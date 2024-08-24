@@ -1,0 +1,141 @@
+# Recipient repos to scan for declarations
+recipients:
+  - repo-a
+  - repo-b
+  - repo-prefix-*-suffix
+  - org-a/repo-c
+  - org-b/repo-d
+  - org-c/repo-e
+
+# Settings to do with permissions that can be given to repos
+permissions:
+  # Rules are applied in order
+  rules:
+    # Default rule
+    - description: Organization-wide default access
+      recipients:
+        - "*"
+      resources:
+        - "*"
+      permissions:
+        actions: write
+        checks: read
+        contents: read
+        issues: write
+        metadata: read
+
+    - description: Write access to repo-b
+      recipients:
+        # Matches requests for tokens FROM these repositories
+        # i.e. they will be the "recipient" of the token
+        - repo-a
+        - repo-prefix-*-suffix
+      resources:
+        # Matches requests for tokens FOR these repositories
+        # i.e. they are the "resource" being accessed
+        - repo-b
+      permissions:
+        # Permissions can be added...
+        pull_requests: write
+        # escalated...
+        contents: write
+        # de-escalated...
+        actions: read
+        # or removed
+        checks: none
+
+    # Cross-org access is also possible
+    - recipients:
+        - org-a/repo-c
+      resources:
+        - org-b/repo-d
+      permissions:
+        issues: read
+        contents: read
+        metadata: write
+
+    # Wildcards don't match slashes, but can still be used for orgs
+    - recipients:
+        - "*/*"
+      resources:
+        - "*/repo-e"
+      permissions:
+        metadata: read
+
+    # Rules for repos requesting to access themselves
+    - self: true
+      recipients:
+        - "*"
+      resources:
+        - "*"
+      permissions:
+        actions: write
+        checks: write
+        contents: write
+        issues: write
+        metadata: write
+        pull_requests: write
+        workflows: write
+
+    # Self rules can be overridden too
+    - self: true
+      recipients:
+        - repo-a
+      resources:
+        - repo-a
+      permissions:
+        actions: none
+        workflows: none
+
+# Hosts can also define tokens
+# Can be used to provision org-level secrets
+tokens:
+  token-a:
+    repositories:
+      - repo-a
+    permissions:
+      issues: write
+      contents: read
+
+  # Shared tokens can be referenced by recipient repos
+  # The recipient doesn't need to define the token
+  # Rules are still applied to each recipient requesting the token
+  $shared-token-a:
+    repositories:
+      - repo-b
+    permissions:
+      actions: write
+      checks: read
+
+provision:
+  # Provision org-level GitHub secrets to the same org as the host
+  github:
+    - secrets:
+        # Actions secrets
+        actions:
+          SECRET_A:
+            token: token-a
+
+          SECRET_B:
+            token: token-b
+
+          # Can revoke secrets
+          SECRET_C:
+            revoke: true
+
+        # Codespaces secrets
+        codespaces:
+          SECRET_A:
+            token: token-a
+
+        # Dependabot secrets
+        dependabot:
+          SECRET_B:
+            token: token-b
+
+    # Provision org-level GitHub secrets to different org
+    - org: org-a
+      secrets:
+        actions:
+          SECRET_A:
+            token: token-a

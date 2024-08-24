@@ -1,0 +1,63 @@
+# Defines the GitHub tokens the current repo wants to exist
+tokens:
+  # Each token has a unique ID
+  token-a:
+    # Repo scoping with wildcard support
+    repositories:
+      - repo-a
+      - repo-prefix-*-suffix
+    permissions:
+      issues: write
+      contents: read
+
+  token-b:
+    repositories:
+      - "*" # All repositories in the same org
+    permissions:
+      actions: write
+      checks: read
+
+  token-c:
+    # Can request cross-org access
+    owner: org-a
+    repositories:
+      - repo-c
+    permissions:
+      metadata: read
+
+  # Can revoke tokens
+  revoked-token:
+    revoke: true
+
+# Defines how the tokens should be provisioned
+# Only supports GitHub secrets for now
+# Room to expand to other services (e.g. Argo, Terraform)
+provision:
+  # Provision to GitHub secrets
+  github:
+    secrets:
+      # Actions secrets
+      actions:
+        SECRET_A:
+          token: token-a
+
+        SECRET_B:
+          token: token-b
+
+        # Shared tokens can be defined by the host
+        SECRET_C:
+          token: $shared-token-a
+
+        # Secrets that point to revoked tokens are removed
+        SECRET_D:
+          token: revoked-token
+
+      # Codespaces secrets
+      codespaces:
+        SECRET_E:
+          token: token-a
+
+      # Dependabot secrets
+      dependabot:
+        SECRET_F:
+          token: token-b
