@@ -1,0 +1,14 @@
+name: TODO
+description: TODO
+author: Ghalactic
+inputs:
+  token:
+    description: >-
+      The GitHub token to use when TODO.
+    default: ${{ github.token }}
+branding:
+  icon: TODO
+  color: TODO
+runs:
+  using: node20
+  main: dist/main.js

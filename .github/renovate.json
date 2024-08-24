@@ -1,0 +1,7 @@
+{
+  "description": "DO NOT EDIT - This file is managed by ghalactic/repos.",
+  "extends": ["github>ghalactic/renovate"],
+  "postUpgradeTasks": {
+    "commands": ["make regenerate"]
+  }
+}

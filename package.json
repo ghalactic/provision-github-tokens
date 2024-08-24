@@ -1,0 +1,22 @@
+{
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "renovate-post-upgrade": "rm -rf dist && node script/build.js dist/main.js"
+  },
+  "engines": {
+    "node": "^20",
+    "npm": "^10"
+  },
+  "dependencies": {
+    "@actions/core": "^1.10.1"
+  },
+  "devDependencies": {
+    "@vitest/coverage-v8": "^2.0.5",
+    "esbuild": "^0.23.1",
+    "prettier": "^3.3.3",
+    "prettier-plugin-organize-imports": "^4.0.0",
+    "typescript": "^5.5.4",
+    "vitest": "^2.0.5"
+  }
+}
