@@ -1,9 +1,7 @@
-# Action template
+# Provision GitHub Tokens
 
-## Usage
+A [GitHub Action] that creates and rotates [GitHub installation access tokens]
+declaratively across your organization's repositories.
 
-1. Add a new repo to [ghalactic/repos] that uses this template.
-2. Clone the new repo.
-3. Search case-insensitively for instances of `TODO`, and replace.
-
-[ghalactic/repos]: https://github.com/ghalactic/repos
+[github action]: https://docs.github.com/actions
+[github installation access tokens]: https://docs.github.com/apps/creating-github-apps/authenticating-with-a-github-app/authenticating-as-a-github-app-installation#using-an-installation-access-token-to-authenticate-as-an-app-installation

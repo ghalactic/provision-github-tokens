@@ -1,14 +1,9 @@
-name: TODO
-description: TODO
+name: Provision GitHub Tokens
+description: Declare GitHub tokens in your repos, and rotate them automatically
 author: Ghalactic
-inputs:
-  token:
-    description: >-
-      The GitHub token to use when TODO.
-    default: ${{ github.token }}
 branding:
-  icon: TODO
-  color: TODO
+  icon: key
+  color: blue
 runs:
   using: node20
   main: dist/main.js
