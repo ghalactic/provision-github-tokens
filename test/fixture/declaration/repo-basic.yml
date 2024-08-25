@@ -1,7 +1,7 @@
 # Defines the GitHub tokens the current repo wants to exist
 tokens:
   # Each token has a unique ID
-  token-a:
+  tokenA:
     # Repo scoping with wildcard support
     repositories:
       - repo-a
@@ -10,14 +10,14 @@ tokens:
       issues: write
       contents: read
 
-  token-b:
+  tokenB:
     repositories:
       - "*" # All repositories in the same org
     permissions:
       actions: write
       checks: read
 
-  token-c:
+  tokenC:
     # Can request cross-org access
     owner: org-a
     repositories:
@@ -25,9 +25,19 @@ tokens:
     permissions:
       metadata: read
 
-  # Can revoke tokens
-  revoked-token:
+  # Can revoke tokens (would require storing the tokens in the host - GPG?)
+  revokedToken:
     revoke: true
+
+  # Shared tokens allow definition re-use
+  # Rules are still applied to each recipient requesting the token
+  shared-token-a:
+    shared: true
+    repositories:
+      - repo-b
+    permissions:
+      actions: write
+      checks: read
 
 # Defines how the tokens should be provisioned
 # Only supports GitHub secrets for now
@@ -38,26 +48,82 @@ provision:
     secrets:
       # Actions secrets
       actions:
-        SECRET_A:
-          token: token-a
+        # Org-level Actions secrets
+        organization:
+          - name: SECRET_A
+            token: tokenA
 
-        SECRET_B:
-          token: token-b
+          # Can provision to other orgs
+          - name: SECRET_B
+            token: tokenB
+            organization: org-a
 
-        # Shared tokens can be defined by the host
-        SECRET_C:
-          token: $shared-token-a
+        # Repository-level Actions secrets
+        repository:
+          - name: SECRET_A
+            token: tokenA
 
-        # Secrets that point to revoked tokens are removed
-        SECRET_D:
-          token: revoked-token
+          - name: SECRET_B
+            token: tokenB
+
+          # Shared tokens can be defined by other repos
+          - name: SECRET_C
+            token: repo-b.shared-tokenA
+          - name: SECRET_D
+            token: org-a/repo-c.shared-tokenB
+
+          # Can delete secrets
+          - name: DELETED_SECRET
+            delete: true
+
+          # Can provision to other repos
+          - name: SECRET_E
+            token: tokenA
+            repository: repo-c
+
+          # Can provision to other orgs
+          - name: SECRET_F
+            token: tokenA
+            repository: org-a/repo-c
+
+      # Repository environment secrets
+      environment:
+        - environment: envA
+          name: SECRET_A
+          token: tokenA
+
+        # Can provision to environments of other repos
+        - environment: envB
+          repository: repo-a
+          name: SECRET_B
+          token: tokenB
+
+        # Can provision to environments of repos in other orgs
+        - environment: envC
+          repository: org-a/repo-c
+          name: SECRET_C
+          token: tokenC
 
       # Codespaces secrets
       codespaces:
-        SECRET_E:
-          token: token-a
+        # Org-level Codespaces secrets
+        organization:
+          SECRET_X:
+            token: tokenA
+
+        # Repository-level Codespaces secrets
+        repository:
+          SECRET_X:
+            token: tokenA
 
       # Dependabot secrets
       dependabot:
-        SECRET_F:
-          token: token-b
+        # Org-level Dependabot secrets
+        organization:
+          SECRET_Y:
+            token: tokenB
+
+        # Repository-level Dependabot secrets
+        repository:
+          SECRET_Y:
+            token: tokenB

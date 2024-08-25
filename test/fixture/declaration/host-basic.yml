@@ -1,4 +1,5 @@
 # Recipient repos to scan for declarations
+# Optional, defaults to all accessible repos
 recipients:
   - repo-a
   - repo-b
@@ -86,56 +87,3 @@ permissions:
       permissions:
         actions: none
         workflows: none
-
-# Hosts can also define tokens
-# Can be used to provision org-level secrets
-tokens:
-  token-a:
-    repositories:
-      - repo-a
-    permissions:
-      issues: write
-      contents: read
-
-  # Shared tokens can be referenced by recipient repos
-  # The recipient doesn't need to define the token
-  # Rules are still applied to each recipient requesting the token
-  $shared-token-a:
-    repositories:
-      - repo-b
-    permissions:
-      actions: write
-      checks: read
-
-provision:
-  # Provision org-level GitHub secrets to the same org as the host
-  github:
-    - secrets:
-        # Actions secrets
-        actions:
-          SECRET_A:
-            token: token-a
-
-          SECRET_B:
-            token: token-b
-
-          # Can revoke secrets
-          SECRET_C:
-            revoke: true
-
-        # Codespaces secrets
-        codespaces:
-          SECRET_A:
-            token: token-a
-
-        # Dependabot secrets
-        dependabot:
-          SECRET_B:
-            token: token-b
-
-    # Provision org-level GitHub secrets to different org
-    - org: org-a
-      secrets:
-        actions:
-          SECRET_A:
-            token: token-a
