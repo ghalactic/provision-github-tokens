@@ -12,7 +12,7 @@ tokens:
 
   tokenB:
     repositories:
-      - "*" # All repositories in the same org
+      - "*" # All repositories
     permissions:
       actions: write
       checks: read
