@@ -14,7 +14,7 @@ const ACCESS_RANK = {
 } as const;
 
 export type AppRegistry = {
-  registerApp: (app: App) => void;
+  registerApp: (role: string | undefined, app: App) => void;
   registerInstallation: (installation: Installation) => void;
   registerInstallationRepositories: (
     installationId: number,
@@ -26,12 +26,14 @@ export type AppRegistry = {
 
 export function createAppRegistry(): AppRegistry {
   const apps: Map<number, App> = new Map();
+  const appRoles: Map<App, string> = new Map();
   const installations: Map<number, Installation> = new Map();
   const installationRepos: Map<Installation, Repository[]> = new Map();
 
   return {
-    registerApp: (app) => {
+    registerApp: (role, app) => {
       apps.set(app.id, app);
+      if (role) appRoles.set(app, role);
     },
 
     registerInstallation: (installation) => {
@@ -66,17 +68,19 @@ export function createAppRegistry(): AppRegistry {
       ][];
 
       for (const [installation, repositories] of installationRepos) {
-        if (
-          typeof request.app === "number" &&
-          installation.app_id !== request.app
-        ) {
-          continue;
-        }
+        const app = apps.get(installation.app_id);
 
-        if (
-          typeof request.app === "string" &&
-          installation.app_slug !== request.app
-        ) {
+        /* v8 ignore start */
+        if (!app) {
+          throw new Error(
+            `Invariant violation: App ${installation.app_id} not registered`,
+          );
+        }
+        /* v8 ignore stop */
+
+        const appRole = appRoles.get(app);
+
+        if (typeof request.role === "string" && appRole !== request.role) {
           continue;
         }
 

@@ -4,5 +4,5 @@ export type TokenRequest = {
   owner: string;
   repositories: string[] | "all";
   permissions: Permissions;
-  app?: number | string;
+  role?: string;
 };
