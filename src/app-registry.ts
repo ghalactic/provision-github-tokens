@@ -53,6 +53,19 @@ export function createAppRegistry(): AppRegistry {
     },
 
     findInstallationForToken: (request) => {
+      const tokenHasRole = typeof request.role === "string";
+      const tokenPerms = Object.entries(request.permissions) as [
+        PermissionName,
+        PermissionAccess,
+      ][];
+
+      // Require an explicit role for write/admin access
+      if (!tokenHasRole) {
+        for (const [, access] of tokenPerms) {
+          if (ACCESS_RANK[access] > ACCESS_RANK.read) return undefined;
+        }
+      }
+
       const tokenRepos: Record<string, true> = Array.isArray(
         request.repositories,
       )
@@ -65,11 +78,6 @@ export function createAppRegistry(): AppRegistry {
           )
         : {};
 
-      const tokenPerms = Object.entries(request.permissions) as [
-        PermissionName,
-        PermissionAccess,
-      ][];
-
       for (const [installation, repositories] of installationRepos) {
         const app = apps.get(installation.app_id);
 
@@ -81,11 +89,7 @@ export function createAppRegistry(): AppRegistry {
         }
         /* v8 ignore stop */
 
-        const appRole = appRoles.get(app);
-
-        if (typeof request.role === "string" && appRole !== request.role) {
-          continue;
-        }
+        if (tokenHasRole && appRoles.get(app) !== request.role) continue;
 
         let permMatchCount = 0;
         let repoMatchCount = 0;
