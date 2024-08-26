@@ -11,9 +11,6 @@ it("finds an installation for all repos in an owner with one permission", () => 
     repository_selection: "all",
     permissions: { contents: "write" },
   });
-  registry.registerInstallationRepositories(101, [
-    { owner: { login: "owner-a" }, name: "repo-a" },
-  ]);
 
   expect(
     registry.findInstallationForToken({

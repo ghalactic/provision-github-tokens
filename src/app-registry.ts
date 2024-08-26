@@ -38,6 +38,9 @@ export function createAppRegistry(): AppRegistry {
 
     registerInstallation: (installation) => {
       installations.set(installation.id, installation);
+      if (installation.repository_selection === "all") {
+        installationRepos.set(installation, []);
+      }
     },
 
     registerInstallationRepositories: (installationId, repositories) => {
