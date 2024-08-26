@@ -4,8 +4,8 @@ import type {
   PermissionAccess,
   PermissionName,
   Repository,
-} from "./api-data.js";
-import type { TokenRequest } from "./token-request.js";
+} from "./type/api-data.js";
+import type { TokenRequest } from "./type/token-request.js";
 
 const ACCESS_RANK = {
   read: 1,
