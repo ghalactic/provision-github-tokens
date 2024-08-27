@@ -12,7 +12,8 @@
     "properties": {
       "appId": {
         "description": "The GitHub app ID.",
-        "type": "integer"
+        "type": "string",
+        "minLength": 1
       },
       "privateKey": {
         "description": "The GitHub app private key in PEM format.",
