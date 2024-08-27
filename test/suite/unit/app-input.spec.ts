@@ -15,29 +15,29 @@ beforeEach(() => {
 
 it("can parse valid input", () => {
   vi.mocked(getInput).mockReturnValue(`
-    - appId: 111111
+    - appId: "111111"
       privateKey: <private key A>
-    - appId: 222222
+    - appId: "222222"
       privateKey: <private key B>
       roles: []
-    - appId: 333333
+    - appId: "333333"
       privateKey: <private key C>
       roles: ["role-a", "role-b"]
   `);
 
   expect(readAppsInput()).toEqual([
     {
-      appId: 111111,
+      appId: "111111",
       privateKey: "<private key A>",
       roles: [],
     },
     {
-      appId: 222222,
+      appId: "222222",
       privateKey: "<private key B>",
       roles: [],
     },
     {
-      appId: 333333,
+      appId: "333333",
       privateKey: "<private key C>",
       roles: ["role-a", "role-b"],
     },
@@ -46,7 +46,7 @@ it("can parse valid input", () => {
 
 it("throws if the input doesn't match the schema", () => {
   vi.mocked(getInput).mockReturnValue(`
-    - appId: "111111"
+    - appId: 111111
       privateKey: <private key A>
   `);
 
