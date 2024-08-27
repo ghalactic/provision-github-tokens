@@ -5,6 +5,16 @@ it("can be converted to a string", () => {
   expect(String(createPattern("a*b/c*d"))).toBe("a*b/c*d");
 });
 
+it("knows if it matches all strings", () => {
+  expect(createPattern("*").isAll).toBe(true);
+  expect(createPattern("**").isAll).toBe(true);
+  expect(createPattern("**********").isAll).toBe(true);
+  expect(createPattern("a").isAll).toBe(false);
+  expect(createPattern("a*").isAll).toBe(false);
+  expect(createPattern("*a").isAll).toBe(false);
+  expect(createPattern("*a*").isAll).toBe(false);
+});
+
 const patterns: [pattern: string, matches: string[], nonMatches: string[]][] = [
   ["name-a", ["name-a"], ["name-b"]],
   ["name.a", ["name.a"], ["name-b"]],

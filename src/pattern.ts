@@ -1,20 +1,22 @@
 import escape from "regexp.escape";
 
 export type Pattern = {
+  readonly isAll: boolean;
   test: (string: string) => boolean;
   toString: () => string;
 };
 
 export function createPattern(pattern: string): Pattern {
-  const expression = new RegExp(
-    `^${pattern.split("*").map(escape).join("[^/]*")}$`,
-  );
+  const literals = pattern.split("*");
+  const expression = new RegExp(`^${literals.map(escape).join("[^/]*")}$`);
 
   return {
-    test: (string) => expression.test(string),
-
-    toString: () => {
-      return pattern;
+    get isAll() {
+      for (const l of literals) if (l) return false;
+      return true;
     },
+
+    test: (string) => expression.test(string),
+    toString: () => pattern,
   };
 }
