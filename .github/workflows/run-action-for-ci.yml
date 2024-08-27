@@ -1,0 +1,36 @@
+name: Run action for CI
+
+on:
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: The Git ref to check out.
+        type: string
+        required: true
+
+jobs:
+  run:
+    name: Run action for CI
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: Run action
+        uses: ./
+        with:
+          apps: |
+            - appId: ${{ toJSON(vars.APP_ID_A) }}
+              privateKey: ${{ toJSON(secrets.APP_PK_A) }}
+              roles:
+                - role-a
+                - role-b
+            - appId: ${{ toJSON(vars.APP_ID_B) }}
+              privateKey: ${{ toJSON(secrets.APP_PK_B) }}
+              roles:
+                - role-b
+            - appId: ${{ toJSON(vars.APP_ID_C) }}
+              privateKey: ${{ toJSON(secrets.APP_PK_C) }}
