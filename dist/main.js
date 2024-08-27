@@ -12297,11 +12297,11 @@ var require_response = __commonJS({
       };
     }
     function makeNetworkError(reason) {
-      const isError2 = isErrorLike(reason);
+      const isError = isErrorLike(reason);
       return makeResponse({
         type: "error",
         status: 0,
-        error: isError2 ? reason : new Error(reason ? String(reason) : reason),
+        error: isError ? reason : new Error(reason ? String(reason) : reason),
         aborted: reason && reason.name === "AbortError"
       });
     }
@@ -18826,15 +18826,14 @@ Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
 // src/main.ts
 var import_core = __toESM(require_core(), 1);
 
-// src/guard.ts
-function isError(value) {
-  return value instanceof Error;
+// src/error.ts
+function errorStack(error) {
+  return (error instanceof Error ? error.stack : void 0) ?? "unknown cause";
 }
 
 // src/main.ts
 main().catch((error) => {
-  const stack = isError(error) ? error.stack : void 0;
-  (0, import_core.setFailed)(stack ?? "unknown cause");
+  (0, import_core.setFailed)(errorStack(error) ?? "unknown cause");
 });
 async function main() {
   (0, import_core.info)("It's working");

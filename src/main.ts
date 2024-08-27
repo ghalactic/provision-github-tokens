@@ -1,9 +1,8 @@
 import { info, setFailed } from "@actions/core";
-import { isError } from "./guard.js";
+import { errorStack } from "./error.js";
 
 main().catch((error) => {
-  const stack = isError(error) ? error.stack : undefined;
-  setFailed(stack ?? "unknown cause");
+  setFailed(errorStack(error) ?? "unknown cause");
 });
 
 async function main(): Promise<void> {
