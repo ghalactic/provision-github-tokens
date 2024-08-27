@@ -1,5 +1,7 @@
-import { info, setFailed } from "@actions/core";
+import { group, setFailed } from "@actions/core";
+import { createAppRegistry } from "./app-registry.js";
 import { readAppsInput } from "./config/apps-input.js";
+import { discoverApps } from "./discover-apps.js";
 import { errorStack } from "./error.js";
 
 main().catch((error) => {
@@ -7,9 +9,9 @@ main().catch((error) => {
 });
 
 async function main(): Promise<void> {
-  info("It's working");
+  const registry = createAppRegistry();
 
-  for (const { appId, roles } of readAppsInput()) {
-    info(`Found app ${appId} with roles ${roles.join(", ")}`);
-  }
+  await group("Discovering apps", async () => {
+    await discoverApps(registry, readAppsInput());
+  });
 }
