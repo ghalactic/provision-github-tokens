@@ -1,0 +1,27 @@
+name: Publish schemas
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - src/schema/*.json
+
+jobs:
+  publish:
+    name: Publish schemas
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Publish schemas
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          branch: gh-pages
+          folder: src/schema
+          target-folder: schema
