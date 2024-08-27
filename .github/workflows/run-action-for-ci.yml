@@ -2,12 +2,6 @@ name: Run action for CI
 
 on:
   workflow_dispatch:
-    inputs:
-      ref:
-        description: The Git ref to check out.
-        type: string
-        required: true
-
 jobs:
   run:
     name: Run action for CI
@@ -16,8 +10,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          ref: ${{ inputs.ref }}
 
       - name: Run action
         uses: ./
