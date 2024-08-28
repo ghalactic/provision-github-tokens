@@ -1,3 +1,3 @@
 import { vi } from "vitest";
 
-export const getInput = vi.fn().mockReturnValue("");
+export const getInput = vi.fn(() => "");
