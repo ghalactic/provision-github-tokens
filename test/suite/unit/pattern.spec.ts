@@ -1,6 +1,10 @@
 import { expect, it } from "vitest";
 import { createPattern } from "../../../src/pattern.js";
 
+it("doesn't allow empty patterns", () => {
+  expect(() => createPattern("")).toThrow("Pattern cannot be empty");
+});
+
 it("can be converted to a string", () => {
   expect(String(createPattern("a*b/c*d"))).toBe("a*b/c*d");
 });

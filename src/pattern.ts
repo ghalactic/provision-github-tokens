@@ -7,6 +7,8 @@ export type Pattern = {
 };
 
 export function createPattern(pattern: string): Pattern {
+  if (!pattern) throw new Error("Pattern cannot be empty");
+
   const literals = pattern.split("*");
   const expression = new RegExp(`^${literals.map(escape).join("[^/]*")}$`);
 
