@@ -3,11 +3,7 @@ import { beforeEach, expect, it, vi } from "vitest";
 import { readAppsInput } from "../../../src/config/apps-input.js";
 import type { AppInput } from "../../../src/type/input.js";
 
-vi.mock("@actions/core", () => {
-  return {
-    getInput: vi.fn().mockReturnValue(""),
-  };
-});
+vi.mock("@actions/core");
 
 beforeEach(() => {
   vi.resetAllMocks();
