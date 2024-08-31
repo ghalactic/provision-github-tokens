@@ -14,7 +14,7 @@ const ACCESS_RANK = {
 } as const;
 
 export type AppRegistry = {
-  registerApp: (role: string | undefined, app: App) => void;
+  registerApp: (roles: string[], app: App) => void;
   registerInstallation: (installation: Installation) => void;
   registerInstallationRepositories: (
     installationId: number,
@@ -25,22 +25,17 @@ export type AppRegistry = {
 };
 
 export function createAppRegistry(): AppRegistry {
-  const apps: Map<number, App> = new Map();
-  const appRoles: Map<App, string> = new Map();
+  const apps: Map<number, AppWithRoles> = new Map();
   const installations: Map<number, Installation> = new Map();
   const installationRepos: Map<Installation, Repository[]> = new Map();
 
   return {
-    registerApp: (role, app) => {
-      apps.set(app.id, app);
-      if (role) appRoles.set(app, role);
+    registerApp: (roles, app) => {
+      apps.set(app.id, [roles, app]);
     },
 
     registerInstallation: (installation) => {
       installations.set(installation.id, installation);
-      if (installation.repository_selection === "all") {
-        installationRepos.set(installation, []);
-      }
     },
 
     registerInstallationRepositories: (installationId, repositories) => {
@@ -79,17 +74,30 @@ export function createAppRegistry(): AppRegistry {
         : {};
 
       for (const [installation, repositories] of installationRepos) {
-        const app = apps.get(installation.app_id);
+        const appWithRoles = apps.get(installation.app_id);
 
         /* v8 ignore start */
-        if (!app) {
+        if (!appWithRoles) {
           throw new Error(
             `Invariant violation: App ${installation.app_id} not registered`,
           );
         }
         /* v8 ignore stop */
 
-        if (tokenHasRole && appRoles.get(app) !== request.role) continue;
+        const [appRoles] = appWithRoles;
+
+        if (tokenHasRole) {
+          let appHasRole = false;
+
+          for (const role of appRoles) {
+            if (role === request.role) {
+              appHasRole = true;
+              break;
+            }
+          }
+
+          if (!appHasRole) continue;
+        }
 
         let permMatchCount = 0;
         let repoMatchCount = 0;
@@ -121,3 +129,5 @@ export function createAppRegistry(): AppRegistry {
     },
   };
 }
+
+type AppWithRoles = [string[], App];

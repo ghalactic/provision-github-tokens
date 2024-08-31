@@ -15,6 +15,7 @@ export type Installation = Pick<
 export type Repository = {
   owner: Pick<GetInstallationRepositoriesRepository["owner"], "login">;
   name: GetInstallationRepositoriesRepository["name"];
+  full_name: GetInstallationRepositoriesRepository["full_name"];
 };
 
 export type Permissions = NonNullable<
