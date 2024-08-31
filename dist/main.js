@@ -52522,8 +52522,6 @@ function pluralize(amount, singular, plural) {
 
 // src/discover-apps.ts
 async function discoverApps(registry, appsInput) {
-  let appCount = 0;
-  let installationCount = 0;
   for (const appInput of appsInput) {
     const appOctokit = createAppOctokit(appInput);
     const { data: app } = await appOctokit.rest.apps.getAuthenticated();
@@ -52540,11 +52538,11 @@ async function discoverApps(registry, appsInput) {
     } else {
       (0, import_core3.debug)(`App ${app.id} has roles ${JSON.stringify(appInput.roles)}`);
     }
-    ++appCount;
     registry.registerApp(appInput.roles, app);
     const installationPages = appOctokit.paginate.iterator(
       appOctokit.rest.apps.listInstallations
     );
+    let installationCount = 0;
     for await (const { data: installations } of installationPages) {
       for (const installation of installations) {
         const {
@@ -52596,10 +52594,10 @@ async function discoverApps(registry, appsInput) {
         registry.registerInstallationRepositories(installationId, repos);
       }
     }
+    (0, import_core3.info)(
+      `Discovered ${pluralize(installationCount, "installation", "installations")} of ${JSON.stringify(app.name)}`
+    );
   }
-  (0, import_core3.info)(
-    `Discovered ${pluralize(appCount, "app", "apps")} and ${pluralize(installationCount, "installation", "installations")}`
-  );
 }
 
 // src/main.ts

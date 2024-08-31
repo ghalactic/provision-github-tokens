@@ -56,7 +56,7 @@ it("discovers installations with access to all repos", async () => {
     ::debug::Discovered app installation 111 for account org-a
     ::debug::Installation 111 has permissions {"contents":"read"}
     ::debug::Installation 111 has access to all repositories in account org-a
-    Discovered 1 app and 1 installation
+    Discovered 1 installation of "App A"
     "
   `);
   expect(
@@ -100,7 +100,7 @@ it("discovers installations with access to selected repos", async () => {
     ::debug::Discovered app installation 111 for account org-a
     ::debug::Installation 111 has permissions {"contents":"read"}
     ::debug::Installation 111 has access to repositories ["org-a/repo-a","org-a/repo-b"]
-    Discovered 1 app and 1 installation
+    Discovered 1 installation of "App A"
     "
   `);
   expect(
@@ -142,7 +142,7 @@ it("discovers installations with access to no repos", async () => {
     ::debug::Discovered app installation 111 for account org-a
     ::debug::Installation 111 has permissions {"members":"read"}
     ::debug::Installation 111 has access to no repositories
-    Discovered 1 app and 1 installation
+    Discovered 1 installation of "App A"
     "
   `);
   expect(
@@ -178,7 +178,7 @@ it("discovers installations with no permissions", async () => {
     ::debug::Discovered app installation 111 for account org-a
     ::debug::Installation 111 has no permissions
     ::debug::Installation 111 has access to all repositories in account org-a
-    Discovered 1 app and 1 installation
+    Discovered 1 installation of "App A"
     "
   `);
   expect(
@@ -214,7 +214,7 @@ it("discovers installations with roles", async () => {
     ::debug::Discovered app installation 111 for account org-a
     ::debug::Installation 111 has permissions {"contents":"write"}
     ::debug::Installation 111 has access to all repositories in account org-a
-    Discovered 1 app and 1 installation
+    Discovered 1 installation of "App A"
     "
   `);
   expect(
@@ -263,7 +263,7 @@ it("discovers multiple installations of an app", async () => {
     ::debug::Discovered app installation 102 for account org-a
     ::debug::Installation 102 has permissions {"contents":"read"}
     ::debug::Installation 102 has access to all repositories in account org-a
-    Discovered 1 app and 2 installations
+    Discovered 2 installations of "App A"
     "
   `);
   expect(
@@ -306,12 +306,13 @@ it("discovers multiple apps", async () => {
     ::debug::Discovered app installation 111 for account org-a
     ::debug::Installation 111 has permissions {"contents":"read"}
     ::debug::Installation 111 has access to all repositories in account org-a
+    Discovered 1 installation of "App A"
     ::debug::Discovered app "App B" (app-b / 120)
     ::debug::App 120 has no roles
     ::debug::Discovered app installation 121 for account org-a
     ::debug::Installation 121 has permissions {"actions":"read"}
     ::debug::Installation 121 has access to all repositories in account org-a
-    Discovered 2 apps and 2 installations
+    Discovered 1 installation of "App B"
     "
   `);
   expect(
