@@ -110,10 +110,16 @@ export async function discoverApps(
       }
     }
 
+    const rolesSuffix =
+      appInput.roles.length < 1
+        ? ""
+        : ` with ${pluralize(appInput.roles.length, "role", "roles")} ` +
+          `${appInput.roles.map((r) => JSON.stringify(r)).join(", ")}`;
+
     info(
-      `Discovered ` +
+      `Discovered ${installationCount} ` +
         `${pluralize(installationCount, "installation", "installations")} ` +
-        `of ${JSON.stringify(app.name)}`,
+        `of ${JSON.stringify(app.name)}${rolesSuffix}`,
     );
   }
 }

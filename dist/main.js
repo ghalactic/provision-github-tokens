@@ -52517,7 +52517,7 @@ function createInstallationOctokit({ appId, privateKey }, installationId) {
 
 // src/pluralize.ts
 function pluralize(amount, singular, plural) {
-  return `${amount} ${amount === 1 ? singular : plural}`;
+  return amount === 1 ? singular : plural;
 }
 
 // src/discover-apps.ts
@@ -52594,8 +52594,9 @@ async function discoverApps(registry, appsInput) {
         registry.registerInstallationRepositories(installationId, repos);
       }
     }
+    const rolesSuffix = appInput.roles.length < 1 ? "" : ` with ${pluralize(appInput.roles.length, "role", "roles")} ${appInput.roles.map((r) => JSON.stringify(r)).join(", ")}`;
     (0, import_core3.info)(
-      `Discovered ${pluralize(installationCount, "installation", "installations")} of ${JSON.stringify(app.name)}`
+      `Discovered ${installationCount} ${pluralize(installationCount, "installation", "installations")} of ${JSON.stringify(app.name)}${rolesSuffix}`
     );
   }
 }

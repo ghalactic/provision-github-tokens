@@ -194,27 +194,40 @@ it("discovers installations with no permissions", async () => {
 it("discovers installations with roles", async () => {
   const orgA = createTestInstallationAccount("Organization", 100, "org-a");
   const appA = createTestApp(110, "app-a", "App A", { contents: "write" });
+  const appB = createTestApp(120, "app-b", "App B", { contents: "write" });
   const appAInstallationA = createTestInstallation(111, appA, orgA, "all", []);
+  const appBInstallationA = createTestInstallation(121, appB, orgA, "all", []);
 
-  __setApps([appA]);
-  __setInstallations([appAInstallationA]);
+  __setApps([appA, appB]);
+  __setInstallations([appAInstallationA, appBInstallationA]);
 
   const registry = createAppRegistry();
   await discoverApps(registry, [
     {
       appId: String(appA.id),
       privateKey: appA.privateKey,
-      roles: ["role-a", "role-b"],
+      roles: ["role-a"],
+    },
+    {
+      appId: String(appB.id),
+      privateKey: appB.privateKey,
+      roles: ["role-b", "role-c"],
     },
   ]);
 
   expect(output).toMatchInlineSnapshot(`
     "::debug::Discovered app "App A" (app-a / 110)
-    ::debug::App 110 has roles ["role-a","role-b"]
+    ::debug::App 110 has roles ["role-a"]
     ::debug::Discovered app installation 111 for account org-a
     ::debug::Installation 111 has permissions {"contents":"write"}
     ::debug::Installation 111 has access to all repositories in account org-a
-    Discovered 1 installation of "App A"
+    Discovered 1 installation of "App A" with role "role-a"
+    ::debug::Discovered app "App B" (app-b / 120)
+    ::debug::App 120 has roles ["role-b","role-c"]
+    ::debug::Discovered app installation 121 for account org-a
+    ::debug::Installation 121 has permissions {"contents":"write"}
+    ::debug::Installation 121 has access to all repositories in account org-a
+    Discovered 1 installation of "App B" with roles "role-b", "role-c"
     "
   `);
   expect(
@@ -232,7 +245,15 @@ it("discovers installations with roles", async () => {
       repositories: "all",
       permissions: { contents: "write" },
     }),
-  ).toBe(appAInstallationA.id);
+  ).toBe(appBInstallationA.id);
+  expect(
+    registry.findInstallationForToken({
+      role: "role-c",
+      owner: orgA.login,
+      repositories: "all",
+      permissions: { contents: "write" },
+    }),
+  ).toBe(appBInstallationA.id);
 });
 
 it("discovers multiple installations of an app", async () => {
