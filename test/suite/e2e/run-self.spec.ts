@@ -2,7 +2,7 @@ import { expect, it } from "vitest";
 import {
   createSelfRunWorkflow,
   E2E_TIMEOUT,
-  waitForWorkflowRunToComplete,
+  waitForWorkflowRunToSucceed,
 } from "../../e2e.js";
 import { underGHA } from "../../gha.js";
 
@@ -15,9 +15,10 @@ underGHA((ghaContext) => {
         ghaContext,
         "example-label",
       );
-      await waitForWorkflowRunToComplete(ghaContext, run);
 
-      expect(run.conclusion).toBe("success");
+      await expect(
+        waitForWorkflowRunToSucceed(ghaContext, run),
+      ).resolves.toBeUndefined();
     },
     E2E_TIMEOUT,
   );
