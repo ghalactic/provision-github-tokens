@@ -48996,14 +48996,16 @@ function readAppsInput() {
     parsed = load(yaml);
   } catch (error) {
     throw new Error(
-      `Parsing of apps action input failed: ${errorMessage(error)}`
+      `Parsing of apps action input failed: ${errorMessage(error)}`,
+      { cause: error }
     );
   }
   try {
     return validateApps(parsed);
   } catch (error) {
     throw new Error(
-      `Validation of apps action input failed: ${errorMessage(error)}`
+      `Validation of apps action input failed: ${errorMessage(error)}`,
+      { cause: error }
     );
   }
 }

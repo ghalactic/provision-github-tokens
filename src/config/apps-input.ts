@@ -13,6 +13,7 @@ export function readAppsInput(): AppInput[] {
   } catch (error) {
     throw new Error(
       `Parsing of apps action input failed: ${errorMessage(error)}`,
+      { cause: error },
     );
   }
 
@@ -21,6 +22,7 @@ export function readAppsInput(): AppInput[] {
   } catch (error) {
     throw new Error(
       `Validation of apps action input failed: ${errorMessage(error)}`,
+      { cause: error },
     );
   }
 }

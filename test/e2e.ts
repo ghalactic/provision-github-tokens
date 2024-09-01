@@ -152,6 +152,7 @@ async function waitFor<T>(
     if (error instanceof DOMException && error.name === "TimeoutError") {
       throw new Error(
         `Timed out waiting for ${description}: ${errorMessage(lastError)}`,
+        { cause: lastError },
       );
     }
 
