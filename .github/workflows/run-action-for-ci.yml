@@ -26,3 +26,5 @@ jobs:
                 - role-b
             - appId: ${{ toJSON(vars.APP_ID_C) }}
               privateKey: ${{ toJSON(secrets.APP_PK_C) }}
+            - appId: 111111111111
+              privateKey: ${{ toJSON(secrets.APP_PK_C) }}
