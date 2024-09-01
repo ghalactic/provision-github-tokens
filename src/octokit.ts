@@ -8,21 +8,38 @@ const CustomOctokit = OctokitAction.plugin(retry);
 
 export type Octokit = InstanceType<typeof CustomOctokit>;
 
-export function createAppOctokit({ appId, privateKey }: AppInput): Octokit {
-  return new CustomOctokit({
-    authStrategy: createAppAuth,
-    auth: { appId: parseInt(appId, 10), privateKey },
-  });
-}
+export type OctokitFactory = {
+  appOctokit: (input: AppInput) => Octokit;
+  installationOctokit: (input: AppInput, installationId: number) => Octokit;
+};
 
-export function createInstallationOctokit(
-  { appId, privateKey }: AppInput,
-  installationId: number,
-): Octokit {
-  return new CustomOctokit({
-    authStrategy: createAppAuth,
-    auth: { appId: parseInt(appId, 10), privateKey, installationId },
-  });
+export function createOctokitFactory(): OctokitFactory {
+  const appOctokits: Record<string, Octokit> = {};
+  const installationOctokits: Record<string, Octokit> = {};
+
+  return {
+    appOctokit: (appInput) => {
+      const { appId, privateKey } = appInput;
+      const key = JSON.stringify({ appId, privateKey });
+      appOctokits[key] ??= new CustomOctokit({
+        authStrategy: createAppAuth,
+        auth: { appId: parseInt(appId, 10), privateKey },
+      });
+
+      return appOctokits[key];
+    },
+
+    installationOctokit: (appInput, installationId) => {
+      const { appId, privateKey } = appInput;
+      const key = JSON.stringify({ appId, privateKey, installationId });
+      installationOctokits[key] ??= new CustomOctokit({
+        authStrategy: createAppAuth,
+        auth: { appId: parseInt(appId, 10), privateKey, installationId },
+      });
+
+      return installationOctokits[key];
+    },
+  };
 }
 
 export function handleRequestError(

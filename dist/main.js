@@ -54777,17 +54777,29 @@ retry.VERSION = VERSION12;
 
 // src/octokit.ts
 var CustomOctokit = Octokit2.plugin(retry);
-function createAppOctokit({ appId, privateKey }) {
-  return new CustomOctokit({
-    authStrategy: createAppAuth,
-    auth: { appId: parseInt(appId, 10), privateKey }
-  });
-}
-function createInstallationOctokit({ appId, privateKey }, installationId) {
-  return new CustomOctokit({
-    authStrategy: createAppAuth,
-    auth: { appId: parseInt(appId, 10), privateKey, installationId }
-  });
+function createOctokitFactory() {
+  const appOctokits = {};
+  const installationOctokits = {};
+  return {
+    appOctokit: (appInput) => {
+      const { appId, privateKey } = appInput;
+      const key = JSON.stringify({ appId, privateKey });
+      appOctokits[key] ??= new CustomOctokit({
+        authStrategy: createAppAuth,
+        auth: { appId: parseInt(appId, 10), privateKey }
+      });
+      return appOctokits[key];
+    },
+    installationOctokit: (appInput, installationId) => {
+      const { appId, privateKey } = appInput;
+      const key = JSON.stringify({ appId, privateKey, installationId });
+      installationOctokits[key] ??= new CustomOctokit({
+        authStrategy: createAppAuth,
+        auth: { appId: parseInt(appId, 10), privateKey, installationId }
+      });
+      return installationOctokits[key];
+    }
+  };
 }
 function handleRequestError(error, handlers = {}) {
   if (!(error instanceof RequestError)) throw error;
@@ -54807,11 +54819,11 @@ function pluralize(amount, singular, plural) {
 }
 
 // src/discover-apps.ts
-async function discoverApps(registry, appsInput) {
+async function discoverApps(octokitFactory, registry, appsInput) {
   let appIndex = 0;
   for (const appInput of appsInput) {
     try {
-      await discoverApp(registry, appInput, appIndex++);
+      await discoverApp(octokitFactory, registry, appInput, appIndex++);
     } catch (error) {
       (0, import_core3.debug)(`Failed to discover app ${appInput.appId}`);
       (0, import_core3.error)(
@@ -54823,8 +54835,8 @@ async function discoverApps(registry, appsInput) {
     }
   }
 }
-async function discoverApp(registry, appInput, appIndex) {
-  const appOctokit = createAppOctokit(appInput);
+async function discoverApp(octokitFactory, registry, appInput, appIndex) {
+  const appOctokit = octokitFactory.appOctokit(appInput);
   let app;
   try {
     ({ data: app } = await appOctokit.rest.apps.getAuthenticated());
@@ -54854,9 +54866,16 @@ async function discoverApp(registry, appInput, appIndex) {
     (0, import_core3.debug)(`App ${app.id} has roles ${JSON.stringify(appInput.roles)}`);
   }
   registry.registerApp(appInput.roles, app);
-  await discoverInstallations(registry, appInput, appOctokit, app, appIndex);
+  await discoverInstallations(
+    octokitFactory,
+    registry,
+    appInput,
+    appOctokit,
+    app,
+    appIndex
+  );
 }
-async function discoverInstallations(registry, appInput, appOctokit, app, appIndex) {
+async function discoverInstallations(octokitFactory, registry, appInput, appOctokit, app, appIndex) {
   const installationPages = appOctokit.paginate.iterator(
     appOctokit.rest.apps.listInstallations
   );
@@ -54865,7 +54884,12 @@ async function discoverInstallations(registry, appInput, appOctokit, app, appInd
   for await (const { data: installations } of installationPages) {
     for (const installation of installations) {
       try {
-        await discoverInstallation(registry, appInput, installation);
+        await discoverInstallation(
+          octokitFactory,
+          registry,
+          appInput,
+          installation
+        );
         ++successCount;
       } catch (error) {
         ++failureCount;
@@ -54889,7 +54913,7 @@ async function discoverInstallations(registry, appInput, appOctokit, app, appInd
     );
   }
 }
-async function discoverInstallation(registry, appInput, installation) {
+async function discoverInstallation(octokitFactory, registry, appInput, installation) {
   const {
     account,
     id: installationId,
@@ -54898,7 +54922,7 @@ async function discoverInstallation(registry, appInput, installation) {
   } = installation;
   const repos = [];
   if (repository_selection === "selected") {
-    const installationOctokit = createInstallationOctokit(
+    const installationOctokit = octokitFactory.installationOctokit(
       appInput,
       installationId
     );
@@ -54942,9 +54966,10 @@ main().catch((error) => {
   (0, import_core4.setFailed)(errorStack(error) ?? "unknown cause");
 });
 async function main() {
+  const octokitFactory = createOctokitFactory();
   const registry = createAppRegistry();
   await (0, import_core4.group)("Discovering apps", async () => {
-    await discoverApps(registry, readAppsInput());
+    await discoverApps(octokitFactory, registry, readAppsInput());
   });
 }
 /*! Bundled license information:

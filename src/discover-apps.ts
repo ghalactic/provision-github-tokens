@@ -2,16 +2,16 @@ import { debug, info, error as logError } from "@actions/core";
 import type { AppRegistry } from "./app-registry.js";
 import { errorStack } from "./error.js";
 import {
-  createAppOctokit,
-  createInstallationOctokit,
   handleRequestError,
   type Octokit,
+  type OctokitFactory,
 } from "./octokit.js";
 import { pluralize } from "./pluralize.js";
 import type { App, Installation, InstallationRepo } from "./type/github-api.js";
 import type { AppInput } from "./type/input.js";
 
 export async function discoverApps(
+  octokitFactory: OctokitFactory,
   registry: AppRegistry,
   appsInput: AppInput[],
 ): Promise<void> {
@@ -19,7 +19,7 @@ export async function discoverApps(
 
   for (const appInput of appsInput) {
     try {
-      await discoverApp(registry, appInput, appIndex++);
+      await discoverApp(octokitFactory, registry, appInput, appIndex++);
     } catch (error) {
       debug(`Failed to discover app ${appInput.appId}`);
       logError(
@@ -33,11 +33,12 @@ export async function discoverApps(
 }
 
 async function discoverApp(
+  octokitFactory: OctokitFactory,
   registry: AppRegistry,
   appInput: AppInput,
   appIndex: number,
 ): Promise<void> {
-  const appOctokit = createAppOctokit(appInput);
+  const appOctokit = octokitFactory.appOctokit(appInput);
   let app: App | null;
 
   try {
@@ -76,10 +77,18 @@ async function discoverApp(
   }
 
   registry.registerApp(appInput.roles, app);
-  await discoverInstallations(registry, appInput, appOctokit, app, appIndex);
+  await discoverInstallations(
+    octokitFactory,
+    registry,
+    appInput,
+    appOctokit,
+    app,
+    appIndex,
+  );
 }
 
 async function discoverInstallations(
+  octokitFactory: OctokitFactory,
   registry: AppRegistry,
   appInput: AppInput,
   appOctokit: Octokit,
@@ -95,7 +104,12 @@ async function discoverInstallations(
   for await (const { data: installations } of installationPages) {
     for (const installation of installations) {
       try {
-        await discoverInstallation(registry, appInput, installation);
+        await discoverInstallation(
+          octokitFactory,
+          registry,
+          appInput,
+          installation,
+        );
         ++successCount;
       } catch (error) {
         ++failureCount;
@@ -133,6 +147,7 @@ async function discoverInstallations(
 }
 
 async function discoverInstallation(
+  octokitFactory: OctokitFactory,
   registry: AppRegistry,
   appInput: AppInput,
   installation: Installation,
@@ -147,7 +162,7 @@ async function discoverInstallation(
   const repos: InstallationRepo[] = [];
 
   if (repository_selection === "selected") {
-    const installationOctokit = createInstallationOctokit(
+    const installationOctokit = octokitFactory.installationOctokit(
       appInput,
       installationId,
     );
