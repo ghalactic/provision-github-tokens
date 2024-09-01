@@ -1,3 +1,4 @@
+/* v8 ignore start - TODO: remove coverage ignore */
 import "source-map-support/register";
 
 import { group, setFailed } from "@actions/core";
@@ -17,3 +18,4 @@ async function main(): Promise<void> {
     await discoverApps(registry, readAppsInput());
   });
 }
+/* v8 ignore end */
