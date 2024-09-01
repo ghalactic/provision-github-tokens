@@ -162,6 +162,60 @@ it.each([
   },
 );
 
+it("finds an installation for the correct owner when there are multiple installations", () => {
+  const orgA = createTestInstallationAccount("Organization", 100, "org-a");
+  const orgB = createTestInstallationAccount("Organization", 200, "org-b");
+  const appA = createTestApp(110, "app-a", "App A");
+  const appAInstallationA = createTestInstallation(111, appA, orgA, "all", []);
+  const appAInstallationB = createTestInstallation(112, appA, orgB, "all", []);
+
+  const registry = createAppRegistry();
+  registry.registerApp([], appA);
+  registry.registerInstallation(appAInstallationA);
+  registry.registerInstallationRepositories(
+    appAInstallationA.id,
+    appAInstallationA.repositories,
+  );
+  registry.registerInstallation(appAInstallationB);
+  registry.registerInstallationRepositories(
+    appAInstallationB.id,
+    appAInstallationB.repositories,
+  );
+
+  expect(
+    registry.findInstallationForToken({
+      role: undefined,
+      owner: orgA.login,
+      repositories: "all",
+      permissions: {},
+    }),
+  ).toBe(appAInstallationA.id);
+  expect(
+    registry.findInstallationForToken({
+      role: undefined,
+      owner: orgA.login,
+      repositories: [],
+      permissions: {},
+    }),
+  ).toBe(appAInstallationA.id);
+  expect(
+    registry.findInstallationForToken({
+      role: undefined,
+      owner: orgB.login,
+      repositories: "all",
+      permissions: {},
+    }),
+  ).toBe(appAInstallationB.id);
+  expect(
+    registry.findInstallationForToken({
+      role: undefined,
+      owner: orgB.login,
+      repositories: [],
+      permissions: {},
+    }),
+  ).toBe(appAInstallationB.id);
+});
+
 it("finds an installation by role", () => {
   const orgA = createTestInstallationAccount("Organization", 100, "org-a");
   const repoA = createTestInstallationRepo(orgA, "repo-a");

@@ -109,7 +109,18 @@ export function createAppRegistry(): AppRegistry {
         }
 
         if (permMatchCount !== tokenPerms.length) continue;
-        if (installation.repository_selection === "all") return installation.id;
+
+        if (installation.repository_selection === "all") {
+          if (
+            installation.account &&
+            "login" in installation.account &&
+            installation.account.login === request.owner
+          ) {
+            return installation.id;
+          }
+
+          continue;
+        }
 
         for (const repository of repositories) {
           if (

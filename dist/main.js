@@ -46295,7 +46295,12 @@ function createAppRegistry() {
           if (ACCESS_RANK[instAccess] >= ACCESS_RANK[access]) ++permMatchCount;
         }
         if (permMatchCount !== tokenPerms.length) continue;
-        if (installation.repository_selection === "all") return installation.id;
+        if (installation.repository_selection === "all") {
+          if (installation.account && "login" in installation.account && installation.account.login === request2.owner) {
+            return installation.id;
+          }
+          continue;
+        }
         for (const repository of repositories) {
           if (repository.owner.login === request2.owner && tokenRepos[repository.name]) {
             ++repoMatchCount;
