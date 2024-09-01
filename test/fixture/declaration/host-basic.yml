@@ -13,7 +13,7 @@ permissions:
   # Rules are applied in order
   rules:
     # Default rule
-    - description: Organization-wide default access
+    - description: Default access across all orgs and repos
       recipients:
         - "*"
       resources:
@@ -63,12 +63,11 @@ permissions:
       permissions:
         metadata: read
 
-    # Rules for repos requesting to access themselves
-    - self: true
-      recipients:
-        - "*"
+    # Rules for repos requesting access to themselves
+    - recipients:
+        - "*/*"
       resources:
-        - "*"
+        - $owner/$repo
       permissions:
         actions: write
         checks: write
@@ -78,12 +77,11 @@ permissions:
         pull_requests: write
         workflows: write
 
-    # Self rules can be overridden too
-    - self: true
-      recipients:
-        - repo-a
+    # Rules for repos in any org requesting access to any repo in the same org
+    - recipients:
+        - "*/*"
       resources:
-        - repo-a
+        - $owner/*
       permissions:
-        actions: none
-        workflows: none
+        contents: read
+        metadata: read

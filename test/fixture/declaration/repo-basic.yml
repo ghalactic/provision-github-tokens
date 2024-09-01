@@ -39,6 +39,14 @@ tokens:
       actions: write
       checks: read
 
+  # Write tokens must specify the app role to act as
+  tokenD:
+    repositories:
+      - repo-d
+    permissions:
+      pull_requests: write
+    as: review-bot
+
 # Defines how the tokens should be provisioned
 # Only supports GitHub secrets for now
 # Room to expand to other services (e.g. Argo, Terraform)
@@ -127,3 +135,30 @@ provision:
         repository:
           SECRET_Y:
             token: tokenB
+
+  # Better way to define this - inverted
+  # Don't have to define the same secret name multiple times
+  secrets:
+    SECRET_A:
+      token: tokenA
+      github:
+        organization:
+          - actions
+          - codespaces
+          - dependabot
+        organizations:
+          other-org:
+            - actions
+            - codespaces
+            - dependabot
+        repository:
+          - actions
+          - environment
+          - codespaces
+          - dependabot
+        repositories:
+          other-repo:
+            - actions
+            - environment
+            - codespaces
+            - dependabot
