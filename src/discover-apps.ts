@@ -7,7 +7,7 @@ import {
   type Octokit,
 } from "./octokit.js";
 import { pluralize } from "./pluralize.js";
-import type { App, Installation } from "./type/github-api.js";
+import type { App, Installation, InstallationRepo } from "./type/github-api.js";
 import type { AppInput } from "./type/input.js";
 
 export async function discoverApps(
@@ -112,6 +112,26 @@ async function discoverInstallation(
     permissions,
   } = installation;
 
+  const repos: InstallationRepo[] = [];
+
+  if (repository_selection === "selected") {
+    const installationOctokit = createInstallationOctokit(
+      appInput,
+      installationId,
+    );
+
+    const repositoryPages = installationOctokit.paginate.iterator(
+      installationOctokit.rest.apps.listReposAccessibleToInstallation,
+    );
+
+    for await (const { data } of repositoryPages) {
+      // Octokit type is broken, this is correct
+      const repositories = data as unknown as (typeof data)["repositories"];
+
+      for (const repository of repositories) repos.push(repository);
+    }
+  }
+
   /* v8 ignore start - never seen without an account login */
   const accountDescription =
     account && "login" in account
@@ -123,8 +143,6 @@ async function discoverInstallation(
     `Discovered app installation ${installationId} for ` +
       `${accountDescription}`,
   );
-
-  registry.registerInstallation(installation);
 
   if (Object.keys(permissions).length < 1) {
     debug(`Installation ${installationId} has no permissions`);
@@ -140,30 +158,7 @@ async function discoverInstallation(
       `Installation ${installationId} has access to all repositories ` +
         `in ${accountDescription}`,
     );
-
-    registry.registerInstallationRepositories(installationId, []);
-
-    return;
-  }
-
-  const installationOctokit = createInstallationOctokit(
-    appInput,
-    installationId,
-  );
-
-  const repositoryPages = installationOctokit.paginate.iterator(
-    installationOctokit.rest.apps.listReposAccessibleToInstallation,
-  );
-  const repos = [];
-
-  for await (const { data } of repositoryPages) {
-    // Octokit type is broken, this is correct
-    const repositories = data as unknown as (typeof data)["repositories"];
-
-    for (const repository of repositories) repos.push(repository);
-  }
-
-  if (repos.length < 1) {
+  } else if (repos.length < 1) {
     debug(`Installation ${installationId} has access to no repositories`);
   } else {
     const repoNames = repos.map(({ full_name }) => full_name);
@@ -173,5 +168,6 @@ async function discoverInstallation(
     );
   }
 
+  registry.registerInstallation(installation);
   registry.registerInstallationRepositories(installationId, repos);
 }

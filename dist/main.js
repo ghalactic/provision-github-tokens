@@ -54866,11 +54866,24 @@ async function discoverInstallation(registry, appInput, installation) {
     repository_selection,
     permissions
   } = installation;
+  const repos = [];
+  if (repository_selection === "selected") {
+    const installationOctokit = createInstallationOctokit(
+      appInput,
+      installationId
+    );
+    const repositoryPages = installationOctokit.paginate.iterator(
+      installationOctokit.rest.apps.listReposAccessibleToInstallation
+    );
+    for await (const { data } of repositoryPages) {
+      const repositories = data;
+      for (const repository of repositories) repos.push(repository);
+    }
+  }
   const accountDescription = account && "login" in account ? `account ${account.login}` : "unknown account";
   (0, import_core3.debug)(
     `Discovered app installation ${installationId} for ${accountDescription}`
   );
-  registry.registerInstallation(installation);
   if (Object.keys(permissions).length < 1) {
     (0, import_core3.debug)(`Installation ${installationId} has no permissions`);
   } else {
@@ -54882,22 +54895,7 @@ async function discoverInstallation(registry, appInput, installation) {
     (0, import_core3.debug)(
       `Installation ${installationId} has access to all repositories in ${accountDescription}`
     );
-    registry.registerInstallationRepositories(installationId, []);
-    return;
-  }
-  const installationOctokit = createInstallationOctokit(
-    appInput,
-    installationId
-  );
-  const repositoryPages = installationOctokit.paginate.iterator(
-    installationOctokit.rest.apps.listReposAccessibleToInstallation
-  );
-  const repos = [];
-  for await (const { data } of repositoryPages) {
-    const repositories = data;
-    for (const repository of repositories) repos.push(repository);
-  }
-  if (repos.length < 1) {
+  } else if (repos.length < 1) {
     (0, import_core3.debug)(`Installation ${installationId} has access to no repositories`);
   } else {
     const repoNames = repos.map(({ full_name }) => full_name);
@@ -54905,6 +54903,7 @@ async function discoverInstallation(registry, appInput, installation) {
       `Installation ${installationId} has access to repositories ${JSON.stringify(repoNames)}`
     );
   }
+  registry.registerInstallation(installation);
   registry.registerInstallationRepositories(installationId, repos);
 }
 
