@@ -54795,9 +54795,7 @@ function handleRequestError(error, handlers = {}) {
   if (!handler2) {
     throw new Error(
       `Unexpected HTTP status ${error.status} from GitHub API: ${error.message}`,
-      {
-        cause: error
-      }
+      { cause: error }
     );
   }
   handler2();
@@ -54856,23 +54854,40 @@ async function discoverApp(registry, appInput, appIndex) {
     (0, import_core3.debug)(`App ${app.id} has roles ${JSON.stringify(appInput.roles)}`);
   }
   registry.registerApp(appInput.roles, app);
-  await discoverInstallations(registry, appInput, appOctokit, app);
+  await discoverInstallations(registry, appInput, appOctokit, app, appIndex);
 }
-async function discoverInstallations(registry, appInput, appOctokit, app) {
+async function discoverInstallations(registry, appInput, appOctokit, app, appIndex) {
   const installationPages = appOctokit.paginate.iterator(
     appOctokit.rest.apps.listInstallations
   );
-  let installationCount = 0;
+  let successCount = 0;
+  let failureCount = 0;
   for await (const { data: installations } of installationPages) {
-    installationCount += installations.length;
     for (const installation of installations) {
-      await discoverInstallation(registry, appInput, installation);
+      try {
+        await discoverInstallation(registry, appInput, installation);
+        ++successCount;
+      } catch (error) {
+        ++failureCount;
+        (0, import_core3.debug)(`Failed to discover installation for app at index ${appIndex}`);
+        (0, import_core3.error)(
+          new Error(
+            `Failed to discover installation ${installation.id} for app ${app.id}: ${errorStack(error)}`,
+            { cause: error }
+          )
+        );
+      }
     }
   }
   const rolesSuffix = appInput.roles.length < 1 ? "" : ` with ${pluralize(appInput.roles.length, "role", "roles")} ${appInput.roles.map((r) => JSON.stringify(r)).join(", ")}`;
   (0, import_core3.info)(
-    `Discovered ${installationCount} ${pluralize(installationCount, "installation", "installations")} of ${JSON.stringify(app.name)}${rolesSuffix}`
+    `Discovered ${successCount} ${pluralize(successCount, "installation", "installations")} of ${JSON.stringify(app.name)}${rolesSuffix}`
   );
+  if (failureCount > 0) {
+    (0, import_core3.info)(
+      `Failed to discover ${failureCount} ${pluralize(failureCount, "installation", "installations")} of ${JSON.stringify(app.name)}${rolesSuffix}`
+    );
+  }
 }
 async function discoverInstallation(registry, appInput, installation) {
   const {

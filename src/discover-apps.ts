@@ -76,7 +76,7 @@ async function discoverApp(
   }
 
   registry.registerApp(appInput.roles, app);
-  await discoverInstallations(registry, appInput, appOctokit, app);
+  await discoverInstallations(registry, appInput, appOctokit, app, appIndex);
 }
 
 async function discoverInstallations(
@@ -84,17 +84,30 @@ async function discoverInstallations(
   appInput: AppInput,
   appOctokit: Octokit,
   app: App,
+  appIndex: number,
 ): Promise<void> {
   const installationPages = appOctokit.paginate.iterator(
     appOctokit.rest.apps.listInstallations,
   );
-  let installationCount = 0;
+  let successCount = 0;
+  let failureCount = 0;
 
   for await (const { data: installations } of installationPages) {
-    installationCount += installations.length;
-
     for (const installation of installations) {
-      await discoverInstallation(registry, appInput, installation);
+      try {
+        await discoverInstallation(registry, appInput, installation);
+        ++successCount;
+      } catch (error) {
+        ++failureCount;
+        debug(`Failed to discover installation for app at index ${appIndex}`);
+        logError(
+          new Error(
+            `Failed to discover installation ${installation.id} for app ` +
+              `${app.id}: ${errorStack(error)}`,
+            { cause: error },
+          ),
+        );
+      }
     }
   }
 
@@ -105,10 +118,18 @@ async function discoverInstallations(
         `${appInput.roles.map((r) => JSON.stringify(r)).join(", ")}`;
 
   info(
-    `Discovered ${installationCount} ` +
-      `${pluralize(installationCount, "installation", "installations")} ` +
+    `Discovered ${successCount} ` +
+      `${pluralize(successCount, "installation", "installations")} ` +
       `of ${JSON.stringify(app.name)}${rolesSuffix}`,
   );
+
+  if (failureCount > 0) {
+    info(
+      `Failed to discover ${failureCount} ` +
+        `${pluralize(failureCount, "installation", "installations")} ` +
+        `of ${JSON.stringify(app.name)}${rolesSuffix}`,
+    );
+  }
 }
 
 async function discoverInstallation(

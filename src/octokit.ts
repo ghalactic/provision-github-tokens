@@ -35,10 +35,9 @@ export function handleRequestError(
 
   if (!handler) {
     throw new Error(
-      `Unexpected HTTP status ${error.status} from GitHub API: ${error.message}`,
-      {
-        cause: error,
-      },
+      `Unexpected HTTP status ${error.status} from GitHub API: ` +
+        `${error.message}`,
+      { cause: error },
     );
   }
 

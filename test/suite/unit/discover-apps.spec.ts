@@ -14,6 +14,7 @@ import {
   createTestInstallationAccount,
   createTestInstallationRepo,
 } from "../../github-api.js";
+import { stripStacks } from "../../output.js";
 
 vi.mock("@actions/core");
 vi.mock("@octokit/action");
@@ -451,7 +452,7 @@ it("skips apps when discovery throws", async () => {
   const orgA = createTestInstallationAccount("Organization", 100, "org-a");
   const appA = createTestApp(110, "app-a", "App A", { contents: "read" });
   const appB = createTestApp(120, "app-b", "App B", { contents: "read" });
-  const appC = createTestApp(130, "app-c", "App C", { contents: "read" });
+  const appC = createTestApp(130, "app-c", "App C", { actions: "read" });
   const appAInstallationA = createTestInstallation(111, appA, orgA, "all", []);
   const appBInstallationA = createTestInstallation(121, appB, orgA, "all", []);
   const appCInstallationA = createTestInstallation(131, appC, orgA, "all", []);
@@ -479,7 +480,7 @@ it("skips apps when discovery throws", async () => {
     },
   ]);
 
-  expect(output.replaceAll(/^    at .*$\n/gm, "")).toMatchInlineSnapshot(`
+  expect(stripStacks(output)).toMatchInlineSnapshot(`
     "::debug::Discovered app "App A" (app-a / 110)
     ::debug::App 110 has no roles
     ::debug::Discovered app installation 111 for account org-a
@@ -491,9 +492,86 @@ it("skips apps when discovery throws", async () => {
     ::debug::Discovered app "App C" (app-c / 130)
     ::debug::App 130 has no roles
     ::debug::Discovered app installation 131 for account org-a
-    ::debug::Installation 131 has permissions {"contents":"read"}
+    ::debug::Installation 131 has permissions {"actions":"read"}
     ::debug::Installation 131 has access to all repositories in account org-a
     Discovered 1 installation of "App C"
     "
   `);
+  expect(
+    registry.findInstallationForToken({
+      role: undefined,
+      owner: orgA.login,
+      repositories: "all",
+      permissions: { contents: "read" },
+    }),
+  ).toBe(appAInstallationA.id);
+  expect(
+    registry.findInstallationForToken({
+      role: undefined,
+      owner: orgA.login,
+      repositories: "all",
+      permissions: { actions: "read" },
+    }),
+  ).toBe(appCInstallationA.id);
+});
+
+it("skips installations when discovery throws", async () => {
+  const orgA = createTestInstallationAccount("Organization", 100, "org-a");
+  const orgB = createTestInstallationAccount("Organization", 200, "org-b");
+  const orgC = createTestInstallationAccount("Organization", 300, "org-b");
+  const appA = createTestApp(110, "app-a", "App A", { contents: "read" });
+  const appAInstallationA = createTestInstallation(111, appA, orgA, "all", []);
+  const appAInstallationB = createTestInstallation(
+    112,
+    appA,
+    orgB,
+    "selected",
+    [],
+  );
+  const appAInstallationC = createTestInstallation(113, appA, orgC, "all", []);
+
+  __setApps([appA]);
+  __setInstallations([appAInstallationA, appAInstallationB, appAInstallationC]);
+  __setErrors("apps.listReposAccessibleToInstallation", [new Error("<ERROR>")]);
+
+  const registry = createAppRegistry();
+  await discoverApps(registry, [
+    {
+      appId: String(appA.id),
+      privateKey: appA.privateKey,
+      roles: [],
+    },
+  ]);
+
+  expect(stripStacks(output)).toMatchInlineSnapshot(`
+    "::debug::Discovered app "App A" (app-a / 110)
+    ::debug::App 110 has no roles
+    ::debug::Discovered app installation 111 for account org-a
+    ::debug::Installation 111 has permissions {"contents":"read"}
+    ::debug::Installation 111 has access to all repositories in account org-a
+    ::debug::Failed to discover installation for app at index 0
+    ::error::Error: Failed to discover installation 112 for app 110: Error: <ERROR>
+    ::debug::Discovered app installation 113 for account org-b
+    ::debug::Installation 113 has permissions {"contents":"read"}
+    ::debug::Installation 113 has access to all repositories in account org-b
+    Discovered 2 installations of "App A"
+    Failed to discover 1 installation of "App A"
+    "
+  `);
+  expect(
+    registry.findInstallationForToken({
+      role: undefined,
+      owner: orgA.login,
+      repositories: "all",
+      permissions: { contents: "read" },
+    }),
+  ).toBe(appAInstallationA.id);
+  expect(
+    registry.findInstallationForToken({
+      role: undefined,
+      owner: orgC.login,
+      repositories: "all",
+      permissions: { contents: "read" },
+    }),
+  ).toBe(appAInstallationC.id);
 });
