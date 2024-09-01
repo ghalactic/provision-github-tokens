@@ -52500,15 +52500,17 @@ function retry(octokit, octokitOptions) {
 retry.VERSION = VERSION12;
 
 // src/octokit.ts
-function createAppOctokit({ appId, privateKey }) {
-  const CustomOctokit = Octokit2.plugin(retry);
+var CustomOctokit = Octokit2.plugin(retry);
+function createAppOctokit({
+  appId,
+  privateKey
+}) {
   return new CustomOctokit({
     authStrategy: createAppAuth,
     auth: { appId: parseInt(appId, 10), privateKey }
   });
 }
 function createInstallationOctokit({ appId, privateKey }, installationId) {
-  const CustomOctokit = Octokit2.plugin(retry);
   return new CustomOctokit({
     authStrategy: createAppAuth,
     auth: { appId: parseInt(appId, 10), privateKey, installationId }
