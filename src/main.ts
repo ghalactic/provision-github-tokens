@@ -1,3 +1,5 @@
+import "source-map-support/register";
+
 import { group, setFailed } from "@actions/core";
 import { createAppRegistry } from "./app-registry.js";
 import { readAppsInput } from "./config/apps-input.js";
