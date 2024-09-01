@@ -1,5 +1,6 @@
-import { debug, info } from "@actions/core";
+import { debug, info, error as logError } from "@actions/core";
 import type { AppRegistry } from "./app-registry.js";
+import { errorStack } from "./error.js";
 import {
   createAppOctokit,
   createInstallationOctokit,
@@ -17,7 +18,17 @@ export async function discoverApps(
   let appIndex = 0;
 
   for (const appInput of appsInput) {
-    await discoverApp(registry, appInput, appIndex++);
+    try {
+      await discoverApp(registry, appInput, appIndex++);
+    } catch (error) {
+      debug(`Failed to discover app ${appInput.appId}`);
+      logError(
+        new Error(
+          `Failed to discover app at index ${appIndex}: ${errorStack(error)}`,
+          { cause: error },
+        ),
+      );
+    }
   }
 }
 

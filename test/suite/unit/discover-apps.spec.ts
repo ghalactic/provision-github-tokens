@@ -1,8 +1,9 @@
-import { debug, info } from "@actions/core";
+import { debug, error, info } from "@actions/core";
 import { beforeAll, beforeEach, expect, it, vi } from "vitest";
 import {
   __reset,
   __setApps,
+  __setErrors,
   __setInstallations,
 } from "../../../__mocks__/@octokit/action.js";
 import { createAppRegistry } from "../../../src/app-registry.js";
@@ -22,6 +23,9 @@ let output = "";
 beforeAll(() => {
   vi.mocked(debug).mockImplementation((message) => {
     output += `::debug::${message}\n`;
+  });
+  vi.mocked(error).mockImplementation((message) => {
+    output += `::error::${message}\n`;
   });
   vi.mocked(info).mockImplementation((message) => {
     output += `${message}\n`;
@@ -441,4 +445,55 @@ it("skips non-existent apps", async () => {
       permissions: { contents: "read" },
     }),
   ).toBe(appAInstallationA.id);
+});
+
+it("skips apps when discovery throws", async () => {
+  const orgA = createTestInstallationAccount("Organization", 100, "org-a");
+  const appA = createTestApp(110, "app-a", "App A", { contents: "read" });
+  const appB = createTestApp(120, "app-b", "App B", { contents: "read" });
+  const appC = createTestApp(130, "app-c", "App C", { contents: "read" });
+  const appAInstallationA = createTestInstallation(111, appA, orgA, "all", []);
+  const appBInstallationA = createTestInstallation(121, appB, orgA, "all", []);
+  const appCInstallationA = createTestInstallation(131, appC, orgA, "all", []);
+
+  __setApps([appA, appB, appC]);
+  __setInstallations([appAInstallationA, appBInstallationA, appCInstallationA]);
+  __setErrors("apps.getAuthenticated", [undefined, new Error("<ERROR>")]);
+
+  const registry = createAppRegistry();
+  await discoverApps(registry, [
+    {
+      appId: String(appA.id),
+      privateKey: appA.privateKey,
+      roles: [],
+    },
+    {
+      appId: String(appB.id),
+      privateKey: appB.privateKey,
+      roles: [],
+    },
+    {
+      appId: String(appC.id),
+      privateKey: appC.privateKey,
+      roles: [],
+    },
+  ]);
+
+  expect(output.replaceAll(/^    at .*$\n/gm, "")).toMatchInlineSnapshot(`
+    "::debug::Discovered app "App A" (app-a / 110)
+    ::debug::App 110 has no roles
+    ::debug::Discovered app installation 111 for account org-a
+    ::debug::Installation 111 has permissions {"contents":"read"}
+    ::debug::Installation 111 has access to all repositories in account org-a
+    Discovered 1 installation of "App A"
+    ::debug::Failed to discover app 120
+    ::error::Error: Failed to discover app at index 2: Error: <ERROR>
+    ::debug::Discovered app "App C" (app-c / 130)
+    ::debug::App 130 has no roles
+    ::debug::Discovered app installation 131 for account org-a
+    ::debug::Installation 131 has permissions {"contents":"read"}
+    ::debug::Installation 131 has access to all repositories in account org-a
+    Discovered 1 installation of "App C"
+    "
+  `);
 });

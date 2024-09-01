@@ -54807,7 +54807,17 @@ function pluralize(amount, singular, plural) {
 async function discoverApps(registry, appsInput) {
   let appIndex = 0;
   for (const appInput of appsInput) {
-    await discoverApp(registry, appInput, appIndex++);
+    try {
+      await discoverApp(registry, appInput, appIndex++);
+    } catch (error) {
+      (0, import_core3.debug)(`Failed to discover app ${appInput.appId}`);
+      (0, import_core3.error)(
+        new Error(
+          `Failed to discover app at index ${appIndex}: ${errorStack(error)}`,
+          { cause: error }
+        )
+      );
+    }
   }
 }
 async function discoverApp(registry, appInput, appIndex) {

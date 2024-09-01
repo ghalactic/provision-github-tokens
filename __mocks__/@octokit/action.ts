@@ -2,10 +2,12 @@ import { RequestError } from "@octokit/request-error";
 
 let apps: any[];
 let installations: any[];
+let errorsByEndpoint: Record<string, (Error | undefined)[]> = {};
 
 export function __reset() {
   apps = [];
   installations = [];
+  errorsByEndpoint = {};
 }
 
 export function __setApps(newApps: any[]) {
@@ -14,6 +16,10 @@ export function __setApps(newApps: any[]) {
 
 export function __setInstallations(newInstallations: any[]) {
   installations = newInstallations;
+}
+
+export function __setErrors(endpoint: string, errors: (Error | undefined)[]) {
+  errorsByEndpoint[endpoint] = errors;
 }
 
 export function Octokit({
@@ -43,6 +49,8 @@ export function Octokit({
     rest: {
       apps: {
         getAuthenticated: async () => {
+          throwIfEndpointError("apps.getAuthenticated");
+
           for (const [, app] of Object.entries(apps)) {
             if (app.id === appId) {
               if (privateKey !== app.privateKey) {
@@ -69,6 +77,8 @@ Object.defineProperty(Octokit, "plugin", {
 });
 
 async function* listInstallations(appId: number) {
+  throwIfEndpointError("apps.listInstallations");
+
   const per_page = 2;
   let page = [];
 
@@ -90,6 +100,8 @@ async function* listReposAccessibleToInstallation(
   appId: number,
   installationId: number,
 ) {
+  throwIfEndpointError("apps.listReposAccessibleToInstallation");
+
   const per_page = 2;
   let page = [];
 
@@ -108,6 +120,14 @@ async function* listReposAccessibleToInstallation(
   }
 
   yield { data: page };
+}
+
+function throwIfEndpointError(endpoint: string) {
+  const errors = errorsByEndpoint[endpoint] ?? [];
+  const error = errors.shift();
+  errorsByEndpoint[endpoint] = errors;
+
+  if (error) throw error;
 }
 
 class TestRequestError extends RequestError {
