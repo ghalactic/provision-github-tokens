@@ -54782,6 +54782,19 @@ function createInstallationOctokit({ appId, privateKey }, installationId) {
     auth: { appId: parseInt(appId, 10), privateKey, installationId }
   });
 }
+function handleRequestError(error, handlers = {}) {
+  if (!(error instanceof RequestError)) throw error;
+  const handler2 = handlers[error.status];
+  if (!handler2) {
+    throw new Error(
+      `Unexpected HTTP status ${error.status} from GitHub API: ${error.message}`,
+      {
+        cause: error
+      }
+    );
+  }
+  handler2();
+}
 
 // src/pluralize.ts
 function pluralize(amount, singular, plural) {
@@ -54790,83 +54803,107 @@ function pluralize(amount, singular, plural) {
 
 // src/discover-apps.ts
 async function discoverApps(registry, appsInput) {
+  let appIndex = 0;
   for (const appInput of appsInput) {
-    const appOctokit = createAppOctokit(appInput);
-    const { data: app } = await appOctokit.rest.apps.getAuthenticated();
-    if (!app) {
-      throw new Error(
-        `Invariant violation: App ${appInput.appId} can't access itself`
-      );
-    }
-    (0, import_core3.debug)(
-      `Discovered app ${JSON.stringify(app.name)} (${app.slug} / ${app.id})`
-    );
-    if (appInput.roles.length < 1) {
-      (0, import_core3.debug)(`App ${app.id} has no roles`);
-    } else {
-      (0, import_core3.debug)(`App ${app.id} has roles ${JSON.stringify(appInput.roles)}`);
-    }
-    registry.registerApp(appInput.roles, app);
-    const installationPages = appOctokit.paginate.iterator(
-      appOctokit.rest.apps.listInstallations
-    );
-    let installationCount = 0;
-    for await (const { data: installations } of installationPages) {
-      for (const installation of installations) {
-        const {
-          account,
-          id: installationId,
-          repository_selection,
-          permissions
-        } = installation;
-        const accountDescription = account ? `account ${account.login}` : "unknown account";
-        (0, import_core3.debug)(
-          `Discovered app installation ${installationId} for ${accountDescription}`
-        );
-        ++installationCount;
-        registry.registerInstallation(installation);
-        if (Object.keys(permissions).length < 1) {
-          (0, import_core3.debug)(`Installation ${installationId} has no permissions`);
-        } else {
-          (0, import_core3.debug)(
-            `Installation ${installationId} has permissions ${JSON.stringify(permissions)}`
-          );
-        }
-        if (repository_selection === "all") {
-          (0, import_core3.debug)(
-            `Installation ${installationId} has access to all repositories in ${accountDescription}`
-          );
-          registry.registerInstallationRepositories(installationId, []);
-          continue;
-        }
-        const installationOctokit = createInstallationOctokit(
-          appInput,
-          installationId
-        );
-        const repositoryPages = installationOctokit.paginate.iterator(
-          installationOctokit.rest.apps.listReposAccessibleToInstallation
-        );
-        const repos = [];
-        for await (const { data } of repositoryPages) {
-          const repositories = data;
-          for (const repository of repositories) repos.push(repository);
-        }
-        if (repos.length < 1) {
-          (0, import_core3.debug)(`Installation ${installationId} has access to no repositories`);
-        } else {
-          const repoNames = repos.map(({ full_name }) => full_name);
-          (0, import_core3.debug)(
-            `Installation ${installationId} has access to repositories ${JSON.stringify(repoNames)}`
-          );
-        }
-        registry.registerInstallationRepositories(installationId, repos);
+    await discoverApp(registry, appInput, appIndex++);
+  }
+}
+async function discoverApp(registry, appInput, appIndex) {
+  const appOctokit = createAppOctokit(appInput);
+  let app;
+  try {
+    ({ data: app } = await appOctokit.rest.apps.getAuthenticated());
+  } catch (error) {
+    handleRequestError(error, {
+      401: () => {
+        (0, import_core3.debug)(`App ${appInput.appId} has incorrect credentials - skipping`);
+        (0, import_core3.info)(`App at index ${appIndex} has incorrect credentials - skipping`);
+      },
+      404: () => {
+        (0, import_core3.debug)(`App ${appInput.appId} not found - skipping`);
+        (0, import_core3.info)(`App at index ${appIndex} not found - skipping`);
       }
-    }
-    const rolesSuffix = appInput.roles.length < 1 ? "" : ` with ${pluralize(appInput.roles.length, "role", "roles")} ${appInput.roles.map((r) => JSON.stringify(r)).join(", ")}`;
-    (0, import_core3.info)(
-      `Discovered ${installationCount} ${pluralize(installationCount, "installation", "installations")} of ${JSON.stringify(app.name)}${rolesSuffix}`
+    });
+    return;
+  }
+  if (!app) {
+    (0, import_core3.debug)(`App ${appInput.appId} can't access itself`);
+    throw new Error(
+      `Invariant violation: App at index ${appIndex} can't access itself`
     );
   }
+  (0, import_core3.debug)(`Discovered app ${JSON.stringify(app.name)} (${app.slug} / ${app.id})`);
+  if (appInput.roles.length < 1) {
+    (0, import_core3.debug)(`App ${app.id} has no roles`);
+  } else {
+    (0, import_core3.debug)(`App ${app.id} has roles ${JSON.stringify(appInput.roles)}`);
+  }
+  registry.registerApp(appInput.roles, app);
+  await discoverInstallations(registry, appInput, appOctokit, app);
+}
+async function discoverInstallations(registry, appInput, appOctokit, app) {
+  const installationPages = appOctokit.paginate.iterator(
+    appOctokit.rest.apps.listInstallations
+  );
+  let installationCount = 0;
+  for await (const { data: installations } of installationPages) {
+    installationCount += installations.length;
+    for (const installation of installations) {
+      await discoverInstallation(registry, appInput, installation);
+    }
+  }
+  const rolesSuffix = appInput.roles.length < 1 ? "" : ` with ${pluralize(appInput.roles.length, "role", "roles")} ${appInput.roles.map((r) => JSON.stringify(r)).join(", ")}`;
+  (0, import_core3.info)(
+    `Discovered ${installationCount} ${pluralize(installationCount, "installation", "installations")} of ${JSON.stringify(app.name)}${rolesSuffix}`
+  );
+}
+async function discoverInstallation(registry, appInput, installation) {
+  const {
+    account,
+    id: installationId,
+    repository_selection,
+    permissions
+  } = installation;
+  const accountDescription = account && "login" in account ? `account ${account.login}` : "unknown account";
+  (0, import_core3.debug)(
+    `Discovered app installation ${installationId} for ${accountDescription}`
+  );
+  registry.registerInstallation(installation);
+  if (Object.keys(permissions).length < 1) {
+    (0, import_core3.debug)(`Installation ${installationId} has no permissions`);
+  } else {
+    (0, import_core3.debug)(
+      `Installation ${installationId} has permissions ${JSON.stringify(permissions)}`
+    );
+  }
+  if (repository_selection === "all") {
+    (0, import_core3.debug)(
+      `Installation ${installationId} has access to all repositories in ${accountDescription}`
+    );
+    registry.registerInstallationRepositories(installationId, []);
+    return;
+  }
+  const installationOctokit = createInstallationOctokit(
+    appInput,
+    installationId
+  );
+  const repositoryPages = installationOctokit.paginate.iterator(
+    installationOctokit.rest.apps.listReposAccessibleToInstallation
+  );
+  const repos = [];
+  for await (const { data } of repositoryPages) {
+    const repositories = data;
+    for (const repository of repositories) repos.push(repository);
+  }
+  if (repos.length < 1) {
+    (0, import_core3.debug)(`Installation ${installationId} has access to no repositories`);
+  } else {
+    const repoNames = repos.map(({ full_name }) => full_name);
+    (0, import_core3.debug)(
+      `Installation ${installationId} has access to repositories ${JSON.stringify(repoNames)}`
+    );
+  }
+  registry.registerInstallationRepositories(installationId, repos);
 }
 
 // src/main.ts

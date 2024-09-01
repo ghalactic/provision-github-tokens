@@ -353,3 +353,92 @@ it("discovers multiple apps", async () => {
     }),
   ).toBe(appBInstallationA.id);
 });
+
+it("skips apps with incorrect credentials", async () => {
+  const orgA = createTestInstallationAccount("Organization", 100, "org-a");
+  const appA = createTestApp(110, "app-a", "App A", { contents: "read" });
+  const appB = createTestApp(120, "app-b", "App B", { contents: "read" });
+  const appAInstallationA = createTestInstallation(101, appA, orgA, "all", []);
+  const appBInstallationA = createTestInstallation(102, appB, orgA, "all", []);
+
+  __setApps([appA, appB]);
+  __setInstallations([appAInstallationA, appBInstallationA]);
+
+  const registry = createAppRegistry();
+  await discoverApps(registry, [
+    {
+      appId: String(appA.id),
+      privateKey: "incorrect",
+      roles: [],
+    },
+    {
+      appId: String(appB.id),
+      privateKey: appB.privateKey,
+      roles: [],
+    },
+  ]);
+
+  expect(output).toMatchInlineSnapshot(`
+    "::debug::App 110 has incorrect credentials - skipping
+    App at index 0 has incorrect credentials - skipping
+    ::debug::Discovered app "App B" (app-b / 120)
+    ::debug::App 120 has no roles
+    ::debug::Discovered app installation 102 for account org-a
+    ::debug::Installation 102 has permissions {"contents":"read"}
+    ::debug::Installation 102 has access to all repositories in account org-a
+    Discovered 1 installation of "App B"
+    "
+  `);
+  expect(
+    registry.findInstallationForToken({
+      role: undefined,
+      owner: orgA.login,
+      repositories: "all",
+      permissions: { contents: "read" },
+    }),
+  ).toBe(appBInstallationA.id);
+});
+
+it("skips non-existent apps", async () => {
+  const orgA = createTestInstallationAccount("Organization", 100, "org-a");
+  const appX = createTestApp(999, "app-x", "App X");
+  const appA = createTestApp(110, "app-a", "App A", { contents: "read" });
+  const appAInstallationA = createTestInstallation(101, appA, orgA, "all", []);
+
+  __setApps([appA]);
+  __setInstallations([appAInstallationA]);
+
+  const registry = createAppRegistry();
+  await discoverApps(registry, [
+    {
+      appId: String(appX.id),
+      privateKey: appX.privateKey,
+      roles: [],
+    },
+    {
+      appId: String(appA.id),
+      privateKey: appA.privateKey,
+      roles: [],
+    },
+  ]);
+
+  expect(output).toMatchInlineSnapshot(`
+    "::debug::App 999 not found - skipping
+    App at index 0 not found - skipping
+    ::debug::Discovered app "App A" (app-a / 110)
+    ::debug::App 110 has no roles
+    ::debug::Discovered app installation 101 for account org-a
+    ::debug::Installation 101 has permissions {"contents":"read"}
+    ::debug::Installation 101 has access to all repositories in account org-a
+    Discovered 1 installation of "App A"
+    "
+  `);
+  expect(
+    registry.findInstallationForToken({
+      role: undefined,
+      owner: orgA.login,
+      repositories: "all",
+      permissions: { contents: "read" },
+    }),
+  ).toBe(appAInstallationA.id);
+});
