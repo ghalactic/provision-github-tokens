@@ -4,7 +4,7 @@ import type {
   PermissionAccess,
   PermissionName,
   Repository,
-} from "./type/api-data.js";
+} from "./type/github-api.js";
 import type { TokenRequest } from "./type/token-request.js";
 
 const ACCESS_RANK = {

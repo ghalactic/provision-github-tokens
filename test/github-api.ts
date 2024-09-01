@@ -1,20 +1,17 @@
 import openapi from "@octokit/openapi";
-import { Endpoints } from "@octokit/types";
 import { createHash } from "crypto";
 import openapiSampler from "openapi-sampler";
+import type {
+  App,
+  Installation,
+  InstallationAccount,
+  InstallationPermissions,
+  InstallationRepo,
+} from "../src/type/github-api.js";
 
 // App
 
-type PartialApp = NonNullable<Endpoints["GET /app"]["response"]["data"]>;
-type App = PartialApp & {
-  slug: NonNullable<PartialApp["slug"]>;
-  permissions: Installation["permissions"];
-};
-type TestApp = App & {
-  privateKey: string;
-};
-
-export const sampleApp = openapiSampler.sample(
+const sampleApp = openapiSampler.sample(
   openapi.schemas["api.github.com.deref"].paths["/app"].get.responses["200"]
     .content["application/json"].schema,
 ) as App;
@@ -23,8 +20,10 @@ export function createTestApp(
   id: number,
   slug: string,
   name: string,
-  permissions: Installation["permissions"] = {},
-): TestApp {
+  permissions: InstallationPermissions = {},
+): App & {
+  privateKey: string;
+} {
   return {
     ...sampleApp,
     id,
@@ -37,17 +36,7 @@ export function createTestApp(
 
 // Installation
 
-type PartialInstallation = NonNullable<
-  Endpoints["GET /app/installations"]["response"]["data"][number]
->;
-type Installation = PartialInstallation & {
-  account: NonNullable<PartialInstallation["account"]>;
-};
-type TestInstallation = Installation & {
-  repositories: InstallationRepo[];
-};
-
-export const sampleInstallation = (
+const sampleInstallation = (
   openapiSampler.sample(
     openapi.schemas["api.github.com.deref"].paths["/app/installations"].get
       .responses["200"].content["application/json"].schema,
@@ -60,14 +49,16 @@ export function createTestInstallation(
   account: InstallationAccount,
   repoSelection: "all" | "selected",
   repositories: InstallationRepo[],
-): TestInstallation {
+): Installation & {
+  repositories: InstallationRepo[];
+} {
   return {
     ...sampleInstallation,
     id,
     app_id: app.id,
-    app_slug: app.slug,
+    app_slug: app.slug ?? "",
     repository_selection: repoSelection,
-    permissions: app.permissions,
+    permissions: app.permissions as InstallationPermissions,
     suspended_by: null,
     suspended_at: null,
     target_type: account.type,
@@ -79,23 +70,22 @@ export function createTestInstallation(
 
 // Installation account
 
-type InstallationAccount = NonNullable<Installation["account"]>;
-
 export function createTestInstallationAccount(
   type: "Organization" | "User",
   id: number,
   login: string,
 ): InstallationAccount {
-  return { ...sampleInstallation.account, type, login, id };
+  return {
+    ...(sampleInstallation.account as InstallationAccount),
+    type,
+    login,
+    id,
+  };
 }
 
 // Installation repo
 
-type InstallationRepo = NonNullable<
-  Endpoints["GET /installation/repositories"]["response"]["data"]["repositories"][number]
->;
-
-export const sampleInstallationRepo = (
+const sampleInstallationRepo = (
   openapiSampler.sample(
     openapi.schemas["api.github.com.deref"].paths["/installation/repositories"]
       .get.responses["200"].content["application/json"].schema,
