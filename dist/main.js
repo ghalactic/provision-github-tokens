@@ -52501,10 +52501,7 @@ retry.VERSION = VERSION12;
 
 // src/octokit.ts
 var CustomOctokit = Octokit2.plugin(retry);
-function createAppOctokit({
-  appId,
-  privateKey
-}) {
+function createAppOctokit({ appId, privateKey }) {
   return new CustomOctokit({
     authStrategy: createAppAuth,
     auth: { appId: parseInt(appId, 10), privateKey }

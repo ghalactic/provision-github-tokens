@@ -1,14 +1,13 @@
-import { Octokit } from "@octokit/action";
+import { Octokit as OctokitAction } from "@octokit/action";
 import { createAppAuth } from "@octokit/auth-app";
 import { retry } from "@octokit/plugin-retry";
 import type { AppInput } from "./type/input.js";
 
-const CustomOctokit = Octokit.plugin(retry);
+const CustomOctokit = OctokitAction.plugin(retry);
 
-export function createAppOctokit({
-  appId,
-  privateKey,
-}: AppInput): InstanceType<typeof CustomOctokit> {
+export type Octokit = InstanceType<typeof CustomOctokit>;
+
+export function createAppOctokit({ appId, privateKey }: AppInput): Octokit {
   return new CustomOctokit({
     authStrategy: createAppAuth,
     auth: { appId: parseInt(appId, 10), privateKey },
@@ -18,7 +17,7 @@ export function createAppOctokit({
 export function createInstallationOctokit(
   { appId, privateKey }: AppInput,
   installationId: number,
-): InstanceType<typeof CustomOctokit> {
+): Octokit {
   return new CustomOctokit({
     authStrategy: createAppAuth,
     auth: { appId: parseInt(appId, 10), privateKey, installationId },
