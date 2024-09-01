@@ -1,3 +1,5 @@
+import { RequestError } from "@octokit/request-error";
+
 let apps: any[];
 let installations: any[];
 
@@ -15,9 +17,9 @@ export function __setInstallations(newInstallations: any[]) {
 }
 
 export function Octokit({
-  auth: { appId, installationId },
+  auth: { appId, privateKey, installationId },
 }: {
-  auth: { appId: number; installationId?: number };
+  auth: { appId: number; privateKey: string; installationId?: number };
 }) {
   return {
     paginate: {
@@ -42,11 +44,16 @@ export function Octokit({
       apps: {
         getAuthenticated: async () => {
           for (const [, app] of Object.entries(apps)) {
-            if (app.id === appId) return { data: app };
+            if (app.id === appId) {
+              if (privateKey !== app.privateKey) {
+                throw new TestRequestError(401);
+              }
+
+              return { data: app };
+            }
           }
 
-          // TODO: Simulate how Octokit would throw an error
-          throw new Error(`App ${appId} not found`);
+          throw new TestRequestError(404);
         },
 
         listInstallations: "apps.listInstallations",
@@ -101,4 +108,12 @@ async function* listReposAccessibleToInstallation(
   }
 
   yield { data: page };
+}
+
+class TestRequestError extends RequestError {
+  constructor(status: number) {
+    super("", status, {
+      request: { method: "GET", url: "https://api.org/", headers: {} },
+    });
+  }
 }
