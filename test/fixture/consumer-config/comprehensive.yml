@@ -1,0 +1,135 @@
+# yaml-language-server: $schema=https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json
+$schema: https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json
+tokens:
+  oneRepOnePerm:
+    repositories: [repo-a]
+    permissions: { contents: read }
+
+  multiRepoMultiPerm:
+    repositories: [repo-a, repo-b]
+    permissions: { contents: read, metadata: read }
+
+  withSharedFalse:
+    shared: false
+    repositories: [repo-a]
+    permissions: { contents: read }
+
+  withSharedTrue:
+    shared: true
+    repositories: [repo-a]
+    permissions: { contents: read }
+
+  withAs:
+    as: role-a
+    repositories: [repo-a]
+    permissions: { contents: write }
+
+  withOwner:
+    owner: owner-a
+    repositories: [repo-a]
+    permissions: { contents: read }
+
+  withAllOptions:
+    shared: true
+    as: role-a
+    owner: owner-a
+    repositories: [repo-a, repo-b]
+    permissions: { contents: write, metadata: read }
+
+  withAllPermissions:
+    as: role-a
+    repositories: [repo-a]
+    permissions:
+      actions: write
+      administration: write
+      checks: write
+      codespaces: write
+      contents: write
+      dependabot_secrets: write
+      deployments: write
+      email_addresses: write
+      environments: write
+      followers: write
+      git_ssh_keys: write
+      gpg_keys: write
+      interaction_limits: write
+      issues: write
+      members: write
+      metadata: write
+      organization_administration: write
+      organization_announcement_banners: write
+      organization_copilot_seat_management: write
+      organization_custom_org_roles: write
+      organization_custom_properties: admin
+      organization_custom_roles: write
+      organization_events: read
+      organization_hooks: write
+      organization_packages: write
+      organization_personal_access_token_requests: write
+      organization_personal_access_tokens: write
+      organization_plan: read
+      organization_projects: admin
+      organization_secrets: write
+      organization_self_hosted_runners: write
+      organization_user_blocking: write
+      packages: write
+      pages: write
+      profile: write
+      pull_requests: write
+      repository_custom_properties: write
+      repository_hooks: write
+      repository_projects: admin
+      secret_scanning_alerts: write
+      secrets: write
+      security_events: write
+      single_file: write
+      starring: write
+      statuses: write
+      team_discussions: write
+      vulnerability_alerts: write
+      workflows: write
+
+provision:
+  secrets:
+    TO_REPO_ACTIONS:
+      token: tokenA
+      github:
+        repository:
+          actions: true
+
+    TO_ORG_DEPENDABOT:
+      token: other-repo.tokenB
+      github:
+        organization:
+          dependabot: true
+
+    TO_EVERYWHERE:
+      token: other-org/repo.tokenC
+      github:
+        organization:
+          actions: true
+          codespaces: true
+          dependabot: true
+        organizations:
+          org-a:
+            actions: true
+          org-b:
+            actions: true
+            codespaces: true
+            dependabot: true
+        repository:
+          actions: true
+          codespaces: true
+          dependabot: true
+          environments: [env-a, env-b]
+        repositories:
+          repo-a:
+            actions: true
+          org-a/repo-a:
+            actions: true
+            codespaces: true
+            dependabot: true
+            environments: [env-a, env-b]
+
+    TO_NOWHERE:
+      token: tokenD

@@ -48915,7 +48915,7 @@ var import_ajv = __toESM(require_ajv(), 1);
 var apps_v1_schema_default = {
   $schema: "http://json-schema.org/draft-07/schema#",
   $id: "https://ghalactic.github.io/provision-github-tokens/schema/apps.v1.schema.json",
-  title: "Provision GitHub Tokens (apps)",
+  title: "Provision GitHub Tokens (apps input)",
   description: "Apps to use for provisioning tokens.",
   type: "array",
   items: {
@@ -48949,16 +48949,610 @@ var apps_v1_schema_default = {
   }
 };
 
+// src/schema/consumer.v1.schema.json
+var consumer_v1_schema_default = {
+  $schema: "http://json-schema.org/draft-07/schema#",
+  $id: "https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json",
+  title: "Provision GitHub Tokens (consumer configuration)",
+  description: 'Consumer configuration for the "Provision GitHub Tokens" GitHub Action.',
+  type: "object",
+  additionalProperties: false,
+  properties: {
+    $schema: {
+      description: "The JSON Schema identifier.",
+      type: "string",
+      const: "https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json",
+      default: "https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json"
+    },
+    tokens: {
+      description: "Declarations of GitHub tokens that the consumer can request to be provisioned.",
+      type: "object",
+      default: {},
+      additionalProperties: {
+        description: "A GitHub token declaration.",
+        type: "object",
+        additionalProperties: false,
+        required: ["repositories", "permissions"],
+        properties: {
+          shared: {
+            description: "Whether the token should be available for other repositories to request.",
+            type: "boolean",
+            default: false
+          },
+          as: {
+            description: "When specified, the token must be created by an app configured with this role.",
+            type: "string",
+            minLength: 1,
+            examples: ["pr-bot", "onboarding"]
+          },
+          owner: {
+            description: "The GitHub user or organization that the specified repositories belong to. Defaults to the same owner as the declaring repository.",
+            type: "string",
+            minLength: 1,
+            examples: ["octocat"]
+          },
+          repositories: {
+            description: "A list of repository name patterns to match against.",
+            type: "array",
+            items: {
+              description: "A repository name pattern.",
+              type: "string",
+              minLength: 1,
+              examples: [
+                "repo",
+                "*",
+                "with-prefix-*",
+                "*-with-suffix",
+                "with-*-infix"
+              ]
+            },
+            minItems: 1
+          },
+          permissions: {
+            $ref: "https://ghalactic.github.io/provision-github-tokens/schema/github.permissions.schema.json",
+            default: {}
+          }
+        }
+      }
+    },
+    provision: {
+      description: "How to provision the requested tokens.",
+      type: "object",
+      additionalProperties: false,
+      default: {},
+      properties: {
+        secrets: {
+          description: "A set of secrets to provision.",
+          type: "object",
+          default: {},
+          additionalProperties: {
+            description: "A secret to provision.",
+            type: "object",
+            additionalProperties: false,
+            required: ["token"],
+            properties: {
+              token: {
+                description: "The name of the token declaration to use.",
+                type: "string",
+                minLength: 1,
+                examples: [
+                  "tokenA",
+                  "other-repo.tokenB",
+                  "other-owner/repo.tokenC"
+                ]
+              },
+              github: {
+                description: "How to provision the secret to GitHub.",
+                type: "object",
+                additionalProperties: false,
+                default: {},
+                properties: {
+                  organization: {
+                    description: "How to provision the secret to the declaring repository's GitHub organization.",
+                    $ref: "#/definitions/organizationSecretTypes",
+                    default: {}
+                  },
+                  organizations: {
+                    description: "How to provision the secret to other GitHub organizations.",
+                    type: "object",
+                    default: {},
+                    additionalProperties: {
+                      description: "How to provision the secret to the specified GitHub organization.",
+                      $ref: "#/definitions/organizationSecretTypes"
+                    }
+                  },
+                  repository: {
+                    description: "How to provision the secret to the declaring repository.",
+                    $ref: "#/definitions/repositorySecretTypes",
+                    default: {}
+                  },
+                  repositories: {
+                    description: "How to provision the secret to other GitHub repositories.",
+                    type: "object",
+                    default: {},
+                    additionalProperties: {
+                      description: "How to provision the secret to the specified GitHub repository.",
+                      $ref: "#/definitions/repositorySecretTypes"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  definitions: {
+    organizationSecretTypes: {
+      type: "object",
+      additionalProperties: false,
+      properties: {
+        actions: {
+          description: "Whether to provision to GitHub Actions secrets.",
+          type: "boolean",
+          default: false
+        },
+        codespaces: {
+          description: "Whether to provision to GitHub Codespaces secrets.",
+          type: "boolean",
+          default: false
+        },
+        dependabot: {
+          description: "Whether to provision to Dependabot secrets.",
+          type: "boolean",
+          default: false
+        }
+      }
+    },
+    repositorySecretTypes: {
+      type: "object",
+      additionalProperties: false,
+      properties: {
+        actions: {
+          description: "Whether to provision to GitHub Actions secrets.",
+          type: "boolean",
+          default: false
+        },
+        codespaces: {
+          description: "Whether to provision to GitHub Codespaces secrets.",
+          type: "boolean",
+          default: false
+        },
+        dependabot: {
+          description: "Whether to provision to Dependabot secrets.",
+          type: "boolean",
+          default: false
+        },
+        environments: {
+          description: "GitHub repository environments to provision to.",
+          type: "array",
+          uniqueItems: true,
+          default: [],
+          items: {
+            description: "The name of an environment to provision the secret to.",
+            type: "string",
+            minLength: 1
+          }
+        }
+      }
+    }
+  }
+};
+
+// src/schema/github.permissions.schema.json
+var github_permissions_schema_default = {
+  $id: "https://ghalactic.github.io/provision-github-tokens/schema/github.permissions.schema.json",
+  type: "object",
+  description: "The permissions that the consumer is requesting for the specified repositories.",
+  properties: {
+    actions: {
+      type: "string",
+      description: "The level of permission to grant the access token for GitHub Actions workflows, workflow runs, and artifacts.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    administration: {
+      type: "string",
+      description: "The level of permission to grant the access token for repository creation, deletion, settings, teams, and collaborators creation.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    checks: {
+      type: "string",
+      description: "The level of permission to grant the access token for checks on code.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    codespaces: {
+      type: "string",
+      description: "The level of permission to grant the access token to create, edit, delete, and list Codespaces.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    contents: {
+      type: "string",
+      description: "The level of permission to grant the access token for repository contents, commits, branches, downloads, releases, and merges.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    dependabot_secrets: {
+      type: "string",
+      description: "The leve of permission to grant the access token to manage Dependabot secrets.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    deployments: {
+      type: "string",
+      description: "The level of permission to grant the access token for deployments and deployment statuses.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    environments: {
+      type: "string",
+      description: "The level of permission to grant the access token for managing repository environments.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    issues: {
+      type: "string",
+      description: "The level of permission to grant the access token for issues and related comments, assignees, labels, and milestones.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    metadata: {
+      type: "string",
+      description: "The level of permission to grant the access token to search repositories, list collaborators, and access repository metadata.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    packages: {
+      type: "string",
+      description: "The level of permission to grant the access token for packages published to GitHub Packages.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    pages: {
+      type: "string",
+      description: "The level of permission to grant the access token to retrieve Pages statuses, configuration, and builds, as well as create new builds.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    pull_requests: {
+      type: "string",
+      description: "The level of permission to grant the access token for pull requests and related comments, assignees, labels, milestones, and merges.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    repository_custom_properties: {
+      type: "string",
+      description: "The level of permission to grant the access token to view and edit custom properties for a repository, when allowed by the property.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    repository_hooks: {
+      type: "string",
+      description: "The level of permission to grant the access token to manage the post-receive hooks for a repository.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    repository_projects: {
+      type: "string",
+      description: "The level of permission to grant the access token to manage repository projects, columns, and cards.",
+      enum: [
+        "read",
+        "write",
+        "admin"
+      ]
+    },
+    secret_scanning_alerts: {
+      type: "string",
+      description: "The level of permission to grant the access token to view and manage secret scanning alerts.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    secrets: {
+      type: "string",
+      description: "The level of permission to grant the access token to manage repository secrets.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    security_events: {
+      type: "string",
+      description: "The level of permission to grant the access token to view and manage security events like code scanning alerts.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    single_file: {
+      type: "string",
+      description: "The level of permission to grant the access token to manage just a single file.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    statuses: {
+      type: "string",
+      description: "The level of permission to grant the access token for commit statuses.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    vulnerability_alerts: {
+      type: "string",
+      description: "The level of permission to grant the access token to manage Dependabot alerts.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    workflows: {
+      type: "string",
+      description: "The level of permission to grant the access token to update GitHub Actions workflow files.",
+      enum: [
+        "write"
+      ]
+    },
+    members: {
+      type: "string",
+      description: "The level of permission to grant the access token for organization teams and members.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    organization_administration: {
+      type: "string",
+      description: "The level of permission to grant the access token to manage access to an organization.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    organization_custom_roles: {
+      type: "string",
+      description: "The level of permission to grant the access token for custom repository roles management.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    organization_custom_org_roles: {
+      type: "string",
+      description: "The level of permission to grant the access token for custom organization roles management.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    organization_custom_properties: {
+      type: "string",
+      description: "The level of permission to grant the access token for custom property management.",
+      enum: [
+        "read",
+        "write",
+        "admin"
+      ]
+    },
+    organization_copilot_seat_management: {
+      type: "string",
+      description: "The level of permission to grant the access token for managing access to GitHub Copilot for members of an organization with a Copilot Business subscription. This property is in beta and is subject to change.",
+      enum: [
+        "write"
+      ]
+    },
+    organization_announcement_banners: {
+      type: "string",
+      description: "The level of permission to grant the access token to view and manage announcement banners for an organization.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    organization_events: {
+      type: "string",
+      description: "The level of permission to grant the access token to view events triggered by an activity in an organization.",
+      enum: [
+        "read"
+      ]
+    },
+    organization_hooks: {
+      type: "string",
+      description: "The level of permission to grant the access token to manage the post-receive hooks for an organization.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    organization_personal_access_tokens: {
+      type: "string",
+      description: "The level of permission to grant the access token for viewing and managing fine-grained personal access token requests to an organization.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    organization_personal_access_token_requests: {
+      type: "string",
+      description: "The level of permission to grant the access token for viewing and managing fine-grained personal access tokens that have been approved by an organization.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    organization_plan: {
+      type: "string",
+      description: "The level of permission to grant the access token for viewing an organization's plan.",
+      enum: [
+        "read"
+      ]
+    },
+    organization_projects: {
+      type: "string",
+      description: "The level of permission to grant the access token to manage organization projects and projects beta (where available).",
+      enum: [
+        "read",
+        "write",
+        "admin"
+      ]
+    },
+    organization_packages: {
+      type: "string",
+      description: "The level of permission to grant the access token for organization packages published to GitHub Packages.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    organization_secrets: {
+      type: "string",
+      description: "The level of permission to grant the access token to manage organization secrets.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    organization_self_hosted_runners: {
+      type: "string",
+      description: "The level of permission to grant the access token to view and manage GitHub Actions self-hosted runners available to an organization.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    organization_user_blocking: {
+      type: "string",
+      description: "The level of permission to grant the access token to view and manage users blocked by the organization.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    team_discussions: {
+      type: "string",
+      description: "The level of permission to grant the access token to manage team discussions and related comments.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    email_addresses: {
+      type: "string",
+      description: "The level of permission to grant the access token to manage the email addresses belonging to a user.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    followers: {
+      type: "string",
+      description: "The level of permission to grant the access token to manage the followers belonging to a user.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    git_ssh_keys: {
+      type: "string",
+      description: "The level of permission to grant the access token to manage git SSH keys.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    gpg_keys: {
+      type: "string",
+      description: "The level of permission to grant the access token to view and manage GPG keys belonging to a user.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    interaction_limits: {
+      type: "string",
+      description: "The level of permission to grant the access token to view and manage interaction limits on a repository.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    profile: {
+      type: "string",
+      description: "The level of permission to grant the access token to manage the profile settings belonging to a user.",
+      enum: [
+        "write"
+      ]
+    },
+    starring: {
+      type: "string",
+      description: "The level of permission to grant the access token to list and manage repositories a user is starring.",
+      enum: [
+        "read",
+        "write"
+      ]
+    }
+  },
+  examples: [
+    {
+      contents: "read",
+      issues: "read",
+      deployments: "write",
+      single_file: "read"
+    }
+  ]
+};
+
 // src/config/validation.ts
 var Ajv = import_ajv.default.default;
 var ajv = new Ajv({
-  schemas: [apps_v1_schema_default],
+  schemas: [apps_v1_schema_default, consumer_v1_schema_default, github_permissions_schema_default],
   allErrors: true,
   useDefaults: true
 });
 var validateApps = createValidate(
   apps_v1_schema_default.$id,
   "apps input"
+);
+var validateConsumer = createValidate(
+  consumer_v1_schema_default.$id,
+  "consumer configuration"
 );
 var ValidateError = class extends Error {
   errors;

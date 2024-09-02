@@ -1,12 +1,15 @@
 import ajvModule, { ErrorObject } from "ajv";
 import appsSchema from "../schema/apps.v1.schema.json";
+import consumerSchema from "../schema/consumer.v1.schema.json";
+import githubPermissionsSchema from "../schema/github.permissions.schema.json";
+import type { PartialConsumerConfig } from "../type/consumer-config.js";
 import type { AppInput } from "../type/input.js";
 
 // see https://github.com/ajv-validator/ajv/issues/2132
 const Ajv = ajvModule.default;
 
 const ajv = new Ajv({
-  schemas: [appsSchema],
+  schemas: [appsSchema, consumerSchema, githubPermissionsSchema],
   allErrors: true,
   useDefaults: true,
 });
@@ -14,6 +17,11 @@ const ajv = new Ajv({
 export const validateApps = createValidate<AppInput[]>(
   appsSchema.$id,
   "apps input",
+);
+
+export const validateConsumer = createValidate<PartialConsumerConfig>(
+  consumerSchema.$id,
+  "consumer configuration",
 );
 
 class ValidateError extends Error {

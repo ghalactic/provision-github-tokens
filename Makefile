@@ -1,5 +1,5 @@
 CI_VERIFY_GENERATED_FILES := true
-GENERATED_FILES += dist/main.js
+GENERATED_FILES += schema/github.permissions.schema.json dist/main.js
 JS_TSC_TYPECHECK_SKIP_LIB := true
 
 -include .makefiles/Makefile
@@ -16,6 +16,9 @@ JS_TSC_TYPECHECK_SKIP_LIB := true
 precommit:: verify-generated
 
 ################################################################################
+
+schema/github.permissions.schema.json: artifacts/link-dependencies.touch $(JS_SOURCE_FILES)
+	node script/build-github-schemas.js
 
 dist/main.js: artifacts/link-dependencies.touch $(JS_SOURCE_FILES)
 	node script/build.js dist/main.js

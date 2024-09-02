@@ -1,3 +1,4 @@
 /.makefiles/
 /artifacts/
 /dist/
+/src/schema/github.*
