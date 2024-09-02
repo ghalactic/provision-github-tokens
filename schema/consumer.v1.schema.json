@@ -1,0 +1,189 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json",
+  "title": "Provision GitHub Tokens (consumer configuration)",
+  "description": "Consumer configuration for the \"Provision GitHub Tokens\" GitHub Action.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "description": "The JSON Schema identifier.",
+      "type": "string",
+      "const": "https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json",
+      "default": "https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json"
+    },
+    "tokens": {
+      "description": "Declarations of GitHub tokens that the consumer can request to be provisioned.",
+      "type": "object",
+      "default": {},
+      "additionalProperties": {
+        "description": "A GitHub token declaration.",
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["repositories", "permissions"],
+        "properties": {
+          "shared": {
+            "description": "Whether the token should be available for other repositories to request.",
+            "type": "boolean",
+            "default": false
+          },
+          "as": {
+            "description": "When specified, the token must be created by an app configured with this role.",
+            "type": "string",
+            "minLength": 1,
+            "examples": ["pr-bot", "onboarding"]
+          },
+          "owner": {
+            "description": "The GitHub user or organization that the specified repositories belong to. Defaults to the same owner as the declaring repository.",
+            "type": "string",
+            "minLength": 1,
+            "examples": ["octocat"]
+          },
+          "repositories": {
+            "description": "A list of repository name patterns to match against.",
+            "type": "array",
+            "items": {
+              "description": "A repository name pattern.",
+              "type": "string",
+              "minLength": 1,
+              "examples": [
+                "repo",
+                "*",
+                "with-prefix-*",
+                "*-with-suffix",
+                "with-*-infix"
+              ]
+            },
+            "minItems": 1
+          },
+          "permissions": {
+            "$ref": "https://ghalactic.github.io/provision-github-tokens/schema/github.permissions.schema.json",
+            "default": {}
+          }
+        }
+      }
+    },
+    "provision": {
+      "description": "How to provision the requested tokens.",
+      "type": "object",
+      "additionalProperties": false,
+      "default": {},
+      "properties": {
+        "secrets": {
+          "description": "A set of secrets to provision.",
+          "type": "object",
+          "default": {},
+          "additionalProperties": {
+            "description": "A secret to provision.",
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["token"],
+            "properties": {
+              "token": {
+                "description": "The name of the token declaration to use.",
+                "type": "string",
+                "minLength": 1,
+                "examples": [
+                  "tokenA",
+                  "other-repo.tokenB",
+                  "other-owner/repo.tokenC"
+                ]
+              },
+              "github": {
+                "description": "How to provision the secret to GitHub.",
+                "type": "object",
+                "additionalProperties": false,
+                "default": {},
+                "properties": {
+                  "organization": {
+                    "description": "How to provision the secret to the declaring repository's GitHub organization.",
+                    "$ref": "#/definitions/organizationSecretTypes",
+                    "default": {}
+                  },
+                  "organizations": {
+                    "description": "How to provision the secret to other GitHub organizations.",
+                    "type": "object",
+                    "default": {},
+                    "additionalProperties": {
+                      "description": "How to provision the secret to the specified GitHub organization.",
+                      "$ref": "#/definitions/organizationSecretTypes"
+                    }
+                  },
+                  "repository": {
+                    "description": "How to provision the secret to the declaring repository.",
+                    "$ref": "#/definitions/repositorySecretTypes",
+                    "default": {}
+                  },
+                  "repositories": {
+                    "description": "How to provision the secret to other GitHub repositories.",
+                    "type": "object",
+                    "default": {},
+                    "additionalProperties": {
+                      "description": "How to provision the secret to the specified GitHub repository.",
+                      "$ref": "#/definitions/repositorySecretTypes"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "organizationSecretTypes": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "actions": {
+          "description": "Whether to provision to GitHub Actions secrets.",
+          "type": "boolean",
+          "default": false
+        },
+        "codespaces": {
+          "description": "Whether to provision to GitHub Codespaces secrets.",
+          "type": "boolean",
+          "default": false
+        },
+        "dependabot": {
+          "description": "Whether to provision to Dependabot secrets.",
+          "type": "boolean",
+          "default": false
+        }
+      }
+    },
+    "repositorySecretTypes": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "actions": {
+          "description": "Whether to provision to GitHub Actions secrets.",
+          "type": "boolean",
+          "default": false
+        },
+        "codespaces": {
+          "description": "Whether to provision to GitHub Codespaces secrets.",
+          "type": "boolean",
+          "default": false
+        },
+        "dependabot": {
+          "description": "Whether to provision to Dependabot secrets.",
+          "type": "boolean",
+          "default": false
+        },
+        "environments": {
+          "description": "GitHub repository environments to provision to.",
+          "type": "array",
+          "uniqueItems": true,
+          "default": [],
+          "items": {
+            "description": "The name of an environment to provision the secret to.",
+            "type": "string",
+            "minLength": 1
+          }
+        }
+      }
+    }
+  }
+}
