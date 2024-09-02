@@ -33,12 +33,12 @@ tokens:
     shared: true
     as: role-a
     owner: owner-a
-    repositories: [repo-a, repo-b]
+    repositories: [repo-a, repo-*]
     permissions: { contents: write, metadata: read }
 
   withAllPermissions:
     as: role-a
-    repositories: [repo-a]
+    repositories: ["*"]
     permissions:
       actions: write
       administration: write

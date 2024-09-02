@@ -69,7 +69,7 @@ it("parses comprehensive consumer config", async () => {
         shared: true,
         as: "role-a",
         owner: "owner-a",
-        repositories: ["repo-a", "repo-b"],
+        repositories: ["repo-a", "repo-*"],
         permissions: { contents: "write", metadata: "read" },
       },
 
@@ -77,7 +77,7 @@ it("parses comprehensive consumer config", async () => {
         shared: false,
         as: "role-a",
         owner: "owner-self",
-        repositories: ["repo-a"],
+        repositories: ["*"],
         permissions: {
           actions: "write",
           administration: "write",
