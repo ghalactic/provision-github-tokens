@@ -1,0 +1,93 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://ghalactic.github.io/provision-github-tokens/schema/provider.v1.schema.json",
+  "title": "Provision GitHub Tokens (provider configuration)",
+  "description": "Provider configuration for the \"Provision GitHub Tokens\" GitHub Action.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "description": "The JSON Schema identifier.",
+      "type": "string",
+      "const": "https://ghalactic.github.io/provision-github-tokens/schema/provider.v1.schema.json",
+      "default": "https://ghalactic.github.io/provision-github-tokens/schema/provider.v1.schema.json"
+    },
+    "permissions": {
+      "description": "Settings that control the token permissions that consumers can request.",
+      "type": "object",
+      "additionalProperties": false,
+      "default": {},
+      "properties": {
+        "rules": {
+          "description": "Rules that define the permissions that consumers can request.",
+          "type": "object",
+          "additionalProperties": false,
+          "default": {},
+          "properties": {
+            "repositories": {
+              "description": "Rules that define the permissions that consumers can request for repositories.",
+              "type": "array",
+              "default": [],
+              "items": {
+                "description": "A rule that defines the permissions that consumers can request for repositories.",
+                "type": "object",
+                "additionalProperties": false,
+                "required": ["resources", "consumers"],
+                "properties": {
+                  "description": {
+                    "description": "A description of the rule.",
+                    "type": "string"
+                  },
+                  "resources": {
+                    "description": "A list of patterns to match against resource repositories when applying the rule.",
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                      "description": "A pattern which matches a resource repository owner and name. If a pattern with no owner part is specified, the pattern will match repositories with the same owner as the repository where the provider configuration file is defined.",
+                      "type": "string",
+                      "minLength": 1,
+                      "examples": [
+                        "repo-a",
+                        "owner-a/repo-a",
+                        "*",
+                        "*/*",
+                        "*/repo-a",
+                        "owner-a/*",
+                        "prefix-*/*-suffix"
+                      ]
+                    }
+                  },
+                  "consumers": {
+                    "description": "A list of patterns to match against consumer repositories when applying the rule.",
+                    "type": "array",
+                    "minItems": 1,
+                    "items": {
+                      "description": "A pattern which matches a consumer repository owner and name. If a pattern with no owner part is specified, the pattern will match repositories with the same owner as the repository where the provider configuration file is defined.",
+                      "type": "string",
+                      "minLength": 1,
+                      "examples": [
+                        "repo-a",
+                        "owner-a/repo-a",
+                        "*",
+                        "*/*",
+                        "*/repo-a",
+                        "owner-a/*",
+                        "prefix-*/*-suffix",
+                        "$OWNER/$REPO",
+                        "$OWNER/*"
+                      ]
+                    }
+                  },
+                  "permissions": {
+                    "$ref": "https://ghalactic.github.io/provision-github-tokens/schema/generated.provider-rule-permissions.v1.schema.json",
+                    "default": {}
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
