@@ -16,6 +16,7 @@ it("parses comprehensive consumer config", async () => {
 
   expect(parseConsumerConfig("owner-self", yaml)).toEqual({
     $schema: consumerSchema.$id,
+
     tokens: {
       oneRepOnePerm: {
         shared: false,

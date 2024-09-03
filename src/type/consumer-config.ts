@@ -1,7 +1,7 @@
 import type { InstallationPermissions } from "./github-api.js";
 
 export type PartialConsumerConfig = {
-  $schema?: string;
+  $schema: string;
   tokens: Record<
     string,
     {
