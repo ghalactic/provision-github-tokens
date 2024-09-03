@@ -48986,7 +48986,7 @@ var consumer_v1_schema_default = {
             examples: ["pr-bot", "onboarding"]
           },
           owner: {
-            description: "The GitHub user or organization that the specified repositories belong to. Defaults to the same owner as the declaring repository.",
+            description: "The GitHub user or organization that the specified repositories belong to. Defaults to the same owner as the repository where the consumer configuration file is defined.",
             type: "string",
             minLength: 1,
             examples: ["octocat"]
@@ -48995,11 +48995,11 @@ var consumer_v1_schema_default = {
             description: "A list of repository name patterns to match against.",
             type: "array",
             items: {
-              description: "A repository name pattern.",
+              description: "A pattern which matches a repository name without the owner prefix.",
               type: "string",
               minLength: 1,
               examples: [
-                "repo",
+                "repo-a",
                 "*",
                 "with-prefix-*",
                 "*-with-suffix",
@@ -49009,7 +49009,7 @@ var consumer_v1_schema_default = {
             minItems: 1
           },
           permissions: {
-            $ref: "https://ghalactic.github.io/provision-github-tokens/schema/github.permissions.schema.json",
+            $ref: "https://ghalactic.github.io/provision-github-tokens/schema/generated.consumer-token-permissions.v1.schema.json",
             default: {}
           }
         }
@@ -49140,9 +49140,9 @@ var consumer_v1_schema_default = {
   }
 };
 
-// src/schema/github.permissions.schema.json
-var github_permissions_schema_default = {
-  $id: "https://ghalactic.github.io/provision-github-tokens/schema/github.permissions.schema.json",
+// src/schema/generated.consumer-token-permissions.v1.schema.json
+var generated_consumer_token_permissions_v1_schema_default = {
+  $id: "https://ghalactic.github.io/provision-github-tokens/schema/generated.consumer-token-permissions.v1.schema.json",
   type: "object",
   description: "The permissions that the consumer is requesting for the specified repositories.",
   properties: {
@@ -49529,6 +49529,15 @@ var github_permissions_schema_default = {
       ]
     }
   },
+  additionalProperties: {
+    type: "string",
+    description: "The level of permission to grant the access token.",
+    enum: [
+      "read",
+      "write",
+      "admin"
+    ]
+  },
   examples: [
     {
       contents: "read",
@@ -49542,7 +49551,7 @@ var github_permissions_schema_default = {
 // src/config/validation.ts
 var Ajv = import_ajv.default.default;
 var ajv = new Ajv({
-  schemas: [apps_v1_schema_default, consumer_v1_schema_default, github_permissions_schema_default],
+  schemas: [apps_v1_schema_default, consumer_v1_schema_default, generated_consumer_token_permissions_v1_schema_default],
   allErrors: true,
   useDefaults: true
 });

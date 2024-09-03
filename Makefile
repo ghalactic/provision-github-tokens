@@ -1,5 +1,5 @@
 CI_VERIFY_GENERATED_FILES := true
-GENERATED_FILES += schema/github.permissions.schema.json dist/main.js
+GENERATED_FILES += src/schema/generated.consumer-token-permissions.v1.schema.json dist/main.js
 JS_TSC_TYPECHECK_SKIP_LIB := true
 
 -include .makefiles/Makefile
@@ -17,8 +17,8 @@ precommit:: verify-generated
 
 ################################################################################
 
-schema/github.permissions.schema.json: artifacts/link-dependencies.touch $(JS_SOURCE_FILES)
-	node script/build-github-schemas.js
+src/schema/generated.consumer-token-permissions.v1.schema.json: script/build-github-schemas.js artifacts/link-dependencies.touch
+	node "$<"
 
-dist/main.js: artifacts/link-dependencies.touch $(JS_SOURCE_FILES)
-	node script/build.js dist/main.js
+dist/main.js: script/build.js artifacts/link-dependencies.touch $(JS_SOURCE_FILES)
+	node "$<" "$@"

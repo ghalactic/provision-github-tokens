@@ -1,7 +1,7 @@
 import ajvModule, { ErrorObject } from "ajv";
 import appsSchema from "../schema/apps.v1.schema.json";
 import consumerSchema from "../schema/consumer.v1.schema.json";
-import githubPermissionsSchema from "../schema/github.permissions.schema.json";
+import consumerTokenPermissionsSchema from "../schema/generated.consumer-token-permissions.v1.schema.json";
 import type { PartialConsumerConfig } from "../type/consumer-config.js";
 import type { AppInput } from "../type/input.js";
 
@@ -9,7 +9,7 @@ import type { AppInput } from "../type/input.js";
 const Ajv = ajvModule.default;
 
 const ajv = new Ajv({
-  schemas: [appsSchema, consumerSchema, githubPermissionsSchema],
+  schemas: [appsSchema, consumerSchema, consumerTokenPermissionsSchema],
   allErrors: true,
   useDefaults: true,
 });

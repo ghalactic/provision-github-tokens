@@ -1,5 +1,6 @@
 # yaml-language-server: $schema=https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json
 $schema: https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json
+
 tokens:
   oneRepOnePerm:
     repositories: [repo-a]
@@ -88,6 +89,7 @@ tokens:
       team_discussions: write
       vulnerability_alerts: write
       workflows: write
+      xxx: admin
 
 provision:
   secrets:

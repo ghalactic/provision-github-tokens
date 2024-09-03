@@ -1,5 +1,5 @@
 {
-  "$id": "https://ghalactic.github.io/provision-github-tokens/schema/github.permissions.schema.json",
+  "$id": "https://ghalactic.github.io/provision-github-tokens/schema/generated.consumer-token-permissions.v1.schema.json",
   "type": "object",
   "description": "The permissions that the consumer is requesting for the specified repositories.",
   "properties": {
@@ -385,6 +385,15 @@
         "write"
       ]
     }
+  },
+  "additionalProperties": {
+    "type": "string",
+    "description": "The level of permission to grant the access token.",
+    "enum": [
+      "read",
+      "write",
+      "admin"
+    ]
   },
   "examples": [
     {
