@@ -34,7 +34,7 @@
             "examples": ["pr-bot", "onboarding"]
           },
           "owner": {
-            "description": "The GitHub user or organization that the specified repositories belong to. Defaults to the same owner as the declaring repository.",
+            "description": "The GitHub user or organization that the specified repositories belong to. Defaults to the same owner as the repository where the consumer configuration file is defined.",
             "type": "string",
             "minLength": 1,
             "examples": ["octocat"]
@@ -43,11 +43,11 @@
             "description": "A list of repository name patterns to match against.",
             "type": "array",
             "items": {
-              "description": "A repository name pattern.",
+              "description": "A pattern which matches a repository name without the owner prefix.",
               "type": "string",
               "minLength": 1,
               "examples": [
-                "repo",
+                "repo-a",
                 "*",
                 "with-prefix-*",
                 "*-with-suffix",
@@ -57,7 +57,7 @@
             "minItems": 1
           },
           "permissions": {
-            "$ref": "https://ghalactic.github.io/provision-github-tokens/schema/github.permissions.schema.json",
+            "$ref": "https://ghalactic.github.io/provision-github-tokens/schema/generated.consumer-token-permissions.v1.schema.json",
             "default": {}
           }
         }
