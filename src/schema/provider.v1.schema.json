@@ -73,8 +73,8 @@
                         "*/repo-a",
                         "owner-a/*",
                         "prefix-*/*-suffix",
-                        "$OWNER/$REPO",
-                        "$OWNER/*"
+                        "<owner>/<repo>",
+                        "<owner>/*"
                       ]
                     }
                   },

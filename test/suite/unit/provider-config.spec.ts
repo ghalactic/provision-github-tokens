@@ -46,19 +46,19 @@ it("parses comprehensive provider config", async () => {
           {
             description: "Access within the same owner",
             resources: ["*/*"],
-            consumers: ["$OWNER/*"],
+            consumers: ["<owner>/*"],
             permissions: { issues: "write", pull_requests: "write" },
           },
           {
             description: "Access to same-named repos (weird, but possible)",
             resources: ["*/*"],
-            consumers: ["*/$REPO"],
+            consumers: ["*/<repo>"],
             permissions: { metadata: "read" },
           },
           {
             description: "Self-access",
             resources: ["*/*"],
-            consumers: ["$OWNER/$REPO"],
+            consumers: ["<owner>/<repo>"],
             permissions: { contents: "write", metadata: "write" },
           },
           {

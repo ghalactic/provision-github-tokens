@@ -50081,8 +50081,8 @@ var provider_v1_schema_default = {
                         "*/repo-a",
                         "owner-a/*",
                         "prefix-*/*-suffix",
-                        "$OWNER/$REPO",
-                        "$OWNER/*"
+                        "<owner>/<repo>",
+                        "<owner>/*"
                       ]
                     }
                   },
