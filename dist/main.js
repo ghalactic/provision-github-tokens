@@ -55791,7 +55791,7 @@ async function hook5(state, request2, route, parameters) {
     state,
     // @ts-expect-error TBD
     {},
-    request2
+    request2.defaults({ baseUrl: endpoint2.baseUrl })
   );
   endpoint2.headers.authorization = `token ${token}`;
   return sendRequestWithRetries(
@@ -55824,7 +55824,7 @@ async function sendRequestWithRetries(state, request2, options, createdAt, retri
     return sendRequestWithRetries(state, request2, options, createdAt, retries);
   }
 }
-var VERSION11 = "7.1.0";
+var VERSION11 = "7.1.1";
 function createAppAuth(options) {
   if (!options.appId) {
     throw new Error("[@octokit/auth-app] appId option is required");
