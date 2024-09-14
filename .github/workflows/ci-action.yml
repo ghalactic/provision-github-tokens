@@ -10,6 +10,3 @@ jobs:
     name: Ghalactic
     uses: ghalactic/repos/.github/workflows/shared-ci-action.yml@main
     secrets: inherit
-    permissions:
-      actions: write
-      contents: write
