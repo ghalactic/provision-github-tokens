@@ -5,6 +5,9 @@ on:
   push:
   pull_request:
 
+permissions:
+  actions: write
+
 jobs:
   ci:
     name: Ghalactic
