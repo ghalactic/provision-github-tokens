@@ -2,6 +2,7 @@ name: Run action for CI
 
 on:
   workflow_dispatch:
+
 jobs:
   run:
     name: Run action for CI
