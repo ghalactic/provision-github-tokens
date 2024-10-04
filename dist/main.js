@@ -55872,6 +55872,7 @@ function createAppAuth(options) {
 
 // node_modules/@octokit/plugin-retry/dist-bundle/index.js
 var import_light = __toESM(require_light(), 1);
+var VERSION12 = "0.0.0-development";
 async function errorRequest(state, octokit, error, options) {
   if (!error.request || !error.request.request) {
     throw error;
@@ -55900,7 +55901,7 @@ async function wrapRequest(state, octokit, request2, options) {
 }
 async function requestWithGraphqlErrorHandling(state, octokit, request2, options) {
   const response = await request2(request2, options);
-  if (response.data && response.data.errors && /Something went wrong while executing your query/.test(
+  if (response.data && response.data.errors && response.data.errors.length > 0 && /Something went wrong while executing your query/.test(
     response.data.errors[0].message
   )) {
     const error = new RequestError(response.data.errors[0].message, 500, {
@@ -55911,7 +55912,6 @@ async function requestWithGraphqlErrorHandling(state, octokit, request2, options
   }
   return response;
 }
-var VERSION12 = "0.0.0-development";
 function retry(octokit, octokitOptions) {
   const state = Object.assign(
     {
