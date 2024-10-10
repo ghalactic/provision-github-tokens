@@ -1,0 +1,15 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  actions: write
+  contents: write
+
+jobs:
+  ci:
+    name: Ghalactic
+    uses: ghalactic/repos/.github/workflows/shared-ci-action.yml@main
+    secrets: inherit
