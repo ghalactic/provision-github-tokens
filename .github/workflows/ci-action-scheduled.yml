@@ -5,10 +5,6 @@ on:
   schedule:
     - cron: 0 14 * * 0 # Sunday 2PM UTC = Monday 12AM AEST
 
-permissions:
-  actions: write
-  contents: write
-
 jobs:
   ci:
     name: Ghalactic
