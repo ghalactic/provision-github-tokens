@@ -1,4 +1,8 @@
 import type { InstallationPermissions } from "./github-api.js";
+import type {
+  GitHubOrganizationSecretTypes,
+  GitHubRepositorySecretTypes,
+} from "./github-secret-type.js";
 
 export type PartialConsumerConfig = {
   $schema: string;
@@ -34,17 +38,4 @@ export type ConsumerConfig = PartialConsumerConfig & {
     string,
     PartialConsumerConfig["tokens"][string] & { owner: string }
   >;
-};
-
-type GitHubOrganizationSecretTypes = {
-  actions: boolean;
-  codespaces: boolean;
-  dependabot: boolean;
-};
-
-type GitHubRepositorySecretTypes = {
-  actions: boolean;
-  codespaces: boolean;
-  dependabot: boolean;
-  environments: string[];
 };

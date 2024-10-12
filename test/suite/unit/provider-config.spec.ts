@@ -175,6 +175,647 @@ it("parses comprehensive provider config", async () => {
         ],
       },
     },
+
+    provision: {
+      rules: {
+        secrets: [
+          {
+            description:
+              "All repos can provision to any secret of any kind in the same repo",
+            requesters: ["*/*"],
+            secrets: ["*"],
+            allow: {
+              github: {
+                organization: {
+                  actions: false,
+                  codespaces: false,
+                  dependabot: false,
+                },
+                organizations: {},
+                repository: {
+                  actions: true,
+                  codespaces: true,
+                  dependabot: true,
+                  environments: ["*"],
+                },
+                repositories: {},
+              },
+            },
+            deny: {
+              github: {
+                organization: {
+                  actions: false,
+                  codespaces: false,
+                  dependabot: false,
+                },
+                organizations: {},
+                repository: {
+                  actions: false,
+                  codespaces: false,
+                  dependabot: false,
+                  environments: [],
+                },
+                repositories: {},
+              },
+            },
+          },
+          {
+            description:
+              "Specific repos can provision to any secret of any kind in their own org",
+            secrets: ["*"],
+            requesters: ["repo-a", "repo-b"],
+            allow: {
+              github: {
+                organization: {
+                  actions: true,
+                  codespaces: true,
+                  dependabot: true,
+                },
+                organizations: {},
+                repository: {
+                  actions: false,
+                  codespaces: false,
+                  dependabot: false,
+                  environments: [],
+                },
+                repositories: {},
+              },
+            },
+            deny: {
+              github: {
+                organization: {
+                  actions: false,
+                  codespaces: false,
+                  dependabot: false,
+                },
+                organizations: {},
+                repository: {
+                  actions: false,
+                  codespaces: false,
+                  dependabot: false,
+                  environments: [],
+                },
+                repositories: {},
+              },
+            },
+          },
+          {
+            description:
+              "Specific repos can provision to dependabot secrets in specific orgs",
+            secrets: ["*"],
+            requesters: ["repo-a", "repo-b"],
+            allow: {
+              github: {
+                organization: {
+                  actions: false,
+                  codespaces: false,
+                  dependabot: false,
+                },
+                organizations: {
+                  "org-a": {
+                    actions: false,
+                    codespaces: false,
+                    dependabot: true,
+                  },
+                  "org-b": {
+                    actions: false,
+                    codespaces: false,
+                    dependabot: true,
+                  },
+                },
+                repository: {
+                  actions: false,
+                  codespaces: false,
+                  dependabot: false,
+                  environments: [],
+                },
+                repositories: {},
+              },
+            },
+            deny: {
+              github: {
+                organization: {
+                  actions: false,
+                  codespaces: false,
+                  dependabot: false,
+                },
+                organizations: {},
+                repository: {
+                  actions: false,
+                  codespaces: false,
+                  dependabot: false,
+                  environments: [],
+                },
+                repositories: {},
+              },
+            },
+          },
+          {
+            description:
+              "Specific repos can provision to dependabot secrets in any org",
+            secrets: ["*"],
+            requesters: ["repo-a", "repo-b"],
+            allow: {
+              github: {
+                organization: {
+                  actions: false,
+                  codespaces: false,
+                  dependabot: false,
+                },
+                organizations: {
+                  "*": {
+                    actions: false,
+                    codespaces: false,
+                    dependabot: true,
+                  },
+                },
+                repository: {
+                  actions: false,
+                  codespaces: false,
+                  dependabot: false,
+                  environments: [],
+                },
+                repositories: {},
+              },
+            },
+            deny: {
+              github: {
+                organization: {
+                  actions: false,
+                  codespaces: false,
+                  dependabot: false,
+                },
+                organizations: {},
+                repository: {
+                  actions: false,
+                  codespaces: false,
+                  dependabot: false,
+                  environments: [],
+                },
+                repositories: {},
+              },
+            },
+          },
+          {
+            description:
+              "A specific repo can provision to a specific codespaces secret in other repos",
+            secrets: ["SECRET_A"],
+            requesters: ["repo-a"],
+            allow: {
+              github: {
+                organization: {
+                  actions: false,
+                  codespaces: false,
+                  dependabot: false,
+                },
+                organizations: {},
+                repository: {
+                  actions: false,
+                  codespaces: false,
+                  dependabot: false,
+                  environments: [],
+                },
+                repositories: {
+                  "repo-b": {
+                    actions: false,
+                    codespaces: true,
+                    dependabot: false,
+                    environments: [],
+                  },
+                  "owner-b/repo-c": {
+                    actions: false,
+                    codespaces: true,
+                    dependabot: false,
+                    environments: [],
+                  },
+                },
+              },
+            },
+            deny: {
+              github: {
+                organization: {
+                  actions: false,
+                  codespaces: false,
+                  dependabot: false,
+                },
+                organizations: {},
+                repository: {
+                  actions: false,
+                  codespaces: false,
+                  dependabot: false,
+                  environments: [],
+                },
+                repositories: {},
+              },
+            },
+          },
+          {
+            description:
+              "A specific repo can provision to specific secrets of specific environments in another repo",
+            secrets: ["SECRET_A"],
+            requesters: ["repo-a"],
+            allow: {
+              github: {
+                organization: {
+                  actions: false,
+                  codespaces: false,
+                  dependabot: false,
+                },
+                organizations: {},
+                repository: {
+                  actions: false,
+                  codespaces: false,
+                  dependabot: false,
+                  environments: [],
+                },
+                repositories: {
+                  "repo-b": {
+                    actions: false,
+                    codespaces: false,
+                    dependabot: false,
+                    environments: ["env-a", "env-b"],
+                  },
+                },
+              },
+            },
+            deny: {
+              github: {
+                organization: {
+                  actions: false,
+                  codespaces: false,
+                  dependabot: false,
+                },
+                organizations: {},
+                repository: {
+                  actions: false,
+                  codespaces: false,
+                  dependabot: false,
+                  environments: [],
+                },
+                repositories: {},
+              },
+            },
+          },
+          {
+            description:
+              "Specific repos can provision to a specific secret of any kind in any repo in any owner",
+            secrets: ["SECRET_A"],
+            requesters: ["repo-a", "repo-b"],
+            allow: {
+              github: {
+                organization: {
+                  actions: false,
+                  codespaces: false,
+                  dependabot: false,
+                },
+                organizations: {},
+                repository: {
+                  actions: false,
+                  codespaces: false,
+                  dependabot: false,
+                  environments: [],
+                },
+                repositories: {
+                  "*/*": {
+                    actions: true,
+                    codespaces: true,
+                    dependabot: true,
+                    environments: ["*"],
+                  },
+                },
+              },
+            },
+            deny: {
+              github: {
+                organization: {
+                  actions: false,
+                  codespaces: false,
+                  dependabot: false,
+                },
+                organizations: {},
+                repository: {
+                  actions: false,
+                  codespaces: false,
+                  dependabot: false,
+                  environments: [],
+                },
+                repositories: {},
+              },
+            },
+          },
+          {
+            description:
+              "Specific repos can provision to a specific actions secret in any repo in a specific owner",
+            secrets: ["SECRET_A"],
+            requesters: ["repo-a", "repo-b"],
+            allow: {
+              github: {
+                organization: {
+                  actions: false,
+                  codespaces: false,
+                  dependabot: false,
+                },
+                organizations: {},
+                repository: {
+                  actions: false,
+                  codespaces: false,
+                  dependabot: false,
+                  environments: [],
+                },
+                repositories: {
+                  "owner-b/*": {
+                    actions: true,
+                    codespaces: false,
+                    dependabot: false,
+                    environments: [],
+                  },
+                },
+              },
+            },
+            deny: {
+              github: {
+                organization: {
+                  actions: false,
+                  codespaces: false,
+                  dependabot: false,
+                },
+                organizations: {},
+                repository: {
+                  actions: false,
+                  codespaces: false,
+                  dependabot: false,
+                  environments: [],
+                },
+                repositories: {},
+              },
+            },
+          },
+          {
+            description:
+              "Specific repos can provision any actions secret in the same repo or org, or specific other repos and orgs",
+            secrets: ["*"],
+            requesters: ["repo-a", "repo-b"],
+            allow: {
+              github: {
+                organization: {
+                  actions: true,
+                  codespaces: false,
+                  dependabot: false,
+                },
+                organizations: {
+                  "org-a": {
+                    actions: true,
+                    codespaces: false,
+                    dependabot: false,
+                  },
+                  "org-b": {
+                    actions: true,
+                    codespaces: false,
+                    dependabot: false,
+                  },
+                },
+                repository: {
+                  actions: true,
+                  codespaces: false,
+                  dependabot: false,
+                  environments: [],
+                },
+                repositories: {
+                  "repo-a": {
+                    actions: true,
+                    codespaces: false,
+                    dependabot: false,
+                    environments: [],
+                  },
+                  "owner-a/repo-a": {
+                    actions: true,
+                    codespaces: false,
+                    dependabot: false,
+                    environments: [],
+                  },
+                },
+              },
+            },
+            deny: {
+              github: {
+                organization: {
+                  actions: false,
+                  codespaces: false,
+                  dependabot: false,
+                },
+                organizations: {},
+                repository: {
+                  actions: false,
+                  codespaces: false,
+                  dependabot: false,
+                  environments: [],
+                },
+                repositories: {},
+              },
+            },
+          },
+          {
+            description:
+              "No repos can provision to a specific secret of any kind in any org or repo",
+            secrets: ["SECRET_X"],
+            requesters: ["*/*"],
+            allow: {
+              github: {
+                organization: {
+                  actions: false,
+                  codespaces: false,
+                  dependabot: false,
+                },
+                organizations: {},
+                repository: {
+                  actions: false,
+                  codespaces: false,
+                  dependabot: false,
+                  environments: [],
+                },
+                repositories: {},
+              },
+            },
+            deny: {
+              github: {
+                organization: {
+                  actions: false,
+                  codespaces: false,
+                  dependabot: false,
+                },
+                organizations: {
+                  "*": {
+                    actions: true,
+                    codespaces: true,
+                    dependabot: true,
+                  },
+                },
+                repository: {
+                  actions: false,
+                  codespaces: false,
+                  dependabot: false,
+                  environments: [],
+                },
+                repositories: {
+                  "*/*": {
+                    actions: true,
+                    codespaces: true,
+                    dependabot: true,
+                    environments: ["*"],
+                  },
+                },
+              },
+            },
+          },
+          {
+            description:
+              "Specific repos can't provision to a specific secret of any kind in the same repo",
+            secrets: ["SECRET_X"],
+            requesters: ["repo-a", "repo-b"],
+            allow: {
+              github: {
+                organization: {
+                  actions: false,
+                  codespaces: false,
+                  dependabot: false,
+                },
+                organizations: {},
+                repository: {
+                  actions: false,
+                  codespaces: false,
+                  dependabot: false,
+                  environments: [],
+                },
+                repositories: {},
+              },
+            },
+            deny: {
+              github: {
+                organization: {
+                  actions: false,
+                  codespaces: false,
+                  dependabot: false,
+                },
+                organizations: {},
+                repository: {
+                  actions: true,
+                  codespaces: true,
+                  dependabot: true,
+                  environments: ["*"],
+                },
+                repositories: {},
+              },
+            },
+          },
+          {
+            description:
+              "Rules can have both allow and deny, but deny takes precedence",
+            secrets: ["SECRET_A"],
+            requesters: ["repo-a"],
+            allow: {
+              github: {
+                organization: {
+                  actions: false,
+                  codespaces: false,
+                  dependabot: false,
+                },
+                organizations: {},
+                repository: {
+                  actions: true,
+                  codespaces: true,
+                  dependabot: true,
+                  environments: ["*"],
+                },
+                repositories: {},
+              },
+            },
+            deny: {
+              github: {
+                organization: {
+                  actions: false,
+                  codespaces: false,
+                  dependabot: false,
+                },
+                organizations: {},
+                repository: {
+                  actions: false,
+                  codespaces: false,
+                  dependabot: true,
+                  environments: ["env-a", "env-b"],
+                },
+                repositories: {},
+              },
+            },
+          },
+          {
+            description:
+              "Explicit false values are equivalent to omitted values",
+            secrets: ["SECRET_A"],
+            requesters: ["repo-a"],
+            allow: {
+              github: {
+                organization: {
+                  actions: false,
+                  codespaces: false,
+                  dependabot: false,
+                },
+                organizations: {
+                  "*": {
+                    actions: false,
+                    codespaces: false,
+                    dependabot: false,
+                  },
+                },
+                repository: {
+                  actions: false,
+                  codespaces: false,
+                  dependabot: false,
+                  environments: [],
+                },
+                repositories: {
+                  "*/*": {
+                    actions: false,
+                    codespaces: false,
+                    dependabot: false,
+                    environments: [],
+                  },
+                },
+              },
+            },
+            deny: {
+              github: {
+                organization: {
+                  actions: false,
+                  codespaces: false,
+                  dependabot: false,
+                },
+                organizations: {
+                  "*": {
+                    actions: false,
+                    codespaces: false,
+                    dependabot: false,
+                  },
+                },
+                repository: {
+                  actions: false,
+                  codespaces: false,
+                  dependabot: false,
+                  environments: [],
+                },
+                repositories: {
+                  "*/*": {
+                    actions: false,
+                    codespaces: false,
+                    dependabot: false,
+                    environments: [],
+                  },
+                },
+              },
+            },
+          },
+        ],
+      },
+    },
   } satisfies ProviderConfig);
 });
 
@@ -185,6 +826,7 @@ it("parses provider configs that are just comments", async () => {
   expect(parseProviderConfig(yaml)).toEqual({
     $schema: providerSchema.$id,
     permissions: { rules: { repositories: [] } },
+    provision: { rules: { secrets: [] } },
   } satisfies ProviderConfig);
 });
 
@@ -192,6 +834,7 @@ it("parses provider configs that are empty", async () => {
   expect(parseProviderConfig("")).toEqual({
     $schema: providerSchema.$id,
     permissions: { rules: { repositories: [] } },
+    provision: { rules: { secrets: [] } },
   } satisfies ProviderConfig);
 });
 

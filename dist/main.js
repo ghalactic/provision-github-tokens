@@ -50907,6 +50907,275 @@ var provider_v1_schema_default = {
           }
         }
       }
+    },
+    provision: {
+      description: "Settings that control where tokens can be provisioned by requesting repositories.",
+      type: "object",
+      additionalProperties: false,
+      default: {},
+      properties: {
+        rules: {
+          description: "Rules that define where tokens can be provisioned by requesting repositories.",
+          type: "object",
+          additionalProperties: false,
+          default: {},
+          properties: {
+            secrets: {
+              description: "Rules that define which secrets can be provisioned, and what types of secrets can be provisioned, by requesting repositories.",
+              type: "array",
+              default: [],
+              items: {
+                description: "A rule that defines which secrets can be provisioned, and what types of secrets can be provisioned, by requesting repositories.",
+                type: "object",
+                additionalProperties: false,
+                anyOf: [
+                  { required: ["secrets", "requesters", "allow"] },
+                  { required: ["secrets", "requesters", "deny"] }
+                ],
+                properties: {
+                  description: {
+                    description: "A description of the rule.",
+                    type: "string"
+                  },
+                  secrets: {
+                    description: "A list of patterns to match against secret names when applying the rule.",
+                    type: "array",
+                    minItems: 1,
+                    items: {
+                      description: "A pattern which matches a secret name.",
+                      type: "string",
+                      minLength: 1,
+                      examples: [
+                        "secret-a",
+                        "prefix-*",
+                        "*-suffix",
+                        "prefix-*-suffix"
+                      ]
+                    }
+                  },
+                  requesters: {
+                    description: "A list of patterns to match against requesting repositories when applying the rule.",
+                    type: "array",
+                    minItems: 1,
+                    items: {
+                      description: "A pattern which matches a requesting repository owner and name. If a pattern with no owner part is specified, the pattern will match repositories with the same owner as the repository where the provider configuration file is defined.",
+                      type: "string",
+                      minLength: 1,
+                      examples: [
+                        "repo-a",
+                        "owner-a/repo-a",
+                        "*",
+                        "*/*",
+                        "*/repo-a",
+                        "owner-a/*",
+                        "prefix-*/*-suffix",
+                        "<owner>/<repo>",
+                        "<owner>/*"
+                      ]
+                    }
+                  },
+                  allow: {
+                    description: "The types of secrets that are allowed to be provisioned by requesting repositories.",
+                    type: "object",
+                    additionalProperties: false,
+                    default: {},
+                    properties: {
+                      github: {
+                        description: "The types of GitHub secrets that are allowed to be provisioned by requesting repositories.",
+                        type: "object",
+                        additionalProperties: false,
+                        default: {},
+                        properties: {
+                          organization: {
+                            description: "Types of secrets to allow provisioning to in the requesting repository's GitHub organization.",
+                            $ref: "#/definitions/provisionGithubOrganizationSecretTypesAllow",
+                            default: {}
+                          },
+                          organizations: {
+                            description: "Types of secrets to allow provisioning to in other GitHub organizations.",
+                            type: "object",
+                            default: {},
+                            additionalProperties: {
+                              description: "Types of secrets to allow provisioning to in the specified GitHub organization.",
+                              $ref: "#/definitions/provisionGithubOrganizationSecretTypesAllow"
+                            }
+                          },
+                          repository: {
+                            description: "Types of secrets to allow provisioning to in the requesting repository.",
+                            $ref: "#/definitions/provisionGithubRepositorySecretTypesAllow",
+                            default: {}
+                          },
+                          repositories: {
+                            description: "Types of secrets to allow provisioning to in other repositories.",
+                            type: "object",
+                            default: {},
+                            additionalProperties: {
+                              description: "Types of secrets to allow provisioning to in the specified repository.",
+                              $ref: "#/definitions/provisionGithubRepositorySecretTypesAllow"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  deny: {
+                    description: "The types of secrets that aren't allowed to be provisioned by requesting repositories.",
+                    type: "object",
+                    additionalProperties: false,
+                    default: {},
+                    properties: {
+                      github: {
+                        description: "The types of GitHub secrets that aren't allowed to be provisioned by requesting repositories.",
+                        type: "object",
+                        additionalProperties: false,
+                        default: {},
+                        properties: {
+                          organization: {
+                            description: "Types of secrets to deny provisioning to in the requesting repository's GitHub organization.",
+                            $ref: "#/definitions/provisionGithubOrganizationSecretTypesDeny",
+                            default: {}
+                          },
+                          organizations: {
+                            description: "Types of secrets to deny provisioning to in other GitHub organizations.",
+                            type: "object",
+                            default: {},
+                            additionalProperties: {
+                              description: "Types of secrets to deny provisioning to in the specified GitHub organization.",
+                              $ref: "#/definitions/provisionGithubOrganizationSecretTypesDeny"
+                            }
+                          },
+                          repository: {
+                            description: "Types of secrets to deny provisioning to in the requesting repository.",
+                            $ref: "#/definitions/provisionGithubRepositorySecretTypesDeny",
+                            default: {}
+                          },
+                          repositories: {
+                            description: "Types of secrets to deny provisioning to in other repositories.",
+                            type: "object",
+                            default: {},
+                            additionalProperties: {
+                              description: "Types of secrets to deny provisioning to in the specified repository.",
+                              $ref: "#/definitions/provisionGithubRepositorySecretTypesDeny"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  definitions: {
+    provisionGithubOrganizationSecretTypesAllow: {
+      type: "object",
+      additionalProperties: false,
+      properties: {
+        actions: {
+          description: "Whether to allow provisioning to GitHub Actions secrets.",
+          type: "boolean",
+          default: false
+        },
+        codespaces: {
+          description: "Whether to allow provisioning to GitHub Codespaces secrets.",
+          type: "boolean",
+          default: false
+        },
+        dependabot: {
+          description: "Whether to allow provisioning to Dependabot secrets.",
+          type: "boolean",
+          default: false
+        }
+      }
+    },
+    provisionGithubOrganizationSecretTypesDeny: {
+      type: "object",
+      additionalProperties: false,
+      properties: {
+        actions: {
+          description: "Whether to deny provisioning to GitHub Actions secrets.",
+          type: "boolean",
+          default: false
+        },
+        codespaces: {
+          description: "Whether to deny provisioning to GitHub Codespaces secrets.",
+          type: "boolean",
+          default: false
+        },
+        dependabot: {
+          description: "Whether to deny provisioning to Dependabot secrets.",
+          type: "boolean",
+          default: false
+        }
+      }
+    },
+    provisionGithubRepositorySecretTypesAllow: {
+      type: "object",
+      additionalProperties: false,
+      properties: {
+        actions: {
+          description: "Whether to allow provisioning to GitHub Actions secrets.",
+          type: "boolean",
+          default: false
+        },
+        codespaces: {
+          description: "Whether to allow provisioning to GitHub Codespaces secrets.",
+          type: "boolean",
+          default: false
+        },
+        dependabot: {
+          description: "Whether to allow provisioning to Dependabot secrets.",
+          type: "boolean",
+          default: false
+        },
+        environments: {
+          description: "GitHub repository environments to allow provisioning to.",
+          type: "array",
+          uniqueItems: true,
+          default: [],
+          items: {
+            description: "The name of an environment to allow provisioning to.",
+            type: "string",
+            minLength: 1
+          }
+        }
+      }
+    },
+    provisionGithubRepositorySecretTypesDeny: {
+      type: "object",
+      additionalProperties: false,
+      properties: {
+        actions: {
+          description: "Whether to deny provisioning to GitHub Actions secrets.",
+          type: "boolean",
+          default: false
+        },
+        codespaces: {
+          description: "Whether to deny provisioning to GitHub Codespaces secrets.",
+          type: "boolean",
+          default: false
+        },
+        dependabot: {
+          description: "Whether to deny provisioning to Dependabot secrets.",
+          type: "boolean",
+          default: false
+        },
+        environments: {
+          description: "GitHub repository environments to deny provisioning to.",
+          type: "array",
+          uniqueItems: true,
+          default: [],
+          items: {
+            description: "The name of an environment to deny provisioning to.",
+            type: "string",
+            minLength: 1
+          }
+        }
+      }
     }
   }
 };

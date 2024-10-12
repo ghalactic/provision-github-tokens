@@ -136,3 +136,200 @@ permissions:
           vulnerability_alerts: write
           workflows: write
           xxx: admin
+
+provision:
+  rules:
+    secrets:
+      - description: All repos can provision to any secret of any kind in the same repo
+        secrets: ["*"]
+        requesters: ["*/*"]
+        allow:
+          github:
+            repository:
+              actions: true
+              codespaces: true
+              dependabot: true
+              environments: ["*"]
+
+      - description: Specific repos can provision to any secret of any kind in their own org
+        secrets: ["*"]
+        requesters: ["repo-a", "repo-b"]
+        allow:
+          github:
+            organization:
+              actions: true
+              codespaces: true
+              dependabot: true
+
+      - description: Specific repos can provision to dependabot secrets in specific orgs
+        secrets: ["*"]
+        requesters: ["repo-a", "repo-b"]
+        allow:
+          github:
+            organizations:
+              org-a:
+                dependabot: true
+              org-b:
+                dependabot: true
+
+      - description: Specific repos can provision to dependabot secrets in any org
+        secrets: ["*"]
+        requesters: ["repo-a", "repo-b"]
+        allow:
+          github:
+            organizations:
+              "*":
+                dependabot: true
+
+      - description: A specific repo can provision to a specific codespaces secret in other repos
+        secrets: ["SECRET_A"]
+        requesters: ["repo-a"]
+        allow:
+          github:
+            repositories:
+              repo-b:
+                codespaces: true
+              owner-b/repo-c:
+                codespaces: true
+
+      - description: A specific repo can provision to specific secrets of specific environments in another repo
+        secrets: ["SECRET_A"]
+        requesters: ["repo-a"]
+        allow:
+          github:
+            repositories:
+              repo-b:
+                environments: ["env-a", "env-b"]
+
+      - description: Specific repos can provision to a specific secret of any kind in any repo in any owner
+        secrets: ["SECRET_A"]
+        requesters: ["repo-a", "repo-b"]
+        allow:
+          github:
+            repositories:
+              "*/*":
+                actions: true
+                codespaces: true
+                dependabot: true
+                environments: ["*"]
+
+      - description: Specific repos can provision to a specific actions secret in any repo in a specific owner
+        secrets: ["SECRET_A"]
+        requesters: ["repo-a", "repo-b"]
+        allow:
+          github:
+            repositories:
+              owner-b/*:
+                actions: true
+
+      - description: Specific repos can provision any actions secret in the same repo or org, or specific other repos and orgs
+        secrets: ["*"]
+        requesters: ["repo-a", "repo-b"]
+        allow:
+          github:
+            organization:
+              actions: true
+            organizations:
+              org-a:
+                actions: true
+              org-b:
+                actions: true
+            repository:
+              actions: true
+            repositories:
+              repo-a:
+                actions: true
+              owner-a/repo-a:
+                actions: true
+
+      - description: No repos can provision to a specific secret of any kind in any org or repo
+        secrets: ["SECRET_X"]
+        requesters: ["*/*"]
+        deny:
+          github:
+            organizations:
+              "*":
+                actions: true
+                codespaces: true
+                dependabot: true
+            repositories:
+              "*/*":
+                actions: true
+                codespaces: true
+                dependabot: true
+                environments: ["*"]
+
+      - description: Specific repos can't provision to a specific secret of any kind in the same repo
+        secrets: ["SECRET_X"]
+        requesters: ["repo-a", "repo-b"]
+        deny:
+          github:
+            repository:
+              actions: true
+              codespaces: true
+              dependabot: true
+              environments: ["*"]
+
+      - description: Rules can have both allow and deny, but deny takes precedence
+        secrets: ["SECRET_A"]
+        requesters: ["repo-a"]
+        allow:
+          github:
+            repository:
+              actions: true
+              codespaces: true
+              dependabot: true
+              environments: ["*"]
+        deny:
+          github:
+            repository:
+              dependabot: true
+              environments: ["env-a", "env-b"]
+
+      - description: Explicit false values are equivalent to omitted values
+        secrets: ["SECRET_A"]
+        requesters: ["repo-a"]
+        allow:
+          github:
+            organization:
+              actions: false
+              codespaces: false
+              dependabot: false
+            organizations:
+              "*":
+                actions: false
+                codespaces: false
+                dependabot: false
+            repository:
+              actions: false
+              codespaces: false
+              dependabot: false
+              environments: []
+            repositories:
+              "*/*":
+                actions: false
+                codespaces: false
+                dependabot: false
+                environments: []
+        deny:
+          github:
+            organization:
+              actions: false
+              codespaces: false
+              dependabot: false
+            organizations:
+              "*":
+                actions: false
+                codespaces: false
+                dependabot: false
+            repository:
+              actions: false
+              codespaces: false
+              dependabot: false
+              environments: []
+            repositories:
+              "*/*":
+                actions: false
+                codespaces: false
+                dependabot: false
+                environments: []
