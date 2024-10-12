@@ -194,7 +194,7 @@ it("parses comprehensive consumer config", async () => {
                 dependabot: false,
                 environments: [],
               },
-              "org-a/repo-a": {
+              "owner-a/repo-a": {
                 actions: true,
                 codespaces: true,
                 dependabot: true,

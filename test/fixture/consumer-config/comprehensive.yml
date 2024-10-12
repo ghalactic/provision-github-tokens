@@ -127,7 +127,7 @@ provision:
         repositories:
           repo-a:
             actions: true
-          org-a/repo-a:
+          owner-a/repo-a:
             actions: true
             codespaces: true
             dependabot: true
