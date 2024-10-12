@@ -49860,7 +49860,7 @@ var consumer_v1_schema_default = {
                 properties: {
                   organization: {
                     description: "How to provision the secret to the declaring repository's GitHub organization.",
-                    $ref: "#/definitions/organizationSecretTypes",
+                    $ref: "#/definitions/provisionGithubOrganizationSecretTypes",
                     default: {}
                   },
                   organizations: {
@@ -49869,12 +49869,12 @@ var consumer_v1_schema_default = {
                     default: {},
                     additionalProperties: {
                       description: "How to provision the secret to the specified GitHub organization.",
-                      $ref: "#/definitions/organizationSecretTypes"
+                      $ref: "#/definitions/provisionGithubOrganizationSecretTypes"
                     }
                   },
                   repository: {
                     description: "How to provision the secret to the declaring repository.",
-                    $ref: "#/definitions/repositorySecretTypes",
+                    $ref: "#/definitions/provisionGithubRepositorySecretTypes",
                     default: {}
                   },
                   repositories: {
@@ -49883,7 +49883,7 @@ var consumer_v1_schema_default = {
                     default: {},
                     additionalProperties: {
                       description: "How to provision the secret to the specified GitHub repository.",
-                      $ref: "#/definitions/repositorySecretTypes"
+                      $ref: "#/definitions/provisionGithubRepositorySecretTypes"
                     }
                   }
                 }
@@ -49895,7 +49895,7 @@ var consumer_v1_schema_default = {
     }
   },
   definitions: {
-    organizationSecretTypes: {
+    provisionGithubOrganizationSecretTypes: {
       type: "object",
       additionalProperties: false,
       properties: {
@@ -49916,7 +49916,7 @@ var consumer_v1_schema_default = {
         }
       }
     },
-    repositorySecretTypes: {
+    provisionGithubRepositorySecretTypes: {
       type: "object",
       additionalProperties: false,
       properties: {
