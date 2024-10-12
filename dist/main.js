@@ -49779,6 +49779,13 @@ var consumer_v1_schema_default = {
       description: "Declarations of GitHub tokens that the consumer can request to be provisioned.",
       type: "object",
       default: {},
+      propertyNames: {
+        description: "The name of a token declaration.",
+        type: "string",
+        minLength: 1,
+        pattern: "^[a-zA-Z0-9-_]+$",
+        examples: ["tokenA", "tokenB"]
+      },
       additionalProperties: {
         description: "A GitHub token declaration.",
         type: "object",
@@ -49836,6 +49843,13 @@ var consumer_v1_schema_default = {
           description: "A set of secrets to provision.",
           type: "object",
           default: {},
+          propertyNames: {
+            description: "The name of a secret.",
+            type: "string",
+            minLength: 1,
+            pattern: "^[a-zA-Z_][a-zA-Z0-9_]*$",
+            examples: ["SECRET_1", "secret_2", "_SeCrEt_3"]
+          },
           additionalProperties: {
             description: "A secret to provision.",
             type: "object",

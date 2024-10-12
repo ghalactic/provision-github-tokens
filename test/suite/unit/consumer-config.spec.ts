@@ -246,6 +246,24 @@ it("parses consumer configs that are empty", async () => {
   } satisfies ConsumerConfig);
 });
 
+it("throws when an invalid token name is defined", async () => {
+  const fixturePath = join(fixturesPath, "invalid-token-name.yml");
+  const yaml = await readFile(fixturePath, "utf-8");
+
+  expect(() => parseConsumerConfig("owner-self", "repo-self", yaml)).toThrow(
+    /property name must be valid \(\/tokens\)/i,
+  );
+});
+
+it("throws when an invalid secret name is defined", async () => {
+  const fixturePath = join(fixturesPath, "invalid-secret-name.yml");
+  const yaml = await readFile(fixturePath, "utf-8");
+
+  expect(() => parseConsumerConfig("owner-self", "repo-self", yaml)).toThrow(
+    /property name must be valid \(\/provision\/secrets\)/i,
+  );
+});
+
 it("throws when there are additional properties", async () => {
   const fixturePath = join(fixturesPath, "additional-properties.yml");
   const yaml = await readFile(fixturePath, "utf-8");
