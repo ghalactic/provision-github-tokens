@@ -14,7 +14,7 @@ it("parses comprehensive consumer config", async () => {
   const fixturePath = join(fixturesPath, "comprehensive.yml");
   const yaml = await readFile(fixturePath, "utf-8");
 
-  expect(parseConsumerConfig("owner-self", yaml)).toEqual({
+  expect(parseConsumerConfig("owner-self", "repo-self", yaml)).toEqual({
     $schema: consumerSchema.$id,
 
     tokens: {
@@ -231,7 +231,7 @@ it("parses consumer configs that are just comments", async () => {
   const fixturePath = join(fixturesPath, "just-comments.yml");
   const yaml = await readFile(fixturePath, "utf-8");
 
-  expect(parseConsumerConfig("owner-self", yaml)).toEqual({
+  expect(parseConsumerConfig("owner-self", "repo-self", yaml)).toEqual({
     $schema: consumerSchema.$id,
     tokens: {},
     provision: { secrets: {} },
@@ -239,7 +239,7 @@ it("parses consumer configs that are just comments", async () => {
 });
 
 it("parses consumer configs that are empty", async () => {
-  expect(parseConsumerConfig("owner-self", "")).toEqual({
+  expect(parseConsumerConfig("owner-self", "repo-self", "")).toEqual({
     $schema: consumerSchema.$id,
     tokens: {},
     provision: { secrets: {} },
@@ -250,11 +250,13 @@ it("throws when there are additional properties", async () => {
   const fixturePath = join(fixturesPath, "additional-properties.yml");
   const yaml = await readFile(fixturePath, "utf-8");
 
-  expect(() => parseConsumerConfig("owner-self", yaml)).toThrow(
+  expect(() => parseConsumerConfig("owner-self", "repo-self", yaml)).toThrow(
     /additional properties/i,
   );
 });
 
 it("throws when the YAML is invalid", async () => {
-  expect(() => parseConsumerConfig("owner-self", "{")).toThrow(/parsing/i);
+  expect(() => parseConsumerConfig("owner-self", "repo-self", "{")).toThrow(
+    /parsing/i,
+  );
 });

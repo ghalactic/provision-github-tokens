@@ -8,6 +8,7 @@ import { validateConsumer } from "./validation.js";
 
 export function parseConsumerConfig(
   owner: string,
+  repo: string,
   yaml: string,
 ): ConsumerConfig {
   const config = parseYAML(yaml);
