@@ -49857,9 +49857,10 @@ var consumer_v1_schema_default = {
             required: ["token"],
             properties: {
               token: {
-                description: "The name of the token declaration to use.",
+                description: "A token reference that points to the token declaration to use.",
                 type: "string",
                 minLength: 1,
+                pattern: "^(?:(?:[a-zA-Z](?:[a-zA-Z-]*[a-zA-Z])?\\/)?[a-zA-Z0-9-_.]+\\.)?[a-zA-Z0-9-_]+$",
                 examples: [
                   "tokenA",
                   "other-repo.tokenB",

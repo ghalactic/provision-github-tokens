@@ -136,7 +136,7 @@ it("parses comprehensive consumer config", async () => {
     provision: {
       secrets: {
         TO_REPO_ACTIONS: {
-          token: "tokenA",
+          token: "owner-self/repo-self.tokenA",
           github: {
             repository: {
               actions: true,
@@ -155,7 +155,7 @@ it("parses comprehensive consumer config", async () => {
         },
 
         TO_ORG_DEPENDABOT: {
-          token: "other-repo.tokenB",
+          token: "owner-self/other-repo.tokenB",
           github: {
             repository: {
               actions: false,
@@ -205,7 +205,7 @@ it("parses comprehensive consumer config", async () => {
         },
 
         TO_NOWHERE: {
-          token: "tokenD",
+          token: "owner-self/repo-self.tokenD",
           github: {
             repository: {
               actions: false,
@@ -261,6 +261,42 @@ it("throws when an invalid secret name is defined", async () => {
 
   expect(() => parseConsumerConfig("owner-self", "repo-self", yaml)).toThrow(
     /property name must be valid \(\/provision\/secrets\)/i,
+  );
+});
+
+it("throws when an secret token reference has an empty owner", async () => {
+  const fixturePath = join(fixturesPath, "empty-token-reference-owner.yml");
+  const yaml = await readFile(fixturePath, "utf-8");
+
+  expect(() => parseConsumerConfig("owner-self", "repo-self", yaml)).toThrow(
+    /must match pattern .* \(\/provision\/secrets\/TO_REPO_ACTIONS\/token\)/,
+  );
+});
+
+it("throws when an secret token reference has an invalid owner", async () => {
+  const fixturePath = join(fixturesPath, "invalid-token-reference-owner.yml");
+  const yaml = await readFile(fixturePath, "utf-8");
+
+  expect(() => parseConsumerConfig("owner-self", "repo-self", yaml)).toThrow(
+    /must match pattern .* \(\/provision\/secrets\/TO_REPO_ACTIONS\/token\)/,
+  );
+});
+
+it("throws when an secret token reference has an empty repository", async () => {
+  const fixturePath = join(fixturesPath, "empty-token-reference-repo.yml");
+  const yaml = await readFile(fixturePath, "utf-8");
+
+  expect(() => parseConsumerConfig("owner-self", "repo-self", yaml)).toThrow(
+    /must match pattern .* \(\/provision\/secrets\/TO_REPO_ACTIONS\/token\)/,
+  );
+});
+
+it("throws when an secret token reference has an invalid repository", async () => {
+  const fixturePath = join(fixturesPath, "invalid-token-reference-repo.yml");
+  const yaml = await readFile(fixturePath, "utf-8");
+
+  expect(() => parseConsumerConfig("owner-self", "repo-self", yaml)).toThrow(
+    /must match pattern .* \(\/provision\/secrets\/TO_REPO_ACTIONS\/token\)/,
   );
 });
 
