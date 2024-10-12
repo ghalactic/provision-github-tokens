@@ -50832,23 +50832,23 @@ var provider_v1_schema_default = {
       default: "https://ghalactic.github.io/provision-github-tokens/schema/provider.v1.schema.json"
     },
     permissions: {
-      description: "Settings that control the token permissions that consumers can request.",
+      description: "Settings that control the token permissions that consumers can receive.",
       type: "object",
       additionalProperties: false,
       default: {},
       properties: {
         rules: {
-          description: "Rules that define the permissions that consumers can request.",
+          description: "Rules that define the permissions that consumers can receive.",
           type: "object",
           additionalProperties: false,
           default: {},
           properties: {
             repositories: {
-              description: "Rules that define the permissions that consumers can request for repositories.",
+              description: "Rules that define the permissions that consumers can receive for repositories.",
               type: "array",
               default: [],
               items: {
-                description: "A rule that defines the permissions that consumers can request for repositories.",
+                description: "A rule that defines the permissions that consumers can receive for repositories.",
                 type: "object",
                 additionalProperties: false,
                 required: ["resources", "consumers"],
