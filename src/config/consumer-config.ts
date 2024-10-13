@@ -1,5 +1,6 @@
 import { load } from "js-yaml";
 import { errorMessage } from "../error.js";
+import { normalizePattern } from "../pattern.js";
 import type {
   ConsumerConfig,
   PartialConsumerConfig,
@@ -43,6 +44,13 @@ function normalizeConsumerConfig(
       definingOwner,
       definingRepo,
       secret.token,
+    );
+
+    secret.github.repositories = Object.fromEntries(
+      Object.entries(secret.github.repositories).map(([k, v]) => [
+        normalizePattern(definingOwner, k),
+        v,
+      ]),
     );
   }
 

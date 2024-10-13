@@ -188,7 +188,7 @@ it("parses comprehensive consumer config", async () => {
               environments: ["env-a", "env-b"],
             },
             repositories: {
-              "repo-a": {
+              "owner-self/repo-a": {
                 actions: true,
                 codespaces: false,
                 dependabot: false,
