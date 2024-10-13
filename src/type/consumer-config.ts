@@ -1,21 +1,12 @@
-import type { InstallationPermissions } from "./github-api.js";
 import type {
   GitHubOrganizationSecretTypes,
   GitHubRepositorySecretTypes,
 } from "./github-secret-type.js";
+import type { TokenDeclaration } from "./token-declaration.js";
 
 export type PartialConsumerConfig = {
   $schema: string;
-  tokens: Record<
-    string,
-    {
-      shared: boolean;
-      as?: string;
-      owner?: string;
-      repositories: string[];
-      permissions: InstallationPermissions;
-    }
-  >;
+  tokens: Record<string, TokenDeclaration>;
   provision: {
     secrets: Record<
       string,
