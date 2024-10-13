@@ -3,7 +3,11 @@ import { errorMessage } from "../error.js";
 import type { ProviderConfig } from "../type/provider-config.js";
 import { validateProvider } from "./validation.js";
 
-export function parseProviderConfig(yaml: string): ProviderConfig {
+export function parseProviderConfig(
+  definingOwner: string,
+  definingRepo: string,
+  yaml: string,
+): ProviderConfig {
   return parseYAML(yaml);
 }
 

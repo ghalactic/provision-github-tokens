@@ -14,7 +14,7 @@ it("parses comprehensive provider config", async () => {
   const fixturePath = join(fixturesPath, "comprehensive.yml");
   const yaml = await readFile(fixturePath, "utf-8");
 
-  expect(parseProviderConfig(yaml)).toEqual({
+  expect(parseProviderConfig("owner-self", "repo-self", yaml)).toEqual({
     $schema: providerSchema.$id,
 
     permissions: {
@@ -823,7 +823,7 @@ it("parses provider configs that are just comments", async () => {
   const fixturePath = join(fixturesPath, "just-comments.yml");
   const yaml = await readFile(fixturePath, "utf-8");
 
-  expect(parseProviderConfig(yaml)).toEqual({
+  expect(parseProviderConfig("owner-self", "repo-self", yaml)).toEqual({
     $schema: providerSchema.$id,
     permissions: { rules: { repositories: [] } },
     provision: { rules: { secrets: [] } },
@@ -831,7 +831,7 @@ it("parses provider configs that are just comments", async () => {
 });
 
 it("parses provider configs that are empty", async () => {
-  expect(parseProviderConfig("")).toEqual({
+  expect(parseProviderConfig("owner-self", "repo-self", "")).toEqual({
     $schema: providerSchema.$id,
     permissions: { rules: { repositories: [] } },
     provision: { rules: { secrets: [] } },
@@ -842,9 +842,13 @@ it("throws when there are additional properties", async () => {
   const fixturePath = join(fixturesPath, "additional-properties.yml");
   const yaml = await readFile(fixturePath, "utf-8");
 
-  expect(() => parseProviderConfig(yaml)).toThrow(/additional properties/i);
+  expect(() => parseProviderConfig("owner-self", "repo-self", yaml)).toThrow(
+    /additional properties/i,
+  );
 });
 
 it("throws when the YAML is invalid", async () => {
-  expect(() => parseProviderConfig("{")).toThrow(/parsing/i);
+  expect(() => parseProviderConfig("owner-self", "repo-self", "{")).toThrow(
+    /parsing/i,
+  );
 });
