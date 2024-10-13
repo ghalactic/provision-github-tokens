@@ -1,17 +1,8 @@
-import type { InstallationPermissions } from "./github-api.js";
+import type { PermissionsRules } from "./permission-rule.js";
 
 export type ProviderConfig = {
   $schema?: string;
-  permissions: {
-    rules: {
-      repositories: {
-        description?: string;
-        resources: string[];
-        consumers: string[];
-        permissions: RulePermissions;
-      }[];
-    };
-  };
+  permissions: ProviderPermissionsConfig;
   provision: {
     rules: {
       secrets: {
@@ -37,10 +28,8 @@ export type ProviderConfig = {
   };
 };
 
-type RulePermissions = {
-  [Property in keyof InstallationPermissions]:
-    | InstallationPermissions[Property]
-    | "none";
+export type ProviderPermissionsConfig = {
+  rules: PermissionsRules;
 };
 
 type ProviderConfigGitHubOrganizationSecretTypes = {
