@@ -11,22 +11,7 @@ export function parseConsumerConfig(
   definingRepo: string,
   yaml: string,
 ): ConsumerConfig {
-  const config = parseYAML(yaml);
-
-  for (const token of Object.values(config.tokens)) {
-    token.as ??= undefined;
-    token.owner ??= definingOwner;
-  }
-
-  for (const [secretName, secret] of Object.entries(config.provision.secrets)) {
-    secret.token = normalizeTokenReference(
-      definingOwner,
-      definingRepo,
-      secret.token,
-    );
-  }
-
-  return config as ConsumerConfig;
+  return normalizeConsumerConfig(definingOwner, definingRepo, parseYAML(yaml));
 }
 
 function parseYAML(yaml: string): PartialConsumerConfig {
@@ -41,6 +26,27 @@ function parseYAML(yaml: string): PartialConsumerConfig {
       `Parsing of consumer configuration failed with ${errorMessage(error)}. Provided value: ${original}`,
     );
   }
+}
+
+function normalizeConsumerConfig(
+  definingOwner: string,
+  definingRepo: string,
+  config: PartialConsumerConfig,
+): ConsumerConfig {
+  for (const token of Object.values(config.tokens)) {
+    token.as ??= undefined;
+    token.owner ??= definingOwner;
+  }
+
+  for (const secret of Object.values(config.provision.secrets)) {
+    secret.token = normalizeTokenReference(
+      definingOwner,
+      definingRepo,
+      secret.token,
+    );
+  }
+
+  return config as ConsumerConfig;
 }
 
 function normalizeTokenReference(

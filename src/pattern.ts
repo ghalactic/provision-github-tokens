@@ -22,3 +22,10 @@ export function createPattern(pattern: string): Pattern {
     toString: () => pattern,
   };
 }
+
+export function normalizePattern(
+  definingOwner: string,
+  pattern: string,
+): string {
+  return pattern.includes("/") ? pattern : `${definingOwner}/${pattern}`;
+}

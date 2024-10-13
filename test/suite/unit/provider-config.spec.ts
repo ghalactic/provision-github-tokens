@@ -70,14 +70,14 @@ it("parses comprehensive provider config", async () => {
           },
           {
             description: "Cross-repo access (in the provider's owner)",
-            resources: ["repo-a"],
-            consumers: ["repo-b"],
+            resources: ["owner-self/repo-a"],
+            consumers: ["owner-self/repo-b"],
             permissions: { contents: "read" },
           },
           {
             description: "All-repo access (in the provider's owner)",
-            resources: ["*"],
-            consumers: ["repo-a"],
+            resources: ["owner-self/*"],
+            consumers: ["owner-self/repo-a"],
             permissions: { contents: "read" },
           },
           {
@@ -88,26 +88,26 @@ it("parses comprehensive provider config", async () => {
           },
           {
             description: "Revocation of access",
-            resources: ["repo-a"],
-            consumers: ["repo-b"],
+            resources: ["owner-self/repo-a"],
+            consumers: ["owner-self/repo-b"],
             permissions: { contents: "none" },
           },
           {
             description: "Escalation of access",
-            resources: ["repo-a"],
-            consumers: ["repo-b"],
+            resources: ["owner-self/repo-a"],
+            consumers: ["owner-self/repo-b"],
             permissions: { contents: "write" },
           },
           {
             description: "De-escalation of access",
-            resources: ["repo-a"],
-            consumers: ["repo-b"],
+            resources: ["owner-self/repo-a"],
+            consumers: ["owner-self/repo-b"],
             permissions: { contents: "read" },
           },
           {
             description: "Multiple resources and consumers",
-            resources: ["repo-a", "repo-b"],
-            consumers: ["repo-c", "repo-d"],
+            resources: ["owner-self/repo-a", "owner-self/repo-b"],
+            consumers: ["owner-self/repo-c", "owner-self/repo-d"],
             permissions: { contents: "read" },
           },
           {
@@ -118,8 +118,8 @@ it("parses comprehensive provider config", async () => {
           },
           {
             description: "All permissions",
-            resources: ["repo-a"],
-            consumers: ["repo-b"],
+            resources: ["owner-self/repo-a"],
+            consumers: ["owner-self/repo-b"],
             permissions: {
               actions: "write",
               administration: "write",
@@ -223,7 +223,7 @@ it("parses comprehensive provider config", async () => {
             description:
               "Specific repos can provision to any secret of any kind in their own org",
             secrets: ["*"],
-            requesters: ["repo-a", "repo-b"],
+            requesters: ["owner-self/repo-a", "owner-self/repo-b"],
             allow: {
               github: {
                 organization: {
@@ -263,7 +263,7 @@ it("parses comprehensive provider config", async () => {
             description:
               "Specific repos can provision to dependabot secrets in specific orgs",
             secrets: ["*"],
-            requesters: ["repo-a", "repo-b"],
+            requesters: ["owner-self/repo-a", "owner-self/repo-b"],
             allow: {
               github: {
                 organization: {
@@ -314,7 +314,7 @@ it("parses comprehensive provider config", async () => {
             description:
               "Specific repos can provision to dependabot secrets in any org",
             secrets: ["*"],
-            requesters: ["repo-a", "repo-b"],
+            requesters: ["owner-self/repo-a", "owner-self/repo-b"],
             allow: {
               github: {
                 organization: {
@@ -360,7 +360,7 @@ it("parses comprehensive provider config", async () => {
             description:
               "A specific repo can provision to a specific codespaces secret in other repos",
             secrets: ["SECRET_A"],
-            requesters: ["repo-a"],
+            requesters: ["owner-self/repo-a"],
             allow: {
               github: {
                 organization: {
@@ -376,7 +376,7 @@ it("parses comprehensive provider config", async () => {
                   environments: [],
                 },
                 repositories: {
-                  "repo-b": {
+                  "owner-self/repo-b": {
                     actions: false,
                     codespaces: true,
                     dependabot: false,
@@ -413,7 +413,7 @@ it("parses comprehensive provider config", async () => {
             description:
               "A specific repo can provision to specific secrets of specific environments in another repo",
             secrets: ["SECRET_A"],
-            requesters: ["repo-a"],
+            requesters: ["owner-self/repo-a"],
             allow: {
               github: {
                 organization: {
@@ -429,7 +429,7 @@ it("parses comprehensive provider config", async () => {
                   environments: [],
                 },
                 repositories: {
-                  "repo-b": {
+                  "owner-self/repo-b": {
                     actions: false,
                     codespaces: false,
                     dependabot: false,
@@ -460,7 +460,7 @@ it("parses comprehensive provider config", async () => {
             description:
               "Specific repos can provision to a specific secret of any kind in any repo in any owner",
             secrets: ["SECRET_A"],
-            requesters: ["repo-a", "repo-b"],
+            requesters: ["owner-self/repo-a", "owner-self/repo-b"],
             allow: {
               github: {
                 organization: {
@@ -507,7 +507,7 @@ it("parses comprehensive provider config", async () => {
             description:
               "Specific repos can provision to a specific actions secret in any repo in a specific owner",
             secrets: ["SECRET_A"],
-            requesters: ["repo-a", "repo-b"],
+            requesters: ["owner-self/repo-a", "owner-self/repo-b"],
             allow: {
               github: {
                 organization: {
@@ -554,7 +554,7 @@ it("parses comprehensive provider config", async () => {
             description:
               "Specific repos can provision any actions secret in the same repo or org, or specific other repos and orgs",
             secrets: ["*"],
-            requesters: ["repo-a", "repo-b"],
+            requesters: ["owner-self/repo-a", "owner-self/repo-b"],
             allow: {
               github: {
                 organization: {
@@ -581,7 +581,7 @@ it("parses comprehensive provider config", async () => {
                   environments: [],
                 },
                 repositories: {
-                  "repo-a": {
+                  "owner-self/repo-a": {
                     actions: true,
                     codespaces: false,
                     dependabot: false,
@@ -671,7 +671,7 @@ it("parses comprehensive provider config", async () => {
             description:
               "Specific repos can't provision to a specific secret of any kind in the same repo",
             secrets: ["SECRET_X"],
-            requesters: ["repo-a", "repo-b"],
+            requesters: ["owner-self/repo-a", "owner-self/repo-b"],
             allow: {
               github: {
                 organization: {
@@ -711,7 +711,7 @@ it("parses comprehensive provider config", async () => {
             description:
               "Rules can have both allow and deny, but deny takes precedence",
             secrets: ["SECRET_A"],
-            requesters: ["repo-a"],
+            requesters: ["owner-self/repo-a"],
             allow: {
               github: {
                 organization: {
@@ -751,7 +751,7 @@ it("parses comprehensive provider config", async () => {
             description:
               "Explicit false values are equivalent to omitted values",
             secrets: ["SECRET_A"],
-            requesters: ["repo-a"],
+            requesters: ["owner-self/repo-a"],
             allow: {
               github: {
                 organization: {
