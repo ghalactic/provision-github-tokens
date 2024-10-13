@@ -30,7 +30,7 @@ function normalizeProviderConfig(
   definingOwner: string,
   config: ProviderConfig,
 ): ProviderConfig {
-  for (const rule of Object.values(config.permissions.rules.repositories)) {
+  for (const rule of config.permissions.rules.repositories) {
     rule.resources = rule.resources.map((resource) =>
       normalizePattern(definingOwner, resource),
     );
@@ -39,23 +39,24 @@ function normalizeProviderConfig(
     );
   }
 
-  for (const rule of Object.values(config.provision.rules.secrets)) {
+  for (const rule of config.provision.rules.secrets) {
     rule.requesters = rule.requesters.map((requester) =>
       normalizePattern(definingOwner, requester),
     );
 
-    rule.allow.github.repositories = Object.fromEntries(
-      Object.entries(rule.allow.github.repositories).map(([k, v]) => [
-        normalizePattern(definingOwner, k),
-        v,
-      ]),
-    );
-    rule.deny.github.repositories = Object.fromEntries(
-      Object.entries(rule.deny.github.repositories).map(([k, v]) => [
-        normalizePattern(definingOwner, k),
-        v,
-      ]),
-    );
+    const allowRepositories: typeof rule.allow.github.repositories = {};
+    for (const pattern in rule.allow.github.repositories) {
+      allowRepositories[normalizePattern(definingOwner, pattern)] =
+        rule.allow.github.repositories[pattern];
+    }
+    rule.allow.github.repositories = allowRepositories;
+
+    const denyRepositories: typeof rule.deny.github.repositories = {};
+    for (const pattern in rule.deny.github.repositories) {
+      denyRepositories[normalizePattern(definingOwner, pattern)] =
+        rule.deny.github.repositories[pattern];
+    }
+    rule.deny.github.repositories = denyRepositories;
   }
 
   return config;

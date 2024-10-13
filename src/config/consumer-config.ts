@@ -34,24 +34,28 @@ function normalizeConsumerConfig(
   definingRepo: string,
   config: PartialConsumerConfig,
 ): ConsumerConfig {
-  for (const token of Object.values(config.tokens)) {
+  for (const name in config.tokens) {
+    const token = config.tokens[name];
+
     token.as ??= undefined;
     token.owner ??= definingOwner;
   }
 
-  for (const secret of Object.values(config.provision.secrets)) {
+  for (const name in config.provision.secrets) {
+    const secret = config.provision.secrets[name];
+
     secret.token = normalizeTokenReference(
       definingOwner,
       definingRepo,
       secret.token,
     );
 
-    secret.github.repositories = Object.fromEntries(
-      Object.entries(secret.github.repositories).map(([k, v]) => [
-        normalizePattern(definingOwner, k),
-        v,
-      ]),
-    );
+    const repositories: typeof secret.github.repositories = {};
+    for (const pattern in secret.github.repositories) {
+      repositories[normalizePattern(definingOwner, pattern)] =
+        secret.github.repositories[pattern];
+    }
+    secret.github.repositories = repositories;
   }
 
   return config as ConsumerConfig;
