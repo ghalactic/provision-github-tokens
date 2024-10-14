@@ -29,3 +29,11 @@ export function normalizePattern(
 ): string {
   return pattern.includes("/") ? pattern : `${definingOwner}/${pattern}`;
 }
+
+export function anyPatternMatches(
+  patterns: Pattern[],
+  string: string,
+): boolean {
+  for (const pattern of patterns) if (pattern.test(string)) return true;
+  return false;
+}

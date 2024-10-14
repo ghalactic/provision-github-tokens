@@ -60,7 +60,7 @@ it("doesn't allow tokens for unauthorized consumer repositories", () => {
       repositories: ["repo-a"],
       permissions: { metadata: "read" },
     }),
-  ).toEqual([false, ""]);
+  ).toEqual([false, { type: "NO_MATCHING_REPOSITORY_RULE" }]);
   expect(
     authorizer.authorizeForRepository("owner-x", "repo-y", {
       role: undefined,
@@ -68,7 +68,7 @@ it("doesn't allow tokens for unauthorized consumer repositories", () => {
       repositories: ["repo-a"],
       permissions: { metadata: "read" },
     }),
-  ).toEqual([false, ""]);
+  ).toEqual([false, { type: "NO_MATCHING_REPOSITORY_RULE" }]);
   expect(
     authorizer.authorizeForRepository("owner-y", "repo-y", {
       role: undefined,
@@ -76,5 +76,5 @@ it("doesn't allow tokens for unauthorized consumer repositories", () => {
       repositories: ["repo-a"],
       permissions: { metadata: "read" },
     }),
-  ).toEqual([false, ""]);
+  ).toEqual([false, { type: "NO_MATCHING_REPOSITORY_RULE" }]);
 });
