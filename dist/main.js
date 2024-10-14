@@ -50943,10 +50943,7 @@ var provider_v1_schema_default = {
                 description: "A rule that defines which secrets can be provisioned, and what types of secrets can be provisioned, by requesting repositories.",
                 type: "object",
                 additionalProperties: false,
-                anyOf: [
-                  { required: ["secrets", "requesters", "allow"] },
-                  { required: ["secrets", "requesters", "deny"] }
-                ],
+                required: ["secrets", "requesters", "to"],
                 properties: {
                   description: {
                     description: "A description of the rule.",
@@ -50989,88 +50986,44 @@ var provider_v1_schema_default = {
                       ]
                     }
                   },
-                  allow: {
-                    description: "The types of secrets that are allowed to be provisioned by requesting repositories.",
+                  to: {
+                    description: "Which types of secrets to allow provisioning to by requesting repositories.",
                     type: "object",
                     additionalProperties: false,
                     default: {},
                     properties: {
                       github: {
-                        description: "The types of GitHub secrets that are allowed to be provisioned by requesting repositories.",
+                        description: "Which types of GitHub secrets to allow provisioning to by requesting repositories.",
                         type: "object",
                         additionalProperties: false,
                         default: {},
                         properties: {
                           organization: {
-                            description: "Types of secrets to allow provisioning to in the requesting repository's GitHub organization.",
-                            $ref: "#/definitions/provisionGithubOrganizationSecretTypesAllow",
+                            description: "Which types of secrets to allow provisioning to in the requesting repository's GitHub organization.",
+                            $ref: "#/definitions/provisionGithubOrganizationSecretTypes",
                             default: {}
                           },
                           organizations: {
-                            description: "Types of secrets to allow provisioning to in other GitHub organizations.",
+                            description: "Which types of secrets to allow provisioning to in other GitHub organizations.",
                             type: "object",
                             default: {},
                             additionalProperties: {
-                              description: "Types of secrets to allow provisioning to in the specified GitHub organization.",
-                              $ref: "#/definitions/provisionGithubOrganizationSecretTypesAllow"
+                              description: "Which types of secrets to allow provisioning to in the specified GitHub organization.",
+                              $ref: "#/definitions/provisionGithubOrganizationSecretTypes"
                             }
                           },
                           repository: {
-                            description: "Types of secrets to allow provisioning to in the requesting repository.",
-                            $ref: "#/definitions/provisionGithubRepositorySecretTypesAllow",
+                            description: "Which types of secrets to allow provisioning to in the requesting repository.",
+                            $ref: "#/definitions/provisionGithubRepositorySecretTypes",
                             default: {}
                           },
                           repositories: {
-                            description: "Types of secrets to allow provisioning to in other repositories.",
+                            description: "Which types of secrets to allow provisioning to in other repositories.",
                             type: "object",
                             default: {},
                             additionalProperties: {
-                              description: "Types of secrets to allow provisioning to in the specified repository.",
-                              $ref: "#/definitions/provisionGithubRepositorySecretTypesAllow"
-                            }
-                          }
-                        }
-                      }
-                    }
-                  },
-                  deny: {
-                    description: "The types of secrets that aren't allowed to be provisioned by requesting repositories.",
-                    type: "object",
-                    additionalProperties: false,
-                    default: {},
-                    properties: {
-                      github: {
-                        description: "The types of GitHub secrets that aren't allowed to be provisioned by requesting repositories.",
-                        type: "object",
-                        additionalProperties: false,
-                        default: {},
-                        properties: {
-                          organization: {
-                            description: "Types of secrets to deny provisioning to in the requesting repository's GitHub organization.",
-                            $ref: "#/definitions/provisionGithubOrganizationSecretTypesDeny",
-                            default: {}
-                          },
-                          organizations: {
-                            description: "Types of secrets to deny provisioning to in other GitHub organizations.",
-                            type: "object",
-                            default: {},
-                            additionalProperties: {
-                              description: "Types of secrets to deny provisioning to in the specified GitHub organization.",
-                              $ref: "#/definitions/provisionGithubOrganizationSecretTypesDeny"
-                            }
-                          },
-                          repository: {
-                            description: "Types of secrets to deny provisioning to in the requesting repository.",
-                            $ref: "#/definitions/provisionGithubRepositorySecretTypesDeny",
-                            default: {}
-                          },
-                          repositories: {
-                            description: "Types of secrets to deny provisioning to in other repositories.",
-                            type: "object",
-                            default: {},
-                            additionalProperties: {
-                              description: "Types of secrets to deny provisioning to in the specified repository.",
-                              $ref: "#/definitions/provisionGithubRepositorySecretTypesDeny"
+                              description: "Which types of secrets to allow provisioning to in the specified repository.",
+                              $ref: "#/definitions/provisionGithubRepositorySecretTypes"
                             }
                           }
                         }
@@ -51086,108 +51039,54 @@ var provider_v1_schema_default = {
     }
   },
   definitions: {
-    provisionGithubOrganizationSecretTypesAllow: {
+    provisionGithubOrganizationSecretTypes: {
       type: "object",
       additionalProperties: false,
       properties: {
         actions: {
           description: "Whether to allow provisioning to GitHub Actions secrets.",
-          type: "boolean",
-          default: false
+          type: "string",
+          enum: ["allow", "deny"]
         },
         codespaces: {
           description: "Whether to allow provisioning to GitHub Codespaces secrets.",
-          type: "boolean",
-          default: false
+          type: "string",
+          enum: ["allow", "deny"]
         },
         dependabot: {
           description: "Whether to allow provisioning to Dependabot secrets.",
-          type: "boolean",
-          default: false
+          type: "string",
+          enum: ["allow", "deny"]
         }
       }
     },
-    provisionGithubOrganizationSecretTypesDeny: {
-      type: "object",
-      additionalProperties: false,
-      properties: {
-        actions: {
-          description: "Whether to deny provisioning to GitHub Actions secrets.",
-          type: "boolean",
-          default: false
-        },
-        codespaces: {
-          description: "Whether to deny provisioning to GitHub Codespaces secrets.",
-          type: "boolean",
-          default: false
-        },
-        dependabot: {
-          description: "Whether to deny provisioning to Dependabot secrets.",
-          type: "boolean",
-          default: false
-        }
-      }
-    },
-    provisionGithubRepositorySecretTypesAllow: {
+    provisionGithubRepositorySecretTypes: {
       type: "object",
       additionalProperties: false,
       properties: {
         actions: {
           description: "Whether to allow provisioning to GitHub Actions secrets.",
-          type: "boolean",
-          default: false
+          type: "string",
+          enum: ["allow", "deny"]
         },
         codespaces: {
           description: "Whether to allow provisioning to GitHub Codespaces secrets.",
-          type: "boolean",
-          default: false
+          type: "string",
+          enum: ["allow", "deny"]
         },
         dependabot: {
           description: "Whether to allow provisioning to Dependabot secrets.",
-          type: "boolean",
-          default: false
+          type: "string",
+          enum: ["allow", "deny"]
         },
         environments: {
           description: "GitHub repository environments to allow provisioning to.",
-          type: "array",
-          uniqueItems: true,
-          default: [],
-          items: {
-            description: "The name of an environment to allow provisioning to.",
+          type: "object",
+          default: {},
+          additionalProperties: {
+            description: "Whether to allow provisioning to the specified GitHub repository environment.",
             type: "string",
-            minLength: 1
-          }
-        }
-      }
-    },
-    provisionGithubRepositorySecretTypesDeny: {
-      type: "object",
-      additionalProperties: false,
-      properties: {
-        actions: {
-          description: "Whether to deny provisioning to GitHub Actions secrets.",
-          type: "boolean",
-          default: false
-        },
-        codespaces: {
-          description: "Whether to deny provisioning to GitHub Codespaces secrets.",
-          type: "boolean",
-          default: false
-        },
-        dependabot: {
-          description: "Whether to deny provisioning to Dependabot secrets.",
-          type: "boolean",
-          default: false
-        },
-        environments: {
-          description: "GitHub repository environments to deny provisioning to.",
-          type: "array",
-          uniqueItems: true,
-          default: [],
-          items: {
-            description: "The name of an environment to deny provisioning to.",
-            type: "string",
-            minLength: 1
+            enum: ["allow", "deny"]
           }
         }
       }

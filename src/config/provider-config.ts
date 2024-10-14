@@ -44,19 +44,12 @@ function normalizeProviderConfig(
       normalizePattern(definingOwner, requester),
     );
 
-    const allowRepositories: typeof rule.allow.github.repositories = {};
-    for (const pattern in rule.allow.github.repositories) {
-      allowRepositories[normalizePattern(definingOwner, pattern)] =
-        rule.allow.github.repositories[pattern];
+    const repositories: typeof rule.to.github.repositories = {};
+    for (const pattern in rule.to.github.repositories) {
+      repositories[normalizePattern(definingOwner, pattern)] =
+        rule.to.github.repositories[pattern];
     }
-    rule.allow.github.repositories = allowRepositories;
-
-    const denyRepositories: typeof rule.deny.github.repositories = {};
-    for (const pattern in rule.deny.github.repositories) {
-      denyRepositories[normalizePattern(definingOwner, pattern)] =
-        rule.deny.github.repositories[pattern];
-    }
-    rule.deny.github.repositories = denyRepositories;
+    rule.to.github.repositories = repositories;
   }
 
   return config;

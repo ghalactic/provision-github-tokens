@@ -1,7 +1,3 @@
-import type {
-  GitHubOrganizationSecretTypes,
-  GitHubRepositorySecretTypes,
-} from "./github-secret-type.js";
 import type { TokenDeclaration } from "./token-declaration.js";
 
 export type PartialConsumerConfig = {
@@ -13,10 +9,16 @@ export type PartialConsumerConfig = {
       {
         token: string;
         github: {
-          organization: GitHubOrganizationSecretTypes;
-          organizations: Record<string, GitHubOrganizationSecretTypes>;
-          repository: GitHubRepositorySecretTypes;
-          repositories: Record<string, GitHubRepositorySecretTypes>;
+          organization: ConsumerConfigGitHubOrganizationSecretTypes;
+          organizations: Record<
+            string,
+            ConsumerConfigGitHubOrganizationSecretTypes
+          >;
+          repository: ConsumerConfigGitHubRepositorySecretTypes;
+          repositories: Record<
+            string,
+            ConsumerConfigGitHubRepositorySecretTypes
+          >;
         };
       }
     >;
@@ -29,4 +31,17 @@ export type ConsumerConfig = PartialConsumerConfig & {
     string,
     PartialConsumerConfig["tokens"][string] & { owner: string }
   >;
+};
+
+type ConsumerConfigGitHubOrganizationSecretTypes = {
+  actions: boolean;
+  codespaces: boolean;
+  dependabot: boolean;
+};
+
+type ConsumerConfigGitHubRepositorySecretTypes = {
+  actions: boolean;
+  codespaces: boolean;
+  dependabot: boolean;
+  environments: string[];
 };

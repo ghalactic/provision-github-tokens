@@ -1,8 +1,4 @@
 import type { InstallationPermissions } from "./github-api.js";
-import type {
-  GitHubOrganizationSecretTypes,
-  GitHubRepositorySecretTypes,
-} from "./github-secret-type.js";
 
 export type ProviderConfig = {
   $schema?: string;
@@ -22,20 +18,18 @@ export type ProviderConfig = {
         description?: string;
         secrets: string[];
         requesters: string[];
-        allow: {
+        to: {
           github: {
-            organization: GitHubOrganizationSecretTypes;
-            organizations: Record<string, GitHubOrganizationSecretTypes>;
-            repository: GitHubRepositorySecretTypes;
-            repositories: Record<string, GitHubRepositorySecretTypes>;
-          };
-        };
-        deny: {
-          github: {
-            organization: GitHubOrganizationSecretTypes;
-            organizations: Record<string, GitHubOrganizationSecretTypes>;
-            repository: GitHubRepositorySecretTypes;
-            repositories: Record<string, GitHubRepositorySecretTypes>;
+            organization: ProviderConfigGitHubOrganizationSecretTypes;
+            organizations: Record<
+              string,
+              ProviderConfigGitHubOrganizationSecretTypes
+            >;
+            repository: ProviderConfigGitHubRepositorySecretTypes;
+            repositories: Record<
+              string,
+              ProviderConfigGitHubRepositorySecretTypes
+            >;
           };
         };
       }[];
@@ -47,4 +41,17 @@ type RulePermissions = {
   [Property in keyof InstallationPermissions]:
     | InstallationPermissions[Property]
     | "none";
+};
+
+type ProviderConfigGitHubOrganizationSecretTypes = {
+  actions?: "allow" | "deny";
+  codespaces?: "allow" | "deny";
+  dependabot?: "allow" | "deny";
+};
+
+type ProviderConfigGitHubRepositorySecretTypes = {
+  actions?: "allow" | "deny";
+  codespaces?: "allow" | "deny";
+  dependabot?: "allow" | "deny";
+  environments: Record<string, "allow" | "deny">;
 };
