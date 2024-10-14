@@ -13,15 +13,21 @@ export type TokenAuthorizer = {
 export function createTokenAuthorizer(
   config: ProviderPermissionsConfig,
 ): TokenAuthorizer {
+  const repoResourcePatterns: Record<number, Pattern[]> = {};
   const repoConsumerPatterns: Record<number, Pattern[]> = {};
 
   for (let n = 1; n <= config.rules.repositories.length; ++n) {
+    const resourcePatterns: Pattern[] = [];
     const consumerPatterns: Pattern[] = [];
 
+    for (const resource of config.rules.repositories[n - 1].resources) {
+      resourcePatterns.push(createPattern(resource));
+    }
     for (const consumer of config.rules.repositories[n - 1].consumers) {
       consumerPatterns.push(createPattern(consumer));
     }
 
+    repoResourcePatterns[n] = resourcePatterns;
     repoConsumerPatterns[n] = consumerPatterns;
   }
 
@@ -30,7 +36,13 @@ export function createTokenAuthorizer(
       const consumer = `${consumerOwner}/${consumerRepo}`;
 
       for (let n = 1; n <= config.rules.repositories.length; ++n) {
-        if (anyPatternMatches(repoConsumerPatterns[n], consumer)) {
+        if (!anyPatternMatches(repoConsumerPatterns[n], consumer)) continue;
+
+        for (const repo of request.repositories) {
+          const resource = `${request.owner}/${repo}`;
+
+          if (!anyPatternMatches(repoResourcePatterns[n], resource)) continue;
+
           return [true, undefined];
         }
       }
