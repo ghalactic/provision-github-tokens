@@ -60,7 +60,14 @@ it("doesn't allow tokens for unauthorized consumer repositories", () => {
       repositories: ["repo-a"],
       permissions: { metadata: "read" },
     }),
-  ).toEqual([false, { type: "NO_MATCHING_REPOSITORY_RULE" }]);
+  ).toEqual([
+    false,
+    {
+      type: "NO_MATCHING_REPOSITORY_RULE",
+      resources: ["owner-a/repo-a"],
+      consumer: "owner-y/repo-x",
+    },
+  ]);
   expect(
     authorizer.authorizeForRepository("owner-x", "repo-y", {
       role: undefined,
@@ -68,7 +75,14 @@ it("doesn't allow tokens for unauthorized consumer repositories", () => {
       repositories: ["repo-a"],
       permissions: { metadata: "read" },
     }),
-  ).toEqual([false, { type: "NO_MATCHING_REPOSITORY_RULE" }]);
+  ).toEqual([
+    false,
+    {
+      type: "NO_MATCHING_REPOSITORY_RULE",
+      resources: ["owner-a/repo-a"],
+      consumer: "owner-x/repo-y",
+    },
+  ]);
   expect(
     authorizer.authorizeForRepository("owner-y", "repo-y", {
       role: undefined,
@@ -76,10 +90,17 @@ it("doesn't allow tokens for unauthorized consumer repositories", () => {
       repositories: ["repo-a"],
       permissions: { metadata: "read" },
     }),
-  ).toEqual([false, { type: "NO_MATCHING_REPOSITORY_RULE" }]);
+  ).toEqual([
+    false,
+    {
+      type: "NO_MATCHING_REPOSITORY_RULE",
+      resources: ["owner-a/repo-a"],
+      consumer: "owner-y/repo-y",
+    },
+  ]);
 });
 
-it("doesn't allow tokens for undefined resource repositories", () => {
+it("doesn't allow tokens for unauthorized resource repositories", () => {
   const authorizer = createTokenAuthorizer({
     rules: {
       repositories: [
@@ -99,7 +120,14 @@ it("doesn't allow tokens for undefined resource repositories", () => {
       repositories: ["repo-y"],
       permissions: { contents: "write" },
     }),
-  ).toEqual([false, { type: "NO_MATCHING_REPOSITORY_RULE" }]);
+  ).toEqual([
+    false,
+    {
+      type: "NO_MATCHING_REPOSITORY_RULE",
+      resources: ["owner-a/repo-y"],
+      consumer: "owner-x/repo-x",
+    },
+  ]);
   expect(
     authorizer.authorizeForRepository("owner-x", "repo-x", {
       role: undefined,
@@ -107,5 +135,42 @@ it("doesn't allow tokens for undefined resource repositories", () => {
       repositories: ["repo-a"],
       permissions: { contents: "write" },
     }),
-  ).toEqual([false, { type: "NO_MATCHING_REPOSITORY_RULE" }]);
+  ).toEqual([
+    false,
+    {
+      type: "NO_MATCHING_REPOSITORY_RULE",
+      resources: ["owner-y/repo-a"],
+      consumer: "owner-x/repo-x",
+    },
+  ]);
+});
+
+it("doesn't allow tokens for where only some of the resources are authorized", () => {
+  const authorizer = createTokenAuthorizer({
+    rules: {
+      repositories: [
+        {
+          resources: ["owner-a/repo-a", "owner-a/repo-b"],
+          consumers: ["owner-x/repo-x"],
+          permissions: { contents: "write", metadata: "read" },
+        },
+      ],
+    },
+  });
+
+  expect(
+    authorizer.authorizeForRepository("owner-x", "repo-x", {
+      role: undefined,
+      owner: "owner-a",
+      repositories: ["repo-a", "repo-b", "repo-y"],
+      permissions: { contents: "write" },
+    }),
+  ).toEqual([
+    false,
+    {
+      type: "NO_MATCHING_REPOSITORY_RULE",
+      resources: ["owner-a/repo-y"],
+      consumer: "owner-x/repo-x",
+    },
+  ]);
 });

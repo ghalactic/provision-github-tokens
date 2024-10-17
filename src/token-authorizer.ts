@@ -34,22 +34,51 @@ export function createTokenAuthorizer(
   return {
     authorizeForRepository(consumerOwner, consumerRepo, request) {
       const consumer = `${consumerOwner}/${consumerRepo}`;
+      const resourceOwner = request.owner;
+      const matchByResource: Record<string, boolean> = {};
 
-      for (let n = 1; n <= config.rules.repositories.length; ++n) {
-        if (!anyPatternMatches(repoConsumerPatterns[n], consumer)) continue;
+      for (const resourceRepo of request.repositories) {
+        matchByResource[`${resourceOwner}/${resourceRepo}`] = false;
+      }
 
-        for (const repo of request.repositories) {
-          const resource = `${request.owner}/${repo}`;
+      for (const n of rulesForConsumer(consumer)) {
+        for (const resourceRepo of request.repositories) {
+          const resource = `${resourceOwner}/${resourceRepo}`;
 
-          if (!anyPatternMatches(repoResourcePatterns[n], resource)) continue;
-
-          return [true, undefined];
+          if (anyPatternMatches(repoResourcePatterns[n], resource)) {
+            matchByResource[resource] = true;
+          }
         }
       }
 
-      return [false, { type: "NO_MATCHING_REPOSITORY_RULE" }];
+      const unmatchedResources: string[] = [];
+
+      for (const [resource, isMatched] of Object.entries(matchByResource)) {
+        if (!isMatched) unmatchedResources.push(resource);
+      }
+
+      if (unmatchedResources.length < 1) return [true, undefined];
+
+      return [
+        false,
+        {
+          type: "NO_MATCHING_REPOSITORY_RULE",
+          resources: unmatchedResources,
+          consumer,
+        },
+      ];
     },
   };
+
+  function rulesForConsumer(consumer: string): number[] {
+    const numbers: number[] = [];
+
+    for (let n = 1; n <= config.rules.repositories.length; ++n) {
+      if (anyPatternMatches(repoConsumerPatterns[n], consumer)) numbers.push(n);
+    }
+
+    return numbers;
+  }
 }
 
 export type TokenAuthorizationDenyReason = NoMatchingRepositoryRule;
