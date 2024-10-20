@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { normalizeRepoPattern } from "../../../src/repo-pattern.js";
+import { normalizeRepoPattern } from "../../../../src/repo-pattern.js";
 
 it("doesn't change repo patterns with an owner", () => {
   expect(normalizeRepoPattern("defining-owner", "owner/repo")).toBe(

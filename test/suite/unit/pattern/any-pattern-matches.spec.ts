@@ -1,6 +1,6 @@
 import { expect, it } from "vitest";
-import { anyPatternMatches } from "../../../src/pattern.js";
-import { createRepoPattern } from "../../../src/repo-pattern.js";
+import { anyPatternMatches } from "../../../../src/pattern.js";
+import { createRepoPattern } from "../../../../src/repo-pattern.js";
 
 it("returns false when no patterns are provided", () => {
   expect(anyPatternMatches([], "a")).toBe(false);

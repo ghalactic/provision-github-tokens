@@ -2,12 +2,12 @@ import { readFile } from "fs/promises";
 import { join } from "path";
 import { fileURLToPath } from "url";
 import { expect, it } from "vitest";
-import { parseConsumerConfig } from "../../../src/config/consumer-config.js";
-import consumerSchema from "../../../src/schema/consumer.v1.schema.json";
-import type { ConsumerConfig } from "../../../src/type/consumer-config.js";
+import { parseConsumerConfig } from "../../../../src/config/consumer-config.js";
+import consumerSchema from "../../../../src/schema/consumer.v1.schema.json";
+import type { ConsumerConfig } from "../../../../src/type/consumer-config.js";
 
 const fixturesPath = fileURLToPath(
-  new URL("../../fixture/consumer-config", import.meta.url),
+  new URL("../../../fixture/consumer-config", import.meta.url),
 );
 
 it("parses comprehensive consumer config", async () => {

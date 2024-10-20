@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { isSufficientPermissions } from "../../../src/permissions.js";
+import { isSufficientPermissions } from "../../../../src/permissions.js";
 
 it("throws for empty wanted permissions", () => {
   expect(() => isSufficientPermissions({ contents: "read" }, {})).toThrow(

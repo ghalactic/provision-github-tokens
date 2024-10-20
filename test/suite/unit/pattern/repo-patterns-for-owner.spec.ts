@@ -2,7 +2,7 @@ import { expect, it } from "vitest";
 import {
   createRepoPattern,
   repoPatternsForOwner,
-} from "../../../src/repo-pattern.js";
+} from "../../../../src/repo-pattern.js";
 
 it("filters repo patterns by owner", () => {
   const a = createRepoPattern("owner-a/repo-a");

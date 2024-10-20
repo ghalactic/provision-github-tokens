@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { createRepoPattern } from "../../../src/repo-pattern.js";
+import { createRepoPattern } from "../../../../src/repo-pattern.js";
 
 it("doesn't allow empty patterns", () => {
   expect(() => createRepoPattern("")).toThrow(

@@ -2,12 +2,12 @@ import { readFile } from "fs/promises";
 import { join } from "path";
 import { fileURLToPath } from "url";
 import { expect, it } from "vitest";
-import { parseProviderConfig } from "../../../src/config/provider-config.js";
-import providerSchema from "../../../src/schema/provider.v1.schema.json";
-import type { ProviderConfig } from "../../../src/type/provider-config.js";
+import { parseProviderConfig } from "../../../../src/config/provider-config.js";
+import providerSchema from "../../../../src/schema/provider.v1.schema.json";
+import type { ProviderConfig } from "../../../../src/type/provider-config.js";
 
 const fixturesPath = fileURLToPath(
-  new URL("../../fixture/provider-config", import.meta.url),
+  new URL("../../../fixture/provider-config", import.meta.url),
 );
 
 it("parses comprehensive provider config", async () => {

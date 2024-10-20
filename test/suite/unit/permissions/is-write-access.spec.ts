@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { isWriteAccess } from "../../../src/access-level.js";
+import { isWriteAccess } from "../../../../src/access-level.js";
 
 it("knows that admin is write access", () => {
   expect(isWriteAccess("admin")).toBe(true);

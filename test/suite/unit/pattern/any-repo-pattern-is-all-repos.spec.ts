@@ -2,7 +2,7 @@ import { expect, it } from "vitest";
 import {
   anyRepoPatternIsAllRepos,
   createRepoPattern,
-} from "../../../src/repo-pattern.js";
+} from "../../../../src/repo-pattern.js";
 
 it("returns true if any repo pattern matches all repos in any owner", () => {
   expect(

@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { createTokenAuthorizer } from "../../../src/token-authorizer.js";
+import { createTokenAuthorizer } from "../../../../src/token-authorizer.js";
 
 it("throws if the requested repositories are empty", () => {
   const authorizer = createTokenAuthorizer({ rules: { repositories: [] } });

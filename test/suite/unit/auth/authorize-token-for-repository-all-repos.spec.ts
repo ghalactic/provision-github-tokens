@@ -1,6 +1,6 @@
 import { expect, it } from "vitest";
-import { createTextRepoAuthExplainer } from "../../../src/token-auth-explainer/text.js";
-import { createTokenAuthorizer } from "../../../src/token-authorizer.js";
+import { createTextRepoAuthExplainer } from "../../../../src/token-auth-explainer/text.js";
+import { createTokenAuthorizer } from "../../../../src/token-authorizer.js";
 
 const explain = createTextRepoAuthExplainer();
 

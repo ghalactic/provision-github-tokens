@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { isSufficientAccess } from "../../../src/access-level.js";
+import { isSufficientAccess } from "../../../../src/access-level.js";
 
 it.each`
   have       | want

@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { createNamePattern } from "../../../src/name-pattern.js";
+import { createNamePattern } from "../../../../src/name-pattern.js";
 
 it("doesn't allow empty patterns", () => {
   expect(() => createNamePattern("")).toThrow("Pattern cannot be empty");
