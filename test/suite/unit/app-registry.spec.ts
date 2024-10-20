@@ -124,16 +124,16 @@ it("finds an installation for no repos with no permissions", () => {
 });
 
 it.each([
-  ["write", "read"],
-  ["admin", "read"],
-  ["admin", "write"],
+  ["read", "write"],
+  ["read", "admin"],
+  ["write", "admin"],
 ] as const)(
-  "finds an installation when it has higher access (got %s, want %s)",
-  (got, want) => {
+  "finds an installation when it has higher access (want %s, have %s)",
+  (want, have) => {
     const orgA = createTestInstallationAccount("Organization", 100, "org-a");
     const repoA = createTestInstallationRepo(orgA, "repo-a");
     const appA = createTestApp(110, "app-a", "App A", {
-      repository_projects: got,
+      repository_projects: have,
     });
     const appAInstallationA = createTestInstallation(
       111,
@@ -529,15 +529,15 @@ it("doesn't find an installation that doesn't have all permissions", () => {
 });
 
 it.each([
-  ["read", "write"],
-  ["read", "admin"],
-  ["write", "admin"],
+  ["write", "read"],
+  ["admin", "read"],
+  ["admin", "write"],
 ] as const)(
-  "doesn't find an installation when it has lower access (got %s, want %s)",
-  (got, want) => {
+  "doesn't find an installation when it has lower access (want %s, have %s)",
+  (want, have) => {
     const orgA = createTestInstallationAccount("Organization", 100, "org-a");
     const appA = createTestApp(110, "app-a", "App A", {
-      repository_projects: got,
+      repository_projects: have,
     });
     const appAInstallationA = createTestInstallation(
       111,
