@@ -11,7 +11,7 @@ export type InstallationRepo = NonNullable<
   Endpoints["GET /installation/repositories"]["response"]["data"]["repositories"][number]
 >;
 export type InstallationPermissions = Installation["permissions"] &
-  Record<string, "read" | "write" | "admin">;
+  Record<string, PermissionAccess>;
 
 export type Repository =
   Endpoints["GET /installation/repositories"]["response"]["data"]["repositories"][0];
