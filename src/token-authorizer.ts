@@ -10,6 +10,9 @@ import type {
 import type { TokenRequest } from "./type/token-request.js";
 
 export type TokenAuthorizer = {
+  /**
+   * Authorize a token request for a single consuming repository.
+   */
   authorizeForRepository: (
     consumerOwner: string,
     consumerRepo: string,
