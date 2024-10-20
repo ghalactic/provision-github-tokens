@@ -2,6 +2,7 @@ import escape from "regexp.escape";
 
 export type Pattern = {
   readonly isAll: boolean;
+  isAllForOwner: (owner: string) => boolean;
   test: (string: string) => boolean;
   toString: () => string;
 };
@@ -12,10 +13,28 @@ export function createPattern(pattern: string): Pattern {
   const literals = pattern.split("*");
   const expression = new RegExp(`^${literals.map(escape).join("[^/]*")}$`);
 
+  let isAll = true;
+  for (const l of literals) if (l) isAll = false;
+
+  const slashIndex = pattern.indexOf("/");
+  let ownerPattern: Pattern | undefined;
+  let repoPattern: Pattern | undefined;
+  if (slashIndex !== -1) {
+    const ownerPart = pattern.slice(0, slashIndex);
+    const repoPart = pattern.slice(slashIndex + 1);
+    if (ownerPart) ownerPattern = createPattern(ownerPart);
+    if (repoPart) repoPattern = createPattern(repoPart);
+  }
+
   return {
     get isAll() {
-      for (const l of literals) if (l) return false;
-      return true;
+      return isAll;
+    },
+
+    isAllForOwner: (owner) => {
+      return ownerPattern && repoPattern
+        ? repoPattern.isAll && ownerPattern.test(owner)
+        : false;
     },
 
     test: (string) => expression.test(string),

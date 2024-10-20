@@ -9,15 +9,58 @@ it("can be converted to a string", () => {
   expect(String(createPattern("a*b/c*d"))).toBe("a*b/c*d");
 });
 
-it("knows if it matches all strings", () => {
-  expect(createPattern("*").isAll).toBe(true);
-  expect(createPattern("**").isAll).toBe(true);
-  expect(createPattern("**********").isAll).toBe(true);
-  expect(createPattern("a").isAll).toBe(false);
-  expect(createPattern("a*").isAll).toBe(false);
-  expect(createPattern("*a").isAll).toBe(false);
-  expect(createPattern("*a*").isAll).toBe(false);
-});
+it.each([["*"], ["**"], ["**********"]])(
+  "knows that %s matches all repos",
+  (pattern) => {
+    expect(createPattern(pattern).isAll).toBe(true);
+  },
+);
+
+it.each([["a"], ["a*"], ["*a"], ["*a*"]])(
+  "knows that %s doesn't match all repos",
+  (pattern) => {
+    expect(createPattern(pattern).isAll).toBe(false);
+  },
+);
+
+it.each`
+  pattern                 | owner
+  ${"*/*"}                | ${"owner-a"}
+  ${"**/**"}              | ${"owner-a"}
+  ${"owner-*/*"}          | ${"owner-a"}
+  ${"owner-**/**"}        | ${"owner-a"}
+  ${"*-a/*"}              | ${"owner-a"}
+  ${"**-a/**"}            | ${"owner-a"}
+  ${"owner-a/*"}          | ${"owner-a"}
+  ${"owner-a/**"}         | ${"owner-a"}
+  ${"owner-a/**********"} | ${"owner-a"}
+`(
+  "knows that $pattern matches all repos with owner $owner",
+  ({ pattern, owner }) => {
+    expect(createPattern(pattern).isAllForOwner(owner)).toBe(true);
+  },
+);
+
+it.each`
+  pattern                 | owner
+  ${"/*"}                 | ${"owner-a"}
+  ${"/**"}                | ${"owner-a"}
+  ${"/**********"}        | ${"owner-a"}
+  ${"owner-b/*"}          | ${"owner-a"}
+  ${"owner-b/**"}         | ${"owner-a"}
+  ${"owner-b/**********"} | ${"owner-a"}
+  ${"owner-a"}            | ${"owner-a"}
+  ${"owner-a/"}           | ${"owner-a"}
+  ${"owner-a/a"}          | ${"owner-a"}
+  ${"owner-a/a*"}         | ${"owner-a"}
+  ${"owner-a/*a"}         | ${"owner-a"}
+  ${"owner-a/*a*"}        | ${"owner-a"}
+`(
+  "knows that $pattern doesn't match all strings with owner $owner",
+  ({ pattern, owner }) => {
+    expect(createPattern(pattern).isAllForOwner(owner)).toBe(false);
+  },
+);
 
 const patterns: [pattern: string, matches: string[], nonMatches: string[]][] = [
   ["name-a", ["name-a"], ["name-b"]],
