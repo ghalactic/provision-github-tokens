@@ -47039,12 +47039,20 @@ require_source_map_support().install();
 // src/main.ts
 var import_core4 = __toESM(require_core(), 1);
 
-// src/app-registry.ts
+// src/access-level.ts
 var ACCESS_RANK = {
   read: 1,
   write: 2,
   admin: 3
 };
+function isSufficientAccess(have, want) {
+  return ACCESS_RANK[have] >= ACCESS_RANK[want];
+}
+function isWriteAccess(access) {
+  return ACCESS_RANK[access] > ACCESS_RANK.read;
+}
+
+// src/app-registry.ts
 function createAppRegistry() {
   const apps = /* @__PURE__ */ new Map();
   const installations = /* @__PURE__ */ new Map();
@@ -47068,7 +47076,7 @@ function createAppRegistry() {
       const tokenPerms = Object.entries(request2.permissions);
       if (!tokenHasRole) {
         for (const [, access] of tokenPerms) {
-          if (ACCESS_RANK[access] > ACCESS_RANK.read) return void 0;
+          if (isWriteAccess(access)) return void 0;
         }
       }
       const tokenRepos = Array.isArray(
@@ -47103,7 +47111,7 @@ function createAppRegistry() {
         for (const [name, access] of tokenPerms) {
           const instAccess = installation.permissions[name];
           if (!instAccess) continue;
-          if (ACCESS_RANK[instAccess] >= ACCESS_RANK[access]) ++permMatchCount;
+          if (isSufficientAccess(instAccess, access)) ++permMatchCount;
         }
         if (permMatchCount !== tokenPerms.length) continue;
         if (installation.repository_selection === "all") {

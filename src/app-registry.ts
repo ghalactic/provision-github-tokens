@@ -1,3 +1,4 @@
+import { isSufficientAccess, isWriteAccess } from "./access-level.js";
 import type {
   App,
   Installation,
@@ -6,12 +7,6 @@ import type {
   Repository,
 } from "./type/github-api.js";
 import type { TokenRequest } from "./type/token-request.js";
-
-const ACCESS_RANK = {
-  read: 1,
-  write: 2,
-  admin: 3,
-} as const;
 
 export type AppRegistry = {
   registerApp: (roles: string[], app: App) => void;
@@ -57,7 +52,7 @@ export function createAppRegistry(): AppRegistry {
       // Require an explicit role for write/admin access
       if (!tokenHasRole) {
         for (const [, access] of tokenPerms) {
-          if (ACCESS_RANK[access] > ACCESS_RANK.read) return undefined;
+          if (isWriteAccess(access)) return undefined;
         }
       }
 
@@ -105,7 +100,7 @@ export function createAppRegistry(): AppRegistry {
         for (const [name, access] of tokenPerms) {
           const instAccess = installation.permissions[name];
           if (!instAccess) continue;
-          if (ACCESS_RANK[instAccess] >= ACCESS_RANK[access]) ++permMatchCount;
+          if (isSufficientAccess(instAccess, access)) ++permMatchCount;
         }
 
         if (permMatchCount !== tokenPerms.length) continue;
