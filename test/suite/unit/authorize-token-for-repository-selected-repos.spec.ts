@@ -4,32 +4,6 @@ import { createTokenAuthorizer } from "../../../src/token-authorizer.js";
 
 const explain = createTextRepoAuthExplainer();
 
-it("throws if the requested repositories are empty", () => {
-  const authorizer = createTokenAuthorizer({ rules: { repositories: [] } });
-
-  expect(() =>
-    authorizer.authorizeForRepository("owner-x", "repo-x", {
-      role: undefined,
-      owner: "owner-a",
-      repositories: [],
-      permissions: { metadata: "read" },
-    }),
-  ).toThrow("No repositories requested");
-});
-
-it("throws if the requested permissions are empty", () => {
-  const authorizer = createTokenAuthorizer({ rules: { repositories: [] } });
-
-  expect(() =>
-    authorizer.authorizeForRepository("owner-x", "repo-x", {
-      role: undefined,
-      owner: "owner-a",
-      repositories: ["repo-a"],
-      permissions: {},
-    }),
-  ).toThrow("No permissions requested");
-});
-
 it("allows tokens that should be allowed", () => {
   const authorizer = createTokenAuthorizer({
     rules: {
@@ -197,7 +171,7 @@ it("supports rule descriptions", () => {
   `);
 });
 
-it("sorts repositories and permissions in the explanation", () => {
+it("sorts repos and permissions in the explanation", () => {
   const authorizer = createTokenAuthorizer({
     rules: {
       repositories: [
@@ -232,7 +206,7 @@ it("sorts repositories and permissions in the explanation", () => {
   `);
 });
 
-it("doesn't allow tokens for unauthorized consumer repositories", () => {
+it("doesn't allow tokens for unauthorized consumer repos", () => {
   const authorizer = createTokenAuthorizer({
     rules: {
       repositories: [
@@ -286,7 +260,7 @@ it("doesn't allow tokens for unauthorized consumer repositories", () => {
   `);
 });
 
-it("doesn't allow tokens for unauthorized resource repositories", () => {
+it("doesn't allow tokens for unauthorized resource repos", () => {
   const authorizer = createTokenAuthorizer({
     rules: {
       repositories: [

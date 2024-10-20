@@ -1,7 +1,16 @@
-import { anyPatternMatches, type Pattern } from "./pattern.js";
+import { isSufficientAccess } from "./access-level.js";
+import { anyPatternMatches } from "./pattern.js";
 import { isSufficientPermissions } from "./permissions.js";
-import { createRepoPattern } from "./repo-pattern.js";
-import type { InstallationPermissions } from "./type/github-api.js";
+import {
+  anyRepoPatternIsAllRepos,
+  createRepoPattern,
+  repoPatternsForOwner,
+  type RepoPattern,
+} from "./repo-pattern.js";
+import type {
+  InstallationPermissions,
+  InstallationPermissionsWithNone,
+} from "./type/github-api.js";
 import type { ProviderPermissionsConfig } from "./type/provider-config.js";
 import type {
   RepositoryTokenAuthorizationResourceResult,
@@ -24,12 +33,12 @@ export type TokenAuthorizer = {
 export function createTokenAuthorizer(
   config: ProviderPermissionsConfig,
 ): TokenAuthorizer {
-  const repoResourcePatterns: Record<number, Pattern[]> = {};
-  const repoConsumerPatterns: Record<number, Pattern[]> = {};
+  const repoResourcePatterns: Record<number, RepoPattern[]> = {};
+  const repoConsumerPatterns: Record<number, RepoPattern[]> = {};
 
   for (let i = 0; i < config.rules.repositories.length; ++i) {
-    const resourcePatterns: Pattern[] = [];
-    const consumerPatterns: Pattern[] = [];
+    const resourcePatterns: RepoPattern[] = [];
+    const consumerPatterns: RepoPattern[] = [];
 
     for (const resource of config.rules.repositories[i].resources) {
       resourcePatterns.push(createRepoPattern(resource));
@@ -45,8 +54,9 @@ export function createTokenAuthorizer(
   return {
     authorizeForRepository(consumerOwner, consumerRepo, request) {
       const want = request.permissions;
+      const isAllRepos = request.repositories === "all";
 
-      if (request.repositories.length < 1) {
+      if (!isAllRepos && request.repositories.length < 1) {
         throw new Error("No repositories requested");
       }
       if (Object.keys(want).length < 1) {
@@ -56,11 +66,64 @@ export function createTokenAuthorizer(
       const consumer = `${consumerOwner}/${consumerRepo}`;
       const resourceOwner = request.owner;
       const rules = rulesForConsumer(consumer);
+      let isAllowed = true;
+
+      if (isAllRepos) {
+        const ruleResults: RepositoryTokenAuthorizationResourceResultRuleResult[] =
+          [];
+        const have: InstallationPermissions = {};
+
+        for (const i of rules) {
+          const rule = config.rules.repositories[i];
+          const patternsForOwner = repoPatternsForOwner(
+            resourceOwner,
+            repoResourcePatterns[i],
+          );
+          let isRelevant: boolean;
+
+          if (patternsForOwner.length > 0) {
+            if (anyRepoPatternIsAllRepos(patternsForOwner)) {
+              updatePermissions(have, rule.permissions);
+              isRelevant = true;
+            } else {
+              isRelevant = reducePermissions(have, rule.permissions);
+            }
+          } else {
+            isRelevant = false;
+          }
+
+          // Token is allowed if last rule is allowed
+          isAllowed = isSufficientPermissions(have, want);
+
+          if (!isRelevant) continue;
+
+          ruleResults.push({
+            index: i,
+            rule,
+            have: structuredClone(have),
+            isAllowed,
+          });
+        }
+
+        return {
+          consumer,
+          resourceOwner,
+          resources: {
+            "*": {
+              rules: ruleResults,
+              have,
+              isAllowed,
+            },
+          },
+          want,
+          isAllowed,
+        };
+      }
+
       const resourceResults: Record<
         string,
         RepositoryTokenAuthorizationResourceResult
       > = {};
-      let isAllowed = true;
 
       for (const resourceRepo of request.repositories) {
         const resource = `${resourceOwner}/${resourceRepo}`;
@@ -73,14 +136,7 @@ export function createTokenAuthorizer(
           if (!anyPatternMatches(repoResourcePatterns[i], resource)) continue;
 
           const rule = config.rules.repositories[i];
-
-          for (let [permission, access] of Object.entries(rule.permissions)) {
-            if (access === "none") {
-              delete have[permission];
-            } else {
-              have[permission] = access;
-            }
-          }
+          updatePermissions(have, rule.permissions);
 
           // Resource is allowed if last rule is allowed
           isResourceAllowed = isSufficientPermissions(have, want);
@@ -120,5 +176,44 @@ export function createTokenAuthorizer(
     }
 
     return indices;
+  }
+
+  function updatePermissions(
+    have: InstallationPermissions,
+    permissions: InstallationPermissionsWithNone,
+  ): void {
+    for (let [permission, access] of Object.entries(permissions)) {
+      if (access === "none") {
+        delete have[permission];
+      } else {
+        have[permission] = access;
+      }
+    }
+  }
+
+  function reducePermissions(
+    have: InstallationPermissions,
+    boundary: InstallationPermissionsWithNone,
+  ): boolean {
+    let wasReduced = false;
+
+    for (let permission of Object.keys(have)) {
+      // Boundary doesn't constrain access
+      if (!(permission in boundary)) continue;
+
+      const maxAccess = boundary[permission];
+
+      if (maxAccess === "none") {
+        // Boundary removes access
+        delete have[permission];
+        wasReduced = true;
+      } else if (!isSufficientAccess(maxAccess, have[permission])) {
+        // Boundary reduces access
+        have[permission] = maxAccess;
+        wasReduced = true;
+      }
+    }
+
+    return wasReduced;
   }
 }

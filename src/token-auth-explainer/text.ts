@@ -13,7 +13,7 @@ const DENIED_ICON = "❌";
 
 export function createTextRepoAuthExplainer(): RepositoryTokenAuthorizationResultExplainer<string> {
   return (result) => {
-    const { resources, want } = result;
+    const { resourceOwner, resources, want } = result;
     const resourceEntries = Object.entries(resources).sort(([a], [b]) =>
       a.localeCompare(b),
     );
@@ -21,7 +21,7 @@ export function createTextRepoAuthExplainer(): RepositoryTokenAuthorizationResul
     let explainedResources = "";
     for (const [resource, resourceResult] of resourceEntries) {
       explainedResources +=
-        "\n" + explainResource(resource, want, resourceResult);
+        "\n" + explainResource(resourceOwner, resource, want, resourceResult);
     }
 
     return explainSummary(result) + explainedResources;
@@ -40,11 +40,16 @@ export function createTextRepoAuthExplainer(): RepositoryTokenAuthorizationResul
   }
 
   function explainResource(
+    resourceOwner: string,
     resource: string,
     want: InstallationPermissions,
     resourceResult: RepositoryTokenAuthorizationResourceResult,
   ): string {
-    const summary = explainResourceSummary(resource, resourceResult);
+    const summary = explainResourceSummary(
+      resourceOwner,
+      resource,
+      resourceResult,
+    );
     const ruleCount = resourceResult.rules.length;
 
     if (ruleCount < 1) return summary;
@@ -58,10 +63,12 @@ export function createTextRepoAuthExplainer(): RepositoryTokenAuthorizationResul
   }
 
   function explainResourceSummary(
+    resourceOwner: string,
     resource: string,
     { rules, isAllowed }: RepositoryTokenAuthorizationResourceResult,
   ): string {
     const icon = isAllowed ? ALLOWED_ICON : DENIED_ICON;
+    const renderedResource = renderResource(resourceOwner, resource);
     const ruleCount = rules.length;
     const ruleOrRules = ruleCount === 1 ? "rule" : "rules";
     const basedOn =
@@ -71,7 +78,7 @@ export function createTextRepoAuthExplainer(): RepositoryTokenAuthorizationResul
 
     return (
       `  ${icon} ${isAllowed ? "Sufficient" : "Insufficient"} ` +
-      `access to repo ${resource} ${basedOn}`
+      `access to ${renderedResource} ${basedOn}`
     );
   }
 
@@ -91,6 +98,12 @@ export function createTextRepoAuthExplainer(): RepositoryTokenAuthorizationResul
       `gave ${isAllowed ? "sufficient" : "insufficient"} access:` +
       renderPermissionComparison("      ", have, want)
     );
+  }
+
+  function renderResource(resourceOwner: string, resource: string): string {
+    return resource === "*"
+      ? `all repos in ${resourceOwner}`
+      : `repo ${resource}`;
   }
 
   function renderRule(
