@@ -1,5 +1,6 @@
-import { anyPatternMatches, createPattern, type Pattern } from "./pattern.js";
+import { anyPatternMatches, type Pattern } from "./pattern.js";
 import { isSufficientPermissions } from "./permissions.js";
+import { createRepoPattern } from "./repo-pattern.js";
 import type { InstallationPermissions } from "./type/github-api.js";
 import type { ProviderPermissionsConfig } from "./type/provider-config.js";
 import type {
@@ -31,10 +32,10 @@ export function createTokenAuthorizer(
     const consumerPatterns: Pattern[] = [];
 
     for (const resource of config.rules.repositories[i].resources) {
-      resourcePatterns.push(createPattern(resource));
+      resourcePatterns.push(createRepoPattern(resource));
     }
     for (const consumer of config.rules.repositories[i].consumers) {
-      consumerPatterns.push(createPattern(consumer));
+      consumerPatterns.push(createRepoPattern(consumer));
     }
 
     repoResourcePatterns[i] = resourcePatterns;

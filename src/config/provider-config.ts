@@ -1,6 +1,6 @@
 import { load } from "js-yaml";
 import { errorMessage } from "../error.js";
-import { normalizePattern } from "../pattern.js";
+import { normalizeRepoPattern } from "../repo-pattern.js";
 import type { ProviderConfig } from "../type/provider-config.js";
 import { validateProvider } from "./validation.js";
 
@@ -32,21 +32,21 @@ function normalizeProviderConfig(
 ): ProviderConfig {
   for (const rule of config.permissions.rules.repositories) {
     rule.resources = rule.resources.map((resource) =>
-      normalizePattern(definingOwner, resource),
+      normalizeRepoPattern(definingOwner, resource),
     );
     rule.consumers = rule.consumers.map((consumer) =>
-      normalizePattern(definingOwner, consumer),
+      normalizeRepoPattern(definingOwner, consumer),
     );
   }
 
   for (const rule of config.provision.rules.secrets) {
     rule.requesters = rule.requesters.map((requester) =>
-      normalizePattern(definingOwner, requester),
+      normalizeRepoPattern(definingOwner, requester),
     );
 
     const repositories: typeof rule.to.github.repositories = {};
     for (const pattern in rule.to.github.repositories) {
-      repositories[normalizePattern(definingOwner, pattern)] =
+      repositories[normalizeRepoPattern(definingOwner, pattern)] =
         rule.to.github.repositories[pattern];
     }
     rule.to.github.repositories = repositories;

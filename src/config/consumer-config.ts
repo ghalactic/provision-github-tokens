@@ -1,6 +1,6 @@
 import { load } from "js-yaml";
 import { errorMessage } from "../error.js";
-import { normalizePattern } from "../pattern.js";
+import { normalizeRepoPattern } from "../repo-pattern.js";
 import type {
   ConsumerConfig,
   PartialConsumerConfig,
@@ -52,7 +52,7 @@ function normalizeConsumerConfig(
 
     const repositories: typeof secret.github.repositories = {};
     for (const pattern in secret.github.repositories) {
-      repositories[normalizePattern(definingOwner, pattern)] =
+      repositories[normalizeRepoPattern(definingOwner, pattern)] =
         secret.github.repositories[pattern];
     }
     secret.github.repositories = repositories;
