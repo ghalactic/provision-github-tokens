@@ -24,12 +24,12 @@
           "additionalProperties": false,
           "default": {},
           "properties": {
-            "repositories": {
-              "description": "Rules that define the permissions that consumers can receive for repositories.",
+            "repos": {
+              "description": "Rules that define the permissions that consumers can receive for repos.",
               "type": "array",
               "default": [],
               "items": {
-                "description": "A rule that defines the permissions that consumers can receive for repositories.",
+                "description": "A rule that defines the permissions that consumers can receive for repos.",
                 "type": "object",
                 "additionalProperties": false,
                 "required": ["resources", "consumers"],
@@ -39,11 +39,11 @@
                     "type": "string"
                   },
                   "resources": {
-                    "description": "A list of patterns to match against resource repositories when applying the rule.",
+                    "description": "A list of patterns to match against resource repos when applying the rule.",
                     "type": "array",
                     "minItems": 1,
                     "items": {
-                      "description": "A pattern which matches a resource repository owner and name. If a pattern with no owner part is specified, the pattern will match repositories with the same owner as the repository where the provider configuration file is defined.",
+                      "description": "A pattern which matches a resource repo owner and name. If a pattern with no owner part is specified, the pattern will match repos with the same owner as the repo where the provider configuration file is defined.",
                       "type": "string",
                       "minLength": 1,
                       "examples": [
@@ -58,11 +58,11 @@
                     }
                   },
                   "consumers": {
-                    "description": "A list of patterns to match against consumer repositories when applying the rule.",
+                    "description": "A list of patterns to match against consumer repos when applying the rule.",
                     "type": "array",
                     "minItems": 1,
                     "items": {
-                      "description": "A pattern which matches a consumer repository owner and name. If a pattern with no owner part is specified, the pattern will match repositories with the same owner as the repository where the provider configuration file is defined.",
+                      "description": "A pattern which matches a consumer repo owner and name. If a pattern with no owner part is specified, the pattern will match repos with the same owner as the repo where the provider configuration file is defined.",
                       "type": "string",
                       "minLength": 1,
                       "examples": [
@@ -90,23 +90,23 @@
       }
     },
     "provision": {
-      "description": "Settings that control where tokens can be provisioned by requesting repositories.",
+      "description": "Settings that control where tokens can be provisioned by requesting repos.",
       "type": "object",
       "additionalProperties": false,
       "default": {},
       "properties": {
         "rules": {
-          "description": "Rules that define where tokens can be provisioned by requesting repositories.",
+          "description": "Rules that define where tokens can be provisioned by requesting repos.",
           "type": "object",
           "additionalProperties": false,
           "default": {},
           "properties": {
             "secrets": {
-              "description": "Rules that define which secrets can be provisioned, and what types of secrets can be provisioned, by requesting repositories.",
+              "description": "Rules that define which secrets can be provisioned, and what types of secrets can be provisioned, by requesting repos.",
               "type": "array",
               "default": [],
               "items": {
-                "description": "A rule that defines which secrets can be provisioned, and what types of secrets can be provisioned, by requesting repositories.",
+                "description": "A rule that defines which secrets can be provisioned, and what types of secrets can be provisioned, by requesting repos.",
                 "type": "object",
                 "additionalProperties": false,
                 "required": ["secrets", "requesters", "to"],
@@ -132,11 +132,11 @@
                     }
                   },
                   "requesters": {
-                    "description": "A list of patterns to match against requesting repositories when applying the rule.",
+                    "description": "A list of patterns to match against requesting repos when applying the rule.",
                     "type": "array",
                     "minItems": 1,
                     "items": {
-                      "description": "A pattern which matches a requesting repository owner and name. If a pattern with no owner part is specified, the pattern will match repositories with the same owner as the repository where the provider configuration file is defined.",
+                      "description": "A pattern which matches a requesting repo owner and name. If a pattern with no owner part is specified, the pattern will match repos with the same owner as the repo where the provider configuration file is defined.",
                       "type": "string",
                       "minLength": 1,
                       "examples": [
@@ -153,43 +153,43 @@
                     }
                   },
                   "to": {
-                    "description": "Which types of secrets to allow provisioning to by requesting repositories.",
+                    "description": "Which types of secrets to allow provisioning to by requesting repos.",
                     "type": "object",
                     "additionalProperties": false,
                     "default": {},
                     "properties": {
                       "github": {
-                        "description": "Which types of GitHub secrets to allow provisioning to by requesting repositories.",
+                        "description": "Which types of GitHub secrets to allow provisioning to by requesting repos.",
                         "type": "object",
                         "additionalProperties": false,
                         "default": {},
                         "properties": {
-                          "organization": {
-                            "description": "Which types of secrets to allow provisioning to in the requesting repository's GitHub organization.",
-                            "$ref": "#/definitions/provisionGithubOrganizationSecretTypes",
+                          "org": {
+                            "description": "Which types of secrets to allow provisioning to in the requesting repo's GitHub org.",
+                            "$ref": "#/definitions/provisionGithubOrgSecretTypes",
                             "default": {}
                           },
-                          "organizations": {
-                            "description": "Which types of secrets to allow provisioning to in other GitHub organizations.",
+                          "orgs": {
+                            "description": "Which types of secrets to allow provisioning to in other GitHub orgs.",
                             "type": "object",
                             "default": {},
                             "additionalProperties": {
-                              "description": "Which types of secrets to allow provisioning to in the specified GitHub organization.",
-                              "$ref": "#/definitions/provisionGithubOrganizationSecretTypes"
+                              "description": "Which types of secrets to allow provisioning to in the specified GitHub org.",
+                              "$ref": "#/definitions/provisionGithubOrgSecretTypes"
                             }
                           },
-                          "repository": {
-                            "description": "Which types of secrets to allow provisioning to in the requesting repository.",
-                            "$ref": "#/definitions/provisionGithubRepositorySecretTypes",
+                          "repo": {
+                            "description": "Which types of secrets to allow provisioning to in the requesting repo.",
+                            "$ref": "#/definitions/provisionGithubRepoSecretTypes",
                             "default": {}
                           },
-                          "repositories": {
-                            "description": "Which types of secrets to allow provisioning to in other repositories.",
+                          "repos": {
+                            "description": "Which types of secrets to allow provisioning to in other repos.",
                             "type": "object",
                             "default": {},
                             "additionalProperties": {
-                              "description": "Which types of secrets to allow provisioning to in the specified repository.",
-                              "$ref": "#/definitions/provisionGithubRepositorySecretTypes"
+                              "description": "Which types of secrets to allow provisioning to in the specified repo.",
+                              "$ref": "#/definitions/provisionGithubRepoSecretTypes"
                             }
                           }
                         }
@@ -205,7 +205,7 @@
     }
   },
   "definitions": {
-    "provisionGithubOrganizationSecretTypes": {
+    "provisionGithubOrgSecretTypes": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -226,7 +226,7 @@
         }
       }
     },
-    "provisionGithubRepositorySecretTypes": {
+    "provisionGithubRepoSecretTypes": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -246,11 +246,11 @@
           "enum": ["allow", "deny"]
         },
         "environments": {
-          "description": "GitHub repository environments to allow provisioning to.",
+          "description": "GitHub repo environments to allow provisioning to.",
           "type": "object",
           "default": {},
           "additionalProperties": {
-            "description": "Whether to allow provisioning to the specified GitHub repository environment.",
+            "description": "Whether to allow provisioning to the specified GitHub repo environment.",
             "type": "string",
             "enum": ["allow", "deny"]
           }
