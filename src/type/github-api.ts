@@ -12,6 +12,9 @@ export type InstallationRepo = NonNullable<
 >;
 export type InstallationPermissions = Installation["permissions"] &
   Record<string, PermissionAccess>;
+export type InstallationPermissionsWithNone = {
+  [K in keyof InstallationPermissions]: "none" | InstallationPermissions[K];
+};
 
 export type Repository =
   Endpoints["GET /installation/repositories"]["response"]["data"]["repositories"][0];
@@ -21,3 +24,4 @@ export type Permissions = NonNullable<
 >;
 export type PermissionName = keyof Permissions;
 export type PermissionAccess = Required<Permissions>[PermissionName];
+export type PermissionAccessWithNone = "none" | PermissionAccess;
