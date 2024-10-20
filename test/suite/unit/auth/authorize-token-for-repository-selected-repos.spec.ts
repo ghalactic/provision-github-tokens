@@ -70,6 +70,51 @@ it("allows tokens that should be allowed", () => {
   `);
 });
 
+it("allows tokens when allowed by a wildcard rule", () => {
+  const authorizer = createTokenAuthorizer({
+    rules: {
+      repos: [
+        {
+          resources: ["owner-a/repo-*", "owner-*/repo-b"],
+          consumers: ["owner-x/repo-x"],
+          permissions: { metadata: "read" },
+        },
+      ],
+    },
+  });
+
+  expect(
+    explain(
+      authorizer.authorizeForRepo("owner-x", "repo-x", {
+        role: undefined,
+        owner: "owner-a",
+        repos: ["repo-a"],
+        permissions: { metadata: "read" },
+      }),
+    ),
+  ).toMatchInlineSnapshot(`
+    "✅ Repo owner-x/repo-x was allowed access to a token:
+      ✅ Sufficient access to repo owner-a/repo-a based on 1 rule:
+        ✅ Rule #1 gave sufficient access:
+          ✅ metadata: have read, wanted read"
+  `);
+  expect(
+    explain(
+      authorizer.authorizeForRepo("owner-x", "repo-x", {
+        role: undefined,
+        owner: "owner-b",
+        repos: ["repo-b"],
+        permissions: { metadata: "read" },
+      }),
+    ),
+  ).toMatchInlineSnapshot(`
+    "✅ Repo owner-x/repo-x was allowed access to a token:
+      ✅ Sufficient access to repo owner-b/repo-b based on 1 rule:
+        ✅ Rule #1 gave sufficient access:
+          ✅ metadata: have read, wanted read"
+  `);
+});
+
 it("allows tokens when the actual access level is higher than requested", () => {
   const authorizer = createTokenAuthorizer({
     rules: {
@@ -393,6 +438,60 @@ it("doesn't allow tokens where only some of the permissions are authorized", () 
         ❌ Rule #1 gave insufficient access:
           ❌ contents: have none, wanted read
           ✅ metadata: have read, wanted read"
+  `);
+});
+
+it("doesn't allow tokens that are denied by a wildcard rule", () => {
+  const authorizer = createTokenAuthorizer({
+    rules: {
+      repos: [
+        {
+          resources: ["owner-a/repo-a", "owner-b/repo-b"],
+          consumers: ["owner-x/repo-x"],
+          permissions: { metadata: "read" },
+        },
+        {
+          resources: ["owner-a/repo-*", "owner-*/repo-b"],
+          consumers: ["owner-x/repo-x"],
+          permissions: { metadata: "none" },
+        },
+      ],
+    },
+  });
+
+  expect(
+    explain(
+      authorizer.authorizeForRepo("owner-x", "repo-x", {
+        role: undefined,
+        owner: "owner-a",
+        repos: ["repo-a"],
+        permissions: { metadata: "read" },
+      }),
+    ),
+  ).toMatchInlineSnapshot(`
+    "❌ Repo owner-x/repo-x was denied access to a token:
+      ❌ Insufficient access to repo owner-a/repo-a based on 2 rules:
+        ✅ Rule #1 gave sufficient access:
+          ✅ metadata: have read, wanted read
+        ❌ Rule #2 gave insufficient access:
+          ❌ metadata: have none, wanted read"
+  `);
+  expect(
+    explain(
+      authorizer.authorizeForRepo("owner-x", "repo-x", {
+        role: undefined,
+        owner: "owner-b",
+        repos: ["repo-b"],
+        permissions: { metadata: "read" },
+      }),
+    ),
+  ).toMatchInlineSnapshot(`
+    "❌ Repo owner-x/repo-x was denied access to a token:
+      ❌ Insufficient access to repo owner-b/repo-b based on 2 rules:
+        ✅ Rule #1 gave sufficient access:
+          ✅ metadata: have read, wanted read
+        ❌ Rule #2 gave insufficient access:
+          ❌ metadata: have none, wanted read"
   `);
 });
 
