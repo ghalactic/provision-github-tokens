@@ -1,27 +1,27 @@
 import { expect, it } from "vitest";
 import { createTokenAuthorizer } from "../../../../src/token-authorizer.js";
 
-it("throws if the requested repositories are empty", () => {
-  const authorizer = createTokenAuthorizer({ rules: { repositories: [] } });
+it("throws if the requested repos are empty", () => {
+  const authorizer = createTokenAuthorizer({ rules: { repos: [] } });
 
   expect(() =>
-    authorizer.authorizeForRepository("owner-x", "repo-x", {
+    authorizer.authorizeForRepo("owner-x", "repo-x", {
       role: undefined,
       owner: "owner-a",
-      repositories: [],
+      repos: [],
       permissions: { metadata: "read" },
     }),
-  ).toThrow("No repositories requested");
+  ).toThrow("No repos requested");
 });
 
 it("throws if the requested permissions are empty", () => {
-  const authorizer = createTokenAuthorizer({ rules: { repositories: [] } });
+  const authorizer = createTokenAuthorizer({ rules: { repos: [] } });
 
   expect(() =>
-    authorizer.authorizeForRepository("owner-x", "repo-x", {
+    authorizer.authorizeForRepo("owner-x", "repo-x", {
       role: undefined,
       owner: "owner-a",
-      repositories: ["repo-a"],
+      repos: ["repo-a"],
       permissions: {},
     }),
   ).toThrow("No permissions requested");

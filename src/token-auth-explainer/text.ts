@@ -1,17 +1,17 @@
 import { isSufficientAccess } from "../access-level.js";
 import type { InstallationPermissions } from "../type/github-api.js";
-import type { RepositoryPermissionRule } from "../type/permission-rule.js";
+import type { RepoPermissionRule } from "../type/permission-rule.js";
 import type {
-  RepositoryTokenAuthorizationResourceResult,
-  RepositoryTokenAuthorizationResourceResultRuleResult,
-  RepositoryTokenAuthorizationResult,
-  RepositoryTokenAuthorizationResultExplainer,
+  RepoTokenAuthorizationResourceResult,
+  RepoTokenAuthorizationResourceResultRuleResult,
+  RepoTokenAuthorizationResult,
+  RepoTokenAuthorizationResultExplainer,
 } from "../type/token-auth-result.js";
 
 const ALLOWED_ICON = "✅";
 const DENIED_ICON = "❌";
 
-export function createTextRepoAuthExplainer(): RepositoryTokenAuthorizationResultExplainer<string> {
+export function createTextRepoAuthExplainer(): RepoTokenAuthorizationResultExplainer<string> {
   return (result) => {
     const { resourceOwner, resources, want } = result;
     const resourceEntries = Object.entries(resources).sort(([a], [b]) =>
@@ -30,7 +30,7 @@ export function createTextRepoAuthExplainer(): RepositoryTokenAuthorizationResul
   function explainSummary({
     consumer,
     isAllowed,
-  }: RepositoryTokenAuthorizationResult): string {
+  }: RepoTokenAuthorizationResult): string {
     const icon = isAllowed ? ALLOWED_ICON : DENIED_ICON;
 
     return (
@@ -43,7 +43,7 @@ export function createTextRepoAuthExplainer(): RepositoryTokenAuthorizationResul
     resourceOwner: string,
     resource: string,
     want: InstallationPermissions,
-    resourceResult: RepositoryTokenAuthorizationResourceResult,
+    resourceResult: RepoTokenAuthorizationResourceResult,
   ): string {
     const summary = explainResourceSummary(
       resourceOwner,
@@ -65,7 +65,7 @@ export function createTextRepoAuthExplainer(): RepositoryTokenAuthorizationResul
   function explainResourceSummary(
     resourceOwner: string,
     resource: string,
-    { rules, isAllowed }: RepositoryTokenAuthorizationResourceResult,
+    { rules, isAllowed }: RepoTokenAuthorizationResourceResult,
   ): string {
     const icon = isAllowed ? ALLOWED_ICON : DENIED_ICON;
     const renderedResource = renderResource(resourceOwner, resource);
@@ -89,7 +89,7 @@ export function createTextRepoAuthExplainer(): RepositoryTokenAuthorizationResul
       rule,
       have,
       isAllowed,
-    }: RepositoryTokenAuthorizationResourceResultRuleResult,
+    }: RepoTokenAuthorizationResourceResultRuleResult,
   ): string {
     const icon = isAllowed ? ALLOWED_ICON : DENIED_ICON;
 
@@ -108,7 +108,7 @@ export function createTextRepoAuthExplainer(): RepositoryTokenAuthorizationResul
 
   function renderRule(
     index: number,
-    { description }: RepositoryPermissionRule,
+    { description }: RepoPermissionRule,
   ): string {
     const n = `#${index + 1}`;
 

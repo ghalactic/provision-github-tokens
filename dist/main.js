@@ -47064,12 +47064,12 @@ function createAppRegistry() {
     registerInstallation: (installation) => {
       installations.set(installation.id, installation);
     },
-    registerInstallationRepositories: (installationId, repositories) => {
+    registerInstallationRepos: (installationId, repos) => {
       const installation = installations.get(installationId);
       if (!installation) {
         throw new Error(`Installation ${installationId} not registered`);
       }
-      installationRepos.set(installation, repositories);
+      installationRepos.set(installation, repos);
     },
     findInstallationForToken: (request2) => {
       const tokenHasRole = typeof request2.role === "string";
@@ -47079,16 +47079,14 @@ function createAppRegistry() {
           if (isWriteAccess(access)) return void 0;
         }
       }
-      const tokenRepos = Array.isArray(
-        request2.repositories
-      ) ? request2.repositories.reduce(
-        (repositories, name) => {
-          repositories[name] = true;
-          return repositories;
+      const tokenRepos = Array.isArray(request2.repos) ? request2.repos.reduce(
+        (repos, name) => {
+          repos[name] = true;
+          return repos;
         },
         {}
       ) : {};
-      for (const [installation, repositories] of installationRepos) {
+      for (const [installation, repos] of installationRepos) {
         const appWithRoles = apps.get(installation.app_id);
         if (!appWithRoles) {
           throw new Error(
@@ -47120,12 +47118,12 @@ function createAppRegistry() {
           }
           continue;
         }
-        for (const repository of repositories) {
-          if (repository.owner.login === request2.owner && tokenRepos[repository.name]) {
+        for (const repo of repos) {
+          if (repo.owner.login === request2.owner && tokenRepos[repo.name]) {
             ++repoMatchCount;
           }
         }
-        if (repoMatchCount !== request2.repositories.length) continue;
+        if (repoMatchCount !== request2.repos.length) continue;
         return installation.id;
       }
       return void 0;
@@ -49798,10 +49796,10 @@ var consumer_v1_schema_default = {
         description: "A GitHub token declaration.",
         type: "object",
         additionalProperties: false,
-        required: ["repositories", "permissions"],
+        required: ["repos", "permissions"],
         properties: {
           shared: {
-            description: "Whether the token should be available for other repositories to request.",
+            description: "Whether the token should be available for other repos to request.",
             type: "boolean",
             default: false
           },
@@ -49812,16 +49810,16 @@ var consumer_v1_schema_default = {
             examples: ["pr-bot", "onboarding"]
           },
           owner: {
-            description: "The GitHub user or organization that the specified repositories belong to. Defaults to the same owner as the repository where the consumer configuration file is defined.",
+            description: "The GitHub user or org that the specified repos belong to. Defaults to the same owner as the repo where the consumer configuration file is defined.",
             type: "string",
             minLength: 1,
             examples: ["octocat"]
           },
-          repositories: {
-            description: "A list of repository name patterns to match against.",
+          repos: {
+            description: "A list of repo name patterns to match against.",
             type: "array",
             items: {
-              description: "A pattern which matches a repository name without the owner prefix.",
+              description: "A pattern which matches a repo name without the owner prefix.",
               type: "string",
               minLength: 1,
               examples: [
@@ -49881,32 +49879,32 @@ var consumer_v1_schema_default = {
                 additionalProperties: false,
                 default: {},
                 properties: {
-                  organization: {
-                    description: "How to provision the secret to the declaring repository's GitHub organization.",
-                    $ref: "#/definitions/provisionGithubOrganizationSecretTypes",
+                  org: {
+                    description: "How to provision the secret to the declaring repo's GitHub org.",
+                    $ref: "#/definitions/provisionGithubOrgSecretTypes",
                     default: {}
                   },
-                  organizations: {
-                    description: "How to provision the secret to other GitHub organizations.",
+                  orgs: {
+                    description: "How to provision the secret to other GitHub orgs.",
                     type: "object",
                     default: {},
                     additionalProperties: {
-                      description: "How to provision the secret to the specified GitHub organization.",
-                      $ref: "#/definitions/provisionGithubOrganizationSecretTypes"
+                      description: "How to provision the secret to the specified GitHub org.",
+                      $ref: "#/definitions/provisionGithubOrgSecretTypes"
                     }
                   },
-                  repository: {
-                    description: "How to provision the secret to the declaring repository.",
-                    $ref: "#/definitions/provisionGithubRepositorySecretTypes",
+                  repo: {
+                    description: "How to provision the secret to the declaring repo.",
+                    $ref: "#/definitions/provisionGithubRepoSecretTypes",
                     default: {}
                   },
-                  repositories: {
-                    description: "How to provision the secret to other GitHub repositories.",
+                  repos: {
+                    description: "How to provision the secret to other GitHub repos.",
                     type: "object",
                     default: {},
                     additionalProperties: {
-                      description: "How to provision the secret to the specified GitHub repository.",
-                      $ref: "#/definitions/provisionGithubRepositorySecretTypes"
+                      description: "How to provision the secret to the specified GitHub repo.",
+                      $ref: "#/definitions/provisionGithubRepoSecretTypes"
                     }
                   }
                 }
@@ -49918,7 +49916,7 @@ var consumer_v1_schema_default = {
     }
   },
   definitions: {
-    provisionGithubOrganizationSecretTypes: {
+    provisionGithubOrgSecretTypes: {
       type: "object",
       additionalProperties: false,
       properties: {
@@ -49939,7 +49937,7 @@ var consumer_v1_schema_default = {
         }
       }
     },
-    provisionGithubRepositorySecretTypes: {
+    provisionGithubRepoSecretTypes: {
       type: "object",
       additionalProperties: false,
       properties: {
@@ -49959,7 +49957,7 @@ var consumer_v1_schema_default = {
           default: false
         },
         environments: {
-          description: "GitHub repository environments to provision to.",
+          description: "GitHub repo environments to provision to.",
           type: "array",
           uniqueItems: true,
           default: [],
@@ -49978,7 +49976,7 @@ var consumer_v1_schema_default = {
 var generated_consumer_token_permissions_v1_schema_default = {
   $id: "https://ghalactic.github.io/provision-github-tokens/schema/generated.consumer-token-permissions.v1.schema.json",
   type: "object",
-  description: "The permissions that the consumer is requesting for the specified repositories.",
+  description: "The permissions that the consumer is requesting for the specified repos.",
   properties: {
     actions: {
       type: "string",
@@ -50866,12 +50864,12 @@ var provider_v1_schema_default = {
           additionalProperties: false,
           default: {},
           properties: {
-            repositories: {
-              description: "Rules that define the permissions that consumers can receive for repositories.",
+            repos: {
+              description: "Rules that define the permissions that consumers can receive for repos.",
               type: "array",
               default: [],
               items: {
-                description: "A rule that defines the permissions that consumers can receive for repositories.",
+                description: "A rule that defines the permissions that consumers can receive for repos.",
                 type: "object",
                 additionalProperties: false,
                 required: ["resources", "consumers"],
@@ -50881,11 +50879,11 @@ var provider_v1_schema_default = {
                     type: "string"
                   },
                   resources: {
-                    description: "A list of patterns to match against resource repositories when applying the rule.",
+                    description: "A list of patterns to match against resource repos when applying the rule.",
                     type: "array",
                     minItems: 1,
                     items: {
-                      description: "A pattern which matches a resource repository owner and name. If a pattern with no owner part is specified, the pattern will match repositories with the same owner as the repository where the provider configuration file is defined.",
+                      description: "A pattern which matches a resource repo owner and name. If a pattern with no owner part is specified, the pattern will match repos with the same owner as the repo where the provider configuration file is defined.",
                       type: "string",
                       minLength: 1,
                       examples: [
@@ -50900,11 +50898,11 @@ var provider_v1_schema_default = {
                     }
                   },
                   consumers: {
-                    description: "A list of patterns to match against consumer repositories when applying the rule.",
+                    description: "A list of patterns to match against consumer repos when applying the rule.",
                     type: "array",
                     minItems: 1,
                     items: {
-                      description: "A pattern which matches a consumer repository owner and name. If a pattern with no owner part is specified, the pattern will match repositories with the same owner as the repository where the provider configuration file is defined.",
+                      description: "A pattern which matches a consumer repo owner and name. If a pattern with no owner part is specified, the pattern will match repos with the same owner as the repo where the provider configuration file is defined.",
                       type: "string",
                       minLength: 1,
                       examples: [
@@ -50932,23 +50930,23 @@ var provider_v1_schema_default = {
       }
     },
     provision: {
-      description: "Settings that control where tokens can be provisioned by requesting repositories.",
+      description: "Settings that control where tokens can be provisioned by requesting repos.",
       type: "object",
       additionalProperties: false,
       default: {},
       properties: {
         rules: {
-          description: "Rules that define where tokens can be provisioned by requesting repositories.",
+          description: "Rules that define where tokens can be provisioned by requesting repos.",
           type: "object",
           additionalProperties: false,
           default: {},
           properties: {
             secrets: {
-              description: "Rules that define which secrets can be provisioned, and what types of secrets can be provisioned, by requesting repositories.",
+              description: "Rules that define which secrets can be provisioned, and what types of secrets can be provisioned, by requesting repos.",
               type: "array",
               default: [],
               items: {
-                description: "A rule that defines which secrets can be provisioned, and what types of secrets can be provisioned, by requesting repositories.",
+                description: "A rule that defines which secrets can be provisioned, and what types of secrets can be provisioned, by requesting repos.",
                 type: "object",
                 additionalProperties: false,
                 required: ["secrets", "requesters", "to"],
@@ -50974,11 +50972,11 @@ var provider_v1_schema_default = {
                     }
                   },
                   requesters: {
-                    description: "A list of patterns to match against requesting repositories when applying the rule.",
+                    description: "A list of patterns to match against requesting repos when applying the rule.",
                     type: "array",
                     minItems: 1,
                     items: {
-                      description: "A pattern which matches a requesting repository owner and name. If a pattern with no owner part is specified, the pattern will match repositories with the same owner as the repository where the provider configuration file is defined.",
+                      description: "A pattern which matches a requesting repo owner and name. If a pattern with no owner part is specified, the pattern will match repos with the same owner as the repo where the provider configuration file is defined.",
                       type: "string",
                       minLength: 1,
                       examples: [
@@ -50995,43 +50993,43 @@ var provider_v1_schema_default = {
                     }
                   },
                   to: {
-                    description: "Which types of secrets to allow provisioning to by requesting repositories.",
+                    description: "Which types of secrets to allow provisioning to by requesting repos.",
                     type: "object",
                     additionalProperties: false,
                     default: {},
                     properties: {
                       github: {
-                        description: "Which types of GitHub secrets to allow provisioning to by requesting repositories.",
+                        description: "Which types of GitHub secrets to allow provisioning to by requesting repos.",
                         type: "object",
                         additionalProperties: false,
                         default: {},
                         properties: {
-                          organization: {
-                            description: "Which types of secrets to allow provisioning to in the requesting repository's GitHub organization.",
-                            $ref: "#/definitions/provisionGithubOrganizationSecretTypes",
+                          org: {
+                            description: "Which types of secrets to allow provisioning to in the requesting repo's GitHub org.",
+                            $ref: "#/definitions/provisionGithubOrgSecretTypes",
                             default: {}
                           },
-                          organizations: {
-                            description: "Which types of secrets to allow provisioning to in other GitHub organizations.",
+                          orgs: {
+                            description: "Which types of secrets to allow provisioning to in other GitHub orgs.",
                             type: "object",
                             default: {},
                             additionalProperties: {
-                              description: "Which types of secrets to allow provisioning to in the specified GitHub organization.",
-                              $ref: "#/definitions/provisionGithubOrganizationSecretTypes"
+                              description: "Which types of secrets to allow provisioning to in the specified GitHub org.",
+                              $ref: "#/definitions/provisionGithubOrgSecretTypes"
                             }
                           },
-                          repository: {
-                            description: "Which types of secrets to allow provisioning to in the requesting repository.",
-                            $ref: "#/definitions/provisionGithubRepositorySecretTypes",
+                          repo: {
+                            description: "Which types of secrets to allow provisioning to in the requesting repo.",
+                            $ref: "#/definitions/provisionGithubRepoSecretTypes",
                             default: {}
                           },
-                          repositories: {
-                            description: "Which types of secrets to allow provisioning to in other repositories.",
+                          repos: {
+                            description: "Which types of secrets to allow provisioning to in other repos.",
                             type: "object",
                             default: {},
                             additionalProperties: {
-                              description: "Which types of secrets to allow provisioning to in the specified repository.",
-                              $ref: "#/definitions/provisionGithubRepositorySecretTypes"
+                              description: "Which types of secrets to allow provisioning to in the specified repo.",
+                              $ref: "#/definitions/provisionGithubRepoSecretTypes"
                             }
                           }
                         }
@@ -51047,7 +51045,7 @@ var provider_v1_schema_default = {
     }
   },
   definitions: {
-    provisionGithubOrganizationSecretTypes: {
+    provisionGithubOrgSecretTypes: {
       type: "object",
       additionalProperties: false,
       properties: {
@@ -51068,7 +51066,7 @@ var provider_v1_schema_default = {
         }
       }
     },
-    provisionGithubRepositorySecretTypes: {
+    provisionGithubRepoSecretTypes: {
       type: "object",
       additionalProperties: false,
       properties: {
@@ -51088,11 +51086,11 @@ var provider_v1_schema_default = {
           enum: ["allow", "deny"]
         },
         environments: {
-          description: "GitHub repository environments to allow provisioning to.",
+          description: "GitHub repo environments to allow provisioning to.",
           type: "object",
           default: {},
           additionalProperties: {
-            description: "Whether to allow provisioning to the specified GitHub repository environment.",
+            description: "Whether to allow provisioning to the specified GitHub repo environment.",
             type: "string",
             enum: ["allow", "deny"]
           }
@@ -57093,12 +57091,12 @@ async function discoverInstallation(octokitFactory, registry, appInput, installa
       appInput,
       installationId
     );
-    const repositoryPages = installationOctokit.paginate.iterator(
+    const repoPages = installationOctokit.paginate.iterator(
       installationOctokit.rest.apps.listReposAccessibleToInstallation
     );
-    for await (const { data } of repositoryPages) {
+    for await (const { data } of repoPages) {
       const repositories = data;
-      for (const repository of repositories) repos.push(repository);
+      for (const repo of repositories) repos.push(repo);
     }
   }
   const accountDescription = account && "login" in account ? `account ${account.login}` : "unknown account";
@@ -57114,18 +57112,18 @@ async function discoverInstallation(octokitFactory, registry, appInput, installa
   }
   if (repository_selection === "all") {
     (0, import_core3.debug)(
-      `Installation ${installationId} has access to all repositories in ${accountDescription}`
+      `Installation ${installationId} has access to all repos in ${accountDescription}`
     );
   } else if (repos.length < 1) {
-    (0, import_core3.debug)(`Installation ${installationId} has access to no repositories`);
+    (0, import_core3.debug)(`Installation ${installationId} has access to no repos`);
   } else {
     const repoNames = repos.map(({ full_name }) => full_name);
     (0, import_core3.debug)(
-      `Installation ${installationId} has access to repositories ${JSON.stringify(repoNames)}`
+      `Installation ${installationId} has access to repos ${JSON.stringify(repoNames)}`
     );
   }
   registry.registerInstallation(installation);
-  registry.registerInstallationRepositories(installationId, repos);
+  registry.registerInstallationRepos(installationId, repos);
 }
 
 // src/main.ts

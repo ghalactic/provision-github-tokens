@@ -15,16 +15,16 @@ it("finds an installation for all repos in an owner with one permission", () => 
   const registry = createAppRegistry();
   registry.registerApp(["role-a"], appA);
   registry.registerInstallation(appAInstallationA);
-  registry.registerInstallationRepositories(
+  registry.registerInstallationRepos(
     appAInstallationA.id,
-    appAInstallationA.repositories,
+    appAInstallationA.repos,
   );
 
   expect(
     registry.findInstallationForToken({
       role: "role-a",
       owner: orgA.login,
-      repositories: "all",
+      repos: "all",
       permissions: { contents: "write" },
     }),
   ).toBe(appAInstallationA.id);
@@ -45,16 +45,16 @@ it("finds an installation for one selected repo with one permission", () => {
   const registry = createAppRegistry();
   registry.registerApp(["role-a"], appA);
   registry.registerInstallation(appAInstallationA);
-  registry.registerInstallationRepositories(
+  registry.registerInstallationRepos(
     appAInstallationA.id,
-    appAInstallationA.repositories,
+    appAInstallationA.repos,
   );
 
   expect(
     registry.findInstallationForToken({
       role: "role-a",
       owner: orgA.login,
-      repositories: [repoA.name],
+      repos: [repoA.name],
       permissions: { contents: "write" },
     }),
   ).toBe(appAInstallationA.id);
@@ -79,16 +79,16 @@ it("finds an installation for multiple selected repos with multiple permissions"
   const registry = createAppRegistry();
   registry.registerApp(["role-a"], appA);
   registry.registerInstallation(appAInstallationA);
-  registry.registerInstallationRepositories(
+  registry.registerInstallationRepos(
     appAInstallationA.id,
-    appAInstallationA.repositories,
+    appAInstallationA.repos,
   );
 
   expect(
     registry.findInstallationForToken({
       role: "role-a",
       owner: orgA.login,
-      repositories: [repoA.name, repoB.name],
+      repos: [repoA.name, repoB.name],
       permissions: { contents: "write", metadata: "read" },
     }),
   ).toBe(appAInstallationA.id);
@@ -108,16 +108,16 @@ it("finds an installation for no repos with no permissions", () => {
   const registry = createAppRegistry();
   registry.registerApp(["role-a"], appA);
   registry.registerInstallation(appAInstallationA);
-  registry.registerInstallationRepositories(
+  registry.registerInstallationRepos(
     appAInstallationA.id,
-    appAInstallationA.repositories,
+    appAInstallationA.repos,
   );
 
   expect(
     registry.findInstallationForToken({
       role: "role-a",
       owner: orgA.login,
-      repositories: [],
+      repos: [],
       permissions: {},
     }),
   ).toBe(appAInstallationA.id);
@@ -146,16 +146,16 @@ it.each([
     const registry = createAppRegistry();
     registry.registerApp(["role-a"], appA);
     registry.registerInstallation(appAInstallationA);
-    registry.registerInstallationRepositories(
+    registry.registerInstallationRepos(
       appAInstallationA.id,
-      appAInstallationA.repositories,
+      appAInstallationA.repos,
     );
 
     expect(
       registry.findInstallationForToken({
         role: "role-a",
         owner: orgA.login,
-        repositories: [repoA.name],
+        repos: [repoA.name],
         permissions: { repository_projects: want },
       }),
     ).toBe(appAInstallationA.id);
@@ -172,21 +172,21 @@ it("finds an installation for the correct owner when there are multiple installa
   const registry = createAppRegistry();
   registry.registerApp([], appA);
   registry.registerInstallation(appAInstallationA);
-  registry.registerInstallationRepositories(
+  registry.registerInstallationRepos(
     appAInstallationA.id,
-    appAInstallationA.repositories,
+    appAInstallationA.repos,
   );
   registry.registerInstallation(appAInstallationB);
-  registry.registerInstallationRepositories(
+  registry.registerInstallationRepos(
     appAInstallationB.id,
-    appAInstallationB.repositories,
+    appAInstallationB.repos,
   );
 
   expect(
     registry.findInstallationForToken({
       role: undefined,
       owner: orgA.login,
-      repositories: "all",
+      repos: "all",
       permissions: {},
     }),
   ).toBe(appAInstallationA.id);
@@ -194,7 +194,7 @@ it("finds an installation for the correct owner when there are multiple installa
     registry.findInstallationForToken({
       role: undefined,
       owner: orgA.login,
-      repositories: [],
+      repos: [],
       permissions: {},
     }),
   ).toBe(appAInstallationA.id);
@@ -202,7 +202,7 @@ it("finds an installation for the correct owner when there are multiple installa
     registry.findInstallationForToken({
       role: undefined,
       owner: orgB.login,
-      repositories: "all",
+      repos: "all",
       permissions: {},
     }),
   ).toBe(appAInstallationB.id);
@@ -210,7 +210,7 @@ it("finds an installation for the correct owner when there are multiple installa
     registry.findInstallationForToken({
       role: undefined,
       owner: orgB.login,
-      repositories: [],
+      repos: [],
       permissions: {},
     }),
   ).toBe(appAInstallationB.id);
@@ -252,34 +252,34 @@ it("finds an installation by role", () => {
   const registry = createAppRegistry();
   registry.registerApp([], appA);
   registry.registerInstallation(appAInstallationA);
-  registry.registerInstallationRepositories(
+  registry.registerInstallationRepos(
     appAInstallationA.id,
-    appAInstallationA.repositories,
+    appAInstallationA.repos,
   );
   registry.registerApp(["role-a"], appB);
   registry.registerInstallation(appBInstallationA);
-  registry.registerInstallationRepositories(
+  registry.registerInstallationRepos(
     appBInstallationA.id,
-    appBInstallationA.repositories,
+    appBInstallationA.repos,
   );
   registry.registerApp(["role-b"], appC);
   registry.registerInstallation(appCInstallationA);
-  registry.registerInstallationRepositories(
+  registry.registerInstallationRepos(
     appCInstallationA.id,
-    appCInstallationA.repositories,
+    appCInstallationA.repos,
   );
   registry.registerApp(["role-a", "role-b"], appD);
   registry.registerInstallation(appDInstallationA);
-  registry.registerInstallationRepositories(
+  registry.registerInstallationRepos(
     appDInstallationA.id,
-    appDInstallationA.repositories,
+    appDInstallationA.repos,
   );
 
   expect(
     registry.findInstallationForToken({
       role: "role-a",
       owner: orgA.login,
-      repositories: [repoA.name],
+      repos: [repoA.name],
       permissions: { contents: "write" },
     }),
   ).toBe(appBInstallationA.id);
@@ -287,7 +287,7 @@ it("finds an installation by role", () => {
     registry.findInstallationForToken({
       role: "role-a",
       owner: orgA.login,
-      repositories: [repoB.name],
+      repos: [repoB.name],
       permissions: { contents: "write" },
     }),
   ).toBe(appBInstallationA.id);
@@ -295,7 +295,7 @@ it("finds an installation by role", () => {
     registry.findInstallationForToken({
       role: "role-a",
       owner: orgA.login,
-      repositories: [repoC.name],
+      repos: [repoC.name],
       permissions: { contents: "write" },
     }),
   ).toBe(appDInstallationA.id);
@@ -303,7 +303,7 @@ it("finds an installation by role", () => {
     registry.findInstallationForToken({
       role: "role-b",
       owner: orgA.login,
-      repositories: [repoA.name],
+      repos: [repoA.name],
       permissions: { contents: "write" },
     }),
   ).toBe(appCInstallationA.id);
@@ -311,7 +311,7 @@ it("finds an installation by role", () => {
     registry.findInstallationForToken({
       role: "role-b",
       owner: orgA.login,
-      repositories: [repoD.name],
+      repos: [repoD.name],
       permissions: { contents: "write" },
     }),
   ).toBe(appDInstallationA.id);
@@ -328,16 +328,16 @@ it("finds an installation for read access when the role is undefined", () => {
   const registry = createAppRegistry();
   registry.registerApp([], appA);
   registry.registerInstallation(appAInstallationA);
-  registry.registerInstallationRepositories(
+  registry.registerInstallationRepos(
     appAInstallationA.id,
-    appAInstallationA.repositories,
+    appAInstallationA.repos,
   );
 
   expect(
     registry.findInstallationForToken({
       role: undefined,
       owner: orgA.login,
-      repositories: [],
+      repos: [],
       permissions: { contents: "read" },
     }),
   ).toBe(appAInstallationA.id);
@@ -345,7 +345,7 @@ it("finds an installation for read access when the role is undefined", () => {
     registry.findInstallationForToken({
       role: undefined,
       owner: orgA.login,
-      repositories: [],
+      repos: [],
       permissions: { repository_projects: "read" },
     }),
   ).toBe(appAInstallationA.id);
@@ -362,16 +362,16 @@ it("doesn't find an installation for write or admin access when the role is unde
   const registry = createAppRegistry();
   registry.registerApp([], appA);
   registry.registerInstallation(appAInstallationA);
-  registry.registerInstallationRepositories(
+  registry.registerInstallationRepos(
     appAInstallationA.id,
-    appAInstallationA.repositories,
+    appAInstallationA.repos,
   );
 
   expect(
     registry.findInstallationForToken({
       role: undefined,
       owner: orgA.login,
-      repositories: [],
+      repos: [],
       permissions: { contents: "write" },
     }),
   ).toBe(undefined);
@@ -379,7 +379,7 @@ it("doesn't find an installation for write or admin access when the role is unde
     registry.findInstallationForToken({
       role: undefined,
       owner: orgA.login,
-      repositories: [],
+      repos: [],
       permissions: { repository_projects: "admin" },
     }),
   ).toBe(undefined);
@@ -400,16 +400,16 @@ it("doesn't find an installation when it can't access all repos in an owner", ()
   const registry = createAppRegistry();
   registry.registerApp(["role-a"], appA);
   registry.registerInstallation(appAInstallationA);
-  registry.registerInstallationRepositories(
+  registry.registerInstallationRepos(
     appAInstallationA.id,
-    appAInstallationA.repositories,
+    appAInstallationA.repos,
   );
 
   expect(
     registry.findInstallationForToken({
       role: "role-a",
       owner: orgA.login,
-      repositories: "all",
+      repos: "all",
       permissions: { contents: "write" },
     }),
   ).toBe(undefined);
@@ -430,16 +430,16 @@ it("doesn't find an installation for an unknown repo owner", () => {
   const registry = createAppRegistry();
   registry.registerApp(["role-a"], appA);
   registry.registerInstallation(appAInstallationA);
-  registry.registerInstallationRepositories(
+  registry.registerInstallationRepos(
     appAInstallationA.id,
-    appAInstallationA.repositories,
+    appAInstallationA.repos,
   );
 
   expect(
     registry.findInstallationForToken({
       role: "role-a",
       owner: "owner-x",
-      repositories: [repoA.name],
+      repos: [repoA.name],
       permissions: { contents: "write" },
     }),
   ).toBe(undefined);
@@ -460,16 +460,16 @@ it("doesn't find an installation for an unknown repo", () => {
   const registry = createAppRegistry();
   registry.registerApp(["role-a"], appA);
   registry.registerInstallation(appAInstallationA);
-  registry.registerInstallationRepositories(
+  registry.registerInstallationRepos(
     appAInstallationA.id,
-    appAInstallationA.repositories,
+    appAInstallationA.repos,
   );
 
   expect(
     registry.findInstallationForToken({
       role: "role-a",
       owner: orgA.login,
-      repositories: ["repo-x"],
+      repos: ["repo-x"],
       permissions: { contents: "write" },
     }),
   ).toBe(undefined);
@@ -490,16 +490,16 @@ it("doesn't find an installation that can't access all requested repos", () => {
   const registry = createAppRegistry();
   registry.registerApp(["role-a"], appA);
   registry.registerInstallation(appAInstallationA);
-  registry.registerInstallationRepositories(
+  registry.registerInstallationRepos(
     appAInstallationA.id,
-    appAInstallationA.repositories,
+    appAInstallationA.repos,
   );
 
   expect(
     registry.findInstallationForToken({
       role: "role-a",
       owner: orgA.login,
-      repositories: [repoA.name, "repo-x"],
+      repos: [repoA.name, "repo-x"],
       permissions: { contents: "write" },
     }),
   ).toBe(undefined);
@@ -513,16 +513,16 @@ it("doesn't find an installation that doesn't have all permissions", () => {
   const registry = createAppRegistry();
   registry.registerApp(["role-a"], appA);
   registry.registerInstallation(appAInstallationA);
-  registry.registerInstallationRepositories(
+  registry.registerInstallationRepos(
     appAInstallationA.id,
-    appAInstallationA.repositories,
+    appAInstallationA.repos,
   );
 
   expect(
     registry.findInstallationForToken({
       role: "role-a",
       owner: orgA.login,
-      repositories: ["repo-a"],
+      repos: ["repo-a"],
       permissions: { contents: "write", metadata: "read" },
     }),
   ).toBe(undefined);
@@ -550,16 +550,16 @@ it.each([
     const registry = createAppRegistry();
     registry.registerApp(["role-a"], appA);
     registry.registerInstallation(appAInstallationA);
-    registry.registerInstallationRepositories(
+    registry.registerInstallationRepos(
       appAInstallationA.id,
-      appAInstallationA.repositories,
+      appAInstallationA.repos,
     );
 
     expect(
       registry.findInstallationForToken({
         role: "role-a",
         owner: orgA.login,
-        repositories: ["repo-a"],
+        repos: ["repo-a"],
         permissions: { repository_projects: want },
       }),
     ).toBe(undefined);
@@ -570,6 +570,6 @@ it("throws when registering repos for an unknown installation", () => {
   const registry = createAppRegistry();
 
   expect(() => {
-    registry.registerInstallationRepositories(101, []);
+    registry.registerInstallationRepos(101, []);
   }).toThrowError("Installation 101 not registered");
 });

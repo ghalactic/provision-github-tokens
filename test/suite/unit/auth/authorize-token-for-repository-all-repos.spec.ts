@@ -7,7 +7,7 @@ const explain = createTextRepoAuthExplainer();
 it("allows tokens that should be allowed", () => {
   const authorizer = createTokenAuthorizer({
     rules: {
-      repositories: [
+      repos: [
         {
           resources: ["owner-a/*"],
           consumers: ["owner-x/repo-x"],
@@ -19,10 +19,10 @@ it("allows tokens that should be allowed", () => {
 
   expect(
     explain(
-      authorizer.authorizeForRepository("owner-x", "repo-x", {
+      authorizer.authorizeForRepo("owner-x", "repo-x", {
         role: undefined,
         owner: "owner-a",
-        repositories: "all",
+        repos: "all",
         permissions: { contents: "write" },
       }),
     ),
@@ -34,10 +34,10 @@ it("allows tokens that should be allowed", () => {
   `);
   expect(
     explain(
-      authorizer.authorizeForRepository("owner-x", "repo-x", {
+      authorizer.authorizeForRepo("owner-x", "repo-x", {
         role: undefined,
         owner: "owner-a",
-        repositories: "all",
+        repos: "all",
         permissions: { contents: "write", metadata: "read" },
       }),
     ),
@@ -53,7 +53,7 @@ it("allows tokens that should be allowed", () => {
 it("allows tokens when a later rule allows access that a previous rule denied", () => {
   const authorizer = createTokenAuthorizer({
     rules: {
-      repositories: [
+      repos: [
         {
           resources: ["owner-a/*"],
           consumers: ["owner-x/repo-x"],
@@ -70,10 +70,10 @@ it("allows tokens when a later rule allows access that a previous rule denied", 
 
   expect(
     explain(
-      authorizer.authorizeForRepository("owner-x", "repo-x", {
+      authorizer.authorizeForRepo("owner-x", "repo-x", {
         role: undefined,
         owner: "owner-a",
-        repositories: "all",
+        repos: "all",
         permissions: { contents: "write", metadata: "read" },
       }),
     ),
@@ -92,7 +92,7 @@ it("allows tokens when a later rule allows access that a previous rule denied", 
 it(`allows tokens when a later owner-scoped non-"all" rule denies access to a permission that isn't requested`, () => {
   const authorizer = createTokenAuthorizer({
     rules: {
-      repositories: [
+      repos: [
         {
           resources: ["owner-a/*"],
           consumers: ["owner-x/repo-x"],
@@ -109,10 +109,10 @@ it(`allows tokens when a later owner-scoped non-"all" rule denies access to a pe
 
   expect(
     explain(
-      authorizer.authorizeForRepository("owner-x", "repo-x", {
+      authorizer.authorizeForRepo("owner-x", "repo-x", {
         role: undefined,
         owner: "owner-a",
-        repositories: "all",
+        repos: "all",
         permissions: { metadata: "read" },
       }),
     ),
@@ -129,7 +129,7 @@ it(`allows tokens when a later owner-scoped non-"all" rule denies access to a pe
 it("allows tokens when a later unrelated rule denies access to the requested permission", () => {
   const authorizer = createTokenAuthorizer({
     rules: {
-      repositories: [
+      repos: [
         {
           resources: ["owner-a/*"],
           consumers: ["owner-x/repo-x"],
@@ -151,10 +151,10 @@ it("allows tokens when a later unrelated rule denies access to the requested per
 
   expect(
     explain(
-      authorizer.authorizeForRepository("owner-x", "repo-x", {
+      authorizer.authorizeForRepo("owner-x", "repo-x", {
         role: undefined,
         owner: "owner-a",
-        repositories: "all",
+        repos: "all",
         permissions: { contents: "write", metadata: "read" },
       }),
     ),
@@ -170,7 +170,7 @@ it("allows tokens when a later unrelated rule denies access to the requested per
 it("doesn't allow tokens for all resource repos unless a resource rule matches all repos in the owner", () => {
   const authorizer = createTokenAuthorizer({
     rules: {
-      repositories: [
+      repos: [
         {
           resources: ["owner-a/repo-a"],
           consumers: ["owner-x/repo-x"],
@@ -187,10 +187,10 @@ it("doesn't allow tokens for all resource repos unless a resource rule matches a
 
   expect(
     explain(
-      authorizer.authorizeForRepository("owner-x", "repo-x", {
+      authorizer.authorizeForRepo("owner-x", "repo-x", {
         role: undefined,
         owner: "owner-a",
-        repositories: "all",
+        repos: "all",
         permissions: { contents: "read" },
       }),
     ),
@@ -203,7 +203,7 @@ it("doesn't allow tokens for all resource repos unless a resource rule matches a
 it(`doesn't allow tokens for all resource repos when a later owner-scoped "all" rule denies access that a previous rule allowed`, () => {
   const authorizer = createTokenAuthorizer({
     rules: {
-      repositories: [
+      repos: [
         {
           resources: ["owner-a/*"],
           consumers: ["owner-x/repo-x"],
@@ -220,10 +220,10 @@ it(`doesn't allow tokens for all resource repos when a later owner-scoped "all" 
 
   expect(
     explain(
-      authorizer.authorizeForRepository("owner-x", "repo-x", {
+      authorizer.authorizeForRepo("owner-x", "repo-x", {
         role: undefined,
         owner: "owner-a",
-        repositories: "all",
+        repos: "all",
         permissions: { contents: "write" },
       }),
     ),
@@ -240,7 +240,7 @@ it(`doesn't allow tokens for all resource repos when a later owner-scoped "all" 
 it(`doesn't allow tokens for all resource repos when a later owner-scoped "all" rule removes access that a previous rule allowed`, () => {
   const authorizer = createTokenAuthorizer({
     rules: {
-      repositories: [
+      repos: [
         {
           resources: ["owner-a/*"],
           consumers: ["owner-x/repo-x"],
@@ -257,10 +257,10 @@ it(`doesn't allow tokens for all resource repos when a later owner-scoped "all" 
 
   expect(
     explain(
-      authorizer.authorizeForRepository("owner-x", "repo-x", {
+      authorizer.authorizeForRepo("owner-x", "repo-x", {
         role: undefined,
         owner: "owner-a",
-        repositories: "all",
+        repos: "all",
         permissions: { contents: "write" },
       }),
     ),
@@ -277,7 +277,7 @@ it(`doesn't allow tokens for all resource repos when a later owner-scoped "all" 
 it(`doesn't allow tokens for all resource repos when a later owner-scoped non-"all" rule denies access that a previous rule allowed`, () => {
   const authorizer = createTokenAuthorizer({
     rules: {
-      repositories: [
+      repos: [
         {
           resources: ["owner-a/*"],
           consumers: ["owner-x/repo-x"],
@@ -294,10 +294,10 @@ it(`doesn't allow tokens for all resource repos when a later owner-scoped non-"a
 
   expect(
     explain(
-      authorizer.authorizeForRepository("owner-x", "repo-x", {
+      authorizer.authorizeForRepo("owner-x", "repo-x", {
         role: undefined,
         owner: "owner-a",
-        repositories: "all",
+        repos: "all",
         permissions: { contents: "write" },
       }),
     ),
@@ -314,7 +314,7 @@ it(`doesn't allow tokens for all resource repos when a later owner-scoped non-"a
 it(`doesn't allow tokens for all resource repos when a later owner-scoped non-"all" rule removes access that a previous rule allowed`, () => {
   const authorizer = createTokenAuthorizer({
     rules: {
-      repositories: [
+      repos: [
         {
           resources: ["owner-a/*"],
           consumers: ["owner-x/repo-x"],
@@ -331,10 +331,10 @@ it(`doesn't allow tokens for all resource repos when a later owner-scoped non-"a
 
   expect(
     explain(
-      authorizer.authorizeForRepository("owner-x", "repo-x", {
+      authorizer.authorizeForRepo("owner-x", "repo-x", {
         role: undefined,
         owner: "owner-a",
-        repositories: "all",
+        repos: "all",
         permissions: { contents: "write" },
       }),
     ),

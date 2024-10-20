@@ -27,10 +27,10 @@
         "description": "A GitHub token declaration.",
         "type": "object",
         "additionalProperties": false,
-        "required": ["repositories", "permissions"],
+        "required": ["repos", "permissions"],
         "properties": {
           "shared": {
-            "description": "Whether the token should be available for other repositories to request.",
+            "description": "Whether the token should be available for other repos to request.",
             "type": "boolean",
             "default": false
           },
@@ -41,16 +41,16 @@
             "examples": ["pr-bot", "onboarding"]
           },
           "owner": {
-            "description": "The GitHub user or organization that the specified repositories belong to. Defaults to the same owner as the repository where the consumer configuration file is defined.",
+            "description": "The GitHub user or org that the specified repos belong to. Defaults to the same owner as the repo where the consumer configuration file is defined.",
             "type": "string",
             "minLength": 1,
             "examples": ["octocat"]
           },
-          "repositories": {
-            "description": "A list of repository name patterns to match against.",
+          "repos": {
+            "description": "A list of repo name patterns to match against.",
             "type": "array",
             "items": {
-              "description": "A pattern which matches a repository name without the owner prefix.",
+              "description": "A pattern which matches a repo name without the owner prefix.",
               "type": "string",
               "minLength": 1,
               "examples": [
@@ -110,32 +110,32 @@
                 "additionalProperties": false,
                 "default": {},
                 "properties": {
-                  "organization": {
-                    "description": "How to provision the secret to the declaring repository's GitHub organization.",
-                    "$ref": "#/definitions/provisionGithubOrganizationSecretTypes",
+                  "org": {
+                    "description": "How to provision the secret to the declaring repo's GitHub org.",
+                    "$ref": "#/definitions/provisionGithubOrgSecretTypes",
                     "default": {}
                   },
-                  "organizations": {
-                    "description": "How to provision the secret to other GitHub organizations.",
+                  "orgs": {
+                    "description": "How to provision the secret to other GitHub orgs.",
                     "type": "object",
                     "default": {},
                     "additionalProperties": {
-                      "description": "How to provision the secret to the specified GitHub organization.",
-                      "$ref": "#/definitions/provisionGithubOrganizationSecretTypes"
+                      "description": "How to provision the secret to the specified GitHub org.",
+                      "$ref": "#/definitions/provisionGithubOrgSecretTypes"
                     }
                   },
-                  "repository": {
-                    "description": "How to provision the secret to the declaring repository.",
-                    "$ref": "#/definitions/provisionGithubRepositorySecretTypes",
+                  "repo": {
+                    "description": "How to provision the secret to the declaring repo.",
+                    "$ref": "#/definitions/provisionGithubRepoSecretTypes",
                     "default": {}
                   },
-                  "repositories": {
-                    "description": "How to provision the secret to other GitHub repositories.",
+                  "repos": {
+                    "description": "How to provision the secret to other GitHub repos.",
                     "type": "object",
                     "default": {},
                     "additionalProperties": {
-                      "description": "How to provision the secret to the specified GitHub repository.",
-                      "$ref": "#/definitions/provisionGithubRepositorySecretTypes"
+                      "description": "How to provision the secret to the specified GitHub repo.",
+                      "$ref": "#/definitions/provisionGithubRepoSecretTypes"
                     }
                   }
                 }
@@ -147,7 +147,7 @@
     }
   },
   "definitions": {
-    "provisionGithubOrganizationSecretTypes": {
+    "provisionGithubOrgSecretTypes": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -168,7 +168,7 @@
         }
       }
     },
-    "provisionGithubRepositorySecretTypes": {
+    "provisionGithubRepoSecretTypes": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
@@ -188,7 +188,7 @@
           "default": false
         },
         "environments": {
-          "description": "GitHub repository environments to provision to.",
+          "description": "GitHub repo environments to provision to.",
           "type": "array",
           "uniqueItems": true,
           "default": [],

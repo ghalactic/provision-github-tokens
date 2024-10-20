@@ -4,6 +4,6 @@ export type TokenDeclaration = {
   shared: boolean;
   as?: string;
   owner?: string;
-  repositories: string[];
+  repos: string[];
   permissions: InstallationPermissions;
 };

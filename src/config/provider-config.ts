@@ -30,7 +30,7 @@ function normalizeProviderConfig(
   definingOwner: string,
   config: ProviderConfig,
 ): ProviderConfig {
-  for (const rule of config.permissions.rules.repositories) {
+  for (const rule of config.permissions.rules.repos) {
     rule.resources = rule.resources.map((resource) =>
       normalizeRepoPattern(definingOwner, resource),
     );
@@ -44,12 +44,12 @@ function normalizeProviderConfig(
       normalizeRepoPattern(definingOwner, requester),
     );
 
-    const repositories: typeof rule.to.github.repositories = {};
-    for (const pattern in rule.to.github.repositories) {
-      repositories[normalizeRepoPattern(definingOwner, pattern)] =
-        rule.to.github.repositories[pattern];
+    const repos: typeof rule.to.github.repos = {};
+    for (const pattern in rule.to.github.repos) {
+      repos[normalizeRepoPattern(definingOwner, pattern)] =
+        rule.to.github.repos[pattern];
     }
-    rule.to.github.repositories = repositories;
+    rule.to.github.repos = repos;
   }
 
   return config;

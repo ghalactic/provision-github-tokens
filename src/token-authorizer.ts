@@ -13,21 +13,21 @@ import type {
 } from "./type/github-api.js";
 import type { ProviderPermissionsConfig } from "./type/provider-config.js";
 import type {
-  RepositoryTokenAuthorizationResourceResult,
-  RepositoryTokenAuthorizationResourceResultRuleResult,
-  RepositoryTokenAuthorizationResult,
+  RepoTokenAuthorizationResourceResult,
+  RepoTokenAuthorizationResourceResultRuleResult,
+  RepoTokenAuthorizationResult,
 } from "./type/token-auth-result.js";
 import type { TokenRequest } from "./type/token-request.js";
 
 export type TokenAuthorizer = {
   /**
-   * Authorize a token request for a single consuming repository.
+   * Authorize a token request for a single consuming repo.
    */
-  authorizeForRepository: (
+  authorizeForRepo: (
     consumerOwner: string,
     consumerRepo: string,
     request: TokenRequest,
-  ) => RepositoryTokenAuthorizationResult;
+  ) => RepoTokenAuthorizationResult;
 };
 
 export function createTokenAuthorizer(
@@ -36,14 +36,14 @@ export function createTokenAuthorizer(
   const repoResourcePatterns: Record<number, RepoPattern[]> = {};
   const repoConsumerPatterns: Record<number, RepoPattern[]> = {};
 
-  for (let i = 0; i < config.rules.repositories.length; ++i) {
+  for (let i = 0; i < config.rules.repos.length; ++i) {
     const resourcePatterns: RepoPattern[] = [];
     const consumerPatterns: RepoPattern[] = [];
 
-    for (const resource of config.rules.repositories[i].resources) {
+    for (const resource of config.rules.repos[i].resources) {
       resourcePatterns.push(createRepoPattern(resource));
     }
-    for (const consumer of config.rules.repositories[i].consumers) {
+    for (const consumer of config.rules.repos[i].consumers) {
       consumerPatterns.push(createRepoPattern(consumer));
     }
 
@@ -52,12 +52,12 @@ export function createTokenAuthorizer(
   }
 
   return {
-    authorizeForRepository(consumerOwner, consumerRepo, request) {
+    authorizeForRepo(consumerOwner, consumerRepo, request) {
       const want = request.permissions;
-      const isAllRepos = request.repositories === "all";
+      const isAllRepos = request.repos === "all";
 
-      if (!isAllRepos && request.repositories.length < 1) {
-        throw new Error("No repositories requested");
+      if (!isAllRepos && request.repos.length < 1) {
+        throw new Error("No repos requested");
       }
       if (Object.keys(want).length < 1) {
         throw new Error("No permissions requested");
@@ -69,12 +69,12 @@ export function createTokenAuthorizer(
       let isAllowed = true;
 
       if (isAllRepos) {
-        const ruleResults: RepositoryTokenAuthorizationResourceResultRuleResult[] =
+        const ruleResults: RepoTokenAuthorizationResourceResultRuleResult[] =
           [];
         const have: InstallationPermissions = {};
 
         for (const i of rules) {
-          const rule = config.rules.repositories[i];
+          const rule = config.rules.repos[i];
           const patternsForOwner = repoPatternsForOwner(
             resourceOwner,
             repoResourcePatterns[i],
@@ -122,12 +122,12 @@ export function createTokenAuthorizer(
 
       const resourceResults: Record<
         string,
-        RepositoryTokenAuthorizationResourceResult
+        RepoTokenAuthorizationResourceResult
       > = {};
 
-      for (const resourceRepo of request.repositories) {
+      for (const resourceRepo of request.repos) {
         const resource = `${resourceOwner}/${resourceRepo}`;
-        const ruleResults: RepositoryTokenAuthorizationResourceResultRuleResult[] =
+        const ruleResults: RepoTokenAuthorizationResourceResultRuleResult[] =
           [];
         const have: InstallationPermissions = {};
         let isResourceAllowed = false;
@@ -135,7 +135,7 @@ export function createTokenAuthorizer(
         for (const i of rules) {
           if (!anyPatternMatches(repoResourcePatterns[i], resource)) continue;
 
-          const rule = config.rules.repositories[i];
+          const rule = config.rules.repos[i];
           updatePermissions(have, rule.permissions);
 
           // Resource is allowed if last rule is allowed
@@ -171,7 +171,7 @@ export function createTokenAuthorizer(
   function rulesForConsumer(consumer: string): number[] {
     const indices: number[] = [];
 
-    for (let i = 0; i < config.rules.repositories.length; ++i) {
+    for (let i = 0; i < config.rules.repos.length; ++i) {
       if (anyPatternMatches(repoConsumerPatterns[i], consumer)) indices.push(i);
     }
 

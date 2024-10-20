@@ -50,12 +50,12 @@ function normalizeConsumerConfig(
       secret.token,
     );
 
-    const repositories: typeof secret.github.repositories = {};
-    for (const pattern in secret.github.repositories) {
-      repositories[normalizeRepoPattern(definingOwner, pattern)] =
-        secret.github.repositories[pattern];
+    const repos: typeof secret.github.repos = {};
+    for (const pattern in secret.github.repos) {
+      repos[normalizeRepoPattern(definingOwner, pattern)] =
+        secret.github.repos[pattern];
     }
-    secret.github.repositories = repositories;
+    secret.github.repos = repos;
   }
 
   return config as ConsumerConfig;

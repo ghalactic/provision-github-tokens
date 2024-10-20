@@ -63,7 +63,7 @@ it("discovers installations with access to all repos", async () => {
     ::debug::App 110 has no roles
     ::debug::Discovered app installation 111 for account org-a
     ::debug::Installation 111 has permissions {"contents":"read"}
-    ::debug::Installation 111 has access to all repositories in account org-a
+    ::debug::Installation 111 has access to all repos in account org-a
     Discovered 1 installation of "App A"
     "
   `);
@@ -71,7 +71,7 @@ it("discovers installations with access to all repos", async () => {
     registry.findInstallationForToken({
       role: undefined,
       owner: orgA.login,
-      repositories: "all",
+      repos: "all",
       permissions: { contents: "read" },
     }),
   ).toBe(appAInstallationA.id);
@@ -108,7 +108,7 @@ it("discovers installations with access to selected repos", async () => {
     ::debug::App 110 has no roles
     ::debug::Discovered app installation 111 for account org-a
     ::debug::Installation 111 has permissions {"contents":"read"}
-    ::debug::Installation 111 has access to repositories ["org-a/repo-a","org-a/repo-b"]
+    ::debug::Installation 111 has access to repos ["org-a/repo-a","org-a/repo-b"]
     Discovered 1 installation of "App A"
     "
   `);
@@ -116,7 +116,7 @@ it("discovers installations with access to selected repos", async () => {
     registry.findInstallationForToken({
       role: undefined,
       owner: orgA.login,
-      repositories: [repoA.name, repoB.name],
+      repos: [repoA.name, repoB.name],
       permissions: { contents: "read" },
     }),
   ).toBe(appAInstallationA.id);
@@ -151,7 +151,7 @@ it("discovers installations with access to no repos", async () => {
     ::debug::App 110 has no roles
     ::debug::Discovered app installation 111 for account org-a
     ::debug::Installation 111 has permissions {"members":"read"}
-    ::debug::Installation 111 has access to no repositories
+    ::debug::Installation 111 has access to no repos
     Discovered 1 installation of "App A"
     "
   `);
@@ -159,7 +159,7 @@ it("discovers installations with access to no repos", async () => {
     registry.findInstallationForToken({
       role: undefined,
       owner: orgA.login,
-      repositories: [],
+      repos: [],
       permissions: { members: "read" },
     }),
   ).toBe(appAInstallationA.id);
@@ -188,7 +188,7 @@ it("discovers installations with no permissions", async () => {
     ::debug::App 110 has no roles
     ::debug::Discovered app installation 111 for account org-a
     ::debug::Installation 111 has no permissions
-    ::debug::Installation 111 has access to all repositories in account org-a
+    ::debug::Installation 111 has access to all repos in account org-a
     Discovered 1 installation of "App A"
     "
   `);
@@ -196,7 +196,7 @@ it("discovers installations with no permissions", async () => {
     registry.findInstallationForToken({
       role: undefined,
       owner: orgA.login,
-      repositories: "all",
+      repos: "all",
       permissions: {},
     }),
   ).toBe(appAInstallationA.id);
@@ -232,13 +232,13 @@ it("discovers installations with roles", async () => {
     ::debug::App 110 has roles ["role-a"]
     ::debug::Discovered app installation 111 for account org-a
     ::debug::Installation 111 has permissions {"contents":"write"}
-    ::debug::Installation 111 has access to all repositories in account org-a
+    ::debug::Installation 111 has access to all repos in account org-a
     Discovered 1 installation of "App A" with role "role-a"
     ::debug::Discovered app "App B" (app-b / 120)
     ::debug::App 120 has roles ["role-b","role-c"]
     ::debug::Discovered app installation 121 for account org-a
     ::debug::Installation 121 has permissions {"contents":"write"}
-    ::debug::Installation 121 has access to all repositories in account org-a
+    ::debug::Installation 121 has access to all repos in account org-a
     Discovered 1 installation of "App B" with roles "role-b", "role-c"
     "
   `);
@@ -246,7 +246,7 @@ it("discovers installations with roles", async () => {
     registry.findInstallationForToken({
       role: "role-a",
       owner: orgA.login,
-      repositories: "all",
+      repos: "all",
       permissions: { contents: "write" },
     }),
   ).toBe(appAInstallationA.id);
@@ -254,7 +254,7 @@ it("discovers installations with roles", async () => {
     registry.findInstallationForToken({
       role: "role-b",
       owner: orgA.login,
-      repositories: "all",
+      repos: "all",
       permissions: { contents: "write" },
     }),
   ).toBe(appBInstallationA.id);
@@ -262,7 +262,7 @@ it("discovers installations with roles", async () => {
     registry.findInstallationForToken({
       role: "role-c",
       owner: orgA.login,
-      repositories: "all",
+      repos: "all",
       permissions: { contents: "write" },
     }),
   ).toBe(appBInstallationA.id);
@@ -293,10 +293,10 @@ it("discovers multiple installations of an app", async () => {
     ::debug::App 100 has no roles
     ::debug::Discovered app installation 101 for account org-a
     ::debug::Installation 101 has permissions {"contents":"read"}
-    ::debug::Installation 101 has access to all repositories in account org-a
+    ::debug::Installation 101 has access to all repos in account org-a
     ::debug::Discovered app installation 102 for account org-a
     ::debug::Installation 102 has permissions {"contents":"read"}
-    ::debug::Installation 102 has access to all repositories in account org-a
+    ::debug::Installation 102 has access to all repos in account org-a
     Discovered 2 installations of "App A"
     "
   `);
@@ -304,7 +304,7 @@ it("discovers multiple installations of an app", async () => {
     registry.findInstallationForToken({
       role: undefined,
       owner: orgA.login,
-      repositories: "all",
+      repos: "all",
       permissions: { contents: "read" },
     }),
   ).toBe(appAInstallationA.id);
@@ -340,13 +340,13 @@ it("discovers multiple apps", async () => {
     ::debug::App 110 has no roles
     ::debug::Discovered app installation 111 for account org-a
     ::debug::Installation 111 has permissions {"contents":"read"}
-    ::debug::Installation 111 has access to all repositories in account org-a
+    ::debug::Installation 111 has access to all repos in account org-a
     Discovered 1 installation of "App A"
     ::debug::Discovered app "App B" (app-b / 120)
     ::debug::App 120 has no roles
     ::debug::Discovered app installation 121 for account org-a
     ::debug::Installation 121 has permissions {"actions":"read"}
-    ::debug::Installation 121 has access to all repositories in account org-a
+    ::debug::Installation 121 has access to all repos in account org-a
     Discovered 1 installation of "App B"
     "
   `);
@@ -354,7 +354,7 @@ it("discovers multiple apps", async () => {
     registry.findInstallationForToken({
       role: undefined,
       owner: orgA.login,
-      repositories: "all",
+      repos: "all",
       permissions: { contents: "read" },
     }),
   ).toBe(appAInstallationA.id);
@@ -362,7 +362,7 @@ it("discovers multiple apps", async () => {
     registry.findInstallationForToken({
       role: undefined,
       owner: orgA.login,
-      repositories: "all",
+      repos: "all",
       permissions: { actions: "read" },
     }),
   ).toBe(appBInstallationA.id);
@@ -400,7 +400,7 @@ it("skips apps with incorrect credentials", async () => {
     ::debug::App 120 has no roles
     ::debug::Discovered app installation 102 for account org-a
     ::debug::Installation 102 has permissions {"contents":"read"}
-    ::debug::Installation 102 has access to all repositories in account org-a
+    ::debug::Installation 102 has access to all repos in account org-a
     Discovered 1 installation of "App B"
     "
   `);
@@ -408,7 +408,7 @@ it("skips apps with incorrect credentials", async () => {
     registry.findInstallationForToken({
       role: undefined,
       owner: orgA.login,
-      repositories: "all",
+      repos: "all",
       permissions: { contents: "read" },
     }),
   ).toBe(appBInstallationA.id);
@@ -445,7 +445,7 @@ it("skips non-existent apps", async () => {
     ::debug::App 110 has no roles
     ::debug::Discovered app installation 101 for account org-a
     ::debug::Installation 101 has permissions {"contents":"read"}
-    ::debug::Installation 101 has access to all repositories in account org-a
+    ::debug::Installation 101 has access to all repos in account org-a
     Discovered 1 installation of "App A"
     "
   `);
@@ -453,7 +453,7 @@ it("skips non-existent apps", async () => {
     registry.findInstallationForToken({
       role: undefined,
       owner: orgA.login,
-      repositories: "all",
+      repos: "all",
       permissions: { contents: "read" },
     }),
   ).toBe(appAInstallationA.id);
@@ -502,7 +502,7 @@ it("reports unexpected HTTP statuses", async () => {
     ::debug::App 110 has no roles
     ::debug::Discovered app installation 111 for account org-a
     ::debug::Installation 111 has permissions {"contents":"read"}
-    ::debug::Installation 111 has access to all repositories in account org-a
+    ::debug::Installation 111 has access to all repos in account org-a
     Discovered 1 installation of "App A"
     ::debug::Failed to discover app 120
     ::error::Error: Failed to discover app at index 2: Error: Unexpected HTTP status 999 from GitHub API: <ERROR>
@@ -510,7 +510,7 @@ it("reports unexpected HTTP statuses", async () => {
     ::debug::App 130 has no roles
     ::debug::Discovered app installation 131 for account org-a
     ::debug::Installation 131 has permissions {"actions":"read"}
-    ::debug::Installation 131 has access to all repositories in account org-a
+    ::debug::Installation 131 has access to all repos in account org-a
     Discovered 1 installation of "App C"
     "
   `);
@@ -518,7 +518,7 @@ it("reports unexpected HTTP statuses", async () => {
     registry.findInstallationForToken({
       role: undefined,
       owner: orgA.login,
-      repositories: "all",
+      repos: "all",
       permissions: { contents: "read" },
     }),
   ).toBe(appAInstallationA.id);
@@ -526,7 +526,7 @@ it("reports unexpected HTTP statuses", async () => {
     registry.findInstallationForToken({
       role: undefined,
       owner: orgA.login,
-      repositories: "all",
+      repos: "all",
       permissions: { actions: "read" },
     }),
   ).toBe(appCInstallationA.id);
@@ -570,7 +570,7 @@ it("skips apps when discovery throws", async () => {
     ::debug::App 110 has no roles
     ::debug::Discovered app installation 111 for account org-a
     ::debug::Installation 111 has permissions {"contents":"read"}
-    ::debug::Installation 111 has access to all repositories in account org-a
+    ::debug::Installation 111 has access to all repos in account org-a
     Discovered 1 installation of "App A"
     ::debug::Failed to discover app 120
     ::error::Error: Failed to discover app at index 2: Error: <ERROR>
@@ -578,7 +578,7 @@ it("skips apps when discovery throws", async () => {
     ::debug::App 130 has no roles
     ::debug::Discovered app installation 131 for account org-a
     ::debug::Installation 131 has permissions {"actions":"read"}
-    ::debug::Installation 131 has access to all repositories in account org-a
+    ::debug::Installation 131 has access to all repos in account org-a
     Discovered 1 installation of "App C"
     "
   `);
@@ -586,7 +586,7 @@ it("skips apps when discovery throws", async () => {
     registry.findInstallationForToken({
       role: undefined,
       owner: orgA.login,
-      repositories: "all",
+      repos: "all",
       permissions: { contents: "read" },
     }),
   ).toBe(appAInstallationA.id);
@@ -594,7 +594,7 @@ it("skips apps when discovery throws", async () => {
     registry.findInstallationForToken({
       role: undefined,
       owner: orgA.login,
-      repositories: "all",
+      repos: "all",
       permissions: { actions: "read" },
     }),
   ).toBe(appCInstallationA.id);
@@ -634,12 +634,12 @@ it("skips installations when discovery throws", async () => {
     ::debug::App 110 has no roles
     ::debug::Discovered app installation 111 for account org-a
     ::debug::Installation 111 has permissions {"contents":"read"}
-    ::debug::Installation 111 has access to all repositories in account org-a
+    ::debug::Installation 111 has access to all repos in account org-a
     ::debug::Failed to discover installation for app at index 0
     ::error::Error: Failed to discover installation 112 for app 110: Error: <ERROR>
     ::debug::Discovered app installation 113 for account org-b
     ::debug::Installation 113 has permissions {"contents":"read"}
-    ::debug::Installation 113 has access to all repositories in account org-b
+    ::debug::Installation 113 has access to all repos in account org-b
     Discovered 2 installations of "App A"
     Failed to discover 1 installation of "App A"
     "
@@ -648,7 +648,7 @@ it("skips installations when discovery throws", async () => {
     registry.findInstallationForToken({
       role: undefined,
       owner: orgA.login,
-      repositories: "all",
+      repos: "all",
       permissions: { contents: "read" },
     }),
   ).toBe(appAInstallationA.id);
@@ -656,7 +656,7 @@ it("skips installations when discovery throws", async () => {
     registry.findInstallationForToken({
       role: undefined,
       owner: orgC.login,
-      repositories: "all",
+      repos: "all",
       permissions: { contents: "read" },
     }),
   ).toBe(appAInstallationC.id);

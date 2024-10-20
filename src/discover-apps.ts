@@ -167,15 +167,15 @@ async function discoverInstallation(
       installationId,
     );
 
-    const repositoryPages = installationOctokit.paginate.iterator(
+    const repoPages = installationOctokit.paginate.iterator(
       installationOctokit.rest.apps.listReposAccessibleToInstallation,
     );
 
-    for await (const { data } of repositoryPages) {
+    for await (const { data } of repoPages) {
       // Octokit type is broken, this is correct
       const repositories = data as unknown as (typeof data)["repositories"];
 
-      for (const repository of repositories) repos.push(repository);
+      for (const repo of repositories) repos.push(repo);
     }
   }
 
@@ -202,19 +202,19 @@ async function discoverInstallation(
 
   if (repository_selection === "all") {
     debug(
-      `Installation ${installationId} has access to all repositories ` +
+      `Installation ${installationId} has access to all repos ` +
         `in ${accountDescription}`,
     );
   } else if (repos.length < 1) {
-    debug(`Installation ${installationId} has access to no repositories`);
+    debug(`Installation ${installationId} has access to no repos`);
   } else {
     const repoNames = repos.map(({ full_name }) => full_name);
     debug(
-      `Installation ${installationId} has access to repositories ` +
+      `Installation ${installationId} has access to repos ` +
         `${JSON.stringify(repoNames)}`,
     );
   }
 
   registry.registerInstallation(installation);
-  registry.registerInstallationRepositories(installationId, repos);
+  registry.registerInstallationRepos(installationId, repos);
 }

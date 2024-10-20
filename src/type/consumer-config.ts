@@ -9,16 +9,10 @@ export type PartialConsumerConfig = {
       {
         token: string;
         github: {
-          organization: ConsumerConfigGitHubOrganizationSecretTypes;
-          organizations: Record<
-            string,
-            ConsumerConfigGitHubOrganizationSecretTypes
-          >;
-          repository: ConsumerConfigGitHubRepositorySecretTypes;
-          repositories: Record<
-            string,
-            ConsumerConfigGitHubRepositorySecretTypes
-          >;
+          org: ConsumerConfigGitHubOrgSecretTypes;
+          orgs: Record<string, ConsumerConfigGitHubOrgSecretTypes>;
+          repo: ConsumerConfigGitHubRepoSecretTypes;
+          repos: Record<string, ConsumerConfigGitHubRepoSecretTypes>;
         };
       }
     >;
@@ -33,13 +27,13 @@ export type ConsumerConfig = PartialConsumerConfig & {
   >;
 };
 
-type ConsumerConfigGitHubOrganizationSecretTypes = {
+type ConsumerConfigGitHubOrgSecretTypes = {
   actions: boolean;
   codespaces: boolean;
   dependabot: boolean;
 };
 
-type ConsumerConfigGitHubRepositorySecretTypes = {
+type ConsumerConfigGitHubRepoSecretTypes = {
   actions: boolean;
   codespaces: boolean;
   dependabot: boolean;

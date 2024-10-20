@@ -6,5 +6,5 @@ provision:
     TO_REPO_ACTIONS:
       token: owner-a/.tokenA
       github:
-        repository:
+        repo:
           actions: true

@@ -16,7 +16,7 @@ export type InstallationPermissionsWithNone = {
   [K in keyof InstallationPermissions]: "none" | InstallationPermissions[K];
 };
 
-export type Repository =
+export type Repo =
   Endpoints["GET /installation/repositories"]["response"]["data"]["repositories"][0];
 
 export type Permissions = NonNullable<

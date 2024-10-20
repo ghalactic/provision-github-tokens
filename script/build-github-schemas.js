@@ -14,7 +14,7 @@ await writeSchema(
     return {
       ...schema,
       description:
-        "The permissions that the consumer is requesting for the specified repositories.",
+        "The permissions that the consumer is requesting for the specified repos.",
       title: undefined,
       additionalProperties: {
         type: "string",

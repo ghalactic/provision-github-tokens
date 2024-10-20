@@ -22,7 +22,7 @@ it("parses comprehensive consumer config", async () => {
         shared: false,
         as: undefined,
         owner: "owner-self",
-        repositories: ["repo-a"],
+        repos: ["repo-a"],
         permissions: { contents: "read" },
       },
 
@@ -30,7 +30,7 @@ it("parses comprehensive consumer config", async () => {
         shared: false,
         as: undefined,
         owner: "owner-self",
-        repositories: ["repo-a", "repo-b"],
+        repos: ["repo-a", "repo-b"],
         permissions: { contents: "read", metadata: "read" },
       },
 
@@ -38,7 +38,7 @@ it("parses comprehensive consumer config", async () => {
         shared: false,
         as: undefined,
         owner: "owner-self",
-        repositories: ["repo-a"],
+        repos: ["repo-a"],
         permissions: { contents: "read" },
       },
 
@@ -46,7 +46,7 @@ it("parses comprehensive consumer config", async () => {
         shared: true,
         as: undefined,
         owner: "owner-self",
-        repositories: ["repo-a"],
+        repos: ["repo-a"],
         permissions: { contents: "read" },
       },
 
@@ -54,7 +54,7 @@ it("parses comprehensive consumer config", async () => {
         shared: false,
         as: "role-a",
         owner: "owner-self",
-        repositories: ["repo-a"],
+        repos: ["repo-a"],
         permissions: { contents: "write" },
       },
 
@@ -62,7 +62,7 @@ it("parses comprehensive consumer config", async () => {
         shared: false,
         as: undefined,
         owner: "owner-a",
-        repositories: ["repo-a"],
+        repos: ["repo-a"],
         permissions: { contents: "read" },
       },
 
@@ -70,7 +70,7 @@ it("parses comprehensive consumer config", async () => {
         shared: true,
         as: "role-a",
         owner: "owner-a",
-        repositories: ["repo-a", "repo-*"],
+        repos: ["repo-a", "repo-*"],
         permissions: { contents: "write", metadata: "read" },
       },
 
@@ -78,7 +78,7 @@ it("parses comprehensive consumer config", async () => {
         shared: false,
         as: "role-a",
         owner: "owner-self",
-        repositories: ["*"],
+        repos: ["*"],
         permissions: {
           actions: "write",
           administration: "write",
@@ -138,56 +138,56 @@ it("parses comprehensive consumer config", async () => {
         TO_REPO_ACTIONS: {
           token: "owner-self/repo-self.tokenA",
           github: {
-            repository: {
+            repo: {
               actions: true,
               codespaces: false,
               dependabot: false,
               environments: [],
             },
-            repositories: {},
-            organization: {
+            repos: {},
+            org: {
               actions: false,
               codespaces: false,
               dependabot: false,
             },
-            organizations: {},
+            orgs: {},
           },
         },
 
         TO_ORG_DEPENDABOT: {
           token: "owner-self/other-repo.tokenB",
           github: {
-            repository: {
+            repo: {
               actions: false,
               codespaces: false,
               dependabot: false,
               environments: [],
             },
-            repositories: {},
-            organization: {
+            repos: {},
+            org: {
               actions: false,
               codespaces: false,
               dependabot: true,
             },
-            organizations: {},
+            orgs: {},
           },
         },
 
         TO_EVERYWHERE: {
           token: "other-org/repo.tokenC",
           github: {
-            organization: { actions: true, codespaces: true, dependabot: true },
-            organizations: {
+            org: { actions: true, codespaces: true, dependabot: true },
+            orgs: {
               "org-a": { actions: true, codespaces: false, dependabot: false },
               "org-b": { actions: true, codespaces: true, dependabot: true },
             },
-            repository: {
+            repo: {
               actions: true,
               codespaces: true,
               dependabot: true,
               environments: ["env-a", "env-b"],
             },
-            repositories: {
+            repos: {
               "owner-self/repo-a": {
                 actions: true,
                 codespaces: false,
@@ -207,19 +207,19 @@ it("parses comprehensive consumer config", async () => {
         TO_NOWHERE: {
           token: "owner-self/repo-self.tokenD",
           github: {
-            repository: {
+            repo: {
               actions: false,
               codespaces: false,
               dependabot: false,
               environments: [],
             },
-            repositories: {},
-            organization: {
+            repos: {},
+            org: {
               actions: false,
               codespaces: false,
               dependabot: false,
             },
-            organizations: {},
+            orgs: {},
           },
         },
       },
@@ -282,7 +282,7 @@ it("throws when an secret token reference has an invalid owner", async () => {
   );
 });
 
-it("throws when an secret token reference has an empty repository", async () => {
+it("throws when an secret token reference has an empty repo", async () => {
   const fixturePath = join(fixturesPath, "empty-token-reference-repo.yml");
   const yaml = await readFile(fixturePath, "utf-8");
 
@@ -291,7 +291,7 @@ it("throws when an secret token reference has an empty repository", async () => 
   );
 });
 
-it("throws when an secret token reference has an invalid repository", async () => {
+it("throws when an secret token reference has an invalid repo", async () => {
   const fixturePath = join(fixturesPath, "invalid-token-reference-repo.yml");
   const yaml = await readFile(fixturePath, "utf-8");
 

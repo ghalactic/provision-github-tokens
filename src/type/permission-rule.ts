@@ -1,10 +1,10 @@
 import type { InstallationPermissions } from "./github-api.js";
 
 export type PermissionsRules = {
-  repositories: RepositoryPermissionRule[];
+  repos: RepoPermissionRule[];
 };
 
-export type RepositoryPermissionRule = {
+export type RepoPermissionRule = {
   description?: string;
   resources: string[];
   consumers: string[];

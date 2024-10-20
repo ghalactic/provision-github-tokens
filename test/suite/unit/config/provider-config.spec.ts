@@ -19,7 +19,7 @@ it("parses comprehensive provider config", async () => {
 
     permissions: {
       rules: {
-        repositories: [
+        repos: [
           {
             description: "Access across all owners and repos",
             resources: ["*/*"],
@@ -186,9 +186,9 @@ it("parses comprehensive provider config", async () => {
             secrets: ["*"],
             to: {
               github: {
-                organization: {},
-                organizations: {},
-                repository: {
+                org: {},
+                orgs: {},
+                repo: {
                   actions: "allow",
                   codespaces: "allow",
                   dependabot: "allow",
@@ -196,7 +196,7 @@ it("parses comprehensive provider config", async () => {
                     "*": "allow",
                   },
                 },
-                repositories: {},
+                repos: {},
               },
             },
           },
@@ -207,16 +207,16 @@ it("parses comprehensive provider config", async () => {
             requesters: ["owner-self/repo-a", "owner-self/repo-b"],
             to: {
               github: {
-                organization: {
+                org: {
                   actions: "allow",
                   codespaces: "allow",
                   dependabot: "allow",
                 },
-                organizations: {},
-                repository: {
+                orgs: {},
+                repo: {
                   environments: {},
                 },
-                repositories: {},
+                repos: {},
               },
             },
           },
@@ -227,8 +227,8 @@ it("parses comprehensive provider config", async () => {
             requesters: ["owner-self/repo-a", "owner-self/repo-b"],
             to: {
               github: {
-                organization: {},
-                organizations: {
+                org: {},
+                orgs: {
                   "org-a": {
                     dependabot: "allow",
                   },
@@ -236,10 +236,10 @@ it("parses comprehensive provider config", async () => {
                     dependabot: "allow",
                   },
                 },
-                repository: {
+                repo: {
                   environments: {},
                 },
-                repositories: {},
+                repos: {},
               },
             },
           },
@@ -250,16 +250,16 @@ it("parses comprehensive provider config", async () => {
             requesters: ["owner-self/repo-a", "owner-self/repo-b"],
             to: {
               github: {
-                organization: {},
-                organizations: {
+                org: {},
+                orgs: {
                   "*": {
                     dependabot: "allow",
                   },
                 },
-                repository: {
+                repo: {
                   environments: {},
                 },
-                repositories: {},
+                repos: {},
               },
             },
           },
@@ -270,12 +270,12 @@ it("parses comprehensive provider config", async () => {
             requesters: ["owner-self/repo-a"],
             to: {
               github: {
-                organization: {},
-                organizations: {},
-                repository: {
+                org: {},
+                orgs: {},
+                repo: {
                   environments: {},
                 },
-                repositories: {
+                repos: {
                   "owner-self/repo-b": {
                     codespaces: "allow",
                     environments: {},
@@ -295,12 +295,12 @@ it("parses comprehensive provider config", async () => {
             requesters: ["owner-self/repo-a"],
             to: {
               github: {
-                organization: {},
-                organizations: {},
-                repository: {
+                org: {},
+                orgs: {},
+                repo: {
                   environments: {},
                 },
-                repositories: {
+                repos: {
                   "owner-self/repo-b": {
                     environments: {
                       "env-a": "allow",
@@ -318,12 +318,12 @@ it("parses comprehensive provider config", async () => {
             requesters: ["owner-self/repo-a", "owner-self/repo-b"],
             to: {
               github: {
-                organization: {},
-                organizations: {},
-                repository: {
+                org: {},
+                orgs: {},
+                repo: {
                   environments: {},
                 },
-                repositories: {
+                repos: {
                   "*/*": {
                     actions: "allow",
                     codespaces: "allow",
@@ -343,12 +343,12 @@ it("parses comprehensive provider config", async () => {
             requesters: ["owner-self/repo-a", "owner-self/repo-b"],
             to: {
               github: {
-                organization: {},
-                organizations: {},
-                repository: {
+                org: {},
+                orgs: {},
+                repo: {
                   environments: {},
                 },
-                repositories: {
+                repos: {
                   "owner-b/*": {
                     actions: "allow",
                     environments: {},
@@ -364,10 +364,10 @@ it("parses comprehensive provider config", async () => {
             requesters: ["owner-self/repo-a", "owner-self/repo-b"],
             to: {
               github: {
-                organization: {
+                org: {
                   actions: "allow",
                 },
-                organizations: {
+                orgs: {
                   "org-a": {
                     actions: "allow",
                   },
@@ -375,11 +375,11 @@ it("parses comprehensive provider config", async () => {
                     actions: "allow",
                   },
                 },
-                repository: {
+                repo: {
                   actions: "allow",
                   environments: {},
                 },
-                repositories: {
+                repos: {
                   "owner-self/repo-a": {
                     actions: "allow",
                     environments: {},
@@ -399,18 +399,18 @@ it("parses comprehensive provider config", async () => {
             requesters: ["*/*"],
             to: {
               github: {
-                organization: {},
-                organizations: {
+                org: {},
+                orgs: {
                   "*": {
                     actions: "deny",
                     codespaces: "deny",
                     dependabot: "deny",
                   },
                 },
-                repository: {
+                repo: {
                   environments: {},
                 },
-                repositories: {
+                repos: {
                   "*/*": {
                     actions: "deny",
                     codespaces: "deny",
@@ -430,9 +430,9 @@ it("parses comprehensive provider config", async () => {
             requesters: ["owner-self/repo-a", "owner-self/repo-b"],
             to: {
               github: {
-                organization: {},
-                organizations: {},
-                repository: {
+                org: {},
+                orgs: {},
+                repo: {
                   actions: "deny",
                   codespaces: "deny",
                   dependabot: "deny",
@@ -440,7 +440,7 @@ it("parses comprehensive provider config", async () => {
                     "*": "deny",
                   },
                 },
-                repositories: {},
+                repos: {},
               },
             },
           },
@@ -451,9 +451,9 @@ it("parses comprehensive provider config", async () => {
             requesters: ["owner-self/repo-a"],
             to: {
               github: {
-                organization: {},
-                organizations: {},
-                repository: {
+                org: {},
+                orgs: {},
+                repo: {
                   actions: "allow",
                   codespaces: "deny",
                   dependabot: "allow",
@@ -463,7 +463,7 @@ it("parses comprehensive provider config", async () => {
                     "env-b": "deny",
                   },
                 },
-                repositories: {},
+                repos: {},
               },
             },
           },
@@ -479,7 +479,7 @@ it("parses provider configs that are just comments", async () => {
 
   expect(parseProviderConfig("owner-self", "repo-self", yaml)).toEqual({
     $schema: providerSchema.$id,
-    permissions: { rules: { repositories: [] } },
+    permissions: { rules: { repos: [] } },
     provision: { rules: { secrets: [] } },
   } satisfies ProviderConfig);
 });
@@ -487,7 +487,7 @@ it("parses provider configs that are just comments", async () => {
 it("parses provider configs that are empty", async () => {
   expect(parseProviderConfig("owner-self", "repo-self", "")).toEqual({
     $schema: providerSchema.$id,
-    permissions: { rules: { repositories: [] } },
+    permissions: { rules: { repos: [] } },
     provision: { rules: { secrets: [] } },
   } satisfies ProviderConfig);
 });

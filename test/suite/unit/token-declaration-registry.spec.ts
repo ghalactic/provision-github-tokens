@@ -5,12 +5,12 @@ import type { TokenDeclaration } from "../../../src/type/token-declaration.js";
 it("finds local token declarations", () => {
   const declarationA: TokenDeclaration = {
     shared: false,
-    repositories: ["owner-x/repo-x"],
+    repos: ["owner-x/repo-x"],
     permissions: { metadata: "read" },
   };
   const declarationB: TokenDeclaration = {
     shared: false,
-    repositories: ["owner-y/repo-y"],
+    repos: ["owner-y/repo-y"],
     permissions: { contents: "write" },
   };
 
@@ -37,12 +37,12 @@ it("finds local token declarations", () => {
 it("finds shared token declarations", () => {
   const declarationA: TokenDeclaration = {
     shared: true,
-    repositories: ["owner-x/repo-x"],
+    repos: ["owner-x/repo-x"],
     permissions: { metadata: "read" },
   };
   const declarationB: TokenDeclaration = {
     shared: true,
-    repositories: ["owner-y/repo-y"],
+    repos: ["owner-y/repo-y"],
     permissions: { contents: "write" },
   };
 
@@ -66,15 +66,15 @@ it("finds shared token declarations", () => {
   ).toEqual([declarationB, true]);
 });
 
-it("doesn't find unshared tokens in other repositories", () => {
+it("doesn't find unshared tokens in other repos", () => {
   const declarationA: TokenDeclaration = {
     shared: false,
-    repositories: ["owner-x/repo-x"],
+    repos: ["owner-x/repo-x"],
     permissions: { metadata: "read" },
   };
   const declarationB: TokenDeclaration = {
     shared: false,
-    repositories: ["owner-y/repo-y"],
+    repos: ["owner-y/repo-y"],
     permissions: { contents: "write" },
   };
 

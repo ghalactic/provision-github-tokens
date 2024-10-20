@@ -7,7 +7,7 @@ const explain = createTextRepoAuthExplainer();
 it("allows tokens that should be allowed", () => {
   const authorizer = createTokenAuthorizer({
     rules: {
-      repositories: [
+      repos: [
         {
           resources: ["owner-a/repo-a", "owner-a/repo-b"],
           consumers: ["owner-x/repo-x"],
@@ -19,10 +19,10 @@ it("allows tokens that should be allowed", () => {
 
   expect(
     explain(
-      authorizer.authorizeForRepository("owner-x", "repo-x", {
+      authorizer.authorizeForRepo("owner-x", "repo-x", {
         role: undefined,
         owner: "owner-a",
-        repositories: ["repo-a"],
+        repos: ["repo-a"],
         permissions: { contents: "write" },
       }),
     ),
@@ -34,10 +34,10 @@ it("allows tokens that should be allowed", () => {
   `);
   expect(
     explain(
-      authorizer.authorizeForRepository("owner-x", "repo-x", {
+      authorizer.authorizeForRepo("owner-x", "repo-x", {
         role: undefined,
         owner: "owner-a",
-        repositories: ["repo-b"],
+        repos: ["repo-b"],
         permissions: { contents: "write", metadata: "read" },
       }),
     ),
@@ -50,10 +50,10 @@ it("allows tokens that should be allowed", () => {
   `);
   expect(
     explain(
-      authorizer.authorizeForRepository("owner-x", "repo-x", {
+      authorizer.authorizeForRepo("owner-x", "repo-x", {
         role: undefined,
         owner: "owner-a",
-        repositories: ["repo-a", "repo-b"],
+        repos: ["repo-a", "repo-b"],
         permissions: { contents: "write", metadata: "read" },
       }),
     ),
@@ -73,7 +73,7 @@ it("allows tokens that should be allowed", () => {
 it("allows tokens when the actual access level is higher than requested", () => {
   const authorizer = createTokenAuthorizer({
     rules: {
-      repositories: [
+      repos: [
         {
           resources: ["owner-a/repo-a"],
           consumers: ["owner-x/repo-x"],
@@ -85,10 +85,10 @@ it("allows tokens when the actual access level is higher than requested", () => 
 
   expect(
     explain(
-      authorizer.authorizeForRepository("owner-x", "repo-x", {
+      authorizer.authorizeForRepo("owner-x", "repo-x", {
         role: undefined,
         owner: "owner-a",
-        repositories: ["repo-a"],
+        repos: ["repo-a"],
         permissions: { metadata: "read", repository_projects: "write" },
       }),
     ),
@@ -104,7 +104,7 @@ it("allows tokens when the actual access level is higher than requested", () => 
 it("allows tokens when a later rule allows access that a previous rule denied", () => {
   const authorizer = createTokenAuthorizer({
     rules: {
-      repositories: [
+      repos: [
         {
           resources: ["owner-a/repo-a"],
           consumers: ["owner-x/repo-x"],
@@ -121,10 +121,10 @@ it("allows tokens when a later rule allows access that a previous rule denied", 
 
   expect(
     explain(
-      authorizer.authorizeForRepository("owner-x", "repo-x", {
+      authorizer.authorizeForRepo("owner-x", "repo-x", {
         role: undefined,
         owner: "owner-a",
-        repositories: ["repo-a"],
+        repos: ["repo-a"],
         permissions: { contents: "write", metadata: "read" },
       }),
     ),
@@ -143,7 +143,7 @@ it("allows tokens when a later rule allows access that a previous rule denied", 
 it("supports rule descriptions", () => {
   const authorizer = createTokenAuthorizer({
     rules: {
-      repositories: [
+      repos: [
         {
           description: "<description>",
           resources: ["owner-a/repo-a"],
@@ -156,10 +156,10 @@ it("supports rule descriptions", () => {
 
   expect(
     explain(
-      authorizer.authorizeForRepository("owner-x", "repo-x", {
+      authorizer.authorizeForRepo("owner-x", "repo-x", {
         role: undefined,
         owner: "owner-a",
-        repositories: ["repo-a"],
+        repos: ["repo-a"],
         permissions: { metadata: "read" },
       }),
     ),
@@ -174,7 +174,7 @@ it("supports rule descriptions", () => {
 it("sorts repos and permissions in the explanation", () => {
   const authorizer = createTokenAuthorizer({
     rules: {
-      repositories: [
+      repos: [
         {
           resources: ["owner-a/repo-b", "owner-a/repo-a"],
           consumers: ["owner-x/repo-x"],
@@ -186,10 +186,10 @@ it("sorts repos and permissions in the explanation", () => {
 
   expect(
     explain(
-      authorizer.authorizeForRepository("owner-x", "repo-x", {
+      authorizer.authorizeForRepo("owner-x", "repo-x", {
         role: undefined,
         owner: "owner-a",
-        repositories: ["repo-b", "repo-a"],
+        repos: ["repo-b", "repo-a"],
         permissions: { metadata: "read", contents: "write" },
       }),
     ),
@@ -209,7 +209,7 @@ it("sorts repos and permissions in the explanation", () => {
 it("doesn't allow tokens for unauthorized consumer repos", () => {
   const authorizer = createTokenAuthorizer({
     rules: {
-      repositories: [
+      repos: [
         {
           resources: ["owner-a/repo-a", "owner-a/repo-b"],
           consumers: ["owner-x/repo-x"],
@@ -221,10 +221,10 @@ it("doesn't allow tokens for unauthorized consumer repos", () => {
 
   expect(
     explain(
-      authorizer.authorizeForRepository("owner-y", "repo-x", {
+      authorizer.authorizeForRepo("owner-y", "repo-x", {
         role: undefined,
         owner: "owner-a",
-        repositories: ["repo-a"],
+        repos: ["repo-a"],
         permissions: { metadata: "read" },
       }),
     ),
@@ -234,10 +234,10 @@ it("doesn't allow tokens for unauthorized consumer repos", () => {
   `);
   expect(
     explain(
-      authorizer.authorizeForRepository("owner-x", "repo-y", {
+      authorizer.authorizeForRepo("owner-x", "repo-y", {
         role: undefined,
         owner: "owner-a",
-        repositories: ["repo-a"],
+        repos: ["repo-a"],
         permissions: { metadata: "read" },
       }),
     ),
@@ -247,10 +247,10 @@ it("doesn't allow tokens for unauthorized consumer repos", () => {
   `);
   expect(
     explain(
-      authorizer.authorizeForRepository("owner-y", "repo-y", {
+      authorizer.authorizeForRepo("owner-y", "repo-y", {
         role: undefined,
         owner: "owner-a",
-        repositories: ["repo-a"],
+        repos: ["repo-a"],
         permissions: { metadata: "read" },
       }),
     ),
@@ -263,7 +263,7 @@ it("doesn't allow tokens for unauthorized consumer repos", () => {
 it("doesn't allow tokens for unauthorized resource repos", () => {
   const authorizer = createTokenAuthorizer({
     rules: {
-      repositories: [
+      repos: [
         {
           resources: ["owner-a/repo-a", "owner-a/repo-b"],
           consumers: ["owner-x/repo-x"],
@@ -275,10 +275,10 @@ it("doesn't allow tokens for unauthorized resource repos", () => {
 
   expect(
     explain(
-      authorizer.authorizeForRepository("owner-x", "repo-x", {
+      authorizer.authorizeForRepo("owner-x", "repo-x", {
         role: undefined,
         owner: "owner-a",
-        repositories: ["repo-y"],
+        repos: ["repo-y"],
         permissions: { contents: "write" },
       }),
     ),
@@ -288,10 +288,10 @@ it("doesn't allow tokens for unauthorized resource repos", () => {
   `);
   expect(
     explain(
-      authorizer.authorizeForRepository("owner-x", "repo-x", {
+      authorizer.authorizeForRepo("owner-x", "repo-x", {
         role: undefined,
         owner: "owner-y",
-        repositories: ["repo-a"],
+        repos: ["repo-a"],
         permissions: { contents: "write" },
       }),
     ),
@@ -304,7 +304,7 @@ it("doesn't allow tokens for unauthorized resource repos", () => {
 it("doesn't allow tokens where only some of the resources are authorized", () => {
   const authorizer = createTokenAuthorizer({
     rules: {
-      repositories: [
+      repos: [
         {
           resources: ["owner-a/repo-a", "owner-a/repo-b"],
           consumers: ["owner-x/repo-x"],
@@ -316,10 +316,10 @@ it("doesn't allow tokens where only some of the resources are authorized", () =>
 
   expect(
     explain(
-      authorizer.authorizeForRepository("owner-x", "repo-x", {
+      authorizer.authorizeForRepo("owner-x", "repo-x", {
         role: undefined,
         owner: "owner-a",
-        repositories: ["repo-a", "repo-b", "repo-y"],
+        repos: ["repo-a", "repo-b", "repo-y"],
         permissions: { contents: "write" },
       }),
     ),
@@ -338,7 +338,7 @@ it("doesn't allow tokens where only some of the resources are authorized", () =>
 it("doesn't allow tokens for unauthorized permissions", () => {
   const authorizer = createTokenAuthorizer({
     rules: {
-      repositories: [
+      repos: [
         {
           resources: ["owner-a/repo-a"],
           consumers: ["owner-x/repo-x"],
@@ -350,10 +350,10 @@ it("doesn't allow tokens for unauthorized permissions", () => {
 
   expect(
     explain(
-      authorizer.authorizeForRepository("owner-x", "repo-x", {
+      authorizer.authorizeForRepo("owner-x", "repo-x", {
         role: undefined,
         owner: "owner-a",
-        repositories: ["repo-a"],
+        repos: ["repo-a"],
         permissions: { contents: "read" },
       }),
     ),
@@ -368,7 +368,7 @@ it("doesn't allow tokens for unauthorized permissions", () => {
 it("doesn't allow tokens where only some of the permissions are authorized", () => {
   const authorizer = createTokenAuthorizer({
     rules: {
-      repositories: [
+      repos: [
         {
           resources: ["owner-a/repo-a"],
           consumers: ["owner-x/repo-x"],
@@ -380,10 +380,10 @@ it("doesn't allow tokens where only some of the permissions are authorized", () 
 
   expect(
     explain(
-      authorizer.authorizeForRepository("owner-x", "repo-x", {
+      authorizer.authorizeForRepo("owner-x", "repo-x", {
         role: undefined,
         owner: "owner-a",
-        repositories: ["repo-a"],
+        repos: ["repo-a"],
         permissions: { contents: "read", metadata: "read" },
       }),
     ),
@@ -399,7 +399,7 @@ it("doesn't allow tokens where only some of the permissions are authorized", () 
 it("doesn't allow tokens when the actual access level is lower than requested", () => {
   const authorizer = createTokenAuthorizer({
     rules: {
-      repositories: [
+      repos: [
         {
           resources: ["owner-a/repo-a"],
           consumers: ["owner-x/repo-x"],
@@ -411,10 +411,10 @@ it("doesn't allow tokens when the actual access level is lower than requested", 
 
   expect(
     explain(
-      authorizer.authorizeForRepository("owner-x", "repo-x", {
+      authorizer.authorizeForRepo("owner-x", "repo-x", {
         role: undefined,
         owner: "owner-a",
-        repositories: ["repo-a"],
+        repos: ["repo-a"],
         permissions: { repository_projects: "admin" },
       }),
     ),
@@ -429,7 +429,7 @@ it("doesn't allow tokens when the actual access level is lower than requested", 
 it("doesn't allow tokens when a later rule denies access that a previous rule allowed", () => {
   const authorizer = createTokenAuthorizer({
     rules: {
-      repositories: [
+      repos: [
         {
           resources: ["owner-a/repo-a"],
           consumers: ["owner-x/repo-x"],
@@ -446,10 +446,10 @@ it("doesn't allow tokens when a later rule denies access that a previous rule al
 
   expect(
     explain(
-      authorizer.authorizeForRepository("owner-x", "repo-x", {
+      authorizer.authorizeForRepo("owner-x", "repo-x", {
         role: undefined,
         owner: "owner-a",
-        repositories: ["repo-a"],
+        repos: ["repo-a"],
         permissions: { contents: "write" },
       }),
     ),
@@ -466,7 +466,7 @@ it("doesn't allow tokens when a later rule denies access that a previous rule al
 it("doesn't allow tokens when a later rule removes access that a previous rule allowed", () => {
   const authorizer = createTokenAuthorizer({
     rules: {
-      repositories: [
+      repos: [
         {
           resources: ["owner-a/repo-a"],
           consumers: ["owner-x/repo-x"],
@@ -483,10 +483,10 @@ it("doesn't allow tokens when a later rule removes access that a previous rule a
 
   expect(
     explain(
-      authorizer.authorizeForRepository("owner-x", "repo-x", {
+      authorizer.authorizeForRepo("owner-x", "repo-x", {
         role: undefined,
         owner: "owner-a",
-        repositories: ["repo-a"],
+        repos: ["repo-a"],
         permissions: { contents: "read" },
       }),
     ),

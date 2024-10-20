@@ -4,25 +4,21 @@ import type {
   Installation,
   PermissionAccess,
   PermissionName,
-  Repository,
+  Repo,
 } from "./type/github-api.js";
 import type { TokenRequest } from "./type/token-request.js";
 
 export type AppRegistry = {
   registerApp: (roles: string[], app: App) => void;
   registerInstallation: (installation: Installation) => void;
-  registerInstallationRepositories: (
-    installationId: number,
-    repositories: Repository[],
-  ) => void;
-
+  registerInstallationRepos: (installationId: number, repos: Repo[]) => void;
   findInstallationForToken: (request: TokenRequest) => number | undefined;
 };
 
 export function createAppRegistry(): AppRegistry {
   const apps: Map<number, AppWithRoles> = new Map();
   const installations: Map<number, Installation> = new Map();
-  const installationRepos: Map<Installation, Repository[]> = new Map();
+  const installationRepos: Map<Installation, Repo[]> = new Map();
 
   return {
     registerApp: (roles, app) => {
@@ -33,13 +29,13 @@ export function createAppRegistry(): AppRegistry {
       installations.set(installation.id, installation);
     },
 
-    registerInstallationRepositories: (installationId, repositories) => {
+    registerInstallationRepos: (installationId, repos) => {
       const installation = installations.get(installationId);
       if (!installation) {
         throw new Error(`Installation ${installationId} not registered`);
       }
 
-      installationRepos.set(installation, repositories);
+      installationRepos.set(installation, repos);
     },
 
     findInstallationForToken: (request) => {
@@ -56,19 +52,17 @@ export function createAppRegistry(): AppRegistry {
         }
       }
 
-      const tokenRepos: Record<string, true> = Array.isArray(
-        request.repositories,
-      )
-        ? request.repositories.reduce(
-            (repositories, name) => {
-              repositories[name] = true;
-              return repositories;
+      const tokenRepos: Record<string, true> = Array.isArray(request.repos)
+        ? request.repos.reduce(
+            (repos, name) => {
+              repos[name] = true;
+              return repos;
             },
             {} as Record<string, true>,
           )
         : {};
 
-      for (const [installation, repositories] of installationRepos) {
+      for (const [installation, repos] of installationRepos) {
         const appWithRoles = apps.get(installation.app_id);
 
         /* v8 ignore start */
@@ -117,16 +111,13 @@ export function createAppRegistry(): AppRegistry {
           continue;
         }
 
-        for (const repository of repositories) {
-          if (
-            repository.owner.login === request.owner &&
-            tokenRepos[repository.name]
-          ) {
+        for (const repo of repos) {
+          if (repo.owner.login === request.owner && tokenRepos[repo.name]) {
             ++repoMatchCount;
           }
         }
 
-        if (repoMatchCount !== request.repositories.length) continue;
+        if (repoMatchCount !== request.repos.length) continue;
 
         return installation.id;
       }

@@ -3,43 +3,43 @@ $schema: https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.
 
 tokens:
   oneRepOnePerm:
-    repositories: [repo-a]
+    repos: [repo-a]
     permissions: { contents: read }
 
   multiRepoMultiPerm:
-    repositories: [repo-a, repo-b]
+    repos: [repo-a, repo-b]
     permissions: { contents: read, metadata: read }
 
   withSharedFalse:
     shared: false
-    repositories: [repo-a]
+    repos: [repo-a]
     permissions: { contents: read }
 
   withSharedTrue:
     shared: true
-    repositories: [repo-a]
+    repos: [repo-a]
     permissions: { contents: read }
 
   withAs:
     as: role-a
-    repositories: [repo-a]
+    repos: [repo-a]
     permissions: { contents: write }
 
   withOwner:
     owner: owner-a
-    repositories: [repo-a]
+    repos: [repo-a]
     permissions: { contents: read }
 
   withAllOptions:
     shared: true
     as: role-a
     owner: owner-a
-    repositories: [repo-a, repo-*]
+    repos: [repo-a, repo-*]
     permissions: { contents: write, metadata: read }
 
   withAllPermissions:
     as: role-a
-    repositories: ["*"]
+    repos: ["*"]
     permissions:
       actions: write
       administration: write
@@ -96,35 +96,35 @@ provision:
     TO_REPO_ACTIONS:
       token: tokenA
       github:
-        repository:
+        repo:
           actions: true
 
     TO_ORG_DEPENDABOT:
       token: other-repo.tokenB
       github:
-        organization:
+        org:
           dependabot: true
 
     TO_EVERYWHERE:
       token: other-org/repo.tokenC
       github:
-        organization:
+        org:
           actions: true
           codespaces: true
           dependabot: true
-        organizations:
+        orgs:
           org-a:
             actions: true
           org-b:
             actions: true
             codespaces: true
             dependabot: true
-        repository:
+        repo:
           actions: true
           codespaces: true
           dependabot: true
           environments: [env-a, env-b]
-        repositories:
+        repos:
           repo-a:
             actions: true
           owner-a/repo-a:

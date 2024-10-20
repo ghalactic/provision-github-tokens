@@ -1,27 +1,27 @@
 import type { InstallationPermissions } from "./github-api.js";
-import type { RepositoryPermissionRule } from "./permission-rule.js";
+import type { RepoPermissionRule } from "./permission-rule.js";
 
-export type RepositoryTokenAuthorizationResultExplainer<T> = (
-  result: RepositoryTokenAuthorizationResult,
+export type RepoTokenAuthorizationResultExplainer<T> = (
+  result: RepoTokenAuthorizationResult,
 ) => T;
 
-export type RepositoryTokenAuthorizationResult = {
+export type RepoTokenAuthorizationResult = {
   consumer: string;
   resourceOwner: string;
-  resources: Record<string, RepositoryTokenAuthorizationResourceResult>;
+  resources: Record<string, RepoTokenAuthorizationResourceResult>;
   want: InstallationPermissions;
   isAllowed: boolean;
 };
 
-export type RepositoryTokenAuthorizationResourceResult = {
-  rules: RepositoryTokenAuthorizationResourceResultRuleResult[];
+export type RepoTokenAuthorizationResourceResult = {
+  rules: RepoTokenAuthorizationResourceResultRuleResult[];
   have: InstallationPermissions;
   isAllowed: boolean;
 };
 
-export type RepositoryTokenAuthorizationResourceResultRuleResult = {
+export type RepoTokenAuthorizationResourceResultRuleResult = {
   index: number;
-  rule: RepositoryPermissionRule;
+  rule: RepoPermissionRule;
   have: InstallationPermissions;
   isAllowed: boolean;
 };

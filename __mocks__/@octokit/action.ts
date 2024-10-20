@@ -109,7 +109,7 @@ async function* listReposAccessibleToInstallation(
     if (installation.app_id !== appId) continue;
     if (installation.id !== installationId) continue;
 
-    for (const repo of installation.repositories) {
+    for (const repo of installation.repos) {
       page.push(repo);
 
       if (page.length >= per_page) {

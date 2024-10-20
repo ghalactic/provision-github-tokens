@@ -11,16 +11,10 @@ export type ProviderConfig = {
         requesters: string[];
         to: {
           github: {
-            organization: ProviderConfigGitHubOrganizationSecretTypes;
-            organizations: Record<
-              string,
-              ProviderConfigGitHubOrganizationSecretTypes
-            >;
-            repository: ProviderConfigGitHubRepositorySecretTypes;
-            repositories: Record<
-              string,
-              ProviderConfigGitHubRepositorySecretTypes
-            >;
+            org: ProviderConfigGitHubOrgSecretTypes;
+            orgs: Record<string, ProviderConfigGitHubOrgSecretTypes>;
+            repo: ProviderConfigGitHubRepoSecretTypes;
+            repos: Record<string, ProviderConfigGitHubRepoSecretTypes>;
           };
         };
       }[];
@@ -32,13 +26,13 @@ export type ProviderPermissionsConfig = {
   rules: PermissionsRules;
 };
 
-type ProviderConfigGitHubOrganizationSecretTypes = {
+type ProviderConfigGitHubOrgSecretTypes = {
   actions?: "allow" | "deny";
   codespaces?: "allow" | "deny";
   dependabot?: "allow" | "deny";
 };
 
-type ProviderConfigGitHubRepositorySecretTypes = {
+type ProviderConfigGitHubRepoSecretTypes = {
   actions?: "allow" | "deny";
   codespaces?: "allow" | "deny";
   dependabot?: "allow" | "deny";

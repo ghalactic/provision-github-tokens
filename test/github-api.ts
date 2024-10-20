@@ -48,9 +48,9 @@ export function createTestInstallation(
   app: App,
   account: InstallationAccount,
   repoSelection: "all" | "selected",
-  repositories: InstallationRepo[],
+  repos: InstallationRepo[],
 ): Installation & {
-  repositories: InstallationRepo[];
+  repos: InstallationRepo[];
 } {
   return {
     ...sampleInstallation,
@@ -64,7 +64,7 @@ export function createTestInstallation(
     target_type: account.type,
     target_id: account.id,
     account: { ...sampleInstallation.account, ...account },
-    repositories,
+    repos,
   };
 }
 
