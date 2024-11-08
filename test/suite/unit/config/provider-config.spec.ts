@@ -38,7 +38,7 @@ it("parses comprehensive provider config", async () => {
             permissions: { metadata: "read" },
           },
           {
-            description: "Access to a specific owner the same owner",
+            description: "Access to a specific owner from the same owner",
             resources: ["owner-a/*"],
             consumers: ["owner-a/*"],
             permissions: { issues: "write" },
