@@ -6,7 +6,7 @@ it("doesn't allow empty patterns", () => {
 });
 
 it("doesn't allow patterns with slashes", () => {
-  expect(() => createNamePattern("/")).toThrow("Pattern cannot contain /");
+  expect(() => createNamePattern("/")).toThrow('Pattern "/" cannot contain /');
 });
 
 it("can be converted to a string", () => {

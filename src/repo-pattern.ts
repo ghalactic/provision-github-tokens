@@ -7,17 +7,7 @@ export type RepoPattern = Pattern & {
 };
 
 export function createRepoPattern(pattern: string): RepoPattern {
-  const parts = pattern.split("/");
-
-  if (parts.length !== 2) {
-    throw new Error("Repo pattern must contain exactly one slash");
-  }
-
-  const [ownerPart, repoPart] = parts;
-
-  if (!ownerPart) throw new Error("Repo pattern owner part cannot be empty");
-  if (!repoPart) throw new Error("Repo pattern repo part cannot be empty");
-
+  const [ownerPart, repoPart] = splitRepoPattern(pattern);
   const owner = createNamePattern(ownerPart);
   const repo = createNamePattern(repoPart);
 
@@ -50,7 +40,9 @@ export function normalizeRepoPattern(
   definingOwner: string,
   pattern: string,
 ): string {
-  return pattern.includes("/") ? pattern : `${definingOwner}/${pattern}`;
+  const [ownerPart, repoPart] = splitRepoPattern(pattern);
+
+  return ownerPart === "." ? `${definingOwner}/${repoPart}` : pattern;
 }
 
 export function repoPatternsForOwner(
@@ -69,4 +61,29 @@ export function anyRepoPatternIsAllRepos(patterns: RepoPattern[]): boolean {
   for (const pattern of patterns) if (pattern.repo.isAll) return true;
 
   return false;
+}
+
+function splitRepoPattern(pattern: string): [string, string] {
+  const parts = pattern.split("/");
+
+  if (parts.length !== 2) {
+    throw new Error(
+      `Repo pattern ${JSON.stringify(pattern)} must contain exactly one slash`,
+    );
+  }
+
+  const [ownerPart, repoPart] = parts;
+
+  if (!ownerPart) {
+    throw new Error(
+      `Repo pattern ${JSON.stringify(pattern)} owner part cannot be empty`,
+    );
+  }
+  if (!repoPart) {
+    throw new Error(
+      `Repo pattern ${JSON.stringify(pattern)} repo part cannot be empty`,
+    );
+  }
+
+  return [ownerPart, repoPart];
 }

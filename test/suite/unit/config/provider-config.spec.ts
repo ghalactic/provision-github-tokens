@@ -492,6 +492,17 @@ it("parses provider configs that are empty", async () => {
   } satisfies ProviderConfig);
 });
 
+it("throws when an invalid repo pattern is used", async () => {
+  const fixturePath = join(fixturesPath, "invalid-repo-pattern.yml");
+  const yaml = await readFile(fixturePath, "utf-8");
+
+  expect(() =>
+    parseProviderConfig("owner-self", "repo-self", yaml),
+  ).toThrowErrorMatchingInlineSnapshot(
+    `[Error: Provider config has an error at $.permissions.rules.repos[0].consumers[0]: Repo pattern "repo-x" must contain exactly one slash]`,
+  );
+});
+
 it("throws when there are additional properties", async () => {
   const fixturePath = join(fixturesPath, "additional-properties.yml");
   const yaml = await readFile(fixturePath, "utf-8");

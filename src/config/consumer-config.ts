@@ -5,6 +5,7 @@ import type {
   ConsumerConfig,
   PartialConsumerConfig,
 } from "../type/consumer-config.js";
+import { withErrorContext } from "./error-context.js";
 import { validateConsumer } from "./validation.js";
 
 export function parseConsumerConfig(
@@ -20,11 +21,13 @@ function parseYAML(yaml: string): PartialConsumerConfig {
     const parsed = load(yaml);
 
     return validateConsumer(parsed == null ? {} : parsed);
-  } catch (error) {
+  } catch (cause) {
     const original = JSON.stringify(yaml);
 
     throw new Error(
-      `Parsing of consumer configuration failed with ${errorMessage(error)}. Provided value: ${original}`,
+      `Parsing of consumer configuration failed with ${errorMessage(cause)}. ` +
+        `Provided value: ${original}`,
+      { cause },
     );
   }
 }
@@ -52,8 +55,14 @@ function normalizeConsumerConfig(
 
     const repos: typeof secret.github.repos = {};
     for (const pattern in secret.github.repos) {
-      repos[normalizeRepoPattern(definingOwner, pattern)] =
-        secret.github.repos[pattern];
+      repos[
+        withErrorContext(
+          "Consumer config has an error at " +
+            `$.provision.secrets[${JSON.stringify(name)}]` +
+            `.github.repos[${JSON.stringify(pattern)}]`,
+          () => normalizeRepoPattern(definingOwner, pattern),
+        )
+      ] = secret.github.repos[pattern];
     }
     secret.github.repos = repos;
   }

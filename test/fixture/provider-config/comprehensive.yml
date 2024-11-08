@@ -44,13 +44,13 @@ permissions:
         permissions: { metadata: read }
 
       - description: Cross-repo access (in the provider's owner)
-        resources: [repo-a]
-        consumers: [repo-b]
+        resources: [./repo-a]
+        consumers: [./repo-b]
         permissions: { contents: read }
 
       - description: All-repo access (in the provider's owner)
-        resources: ["*"]
-        consumers: [repo-a]
+        resources: [./*]
+        consumers: [./repo-a]
         permissions: { contents: read }
 
       - description: Cross-owner access
@@ -59,33 +59,33 @@ permissions:
         permissions: { contents: read }
 
       - description: Revocation of access
-        resources: [repo-a]
-        consumers: [repo-b]
+        resources: [./repo-a]
+        consumers: [./repo-b]
         permissions: { contents: none }
 
       - description: Escalation of access
-        resources: [repo-a]
-        consumers: [repo-b]
+        resources: [./repo-a]
+        consumers: [./repo-b]
         permissions: { contents: write }
 
       - description: De-escalation of access
-        resources: [repo-a]
-        consumers: [repo-b]
+        resources: [./repo-a]
+        consumers: [./repo-b]
         permissions: { contents: read }
 
       - description: Multiple resources and consumers
-        resources: [repo-a, repo-b]
-        consumers: [repo-c, repo-d]
+        resources: [./repo-a, ./repo-b]
+        consumers: [./repo-c, ./repo-d]
         permissions: { contents: read }
 
       - description: Wildcards
-        resources: ["owner-*/repo-*"]
+        resources: [owner-*/repo-*]
         consumers: ["*-owner/*-repo"]
         permissions: { contents: read }
 
       - description: All permissions
-        resources: [repo-a]
-        consumers: [repo-b]
+        resources: [./repo-a]
+        consumers: [./repo-b]
         permissions:
           actions: write
           administration: write
@@ -154,7 +154,7 @@ provision:
 
       - description: Specific repos can provision to any secret of any kind in their own org
         secrets: ["*"]
-        requesters: ["repo-a", "repo-b"]
+        requesters: [./repo-a, ./repo-b]
         to:
           github:
             org:
@@ -164,7 +164,7 @@ provision:
 
       - description: Specific repos can provision to dependabot secrets in specific orgs
         secrets: ["*"]
-        requesters: ["repo-a", "repo-b"]
+        requesters: [./repo-a, ./repo-b]
         to:
           github:
             orgs:
@@ -175,7 +175,7 @@ provision:
 
       - description: Specific repos can provision to dependabot secrets in any org
         secrets: ["*"]
-        requesters: ["repo-a", "repo-b"]
+        requesters: [./repo-a, ./repo-b]
         to:
           github:
             orgs:
@@ -183,30 +183,30 @@ provision:
                 dependabot: allow
 
       - description: A specific repo can provision to a specific codespaces secret in other repos
-        secrets: ["SECRET_A"]
-        requesters: ["repo-a"]
+        secrets: [SECRET_A]
+        requesters: [./repo-a]
         to:
           github:
             repos:
-              repo-b:
+              ./repo-b:
                 codespaces: allow
               owner-b/repo-c:
                 codespaces: allow
 
       - description: A specific repo can provision to specific secrets of specific environments in another repo
-        secrets: ["SECRET_A"]
-        requesters: ["repo-a"]
+        secrets: [SECRET_A]
+        requesters: [./repo-a]
         to:
           github:
             repos:
-              repo-b:
+              ./repo-b:
                 environments:
                   env-a: allow
                   env-b: allow
 
       - description: Specific repos can provision to a specific secret of any kind in any repo in any owner
-        secrets: ["SECRET_A"]
-        requesters: ["repo-a", "repo-b"]
+        secrets: [SECRET_A]
+        requesters: [./repo-a, ./repo-b]
         to:
           github:
             repos:
@@ -218,8 +218,8 @@ provision:
                   "*": allow
 
       - description: Specific repos can provision to a specific actions secret in any repo in a specific owner
-        secrets: ["SECRET_A"]
-        requesters: ["repo-a", "repo-b"]
+        secrets: [SECRET_A]
+        requesters: [./repo-a, ./repo-b]
         to:
           github:
             repos:
@@ -228,7 +228,7 @@ provision:
 
       - description: Specific repos can provision any actions secret in the same repo or org, or specific other repos and orgs
         secrets: ["*"]
-        requesters: ["repo-a", "repo-b"]
+        requesters: [./repo-a, ./repo-b]
         to:
           github:
             org:
@@ -241,13 +241,13 @@ provision:
             repo:
               actions: allow
             repos:
-              repo-a:
+              ./repo-a:
                 actions: allow
               owner-a/repo-a:
                 actions: allow
 
       - description: No repos can provision to a specific secret of any kind in any org or repo
-        secrets: ["SECRET_X"]
+        secrets: [SECRET_X]
         requesters: ["*/*"]
         to:
           github:
@@ -265,8 +265,8 @@ provision:
                   "*": deny
 
       - description: Specific repos can't provision to a specific secret of any kind in the same repo
-        secrets: ["SECRET_X"]
-        requesters: ["repo-a", "repo-b"]
+        secrets: [SECRET_X]
+        requesters: [./repo-a, ./repo-b]
         to:
           github:
             repo:
@@ -277,8 +277,8 @@ provision:
                 "*": deny
 
       - description: Rules can have both allow and deny, but deny takes precedence
-        secrets: ["SECRET_A"]
-        requesters: ["repo-a"]
+        secrets: [SECRET_A]
+        requesters: [./repo-a]
         to:
           github:
             repo:

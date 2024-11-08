@@ -3,25 +3,25 @@ import { createRepoPattern } from "../../../../src/repo-pattern.js";
 
 it("doesn't allow empty patterns", () => {
   expect(() => createRepoPattern("")).toThrow(
-    "Repo pattern must contain exactly one slash",
+    'Repo pattern "" must contain exactly one slash',
   );
 });
 
 it("doesn't allow patterns without a slash", () => {
   expect(() => createRepoPattern("a")).toThrow(
-    "Repo pattern must contain exactly one slash",
+    'Repo pattern "a" must contain exactly one slash',
   );
 });
 
 it("doesn't allow patterns with an empty owner", () => {
   expect(() => createRepoPattern("/repo")).toThrow(
-    "Repo pattern owner part cannot be empty",
+    'Repo pattern "/repo" owner part cannot be empty',
   );
 });
 
 it("doesn't allow patterns with an empty repo", () => {
   expect(() => createRepoPattern("owner/")).toThrow(
-    "Repo pattern repo part cannot be empty",
+    'Repo pattern "owner/" repo part cannot be empty',
   );
 });
 

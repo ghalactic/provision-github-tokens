@@ -137,7 +137,7 @@ provision:
           dependabot: true
           environments: [env-a, env-b]
         repos:
-          repo-a:
+          ./repo-a:
             actions: true
           owner-a/repo-a:
             actions: true

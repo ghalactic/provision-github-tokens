@@ -270,6 +270,17 @@ it("parses consumer configs that are empty", async () => {
   } satisfies ConsumerConfig);
 });
 
+it("throws when an invalid repo pattern is used", async () => {
+  const fixturePath = join(fixturesPath, "invalid-repo-pattern.yml");
+  const yaml = await readFile(fixturePath, "utf-8");
+
+  expect(() =>
+    parseConsumerConfig("owner-self", "repo-self", yaml),
+  ).toThrowErrorMatchingInlineSnapshot(
+    `[Error: Consumer config has an error at $.provision.secrets["SECRET_A"].github.repos["repo-x"]: Repo pattern "repo-x" must contain exactly one slash]`,
+  );
+});
+
 it("throws when an invalid token name is defined", async () => {
   const fixturePath = join(fixturesPath, "invalid-token-name.yml");
   const yaml = await readFile(fixturePath, "utf-8");
