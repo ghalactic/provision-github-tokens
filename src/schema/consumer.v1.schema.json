@@ -47,21 +47,31 @@
             "examples": ["octocat"]
           },
           "repos": {
-            "description": "A list of repo name patterns to match against.",
-            "type": "array",
-            "items": {
-              "description": "A pattern which matches a repo name without the owner prefix.",
-              "type": "string",
-              "minLength": 1,
-              "examples": [
-                "repo-a",
-                "*",
-                "with-prefix-*",
-                "*-with-suffix",
-                "with-*-infix"
-              ]
-            },
-            "minItems": 1
+            "description": "Which repos are allowed to access the token.",
+            "oneOf": [
+              {
+                "description": "All repos in the owner's account, including those created after the token is provisioned.",
+                "type": "string",
+                "const": "all"
+              },
+              {
+                "description": "A list of repo name patterns to match against.",
+                "type": "array",
+                "items": {
+                  "description": "A pattern which matches a repo name without the owner prefix.",
+                  "type": "string",
+                  "minLength": 1,
+                  "examples": [
+                    "repo-a",
+                    "*",
+                    "with-prefix-*",
+                    "*-with-suffix",
+                    "with-*-infix"
+                  ]
+                },
+                "minItems": 1
+              }
+            ]
           },
           "permissions": {
             "$ref": "https://ghalactic.github.io/provision-github-tokens/schema/generated.consumer-token-permissions.v1.schema.json",

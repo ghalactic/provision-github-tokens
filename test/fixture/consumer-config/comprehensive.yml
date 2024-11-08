@@ -10,6 +10,18 @@ tokens:
     repos: [repo-a, repo-b]
     permissions: { contents: read, metadata: read }
 
+  wildcardRepos:
+    repos: [repo-*]
+    permissions: { contents: read }
+
+  wildcardAllRepos:
+    repos: ["*"]
+    permissions: { contents: read }
+
+  allRepos:
+    repos: all
+    permissions: { contents: read }
+
   withSharedFalse:
     shared: false
     repos: [repo-a]
@@ -39,7 +51,7 @@ tokens:
 
   withAllPermissions:
     as: role-a
-    repos: ["*"]
+    repos: all
     permissions:
       actions: write
       administration: write

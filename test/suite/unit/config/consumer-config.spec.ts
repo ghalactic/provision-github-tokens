@@ -34,6 +34,30 @@ it("parses comprehensive consumer config", async () => {
         permissions: { contents: "read", metadata: "read" },
       },
 
+      wildcardRepos: {
+        shared: false,
+        as: undefined,
+        owner: "owner-self",
+        repos: ["repo-*"],
+        permissions: { contents: "read" },
+      },
+
+      wildcardAllRepos: {
+        shared: false,
+        as: undefined,
+        owner: "owner-self",
+        repos: ["*"],
+        permissions: { contents: "read" },
+      },
+
+      allRepos: {
+        shared: false,
+        as: undefined,
+        owner: "owner-self",
+        repos: "all",
+        permissions: { contents: "read" },
+      },
+
       withSharedFalse: {
         shared: false,
         as: undefined,
@@ -78,7 +102,7 @@ it("parses comprehensive consumer config", async () => {
         shared: false,
         as: "role-a",
         owner: "owner-self",
-        repos: ["*"],
+        repos: "all",
         permissions: {
           actions: "write",
           administration: "write",
