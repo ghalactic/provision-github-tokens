@@ -534,7 +534,7 @@ it("throws when an invalid repo pattern is used in /provision/rules/secrets/<n>/
 
   expect(throws(() => parseProviderConfig("account-self", "repo-self", yaml)))
     .toMatchInlineSnapshot(`
-      "Parsing of provider configuration failed for "# yaml-language-server: $schema=https://ghalactic.github.io/provision-github-tokens/schema/provider.v1.schema.json\\n$schema: https://ghalactic.github.io/provision-github-tokens/schema/provider.v1.schema.json\\n\\nprovision:\\n  rules:\\n    secrets:\\n      - secrets: [\\"*\\"]\\n        requesters: [\\"repo-x\\"]\\n        to:\\n          github:\\n            repo:\\n              actions: allow\\n"
+      "Parsing of provider configuration failed for "# yaml-language-server: $schema=https://ghalactic.github.io/provision-github-tokens/schema/provider.v1.schema.json\\n$schema: https://ghalactic.github.io/provision-github-tokens/schema/provider.v1.schema.json\\n\\nprovision:\\n  rules:\\n    secrets:\\n      - secrets: [\\"*\\"]\\n        requesters: [repo-x]\\n        to:\\n          github:\\n            repo:\\n              actions: allow\\n"
 
       Caused by: Invalid provider configuration:
         - must be a repo pattern in the form of "account/repo", or "./repo" (/provision/rules/secrets/0/requesters/0)"
