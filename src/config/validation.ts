@@ -1,4 +1,5 @@
 import ajvModule, { ErrorObject } from "ajv";
+import ajvErrorsModule from "ajv-errors";
 import appsSchema from "../schema/apps.v1.schema.json";
 import consumerSchema from "../schema/consumer.v1.schema.json";
 import consumerTokenPermissionsSchema from "../schema/generated.consumer-token-permissions.v1.schema.json";
@@ -10,6 +11,7 @@ import type { ProviderConfig } from "../type/provider-config.js";
 
 // see https://github.com/ajv-validator/ajv/issues/2132
 const Ajv = ajvModule.default;
+const ajvErrors = ajvErrorsModule.default;
 
 const ajv = new Ajv({
   schemas: [
@@ -22,6 +24,7 @@ const ajv = new Ajv({
   allErrors: true,
   useDefaults: true,
 });
+ajvErrors(ajv);
 
 export const validateApps = createValidate<AppInput[]>(
   appsSchema.$id,

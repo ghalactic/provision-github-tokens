@@ -505,7 +505,7 @@ it("throws when an invalid repo pattern is used in /permissions/rules/repos/<n>/
       "Parsing of provider configuration failed for "# yaml-language-server: $schema=https://ghalactic.github.io/provision-github-tokens/schema/provider.v1.schema.json\\n$schema: https://ghalactic.github.io/provision-github-tokens/schema/provider.v1.schema.json\\n\\npermissions:\\n  rules:\\n    repos:\\n      - resources: [repo-x]\\n        consumers: [./repo-a]\\n"
 
       Caused by: Invalid provider configuration:
-        - must match pattern "^(?:\\.|[*a-zA-Z](?:[*a-zA-Z-]*[*a-zA-Z])?)\\/[*a-zA-Z0-9-_.]+$" (/permissions/rules/repos/0/resources/0)"
+        - must be a repo pattern in the form of "account/repo", or "./repo" (/permissions/rules/repos/0/resources/0)"
     `);
 });
 
@@ -521,7 +521,7 @@ it("throws when an invalid repo pattern is used in /permissions/rules/repos/<n>/
       "Parsing of provider configuration failed for "# yaml-language-server: $schema=https://ghalactic.github.io/provision-github-tokens/schema/provider.v1.schema.json\\n$schema: https://ghalactic.github.io/provision-github-tokens/schema/provider.v1.schema.json\\n\\npermissions:\\n  rules:\\n    repos:\\n      - resources: [./repo-a]\\n        consumers: [repo-x]\\n"
 
       Caused by: Invalid provider configuration:
-        - must match pattern "^(?:\\.|[*<>a-zA-Z](?:[*<>a-zA-Z-]*[*<>a-zA-Z])?)\\/[*<>a-zA-Z0-9-_.]+$" (/permissions/rules/repos/0/consumers/0)"
+        - must be a repo pattern in the form of "account/repo", or "./repo" (/permissions/rules/repos/0/consumers/0)"
     `);
 });
 
@@ -537,7 +537,7 @@ it("throws when an invalid repo pattern is used in /provision/rules/secrets/<n>/
       "Parsing of provider configuration failed for "# yaml-language-server: $schema=https://ghalactic.github.io/provision-github-tokens/schema/provider.v1.schema.json\\n$schema: https://ghalactic.github.io/provision-github-tokens/schema/provider.v1.schema.json\\n\\nprovision:\\n  rules:\\n    secrets:\\n      - secrets: [\\"*\\"]\\n        requesters: [\\"repo-x\\"]\\n        to:\\n          github:\\n            repo:\\n              actions: allow\\n"
 
       Caused by: Invalid provider configuration:
-        - must match pattern "^(?:\\.|[*a-zA-Z](?:[*a-zA-Z-]*[*a-zA-Z])?)\\/[*a-zA-Z0-9-_.]+$" (/provision/rules/secrets/0/requesters/0)"
+        - must be a repo pattern in the form of "account/repo", or "./repo" (/provision/rules/secrets/0/requesters/0)"
     `);
 });
 
@@ -553,7 +553,7 @@ it("throws when an invalid repo pattern is used in /provision/rules/secrets/<n>/
       "Parsing of provider configuration failed for "# yaml-language-server: $schema=https://ghalactic.github.io/provision-github-tokens/schema/provider.v1.schema.json\\n$schema: https://ghalactic.github.io/provision-github-tokens/schema/provider.v1.schema.json\\n\\nprovision:\\n  rules:\\n    secrets:\\n      - secrets: [\\"*\\"]\\n        requesters: [\\"*/*\\"]\\n        to:\\n          github:\\n            repos:\\n              repo-x:\\n                actions: allow\\n"
 
       Caused by: Invalid provider configuration:
-        - must match pattern "^(?:\\.|[*a-zA-Z](?:[*a-zA-Z-]*[*a-zA-Z])?)\\/[*a-zA-Z0-9-_.]+$" (/provision/rules/secrets/0/to/github/repos)
+        - must be a repo pattern in the form of "account/repo", or "./repo" (/provision/rules/secrets/0/to/github/repos)
         - property name must be valid (/provision/rules/secrets/0/to/github/repos)"
     `);
 });
