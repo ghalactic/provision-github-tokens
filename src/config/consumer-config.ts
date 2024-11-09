@@ -1,12 +1,12 @@
 import { load } from "js-yaml";
-import { errorMessage } from "../error.js";
+import { escape } from "../json-pointer.js";
 import { normalizeRepoPattern } from "../repo-pattern.js";
 import type {
   ConsumerConfig,
   PartialConsumerConfig,
 } from "../type/consumer-config.js";
-import { withErrorContext } from "./error-context.js";
 import { validateConsumer } from "./validation.js";
+import { wrapErrors } from "./wrap-errors.js";
 
 export function parseConsumerConfig(
   definingOwner: string,
@@ -25,8 +25,7 @@ function parseYAML(yaml: string): PartialConsumerConfig {
     const original = JSON.stringify(yaml);
 
     throw new Error(
-      `Parsing of consumer configuration failed with ${errorMessage(cause)}. ` +
-        `Provided value: ${original}`,
+      `Parsing of consumer configuration failed for ${original}`,
       { cause },
     );
   }
@@ -56,11 +55,15 @@ function normalizeConsumerConfig(
     const repos: typeof secret.github.repos = {};
     for (const pattern in secret.github.repos) {
       repos[
-        withErrorContext(
-          "Consumer config has an error at " +
-            `$.provision.secrets[${JSON.stringify(name)}]` +
-            `.github.repos[${JSON.stringify(pattern)}]`,
+        wrapErrors(
           () => normalizeRepoPattern(definingOwner, pattern),
+          (cause) =>
+            new Error(
+              "Consumer config has an error at " +
+                `/provision/secrets/${escape(name)}` +
+                `/github/repos/${escape(pattern)}`,
+              { cause },
+            ),
         )
       ] = secret.github.repos[pattern];
     }

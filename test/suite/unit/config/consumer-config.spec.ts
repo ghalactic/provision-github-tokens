@@ -5,6 +5,7 @@ import { expect, it } from "vitest";
 import { parseConsumerConfig } from "../../../../src/config/consumer-config.js";
 import consumerSchema from "../../../../src/schema/consumer.v1.schema.json";
 import type { ConsumerConfig } from "../../../../src/type/consumer-config.js";
+import { throws } from "../../../error.js";
 
 const fixturesPath = fileURLToPath(
   new URL("../../../fixture/consumer-config", import.meta.url),
@@ -270,82 +271,123 @@ it("parses consumer configs that are empty", async () => {
   } satisfies ConsumerConfig);
 });
 
-it("throws when an invalid repo pattern is used", async () => {
-  const fixturePath = join(fixturesPath, "invalid-repo-pattern.yml");
+it("throws when an invalid repo pattern is used in /provision/secrets/<name>/github/repos/<pattern>", async () => {
+  const fixturePath = join(
+    fixturesPath,
+    "invalid-repo-pattern-provision-secrets-github-repos-key.yml",
+  );
   const yaml = await readFile(fixturePath, "utf-8");
 
-  expect(() =>
-    parseConsumerConfig("owner-self", "repo-self", yaml),
-  ).toThrowErrorMatchingInlineSnapshot(
-    `[Error: Consumer config has an error at $.provision.secrets["SECRET_A"].github.repos["repo-x"]: Repo pattern "repo-x" must contain exactly one slash]`,
-  );
+  expect(throws(() => parseConsumerConfig("owner-self", "repo-self", yaml)))
+    .toMatchInlineSnapshot(`
+    "Consumer config has an error at /provision/secrets/SECRET_A/github/repos/repo-x
+
+    Caused by: Repo pattern "repo-x" must contain exactly one slash"
+  `);
 });
 
 it("throws when an invalid token name is defined", async () => {
   const fixturePath = join(fixturesPath, "invalid-token-name.yml");
   const yaml = await readFile(fixturePath, "utf-8");
 
-  expect(() => parseConsumerConfig("owner-self", "repo-self", yaml)).toThrow(
-    /property name must be valid \(\/tokens\)/i,
-  );
+  expect(throws(() => parseConsumerConfig("owner-self", "repo-self", yaml)))
+    .toMatchInlineSnapshot(`
+      "Parsing of consumer configuration failed for "# yaml-language-server: $schema=https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json\\n$schema: https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json\\n\\ntokens:\\n  invalid.token.name:\\n    repos: [repo-a]\\n    permissions: { contents: read }\\n"
+
+      Caused by: Invalid consumer configuration:
+        - must match pattern "^[a-zA-Z0-9-_]+$" (/tokens)
+        - property name must be valid (/tokens)"
+    `);
 });
 
 it("throws when an invalid secret name is defined", async () => {
   const fixturePath = join(fixturesPath, "invalid-secret-name.yml");
   const yaml = await readFile(fixturePath, "utf-8");
 
-  expect(() => parseConsumerConfig("owner-self", "repo-self", yaml)).toThrow(
-    /property name must be valid \(\/provision\/secrets\)/i,
-  );
+  expect(throws(() => parseConsumerConfig("owner-self", "repo-self", yaml)))
+    .toMatchInlineSnapshot(`
+      "Parsing of consumer configuration failed for "# yaml-language-server: $schema=https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json\\n$schema: https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json\\n\\nprovision:\\n  secrets:\\n    1_INVALID_SECRET_NAME:\\n      token: tokenA\\n      github:\\n        repo:\\n          actions: true\\n"
+
+      Caused by: Invalid consumer configuration:
+        - must match pattern "^[a-zA-Z_][a-zA-Z0-9_]*$" (/provision/secrets)
+        - property name must be valid (/provision/secrets)"
+    `);
 });
 
 it("throws when an secret token reference has an empty owner", async () => {
   const fixturePath = join(fixturesPath, "empty-token-reference-owner.yml");
   const yaml = await readFile(fixturePath, "utf-8");
 
-  expect(() => parseConsumerConfig("owner-self", "repo-self", yaml)).toThrow(
-    /must match pattern .* \(\/provision\/secrets\/TO_REPO_ACTIONS\/token\)/,
-  );
+  expect(throws(() => parseConsumerConfig("owner-self", "repo-self", yaml)))
+    .toMatchInlineSnapshot(`
+      "Parsing of consumer configuration failed for "# yaml-language-server: $schema=https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json\\n$schema: https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json\\n\\nprovision:\\n  secrets:\\n    TO_REPO_ACTIONS:\\n      token: /repo-a.tokenA\\n      github:\\n        repo:\\n          actions: true\\n"
+
+      Caused by: Invalid consumer configuration:
+        - must match pattern "^(?:(?:[a-zA-Z](?:[a-zA-Z-]*[a-zA-Z])?\\/)?[a-zA-Z0-9-_.]+\\.)?[a-zA-Z0-9-_]+$" (/provision/secrets/TO_REPO_ACTIONS/token)"
+    `);
 });
 
 it("throws when an secret token reference has an invalid owner", async () => {
   const fixturePath = join(fixturesPath, "invalid-token-reference-owner.yml");
   const yaml = await readFile(fixturePath, "utf-8");
 
-  expect(() => parseConsumerConfig("owner-self", "repo-self", yaml)).toThrow(
-    /must match pattern .* \(\/provision\/secrets\/TO_REPO_ACTIONS\/token\)/,
-  );
+  expect(throws(() => parseConsumerConfig("owner-self", "repo-self", yaml)))
+    .toMatchInlineSnapshot(`
+      "Parsing of consumer configuration failed for "# yaml-language-server: $schema=https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json\\n$schema: https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json\\n\\nprovision:\\n  secrets:\\n    TO_REPO_ACTIONS:\\n      token: owner-/repo-a.tokenA\\n      github:\\n        repo:\\n          actions: true\\n"
+
+      Caused by: Invalid consumer configuration:
+        - must match pattern "^(?:(?:[a-zA-Z](?:[a-zA-Z-]*[a-zA-Z])?\\/)?[a-zA-Z0-9-_.]+\\.)?[a-zA-Z0-9-_]+$" (/provision/secrets/TO_REPO_ACTIONS/token)"
+    `);
 });
 
 it("throws when an secret token reference has an empty repo", async () => {
   const fixturePath = join(fixturesPath, "empty-token-reference-repo.yml");
   const yaml = await readFile(fixturePath, "utf-8");
 
-  expect(() => parseConsumerConfig("owner-self", "repo-self", yaml)).toThrow(
-    /must match pattern .* \(\/provision\/secrets\/TO_REPO_ACTIONS\/token\)/,
-  );
+  expect(throws(() => parseConsumerConfig("owner-self", "repo-self", yaml)))
+    .toMatchInlineSnapshot(`
+      "Parsing of consumer configuration failed for "# yaml-language-server: $schema=https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json\\n$schema: https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json\\n\\nprovision:\\n  secrets:\\n    TO_REPO_ACTIONS:\\n      token: owner-a/.tokenA\\n      github:\\n        repo:\\n          actions: true\\n"
+
+      Caused by: Invalid consumer configuration:
+        - must match pattern "^(?:(?:[a-zA-Z](?:[a-zA-Z-]*[a-zA-Z])?\\/)?[a-zA-Z0-9-_.]+\\.)?[a-zA-Z0-9-_]+$" (/provision/secrets/TO_REPO_ACTIONS/token)"
+    `);
 });
 
 it("throws when an secret token reference has an invalid repo", async () => {
   const fixturePath = join(fixturesPath, "invalid-token-reference-repo.yml");
   const yaml = await readFile(fixturePath, "utf-8");
 
-  expect(() => parseConsumerConfig("owner-self", "repo-self", yaml)).toThrow(
-    /must match pattern .* \(\/provision\/secrets\/TO_REPO_ACTIONS\/token\)/,
-  );
+  expect(throws(() => parseConsumerConfig("owner-self", "repo-self", yaml)))
+    .toMatchInlineSnapshot(`
+      "Parsing of consumer configuration failed for "# yaml-language-server: $schema=https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json\\n$schema: https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json\\n\\nprovision:\\n  secrets:\\n    TO_REPO_ACTIONS:\\n      token: owner-a/repo-*.tokenA\\n      github:\\n        repo:\\n          actions: true\\n"
+
+      Caused by: Invalid consumer configuration:
+        - must match pattern "^(?:(?:[a-zA-Z](?:[a-zA-Z-]*[a-zA-Z])?\\/)?[a-zA-Z0-9-_.]+\\.)?[a-zA-Z0-9-_]+$" (/provision/secrets/TO_REPO_ACTIONS/token)"
+    `);
 });
 
 it("throws when there are additional properties", async () => {
   const fixturePath = join(fixturesPath, "additional-properties.yml");
   const yaml = await readFile(fixturePath, "utf-8");
 
-  expect(() => parseConsumerConfig("owner-self", "repo-self", yaml)).toThrow(
-    /additional properties/i,
-  );
+  expect(throws(() => parseConsumerConfig("owner-self", "repo-self", yaml)))
+    .toMatchInlineSnapshot(`
+      "Parsing of consumer configuration failed for "# yaml-language-server: $schema=https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json\\nadditional: This should not be allowed\\n"
+
+      Caused by: Invalid consumer configuration:
+        - must NOT have additional properties"
+    `);
 });
 
 it("throws when the YAML is invalid", async () => {
-  expect(() => parseConsumerConfig("owner-self", "repo-self", "{")).toThrow(
-    /parsing/i,
-  );
+  expect(throws(() => parseConsumerConfig("owner-self", "repo-self", "{")))
+    .toMatchInlineSnapshot(`
+      "Parsing of consumer configuration failed for "{"
+
+      Caused by: unexpected end of the stream within a flow collection (2:1)
+
+       1 | {
+       2 |
+      -----^"
+    `);
 });

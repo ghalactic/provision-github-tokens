@@ -504,8 +504,8 @@ it("reports unexpected HTTP statuses", async () => {
     ::debug::Installation 111 has permissions {"contents":"read"}
     ::debug::Installation 111 has access to all repos in account org-a
     Discovered 1 installation of "App A"
-    ::debug::Failed to discover app 120
-    ::error::Error: Failed to discover app at index 2: Error: Unexpected HTTP status 999 from GitHub API: <ERROR>
+    ::debug::Failed to discover app 120: Error: Unexpected HTTP status 999 from GitHub API: <ERROR>
+    ::error::Failed to discover app at index 2
     ::debug::Discovered app "App C" (app-c / 130)
     ::debug::App 130 has no roles
     ::debug::Discovered app installation 131 for account org-a
@@ -572,8 +572,8 @@ it("skips apps when discovery throws", async () => {
     ::debug::Installation 111 has permissions {"contents":"read"}
     ::debug::Installation 111 has access to all repos in account org-a
     Discovered 1 installation of "App A"
-    ::debug::Failed to discover app 120
-    ::error::Error: Failed to discover app at index 2: Error: <ERROR>
+    ::debug::Failed to discover app 120: Error: <ERROR>
+    ::error::Failed to discover app at index 2
     ::debug::Discovered app "App C" (app-c / 130)
     ::debug::App 130 has no roles
     ::debug::Discovered app installation 131 for account org-a
@@ -635,8 +635,8 @@ it("skips installations when discovery throws", async () => {
     ::debug::Discovered app installation 111 for account org-a
     ::debug::Installation 111 has permissions {"contents":"read"}
     ::debug::Installation 111 has access to all repos in account org-a
-    ::debug::Failed to discover installation for app at index 0
-    ::error::Error: Failed to discover installation 112 for app 110: Error: <ERROR>
+    ::debug::Failed to discover installation 112 for app 110: Error: <ERROR>
+    ::error::Failed to discover installation for app at index 0
     ::debug::Discovered app installation 113 for account org-b
     ::debug::Installation 113 has permissions {"contents":"read"}
     ::debug::Installation 113 has access to all repos in account org-b

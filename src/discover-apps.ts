@@ -20,14 +20,9 @@ export async function discoverApps(
   for (const appInput of appsInput) {
     try {
       await discoverApp(octokitFactory, registry, appInput, appIndex++);
-    } catch (error) {
-      debug(`Failed to discover app ${appInput.appId}`);
-      logError(
-        new Error(
-          `Failed to discover app at index ${appIndex}: ${errorStack(error)}`,
-          { cause: error },
-        ),
-      );
+    } catch (cause) {
+      debug(`Failed to discover app ${appInput.appId}: ${errorStack(cause)}`);
+      logError(`Failed to discover app at index ${appIndex}`);
     }
   }
 }
@@ -111,15 +106,14 @@ async function discoverInstallations(
           installation,
         );
         ++successCount;
-      } catch (error) {
+      } catch (cause) {
         ++failureCount;
-        debug(`Failed to discover installation for app at index ${appIndex}`);
+        debug(
+          `Failed to discover installation ${installation.id} ` +
+            `for app ${appInput.appId}: ${errorStack(cause)}`,
+        );
         logError(
-          new Error(
-            `Failed to discover installation ${installation.id} for app ` +
-              `${app.id}: ${errorStack(error)}`,
-            { cause: error },
-          ),
+          `Failed to discover installation for app at index ${appIndex}`,
         );
       }
     }

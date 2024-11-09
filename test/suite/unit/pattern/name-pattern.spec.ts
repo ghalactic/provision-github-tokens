@@ -1,12 +1,17 @@
 import { expect, it } from "vitest";
 import { createNamePattern } from "../../../../src/name-pattern.js";
+import { throws } from "../../../error.js";
 
 it("doesn't allow empty patterns", () => {
-  expect(() => createNamePattern("")).toThrow("Pattern cannot be empty");
+  expect(throws(() => createNamePattern(""))).toMatchInlineSnapshot(
+    `"Pattern cannot be empty"`,
+  );
 });
 
 it("doesn't allow patterns with slashes", () => {
-  expect(() => createNamePattern("/")).toThrow('Pattern "/" cannot contain /');
+  expect(throws(() => createNamePattern("/"))).toMatchInlineSnapshot(
+    `"Pattern "/" cannot contain /"`,
+  );
 });
 
 it("can be converted to a string", () => {

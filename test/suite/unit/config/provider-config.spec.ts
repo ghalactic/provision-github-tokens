@@ -5,6 +5,7 @@ import { expect, it } from "vitest";
 import { parseProviderConfig } from "../../../../src/config/provider-config.js";
 import providerSchema from "../../../../src/schema/provider.v1.schema.json";
 import type { ProviderConfig } from "../../../../src/type/provider-config.js";
+import { throws } from "../../../error.js";
 
 const fixturesPath = fileURLToPath(
   new URL("../../../fixture/provider-config", import.meta.url),
@@ -492,28 +493,88 @@ it("parses provider configs that are empty", async () => {
   } satisfies ProviderConfig);
 });
 
-it("throws when an invalid repo pattern is used", async () => {
-  const fixturePath = join(fixturesPath, "invalid-repo-pattern.yml");
+it("throws when an invalid repo pattern is used in /permissions/rules/repos/<n>/resources/<n>", async () => {
+  const fixturePath = join(
+    fixturesPath,
+    "invalid-repo-pattern-permissions-rules-repos-resources.yml",
+  );
   const yaml = await readFile(fixturePath, "utf-8");
 
-  expect(() =>
-    parseProviderConfig("owner-self", "repo-self", yaml),
-  ).toThrowErrorMatchingInlineSnapshot(
-    `[Error: Provider config has an error at $.permissions.rules.repos[0].consumers[0]: Repo pattern "repo-x" must contain exactly one slash]`,
+  expect(throws(() => parseProviderConfig("owner-self", "repo-self", yaml)))
+    .toMatchInlineSnapshot(`
+    "Provider config has an error at /permissions/rules/repos/0/resources/0
+
+    Caused by: Repo pattern "repo-x" must contain exactly one slash"
+  `);
+});
+
+it("throws when an invalid repo pattern is used in /permissions/rules/repos/<n>/consumers/<n>", async () => {
+  const fixturePath = join(
+    fixturesPath,
+    "invalid-repo-pattern-permissions-rules-repos-consumers.yml",
   );
+  const yaml = await readFile(fixturePath, "utf-8");
+
+  expect(throws(() => parseProviderConfig("owner-self", "repo-self", yaml)))
+    .toMatchInlineSnapshot(`
+    "Provider config has an error at /permissions/rules/repos/0/consumers/0
+
+    Caused by: Repo pattern "repo-x" must contain exactly one slash"
+  `);
+});
+
+it("throws when an invalid repo pattern is used in /provision/rules/secrets/<n>/requesters/<n>", async () => {
+  const fixturePath = join(
+    fixturesPath,
+    "invalid-repo-pattern-provision-rules-secrets-requesters.yml",
+  );
+  const yaml = await readFile(fixturePath, "utf-8");
+
+  expect(throws(() => parseProviderConfig("owner-self", "repo-self", yaml)))
+    .toMatchInlineSnapshot(`
+    "Provider config has an error at /provision/rules/secrets/0/requesters/0
+
+    Caused by: Repo pattern "repo-x" must contain exactly one slash"
+  `);
+});
+
+it("throws when an invalid repo pattern is used in /provision/rules/secrets/<n>/to/github/repos/<pattern>", async () => {
+  const fixturePath = join(
+    fixturesPath,
+    "invalid-repo-pattern-provision-rules-secrets-to-github-repos.yml",
+  );
+  const yaml = await readFile(fixturePath, "utf-8");
+
+  expect(throws(() => parseProviderConfig("owner-self", "repo-self", yaml)))
+    .toMatchInlineSnapshot(`
+    "Provider config has an error at /provision/rules/secrets/0/to/github/repos/repo-x
+
+    Caused by: Repo pattern "repo-x" must contain exactly one slash"
+  `);
 });
 
 it("throws when there are additional properties", async () => {
   const fixturePath = join(fixturesPath, "additional-properties.yml");
   const yaml = await readFile(fixturePath, "utf-8");
 
-  expect(() => parseProviderConfig("owner-self", "repo-self", yaml)).toThrow(
-    /additional properties/i,
-  );
+  expect(throws(() => parseProviderConfig("owner-self", "repo-self", yaml)))
+    .toMatchInlineSnapshot(`
+      "Parsing of provider configuration failed for "# yaml-language-server: $schema=https://ghalactic.github.io/provision-github-tokens/schema/provider.v1.schema.json\\nadditional: This should not be allowed\\n"
+
+      Caused by: Invalid provider configuration:
+        - must NOT have additional properties"
+    `);
 });
 
 it("throws when the YAML is invalid", async () => {
-  expect(() => parseProviderConfig("owner-self", "repo-self", "{")).toThrow(
-    /parsing/i,
-  );
+  expect(throws(() => parseProviderConfig("owner-self", "repo-self", "{")))
+    .toMatchInlineSnapshot(`
+      "Parsing of provider configuration failed for "{"
+
+      Caused by: unexpected end of the stream within a flow collection (2:1)
+
+       1 | {
+       2 |
+      -----^"
+    `);
 });

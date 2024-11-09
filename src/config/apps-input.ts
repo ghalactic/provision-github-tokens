@@ -1,6 +1,5 @@
 import { getInput } from "@actions/core";
 import { load } from "js-yaml";
-import { errorMessage } from "../error.js";
 import type { AppInput } from "../type/input.js";
 import { validateApps } from "./validation.js";
 
@@ -10,19 +9,13 @@ export function readAppsInput(): AppInput[] {
 
   try {
     parsed = load(yaml);
-  } catch (error) {
-    throw new Error(
-      `Parsing of apps action input failed: ${errorMessage(error)}`,
-      { cause: error },
-    );
+  } catch (cause) {
+    throw new Error("Parsing of apps action input failed", { cause });
   }
 
   try {
     return validateApps(parsed);
-  } catch (error) {
-    throw new Error(
-      `Validation of apps action input failed: ${errorMessage(error)}`,
-      { cause: error },
-    );
+  } catch (cause) {
+    throw new Error("Validation of apps action input failed", { cause });
   }
 }

@@ -1,9 +1,9 @@
 import { load } from "js-yaml";
-import { errorMessage } from "../error.js";
+import { escape } from "../json-pointer.js";
 import { normalizeRepoPattern } from "../repo-pattern.js";
 import type { ProviderConfig } from "../type/provider-config.js";
-import { withErrorContext } from "./error-context.js";
 import { validateProvider } from "./validation.js";
+import { wrapErrors } from "./wrap-errors.js";
 
 export function parseProviderConfig(
   definingOwner: string,
@@ -22,8 +22,7 @@ function parseYAML(yaml: string): ProviderConfig {
     const original = JSON.stringify(yaml);
 
     throw new Error(
-      `Parsing of provider configuration failed with ${errorMessage(cause)}. ` +
-        `Provided value: ${original}`,
+      `Parsing of provider configuration failed for ${original}`,
       { cause },
     );
   }
@@ -37,17 +36,25 @@ function normalizeProviderConfig(
     const rule = config.permissions.rules.repos[i];
 
     rule.resources = rule.resources.map((resource, j) =>
-      withErrorContext(
-        "Provider config has an error at " +
-          `$.permissions.rules.repos[${i}].resources[${j}]`,
+      wrapErrors(
         () => normalizeRepoPattern(definingOwner, resource),
+        (cause) =>
+          new Error(
+            "Provider config has an error at " +
+              `/permissions/rules/repos/${escape(i)}/resources/${escape(j)}`,
+            { cause },
+          ),
       ),
     );
     rule.consumers = rule.consumers.map((consumer, j) =>
-      withErrorContext(
-        "Provider config has an error at " +
-          `$.permissions.rules.repos[${i}].consumers[${j}]`,
+      wrapErrors(
         () => normalizeRepoPattern(definingOwner, consumer),
+        (cause) =>
+          new Error(
+            "Provider config has an error at " +
+              `/permissions/rules/repos/${escape(i)}/consumers/${escape(j)}`,
+            { cause },
+          ),
       ),
     );
   }
@@ -56,21 +63,29 @@ function normalizeProviderConfig(
     const rule = config.provision.rules.secrets[i];
 
     rule.requesters = rule.requesters.map((requester, j) =>
-      withErrorContext(
-        "Provider config has an error at " +
-          `$.provision.rules.secrets[${i}].requesters[${j}]`,
+      wrapErrors(
         () => normalizeRepoPattern(definingOwner, requester),
+        (cause) =>
+          new Error(
+            "Provider config has an error at " +
+              `/provision/rules/secrets/${escape(i)}/requesters/${escape(j)}`,
+            { cause },
+          ),
       ),
     );
 
     const repos: typeof rule.to.github.repos = {};
     for (const pattern in rule.to.github.repos) {
       repos[
-        withErrorContext(
-          "Provider config has an error at " +
-            `$.provision.rules.secrets[${i}]` +
-            `.to.github.repos[${JSON.stringify(pattern)}]`,
+        wrapErrors(
           () => normalizeRepoPattern(definingOwner, pattern),
+          (cause) =>
+            new Error(
+              "Provider config has an error at " +
+                `/provision/rules/secrets/${escape(i)}` +
+                `/to/github/repos/${escape(pattern)}`,
+              { cause },
+            ),
         )
       ] = rule.to.github.repos[pattern];
     }

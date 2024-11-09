@@ -1,10 +1,11 @@
 import { expect, it } from "vitest";
 import { normalizeRepoPattern } from "../../../../src/repo-pattern.js";
+import { throws } from "../../../error.js";
 
 it("doesn't allow patterns without a slash", () => {
-  expect(() => normalizeRepoPattern("defining-owner", "a")).toThrow(
-    'Repo pattern "a" must contain exactly one slash',
-  );
+  expect(
+    throws(() => normalizeRepoPattern("defining-owner", "a")),
+  ).toMatchInlineSnapshot(`"Repo pattern "a" must contain exactly one slash"`);
 });
 
 it("doesn't change repo patterns with an owner", () => {

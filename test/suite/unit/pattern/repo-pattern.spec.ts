@@ -1,27 +1,28 @@
 import { expect, it } from "vitest";
 import { createRepoPattern } from "../../../../src/repo-pattern.js";
+import { throws } from "../../../error.js";
 
 it("doesn't allow empty patterns", () => {
-  expect(() => createRepoPattern("")).toThrow(
-    'Repo pattern "" must contain exactly one slash',
+  expect(throws(() => createRepoPattern(""))).toMatchInlineSnapshot(
+    `"Repo pattern "" must contain exactly one slash"`,
   );
 });
 
 it("doesn't allow patterns without a slash", () => {
-  expect(() => createRepoPattern("a")).toThrow(
-    'Repo pattern "a" must contain exactly one slash',
+  expect(throws(() => createRepoPattern("a"))).toMatchInlineSnapshot(
+    `"Repo pattern "a" must contain exactly one slash"`,
   );
 });
 
 it("doesn't allow patterns with an empty owner", () => {
-  expect(() => createRepoPattern("/repo")).toThrow(
-    'Repo pattern "/repo" owner part cannot be empty',
+  expect(throws(() => createRepoPattern("/repo"))).toMatchInlineSnapshot(
+    `"Repo pattern "/repo" owner part cannot be empty"`,
   );
 });
 
 it("doesn't allow patterns with an empty repo", () => {
-  expect(() => createRepoPattern("owner/")).toThrow(
-    'Repo pattern "owner/" repo part cannot be empty',
+  expect(throws(() => createRepoPattern("owner/"))).toMatchInlineSnapshot(
+    `"Repo pattern "owner/" repo part cannot be empty"`,
   );
 });
 

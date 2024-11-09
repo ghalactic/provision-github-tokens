@@ -1,4 +1,3 @@
-import { errorMessage } from "../src/error.js";
 import { sleep } from "./async.js";
 import type { GitHubActionsContext } from "./gha.js";
 import type { Reference, WorkflowRun } from "./octokit.js";
@@ -68,8 +67,8 @@ async function createSelfRunRef(
   cleanup(async () => {
     try {
       await octokit.rest.git.deleteRef({ owner, repo, ref: refName });
-    } catch (error) {
-      console.warn(`Failed to cleanup ref ${ref}: ${errorMessage(error)}`);
+    } catch (cause) {
+      console.warn(`Failed to cleanup ref ${ref}`, { cause });
     }
   });
 
@@ -116,7 +115,7 @@ async function waitFor<T>(
   fn: () => Promise<T>,
 ): Promise<T> {
   const signal = AbortSignal.timeout(WAIT_TIMEOUT);
-  let lastError: unknown;
+  let cause: unknown;
 
   try {
     return await Promise.race([
@@ -128,7 +127,7 @@ async function waitFor<T>(
           try {
             return await fn();
           } catch (error) {
-            lastError = error;
+            cause = error;
           }
         }
       })(),
@@ -150,10 +149,7 @@ async function waitFor<T>(
     ]);
   } catch (error) {
     if (error instanceof DOMException && error.name === "TimeoutError") {
-      throw new Error(
-        `Timed out waiting for ${description}: ${errorMessage(lastError)}`,
-        { cause: lastError },
-      );
+      throw new Error(`Timed out waiting for ${description}`, { cause });
     }
 
     throw error;

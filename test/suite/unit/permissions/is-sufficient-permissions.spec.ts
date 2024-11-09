@@ -1,10 +1,11 @@
 import { expect, it } from "vitest";
 import { isSufficientPermissions } from "../../../../src/permissions.js";
+import { throws } from "../../../error.js";
 
 it("throws for empty wanted permissions", () => {
-  expect(() => isSufficientPermissions({ contents: "read" }, {})).toThrow(
-    "Empty permissions",
-  );
+  expect(
+    throws(() => isSufficientPermissions({ contents: "read" }, {})),
+  ).toMatchInlineSnapshot(`"Empty permissions"`);
 });
 
 it.each`

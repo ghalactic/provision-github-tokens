@@ -49717,14 +49717,6 @@ var safeLoad = renamed("safeLoad", "load");
 var safeLoadAll = renamed("safeLoadAll", "loadAll");
 var safeDump = renamed("safeDump", "dump");
 
-// src/error.ts
-function errorMessage(error) {
-  return error instanceof Error ? error.message : "unknown cause";
-}
-function errorStack(error) {
-  return (error instanceof Error ? error.stack : void 0) ?? "unknown cause";
-}
-
 // src/config/validation.ts
 var import_ajv = __toESM(require_ajv(), 1);
 
@@ -51174,24 +51166,23 @@ function readAppsInput() {
   let parsed;
   try {
     parsed = load(yaml);
-  } catch (error) {
-    throw new Error(
-      `Parsing of apps action input failed: ${errorMessage(error)}`,
-      { cause: error }
-    );
+  } catch (cause) {
+    throw new Error("Parsing of apps action input failed", { cause });
   }
   try {
     return validateApps(parsed);
-  } catch (error) {
-    throw new Error(
-      `Validation of apps action input failed: ${errorMessage(error)}`,
-      { cause: error }
-    );
+  } catch (cause) {
+    throw new Error("Validation of apps action input failed", { cause });
   }
 }
 
 // src/discover-apps.ts
 var import_core3 = __toESM(require_core(), 1);
+
+// src/error.ts
+function errorStack(error) {
+  return error instanceof Error ? error.stack ?? error.message : String(error);
+}
 
 // node_modules/universal-user-agent/index.js
 function getUserAgent() {
@@ -56999,14 +56990,9 @@ async function discoverApps(octokitFactory, registry, appsInput) {
   for (const appInput of appsInput) {
     try {
       await discoverApp(octokitFactory, registry, appInput, appIndex++);
-    } catch (error) {
-      (0, import_core3.debug)(`Failed to discover app ${appInput.appId}`);
-      (0, import_core3.error)(
-        new Error(
-          `Failed to discover app at index ${appIndex}: ${errorStack(error)}`,
-          { cause: error }
-        )
-      );
+    } catch (cause) {
+      (0, import_core3.debug)(`Failed to discover app ${appInput.appId}: ${errorStack(cause)}`);
+      (0, import_core3.error)(`Failed to discover app at index ${appIndex}`);
     }
   }
 }
@@ -57066,14 +57052,13 @@ async function discoverInstallations(octokitFactory, registry, appInput, appOcto
           installation
         );
         ++successCount;
-      } catch (error) {
+      } catch (cause) {
         ++failureCount;
-        (0, import_core3.debug)(`Failed to discover installation for app at index ${appIndex}`);
+        (0, import_core3.debug)(
+          `Failed to discover installation ${installation.id} for app ${appInput.appId}: ${errorStack(cause)}`
+        );
         (0, import_core3.error)(
-          new Error(
-            `Failed to discover installation ${installation.id} for app ${app.id}: ${errorStack(error)}`,
-            { cause: error }
-          )
+          `Failed to discover installation for app at index ${appIndex}`
         );
       }
     }
@@ -57138,7 +57123,7 @@ async function discoverInstallation(octokitFactory, registry, appInput, installa
 
 // src/main.ts
 main().catch((error) => {
-  (0, import_core4.setFailed)(errorStack(error) ?? "unknown cause");
+  (0, import_core4.setFailed)(error instanceof Error ? error : String(error));
 });
 async function main() {
   const octokitFactory = createOctokitFactory();

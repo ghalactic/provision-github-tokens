@@ -1,5 +1,6 @@
 import { expect, it } from "vitest";
 import { createAppRegistry } from "../../../src/app-registry.js";
+import { throws } from "../../error.js";
 import {
   createTestApp,
   createTestInstallation,
@@ -569,7 +570,9 @@ it.each([
 it("throws when registering repos for an unknown installation", () => {
   const registry = createAppRegistry();
 
-  expect(() => {
-    registry.registerInstallationRepos(101, []);
-  }).toThrowError("Installation 101 not registered");
+  expect(
+    throws(() => {
+      registry.registerInstallationRepos(101, []);
+    }),
+  ).toMatchInlineSnapshot(`"Installation 101 not registered"`);
 });
