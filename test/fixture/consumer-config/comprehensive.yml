@@ -112,7 +112,7 @@ provision:
           actions: true
 
     TO_ACCOUNT_DEPENDABOT:
-      token: other-repo.tokenB
+      token: ./other-repo.tokenB
       github:
         account:
           dependabot: true

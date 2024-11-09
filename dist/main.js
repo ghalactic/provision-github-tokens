@@ -49869,7 +49869,7 @@ var consumer_v1_schema_default = {
                 description: "A token reference that points to the token declaration to use.",
                 type: "string",
                 minLength: 1,
-                pattern: "^(?:(?:[a-zA-Z](?:[a-zA-Z-]*[a-zA-Z])?\\/)?[a-zA-Z0-9-_.]+\\.)?[a-zA-Z0-9-_]+$",
+                pattern: "^(?:(?:\\.|[a-zA-Z](?:[a-zA-Z-]*[a-zA-Z])?)\\/[a-zA-Z0-9-_.]+\\.)?[a-zA-Z0-9-_]+$",
                 examples: [
                   "tokenA",
                   "other-repo.tokenB",
@@ -49922,7 +49922,7 @@ var consumer_v1_schema_default = {
                       description: "A pattern which matches repos.",
                       type: "string",
                       minLength: 1,
-                      pattern: "^(?:.|[*a-zA-Z](?:[*a-zA-Z-]*[*a-zA-Z])?)\\/[*a-zA-Z0-9-_.]+$",
+                      pattern: "^(?:\\.|[*a-zA-Z](?:[*a-zA-Z-]*[*a-zA-Z])?)\\/[*a-zA-Z0-9-_.]+$",
                       examples: [
                         "./repo-a",
                         "account-a/repo-a",
@@ -50917,7 +50917,7 @@ var provider_v1_schema_default = {
                       description: "A pattern which matches repos.",
                       type: "string",
                       minLength: 1,
-                      pattern: "^(?:.|[*a-zA-Z](?:[*a-zA-Z-]*[*a-zA-Z])?)\\/[*a-zA-Z0-9-_.]+$",
+                      pattern: "^(?:\\.|[*a-zA-Z](?:[*a-zA-Z-]*[*a-zA-Z])?)\\/[*a-zA-Z0-9-_.]+$",
                       examples: [
                         "./repo-a",
                         "account-a/repo-a",
@@ -50937,7 +50937,7 @@ var provider_v1_schema_default = {
                       description: "A pattern which matches repos.",
                       type: "string",
                       minLength: 1,
-                      pattern: "^(?:.|[*<>a-zA-Z](?:[*<>a-zA-Z-]*[*<>a-zA-Z])?)\\/[*<>a-zA-Z0-9-_.]+$",
+                      pattern: "^(?:\\.|[*<>a-zA-Z](?:[*<>a-zA-Z-]*[*<>a-zA-Z])?)\\/[*<>a-zA-Z0-9-_.]+$",
                       examples: [
                         "./repo-a",
                         "account-a/repo-a",
@@ -51013,7 +51013,7 @@ var provider_v1_schema_default = {
                       description: "A pattern which matches repos.",
                       type: "string",
                       minLength: 1,
-                      pattern: "^(?:.|[*a-zA-Z](?:[*a-zA-Z-]*[*a-zA-Z])?)\\/[*a-zA-Z0-9-_.]+$",
+                      pattern: "^(?:\\.|[*a-zA-Z](?:[*a-zA-Z-]*[*a-zA-Z])?)\\/[*a-zA-Z0-9-_.]+$",
                       examples: [
                         "./repo-a",
                         "account-a/repo-a",
@@ -51077,7 +51077,7 @@ var provider_v1_schema_default = {
                               description: "A pattern which matches repos.",
                               type: "string",
                               minLength: 1,
-                              pattern: "^(?:.|[*a-zA-Z](?:[*a-zA-Z-]*[*a-zA-Z])?)\\/[*a-zA-Z0-9-_.]+$",
+                              pattern: "^(?:\\.|[*a-zA-Z](?:[*a-zA-Z-]*[*a-zA-Z])?)\\/[*a-zA-Z0-9-_.]+$",
                               examples: [
                                 "./repo-a",
                                 "account-a/repo-a",

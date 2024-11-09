@@ -291,7 +291,7 @@ it("throws when an invalid repo pattern is used in /provision/secrets/<name>/git
       "Parsing of consumer configuration failed for "# yaml-language-server: $schema=https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json\\n$schema: https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json\\n\\nprovision:\\n  secrets:\\n    SECRET_A:\\n      token: tokenA\\n      github:\\n        repos:\\n          repo-x:\\n            actions: true\\n"
 
       Caused by: Invalid consumer configuration:
-        - must match pattern "^(?:.|[*a-zA-Z](?:[*a-zA-Z-]*[*a-zA-Z])?)\\/[*a-zA-Z0-9-_.]+$" (/provision/secrets/SECRET_A/github/repos)
+        - must match pattern "^(?:\\.|[*a-zA-Z](?:[*a-zA-Z-]*[*a-zA-Z])?)\\/[*a-zA-Z0-9-_.]+$" (/provision/secrets/SECRET_A/github/repos)
         - property name must be valid (/provision/secrets/SECRET_A/github/repos)"
     `);
 });
@@ -324,7 +324,7 @@ it("throws when an invalid secret name is defined", async () => {
     `);
 });
 
-it("throws when an secret token reference has an empty account", async () => {
+it("throws when a secret token reference has an empty account", async () => {
   const fixturePath = join(fixturesPath, "empty-token-reference-account.yml");
   const yaml = await readFile(fixturePath, "utf-8");
 
@@ -333,11 +333,11 @@ it("throws when an secret token reference has an empty account", async () => {
       "Parsing of consumer configuration failed for "# yaml-language-server: $schema=https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json\\n$schema: https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json\\n\\nprovision:\\n  secrets:\\n    TO_REPO_ACTIONS:\\n      token: /repo-a.tokenA\\n      github:\\n        repo:\\n          actions: true\\n"
 
       Caused by: Invalid consumer configuration:
-        - must match pattern "^(?:(?:[a-zA-Z](?:[a-zA-Z-]*[a-zA-Z])?\\/)?[a-zA-Z0-9-_.]+\\.)?[a-zA-Z0-9-_]+$" (/provision/secrets/TO_REPO_ACTIONS/token)"
+        - must match pattern "^(?:(?:\\.|[a-zA-Z](?:[a-zA-Z-]*[a-zA-Z])?)\\/[a-zA-Z0-9-_.]+\\.)?[a-zA-Z0-9-_]+$" (/provision/secrets/TO_REPO_ACTIONS/token)"
     `);
 });
 
-it("throws when an secret token reference has an invalid account", async () => {
+it("throws when a secret token reference has an invalid account", async () => {
   const fixturePath = join(fixturesPath, "invalid-token-reference-account.yml");
   const yaml = await readFile(fixturePath, "utf-8");
 
@@ -346,11 +346,11 @@ it("throws when an secret token reference has an invalid account", async () => {
       "Parsing of consumer configuration failed for "# yaml-language-server: $schema=https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json\\n$schema: https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json\\n\\nprovision:\\n  secrets:\\n    TO_REPO_ACTIONS:\\n      token: account-/repo-a.tokenA\\n      github:\\n        repo:\\n          actions: true\\n"
 
       Caused by: Invalid consumer configuration:
-        - must match pattern "^(?:(?:[a-zA-Z](?:[a-zA-Z-]*[a-zA-Z])?\\/)?[a-zA-Z0-9-_.]+\\.)?[a-zA-Z0-9-_]+$" (/provision/secrets/TO_REPO_ACTIONS/token)"
+        - must match pattern "^(?:(?:\\.|[a-zA-Z](?:[a-zA-Z-]*[a-zA-Z])?)\\/[a-zA-Z0-9-_.]+\\.)?[a-zA-Z0-9-_]+$" (/provision/secrets/TO_REPO_ACTIONS/token)"
     `);
 });
 
-it("throws when an secret token reference has an empty repo", async () => {
+it("throws when a secret token reference has an empty repo", async () => {
   const fixturePath = join(fixturesPath, "empty-token-reference-repo.yml");
   const yaml = await readFile(fixturePath, "utf-8");
 
@@ -359,11 +359,11 @@ it("throws when an secret token reference has an empty repo", async () => {
       "Parsing of consumer configuration failed for "# yaml-language-server: $schema=https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json\\n$schema: https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json\\n\\nprovision:\\n  secrets:\\n    TO_REPO_ACTIONS:\\n      token: account-a/.tokenA\\n      github:\\n        repo:\\n          actions: true\\n"
 
       Caused by: Invalid consumer configuration:
-        - must match pattern "^(?:(?:[a-zA-Z](?:[a-zA-Z-]*[a-zA-Z])?\\/)?[a-zA-Z0-9-_.]+\\.)?[a-zA-Z0-9-_]+$" (/provision/secrets/TO_REPO_ACTIONS/token)"
+        - must match pattern "^(?:(?:\\.|[a-zA-Z](?:[a-zA-Z-]*[a-zA-Z])?)\\/[a-zA-Z0-9-_.]+\\.)?[a-zA-Z0-9-_]+$" (/provision/secrets/TO_REPO_ACTIONS/token)"
     `);
 });
 
-it("throws when an secret token reference has an invalid repo", async () => {
+it("throws when a secret token reference has an invalid repo", async () => {
   const fixturePath = join(fixturesPath, "invalid-token-reference-repo.yml");
   const yaml = await readFile(fixturePath, "utf-8");
 
@@ -372,7 +372,7 @@ it("throws when an secret token reference has an invalid repo", async () => {
       "Parsing of consumer configuration failed for "# yaml-language-server: $schema=https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json\\n$schema: https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json\\n\\nprovision:\\n  secrets:\\n    TO_REPO_ACTIONS:\\n      token: account-a/repo-*.tokenA\\n      github:\\n        repo:\\n          actions: true\\n"
 
       Caused by: Invalid consumer configuration:
-        - must match pattern "^(?:(?:[a-zA-Z](?:[a-zA-Z-]*[a-zA-Z])?\\/)?[a-zA-Z0-9-_.]+\\.)?[a-zA-Z0-9-_]+$" (/provision/secrets/TO_REPO_ACTIONS/token)"
+        - must match pattern "^(?:(?:\\.|[a-zA-Z](?:[a-zA-Z-]*[a-zA-Z])?)\\/[a-zA-Z0-9-_.]+\\.)?[a-zA-Z0-9-_]+$" (/provision/secrets/TO_REPO_ACTIONS/token)"
     `);
 });
 
