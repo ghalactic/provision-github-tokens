@@ -50063,9 +50063,7 @@ var consumer_v1_schema_default = {
         type: "string",
         minLength: 1,
         pattern: "^[a-zA-Z0-9-_]+$",
-        errorMessage: {
-          pattern: "must only contain alphanumeric characters, hyphens, or underscores"
-        },
+        errorMessage: "must only contain alphanumeric characters, hyphens, or underscores",
         examples: ["tokenA", "tokenB"]
       },
       additionalProperties: {
@@ -50107,9 +50105,7 @@ var consumer_v1_schema_default = {
                   type: "string",
                   minLength: 1,
                   pattern: "^[*a-zA-Z0-9-_.]+$",
-                  errorMessage: {
-                    pattern: "must only contain alphanumeric characters, hyphens, underscores, periods, or asterisks"
-                  },
+                  errorMessage: "must only contain alphanumeric characters, hyphens, underscores, periods, or asterisks",
                   examples: [
                     "repo-a",
                     "*",
@@ -50144,9 +50140,7 @@ var consumer_v1_schema_default = {
             type: "string",
             minLength: 1,
             pattern: "^[a-zA-Z_][a-zA-Z0-9_]*$",
-            errorMessage: {
-              pattern: "must only contain alphanumeric characters or underscores, and cannot begin with a number"
-            },
+            errorMessage: "must only contain alphanumeric characters or underscores, and cannot begin with a number",
             examples: ["SECRET_1", "secret_2", "_SeCrEt_3"]
           },
           additionalProperties: {
@@ -50160,9 +50154,7 @@ var consumer_v1_schema_default = {
                 type: "string",
                 minLength: 1,
                 pattern: "^(?:(?:\\.|[a-zA-Z](?:[a-zA-Z-]*[a-zA-Z])?)\\/[a-zA-Z0-9-_.]+\\.)?[a-zA-Z0-9-_]+$",
-                errorMessage: {
-                  pattern: 'must be a token reference in the form of "account/repo.token-name", "./repo.token-name", or "token-name"'
-                },
+                errorMessage: 'must be a token reference in the form of "account/repo.token-name", "./repo.token-name", or "token-name"',
                 examples: [
                   "tokenA",
                   "./other-repo.tokenB",
@@ -50189,9 +50181,7 @@ var consumer_v1_schema_default = {
                       type: "string",
                       minLength: 1,
                       pattern: "^[*a-zA-Z](?:[*a-zA-Z-]*[*a-zA-Z])?$",
-                      errorMessage: {
-                        pattern: "must only contain alphanumeric characters, hyphens, or asterisks, and cannot begin or end with a hyphen"
-                      },
+                      errorMessage: "must only contain alphanumeric characters, hyphens, or asterisks, and cannot begin or end with a hyphen",
                       examples: [
                         "account-a",
                         "*",
@@ -50219,9 +50209,7 @@ var consumer_v1_schema_default = {
                       type: "string",
                       minLength: 1,
                       pattern: "^(?:\\.|[*a-zA-Z](?:[*a-zA-Z-]*[*a-zA-Z])?)\\/[*a-zA-Z0-9-_.]+$",
-                      errorMessage: {
-                        pattern: 'must be a repo pattern in the form of "account/repo", or "./repo"'
-                      },
+                      errorMessage: 'must be a repo pattern in the form of "account/repo", or "./repo"',
                       examples: [
                         "./repo-a",
                         "account-a/repo-a",
@@ -51217,9 +51205,7 @@ var provider_v1_schema_default = {
                       type: "string",
                       minLength: 1,
                       pattern: "^(?:\\.|[*a-zA-Z](?:[*a-zA-Z-]*[*a-zA-Z])?)\\/[*a-zA-Z0-9-_.]+$",
-                      errorMessage: {
-                        pattern: 'must be a repo pattern in the form of "account/repo", or "./repo"'
-                      },
+                      errorMessage: 'must be a repo pattern in the form of "account/repo", or "./repo"',
                       examples: [
                         "./repo-a",
                         "account-a/repo-a",
@@ -51240,9 +51226,7 @@ var provider_v1_schema_default = {
                       type: "string",
                       minLength: 1,
                       pattern: "^(?:\\.|[*<>a-zA-Z](?:[*<>a-zA-Z-]*[*<>a-zA-Z])?)\\/[*<>a-zA-Z0-9-_.]+$",
-                      errorMessage: {
-                        pattern: 'must be a repo pattern in the form of "account/repo", or "./repo"'
-                      },
+                      errorMessage: 'must be a repo pattern in the form of "account/repo", or "./repo"',
                       examples: [
                         "./repo-a",
                         "account-a/repo-a",
@@ -51302,9 +51286,7 @@ var provider_v1_schema_default = {
                       type: "string",
                       minLength: 1,
                       pattern: "^[*a-zA-Z_][*a-zA-Z0-9_]*$",
-                      errorMessage: {
-                        pattern: "must only contain alphanumeric characters, underscores, or asterisks, and cannot begin with a number"
-                      },
+                      errorMessage: "must only contain alphanumeric characters, underscores, or asterisks, and cannot begin with a number",
                       examples: [
                         "secret-a",
                         "prefix-*",
@@ -51322,9 +51304,7 @@ var provider_v1_schema_default = {
                       type: "string",
                       minLength: 1,
                       pattern: "^(?:\\.|[*a-zA-Z](?:[*a-zA-Z-]*[*a-zA-Z])?)\\/[*a-zA-Z0-9-_.]+$",
-                      errorMessage: {
-                        pattern: 'must be a repo pattern in the form of "account/repo", or "./repo"'
-                      },
+                      errorMessage: 'must be a repo pattern in the form of "account/repo", or "./repo"',
                       examples: [
                         "./repo-a",
                         "account-a/repo-a",
@@ -51362,9 +51342,7 @@ var provider_v1_schema_default = {
                               type: "string",
                               minLength: 1,
                               pattern: "^[*a-zA-Z](?:[*a-zA-Z-]*[*a-zA-Z])?$",
-                              errorMessage: {
-                                pattern: "must only contain alphanumeric characters, hyphens, or asterisks, and cannot begin or end with a hyphen"
-                              },
+                              errorMessage: "must only contain alphanumeric characters, hyphens, or asterisks, and cannot begin or end with a hyphen",
                               examples: [
                                 "account-a",
                                 "*",
@@ -51392,9 +51370,7 @@ var provider_v1_schema_default = {
                               type: "string",
                               minLength: 1,
                               pattern: "^(?:\\.|[*a-zA-Z](?:[*a-zA-Z-]*[*a-zA-Z])?)\\/[*a-zA-Z0-9-_.]+$",
-                              errorMessage: {
-                                pattern: 'must be a repo pattern in the form of "account/repo", or "./repo"'
-                              },
+                              errorMessage: 'must be a repo pattern in the form of "account/repo", or "./repo"',
                               examples: [
                                 "./repo-a",
                                 "account-a/repo-a",
@@ -51472,9 +51448,7 @@ var provider_v1_schema_default = {
             type: "string",
             minLength: 1,
             pattern: "^[ !#-&(-+\\--:<-[\\]^_a-~]+$",
-            errorMessage: {
-              pattern: "must not contain single quotes, double quotes, backticks, commas, semicolons, backslashes, or non-printable characters"
-            },
+            errorMessage: "must not contain single quotes, double quotes, backticks, commas, semicolons, backslashes, or non-printable characters",
             examples: [
               "environment-a",
               "prefix-*",
