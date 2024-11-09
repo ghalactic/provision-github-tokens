@@ -23,7 +23,7 @@ export type ConsumerConfig = PartialConsumerConfig & {
   $schema: string;
   tokens: Record<
     string,
-    PartialConsumerConfig["tokens"][string] & { owner: string }
+    PartialConsumerConfig["tokens"][string] & { account: string }
   >;
 };
 

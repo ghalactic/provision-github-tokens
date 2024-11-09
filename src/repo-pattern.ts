@@ -2,22 +2,22 @@ import { createNamePattern } from "./name-pattern.js";
 import type { Pattern } from "./pattern.js";
 
 export type RepoPattern = Pattern & {
-  readonly owner: Pattern;
+  readonly account: Pattern;
   readonly repo: Pattern;
 };
 
 export function createRepoPattern(pattern: string): RepoPattern {
-  const [ownerPart, repoPart] = splitRepoPattern(pattern);
-  const owner = createNamePattern(ownerPart);
+  const [accountPart, repoPart] = splitRepoPattern(pattern);
+  const account = createNamePattern(accountPart);
   const repo = createNamePattern(repoPart);
 
   return {
     get isAll() {
-      return owner.isAll && repo.isAll;
+      return account.isAll && repo.isAll;
     },
 
-    get owner() {
-      return owner;
+    get account() {
+      return account;
     },
 
     get repo() {
@@ -28,7 +28,7 @@ export function createRepoPattern(pattern: string): RepoPattern {
       const parts = string.split("/");
 
       return parts.length === 2
-        ? owner.test(parts[0]) && repo.test(parts[1])
+        ? account.test(parts[0]) && repo.test(parts[1])
         : false;
     },
 
@@ -37,21 +37,21 @@ export function createRepoPattern(pattern: string): RepoPattern {
 }
 
 export function normalizeRepoPattern(
-  definingOwner: string,
+  definingAccount: string,
   pattern: string,
 ): string {
-  const [ownerPart, repoPart] = splitRepoPattern(pattern);
+  const [accountPart, repoPart] = splitRepoPattern(pattern);
 
-  return ownerPart === "." ? `${definingOwner}/${repoPart}` : pattern;
+  return accountPart === "." ? `${definingAccount}/${repoPart}` : pattern;
 }
 
-export function repoPatternsForOwner(
-  owner: string,
+export function repoPatternsForAccount(
+  account: string,
   patterns: RepoPattern[],
 ): RepoPattern[] {
   const result: RepoPattern[] = [];
   for (const pattern of patterns) {
-    if (pattern.owner.test(owner)) result.push(pattern);
+    if (pattern.account.test(account)) result.push(pattern);
   }
 
   return result;
@@ -72,11 +72,11 @@ function splitRepoPattern(pattern: string): [string, string] {
     );
   }
 
-  const [ownerPart, repoPart] = parts;
+  const [accountPart, repoPart] = parts;
 
-  if (!ownerPart) {
+  if (!accountPart) {
     throw new Error(
-      `Repo pattern ${JSON.stringify(pattern)} owner part cannot be empty`,
+      `Repo pattern ${JSON.stringify(pattern)} account part cannot be empty`,
     );
   }
   if (!repoPart) {
@@ -85,5 +85,5 @@ function splitRepoPattern(pattern: string): [string, string] {
     );
   }
 
-  return [ownerPart, repoPart];
+  return [accountPart, repoPart];
 }

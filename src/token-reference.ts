@@ -1,21 +1,21 @@
 export function normalizeTokenReference(
-  definingOwner: string,
+  definingAccount: string,
   definingRepo: string,
   reference: string,
 ): string {
   const dotIdx = reference.lastIndexOf(".");
 
-  if (dotIdx === -1) return `${definingOwner}/${definingRepo}.${reference}`;
+  if (dotIdx === -1) return `${definingAccount}/${definingRepo}.${reference}`;
 
   const name = reference.slice(dotIdx + 1);
-  const referenceOwnerRepo = reference.slice(0, dotIdx);
-  const slashIdx = referenceOwnerRepo.indexOf("/");
-  const owner =
-    slashIdx === -1 ? definingOwner : referenceOwnerRepo.slice(0, slashIdx);
+  const referenceAccountRepo = reference.slice(0, dotIdx);
+  const slashIdx = referenceAccountRepo.indexOf("/");
+  const account =
+    slashIdx === -1 ? definingAccount : referenceAccountRepo.slice(0, slashIdx);
   const repo =
     slashIdx === -1
-      ? referenceOwnerRepo
-      : referenceOwnerRepo.slice(slashIdx + 1);
+      ? referenceAccountRepo
+      : referenceAccountRepo.slice(slashIdx + 1);
 
-  return `${owner}/${repo}.${name}`;
+  return `${account}/${repo}.${name}`;
 }

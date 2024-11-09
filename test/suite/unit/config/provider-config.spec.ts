@@ -15,14 +15,14 @@ it("parses comprehensive provider config", async () => {
   const fixturePath = join(fixturesPath, "comprehensive.yml");
   const yaml = await readFile(fixturePath, "utf-8");
 
-  expect(parseProviderConfig("owner-self", "repo-self", yaml)).toEqual({
+  expect(parseProviderConfig("account-self", "repo-self", yaml)).toEqual({
     $schema: providerSchema.$id,
 
     permissions: {
       rules: {
         repos: [
           {
-            description: "Access across all owners and repos",
+            description: "Access across all accounts and repos",
             resources: ["*/*"],
             consumers: ["*/*"],
             permissions: {
@@ -33,21 +33,21 @@ it("parses comprehensive provider config", async () => {
             },
           },
           {
-            description: "Access to a specific owner from anywhere",
-            resources: ["owner-a/*"],
+            description: "Access to a specific account from anywhere",
+            resources: ["account-a/*"],
             consumers: ["*/*"],
             permissions: { metadata: "read" },
           },
           {
-            description: "Access to a specific owner from the same owner",
-            resources: ["owner-a/*"],
-            consumers: ["owner-a/*"],
+            description: "Access to a specific account from the same account",
+            resources: ["account-a/*"],
+            consumers: ["account-a/*"],
             permissions: { issues: "write" },
           },
           {
-            description: "Access within the same owner",
+            description: "Access within the same account",
             resources: ["*/*"],
-            consumers: ["<owner>/*"],
+            consumers: ["<account>/*"],
             permissions: { issues: "write", pull_requests: "write" },
           },
           {
@@ -59,68 +59,68 @@ it("parses comprehensive provider config", async () => {
           {
             description: "Self-access",
             resources: ["*/*"],
-            consumers: ["<owner>/<repo>"],
+            consumers: ["<account>/<repo>"],
             permissions: { contents: "write", metadata: "write" },
           },
           {
             description:
-              "Access to repos with a specific name in any owner (weird, but possible)",
+              "Access to repos with a specific name in any account (weird, but possible)",
             resources: ["*/repo-a"],
             consumers: ["*/*"],
             permissions: { metadata: "read" },
           },
           {
-            description: "Cross-repo access (in the provider's owner)",
-            resources: ["owner-self/repo-a"],
-            consumers: ["owner-self/repo-b"],
+            description: "Cross-repo access (in the provider's account)",
+            resources: ["account-self/repo-a"],
+            consumers: ["account-self/repo-b"],
             permissions: { contents: "read" },
           },
           {
-            description: "All-repo access (in the provider's owner)",
-            resources: ["owner-self/*"],
-            consumers: ["owner-self/repo-a"],
+            description: "All-repo access (in the provider's account)",
+            resources: ["account-self/*"],
+            consumers: ["account-self/repo-a"],
             permissions: { contents: "read" },
           },
           {
-            description: "Cross-owner access",
-            resources: ["owner-a/repo-a"],
-            consumers: ["owner-b/repo-b"],
+            description: "Cross-account access",
+            resources: ["account-a/repo-a"],
+            consumers: ["account-b/repo-b"],
             permissions: { contents: "read" },
           },
           {
             description: "Revocation of access",
-            resources: ["owner-self/repo-a"],
-            consumers: ["owner-self/repo-b"],
+            resources: ["account-self/repo-a"],
+            consumers: ["account-self/repo-b"],
             permissions: { contents: "none" },
           },
           {
             description: "Escalation of access",
-            resources: ["owner-self/repo-a"],
-            consumers: ["owner-self/repo-b"],
+            resources: ["account-self/repo-a"],
+            consumers: ["account-self/repo-b"],
             permissions: { contents: "write" },
           },
           {
             description: "De-escalation of access",
-            resources: ["owner-self/repo-a"],
-            consumers: ["owner-self/repo-b"],
+            resources: ["account-self/repo-a"],
+            consumers: ["account-self/repo-b"],
             permissions: { contents: "read" },
           },
           {
             description: "Multiple resources and consumers",
-            resources: ["owner-self/repo-a", "owner-self/repo-b"],
-            consumers: ["owner-self/repo-c", "owner-self/repo-d"],
+            resources: ["account-self/repo-a", "account-self/repo-b"],
+            consumers: ["account-self/repo-c", "account-self/repo-d"],
             permissions: { contents: "read" },
           },
           {
             description: "Wildcards",
-            resources: ["owner-*/repo-*"],
-            consumers: ["*-owner/*-repo"],
+            resources: ["account-*/repo-*"],
+            consumers: ["*-account/*-repo"],
             permissions: { contents: "read" },
           },
           {
             description: "All permissions",
-            resources: ["owner-self/repo-a"],
-            consumers: ["owner-self/repo-b"],
+            resources: ["account-self/repo-a"],
+            consumers: ["account-self/repo-b"],
             permissions: {
               actions: "write",
               administration: "write",
@@ -205,7 +205,7 @@ it("parses comprehensive provider config", async () => {
             description:
               "Specific repos can provision to any secret of any kind in their own org",
             secrets: ["*"],
-            requesters: ["owner-self/repo-a", "owner-self/repo-b"],
+            requesters: ["account-self/repo-a", "account-self/repo-b"],
             to: {
               github: {
                 org: {
@@ -225,7 +225,7 @@ it("parses comprehensive provider config", async () => {
             description:
               "Specific repos can provision to dependabot secrets in specific orgs",
             secrets: ["*"],
-            requesters: ["owner-self/repo-a", "owner-self/repo-b"],
+            requesters: ["account-self/repo-a", "account-self/repo-b"],
             to: {
               github: {
                 org: {},
@@ -248,7 +248,7 @@ it("parses comprehensive provider config", async () => {
             description:
               "Specific repos can provision to dependabot secrets in any org",
             secrets: ["*"],
-            requesters: ["owner-self/repo-a", "owner-self/repo-b"],
+            requesters: ["account-self/repo-a", "account-self/repo-b"],
             to: {
               github: {
                 org: {},
@@ -268,7 +268,7 @@ it("parses comprehensive provider config", async () => {
             description:
               "A specific repo can provision to a specific codespaces secret in other repos",
             secrets: ["SECRET_A"],
-            requesters: ["owner-self/repo-a"],
+            requesters: ["account-self/repo-a"],
             to: {
               github: {
                 org: {},
@@ -277,11 +277,11 @@ it("parses comprehensive provider config", async () => {
                   environments: {},
                 },
                 repos: {
-                  "owner-self/repo-b": {
+                  "account-self/repo-b": {
                     codespaces: "allow",
                     environments: {},
                   },
-                  "owner-b/repo-c": {
+                  "account-b/repo-c": {
                     codespaces: "allow",
                     environments: {},
                   },
@@ -293,7 +293,7 @@ it("parses comprehensive provider config", async () => {
             description:
               "A specific repo can provision to specific secrets of specific environments in another repo",
             secrets: ["SECRET_A"],
-            requesters: ["owner-self/repo-a"],
+            requesters: ["account-self/repo-a"],
             to: {
               github: {
                 org: {},
@@ -302,7 +302,7 @@ it("parses comprehensive provider config", async () => {
                   environments: {},
                 },
                 repos: {
-                  "owner-self/repo-b": {
+                  "account-self/repo-b": {
                     environments: {
                       "env-a": "allow",
                       "env-b": "allow",
@@ -314,9 +314,9 @@ it("parses comprehensive provider config", async () => {
           },
           {
             description:
-              "Specific repos can provision to a specific secret of any kind in any repo in any owner",
+              "Specific repos can provision to a specific secret of any kind in any repo in any account",
             secrets: ["SECRET_A"],
-            requesters: ["owner-self/repo-a", "owner-self/repo-b"],
+            requesters: ["account-self/repo-a", "account-self/repo-b"],
             to: {
               github: {
                 org: {},
@@ -339,9 +339,9 @@ it("parses comprehensive provider config", async () => {
           },
           {
             description:
-              "Specific repos can provision to a specific actions secret in any repo in a specific owner",
+              "Specific repos can provision to a specific actions secret in any repo in a specific account",
             secrets: ["SECRET_A"],
-            requesters: ["owner-self/repo-a", "owner-self/repo-b"],
+            requesters: ["account-self/repo-a", "account-self/repo-b"],
             to: {
               github: {
                 org: {},
@@ -350,7 +350,7 @@ it("parses comprehensive provider config", async () => {
                   environments: {},
                 },
                 repos: {
-                  "owner-b/*": {
+                  "account-b/*": {
                     actions: "allow",
                     environments: {},
                   },
@@ -362,7 +362,7 @@ it("parses comprehensive provider config", async () => {
             description:
               "Specific repos can provision any actions secret in the same repo or org, or specific other repos and orgs",
             secrets: ["*"],
-            requesters: ["owner-self/repo-a", "owner-self/repo-b"],
+            requesters: ["account-self/repo-a", "account-self/repo-b"],
             to: {
               github: {
                 org: {
@@ -381,11 +381,11 @@ it("parses comprehensive provider config", async () => {
                   environments: {},
                 },
                 repos: {
-                  "owner-self/repo-a": {
+                  "account-self/repo-a": {
                     actions: "allow",
                     environments: {},
                   },
-                  "owner-a/repo-a": {
+                  "account-a/repo-a": {
                     actions: "allow",
                     environments: {},
                   },
@@ -428,7 +428,7 @@ it("parses comprehensive provider config", async () => {
             description:
               "Specific repos can't provision to a specific secret of any kind in the same repo",
             secrets: ["SECRET_X"],
-            requesters: ["owner-self/repo-a", "owner-self/repo-b"],
+            requesters: ["account-self/repo-a", "account-self/repo-b"],
             to: {
               github: {
                 org: {},
@@ -449,7 +449,7 @@ it("parses comprehensive provider config", async () => {
             description:
               "Rules can have both allow and deny, but deny takes precedence",
             secrets: ["SECRET_A"],
-            requesters: ["owner-self/repo-a"],
+            requesters: ["account-self/repo-a"],
             to: {
               github: {
                 org: {},
@@ -478,7 +478,7 @@ it("parses provider configs that are just comments", async () => {
   const fixturePath = join(fixturesPath, "just-comments.yml");
   const yaml = await readFile(fixturePath, "utf-8");
 
-  expect(parseProviderConfig("owner-self", "repo-self", yaml)).toEqual({
+  expect(parseProviderConfig("account-self", "repo-self", yaml)).toEqual({
     $schema: providerSchema.$id,
     permissions: { rules: { repos: [] } },
     provision: { rules: { secrets: [] } },
@@ -486,7 +486,7 @@ it("parses provider configs that are just comments", async () => {
 });
 
 it("parses provider configs that are empty", async () => {
-  expect(parseProviderConfig("owner-self", "repo-self", "")).toEqual({
+  expect(parseProviderConfig("account-self", "repo-self", "")).toEqual({
     $schema: providerSchema.$id,
     permissions: { rules: { repos: [] } },
     provision: { rules: { secrets: [] } },
@@ -500,7 +500,7 @@ it("throws when an invalid repo pattern is used in /permissions/rules/repos/<n>/
   );
   const yaml = await readFile(fixturePath, "utf-8");
 
-  expect(throws(() => parseProviderConfig("owner-self", "repo-self", yaml)))
+  expect(throws(() => parseProviderConfig("account-self", "repo-self", yaml)))
     .toMatchInlineSnapshot(`
     "Provider config has an error at /permissions/rules/repos/0/resources/0
 
@@ -515,7 +515,7 @@ it("throws when an invalid repo pattern is used in /permissions/rules/repos/<n>/
   );
   const yaml = await readFile(fixturePath, "utf-8");
 
-  expect(throws(() => parseProviderConfig("owner-self", "repo-self", yaml)))
+  expect(throws(() => parseProviderConfig("account-self", "repo-self", yaml)))
     .toMatchInlineSnapshot(`
     "Provider config has an error at /permissions/rules/repos/0/consumers/0
 
@@ -530,7 +530,7 @@ it("throws when an invalid repo pattern is used in /provision/rules/secrets/<n>/
   );
   const yaml = await readFile(fixturePath, "utf-8");
 
-  expect(throws(() => parseProviderConfig("owner-self", "repo-self", yaml)))
+  expect(throws(() => parseProviderConfig("account-self", "repo-self", yaml)))
     .toMatchInlineSnapshot(`
     "Provider config has an error at /provision/rules/secrets/0/requesters/0
 
@@ -545,7 +545,7 @@ it("throws when an invalid repo pattern is used in /provision/rules/secrets/<n>/
   );
   const yaml = await readFile(fixturePath, "utf-8");
 
-  expect(throws(() => parseProviderConfig("owner-self", "repo-self", yaml)))
+  expect(throws(() => parseProviderConfig("account-self", "repo-self", yaml)))
     .toMatchInlineSnapshot(`
     "Provider config has an error at /provision/rules/secrets/0/to/github/repos/repo-x
 
@@ -557,7 +557,7 @@ it("throws when there are additional properties", async () => {
   const fixturePath = join(fixturesPath, "additional-properties.yml");
   const yaml = await readFile(fixturePath, "utf-8");
 
-  expect(throws(() => parseProviderConfig("owner-self", "repo-self", yaml)))
+  expect(throws(() => parseProviderConfig("account-self", "repo-self", yaml)))
     .toMatchInlineSnapshot(`
       "Parsing of provider configuration failed for "# yaml-language-server: $schema=https://ghalactic.github.io/provision-github-tokens/schema/provider.v1.schema.json\\nadditional: This should not be allowed\\n"
 
@@ -567,7 +567,7 @@ it("throws when there are additional properties", async () => {
 });
 
 it("throws when the YAML is invalid", async () => {
-  expect(throws(() => parseProviderConfig("owner-self", "repo-self", "{")))
+  expect(throws(() => parseProviderConfig("account-self", "repo-self", "{")))
     .toMatchInlineSnapshot(`
       "Parsing of provider configuration failed for "{"
 

@@ -37,15 +37,15 @@ tokens:
     repos: [repo-a]
     permissions: { contents: write }
 
-  withOwner:
-    owner: owner-a
+  withAccount:
+    account: account-a
     repos: [repo-a]
     permissions: { contents: read }
 
   withAllOptions:
     shared: true
     as: role-a
-    owner: owner-a
+    account: account-a
     repos: [repo-a, repo-*]
     permissions: { contents: write, metadata: read }
 
@@ -139,7 +139,7 @@ provision:
         repos:
           ./repo-a:
             actions: true
-          owner-a/repo-a:
+          account-a/repo-a:
             actions: true
             codespaces: true
             dependabot: true

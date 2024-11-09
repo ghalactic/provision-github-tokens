@@ -5,31 +5,31 @@ import type { TokenDeclaration } from "../../../src/type/token-declaration.js";
 it("finds local token declarations", () => {
   const declarationA: TokenDeclaration = {
     shared: false,
-    repos: ["owner-x/repo-x"],
+    repos: ["account-x/repo-x"],
     permissions: { metadata: "read" },
   };
   const declarationB: TokenDeclaration = {
     shared: false,
-    repos: ["owner-y/repo-y"],
+    repos: ["account-y/repo-y"],
     permissions: { contents: "write" },
   };
 
   const registry = createTokenDeclarationRegistry();
-  registry.registerDeclaration("owner-a", "repo-a", "token-a", declarationA);
-  registry.registerDeclaration("owner-b", "repo-b", "token-b", declarationB);
+  registry.registerDeclaration("account-a", "repo-a", "token-a", declarationA);
+  registry.registerDeclaration("account-b", "repo-b", "token-b", declarationB);
 
   expect(
     registry.findDeclarationForRequester(
-      "owner-a",
+      "account-a",
       "repo-a",
-      "owner-a/repo-a.token-a",
+      "account-a/repo-a.token-a",
     ),
   ).toEqual([declarationA, true]);
   expect(
     registry.findDeclarationForRequester(
-      "owner-b",
+      "account-b",
       "repo-b",
-      "owner-b/repo-b.token-b",
+      "account-b/repo-b.token-b",
     ),
   ).toEqual([declarationB, true]);
 });
@@ -37,31 +37,31 @@ it("finds local token declarations", () => {
 it("finds shared token declarations", () => {
   const declarationA: TokenDeclaration = {
     shared: true,
-    repos: ["owner-x/repo-x"],
+    repos: ["account-x/repo-x"],
     permissions: { metadata: "read" },
   };
   const declarationB: TokenDeclaration = {
     shared: true,
-    repos: ["owner-y/repo-y"],
+    repos: ["account-y/repo-y"],
     permissions: { contents: "write" },
   };
 
   const registry = createTokenDeclarationRegistry();
-  registry.registerDeclaration("owner-a", "repo-a", "token-a", declarationA);
-  registry.registerDeclaration("owner-b", "repo-b", "token-b", declarationB);
+  registry.registerDeclaration("account-a", "repo-a", "token-a", declarationA);
+  registry.registerDeclaration("account-b", "repo-b", "token-b", declarationB);
 
   expect(
     registry.findDeclarationForRequester(
-      "owner-b",
+      "account-b",
       "repo-b",
-      "owner-a/repo-a.token-a",
+      "account-a/repo-a.token-a",
     ),
   ).toEqual([declarationA, true]);
   expect(
     registry.findDeclarationForRequester(
-      "owner-a",
+      "account-a",
       "repo-a",
-      "owner-b/repo-b.token-b",
+      "account-b/repo-b.token-b",
     ),
   ).toEqual([declarationB, true]);
 });
@@ -69,31 +69,31 @@ it("finds shared token declarations", () => {
 it("doesn't find unshared tokens in other repos", () => {
   const declarationA: TokenDeclaration = {
     shared: false,
-    repos: ["owner-x/repo-x"],
+    repos: ["account-x/repo-x"],
     permissions: { metadata: "read" },
   };
   const declarationB: TokenDeclaration = {
     shared: false,
-    repos: ["owner-y/repo-y"],
+    repos: ["account-y/repo-y"],
     permissions: { contents: "write" },
   };
 
   const registry = createTokenDeclarationRegistry();
-  registry.registerDeclaration("owner-a", "repo-a", "token-a", declarationA);
-  registry.registerDeclaration("owner-b", "repo-b", "token-b", declarationB);
+  registry.registerDeclaration("account-a", "repo-a", "token-a", declarationA);
+  registry.registerDeclaration("account-b", "repo-b", "token-b", declarationB);
 
   expect(
     registry.findDeclarationForRequester(
-      "owner-b",
+      "account-b",
       "repo-b",
-      "owner-a/repo-a.token-a",
+      "account-a/repo-a.token-a",
     ),
   ).toEqual([undefined, true]);
   expect(
     registry.findDeclarationForRequester(
-      "owner-a",
+      "account-a",
       "repo-a",
-      "owner-b/repo-b.token-b",
+      "account-b/repo-b.token-b",
     ),
   ).toEqual([undefined, true]);
 });
@@ -103,9 +103,9 @@ it("doesn't find unregistered tokens", () => {
 
   expect(
     registry.findDeclarationForRequester(
-      "owner-a",
+      "account-a",
       "repo-a",
-      "owner-a/repo-a.token-a",
+      "account-a/repo-a.token-a",
     ),
   ).toEqual([undefined, false]);
 });

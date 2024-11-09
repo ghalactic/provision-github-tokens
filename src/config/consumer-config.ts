@@ -10,11 +10,15 @@ import { validateConsumer } from "./validation.js";
 import { wrapErrors } from "./wrap-errors.js";
 
 export function parseConsumerConfig(
-  definingOwner: string,
+  definingAccount: string,
   definingRepo: string,
   yaml: string,
 ): ConsumerConfig {
-  return normalizeConsumerConfig(definingOwner, definingRepo, parseYAML(yaml));
+  return normalizeConsumerConfig(
+    definingAccount,
+    definingRepo,
+    parseYAML(yaml),
+  );
 }
 
 function parseYAML(yaml: string): PartialConsumerConfig {
@@ -33,7 +37,7 @@ function parseYAML(yaml: string): PartialConsumerConfig {
 }
 
 function normalizeConsumerConfig(
-  definingOwner: string,
+  definingAccount: string,
   definingRepo: string,
   config: PartialConsumerConfig,
 ): ConsumerConfig {
@@ -41,14 +45,14 @@ function normalizeConsumerConfig(
     const token = config.tokens[name];
 
     token.as ??= undefined;
-    token.owner ??= definingOwner;
+    token.account ??= definingAccount;
   }
 
   for (const name in config.provision.secrets) {
     const secret = config.provision.secrets[name];
 
     secret.token = normalizeTokenReference(
-      definingOwner,
+      definingAccount,
       definingRepo,
       secret.token,
     );
@@ -57,7 +61,7 @@ function normalizeConsumerConfig(
     for (const pattern in secret.github.repos) {
       repos[
         wrapErrors(
-          () => normalizeRepoPattern(definingOwner, pattern),
+          () => normalizeRepoPattern(definingAccount, pattern),
           (cause) =>
             new Error(
               "Consumer config has an error at " +

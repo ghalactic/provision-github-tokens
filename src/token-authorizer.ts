@@ -4,7 +4,7 @@ import { isSufficientPermissions } from "./permissions.js";
 import {
   anyRepoPatternIsAllRepos,
   createRepoPattern,
-  repoPatternsForOwner,
+  repoPatternsForAccount,
   type RepoPattern,
 } from "./repo-pattern.js";
 import type {
@@ -24,7 +24,7 @@ export type TokenAuthorizer = {
    * Authorize a token request for a single consuming repo.
    */
   authorizeForRepo: (
-    consumerOwner: string,
+    consumerAccount: string,
     consumerRepo: string,
     request: TokenRequest,
   ) => RepoTokenAuthorizationResult;
@@ -52,7 +52,7 @@ export function createTokenAuthorizer(
   }
 
   return {
-    authorizeForRepo(consumerOwner, consumerRepo, request) {
+    authorizeForRepo(consumerAccount, consumerRepo, request) {
       const want = request.permissions;
       const isAllRepos = request.repos === "all";
 
@@ -63,8 +63,8 @@ export function createTokenAuthorizer(
         throw new Error("No permissions requested");
       }
 
-      const consumer = `${consumerOwner}/${consumerRepo}`;
-      const resourceOwner = request.owner;
+      const consumer = `${consumerAccount}/${consumerRepo}`;
+      const resourceAccount = request.account;
       const rules = rulesForConsumer(consumer);
       let isAllowed = true;
 
@@ -75,14 +75,14 @@ export function createTokenAuthorizer(
 
         for (const i of rules) {
           const rule = config.rules.repos[i];
-          const patternsForOwner = repoPatternsForOwner(
-            resourceOwner,
+          const patternsForAccount = repoPatternsForAccount(
+            resourceAccount,
             repoResourcePatterns[i],
           );
           let isRelevant: boolean;
 
-          if (patternsForOwner.length > 0) {
-            if (anyRepoPatternIsAllRepos(patternsForOwner)) {
+          if (patternsForAccount.length > 0) {
+            if (anyRepoPatternIsAllRepos(patternsForAccount)) {
               updatePermissions(have, rule.permissions);
               isRelevant = true;
             } else {
@@ -107,7 +107,7 @@ export function createTokenAuthorizer(
 
         return {
           consumer,
-          resourceOwner,
+          resourceAccount,
           resources: {
             "*": {
               rules: ruleResults,
@@ -126,7 +126,7 @@ export function createTokenAuthorizer(
       > = {};
 
       for (const resourceRepo of request.repos) {
-        const resource = `${resourceOwner}/${resourceRepo}`;
+        const resource = `${resourceAccount}/${resourceRepo}`;
         const ruleResults: RepoTokenAuthorizationResourceResultRuleResult[] =
           [];
         const have: InstallationPermissions = {};
@@ -160,7 +160,7 @@ export function createTokenAuthorizer(
 
       return {
         consumer,
-        resourceOwner,
+        resourceAccount,
         resources: resourceResults,
         want,
         isAllowed,

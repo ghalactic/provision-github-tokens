@@ -6,11 +6,11 @@ import { validateProvider } from "./validation.js";
 import { wrapErrors } from "./wrap-errors.js";
 
 export function parseProviderConfig(
-  definingOwner: string,
+  definingAccount: string,
   definingRepo: string,
   yaml: string,
 ): ProviderConfig {
-  return normalizeProviderConfig(definingOwner, parseYAML(yaml));
+  return normalizeProviderConfig(definingAccount, parseYAML(yaml));
 }
 
 function parseYAML(yaml: string): ProviderConfig {
@@ -29,7 +29,7 @@ function parseYAML(yaml: string): ProviderConfig {
 }
 
 function normalizeProviderConfig(
-  definingOwner: string,
+  definingAccount: string,
   config: ProviderConfig,
 ): ProviderConfig {
   for (let i = 0; i < config.permissions.rules.repos.length; ++i) {
@@ -37,7 +37,7 @@ function normalizeProviderConfig(
 
     for (let j = 0; j < rule.resources.length; ++j) {
       rule.resources[j] = wrapErrors(
-        () => normalizeRepoPattern(definingOwner, rule.resources[j]),
+        () => normalizeRepoPattern(definingAccount, rule.resources[j]),
         (cause) =>
           new Error(
             "Provider config has an error at " +
@@ -49,7 +49,7 @@ function normalizeProviderConfig(
 
     for (let j = 0; j < rule.consumers.length; ++j) {
       rule.consumers[j] = wrapErrors(
-        () => normalizeRepoPattern(definingOwner, rule.consumers[j]),
+        () => normalizeRepoPattern(definingAccount, rule.consumers[j]),
         (cause) =>
           new Error(
             "Provider config has an error at " +
@@ -65,7 +65,7 @@ function normalizeProviderConfig(
 
     for (let j = 0; j < rule.requesters.length; ++j) {
       rule.requesters[j] = wrapErrors(
-        () => normalizeRepoPattern(definingOwner, rule.requesters[j]),
+        () => normalizeRepoPattern(definingAccount, rule.requesters[j]),
         (cause) =>
           new Error(
             "Provider config has an error at " +
@@ -79,7 +79,7 @@ function normalizeProviderConfig(
     for (const pattern in rule.to.github.repos) {
       repos[
         wrapErrors(
-          () => normalizeRepoPattern(definingOwner, pattern),
+          () => normalizeRepoPattern(definingAccount, pattern),
           (cause) =>
             new Error(
               "Provider config has an error at " +

@@ -7,9 +7,9 @@ it("throws if the requested repos are empty", () => {
 
   expect(
     throws(() =>
-      authorizer.authorizeForRepo("owner-x", "repo-x", {
+      authorizer.authorizeForRepo("account-x", "repo-x", {
         role: undefined,
-        owner: "owner-a",
+        account: "account-a",
         repos: [],
         permissions: { metadata: "read" },
       }),
@@ -22,9 +22,9 @@ it("throws if the requested permissions are empty", () => {
 
   expect(
     throws(() =>
-      authorizer.authorizeForRepo("owner-x", "repo-x", {
+      authorizer.authorizeForRepo("account-x", "repo-x", {
         role: undefined,
-        owner: "owner-a",
+        account: "account-a",
         repos: ["repo-a"],
         permissions: {},
       }),

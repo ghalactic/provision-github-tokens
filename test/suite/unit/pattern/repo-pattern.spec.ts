@@ -14,15 +14,15 @@ it("doesn't allow patterns without a slash", () => {
   );
 });
 
-it("doesn't allow patterns with an empty owner", () => {
+it("doesn't allow patterns with an empty account", () => {
   expect(throws(() => createRepoPattern("/repo"))).toMatchInlineSnapshot(
-    `"Repo pattern "/repo" owner part cannot be empty"`,
+    `"Repo pattern "/repo" account part cannot be empty"`,
   );
 });
 
 it("doesn't allow patterns with an empty repo", () => {
-  expect(throws(() => createRepoPattern("owner/"))).toMatchInlineSnapshot(
-    `"Repo pattern "owner/" repo part cannot be empty"`,
+  expect(throws(() => createRepoPattern("account/"))).toMatchInlineSnapshot(
+    `"Repo pattern "account/" repo part cannot be empty"`,
   );
 });
 
@@ -55,40 +55,40 @@ it.each([
 });
 
 it.each`
-  pattern                 | owner
-  ${"*/*"}                | ${"owner-a"}
-  ${"**/**"}              | ${"owner-a"}
-  ${"owner-*/*"}          | ${"owner-a"}
-  ${"owner-**/**"}        | ${"owner-a"}
-  ${"*-a/*"}              | ${"owner-a"}
-  ${"**-a/**"}            | ${"owner-a"}
-  ${"owner-a/*"}          | ${"owner-a"}
-  ${"owner-a/**"}         | ${"owner-a"}
-  ${"owner-a/**********"} | ${"owner-a"}
+  pattern                   | account
+  ${"*/*"}                  | ${"account-a"}
+  ${"**/**"}                | ${"account-a"}
+  ${"account-*/*"}          | ${"account-a"}
+  ${"account-**/**"}        | ${"account-a"}
+  ${"*-a/*"}                | ${"account-a"}
+  ${"**-a/**"}              | ${"account-a"}
+  ${"account-a/*"}          | ${"account-a"}
+  ${"account-a/**"}         | ${"account-a"}
+  ${"account-a/**********"} | ${"account-a"}
 `(
-  "knows that $pattern matches all repos with owner $owner",
-  ({ pattern, owner }) => {
+  "knows that $pattern matches all repos with account $account",
+  ({ pattern, account }) => {
     const actual = createRepoPattern(pattern);
 
-    expect(actual.owner.test(owner) && actual.repo.isAll).toBe(true);
+    expect(actual.account.test(account) && actual.repo.isAll).toBe(true);
   },
 );
 
 it.each`
-  pattern                 | owner
-  ${"owner-b/*"}          | ${"owner-a"}
-  ${"owner-b/**"}         | ${"owner-a"}
-  ${"owner-b/**********"} | ${"owner-a"}
-  ${"owner-a/a"}          | ${"owner-a"}
-  ${"owner-a/a*"}         | ${"owner-a"}
-  ${"owner-a/*a"}         | ${"owner-a"}
-  ${"owner-a/*a*"}        | ${"owner-a"}
+  pattern                   | account
+  ${"account-b/*"}          | ${"account-a"}
+  ${"account-b/**"}         | ${"account-a"}
+  ${"account-b/**********"} | ${"account-a"}
+  ${"account-a/a"}          | ${"account-a"}
+  ${"account-a/a*"}         | ${"account-a"}
+  ${"account-a/*a"}         | ${"account-a"}
+  ${"account-a/*a*"}        | ${"account-a"}
 `(
-  "knows that $pattern doesn't match all strings with owner $owner",
-  ({ pattern, owner }) => {
+  "knows that $pattern doesn't match all strings with account $account",
+  ({ pattern, account }) => {
     const actual = createRepoPattern(pattern);
 
-    expect(actual.owner.test(owner) && actual.repo.isAll).toBe(false);
+    expect(actual.account.test(account) && actual.repo.isAll).toBe(false);
   },
 );
 
@@ -111,10 +111,10 @@ for (const [pattern, matches, nonMatches] of patterns) {
       );
     });
 
-    it(`matches owner/${match} to owner/${pattern}`, () => {
-      expect(createRepoPattern(`owner/${pattern}`).test(`owner/${match}`)).toBe(
-        true,
-      );
+    it(`matches account/${match} to account/${pattern}`, () => {
+      expect(
+        createRepoPattern(`account/${pattern}`).test(`account/${match}`),
+      ).toBe(true);
     });
 
     it(`matches ${match}/${match} to ${pattern}/${pattern}`, () => {
@@ -131,9 +131,9 @@ for (const [pattern, matches, nonMatches] of patterns) {
       ).toBe(false);
     });
 
-    it(`doesn't match owner/${nonMatch} to owner/${pattern}`, () => {
+    it(`doesn't match account/${nonMatch} to account/${pattern}`, () => {
       expect(
-        createRepoPattern(`owner/${pattern}`).test(`owner/${nonMatch}`),
+        createRepoPattern(`account/${pattern}`).test(`account/${nonMatch}`),
       ).toBe(false);
     });
 

@@ -7,7 +7,7 @@ export type RepoTokenAuthorizationResultExplainer<T> = (
 
 export type RepoTokenAuthorizationResult = {
   consumer: string;
-  resourceOwner: string;
+  resourceAccount: string;
   resources: Record<string, RepoTokenAuthorizationResourceResult>;
   want: InstallationPermissions;
   isAllowed: boolean;

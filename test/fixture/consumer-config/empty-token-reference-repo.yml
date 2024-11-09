@@ -4,7 +4,7 @@ $schema: https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.
 provision:
   secrets:
     TO_REPO_ACTIONS:
-      token: owner-a/.tokenA
+      token: account-a/.tokenA
       github:
         repo:
           actions: true

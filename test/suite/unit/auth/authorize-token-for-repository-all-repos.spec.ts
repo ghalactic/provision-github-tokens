@@ -9,8 +9,8 @@ it("allows tokens that should be allowed", () => {
     rules: {
       repos: [
         {
-          resources: ["owner-a/*"],
-          consumers: ["owner-x/repo-x"],
+          resources: ["account-a/*"],
+          consumers: ["account-x/repo-x"],
           permissions: { contents: "write", metadata: "read" },
         },
       ],
@@ -19,31 +19,31 @@ it("allows tokens that should be allowed", () => {
 
   expect(
     explain(
-      authorizer.authorizeForRepo("owner-x", "repo-x", {
+      authorizer.authorizeForRepo("account-x", "repo-x", {
         role: undefined,
-        owner: "owner-a",
+        account: "account-a",
         repos: "all",
         permissions: { contents: "write" },
       }),
     ),
   ).toMatchInlineSnapshot(`
-    "✅ Repo owner-x/repo-x was allowed access to a token:
-      ✅ Sufficient access to all repos in owner-a based on 1 rule:
+    "✅ Repo account-x/repo-x was allowed access to a token:
+      ✅ Sufficient access to all repos in account-a based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ contents: have write, wanted write"
   `);
   expect(
     explain(
-      authorizer.authorizeForRepo("owner-x", "repo-x", {
+      authorizer.authorizeForRepo("account-x", "repo-x", {
         role: undefined,
-        owner: "owner-a",
+        account: "account-a",
         repos: "all",
         permissions: { contents: "write", metadata: "read" },
       }),
     ),
   ).toMatchInlineSnapshot(`
-    "✅ Repo owner-x/repo-x was allowed access to a token:
-      ✅ Sufficient access to all repos in owner-a based on 1 rule:
+    "✅ Repo account-x/repo-x was allowed access to a token:
+      ✅ Sufficient access to all repos in account-a based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ contents: have write, wanted write
           ✅ metadata: have read, wanted read"
@@ -55,13 +55,13 @@ it("allows tokens when a later rule allows access that a previous rule denied", 
     rules: {
       repos: [
         {
-          resources: ["owner-a/*"],
-          consumers: ["owner-x/repo-x"],
+          resources: ["account-a/*"],
+          consumers: ["account-x/repo-x"],
           permissions: { contents: "read", metadata: "read" },
         },
         {
-          resources: ["owner-a/*"],
-          consumers: ["owner-x/repo-x"],
+          resources: ["account-a/*"],
+          consumers: ["account-x/repo-x"],
           permissions: { contents: "write" },
         },
       ],
@@ -70,16 +70,16 @@ it("allows tokens when a later rule allows access that a previous rule denied", 
 
   expect(
     explain(
-      authorizer.authorizeForRepo("owner-x", "repo-x", {
+      authorizer.authorizeForRepo("account-x", "repo-x", {
         role: undefined,
-        owner: "owner-a",
+        account: "account-a",
         repos: "all",
         permissions: { contents: "write", metadata: "read" },
       }),
     ),
   ).toMatchInlineSnapshot(`
-    "✅ Repo owner-x/repo-x was allowed access to a token:
-      ✅ Sufficient access to all repos in owner-a based on 2 rules:
+    "✅ Repo account-x/repo-x was allowed access to a token:
+      ✅ Sufficient access to all repos in account-a based on 2 rules:
         ❌ Rule #1 gave insufficient access:
           ❌ contents: have read, wanted write
           ✅ metadata: have read, wanted read
@@ -89,18 +89,18 @@ it("allows tokens when a later rule allows access that a previous rule denied", 
   `);
 });
 
-it(`allows tokens when a later owner-scoped non-"all" rule denies access to a permission that isn't requested`, () => {
+it(`allows tokens when a later account-scoped non-"all" rule denies access to a permission that isn't requested`, () => {
   const authorizer = createTokenAuthorizer({
     rules: {
       repos: [
         {
-          resources: ["owner-a/*"],
-          consumers: ["owner-x/repo-x"],
+          resources: ["account-a/*"],
+          consumers: ["account-x/repo-x"],
           permissions: { contents: "write", metadata: "read" },
         },
         {
-          resources: ["owner-a/repo-*"],
-          consumers: ["owner-x/repo-x"],
+          resources: ["account-a/repo-*"],
+          consumers: ["account-x/repo-x"],
           permissions: { contents: "none" },
         },
       ],
@@ -109,16 +109,16 @@ it(`allows tokens when a later owner-scoped non-"all" rule denies access to a pe
 
   expect(
     explain(
-      authorizer.authorizeForRepo("owner-x", "repo-x", {
+      authorizer.authorizeForRepo("account-x", "repo-x", {
         role: undefined,
-        owner: "owner-a",
+        account: "account-a",
         repos: "all",
         permissions: { metadata: "read" },
       }),
     ),
   ).toMatchInlineSnapshot(`
-    "✅ Repo owner-x/repo-x was allowed access to a token:
-      ✅ Sufficient access to all repos in owner-a based on 2 rules:
+    "✅ Repo account-x/repo-x was allowed access to a token:
+      ✅ Sufficient access to all repos in account-a based on 2 rules:
         ✅ Rule #1 gave sufficient access:
           ✅ metadata: have read, wanted read
         ✅ Rule #2 gave sufficient access:
@@ -131,18 +131,18 @@ it("allows tokens when a later unrelated rule denies access to the requested per
     rules: {
       repos: [
         {
-          resources: ["owner-a/*"],
-          consumers: ["owner-x/repo-x"],
+          resources: ["account-a/*"],
+          consumers: ["account-x/repo-x"],
           permissions: { contents: "write", metadata: "read" },
         },
         {
-          resources: ["owner-b/*"],
-          consumers: ["owner-x/repo-x"],
+          resources: ["account-b/*"],
+          consumers: ["account-x/repo-x"],
           permissions: { contents: "none" },
         },
         {
-          resources: ["owner-b/repo-b"],
-          consumers: ["owner-x/repo-x"],
+          resources: ["account-b/repo-b"],
+          consumers: ["account-x/repo-x"],
           permissions: { metadata: "none" },
         },
       ],
@@ -151,34 +151,34 @@ it("allows tokens when a later unrelated rule denies access to the requested per
 
   expect(
     explain(
-      authorizer.authorizeForRepo("owner-x", "repo-x", {
+      authorizer.authorizeForRepo("account-x", "repo-x", {
         role: undefined,
-        owner: "owner-a",
+        account: "account-a",
         repos: "all",
         permissions: { contents: "write", metadata: "read" },
       }),
     ),
   ).toMatchInlineSnapshot(`
-    "✅ Repo owner-x/repo-x was allowed access to a token:
-      ✅ Sufficient access to all repos in owner-a based on 1 rule:
+    "✅ Repo account-x/repo-x was allowed access to a token:
+      ✅ Sufficient access to all repos in account-a based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ contents: have write, wanted write
           ✅ metadata: have read, wanted read"
   `);
 });
 
-it("doesn't allow tokens for all resource repos unless a resource rule matches all repos in the owner", () => {
+it("doesn't allow tokens for all resource repos unless a resource rule matches all repos in the account", () => {
   const authorizer = createTokenAuthorizer({
     rules: {
       repos: [
         {
-          resources: ["owner-a/repo-a"],
-          consumers: ["owner-x/repo-x"],
+          resources: ["account-a/repo-a"],
+          consumers: ["account-x/repo-x"],
           permissions: { contents: "read" },
         },
         {
-          resources: ["owner-b/*"],
-          consumers: ["owner-x/repo-x"],
+          resources: ["account-b/*"],
+          consumers: ["account-x/repo-x"],
           permissions: { contents: "read" },
         },
       ],
@@ -187,31 +187,31 @@ it("doesn't allow tokens for all resource repos unless a resource rule matches a
 
   expect(
     explain(
-      authorizer.authorizeForRepo("owner-x", "repo-x", {
+      authorizer.authorizeForRepo("account-x", "repo-x", {
         role: undefined,
-        owner: "owner-a",
+        account: "account-a",
         repos: "all",
         permissions: { contents: "read" },
       }),
     ),
   ).toMatchInlineSnapshot(`
-    "❌ Repo owner-x/repo-x was denied access to a token:
-      ❌ Insufficient access to all repos in owner-a (no matching rules)"
+    "❌ Repo account-x/repo-x was denied access to a token:
+      ❌ Insufficient access to all repos in account-a (no matching rules)"
   `);
 });
 
-it(`doesn't allow tokens for all resource repos when a later owner-scoped "all" rule denies access that a previous rule allowed`, () => {
+it(`doesn't allow tokens for all resource repos when a later account-scoped "all" rule denies access that a previous rule allowed`, () => {
   const authorizer = createTokenAuthorizer({
     rules: {
       repos: [
         {
-          resources: ["owner-a/*"],
-          consumers: ["owner-x/repo-x"],
+          resources: ["account-a/*"],
+          consumers: ["account-x/repo-x"],
           permissions: { contents: "write" },
         },
         {
-          resources: ["owner-a/*"],
-          consumers: ["owner-x/repo-x"],
+          resources: ["account-a/*"],
+          consumers: ["account-x/repo-x"],
           permissions: { contents: "read" },
         },
       ],
@@ -220,16 +220,16 @@ it(`doesn't allow tokens for all resource repos when a later owner-scoped "all" 
 
   expect(
     explain(
-      authorizer.authorizeForRepo("owner-x", "repo-x", {
+      authorizer.authorizeForRepo("account-x", "repo-x", {
         role: undefined,
-        owner: "owner-a",
+        account: "account-a",
         repos: "all",
         permissions: { contents: "write" },
       }),
     ),
   ).toMatchInlineSnapshot(`
-    "❌ Repo owner-x/repo-x was denied access to a token:
-      ❌ Insufficient access to all repos in owner-a based on 2 rules:
+    "❌ Repo account-x/repo-x was denied access to a token:
+      ❌ Insufficient access to all repos in account-a based on 2 rules:
         ✅ Rule #1 gave sufficient access:
           ✅ contents: have write, wanted write
         ❌ Rule #2 gave insufficient access:
@@ -237,18 +237,18 @@ it(`doesn't allow tokens for all resource repos when a later owner-scoped "all" 
   `);
 });
 
-it(`doesn't allow tokens for all resource repos when a later owner-scoped "all" rule removes access that a previous rule allowed`, () => {
+it(`doesn't allow tokens for all resource repos when a later account-scoped "all" rule removes access that a previous rule allowed`, () => {
   const authorizer = createTokenAuthorizer({
     rules: {
       repos: [
         {
-          resources: ["owner-a/*"],
-          consumers: ["owner-x/repo-x"],
+          resources: ["account-a/*"],
+          consumers: ["account-x/repo-x"],
           permissions: { contents: "write" },
         },
         {
-          resources: ["owner-a/*"],
-          consumers: ["owner-x/repo-x"],
+          resources: ["account-a/*"],
+          consumers: ["account-x/repo-x"],
           permissions: { contents: "none" },
         },
       ],
@@ -257,16 +257,16 @@ it(`doesn't allow tokens for all resource repos when a later owner-scoped "all" 
 
   expect(
     explain(
-      authorizer.authorizeForRepo("owner-x", "repo-x", {
+      authorizer.authorizeForRepo("account-x", "repo-x", {
         role: undefined,
-        owner: "owner-a",
+        account: "account-a",
         repos: "all",
         permissions: { contents: "write" },
       }),
     ),
   ).toMatchInlineSnapshot(`
-    "❌ Repo owner-x/repo-x was denied access to a token:
-      ❌ Insufficient access to all repos in owner-a based on 2 rules:
+    "❌ Repo account-x/repo-x was denied access to a token:
+      ❌ Insufficient access to all repos in account-a based on 2 rules:
         ✅ Rule #1 gave sufficient access:
           ✅ contents: have write, wanted write
         ❌ Rule #2 gave insufficient access:
@@ -274,18 +274,18 @@ it(`doesn't allow tokens for all resource repos when a later owner-scoped "all" 
   `);
 });
 
-it(`doesn't allow tokens for all resource repos when a later owner-scoped non-"all" rule denies access that a previous rule allowed`, () => {
+it(`doesn't allow tokens for all resource repos when a later account-scoped non-"all" rule denies access that a previous rule allowed`, () => {
   const authorizer = createTokenAuthorizer({
     rules: {
       repos: [
         {
-          resources: ["owner-a/*"],
-          consumers: ["owner-x/repo-x"],
+          resources: ["account-a/*"],
+          consumers: ["account-x/repo-x"],
           permissions: { contents: "write" },
         },
         {
-          resources: ["owner-a/repo-*"],
-          consumers: ["owner-x/repo-x"],
+          resources: ["account-a/repo-*"],
+          consumers: ["account-x/repo-x"],
           permissions: { contents: "read" },
         },
       ],
@@ -294,16 +294,16 @@ it(`doesn't allow tokens for all resource repos when a later owner-scoped non-"a
 
   expect(
     explain(
-      authorizer.authorizeForRepo("owner-x", "repo-x", {
+      authorizer.authorizeForRepo("account-x", "repo-x", {
         role: undefined,
-        owner: "owner-a",
+        account: "account-a",
         repos: "all",
         permissions: { contents: "write" },
       }),
     ),
   ).toMatchInlineSnapshot(`
-    "❌ Repo owner-x/repo-x was denied access to a token:
-      ❌ Insufficient access to all repos in owner-a based on 2 rules:
+    "❌ Repo account-x/repo-x was denied access to a token:
+      ❌ Insufficient access to all repos in account-a based on 2 rules:
         ✅ Rule #1 gave sufficient access:
           ✅ contents: have write, wanted write
         ❌ Rule #2 gave insufficient access:
@@ -311,18 +311,18 @@ it(`doesn't allow tokens for all resource repos when a later owner-scoped non-"a
   `);
 });
 
-it(`doesn't allow tokens for all resource repos when a later owner-scoped non-"all" rule removes access that a previous rule allowed`, () => {
+it(`doesn't allow tokens for all resource repos when a later account-scoped non-"all" rule removes access that a previous rule allowed`, () => {
   const authorizer = createTokenAuthorizer({
     rules: {
       repos: [
         {
-          resources: ["owner-a/*"],
-          consumers: ["owner-x/repo-x"],
+          resources: ["account-a/*"],
+          consumers: ["account-x/repo-x"],
           permissions: { contents: "write" },
         },
         {
-          resources: ["owner-a/repo-*"],
-          consumers: ["owner-x/repo-x"],
+          resources: ["account-a/repo-*"],
+          consumers: ["account-x/repo-x"],
           permissions: { contents: "none" },
         },
       ],
@@ -331,16 +331,16 @@ it(`doesn't allow tokens for all resource repos when a later owner-scoped non-"a
 
   expect(
     explain(
-      authorizer.authorizeForRepo("owner-x", "repo-x", {
+      authorizer.authorizeForRepo("account-x", "repo-x", {
         role: undefined,
-        owner: "owner-a",
+        account: "account-a",
         repos: "all",
         permissions: { contents: "write" },
       }),
     ),
   ).toMatchInlineSnapshot(`
-    "❌ Repo owner-x/repo-x was denied access to a token:
-      ❌ Insufficient access to all repos in owner-a based on 2 rules:
+    "❌ Repo account-x/repo-x was denied access to a token:
+      ❌ Insufficient access to all repos in account-a based on 2 rules:
         ✅ Rule #1 gave sufficient access:
           ✅ contents: have write, wanted write
         ❌ Rule #2 gave insufficient access:

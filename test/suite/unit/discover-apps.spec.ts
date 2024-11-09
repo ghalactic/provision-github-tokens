@@ -70,7 +70,7 @@ it("discovers installations with access to all repos", async () => {
   expect(
     registry.findInstallationForToken({
       role: undefined,
-      owner: orgA.login,
+      account: orgA.login,
       repos: "all",
       permissions: { contents: "read" },
     }),
@@ -115,7 +115,7 @@ it("discovers installations with access to selected repos", async () => {
   expect(
     registry.findInstallationForToken({
       role: undefined,
-      owner: orgA.login,
+      account: orgA.login,
       repos: [repoA.name, repoB.name],
       permissions: { contents: "read" },
     }),
@@ -158,7 +158,7 @@ it("discovers installations with access to no repos", async () => {
   expect(
     registry.findInstallationForToken({
       role: undefined,
-      owner: orgA.login,
+      account: orgA.login,
       repos: [],
       permissions: { members: "read" },
     }),
@@ -195,7 +195,7 @@ it("discovers installations with no permissions", async () => {
   expect(
     registry.findInstallationForToken({
       role: undefined,
-      owner: orgA.login,
+      account: orgA.login,
       repos: "all",
       permissions: {},
     }),
@@ -245,7 +245,7 @@ it("discovers installations with roles", async () => {
   expect(
     registry.findInstallationForToken({
       role: "role-a",
-      owner: orgA.login,
+      account: orgA.login,
       repos: "all",
       permissions: { contents: "write" },
     }),
@@ -253,7 +253,7 @@ it("discovers installations with roles", async () => {
   expect(
     registry.findInstallationForToken({
       role: "role-b",
-      owner: orgA.login,
+      account: orgA.login,
       repos: "all",
       permissions: { contents: "write" },
     }),
@@ -261,7 +261,7 @@ it("discovers installations with roles", async () => {
   expect(
     registry.findInstallationForToken({
       role: "role-c",
-      owner: orgA.login,
+      account: orgA.login,
       repos: "all",
       permissions: { contents: "write" },
     }),
@@ -303,7 +303,7 @@ it("discovers multiple installations of an app", async () => {
   expect(
     registry.findInstallationForToken({
       role: undefined,
-      owner: orgA.login,
+      account: orgA.login,
       repos: "all",
       permissions: { contents: "read" },
     }),
@@ -353,7 +353,7 @@ it("discovers multiple apps", async () => {
   expect(
     registry.findInstallationForToken({
       role: undefined,
-      owner: orgA.login,
+      account: orgA.login,
       repos: "all",
       permissions: { contents: "read" },
     }),
@@ -361,7 +361,7 @@ it("discovers multiple apps", async () => {
   expect(
     registry.findInstallationForToken({
       role: undefined,
-      owner: orgA.login,
+      account: orgA.login,
       repos: "all",
       permissions: { actions: "read" },
     }),
@@ -407,7 +407,7 @@ it("skips apps with incorrect credentials", async () => {
   expect(
     registry.findInstallationForToken({
       role: undefined,
-      owner: orgA.login,
+      account: orgA.login,
       repos: "all",
       permissions: { contents: "read" },
     }),
@@ -452,7 +452,7 @@ it("skips non-existent apps", async () => {
   expect(
     registry.findInstallationForToken({
       role: undefined,
-      owner: orgA.login,
+      account: orgA.login,
       repos: "all",
       permissions: { contents: "read" },
     }),
@@ -517,7 +517,7 @@ it("reports unexpected HTTP statuses", async () => {
   expect(
     registry.findInstallationForToken({
       role: undefined,
-      owner: orgA.login,
+      account: orgA.login,
       repos: "all",
       permissions: { contents: "read" },
     }),
@@ -525,7 +525,7 @@ it("reports unexpected HTTP statuses", async () => {
   expect(
     registry.findInstallationForToken({
       role: undefined,
-      owner: orgA.login,
+      account: orgA.login,
       repos: "all",
       permissions: { actions: "read" },
     }),
@@ -585,7 +585,7 @@ it("skips apps when discovery throws", async () => {
   expect(
     registry.findInstallationForToken({
       role: undefined,
-      owner: orgA.login,
+      account: orgA.login,
       repos: "all",
       permissions: { contents: "read" },
     }),
@@ -593,7 +593,7 @@ it("skips apps when discovery throws", async () => {
   expect(
     registry.findInstallationForToken({
       role: undefined,
-      owner: orgA.login,
+      account: orgA.login,
       repos: "all",
       permissions: { actions: "read" },
     }),
@@ -647,7 +647,7 @@ it("skips installations when discovery throws", async () => {
   expect(
     registry.findInstallationForToken({
       role: undefined,
-      owner: orgA.login,
+      account: orgA.login,
       repos: "all",
       permissions: { contents: "read" },
     }),
@@ -655,7 +655,7 @@ it("skips installations when discovery throws", async () => {
   expect(
     registry.findInstallationForToken({
       role: undefined,
-      owner: orgC.login,
+      account: orgC.login,
       repos: "all",
       permissions: { contents: "read" },
     }),

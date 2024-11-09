@@ -13,7 +13,7 @@ const DENIED_ICON = "❌";
 
 export function createTextRepoAuthExplainer(): RepoTokenAuthorizationResultExplainer<string> {
   return (result) => {
-    const { resourceOwner, resources, want } = result;
+    const { resourceAccount, resources, want } = result;
     const resourceEntries = Object.entries(resources).sort(([a], [b]) =>
       a.localeCompare(b),
     );
@@ -21,7 +21,7 @@ export function createTextRepoAuthExplainer(): RepoTokenAuthorizationResultExpla
     let explainedResources = "";
     for (const [resource, resourceResult] of resourceEntries) {
       explainedResources +=
-        "\n" + explainResource(resourceOwner, resource, want, resourceResult);
+        "\n" + explainResource(resourceAccount, resource, want, resourceResult);
     }
 
     return explainSummary(result) + explainedResources;
@@ -40,13 +40,13 @@ export function createTextRepoAuthExplainer(): RepoTokenAuthorizationResultExpla
   }
 
   function explainResource(
-    resourceOwner: string,
+    resourceAccount: string,
     resource: string,
     want: InstallationPermissions,
     resourceResult: RepoTokenAuthorizationResourceResult,
   ): string {
     const summary = explainResourceSummary(
-      resourceOwner,
+      resourceAccount,
       resource,
       resourceResult,
     );
@@ -63,12 +63,12 @@ export function createTextRepoAuthExplainer(): RepoTokenAuthorizationResultExpla
   }
 
   function explainResourceSummary(
-    resourceOwner: string,
+    resourceAccount: string,
     resource: string,
     { rules, isAllowed }: RepoTokenAuthorizationResourceResult,
   ): string {
     const icon = isAllowed ? ALLOWED_ICON : DENIED_ICON;
-    const renderedResource = renderResource(resourceOwner, resource);
+    const renderedResource = renderResource(resourceAccount, resource);
     const ruleCount = rules.length;
     const ruleOrRules = ruleCount === 1 ? "rule" : "rules";
     const basedOn =
@@ -100,9 +100,9 @@ export function createTextRepoAuthExplainer(): RepoTokenAuthorizationResultExpla
     );
   }
 
-  function renderResource(resourceOwner: string, resource: string): string {
+  function renderResource(resourceAccount: string, resource: string): string {
     return resource === "*"
-      ? `all repos in ${resourceOwner}`
+      ? `all repos in ${resourceAccount}`
       : `repo ${resource}`;
   }
 

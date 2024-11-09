@@ -47113,13 +47113,13 @@ function createAppRegistry() {
         }
         if (permMatchCount !== tokenPerms.length) continue;
         if (installation.repository_selection === "all") {
-          if (installation.account && "login" in installation.account && installation.account.login === request2.owner) {
+          if (installation.account && "login" in installation.account && installation.account.login === request2.account) {
             return installation.id;
           }
           continue;
         }
         for (const repo of repos) {
-          if (repo.owner.login === request2.owner && tokenRepos[repo.name]) {
+          if (repo.owner.login === request2.account && tokenRepos[repo.name]) {
             ++repoMatchCount;
           }
         }
@@ -49801,8 +49801,8 @@ var consumer_v1_schema_default = {
             minLength: 1,
             examples: ["pr-bot", "onboarding"]
           },
-          owner: {
-            description: "The GitHub user or org that the specified repos belong to. Defaults to the same owner as the repo where the consumer configuration file is defined.",
+          account: {
+            description: "The GitHub user or org that the specified repos belong to. Defaults to the same account as the repo where the consumer configuration file is defined.",
             type: "string",
             minLength: 1,
             examples: ["octocat"]
@@ -49811,7 +49811,7 @@ var consumer_v1_schema_default = {
             description: "Which repos are allowed to access the token.",
             oneOf: [
               {
-                description: "All repos in the owner's account, including those created after the token is provisioned.",
+                description: "All repos in the account, including those created after the token is provisioned.",
                 type: "string",
                 const: "all"
               },
@@ -49819,7 +49819,7 @@ var consumer_v1_schema_default = {
                 description: "A list of repo name patterns to match against.",
                 type: "array",
                 items: {
-                  description: "A pattern which matches a repo name without the owner prefix.",
+                  description: "A pattern which matches a repo name without the account prefix.",
                   type: "string",
                   minLength: 1,
                   examples: [
@@ -49872,7 +49872,7 @@ var consumer_v1_schema_default = {
                 examples: [
                   "tokenA",
                   "other-repo.tokenB",
-                  "other-owner/repo.tokenC"
+                  "other-account/repo.tokenC"
                 ]
               },
               github: {
@@ -50885,16 +50885,16 @@ var provider_v1_schema_default = {
                     type: "array",
                     minItems: 1,
                     items: {
-                      description: "A pattern which matches a resource repo owner and name. If a pattern with no owner part is specified, the pattern will match repos with the same owner as the repo where the provider configuration file is defined.",
+                      description: "A pattern which matches a resource account and repo name.",
                       type: "string",
                       minLength: 1,
                       examples: [
-                        "repo-a",
-                        "owner-a/repo-a",
-                        "*",
+                        "./repo-a",
+                        "account-a/repo-a",
+                        "./*",
                         "*/*",
                         "*/repo-a",
-                        "owner-a/*",
+                        "account-a/*",
                         "prefix-*/*-suffix"
                       ]
                     }
@@ -50904,19 +50904,19 @@ var provider_v1_schema_default = {
                     type: "array",
                     minItems: 1,
                     items: {
-                      description: "A pattern which matches a consumer repo owner and name. If a pattern with no owner part is specified, the pattern will match repos with the same owner as the repo where the provider configuration file is defined.",
+                      description: "A pattern which matches a consumer account and repo name.",
                       type: "string",
                       minLength: 1,
                       examples: [
-                        "repo-a",
-                        "owner-a/repo-a",
-                        "*",
+                        "./repo-a",
+                        "account-a/repo-a",
+                        "./*",
                         "*/*",
                         "*/repo-a",
-                        "owner-a/*",
+                        "account-a/*",
                         "prefix-*/*-suffix",
-                        "<owner>/<repo>",
-                        "<owner>/*"
+                        "<account>/<repo>",
+                        "<account>/*"
                       ]
                     }
                   },
@@ -50978,19 +50978,19 @@ var provider_v1_schema_default = {
                     type: "array",
                     minItems: 1,
                     items: {
-                      description: "A pattern which matches a requesting repo owner and name. If a pattern with no owner part is specified, the pattern will match repos with the same owner as the repo where the provider configuration file is defined.",
+                      description: "A pattern which matches a requesting account and repo name.",
                       type: "string",
                       minLength: 1,
                       examples: [
-                        "repo-a",
-                        "owner-a/repo-a",
-                        "*",
+                        "./repo-a",
+                        "account-a/repo-a",
+                        "./*",
                         "*/*",
                         "*/repo-a",
-                        "owner-a/*",
+                        "account-a/*",
                         "prefix-*/*-suffix",
-                        "<owner>/<repo>",
-                        "<owner>/*"
+                        "<account>/<repo>",
+                        "<account>/*"
                       ]
                     }
                   },

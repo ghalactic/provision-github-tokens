@@ -15,14 +15,14 @@ it("parses comprehensive consumer config", async () => {
   const fixturePath = join(fixturesPath, "comprehensive.yml");
   const yaml = await readFile(fixturePath, "utf-8");
 
-  expect(parseConsumerConfig("owner-self", "repo-self", yaml)).toEqual({
+  expect(parseConsumerConfig("account-self", "repo-self", yaml)).toEqual({
     $schema: consumerSchema.$id,
 
     tokens: {
       oneRepOnePerm: {
         shared: false,
         as: undefined,
-        owner: "owner-self",
+        account: "account-self",
         repos: ["repo-a"],
         permissions: { contents: "read" },
       },
@@ -30,7 +30,7 @@ it("parses comprehensive consumer config", async () => {
       multiRepoMultiPerm: {
         shared: false,
         as: undefined,
-        owner: "owner-self",
+        account: "account-self",
         repos: ["repo-a", "repo-b"],
         permissions: { contents: "read", metadata: "read" },
       },
@@ -38,7 +38,7 @@ it("parses comprehensive consumer config", async () => {
       wildcardRepos: {
         shared: false,
         as: undefined,
-        owner: "owner-self",
+        account: "account-self",
         repos: ["repo-*"],
         permissions: { contents: "read" },
       },
@@ -46,7 +46,7 @@ it("parses comprehensive consumer config", async () => {
       wildcardAllRepos: {
         shared: false,
         as: undefined,
-        owner: "owner-self",
+        account: "account-self",
         repos: ["*"],
         permissions: { contents: "read" },
       },
@@ -54,7 +54,7 @@ it("parses comprehensive consumer config", async () => {
       allRepos: {
         shared: false,
         as: undefined,
-        owner: "owner-self",
+        account: "account-self",
         repos: "all",
         permissions: { contents: "read" },
       },
@@ -62,7 +62,7 @@ it("parses comprehensive consumer config", async () => {
       withSharedFalse: {
         shared: false,
         as: undefined,
-        owner: "owner-self",
+        account: "account-self",
         repos: ["repo-a"],
         permissions: { contents: "read" },
       },
@@ -70,7 +70,7 @@ it("parses comprehensive consumer config", async () => {
       withSharedTrue: {
         shared: true,
         as: undefined,
-        owner: "owner-self",
+        account: "account-self",
         repos: ["repo-a"],
         permissions: { contents: "read" },
       },
@@ -78,15 +78,15 @@ it("parses comprehensive consumer config", async () => {
       withAs: {
         shared: false,
         as: "role-a",
-        owner: "owner-self",
+        account: "account-self",
         repos: ["repo-a"],
         permissions: { contents: "write" },
       },
 
-      withOwner: {
+      withAccount: {
         shared: false,
         as: undefined,
-        owner: "owner-a",
+        account: "account-a",
         repos: ["repo-a"],
         permissions: { contents: "read" },
       },
@@ -94,7 +94,7 @@ it("parses comprehensive consumer config", async () => {
       withAllOptions: {
         shared: true,
         as: "role-a",
-        owner: "owner-a",
+        account: "account-a",
         repos: ["repo-a", "repo-*"],
         permissions: { contents: "write", metadata: "read" },
       },
@@ -102,7 +102,7 @@ it("parses comprehensive consumer config", async () => {
       withAllPermissions: {
         shared: false,
         as: "role-a",
-        owner: "owner-self",
+        account: "account-self",
         repos: "all",
         permissions: {
           actions: "write",
@@ -161,7 +161,7 @@ it("parses comprehensive consumer config", async () => {
     provision: {
       secrets: {
         TO_REPO_ACTIONS: {
-          token: "owner-self/repo-self.tokenA",
+          token: "account-self/repo-self.tokenA",
           github: {
             repo: {
               actions: true,
@@ -180,7 +180,7 @@ it("parses comprehensive consumer config", async () => {
         },
 
         TO_ORG_DEPENDABOT: {
-          token: "owner-self/other-repo.tokenB",
+          token: "account-self/other-repo.tokenB",
           github: {
             repo: {
               actions: false,
@@ -213,13 +213,13 @@ it("parses comprehensive consumer config", async () => {
               environments: ["env-a", "env-b"],
             },
             repos: {
-              "owner-self/repo-a": {
+              "account-self/repo-a": {
                 actions: true,
                 codespaces: false,
                 dependabot: false,
                 environments: [],
               },
-              "owner-a/repo-a": {
+              "account-a/repo-a": {
                 actions: true,
                 codespaces: true,
                 dependabot: true,
@@ -230,7 +230,7 @@ it("parses comprehensive consumer config", async () => {
         },
 
         TO_NOWHERE: {
-          token: "owner-self/repo-self.tokenD",
+          token: "account-self/repo-self.tokenD",
           github: {
             repo: {
               actions: false,
@@ -256,7 +256,7 @@ it("parses consumer configs that are just comments", async () => {
   const fixturePath = join(fixturesPath, "just-comments.yml");
   const yaml = await readFile(fixturePath, "utf-8");
 
-  expect(parseConsumerConfig("owner-self", "repo-self", yaml)).toEqual({
+  expect(parseConsumerConfig("account-self", "repo-self", yaml)).toEqual({
     $schema: consumerSchema.$id,
     tokens: {},
     provision: { secrets: {} },
@@ -264,7 +264,7 @@ it("parses consumer configs that are just comments", async () => {
 });
 
 it("parses consumer configs that are empty", async () => {
-  expect(parseConsumerConfig("owner-self", "repo-self", "")).toEqual({
+  expect(parseConsumerConfig("account-self", "repo-self", "")).toEqual({
     $schema: consumerSchema.$id,
     tokens: {},
     provision: { secrets: {} },
@@ -278,7 +278,7 @@ it("throws when an invalid repo pattern is used in /provision/secrets/<name>/git
   );
   const yaml = await readFile(fixturePath, "utf-8");
 
-  expect(throws(() => parseConsumerConfig("owner-self", "repo-self", yaml)))
+  expect(throws(() => parseConsumerConfig("account-self", "repo-self", yaml)))
     .toMatchInlineSnapshot(`
     "Consumer config has an error at /provision/secrets/SECRET_A/github/repos/repo-x
 
@@ -290,7 +290,7 @@ it("throws when an invalid token name is defined", async () => {
   const fixturePath = join(fixturesPath, "invalid-token-name.yml");
   const yaml = await readFile(fixturePath, "utf-8");
 
-  expect(throws(() => parseConsumerConfig("owner-self", "repo-self", yaml)))
+  expect(throws(() => parseConsumerConfig("account-self", "repo-self", yaml)))
     .toMatchInlineSnapshot(`
       "Parsing of consumer configuration failed for "# yaml-language-server: $schema=https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json\\n$schema: https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json\\n\\ntokens:\\n  invalid.token.name:\\n    repos: [repo-a]\\n    permissions: { contents: read }\\n"
 
@@ -304,7 +304,7 @@ it("throws when an invalid secret name is defined", async () => {
   const fixturePath = join(fixturesPath, "invalid-secret-name.yml");
   const yaml = await readFile(fixturePath, "utf-8");
 
-  expect(throws(() => parseConsumerConfig("owner-self", "repo-self", yaml)))
+  expect(throws(() => parseConsumerConfig("account-self", "repo-self", yaml)))
     .toMatchInlineSnapshot(`
       "Parsing of consumer configuration failed for "# yaml-language-server: $schema=https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json\\n$schema: https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json\\n\\nprovision:\\n  secrets:\\n    1_INVALID_SECRET_NAME:\\n      token: tokenA\\n      github:\\n        repo:\\n          actions: true\\n"
 
@@ -314,11 +314,11 @@ it("throws when an invalid secret name is defined", async () => {
     `);
 });
 
-it("throws when an secret token reference has an empty owner", async () => {
-  const fixturePath = join(fixturesPath, "empty-token-reference-owner.yml");
+it("throws when an secret token reference has an empty account", async () => {
+  const fixturePath = join(fixturesPath, "empty-token-reference-account.yml");
   const yaml = await readFile(fixturePath, "utf-8");
 
-  expect(throws(() => parseConsumerConfig("owner-self", "repo-self", yaml)))
+  expect(throws(() => parseConsumerConfig("account-self", "repo-self", yaml)))
     .toMatchInlineSnapshot(`
       "Parsing of consumer configuration failed for "# yaml-language-server: $schema=https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json\\n$schema: https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json\\n\\nprovision:\\n  secrets:\\n    TO_REPO_ACTIONS:\\n      token: /repo-a.tokenA\\n      github:\\n        repo:\\n          actions: true\\n"
 
@@ -327,13 +327,13 @@ it("throws when an secret token reference has an empty owner", async () => {
     `);
 });
 
-it("throws when an secret token reference has an invalid owner", async () => {
-  const fixturePath = join(fixturesPath, "invalid-token-reference-owner.yml");
+it("throws when an secret token reference has an invalid account", async () => {
+  const fixturePath = join(fixturesPath, "invalid-token-reference-account.yml");
   const yaml = await readFile(fixturePath, "utf-8");
 
-  expect(throws(() => parseConsumerConfig("owner-self", "repo-self", yaml)))
+  expect(throws(() => parseConsumerConfig("account-self", "repo-self", yaml)))
     .toMatchInlineSnapshot(`
-      "Parsing of consumer configuration failed for "# yaml-language-server: $schema=https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json\\n$schema: https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json\\n\\nprovision:\\n  secrets:\\n    TO_REPO_ACTIONS:\\n      token: owner-/repo-a.tokenA\\n      github:\\n        repo:\\n          actions: true\\n"
+      "Parsing of consumer configuration failed for "# yaml-language-server: $schema=https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json\\n$schema: https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json\\n\\nprovision:\\n  secrets:\\n    TO_REPO_ACTIONS:\\n      token: account-/repo-a.tokenA\\n      github:\\n        repo:\\n          actions: true\\n"
 
       Caused by: Invalid consumer configuration:
         - must match pattern "^(?:(?:[a-zA-Z](?:[a-zA-Z-]*[a-zA-Z])?\\/)?[a-zA-Z0-9-_.]+\\.)?[a-zA-Z0-9-_]+$" (/provision/secrets/TO_REPO_ACTIONS/token)"
@@ -344,9 +344,9 @@ it("throws when an secret token reference has an empty repo", async () => {
   const fixturePath = join(fixturesPath, "empty-token-reference-repo.yml");
   const yaml = await readFile(fixturePath, "utf-8");
 
-  expect(throws(() => parseConsumerConfig("owner-self", "repo-self", yaml)))
+  expect(throws(() => parseConsumerConfig("account-self", "repo-self", yaml)))
     .toMatchInlineSnapshot(`
-      "Parsing of consumer configuration failed for "# yaml-language-server: $schema=https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json\\n$schema: https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json\\n\\nprovision:\\n  secrets:\\n    TO_REPO_ACTIONS:\\n      token: owner-a/.tokenA\\n      github:\\n        repo:\\n          actions: true\\n"
+      "Parsing of consumer configuration failed for "# yaml-language-server: $schema=https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json\\n$schema: https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json\\n\\nprovision:\\n  secrets:\\n    TO_REPO_ACTIONS:\\n      token: account-a/.tokenA\\n      github:\\n        repo:\\n          actions: true\\n"
 
       Caused by: Invalid consumer configuration:
         - must match pattern "^(?:(?:[a-zA-Z](?:[a-zA-Z-]*[a-zA-Z])?\\/)?[a-zA-Z0-9-_.]+\\.)?[a-zA-Z0-9-_]+$" (/provision/secrets/TO_REPO_ACTIONS/token)"
@@ -357,9 +357,9 @@ it("throws when an secret token reference has an invalid repo", async () => {
   const fixturePath = join(fixturesPath, "invalid-token-reference-repo.yml");
   const yaml = await readFile(fixturePath, "utf-8");
 
-  expect(throws(() => parseConsumerConfig("owner-self", "repo-self", yaml)))
+  expect(throws(() => parseConsumerConfig("account-self", "repo-self", yaml)))
     .toMatchInlineSnapshot(`
-      "Parsing of consumer configuration failed for "# yaml-language-server: $schema=https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json\\n$schema: https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json\\n\\nprovision:\\n  secrets:\\n    TO_REPO_ACTIONS:\\n      token: owner-a/repo-*.tokenA\\n      github:\\n        repo:\\n          actions: true\\n"
+      "Parsing of consumer configuration failed for "# yaml-language-server: $schema=https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json\\n$schema: https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json\\n\\nprovision:\\n  secrets:\\n    TO_REPO_ACTIONS:\\n      token: account-a/repo-*.tokenA\\n      github:\\n        repo:\\n          actions: true\\n"
 
       Caused by: Invalid consumer configuration:
         - must match pattern "^(?:(?:[a-zA-Z](?:[a-zA-Z-]*[a-zA-Z])?\\/)?[a-zA-Z0-9-_.]+\\.)?[a-zA-Z0-9-_]+$" (/provision/secrets/TO_REPO_ACTIONS/token)"
@@ -370,7 +370,7 @@ it("throws when there are additional properties", async () => {
   const fixturePath = join(fixturesPath, "additional-properties.yml");
   const yaml = await readFile(fixturePath, "utf-8");
 
-  expect(throws(() => parseConsumerConfig("owner-self", "repo-self", yaml)))
+  expect(throws(() => parseConsumerConfig("account-self", "repo-self", yaml)))
     .toMatchInlineSnapshot(`
       "Parsing of consumer configuration failed for "# yaml-language-server: $schema=https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json\\nadditional: This should not be allowed\\n"
 
@@ -380,7 +380,7 @@ it("throws when there are additional properties", async () => {
 });
 
 it("throws when the YAML is invalid", async () => {
-  expect(throws(() => parseConsumerConfig("owner-self", "repo-self", "{")))
+  expect(throws(() => parseConsumerConfig("account-self", "repo-self", "{")))
     .toMatchInlineSnapshot(`
       "Parsing of consumer configuration failed for "{"
 

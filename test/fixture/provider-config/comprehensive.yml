@@ -4,7 +4,7 @@ $schema: https://ghalactic.github.io/provision-github-tokens/schema/provider.v1.
 permissions:
   rules:
     repos:
-      - description: Access across all owners and repos
+      - description: Access across all accounts and repos
         resources: ["*/*"]
         consumers: ["*/*"]
         permissions:
@@ -13,19 +13,19 @@ permissions:
           metadata: read
           pull_requests: read
 
-      - description: Access to a specific owner from anywhere
-        resources: [owner-a/*]
+      - description: Access to a specific account from anywhere
+        resources: [account-a/*]
         consumers: ["*/*"]
         permissions: { metadata: read }
 
-      - description: Access to a specific owner from the same owner
-        resources: [owner-a/*]
-        consumers: [owner-a/*]
+      - description: Access to a specific account from the same account
+        resources: [account-a/*]
+        consumers: [account-a/*]
         permissions: { issues: write }
 
-      - description: Access within the same owner
+      - description: Access within the same account
         resources: ["*/*"]
-        consumers: [<owner>/*]
+        consumers: [<account>/*]
         permissions: { issues: write, pull_requests: write }
 
       - description: Access to same-named repos (weird, but possible)
@@ -35,27 +35,27 @@ permissions:
 
       - description: Self-access
         resources: ["*/*"]
-        consumers: [<owner>/<repo>]
+        consumers: [<account>/<repo>]
         permissions: { contents: write, metadata: write }
 
-      - description: Access to repos with a specific name in any owner (weird, but possible)
+      - description: Access to repos with a specific name in any account (weird, but possible)
         resources: ["*/repo-a"]
         consumers: ["*/*"]
         permissions: { metadata: read }
 
-      - description: Cross-repo access (in the provider's owner)
+      - description: Cross-repo access (in the provider's account)
         resources: [./repo-a]
         consumers: [./repo-b]
         permissions: { contents: read }
 
-      - description: All-repo access (in the provider's owner)
+      - description: All-repo access (in the provider's account)
         resources: [./*]
         consumers: [./repo-a]
         permissions: { contents: read }
 
-      - description: Cross-owner access
-        resources: [owner-a/repo-a]
-        consumers: [owner-b/repo-b]
+      - description: Cross-account access
+        resources: [account-a/repo-a]
+        consumers: [account-b/repo-b]
         permissions: { contents: read }
 
       - description: Revocation of access
@@ -79,8 +79,8 @@ permissions:
         permissions: { contents: read }
 
       - description: Wildcards
-        resources: [owner-*/repo-*]
-        consumers: ["*-owner/*-repo"]
+        resources: [account-*/repo-*]
+        consumers: ["*-account/*-repo"]
         permissions: { contents: read }
 
       - description: All permissions
@@ -190,7 +190,7 @@ provision:
             repos:
               ./repo-b:
                 codespaces: allow
-              owner-b/repo-c:
+              account-b/repo-c:
                 codespaces: allow
 
       - description: A specific repo can provision to specific secrets of specific environments in another repo
@@ -204,7 +204,7 @@ provision:
                   env-a: allow
                   env-b: allow
 
-      - description: Specific repos can provision to a specific secret of any kind in any repo in any owner
+      - description: Specific repos can provision to a specific secret of any kind in any repo in any account
         secrets: [SECRET_A]
         requesters: [./repo-a, ./repo-b]
         to:
@@ -217,13 +217,13 @@ provision:
                 environments:
                   "*": allow
 
-      - description: Specific repos can provision to a specific actions secret in any repo in a specific owner
+      - description: Specific repos can provision to a specific actions secret in any repo in a specific account
         secrets: [SECRET_A]
         requesters: [./repo-a, ./repo-b]
         to:
           github:
             repos:
-              owner-b/*:
+              account-b/*:
                 actions: allow
 
       - description: Specific repos can provision any actions secret in the same repo or org, or specific other repos and orgs
@@ -243,7 +243,7 @@ provision:
             repos:
               ./repo-a:
                 actions: allow
-              owner-a/repo-a:
+              account-a/repo-a:
                 actions: allow
 
       - description: No repos can provision to a specific secret of any kind in any org or repo

@@ -9,8 +9,8 @@ it("allows tokens that should be allowed", () => {
     rules: {
       repos: [
         {
-          resources: ["owner-a/repo-a", "owner-a/repo-b"],
-          consumers: ["owner-x/repo-x"],
+          resources: ["account-a/repo-a", "account-a/repo-b"],
+          consumers: ["account-x/repo-x"],
           permissions: { contents: "write", metadata: "read" },
         },
       ],
@@ -19,51 +19,51 @@ it("allows tokens that should be allowed", () => {
 
   expect(
     explain(
-      authorizer.authorizeForRepo("owner-x", "repo-x", {
+      authorizer.authorizeForRepo("account-x", "repo-x", {
         role: undefined,
-        owner: "owner-a",
+        account: "account-a",
         repos: ["repo-a"],
         permissions: { contents: "write" },
       }),
     ),
   ).toMatchInlineSnapshot(`
-    "✅ Repo owner-x/repo-x was allowed access to a token:
-      ✅ Sufficient access to repo owner-a/repo-a based on 1 rule:
+    "✅ Repo account-x/repo-x was allowed access to a token:
+      ✅ Sufficient access to repo account-a/repo-a based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ contents: have write, wanted write"
   `);
   expect(
     explain(
-      authorizer.authorizeForRepo("owner-x", "repo-x", {
+      authorizer.authorizeForRepo("account-x", "repo-x", {
         role: undefined,
-        owner: "owner-a",
+        account: "account-a",
         repos: ["repo-b"],
         permissions: { contents: "write", metadata: "read" },
       }),
     ),
   ).toMatchInlineSnapshot(`
-    "✅ Repo owner-x/repo-x was allowed access to a token:
-      ✅ Sufficient access to repo owner-a/repo-b based on 1 rule:
+    "✅ Repo account-x/repo-x was allowed access to a token:
+      ✅ Sufficient access to repo account-a/repo-b based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ contents: have write, wanted write
           ✅ metadata: have read, wanted read"
   `);
   expect(
     explain(
-      authorizer.authorizeForRepo("owner-x", "repo-x", {
+      authorizer.authorizeForRepo("account-x", "repo-x", {
         role: undefined,
-        owner: "owner-a",
+        account: "account-a",
         repos: ["repo-a", "repo-b"],
         permissions: { contents: "write", metadata: "read" },
       }),
     ),
   ).toMatchInlineSnapshot(`
-    "✅ Repo owner-x/repo-x was allowed access to a token:
-      ✅ Sufficient access to repo owner-a/repo-a based on 1 rule:
+    "✅ Repo account-x/repo-x was allowed access to a token:
+      ✅ Sufficient access to repo account-a/repo-a based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ contents: have write, wanted write
           ✅ metadata: have read, wanted read
-      ✅ Sufficient access to repo owner-a/repo-b based on 1 rule:
+      ✅ Sufficient access to repo account-a/repo-b based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ contents: have write, wanted write
           ✅ metadata: have read, wanted read"
@@ -75,8 +75,8 @@ it("allows tokens when allowed by a wildcard rule", () => {
     rules: {
       repos: [
         {
-          resources: ["owner-a/repo-*", "owner-*/repo-b"],
-          consumers: ["owner-x/repo-x"],
+          resources: ["account-a/repo-*", "account-*/repo-b"],
+          consumers: ["account-x/repo-x"],
           permissions: { metadata: "read" },
         },
       ],
@@ -85,31 +85,31 @@ it("allows tokens when allowed by a wildcard rule", () => {
 
   expect(
     explain(
-      authorizer.authorizeForRepo("owner-x", "repo-x", {
+      authorizer.authorizeForRepo("account-x", "repo-x", {
         role: undefined,
-        owner: "owner-a",
+        account: "account-a",
         repos: ["repo-a"],
         permissions: { metadata: "read" },
       }),
     ),
   ).toMatchInlineSnapshot(`
-    "✅ Repo owner-x/repo-x was allowed access to a token:
-      ✅ Sufficient access to repo owner-a/repo-a based on 1 rule:
+    "✅ Repo account-x/repo-x was allowed access to a token:
+      ✅ Sufficient access to repo account-a/repo-a based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ metadata: have read, wanted read"
   `);
   expect(
     explain(
-      authorizer.authorizeForRepo("owner-x", "repo-x", {
+      authorizer.authorizeForRepo("account-x", "repo-x", {
         role: undefined,
-        owner: "owner-b",
+        account: "account-b",
         repos: ["repo-b"],
         permissions: { metadata: "read" },
       }),
     ),
   ).toMatchInlineSnapshot(`
-    "✅ Repo owner-x/repo-x was allowed access to a token:
-      ✅ Sufficient access to repo owner-b/repo-b based on 1 rule:
+    "✅ Repo account-x/repo-x was allowed access to a token:
+      ✅ Sufficient access to repo account-b/repo-b based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ metadata: have read, wanted read"
   `);
@@ -120,8 +120,8 @@ it("allows tokens when the actual access level is higher than requested", () => 
     rules: {
       repos: [
         {
-          resources: ["owner-a/repo-a"],
-          consumers: ["owner-x/repo-x"],
+          resources: ["account-a/repo-a"],
+          consumers: ["account-x/repo-x"],
           permissions: { metadata: "write", repository_projects: "admin" },
         },
       ],
@@ -130,16 +130,16 @@ it("allows tokens when the actual access level is higher than requested", () => 
 
   expect(
     explain(
-      authorizer.authorizeForRepo("owner-x", "repo-x", {
+      authorizer.authorizeForRepo("account-x", "repo-x", {
         role: undefined,
-        owner: "owner-a",
+        account: "account-a",
         repos: ["repo-a"],
         permissions: { metadata: "read", repository_projects: "write" },
       }),
     ),
   ).toMatchInlineSnapshot(`
-    "✅ Repo owner-x/repo-x was allowed access to a token:
-      ✅ Sufficient access to repo owner-a/repo-a based on 1 rule:
+    "✅ Repo account-x/repo-x was allowed access to a token:
+      ✅ Sufficient access to repo account-a/repo-a based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ metadata: have write, wanted read
           ✅ repository_projects: have admin, wanted write"
@@ -151,13 +151,13 @@ it("allows tokens when a later rule allows access that a previous rule denied", 
     rules: {
       repos: [
         {
-          resources: ["owner-a/repo-a"],
-          consumers: ["owner-x/repo-x"],
+          resources: ["account-a/repo-a"],
+          consumers: ["account-x/repo-x"],
           permissions: { contents: "read", metadata: "read" },
         },
         {
-          resources: ["owner-a/repo-a"],
-          consumers: ["owner-x/repo-x"],
+          resources: ["account-a/repo-a"],
+          consumers: ["account-x/repo-x"],
           permissions: { contents: "write" },
         },
       ],
@@ -166,16 +166,16 @@ it("allows tokens when a later rule allows access that a previous rule denied", 
 
   expect(
     explain(
-      authorizer.authorizeForRepo("owner-x", "repo-x", {
+      authorizer.authorizeForRepo("account-x", "repo-x", {
         role: undefined,
-        owner: "owner-a",
+        account: "account-a",
         repos: ["repo-a"],
         permissions: { contents: "write", metadata: "read" },
       }),
     ),
   ).toMatchInlineSnapshot(`
-    "✅ Repo owner-x/repo-x was allowed access to a token:
-      ✅ Sufficient access to repo owner-a/repo-a based on 2 rules:
+    "✅ Repo account-x/repo-x was allowed access to a token:
+      ✅ Sufficient access to repo account-a/repo-a based on 2 rules:
         ❌ Rule #1 gave insufficient access:
           ❌ contents: have read, wanted write
           ✅ metadata: have read, wanted read
@@ -191,8 +191,8 @@ it("supports rule descriptions", () => {
       repos: [
         {
           description: "<description>",
-          resources: ["owner-a/repo-a"],
-          consumers: ["owner-x/repo-x"],
+          resources: ["account-a/repo-a"],
+          consumers: ["account-x/repo-x"],
           permissions: { metadata: "read" },
         },
       ],
@@ -201,16 +201,16 @@ it("supports rule descriptions", () => {
 
   expect(
     explain(
-      authorizer.authorizeForRepo("owner-x", "repo-x", {
+      authorizer.authorizeForRepo("account-x", "repo-x", {
         role: undefined,
-        owner: "owner-a",
+        account: "account-a",
         repos: ["repo-a"],
         permissions: { metadata: "read" },
       }),
     ),
   ).toMatchInlineSnapshot(`
-    "✅ Repo owner-x/repo-x was allowed access to a token:
-      ✅ Sufficient access to repo owner-a/repo-a based on 1 rule:
+    "✅ Repo account-x/repo-x was allowed access to a token:
+      ✅ Sufficient access to repo account-a/repo-a based on 1 rule:
         ✅ Rule #1: "<description>" gave sufficient access:
           ✅ metadata: have read, wanted read"
   `);
@@ -221,8 +221,8 @@ it("sorts repos and permissions in the explanation", () => {
     rules: {
       repos: [
         {
-          resources: ["owner-a/repo-b", "owner-a/repo-a"],
-          consumers: ["owner-x/repo-x"],
+          resources: ["account-a/repo-b", "account-a/repo-a"],
+          consumers: ["account-x/repo-x"],
           permissions: { metadata: "read", contents: "write" },
         },
       ],
@@ -231,20 +231,20 @@ it("sorts repos and permissions in the explanation", () => {
 
   expect(
     explain(
-      authorizer.authorizeForRepo("owner-x", "repo-x", {
+      authorizer.authorizeForRepo("account-x", "repo-x", {
         role: undefined,
-        owner: "owner-a",
+        account: "account-a",
         repos: ["repo-b", "repo-a"],
         permissions: { metadata: "read", contents: "write" },
       }),
     ),
   ).toMatchInlineSnapshot(`
-    "✅ Repo owner-x/repo-x was allowed access to a token:
-      ✅ Sufficient access to repo owner-a/repo-a based on 1 rule:
+    "✅ Repo account-x/repo-x was allowed access to a token:
+      ✅ Sufficient access to repo account-a/repo-a based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ contents: have write, wanted write
           ✅ metadata: have read, wanted read
-      ✅ Sufficient access to repo owner-a/repo-b based on 1 rule:
+      ✅ Sufficient access to repo account-a/repo-b based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ contents: have write, wanted write
           ✅ metadata: have read, wanted read"
@@ -256,8 +256,8 @@ it("doesn't allow tokens for unauthorized consumer repos", () => {
     rules: {
       repos: [
         {
-          resources: ["owner-a/repo-a", "owner-a/repo-b"],
-          consumers: ["owner-x/repo-x"],
+          resources: ["account-a/repo-a", "account-a/repo-b"],
+          consumers: ["account-x/repo-x"],
           permissions: { contents: "write", metadata: "read" },
         },
       ],
@@ -266,42 +266,42 @@ it("doesn't allow tokens for unauthorized consumer repos", () => {
 
   expect(
     explain(
-      authorizer.authorizeForRepo("owner-y", "repo-x", {
+      authorizer.authorizeForRepo("account-y", "repo-x", {
         role: undefined,
-        owner: "owner-a",
+        account: "account-a",
         repos: ["repo-a"],
         permissions: { metadata: "read" },
       }),
     ),
   ).toMatchInlineSnapshot(`
-    "❌ Repo owner-y/repo-x was denied access to a token:
-      ❌ Insufficient access to repo owner-a/repo-a (no matching rules)"
+    "❌ Repo account-y/repo-x was denied access to a token:
+      ❌ Insufficient access to repo account-a/repo-a (no matching rules)"
   `);
   expect(
     explain(
-      authorizer.authorizeForRepo("owner-x", "repo-y", {
+      authorizer.authorizeForRepo("account-x", "repo-y", {
         role: undefined,
-        owner: "owner-a",
+        account: "account-a",
         repos: ["repo-a"],
         permissions: { metadata: "read" },
       }),
     ),
   ).toMatchInlineSnapshot(`
-    "❌ Repo owner-x/repo-y was denied access to a token:
-      ❌ Insufficient access to repo owner-a/repo-a (no matching rules)"
+    "❌ Repo account-x/repo-y was denied access to a token:
+      ❌ Insufficient access to repo account-a/repo-a (no matching rules)"
   `);
   expect(
     explain(
-      authorizer.authorizeForRepo("owner-y", "repo-y", {
+      authorizer.authorizeForRepo("account-y", "repo-y", {
         role: undefined,
-        owner: "owner-a",
+        account: "account-a",
         repos: ["repo-a"],
         permissions: { metadata: "read" },
       }),
     ),
   ).toMatchInlineSnapshot(`
-    "❌ Repo owner-y/repo-y was denied access to a token:
-      ❌ Insufficient access to repo owner-a/repo-a (no matching rules)"
+    "❌ Repo account-y/repo-y was denied access to a token:
+      ❌ Insufficient access to repo account-a/repo-a (no matching rules)"
   `);
 });
 
@@ -310,8 +310,8 @@ it("doesn't allow tokens for unauthorized resource repos", () => {
     rules: {
       repos: [
         {
-          resources: ["owner-a/repo-a", "owner-a/repo-b"],
-          consumers: ["owner-x/repo-x"],
+          resources: ["account-a/repo-a", "account-a/repo-b"],
+          consumers: ["account-x/repo-x"],
           permissions: { contents: "write", metadata: "read" },
         },
       ],
@@ -320,29 +320,29 @@ it("doesn't allow tokens for unauthorized resource repos", () => {
 
   expect(
     explain(
-      authorizer.authorizeForRepo("owner-x", "repo-x", {
+      authorizer.authorizeForRepo("account-x", "repo-x", {
         role: undefined,
-        owner: "owner-a",
+        account: "account-a",
         repos: ["repo-y"],
         permissions: { contents: "write" },
       }),
     ),
   ).toMatchInlineSnapshot(`
-    "❌ Repo owner-x/repo-x was denied access to a token:
-      ❌ Insufficient access to repo owner-a/repo-y (no matching rules)"
+    "❌ Repo account-x/repo-x was denied access to a token:
+      ❌ Insufficient access to repo account-a/repo-y (no matching rules)"
   `);
   expect(
     explain(
-      authorizer.authorizeForRepo("owner-x", "repo-x", {
+      authorizer.authorizeForRepo("account-x", "repo-x", {
         role: undefined,
-        owner: "owner-y",
+        account: "account-y",
         repos: ["repo-a"],
         permissions: { contents: "write" },
       }),
     ),
   ).toMatchInlineSnapshot(`
-    "❌ Repo owner-x/repo-x was denied access to a token:
-      ❌ Insufficient access to repo owner-y/repo-a (no matching rules)"
+    "❌ Repo account-x/repo-x was denied access to a token:
+      ❌ Insufficient access to repo account-y/repo-a (no matching rules)"
   `);
 });
 
@@ -351,8 +351,8 @@ it("doesn't allow tokens where only some of the resources are authorized", () =>
     rules: {
       repos: [
         {
-          resources: ["owner-a/repo-a", "owner-a/repo-b"],
-          consumers: ["owner-x/repo-x"],
+          resources: ["account-a/repo-a", "account-a/repo-b"],
+          consumers: ["account-x/repo-x"],
           permissions: { contents: "write", metadata: "read" },
         },
       ],
@@ -361,22 +361,22 @@ it("doesn't allow tokens where only some of the resources are authorized", () =>
 
   expect(
     explain(
-      authorizer.authorizeForRepo("owner-x", "repo-x", {
+      authorizer.authorizeForRepo("account-x", "repo-x", {
         role: undefined,
-        owner: "owner-a",
+        account: "account-a",
         repos: ["repo-a", "repo-b", "repo-y"],
         permissions: { contents: "write" },
       }),
     ),
   ).toMatchInlineSnapshot(`
-    "❌ Repo owner-x/repo-x was denied access to a token:
-      ✅ Sufficient access to repo owner-a/repo-a based on 1 rule:
+    "❌ Repo account-x/repo-x was denied access to a token:
+      ✅ Sufficient access to repo account-a/repo-a based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ contents: have write, wanted write
-      ✅ Sufficient access to repo owner-a/repo-b based on 1 rule:
+      ✅ Sufficient access to repo account-a/repo-b based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ contents: have write, wanted write
-      ❌ Insufficient access to repo owner-a/repo-y (no matching rules)"
+      ❌ Insufficient access to repo account-a/repo-y (no matching rules)"
   `);
 });
 
@@ -385,8 +385,8 @@ it("doesn't allow tokens for unauthorized permissions", () => {
     rules: {
       repos: [
         {
-          resources: ["owner-a/repo-a"],
-          consumers: ["owner-x/repo-x"],
+          resources: ["account-a/repo-a"],
+          consumers: ["account-x/repo-x"],
           permissions: { metadata: "read" },
         },
       ],
@@ -395,16 +395,16 @@ it("doesn't allow tokens for unauthorized permissions", () => {
 
   expect(
     explain(
-      authorizer.authorizeForRepo("owner-x", "repo-x", {
+      authorizer.authorizeForRepo("account-x", "repo-x", {
         role: undefined,
-        owner: "owner-a",
+        account: "account-a",
         repos: ["repo-a"],
         permissions: { contents: "read" },
       }),
     ),
   ).toMatchInlineSnapshot(`
-    "❌ Repo owner-x/repo-x was denied access to a token:
-      ❌ Insufficient access to repo owner-a/repo-a based on 1 rule:
+    "❌ Repo account-x/repo-x was denied access to a token:
+      ❌ Insufficient access to repo account-a/repo-a based on 1 rule:
         ❌ Rule #1 gave insufficient access:
           ❌ contents: have none, wanted read"
   `);
@@ -415,8 +415,8 @@ it("doesn't allow tokens where only some of the permissions are authorized", () 
     rules: {
       repos: [
         {
-          resources: ["owner-a/repo-a"],
-          consumers: ["owner-x/repo-x"],
+          resources: ["account-a/repo-a"],
+          consumers: ["account-x/repo-x"],
           permissions: { metadata: "read" },
         },
       ],
@@ -425,16 +425,16 @@ it("doesn't allow tokens where only some of the permissions are authorized", () 
 
   expect(
     explain(
-      authorizer.authorizeForRepo("owner-x", "repo-x", {
+      authorizer.authorizeForRepo("account-x", "repo-x", {
         role: undefined,
-        owner: "owner-a",
+        account: "account-a",
         repos: ["repo-a"],
         permissions: { contents: "read", metadata: "read" },
       }),
     ),
   ).toMatchInlineSnapshot(`
-    "❌ Repo owner-x/repo-x was denied access to a token:
-      ❌ Insufficient access to repo owner-a/repo-a based on 1 rule:
+    "❌ Repo account-x/repo-x was denied access to a token:
+      ❌ Insufficient access to repo account-a/repo-a based on 1 rule:
         ❌ Rule #1 gave insufficient access:
           ❌ contents: have none, wanted read
           ✅ metadata: have read, wanted read"
@@ -446,13 +446,13 @@ it("doesn't allow tokens that are denied by a wildcard rule", () => {
     rules: {
       repos: [
         {
-          resources: ["owner-a/repo-a", "owner-b/repo-b"],
-          consumers: ["owner-x/repo-x"],
+          resources: ["account-a/repo-a", "account-b/repo-b"],
+          consumers: ["account-x/repo-x"],
           permissions: { metadata: "read" },
         },
         {
-          resources: ["owner-a/repo-*", "owner-*/repo-b"],
-          consumers: ["owner-x/repo-x"],
+          resources: ["account-a/repo-*", "account-*/repo-b"],
+          consumers: ["account-x/repo-x"],
           permissions: { metadata: "none" },
         },
       ],
@@ -461,16 +461,16 @@ it("doesn't allow tokens that are denied by a wildcard rule", () => {
 
   expect(
     explain(
-      authorizer.authorizeForRepo("owner-x", "repo-x", {
+      authorizer.authorizeForRepo("account-x", "repo-x", {
         role: undefined,
-        owner: "owner-a",
+        account: "account-a",
         repos: ["repo-a"],
         permissions: { metadata: "read" },
       }),
     ),
   ).toMatchInlineSnapshot(`
-    "❌ Repo owner-x/repo-x was denied access to a token:
-      ❌ Insufficient access to repo owner-a/repo-a based on 2 rules:
+    "❌ Repo account-x/repo-x was denied access to a token:
+      ❌ Insufficient access to repo account-a/repo-a based on 2 rules:
         ✅ Rule #1 gave sufficient access:
           ✅ metadata: have read, wanted read
         ❌ Rule #2 gave insufficient access:
@@ -478,16 +478,16 @@ it("doesn't allow tokens that are denied by a wildcard rule", () => {
   `);
   expect(
     explain(
-      authorizer.authorizeForRepo("owner-x", "repo-x", {
+      authorizer.authorizeForRepo("account-x", "repo-x", {
         role: undefined,
-        owner: "owner-b",
+        account: "account-b",
         repos: ["repo-b"],
         permissions: { metadata: "read" },
       }),
     ),
   ).toMatchInlineSnapshot(`
-    "❌ Repo owner-x/repo-x was denied access to a token:
-      ❌ Insufficient access to repo owner-b/repo-b based on 2 rules:
+    "❌ Repo account-x/repo-x was denied access to a token:
+      ❌ Insufficient access to repo account-b/repo-b based on 2 rules:
         ✅ Rule #1 gave sufficient access:
           ✅ metadata: have read, wanted read
         ❌ Rule #2 gave insufficient access:
@@ -500,8 +500,8 @@ it("doesn't allow tokens when the actual access level is lower than requested", 
     rules: {
       repos: [
         {
-          resources: ["owner-a/repo-a"],
-          consumers: ["owner-x/repo-x"],
+          resources: ["account-a/repo-a"],
+          consumers: ["account-x/repo-x"],
           permissions: { repository_projects: "write" },
         },
       ],
@@ -510,16 +510,16 @@ it("doesn't allow tokens when the actual access level is lower than requested", 
 
   expect(
     explain(
-      authorizer.authorizeForRepo("owner-x", "repo-x", {
+      authorizer.authorizeForRepo("account-x", "repo-x", {
         role: undefined,
-        owner: "owner-a",
+        account: "account-a",
         repos: ["repo-a"],
         permissions: { repository_projects: "admin" },
       }),
     ),
   ).toMatchInlineSnapshot(`
-    "❌ Repo owner-x/repo-x was denied access to a token:
-      ❌ Insufficient access to repo owner-a/repo-a based on 1 rule:
+    "❌ Repo account-x/repo-x was denied access to a token:
+      ❌ Insufficient access to repo account-a/repo-a based on 1 rule:
         ❌ Rule #1 gave insufficient access:
           ❌ repository_projects: have write, wanted admin"
   `);
@@ -530,13 +530,13 @@ it("doesn't allow tokens when a later rule denies access that a previous rule al
     rules: {
       repos: [
         {
-          resources: ["owner-a/repo-a"],
-          consumers: ["owner-x/repo-x"],
+          resources: ["account-a/repo-a"],
+          consumers: ["account-x/repo-x"],
           permissions: { contents: "write" },
         },
         {
-          resources: ["owner-a/repo-a"],
-          consumers: ["owner-x/repo-x"],
+          resources: ["account-a/repo-a"],
+          consumers: ["account-x/repo-x"],
           permissions: { contents: "read" },
         },
       ],
@@ -545,16 +545,16 @@ it("doesn't allow tokens when a later rule denies access that a previous rule al
 
   expect(
     explain(
-      authorizer.authorizeForRepo("owner-x", "repo-x", {
+      authorizer.authorizeForRepo("account-x", "repo-x", {
         role: undefined,
-        owner: "owner-a",
+        account: "account-a",
         repos: ["repo-a"],
         permissions: { contents: "write" },
       }),
     ),
   ).toMatchInlineSnapshot(`
-    "❌ Repo owner-x/repo-x was denied access to a token:
-      ❌ Insufficient access to repo owner-a/repo-a based on 2 rules:
+    "❌ Repo account-x/repo-x was denied access to a token:
+      ❌ Insufficient access to repo account-a/repo-a based on 2 rules:
         ✅ Rule #1 gave sufficient access:
           ✅ contents: have write, wanted write
         ❌ Rule #2 gave insufficient access:
@@ -567,13 +567,13 @@ it("doesn't allow tokens when a later rule removes access that a previous rule a
     rules: {
       repos: [
         {
-          resources: ["owner-a/repo-a"],
-          consumers: ["owner-x/repo-x"],
+          resources: ["account-a/repo-a"],
+          consumers: ["account-x/repo-x"],
           permissions: { contents: "read" },
         },
         {
-          resources: ["owner-a/repo-a"],
-          consumers: ["owner-x/repo-x"],
+          resources: ["account-a/repo-a"],
+          consumers: ["account-x/repo-x"],
           permissions: { contents: "none" },
         },
       ],
@@ -582,16 +582,16 @@ it("doesn't allow tokens when a later rule removes access that a previous rule a
 
   expect(
     explain(
-      authorizer.authorizeForRepo("owner-x", "repo-x", {
+      authorizer.authorizeForRepo("account-x", "repo-x", {
         role: undefined,
-        owner: "owner-a",
+        account: "account-a",
         repos: ["repo-a"],
         permissions: { contents: "read" },
       }),
     ),
   ).toMatchInlineSnapshot(`
-    "❌ Repo owner-x/repo-x was denied access to a token:
-      ❌ Insufficient access to repo owner-a/repo-a based on 2 rules:
+    "❌ Repo account-x/repo-x was denied access to a token:
+      ❌ Insufficient access to repo account-a/repo-a based on 2 rules:
         ✅ Rule #1 gave sufficient access:
           ✅ contents: have read, wanted read
         ❌ Rule #2 gave insufficient access:

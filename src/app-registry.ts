@@ -103,7 +103,7 @@ export function createAppRegistry(): AppRegistry {
           if (
             installation.account &&
             "login" in installation.account &&
-            installation.account.login === request.owner
+            installation.account.login === request.account
           ) {
             return installation.id;
           }
@@ -112,7 +112,7 @@ export function createAppRegistry(): AppRegistry {
         }
 
         for (const repo of repos) {
-          if (repo.owner.login === request.owner && tokenRepos[repo.name]) {
+          if (repo.owner.login === request.account && tokenRepos[repo.name]) {
             ++repoMatchCount;
           }
         }

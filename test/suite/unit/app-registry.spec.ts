@@ -8,7 +8,7 @@ import {
   createTestInstallationRepo,
 } from "../../github-api.js";
 
-it("finds an installation for all repos in an owner with one permission", () => {
+it("finds an installation for all repos in an account with one permission", () => {
   const orgA = createTestInstallationAccount("Organization", 100, "org-a");
   const appA = createTestApp(110, "app-a", "App A", { contents: "write" });
   const appAInstallationA = createTestInstallation(111, appA, orgA, "all", []);
@@ -24,7 +24,7 @@ it("finds an installation for all repos in an owner with one permission", () => 
   expect(
     registry.findInstallationForToken({
       role: "role-a",
-      owner: orgA.login,
+      account: orgA.login,
       repos: "all",
       permissions: { contents: "write" },
     }),
@@ -54,7 +54,7 @@ it("finds an installation for one selected repo with one permission", () => {
   expect(
     registry.findInstallationForToken({
       role: "role-a",
-      owner: orgA.login,
+      account: orgA.login,
       repos: [repoA.name],
       permissions: { contents: "write" },
     }),
@@ -88,7 +88,7 @@ it("finds an installation for multiple selected repos with multiple permissions"
   expect(
     registry.findInstallationForToken({
       role: "role-a",
-      owner: orgA.login,
+      account: orgA.login,
       repos: [repoA.name, repoB.name],
       permissions: { contents: "write", metadata: "read" },
     }),
@@ -117,7 +117,7 @@ it("finds an installation for no repos with no permissions", () => {
   expect(
     registry.findInstallationForToken({
       role: "role-a",
-      owner: orgA.login,
+      account: orgA.login,
       repos: [],
       permissions: {},
     }),
@@ -155,7 +155,7 @@ it.each([
     expect(
       registry.findInstallationForToken({
         role: "role-a",
-        owner: orgA.login,
+        account: orgA.login,
         repos: [repoA.name],
         permissions: { repository_projects: want },
       }),
@@ -163,7 +163,7 @@ it.each([
   },
 );
 
-it("finds an installation for the correct owner when there are multiple installations", () => {
+it("finds an installation for the correct account when there are multiple installations", () => {
   const orgA = createTestInstallationAccount("Organization", 100, "org-a");
   const orgB = createTestInstallationAccount("Organization", 200, "org-b");
   const appA = createTestApp(110, "app-a", "App A");
@@ -186,7 +186,7 @@ it("finds an installation for the correct owner when there are multiple installa
   expect(
     registry.findInstallationForToken({
       role: undefined,
-      owner: orgA.login,
+      account: orgA.login,
       repos: "all",
       permissions: {},
     }),
@@ -194,7 +194,7 @@ it("finds an installation for the correct owner when there are multiple installa
   expect(
     registry.findInstallationForToken({
       role: undefined,
-      owner: orgA.login,
+      account: orgA.login,
       repos: [],
       permissions: {},
     }),
@@ -202,7 +202,7 @@ it("finds an installation for the correct owner when there are multiple installa
   expect(
     registry.findInstallationForToken({
       role: undefined,
-      owner: orgB.login,
+      account: orgB.login,
       repos: "all",
       permissions: {},
     }),
@@ -210,7 +210,7 @@ it("finds an installation for the correct owner when there are multiple installa
   expect(
     registry.findInstallationForToken({
       role: undefined,
-      owner: orgB.login,
+      account: orgB.login,
       repos: [],
       permissions: {},
     }),
@@ -279,7 +279,7 @@ it("finds an installation by role", () => {
   expect(
     registry.findInstallationForToken({
       role: "role-a",
-      owner: orgA.login,
+      account: orgA.login,
       repos: [repoA.name],
       permissions: { contents: "write" },
     }),
@@ -287,7 +287,7 @@ it("finds an installation by role", () => {
   expect(
     registry.findInstallationForToken({
       role: "role-a",
-      owner: orgA.login,
+      account: orgA.login,
       repos: [repoB.name],
       permissions: { contents: "write" },
     }),
@@ -295,7 +295,7 @@ it("finds an installation by role", () => {
   expect(
     registry.findInstallationForToken({
       role: "role-a",
-      owner: orgA.login,
+      account: orgA.login,
       repos: [repoC.name],
       permissions: { contents: "write" },
     }),
@@ -303,7 +303,7 @@ it("finds an installation by role", () => {
   expect(
     registry.findInstallationForToken({
       role: "role-b",
-      owner: orgA.login,
+      account: orgA.login,
       repos: [repoA.name],
       permissions: { contents: "write" },
     }),
@@ -311,7 +311,7 @@ it("finds an installation by role", () => {
   expect(
     registry.findInstallationForToken({
       role: "role-b",
-      owner: orgA.login,
+      account: orgA.login,
       repos: [repoD.name],
       permissions: { contents: "write" },
     }),
@@ -337,7 +337,7 @@ it("finds an installation for read access when the role is undefined", () => {
   expect(
     registry.findInstallationForToken({
       role: undefined,
-      owner: orgA.login,
+      account: orgA.login,
       repos: [],
       permissions: { contents: "read" },
     }),
@@ -345,7 +345,7 @@ it("finds an installation for read access when the role is undefined", () => {
   expect(
     registry.findInstallationForToken({
       role: undefined,
-      owner: orgA.login,
+      account: orgA.login,
       repos: [],
       permissions: { repository_projects: "read" },
     }),
@@ -371,7 +371,7 @@ it("doesn't find an installation for write or admin access when the role is unde
   expect(
     registry.findInstallationForToken({
       role: undefined,
-      owner: orgA.login,
+      account: orgA.login,
       repos: [],
       permissions: { contents: "write" },
     }),
@@ -379,14 +379,14 @@ it("doesn't find an installation for write or admin access when the role is unde
   expect(
     registry.findInstallationForToken({
       role: undefined,
-      owner: orgA.login,
+      account: orgA.login,
       repos: [],
       permissions: { repository_projects: "admin" },
     }),
   ).toBe(undefined);
 });
 
-it("doesn't find an installation when it can't access all repos in an owner", () => {
+it("doesn't find an installation when it can't access all repos in an account", () => {
   const orgA = createTestInstallationAccount("Organization", 100, "org-a");
   const repoA = createTestInstallationRepo(orgA, "repo-a");
   const appA = createTestApp(110, "app-a", "App A", { contents: "write" });
@@ -409,14 +409,14 @@ it("doesn't find an installation when it can't access all repos in an owner", ()
   expect(
     registry.findInstallationForToken({
       role: "role-a",
-      owner: orgA.login,
+      account: orgA.login,
       repos: "all",
       permissions: { contents: "write" },
     }),
   ).toBe(undefined);
 });
 
-it("doesn't find an installation for an unknown repo owner", () => {
+it("doesn't find an installation for an unknown account", () => {
   const orgA = createTestInstallationAccount("Organization", 100, "org-a");
   const repoA = createTestInstallationRepo(orgA, "repo-a");
   const appA = createTestApp(110, "app-a", "App A", { contents: "write" });
@@ -439,7 +439,7 @@ it("doesn't find an installation for an unknown repo owner", () => {
   expect(
     registry.findInstallationForToken({
       role: "role-a",
-      owner: "owner-x",
+      account: "account-x",
       repos: [repoA.name],
       permissions: { contents: "write" },
     }),
@@ -469,7 +469,7 @@ it("doesn't find an installation for an unknown repo", () => {
   expect(
     registry.findInstallationForToken({
       role: "role-a",
-      owner: orgA.login,
+      account: orgA.login,
       repos: ["repo-x"],
       permissions: { contents: "write" },
     }),
@@ -499,7 +499,7 @@ it("doesn't find an installation that can't access all requested repos", () => {
   expect(
     registry.findInstallationForToken({
       role: "role-a",
-      owner: orgA.login,
+      account: orgA.login,
       repos: [repoA.name, "repo-x"],
       permissions: { contents: "write" },
     }),
@@ -522,7 +522,7 @@ it("doesn't find an installation that doesn't have all permissions", () => {
   expect(
     registry.findInstallationForToken({
       role: "role-a",
-      owner: orgA.login,
+      account: orgA.login,
       repos: ["repo-a"],
       permissions: { contents: "write", metadata: "read" },
     }),
@@ -559,7 +559,7 @@ it.each([
     expect(
       registry.findInstallationForToken({
         role: "role-a",
-        owner: orgA.login,
+        account: orgA.login,
         repos: ["repo-a"],
         permissions: { repository_projects: want },
       }),
