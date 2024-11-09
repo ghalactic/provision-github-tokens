@@ -9,7 +9,7 @@ export function createNamePattern(pattern: string): Pattern {
   }
 
   const literals = pattern.split("*");
-  const expression = new RegExp(`^${literals.map(escape).join("[^/]*")}$`);
+  const expression = patternRegExp(literals);
 
   let isAll = true;
   for (const l of literals) if (l) isAll = false;
@@ -22,4 +22,15 @@ export function createNamePattern(pattern: string): Pattern {
     test: (string) => expression.test(string),
     toString: () => pattern,
   };
+}
+
+function patternRegExp(literals: string[]): RegExp {
+  let exp = "^";
+  for (let i = 0; i < literals.length; ++i) {
+    if (i) exp += "[^/]*";
+    exp += escape(literals[i]);
+  }
+  exp += "$";
+
+  return new RegExp(exp);
 }

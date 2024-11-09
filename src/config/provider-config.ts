@@ -35,44 +35,45 @@ function normalizeProviderConfig(
   for (let i = 0; i < config.permissions.rules.repos.length; ++i) {
     const rule = config.permissions.rules.repos[i];
 
-    rule.resources = rule.resources.map((resource, j) =>
-      wrapErrors(
-        () => normalizeRepoPattern(definingOwner, resource),
+    for (let j = 0; j < rule.resources.length; ++j) {
+      rule.resources[j] = wrapErrors(
+        () => normalizeRepoPattern(definingOwner, rule.resources[j]),
         (cause) =>
           new Error(
             "Provider config has an error at " +
               `/permissions/rules/repos/${escape(i)}/resources/${escape(j)}`,
             { cause },
           ),
-      ),
-    );
-    rule.consumers = rule.consumers.map((consumer, j) =>
-      wrapErrors(
-        () => normalizeRepoPattern(definingOwner, consumer),
+      );
+    }
+
+    for (let j = 0; j < rule.consumers.length; ++j) {
+      rule.consumers[j] = wrapErrors(
+        () => normalizeRepoPattern(definingOwner, rule.consumers[j]),
         (cause) =>
           new Error(
             "Provider config has an error at " +
               `/permissions/rules/repos/${escape(i)}/consumers/${escape(j)}`,
             { cause },
           ),
-      ),
-    );
+      );
+    }
   }
 
   for (let i = 0; i < config.provision.rules.secrets.length; ++i) {
     const rule = config.provision.rules.secrets[i];
 
-    rule.requesters = rule.requesters.map((requester, j) =>
-      wrapErrors(
-        () => normalizeRepoPattern(definingOwner, requester),
+    for (let j = 0; j < rule.requesters.length; ++j) {
+      rule.requesters[j] = wrapErrors(
+        () => normalizeRepoPattern(definingOwner, rule.requesters[j]),
         (cause) =>
           new Error(
             "Provider config has an error at " +
               `/provision/rules/secrets/${escape(i)}/requesters/${escape(j)}`,
             { cause },
           ),
-      ),
-    );
+      );
+    }
 
     const repos: typeof rule.to.github.repos = {};
     for (const pattern in rule.to.github.repos) {
