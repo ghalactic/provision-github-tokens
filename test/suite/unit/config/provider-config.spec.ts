@@ -187,8 +187,8 @@ it("parses comprehensive provider config", async () => {
             secrets: ["*"],
             to: {
               github: {
-                org: {},
-                orgs: {},
+                account: {},
+                accounts: {},
                 repo: {
                   actions: "allow",
                   codespaces: "allow",
@@ -203,17 +203,17 @@ it("parses comprehensive provider config", async () => {
           },
           {
             description:
-              "Specific repos can provision to any secret of any kind in their own org",
+              "Specific repos can provision to any secret of any kind in their own account",
             secrets: ["*"],
             requesters: ["account-self/repo-a", "account-self/repo-b"],
             to: {
               github: {
-                org: {
+                account: {
                   actions: "allow",
                   codespaces: "allow",
                   dependabot: "allow",
                 },
-                orgs: {},
+                accounts: {},
                 repo: {
                   environments: {},
                 },
@@ -223,17 +223,17 @@ it("parses comprehensive provider config", async () => {
           },
           {
             description:
-              "Specific repos can provision to dependabot secrets in specific orgs",
+              "Specific repos can provision to dependabot secrets in specific accounts",
             secrets: ["*"],
             requesters: ["account-self/repo-a", "account-self/repo-b"],
             to: {
               github: {
-                org: {},
-                orgs: {
-                  "org-a": {
+                account: {},
+                accounts: {
+                  "account-a": {
                     dependabot: "allow",
                   },
-                  "org-b": {
+                  "account-b": {
                     dependabot: "allow",
                   },
                 },
@@ -246,13 +246,13 @@ it("parses comprehensive provider config", async () => {
           },
           {
             description:
-              "Specific repos can provision to dependabot secrets in any org",
+              "Specific repos can provision to dependabot secrets in any account",
             secrets: ["*"],
             requesters: ["account-self/repo-a", "account-self/repo-b"],
             to: {
               github: {
-                org: {},
-                orgs: {
+                account: {},
+                accounts: {
                   "*": {
                     dependabot: "allow",
                   },
@@ -271,8 +271,8 @@ it("parses comprehensive provider config", async () => {
             requesters: ["account-self/repo-a"],
             to: {
               github: {
-                org: {},
-                orgs: {},
+                account: {},
+                accounts: {},
                 repo: {
                   environments: {},
                 },
@@ -296,8 +296,8 @@ it("parses comprehensive provider config", async () => {
             requesters: ["account-self/repo-a"],
             to: {
               github: {
-                org: {},
-                orgs: {},
+                account: {},
+                accounts: {},
                 repo: {
                   environments: {},
                 },
@@ -319,8 +319,8 @@ it("parses comprehensive provider config", async () => {
             requesters: ["account-self/repo-a", "account-self/repo-b"],
             to: {
               github: {
-                org: {},
-                orgs: {},
+                account: {},
+                accounts: {},
                 repo: {
                   environments: {},
                 },
@@ -344,8 +344,8 @@ it("parses comprehensive provider config", async () => {
             requesters: ["account-self/repo-a", "account-self/repo-b"],
             to: {
               github: {
-                org: {},
-                orgs: {},
+                account: {},
+                accounts: {},
                 repo: {
                   environments: {},
                 },
@@ -360,19 +360,19 @@ it("parses comprehensive provider config", async () => {
           },
           {
             description:
-              "Specific repos can provision any actions secret in the same repo or org, or specific other repos and orgs",
+              "Specific repos can provision any actions secret in the same repo or account, or specific other repos and accounts",
             secrets: ["*"],
             requesters: ["account-self/repo-a", "account-self/repo-b"],
             to: {
               github: {
-                org: {
+                account: {
                   actions: "allow",
                 },
-                orgs: {
-                  "org-a": {
+                accounts: {
+                  "account-a": {
                     actions: "allow",
                   },
-                  "org-b": {
+                  "account-b": {
                     actions: "allow",
                   },
                 },
@@ -395,13 +395,13 @@ it("parses comprehensive provider config", async () => {
           },
           {
             description:
-              "No repos can provision to a specific secret of any kind in any org or repo",
+              "No repos can provision to a specific secret of any kind in any account or repo",
             secrets: ["SECRET_X"],
             requesters: ["*/*"],
             to: {
               github: {
-                org: {},
-                orgs: {
+                account: {},
+                accounts: {
                   "*": {
                     actions: "deny",
                     codespaces: "deny",
@@ -431,8 +431,8 @@ it("parses comprehensive provider config", async () => {
             requesters: ["account-self/repo-a", "account-self/repo-b"],
             to: {
               github: {
-                org: {},
-                orgs: {},
+                account: {},
+                accounts: {},
                 repo: {
                   actions: "deny",
                   codespaces: "deny",
@@ -452,8 +452,8 @@ it("parses comprehensive provider config", async () => {
             requesters: ["account-self/repo-a"],
             to: {
               github: {
-                org: {},
-                orgs: {},
+                account: {},
+                accounts: {},
                 repo: {
                   actions: "allow",
                   codespaces: "deny",

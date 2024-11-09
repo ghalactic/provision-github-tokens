@@ -9,8 +9,8 @@ export type PartialConsumerConfig = {
       {
         token: string;
         github: {
-          org: ConsumerConfigGitHubOrgSecretTypes;
-          orgs: Record<string, ConsumerConfigGitHubOrgSecretTypes>;
+          account: ConsumerConfigGitHubAccountSecretTypes;
+          accounts: Record<string, ConsumerConfigGitHubAccountSecretTypes>;
           repo: ConsumerConfigGitHubRepoSecretTypes;
           repos: Record<string, ConsumerConfigGitHubRepoSecretTypes>;
         };
@@ -27,7 +27,7 @@ export type ConsumerConfig = PartialConsumerConfig & {
   >;
 };
 
-type ConsumerConfigGitHubOrgSecretTypes = {
+type ConsumerConfigGitHubAccountSecretTypes = {
   actions: boolean;
   codespaces: boolean;
   dependabot: boolean;

@@ -152,33 +152,33 @@ provision:
               environments:
                 "*": allow
 
-      - description: Specific repos can provision to any secret of any kind in their own org
+      - description: Specific repos can provision to any secret of any kind in their own account
         secrets: ["*"]
         requesters: [./repo-a, ./repo-b]
         to:
           github:
-            org:
+            account:
               actions: allow
               codespaces: allow
               dependabot: allow
 
-      - description: Specific repos can provision to dependabot secrets in specific orgs
+      - description: Specific repos can provision to dependabot secrets in specific accounts
         secrets: ["*"]
         requesters: [./repo-a, ./repo-b]
         to:
           github:
-            orgs:
-              org-a:
+            accounts:
+              account-a:
                 dependabot: allow
-              org-b:
+              account-b:
                 dependabot: allow
 
-      - description: Specific repos can provision to dependabot secrets in any org
+      - description: Specific repos can provision to dependabot secrets in any account
         secrets: ["*"]
         requesters: [./repo-a, ./repo-b]
         to:
           github:
-            orgs:
+            accounts:
               "*":
                 dependabot: allow
 
@@ -226,17 +226,17 @@ provision:
               account-b/*:
                 actions: allow
 
-      - description: Specific repos can provision any actions secret in the same repo or org, or specific other repos and orgs
+      - description: Specific repos can provision any actions secret in the same repo or account, or specific other repos and accounts
         secrets: ["*"]
         requesters: [./repo-a, ./repo-b]
         to:
           github:
-            org:
+            account:
               actions: allow
-            orgs:
-              org-a:
+            accounts:
+              account-a:
                 actions: allow
-              org-b:
+              account-b:
                 actions: allow
             repo:
               actions: allow
@@ -246,12 +246,12 @@ provision:
               account-a/repo-a:
                 actions: allow
 
-      - description: No repos can provision to a specific secret of any kind in any org or repo
+      - description: No repos can provision to a specific secret of any kind in any account or repo
         secrets: [SECRET_X]
         requesters: ["*/*"]
         to:
           github:
-            orgs:
+            accounts:
               "*":
                 actions: deny
                 codespaces: deny

@@ -111,23 +111,23 @@ provision:
         repo:
           actions: true
 
-    TO_ORG_DEPENDABOT:
+    TO_ACCOUNT_DEPENDABOT:
       token: other-repo.tokenB
       github:
-        org:
+        account:
           dependabot: true
 
     TO_EVERYWHERE:
-      token: other-org/repo.tokenC
+      token: other-account/repo.tokenC
       github:
-        org:
+        account:
           actions: true
           codespaces: true
           dependabot: true
-        orgs:
-          org-a:
+        accounts:
+          account-a:
             actions: true
-          org-b:
+          account-b:
             actions: true
             codespaces: true
             dependabot: true

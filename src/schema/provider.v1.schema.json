@@ -164,18 +164,18 @@
                         "additionalProperties": false,
                         "default": {},
                         "properties": {
-                          "org": {
-                            "description": "Which types of secrets to allow provisioning to in the requesting repo's GitHub org.",
-                            "$ref": "#/definitions/provisionGithubOrgSecretTypes",
+                          "account": {
+                            "description": "Which types of secrets to allow provisioning to in the requesting repo's GitHub account.",
+                            "$ref": "#/definitions/provisionGithubAccountSecretTypes",
                             "default": {}
                           },
-                          "orgs": {
-                            "description": "Which types of secrets to allow provisioning to in other GitHub orgs.",
+                          "accounts": {
+                            "description": "Which types of secrets to allow provisioning to in other GitHub accounts.",
                             "type": "object",
                             "default": {},
                             "additionalProperties": {
-                              "description": "Which types of secrets to allow provisioning to in the specified GitHub org.",
-                              "$ref": "#/definitions/provisionGithubOrgSecretTypes"
+                              "description": "Which types of secrets to allow provisioning to in the specified GitHub account.",
+                              "$ref": "#/definitions/provisionGithubAccountSecretTypes"
                             }
                           },
                           "repo": {
@@ -205,7 +205,7 @@
     }
   },
   "definitions": {
-    "provisionGithubOrgSecretTypes": {
+    "provisionGithubAccountSecretTypes": {
       "type": "object",
       "additionalProperties": false,
       "properties": {

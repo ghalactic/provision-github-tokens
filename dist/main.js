@@ -49881,18 +49881,18 @@ var consumer_v1_schema_default = {
                 additionalProperties: false,
                 default: {},
                 properties: {
-                  org: {
-                    description: "How to provision the secret to the declaring repo's GitHub org.",
-                    $ref: "#/definitions/provisionGithubOrgSecretTypes",
+                  account: {
+                    description: "How to provision the secret to the declaring repo's GitHub account.",
+                    $ref: "#/definitions/provisionGithubAccountSecretTypes",
                     default: {}
                   },
-                  orgs: {
-                    description: "How to provision the secret to other GitHub orgs.",
+                  accounts: {
+                    description: "How to provision the secret to other GitHub accounts.",
                     type: "object",
                     default: {},
                     additionalProperties: {
-                      description: "How to provision the secret to the specified GitHub org.",
-                      $ref: "#/definitions/provisionGithubOrgSecretTypes"
+                      description: "How to provision the secret to the specified GitHub account.",
+                      $ref: "#/definitions/provisionGithubAccountSecretTypes"
                     }
                   },
                   repo: {
@@ -49918,7 +49918,7 @@ var consumer_v1_schema_default = {
     }
   },
   definitions: {
-    provisionGithubOrgSecretTypes: {
+    provisionGithubAccountSecretTypes: {
       type: "object",
       additionalProperties: false,
       properties: {
@@ -51006,18 +51006,18 @@ var provider_v1_schema_default = {
                         additionalProperties: false,
                         default: {},
                         properties: {
-                          org: {
-                            description: "Which types of secrets to allow provisioning to in the requesting repo's GitHub org.",
-                            $ref: "#/definitions/provisionGithubOrgSecretTypes",
+                          account: {
+                            description: "Which types of secrets to allow provisioning to in the requesting repo's GitHub account.",
+                            $ref: "#/definitions/provisionGithubAccountSecretTypes",
                             default: {}
                           },
-                          orgs: {
-                            description: "Which types of secrets to allow provisioning to in other GitHub orgs.",
+                          accounts: {
+                            description: "Which types of secrets to allow provisioning to in other GitHub accounts.",
                             type: "object",
                             default: {},
                             additionalProperties: {
-                              description: "Which types of secrets to allow provisioning to in the specified GitHub org.",
-                              $ref: "#/definitions/provisionGithubOrgSecretTypes"
+                              description: "Which types of secrets to allow provisioning to in the specified GitHub account.",
+                              $ref: "#/definitions/provisionGithubAccountSecretTypes"
                             }
                           },
                           repo: {
@@ -51047,7 +51047,7 @@ var provider_v1_schema_default = {
     }
   },
   definitions: {
-    provisionGithubOrgSecretTypes: {
+    provisionGithubAccountSecretTypes: {
       type: "object",
       additionalProperties: false,
       properties: {

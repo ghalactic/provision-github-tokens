@@ -170,16 +170,16 @@ it("parses comprehensive consumer config", async () => {
               environments: [],
             },
             repos: {},
-            org: {
+            account: {
               actions: false,
               codespaces: false,
               dependabot: false,
             },
-            orgs: {},
+            accounts: {},
           },
         },
 
-        TO_ORG_DEPENDABOT: {
+        TO_ACCOUNT_DEPENDABOT: {
           token: "account-self/other-repo.tokenB",
           github: {
             repo: {
@@ -189,22 +189,30 @@ it("parses comprehensive consumer config", async () => {
               environments: [],
             },
             repos: {},
-            org: {
+            account: {
               actions: false,
               codespaces: false,
               dependabot: true,
             },
-            orgs: {},
+            accounts: {},
           },
         },
 
         TO_EVERYWHERE: {
-          token: "other-org/repo.tokenC",
+          token: "other-account/repo.tokenC",
           github: {
-            org: { actions: true, codespaces: true, dependabot: true },
-            orgs: {
-              "org-a": { actions: true, codespaces: false, dependabot: false },
-              "org-b": { actions: true, codespaces: true, dependabot: true },
+            account: { actions: true, codespaces: true, dependabot: true },
+            accounts: {
+              "account-a": {
+                actions: true,
+                codespaces: false,
+                dependabot: false,
+              },
+              "account-b": {
+                actions: true,
+                codespaces: true,
+                dependabot: true,
+              },
             },
             repo: {
               actions: true,
@@ -239,12 +247,12 @@ it("parses comprehensive consumer config", async () => {
               environments: [],
             },
             repos: {},
-            org: {
+            account: {
               actions: false,
               codespaces: false,
               dependabot: false,
             },
-            orgs: {},
+            accounts: {},
           },
         },
       },

@@ -11,8 +11,8 @@ export type ProviderConfig = {
         requesters: string[];
         to: {
           github: {
-            org: ProviderConfigGitHubOrgSecretTypes;
-            orgs: Record<string, ProviderConfigGitHubOrgSecretTypes>;
+            account: ProviderConfigGitHubAccountSecretTypes;
+            accounts: Record<string, ProviderConfigGitHubAccountSecretTypes>;
             repo: ProviderConfigGitHubRepoSecretTypes;
             repos: Record<string, ProviderConfigGitHubRepoSecretTypes>;
           };
@@ -26,7 +26,7 @@ export type ProviderPermissionsConfig = {
   rules: PermissionsRules;
 };
 
-type ProviderConfigGitHubOrgSecretTypes = {
+type ProviderConfigGitHubAccountSecretTypes = {
   actions?: "allow" | "deny";
   codespaces?: "allow" | "deny";
   dependabot?: "allow" | "deny";
