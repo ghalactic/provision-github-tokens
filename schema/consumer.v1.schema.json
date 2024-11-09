@@ -40,8 +40,8 @@
             "minLength": 1,
             "examples": ["pr-bot", "onboarding"]
           },
-          "owner": {
-            "description": "The GitHub user or org that the specified repos belong to. Defaults to the same owner as the repo where the consumer configuration file is defined.",
+          "account": {
+            "description": "The GitHub user or org that the specified repos belong to. Defaults to the same account as the repo where the consumer configuration file is defined.",
             "type": "string",
             "minLength": 1,
             "examples": ["octocat"]
@@ -50,7 +50,7 @@
             "description": "Which repos are allowed to access the token.",
             "oneOf": [
               {
-                "description": "All repos in the owner's account, including those created after the token is provisioned.",
+                "description": "All repos in the account, including those created after the token is provisioned.",
                 "type": "string",
                 "const": "all"
               },
@@ -58,7 +58,7 @@
                 "description": "A list of repo name patterns to match against.",
                 "type": "array",
                 "items": {
-                  "description": "A pattern which matches a repo name without the owner prefix.",
+                  "description": "A pattern which matches a repo name without the account prefix.",
                   "type": "string",
                   "minLength": 1,
                   "examples": [
@@ -111,7 +111,7 @@
                 "examples": [
                   "tokenA",
                   "other-repo.tokenB",
-                  "other-owner/repo.tokenC"
+                  "other-account/repo.tokenC"
                 ]
               },
               "github": {
@@ -120,18 +120,18 @@
                 "additionalProperties": false,
                 "default": {},
                 "properties": {
-                  "org": {
-                    "description": "How to provision the secret to the declaring repo's GitHub org.",
-                    "$ref": "#/definitions/provisionGithubOrgSecretTypes",
+                  "account": {
+                    "description": "How to provision the secret to the declaring repo's GitHub account.",
+                    "$ref": "#/definitions/provisionGithubAccountSecretTypes",
                     "default": {}
                   },
-                  "orgs": {
-                    "description": "How to provision the secret to other GitHub orgs.",
+                  "accounts": {
+                    "description": "How to provision the secret to other GitHub accounts.",
                     "type": "object",
                     "default": {},
                     "additionalProperties": {
-                      "description": "How to provision the secret to the specified GitHub org.",
-                      "$ref": "#/definitions/provisionGithubOrgSecretTypes"
+                      "description": "How to provision the secret to the specified GitHub account.",
+                      "$ref": "#/definitions/provisionGithubAccountSecretTypes"
                     }
                   },
                   "repo": {
@@ -157,7 +157,7 @@
     }
   },
   "definitions": {
-    "provisionGithubOrgSecretTypes": {
+    "provisionGithubAccountSecretTypes": {
       "type": "object",
       "additionalProperties": false,
       "properties": {
