@@ -61,6 +61,7 @@
                   "description": "A pattern which matches repos without their account prefix.",
                   "type": "string",
                   "minLength": 1,
+                  "pattern": "^[*a-zA-Z0-9-_.]+$",
                   "examples": [
                     "repo-a",
                     "*",
@@ -133,6 +134,7 @@
                       "description": "A pattern which matches accounts.",
                       "type": "string",
                       "minLength": 1,
+                      "pattern": "^[*a-zA-Z](?:[*a-zA-Z-]*[*a-zA-Z])?$",
                       "examples": [
                         "account-a",
                         "*",
@@ -159,6 +161,7 @@
                       "description": "A pattern which matches repos.",
                       "type": "string",
                       "minLength": 1,
+                      "pattern": "^(?:.|[*a-zA-Z](?:[*a-zA-Z-]*[*a-zA-Z])?)\\/[*a-zA-Z0-9-_.]+$",
                       "examples": [
                         "./repo-a",
                         "account-a/repo-a",

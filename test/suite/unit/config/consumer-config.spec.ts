@@ -288,10 +288,12 @@ it("throws when an invalid repo pattern is used in /provision/secrets/<name>/git
 
   expect(throws(() => parseConsumerConfig("account-self", "repo-self", yaml)))
     .toMatchInlineSnapshot(`
-    "Consumer config has an error at /provision/secrets/SECRET_A/github/repos/repo-x
+      "Parsing of consumer configuration failed for "# yaml-language-server: $schema=https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json\\n$schema: https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json\\n\\nprovision:\\n  secrets:\\n    SECRET_A:\\n      token: tokenA\\n      github:\\n        repos:\\n          repo-x:\\n            actions: true\\n"
 
-    Caused by: Repo pattern "repo-x" must contain exactly one slash"
-  `);
+      Caused by: Invalid consumer configuration:
+        - must match pattern "^(?:.|[*a-zA-Z](?:[*a-zA-Z-]*[*a-zA-Z])?)\\/[*a-zA-Z0-9-_.]+$" (/provision/secrets/SECRET_A/github/repos)
+        - property name must be valid (/provision/secrets/SECRET_A/github/repos)"
+    `);
 });
 
 it("throws when an invalid token name is defined", async () => {

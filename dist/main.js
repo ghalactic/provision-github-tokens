@@ -49822,6 +49822,7 @@ var consumer_v1_schema_default = {
                   description: "A pattern which matches repos without their account prefix.",
                   type: "string",
                   minLength: 1,
+                  pattern: "^[*a-zA-Z0-9-_.]+$",
                   examples: [
                     "repo-a",
                     "*",
@@ -49894,6 +49895,7 @@ var consumer_v1_schema_default = {
                       description: "A pattern which matches accounts.",
                       type: "string",
                       minLength: 1,
+                      pattern: "^[*a-zA-Z](?:[*a-zA-Z-]*[*a-zA-Z])?$",
                       examples: [
                         "account-a",
                         "*",
@@ -49920,6 +49922,7 @@ var consumer_v1_schema_default = {
                       description: "A pattern which matches repos.",
                       type: "string",
                       minLength: 1,
+                      pattern: "^(?:.|[*a-zA-Z](?:[*a-zA-Z-]*[*a-zA-Z])?)\\/[*a-zA-Z0-9-_.]+$",
                       examples: [
                         "./repo-a",
                         "account-a/repo-a",
@@ -50914,6 +50917,7 @@ var provider_v1_schema_default = {
                       description: "A pattern which matches repos.",
                       type: "string",
                       minLength: 1,
+                      pattern: "^(?:.|[*a-zA-Z](?:[*a-zA-Z-]*[*a-zA-Z])?)\\/[*a-zA-Z0-9-_.]+$",
                       examples: [
                         "./repo-a",
                         "account-a/repo-a",
@@ -50933,6 +50937,7 @@ var provider_v1_schema_default = {
                       description: "A pattern which matches repos.",
                       type: "string",
                       minLength: 1,
+                      pattern: "^(?:.|[*<>a-zA-Z](?:[*<>a-zA-Z-]*[*<>a-zA-Z])?)\\/[*<>a-zA-Z0-9-_.]+$",
                       examples: [
                         "./repo-a",
                         "account-a/repo-a",
@@ -50991,6 +50996,7 @@ var provider_v1_schema_default = {
                       description: "A pattern which matches secrets.",
                       type: "string",
                       minLength: 1,
+                      pattern: "^[*a-zA-Z_][*a-zA-Z0-9_]*$",
                       examples: [
                         "secret-a",
                         "prefix-*",
@@ -51007,6 +51013,7 @@ var provider_v1_schema_default = {
                       description: "A pattern which matches repos.",
                       type: "string",
                       minLength: 1,
+                      pattern: "^(?:.|[*a-zA-Z](?:[*a-zA-Z-]*[*a-zA-Z])?)\\/[*a-zA-Z0-9-_.]+$",
                       examples: [
                         "./repo-a",
                         "account-a/repo-a",
@@ -51014,9 +51021,7 @@ var provider_v1_schema_default = {
                         "*/*",
                         "*/repo-a",
                         "account-a/*",
-                        "prefix-*/*-suffix",
-                        "<account>/<repo>",
-                        "<account>/*"
+                        "prefix-*/*-suffix"
                       ]
                     }
                   },
@@ -51045,6 +51050,7 @@ var provider_v1_schema_default = {
                               description: "A pattern which matches accounts.",
                               type: "string",
                               minLength: 1,
+                              pattern: "^[*a-zA-Z](?:[*a-zA-Z-]*[*a-zA-Z])?$",
                               examples: [
                                 "account-a",
                                 "*",
@@ -51071,6 +51077,7 @@ var provider_v1_schema_default = {
                               description: "A pattern which matches repos.",
                               type: "string",
                               minLength: 1,
+                              pattern: "^(?:.|[*a-zA-Z](?:[*a-zA-Z-]*[*a-zA-Z])?)\\/[*a-zA-Z0-9-_.]+$",
                               examples: [
                                 "./repo-a",
                                 "account-a/repo-a",
@@ -51147,6 +51154,7 @@ var provider_v1_schema_default = {
             description: "A pattern which matches environments.",
             type: "string",
             minLength: 1,
+            pattern: "^[ !#-&(-+\\--:<-[\\]^_a-~]+$",
             examples: [
               "environment-a",
               "prefix-*",

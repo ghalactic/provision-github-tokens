@@ -502,10 +502,11 @@ it("throws when an invalid repo pattern is used in /permissions/rules/repos/<n>/
 
   expect(throws(() => parseProviderConfig("account-self", "repo-self", yaml)))
     .toMatchInlineSnapshot(`
-    "Provider config has an error at /permissions/rules/repos/0/resources/0
+      "Parsing of provider configuration failed for "# yaml-language-server: $schema=https://ghalactic.github.io/provision-github-tokens/schema/provider.v1.schema.json\\n$schema: https://ghalactic.github.io/provision-github-tokens/schema/provider.v1.schema.json\\n\\npermissions:\\n  rules:\\n    repos:\\n      - resources: [repo-x]\\n        consumers: [./repo-a]\\n"
 
-    Caused by: Repo pattern "repo-x" must contain exactly one slash"
-  `);
+      Caused by: Invalid provider configuration:
+        - must match pattern "^(?:.|[*a-zA-Z](?:[*a-zA-Z-]*[*a-zA-Z])?)\\/[*a-zA-Z0-9-_.]+$" (/permissions/rules/repos/0/resources/0)"
+    `);
 });
 
 it("throws when an invalid repo pattern is used in /permissions/rules/repos/<n>/consumers/<n>", async () => {
@@ -517,10 +518,11 @@ it("throws when an invalid repo pattern is used in /permissions/rules/repos/<n>/
 
   expect(throws(() => parseProviderConfig("account-self", "repo-self", yaml)))
     .toMatchInlineSnapshot(`
-    "Provider config has an error at /permissions/rules/repos/0/consumers/0
+      "Parsing of provider configuration failed for "# yaml-language-server: $schema=https://ghalactic.github.io/provision-github-tokens/schema/provider.v1.schema.json\\n$schema: https://ghalactic.github.io/provision-github-tokens/schema/provider.v1.schema.json\\n\\npermissions:\\n  rules:\\n    repos:\\n      - resources: [./repo-a]\\n        consumers: [repo-x]\\n"
 
-    Caused by: Repo pattern "repo-x" must contain exactly one slash"
-  `);
+      Caused by: Invalid provider configuration:
+        - must match pattern "^(?:.|[*<>a-zA-Z](?:[*<>a-zA-Z-]*[*<>a-zA-Z])?)\\/[*<>a-zA-Z0-9-_.]+$" (/permissions/rules/repos/0/consumers/0)"
+    `);
 });
 
 it("throws when an invalid repo pattern is used in /provision/rules/secrets/<n>/requesters/<n>", async () => {
@@ -532,10 +534,11 @@ it("throws when an invalid repo pattern is used in /provision/rules/secrets/<n>/
 
   expect(throws(() => parseProviderConfig("account-self", "repo-self", yaml)))
     .toMatchInlineSnapshot(`
-    "Provider config has an error at /provision/rules/secrets/0/requesters/0
+      "Parsing of provider configuration failed for "# yaml-language-server: $schema=https://ghalactic.github.io/provision-github-tokens/schema/provider.v1.schema.json\\n$schema: https://ghalactic.github.io/provision-github-tokens/schema/provider.v1.schema.json\\n\\nprovision:\\n  rules:\\n    secrets:\\n      - secrets: [\\"*\\"]\\n        requesters: [\\"repo-x\\"]\\n        to:\\n          github:\\n            repo:\\n              actions: allow\\n"
 
-    Caused by: Repo pattern "repo-x" must contain exactly one slash"
-  `);
+      Caused by: Invalid provider configuration:
+        - must match pattern "^(?:.|[*a-zA-Z](?:[*a-zA-Z-]*[*a-zA-Z])?)\\/[*a-zA-Z0-9-_.]+$" (/provision/rules/secrets/0/requesters/0)"
+    `);
 });
 
 it("throws when an invalid repo pattern is used in /provision/rules/secrets/<n>/to/github/repos/<pattern>", async () => {
@@ -547,10 +550,12 @@ it("throws when an invalid repo pattern is used in /provision/rules/secrets/<n>/
 
   expect(throws(() => parseProviderConfig("account-self", "repo-self", yaml)))
     .toMatchInlineSnapshot(`
-    "Provider config has an error at /provision/rules/secrets/0/to/github/repos/repo-x
+      "Parsing of provider configuration failed for "# yaml-language-server: $schema=https://ghalactic.github.io/provision-github-tokens/schema/provider.v1.schema.json\\n$schema: https://ghalactic.github.io/provision-github-tokens/schema/provider.v1.schema.json\\n\\nprovision:\\n  rules:\\n    secrets:\\n      - secrets: [\\"*\\"]\\n        requesters: [\\"*/*\\"]\\n        to:\\n          github:\\n            repos:\\n              repo-x:\\n                actions: allow\\n"
 
-    Caused by: Repo pattern "repo-x" must contain exactly one slash"
-  `);
+      Caused by: Invalid provider configuration:
+        - must match pattern "^(?:.|[*a-zA-Z](?:[*a-zA-Z-]*[*a-zA-Z])?)\\/[*a-zA-Z0-9-_.]+$" (/provision/rules/secrets/0/to/github/repos)
+        - property name must be valid (/provision/rules/secrets/0/to/github/repos)"
+    `);
 });
 
 it("throws when there are additional properties", async () => {

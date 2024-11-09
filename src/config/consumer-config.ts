@@ -1,5 +1,4 @@
 import { load } from "js-yaml";
-import { escape } from "../json-pointer.js";
 import { normalizeRepoPattern } from "../repo-pattern.js";
 import { normalizeTokenReference } from "../token-reference.js";
 import type {
@@ -7,7 +6,6 @@ import type {
   PartialConsumerConfig,
 } from "../type/consumer-config.js";
 import { validateConsumer } from "./validation.js";
-import { wrapErrors } from "./wrap-errors.js";
 
 export function parseConsumerConfig(
   definingAccount: string,
@@ -59,18 +57,8 @@ function normalizeConsumerConfig(
 
     const repos: typeof secret.github.repos = {};
     for (const pattern in secret.github.repos) {
-      repos[
-        wrapErrors(
-          () => normalizeRepoPattern(definingAccount, pattern),
-          (cause) =>
-            new Error(
-              "Consumer config has an error at " +
-                `/provision/secrets/${escape(name)}` +
-                `/github/repos/${escape(pattern)}`,
-              { cause },
-            ),
-        )
-      ] = secret.github.repos[pattern];
+      repos[normalizeRepoPattern(definingAccount, pattern)] =
+        secret.github.repos[pattern];
     }
     secret.github.repos = repos;
   }
