@@ -49819,7 +49819,7 @@ var consumer_v1_schema_default = {
                 description: "A list of repo name patterns to match against.",
                 type: "array",
                 items: {
-                  description: "A pattern which matches a repo name without the account prefix.",
+                  description: "A pattern which matches repos without their account prefix.",
                   type: "string",
                   minLength: 1,
                   examples: [
@@ -49890,6 +49890,18 @@ var consumer_v1_schema_default = {
                     description: "How to provision the secret to other GitHub accounts.",
                     type: "object",
                     default: {},
+                    propertyNames: {
+                      description: "A pattern which matches accounts.",
+                      type: "string",
+                      minLength: 1,
+                      examples: [
+                        "account-a",
+                        "*",
+                        "with-prefix-*",
+                        "*-with-suffix",
+                        "with-*-infix"
+                      ]
+                    },
                     additionalProperties: {
                       description: "How to provision the secret to the specified GitHub account.",
                       $ref: "#/definitions/provisionGithubAccountSecretTypes"
@@ -49904,6 +49916,20 @@ var consumer_v1_schema_default = {
                     description: "How to provision the secret to other GitHub repos.",
                     type: "object",
                     default: {},
+                    propertyNames: {
+                      description: "A pattern which matches repos.",
+                      type: "string",
+                      minLength: 1,
+                      examples: [
+                        "./repo-a",
+                        "account-a/repo-a",
+                        "./*",
+                        "*/*",
+                        "*/repo-a",
+                        "account-a/*",
+                        "prefix-*/*-suffix"
+                      ]
+                    },
                     additionalProperties: {
                       description: "How to provision the secret to the specified GitHub repo.",
                       $ref: "#/definitions/provisionGithubRepoSecretTypes"
@@ -50885,7 +50911,7 @@ var provider_v1_schema_default = {
                     type: "array",
                     minItems: 1,
                     items: {
-                      description: "A pattern which matches a resource account and repo name.",
+                      description: "A pattern which matches repos.",
                       type: "string",
                       minLength: 1,
                       examples: [
@@ -50904,7 +50930,7 @@ var provider_v1_schema_default = {
                     type: "array",
                     minItems: 1,
                     items: {
-                      description: "A pattern which matches a consumer account and repo name.",
+                      description: "A pattern which matches repos.",
                       type: "string",
                       minLength: 1,
                       examples: [
@@ -50962,7 +50988,7 @@ var provider_v1_schema_default = {
                     type: "array",
                     minItems: 1,
                     items: {
-                      description: "A pattern which matches a secret name.",
+                      description: "A pattern which matches secrets.",
                       type: "string",
                       minLength: 1,
                       examples: [
@@ -50978,7 +51004,7 @@ var provider_v1_schema_default = {
                     type: "array",
                     minItems: 1,
                     items: {
-                      description: "A pattern which matches a requesting account and repo name.",
+                      description: "A pattern which matches repos.",
                       type: "string",
                       minLength: 1,
                       examples: [
@@ -51015,6 +51041,18 @@ var provider_v1_schema_default = {
                             description: "Which types of secrets to allow provisioning to in other GitHub accounts.",
                             type: "object",
                             default: {},
+                            propertyNames: {
+                              description: "A pattern which matches accounts.",
+                              type: "string",
+                              minLength: 1,
+                              examples: [
+                                "account-a",
+                                "*",
+                                "with-prefix-*",
+                                "*-with-suffix",
+                                "with-*-infix"
+                              ]
+                            },
                             additionalProperties: {
                               description: "Which types of secrets to allow provisioning to in the specified GitHub account.",
                               $ref: "#/definitions/provisionGithubAccountSecretTypes"
@@ -51029,6 +51067,20 @@ var provider_v1_schema_default = {
                             description: "Which types of secrets to allow provisioning to in other repos.",
                             type: "object",
                             default: {},
+                            propertyNames: {
+                              description: "A pattern which matches repos.",
+                              type: "string",
+                              minLength: 1,
+                              examples: [
+                                "./repo-a",
+                                "account-a/repo-a",
+                                "./*",
+                                "*/*",
+                                "*/repo-a",
+                                "account-a/*",
+                                "prefix-*/*-suffix"
+                              ]
+                            },
                             additionalProperties: {
                               description: "Which types of secrets to allow provisioning to in the specified repo.",
                               $ref: "#/definitions/provisionGithubRepoSecretTypes"
@@ -51091,6 +51143,17 @@ var provider_v1_schema_default = {
           description: "GitHub repo environments to allow provisioning to.",
           type: "object",
           default: {},
+          propertyNames: {
+            description: "A pattern which matches environments.",
+            type: "string",
+            minLength: 1,
+            examples: [
+              "environment-a",
+              "prefix-*",
+              "*-suffix",
+              "prefix-*-suffix"
+            ]
+          },
           additionalProperties: {
             description: "Whether to allow provisioning to the specified GitHub repo environment.",
             type: "string",
