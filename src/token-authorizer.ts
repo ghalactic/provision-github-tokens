@@ -1,12 +1,12 @@
 import { isSufficientAccess } from "./access-level.js";
+import {
+  anyGitHubPatternIsAllRepos,
+  createGitHubPattern,
+  gitHubPatternsForAccount,
+  type GitHubPattern,
+} from "./github-pattern.js";
 import { anyPatternMatches } from "./pattern.js";
 import { isSufficientPermissions } from "./permissions.js";
-import {
-  anyRepoPatternIsAllRepos,
-  createRepoPattern,
-  repoPatternsForAccount,
-  type RepoPattern,
-} from "./repo-pattern.js";
 import type {
   InstallationPermissions,
   InstallationPermissionsWithNone,
@@ -33,18 +33,18 @@ export type TokenAuthorizer = {
 export function createTokenAuthorizer(
   config: ProviderPermissionsConfig,
 ): TokenAuthorizer {
-  const repoResourcePatterns: Record<number, RepoPattern[]> = {};
-  const repoConsumerPatterns: Record<number, RepoPattern[]> = {};
+  const repoResourcePatterns: Record<number, GitHubPattern[]> = {};
+  const repoConsumerPatterns: Record<number, GitHubPattern[]> = {};
 
   for (let i = 0; i < config.rules.repos.length; ++i) {
-    const resourcePatterns: RepoPattern[] = [];
-    const consumerPatterns: RepoPattern[] = [];
+    const resourcePatterns: GitHubPattern[] = [];
+    const consumerPatterns: GitHubPattern[] = [];
 
     for (const resource of config.rules.repos[i].resources) {
-      resourcePatterns.push(createRepoPattern(resource));
+      resourcePatterns.push(createGitHubPattern(resource));
     }
     for (const consumer of config.rules.repos[i].consumers) {
-      consumerPatterns.push(createRepoPattern(consumer));
+      consumerPatterns.push(createGitHubPattern(consumer));
     }
 
     repoResourcePatterns[i] = resourcePatterns;
@@ -75,14 +75,14 @@ export function createTokenAuthorizer(
 
         for (const i of rules) {
           const rule = config.rules.repos[i];
-          const patternsForAccount = repoPatternsForAccount(
+          const patternsForAccount = gitHubPatternsForAccount(
             resourceAccount,
             repoResourcePatterns[i],
           );
           let isRelevant: boolean;
 
           if (patternsForAccount.length > 0) {
-            if (anyRepoPatternIsAllRepos(patternsForAccount)) {
+            if (anyGitHubPatternIsAllRepos(patternsForAccount)) {
               updatePermissions(have, rule.permissions);
               isRelevant = true;
             } else {

@@ -1,5 +1,5 @@
 import { load } from "js-yaml";
-import { normalizeRepoPattern } from "../repo-pattern.js";
+import { normalizeGitHubPattern } from "../github-pattern.js";
 import { normalizeTokenReference } from "../token-reference.js";
 import type {
   ConsumerConfig,
@@ -57,7 +57,7 @@ function normalizeConsumerConfig(
 
     const repos: typeof secret.github.repos = {};
     for (const pattern in secret.github.repos) {
-      repos[normalizeRepoPattern(definingAccount, pattern)] =
+      repos[normalizeGitHubPattern(definingAccount, pattern)] =
         secret.github.repos[pattern];
     }
     secret.github.repos = repos;

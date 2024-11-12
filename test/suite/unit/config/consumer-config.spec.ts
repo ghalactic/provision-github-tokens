@@ -279,10 +279,10 @@ it("parses consumer configs that are empty", async () => {
   } satisfies ConsumerConfig);
 });
 
-it("throws when an invalid repo pattern is used in /provision/secrets/<name>/github/repos/<pattern>", async () => {
+it("throws when an invalid pattern is used in /provision/secrets/<name>/github/repos/<pattern>", async () => {
   const fixturePath = join(
     fixturesPath,
-    "invalid-repo-pattern-provision-secrets-github-repos-key.yml",
+    "invalid-pattern-provision-secrets-github-repos-key.yml",
   );
   const yaml = await readFile(fixturePath, "utf-8");
 

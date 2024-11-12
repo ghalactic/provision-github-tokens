@@ -1,43 +1,43 @@
 import { expect, it } from "vitest";
-import { createRepoPattern } from "../../../../src/repo-pattern.js";
-import { throws } from "../../../error.js";
+import { createGitHubPattern } from "../../../../src/github-pattern.js";
 
 it("doesn't allow empty patterns", () => {
-  expect(throws(() => createRepoPattern(""))).toMatchInlineSnapshot(
-    `"Repo pattern "" must contain exactly one slash"`,
-  );
-});
-
-it("doesn't allow patterns without a slash", () => {
-  expect(throws(() => createRepoPattern("a"))).toMatchInlineSnapshot(
-    `"Repo pattern "a" must contain exactly one slash"`,
+  expect(() => createGitHubPattern("")).toThrow(
+    'GitHub pattern "" account part cannot be empty',
   );
 });
 
 it("doesn't allow patterns with an empty account", () => {
-  expect(throws(() => createRepoPattern("/repo"))).toMatchInlineSnapshot(
-    `"Repo pattern "/repo" account part cannot be empty"`,
+  expect(() => createGitHubPattern("/repo")).toThrow(
+    'GitHub pattern "/repo" account part cannot be empty',
   );
 });
 
 it("doesn't allow patterns with an empty repo", () => {
-  expect(throws(() => createRepoPattern("account/"))).toMatchInlineSnapshot(
-    `"Repo pattern "account/" repo part cannot be empty"`,
+  expect(() => createGitHubPattern("account/")).toThrow(
+    'GitHub pattern "account/" repo part cannot be empty',
+  );
+});
+
+it("doesn't allow patterns with more than one slash", () => {
+  expect(() => createGitHubPattern("account/repo/extra")).toThrow(
+    'GitHub pattern "account/repo/extra" cannot have more than one slash',
   );
 });
 
 it("can be converted to a string", () => {
-  expect(String(createRepoPattern("a*b/c*d"))).toBe("a*b/c*d");
+  expect(String(createGitHubPattern("a*b/c*d"))).toBe("a*b/c*d");
 });
 
 it.each([["*/*"], ["**/**"], ["**********/**********"]])(
   "knows that %s matches all repos",
   (pattern) => {
-    expect(createRepoPattern(pattern).isAll).toBe(true);
+    expect(createGitHubPattern(pattern).isAll).toBe(true);
   },
 );
 
 it.each([
+  ["a"],
   ["a/*"],
   ["a*/*"],
   ["*a/*"],
@@ -51,7 +51,7 @@ it.each([
   ["*a/*a"],
   ["*a*/*a*"],
 ])("knows that %s doesn't match all repos", (pattern) => {
-  expect(createRepoPattern(pattern).isAll).toBe(false);
+  expect(createGitHubPattern(pattern).isAll).toBe(false);
 });
 
 it.each`
@@ -68,9 +68,9 @@ it.each`
 `(
   "knows that $pattern matches all repos with account $account",
   ({ pattern, account }) => {
-    const actual = createRepoPattern(pattern);
+    const actual = createGitHubPattern(pattern);
 
-    expect(actual.account.test(account) && actual.repo.isAll).toBe(true);
+    expect(actual.isAllForAccount(account)).toBe(true);
   },
 );
 
@@ -79,16 +79,17 @@ it.each`
   ${"account-b/*"}          | ${"account-a"}
   ${"account-b/**"}         | ${"account-a"}
   ${"account-b/**********"} | ${"account-a"}
+  ${"account-a"}            | ${"account-a"}
   ${"account-a/a"}          | ${"account-a"}
   ${"account-a/a*"}         | ${"account-a"}
   ${"account-a/*a"}         | ${"account-a"}
   ${"account-a/*a*"}        | ${"account-a"}
 `(
-  "knows that $pattern doesn't match all strings with account $account",
+  "knows that $pattern doesn't match all repos with account $account",
   ({ pattern, account }) => {
-    const actual = createRepoPattern(pattern);
+    const actual = createGitHubPattern(pattern);
 
-    expect(actual.account.test(account) && actual.repo.isAll).toBe(false);
+    expect(actual.isAllForAccount(account)).toBe(false);
   },
 );
 
@@ -105,41 +106,69 @@ const patterns: [pattern: string, matches: string[], nonMatches: string[]][] = [
 
 for (const [pattern, matches, nonMatches] of patterns) {
   for (const match of matches) {
+    it(`matches ${match} to ${pattern}`, () => {
+      expect(createGitHubPattern(pattern).test(match)).toBe(true);
+    });
+
     it(`matches ${match}/repo to ${pattern}/repo`, () => {
-      expect(createRepoPattern(`${pattern}/repo`).test(`${match}/repo`)).toBe(
+      expect(createGitHubPattern(`${pattern}/repo`).test(`${match}/repo`)).toBe(
         true,
       );
     });
 
     it(`matches account/${match} to account/${pattern}`, () => {
       expect(
-        createRepoPattern(`account/${pattern}`).test(`account/${match}`),
+        createGitHubPattern(`account/${pattern}`).test(`account/${match}`),
       ).toBe(true);
     });
 
     it(`matches ${match}/${match} to ${pattern}/${pattern}`, () => {
       expect(
-        createRepoPattern(`${pattern}/${pattern}`).test(`${match}/${match}`),
+        createGitHubPattern(`${pattern}/${pattern}`).test(`${match}/${match}`),
       ).toBe(true);
     });
   }
 
   for (const nonMatch of nonMatches) {
+    it(`doesn't match ${nonMatch} to ${pattern}`, () => {
+      expect(createGitHubPattern(pattern).test(nonMatch)).toBe(false);
+    });
+
+    it(`doesn't match ${nonMatch}/repo to ${pattern}`, () => {
+      expect(createGitHubPattern(pattern).test(`${nonMatch}/repo`)).toBe(false);
+    });
+
+    it(`doesn't match ${nonMatch} to ${pattern}/repo`, () => {
+      expect(createGitHubPattern(`${pattern}/repo`).test(nonMatch)).toBe(false);
+    });
+
     it(`doesn't match ${nonMatch}/repo to ${pattern}/repo`, () => {
       expect(
-        createRepoPattern(`${pattern}/repo`).test(`${nonMatch}/repo`),
+        createGitHubPattern(`${pattern}/repo`).test(`${nonMatch}/repo`),
       ).toBe(false);
+    });
+
+    it(`doesn't match account/${nonMatch} to ${pattern}`, () => {
+      expect(createGitHubPattern(pattern).test(`account/${nonMatch}`)).toBe(
+        false,
+      );
+    });
+
+    it(`doesn't match ${nonMatch} to account/${pattern}`, () => {
+      expect(createGitHubPattern(`account/${pattern}`).test(nonMatch)).toBe(
+        false,
+      );
     });
 
     it(`doesn't match account/${nonMatch} to account/${pattern}`, () => {
       expect(
-        createRepoPattern(`account/${pattern}`).test(`account/${nonMatch}`),
+        createGitHubPattern(`account/${pattern}`).test(`account/${nonMatch}`),
       ).toBe(false);
     });
 
     it(`doesn't match ${nonMatch}/${nonMatch} to ${pattern}/${pattern}`, () => {
       expect(
-        createRepoPattern(`${pattern}/${pattern}`).test(
+        createGitHubPattern(`${pattern}/${pattern}`).test(
           `${nonMatch}/${nonMatch}`,
         ),
       ).toBe(false);

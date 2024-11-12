@@ -4,5 +4,5 @@ $schema: https://ghalactic.github.io/provision-github-tokens/schema/provider.v1.
 permissions:
   rules:
     repos:
-      - resources: [./repo-a]
-        consumers: [repo-x]
+      - resources: [/repo-x]
+        consumers: [./repo-a]

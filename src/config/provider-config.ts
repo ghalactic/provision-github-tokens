@@ -1,5 +1,5 @@
 import { load } from "js-yaml";
-import { normalizeRepoPattern } from "../repo-pattern.js";
+import { normalizeGitHubPattern } from "../github-pattern.js";
 import type { ProviderConfig } from "../type/provider-config.js";
 import { validateProvider } from "./validation.js";
 
@@ -34,14 +34,14 @@ function normalizeProviderConfig(
     const rule = config.permissions.rules.repos[i];
 
     for (let j = 0; j < rule.resources.length; ++j) {
-      rule.resources[j] = normalizeRepoPattern(
+      rule.resources[j] = normalizeGitHubPattern(
         definingAccount,
         rule.resources[j],
       );
     }
 
     for (let j = 0; j < rule.consumers.length; ++j) {
-      rule.consumers[j] = normalizeRepoPattern(
+      rule.consumers[j] = normalizeGitHubPattern(
         definingAccount,
         rule.consumers[j],
       );
@@ -52,7 +52,7 @@ function normalizeProviderConfig(
     const rule = config.provision.rules.secrets[i];
 
     for (let j = 0; j < rule.requesters.length; ++j) {
-      rule.requesters[j] = normalizeRepoPattern(
+      rule.requesters[j] = normalizeGitHubPattern(
         definingAccount,
         rule.requesters[j],
       );
@@ -60,7 +60,7 @@ function normalizeProviderConfig(
 
     const repos: typeof rule.to.github.repos = {};
     for (const pattern in rule.to.github.repos) {
-      repos[normalizeRepoPattern(definingAccount, pattern)] =
+      repos[normalizeGitHubPattern(definingAccount, pattern)] =
         rule.to.github.repos[pattern];
     }
     rule.to.github.repos = repos;

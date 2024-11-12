@@ -493,42 +493,42 @@ it("parses provider configs that are empty", async () => {
   } satisfies ProviderConfig);
 });
 
-it("throws when an invalid repo pattern is used in /permissions/rules/repos/<n>/resources/<n>", async () => {
+it("throws when an invalid pattern is used in /permissions/rules/repos/<n>/resources/<n>", async () => {
   const fixturePath = join(
     fixturesPath,
-    "invalid-repo-pattern-permissions-rules-repos-resources.yml",
+    "invalid-pattern-permissions-rules-repos-resources.yml",
   );
   const yaml = await readFile(fixturePath, "utf-8");
 
   expect(throws(() => parseProviderConfig("account-self", "repo-self", yaml)))
     .toMatchInlineSnapshot(`
-      "Parsing of provider configuration failed for "# yaml-language-server: $schema=https://ghalactic.github.io/provision-github-tokens/schema/provider.v1.schema.json\\n$schema: https://ghalactic.github.io/provision-github-tokens/schema/provider.v1.schema.json\\n\\npermissions:\\n  rules:\\n    repos:\\n      - resources: [repo-x]\\n        consumers: [./repo-a]\\n"
+      "Parsing of provider configuration failed for "# yaml-language-server: $schema=https://ghalactic.github.io/provision-github-tokens/schema/provider.v1.schema.json\\n$schema: https://ghalactic.github.io/provision-github-tokens/schema/provider.v1.schema.json\\n\\npermissions:\\n  rules:\\n    repos:\\n      - resources: [/repo-x]\\n        consumers: [./repo-a]\\n"
 
       Caused by: Invalid provider configuration:
         - must be a repo pattern in the form of "account/repo", or "./repo" (/permissions/rules/repos/0/resources/0)"
     `);
 });
 
-it("throws when an invalid repo pattern is used in /permissions/rules/repos/<n>/consumers/<n>", async () => {
+it("throws when an invalid pattern is used in /permissions/rules/repos/<n>/consumers/<n>", async () => {
   const fixturePath = join(
     fixturesPath,
-    "invalid-repo-pattern-permissions-rules-repos-consumers.yml",
+    "invalid-pattern-permissions-rules-repos-consumers.yml",
   );
   const yaml = await readFile(fixturePath, "utf-8");
 
   expect(throws(() => parseProviderConfig("account-self", "repo-self", yaml)))
     .toMatchInlineSnapshot(`
-      "Parsing of provider configuration failed for "# yaml-language-server: $schema=https://ghalactic.github.io/provision-github-tokens/schema/provider.v1.schema.json\\n$schema: https://ghalactic.github.io/provision-github-tokens/schema/provider.v1.schema.json\\n\\npermissions:\\n  rules:\\n    repos:\\n      - resources: [./repo-a]\\n        consumers: [repo-x]\\n"
+      "Parsing of provider configuration failed for "# yaml-language-server: $schema=https://ghalactic.github.io/provision-github-tokens/schema/provider.v1.schema.json\\n$schema: https://ghalactic.github.io/provision-github-tokens/schema/provider.v1.schema.json\\n\\npermissions:\\n  rules:\\n    repos:\\n      - resources: [./repo-a]\\n        consumers: [/repo-x]\\n"
 
       Caused by: Invalid provider configuration:
         - must be a repo pattern in the form of "account/repo", or "./repo" (/permissions/rules/repos/0/consumers/0)"
     `);
 });
 
-it("throws when an invalid repo pattern is used in /provision/rules/secrets/<n>/requesters/<n>", async () => {
+it("throws when an invalid pattern is used in /provision/rules/secrets/<n>/requesters/<n>", async () => {
   const fixturePath = join(
     fixturesPath,
-    "invalid-repo-pattern-provision-rules-secrets-requesters.yml",
+    "invalid-pattern-provision-rules-secrets-requesters.yml",
   );
   const yaml = await readFile(fixturePath, "utf-8");
 
@@ -541,10 +541,10 @@ it("throws when an invalid repo pattern is used in /provision/rules/secrets/<n>/
     `);
 });
 
-it("throws when an invalid repo pattern is used in /provision/rules/secrets/<n>/to/github/repos/<pattern>", async () => {
+it("throws when an invalid pattern is used in /provision/rules/secrets/<n>/to/github/repos/<pattern>", async () => {
   const fixturePath = join(
     fixturesPath,
-    "invalid-repo-pattern-provision-rules-secrets-to-github-repos.yml",
+    "invalid-pattern-provision-rules-secrets-to-github-repos.yml",
   );
   const yaml = await readFile(fixturePath, "utf-8");
 
