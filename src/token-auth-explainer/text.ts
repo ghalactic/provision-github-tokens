@@ -1,6 +1,6 @@
 import { isSufficientAccess } from "../access-level.js";
 import type { InstallationPermissions } from "../type/github-api.js";
-import type { RepoPermissionRule } from "../type/permission-rule.js";
+import type { PermissionsRule } from "../type/permissions-rule.js";
 import type {
   RepoTokenAuthorizationResourceResult,
   RepoTokenAuthorizationResourceResultRuleResult,
@@ -106,10 +106,7 @@ export function createTextRepoAuthExplainer(): RepoTokenAuthorizationResultExpla
       : `repo ${resource}`;
   }
 
-  function renderRule(
-    index: number,
-    { description }: RepoPermissionRule,
-  ): string {
+  function renderRule(index: number, { description }: PermissionsRule): string {
     const n = `#${index + 1}`;
 
     return description ? `${n}: ${JSON.stringify(description)}` : n;

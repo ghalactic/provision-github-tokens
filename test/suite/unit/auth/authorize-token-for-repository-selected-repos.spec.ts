@@ -6,15 +6,13 @@ const explain = createTextRepoAuthExplainer();
 
 it("allows tokens that should be allowed", () => {
   const authorizer = createTokenAuthorizer({
-    rules: {
-      repos: [
-        {
-          resources: ["account-a/repo-a", "account-a/repo-b"],
-          consumers: ["account-x/repo-x"],
-          permissions: { contents: "write", metadata: "read" },
-        },
-      ],
-    },
+    rules: [
+      {
+        resources: ["account-a/repo-a", "account-a/repo-b"],
+        consumers: ["account-x/repo-x"],
+        permissions: { contents: "write", metadata: "read" },
+      },
+    ],
   });
 
   expect(
@@ -72,15 +70,13 @@ it("allows tokens that should be allowed", () => {
 
 it("allows tokens when allowed by a wildcard rule", () => {
   const authorizer = createTokenAuthorizer({
-    rules: {
-      repos: [
-        {
-          resources: ["account-a/repo-*", "account-*/repo-b"],
-          consumers: ["account-x/repo-x"],
-          permissions: { metadata: "read" },
-        },
-      ],
-    },
+    rules: [
+      {
+        resources: ["account-a/repo-*", "account-*/repo-b"],
+        consumers: ["account-x/repo-x"],
+        permissions: { metadata: "read" },
+      },
+    ],
   });
 
   expect(
@@ -117,15 +113,13 @@ it("allows tokens when allowed by a wildcard rule", () => {
 
 it("allows tokens when the actual access level is higher than requested", () => {
   const authorizer = createTokenAuthorizer({
-    rules: {
-      repos: [
-        {
-          resources: ["account-a/repo-a"],
-          consumers: ["account-x/repo-x"],
-          permissions: { metadata: "write", repository_projects: "admin" },
-        },
-      ],
-    },
+    rules: [
+      {
+        resources: ["account-a/repo-a"],
+        consumers: ["account-x/repo-x"],
+        permissions: { metadata: "write", repository_projects: "admin" },
+      },
+    ],
   });
 
   expect(
@@ -148,20 +142,18 @@ it("allows tokens when the actual access level is higher than requested", () => 
 
 it("allows tokens when a later rule allows access that a previous rule denied", () => {
   const authorizer = createTokenAuthorizer({
-    rules: {
-      repos: [
-        {
-          resources: ["account-a/repo-a"],
-          consumers: ["account-x/repo-x"],
-          permissions: { contents: "read", metadata: "read" },
-        },
-        {
-          resources: ["account-a/repo-a"],
-          consumers: ["account-x/repo-x"],
-          permissions: { contents: "write" },
-        },
-      ],
-    },
+    rules: [
+      {
+        resources: ["account-a/repo-a"],
+        consumers: ["account-x/repo-x"],
+        permissions: { contents: "read", metadata: "read" },
+      },
+      {
+        resources: ["account-a/repo-a"],
+        consumers: ["account-x/repo-x"],
+        permissions: { contents: "write" },
+      },
+    ],
   });
 
   expect(
@@ -187,16 +179,14 @@ it("allows tokens when a later rule allows access that a previous rule denied", 
 
 it("supports rule descriptions", () => {
   const authorizer = createTokenAuthorizer({
-    rules: {
-      repos: [
-        {
-          description: "<description>",
-          resources: ["account-a/repo-a"],
-          consumers: ["account-x/repo-x"],
-          permissions: { metadata: "read" },
-        },
-      ],
-    },
+    rules: [
+      {
+        description: "<description>",
+        resources: ["account-a/repo-a"],
+        consumers: ["account-x/repo-x"],
+        permissions: { metadata: "read" },
+      },
+    ],
   });
 
   expect(
@@ -218,15 +208,13 @@ it("supports rule descriptions", () => {
 
 it("sorts repos and permissions in the explanation", () => {
   const authorizer = createTokenAuthorizer({
-    rules: {
-      repos: [
-        {
-          resources: ["account-a/repo-b", "account-a/repo-a"],
-          consumers: ["account-x/repo-x"],
-          permissions: { metadata: "read", contents: "write" },
-        },
-      ],
-    },
+    rules: [
+      {
+        resources: ["account-a/repo-b", "account-a/repo-a"],
+        consumers: ["account-x/repo-x"],
+        permissions: { metadata: "read", contents: "write" },
+      },
+    ],
   });
 
   expect(
@@ -253,15 +241,13 @@ it("sorts repos and permissions in the explanation", () => {
 
 it("doesn't allow tokens for unauthorized consumer repos", () => {
   const authorizer = createTokenAuthorizer({
-    rules: {
-      repos: [
-        {
-          resources: ["account-a/repo-a", "account-a/repo-b"],
-          consumers: ["account-x/repo-x"],
-          permissions: { contents: "write", metadata: "read" },
-        },
-      ],
-    },
+    rules: [
+      {
+        resources: ["account-a/repo-a", "account-a/repo-b"],
+        consumers: ["account-x/repo-x"],
+        permissions: { contents: "write", metadata: "read" },
+      },
+    ],
   });
 
   expect(
@@ -307,15 +293,13 @@ it("doesn't allow tokens for unauthorized consumer repos", () => {
 
 it("doesn't allow tokens for unauthorized resource repos", () => {
   const authorizer = createTokenAuthorizer({
-    rules: {
-      repos: [
-        {
-          resources: ["account-a/repo-a", "account-a/repo-b"],
-          consumers: ["account-x/repo-x"],
-          permissions: { contents: "write", metadata: "read" },
-        },
-      ],
-    },
+    rules: [
+      {
+        resources: ["account-a/repo-a", "account-a/repo-b"],
+        consumers: ["account-x/repo-x"],
+        permissions: { contents: "write", metadata: "read" },
+      },
+    ],
   });
 
   expect(
@@ -348,15 +332,13 @@ it("doesn't allow tokens for unauthorized resource repos", () => {
 
 it("doesn't allow tokens where only some of the resources are authorized", () => {
   const authorizer = createTokenAuthorizer({
-    rules: {
-      repos: [
-        {
-          resources: ["account-a/repo-a", "account-a/repo-b"],
-          consumers: ["account-x/repo-x"],
-          permissions: { contents: "write", metadata: "read" },
-        },
-      ],
-    },
+    rules: [
+      {
+        resources: ["account-a/repo-a", "account-a/repo-b"],
+        consumers: ["account-x/repo-x"],
+        permissions: { contents: "write", metadata: "read" },
+      },
+    ],
   });
 
   expect(
@@ -382,15 +364,13 @@ it("doesn't allow tokens where only some of the resources are authorized", () =>
 
 it("doesn't allow tokens for unauthorized permissions", () => {
   const authorizer = createTokenAuthorizer({
-    rules: {
-      repos: [
-        {
-          resources: ["account-a/repo-a"],
-          consumers: ["account-x/repo-x"],
-          permissions: { metadata: "read" },
-        },
-      ],
-    },
+    rules: [
+      {
+        resources: ["account-a/repo-a"],
+        consumers: ["account-x/repo-x"],
+        permissions: { metadata: "read" },
+      },
+    ],
   });
 
   expect(
@@ -412,15 +392,13 @@ it("doesn't allow tokens for unauthorized permissions", () => {
 
 it("doesn't allow tokens where only some of the permissions are authorized", () => {
   const authorizer = createTokenAuthorizer({
-    rules: {
-      repos: [
-        {
-          resources: ["account-a/repo-a"],
-          consumers: ["account-x/repo-x"],
-          permissions: { metadata: "read" },
-        },
-      ],
-    },
+    rules: [
+      {
+        resources: ["account-a/repo-a"],
+        consumers: ["account-x/repo-x"],
+        permissions: { metadata: "read" },
+      },
+    ],
   });
 
   expect(
@@ -443,20 +421,18 @@ it("doesn't allow tokens where only some of the permissions are authorized", () 
 
 it("doesn't allow tokens that are denied by a wildcard rule", () => {
   const authorizer = createTokenAuthorizer({
-    rules: {
-      repos: [
-        {
-          resources: ["account-a/repo-a", "account-b/repo-b"],
-          consumers: ["account-x/repo-x"],
-          permissions: { metadata: "read" },
-        },
-        {
-          resources: ["account-a/repo-*", "account-*/repo-b"],
-          consumers: ["account-x/repo-x"],
-          permissions: { metadata: "none" },
-        },
-      ],
-    },
+    rules: [
+      {
+        resources: ["account-a/repo-a", "account-b/repo-b"],
+        consumers: ["account-x/repo-x"],
+        permissions: { metadata: "read" },
+      },
+      {
+        resources: ["account-a/repo-*", "account-*/repo-b"],
+        consumers: ["account-x/repo-x"],
+        permissions: { metadata: "none" },
+      },
+    ],
   });
 
   expect(
@@ -497,15 +473,13 @@ it("doesn't allow tokens that are denied by a wildcard rule", () => {
 
 it("doesn't allow tokens when the actual access level is lower than requested", () => {
   const authorizer = createTokenAuthorizer({
-    rules: {
-      repos: [
-        {
-          resources: ["account-a/repo-a"],
-          consumers: ["account-x/repo-x"],
-          permissions: { repository_projects: "write" },
-        },
-      ],
-    },
+    rules: [
+      {
+        resources: ["account-a/repo-a"],
+        consumers: ["account-x/repo-x"],
+        permissions: { repository_projects: "write" },
+      },
+    ],
   });
 
   expect(
@@ -527,20 +501,18 @@ it("doesn't allow tokens when the actual access level is lower than requested", 
 
 it("doesn't allow tokens when a later rule denies access that a previous rule allowed", () => {
   const authorizer = createTokenAuthorizer({
-    rules: {
-      repos: [
-        {
-          resources: ["account-a/repo-a"],
-          consumers: ["account-x/repo-x"],
-          permissions: { contents: "write" },
-        },
-        {
-          resources: ["account-a/repo-a"],
-          consumers: ["account-x/repo-x"],
-          permissions: { contents: "read" },
-        },
-      ],
-    },
+    rules: [
+      {
+        resources: ["account-a/repo-a"],
+        consumers: ["account-x/repo-x"],
+        permissions: { contents: "write" },
+      },
+      {
+        resources: ["account-a/repo-a"],
+        consumers: ["account-x/repo-x"],
+        permissions: { contents: "read" },
+      },
+    ],
   });
 
   expect(
@@ -564,20 +536,18 @@ it("doesn't allow tokens when a later rule denies access that a previous rule al
 
 it("doesn't allow tokens when a later rule removes access that a previous rule allowed", () => {
   const authorizer = createTokenAuthorizer({
-    rules: {
-      repos: [
-        {
-          resources: ["account-a/repo-a"],
-          consumers: ["account-x/repo-x"],
-          permissions: { contents: "read" },
-        },
-        {
-          resources: ["account-a/repo-a"],
-          consumers: ["account-x/repo-x"],
-          permissions: { contents: "none" },
-        },
-      ],
-    },
+    rules: [
+      {
+        resources: ["account-a/repo-a"],
+        consumers: ["account-x/repo-x"],
+        permissions: { contents: "read" },
+      },
+      {
+        resources: ["account-a/repo-a"],
+        consumers: ["account-x/repo-x"],
+        permissions: { contents: "none" },
+      },
+    ],
   });
 
   expect(

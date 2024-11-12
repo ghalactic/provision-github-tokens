@@ -3,7 +3,7 @@ import { createTokenAuthorizer } from "../../../../src/token-authorizer.js";
 import { throws } from "../../../error.js";
 
 it("throws if the requested repos are empty", () => {
-  const authorizer = createTokenAuthorizer({ rules: { repos: [] } });
+  const authorizer = createTokenAuthorizer({ rules: [] });
 
   expect(
     throws(() =>
@@ -18,7 +18,7 @@ it("throws if the requested repos are empty", () => {
 });
 
 it("throws if the requested permissions are empty", () => {
-  const authorizer = createTokenAuthorizer({ rules: { repos: [] } });
+  const authorizer = createTokenAuthorizer({ rules: [] });
 
   expect(
     throws(() =>

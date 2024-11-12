@@ -6,15 +6,13 @@ const explain = createTextRepoAuthExplainer();
 
 it("allows tokens that should be allowed", () => {
   const authorizer = createTokenAuthorizer({
-    rules: {
-      repos: [
-        {
-          resources: ["account-a/*"],
-          consumers: ["account-x/repo-x"],
-          permissions: { contents: "write", metadata: "read" },
-        },
-      ],
-    },
+    rules: [
+      {
+        resources: ["account-a/*"],
+        consumers: ["account-x/repo-x"],
+        permissions: { contents: "write", metadata: "read" },
+      },
+    ],
   });
 
   expect(
@@ -52,20 +50,18 @@ it("allows tokens that should be allowed", () => {
 
 it("allows tokens when a later rule allows access that a previous rule denied", () => {
   const authorizer = createTokenAuthorizer({
-    rules: {
-      repos: [
-        {
-          resources: ["account-a/*"],
-          consumers: ["account-x/repo-x"],
-          permissions: { contents: "read", metadata: "read" },
-        },
-        {
-          resources: ["account-a/*"],
-          consumers: ["account-x/repo-x"],
-          permissions: { contents: "write" },
-        },
-      ],
-    },
+    rules: [
+      {
+        resources: ["account-a/*"],
+        consumers: ["account-x/repo-x"],
+        permissions: { contents: "read", metadata: "read" },
+      },
+      {
+        resources: ["account-a/*"],
+        consumers: ["account-x/repo-x"],
+        permissions: { contents: "write" },
+      },
+    ],
   });
 
   expect(
@@ -91,20 +87,18 @@ it("allows tokens when a later rule allows access that a previous rule denied", 
 
 it(`allows tokens when a later account-scoped non-"all" rule denies access to a permission that isn't requested`, () => {
   const authorizer = createTokenAuthorizer({
-    rules: {
-      repos: [
-        {
-          resources: ["account-a/*"],
-          consumers: ["account-x/repo-x"],
-          permissions: { contents: "write", metadata: "read" },
-        },
-        {
-          resources: ["account-a/repo-*"],
-          consumers: ["account-x/repo-x"],
-          permissions: { contents: "none" },
-        },
-      ],
-    },
+    rules: [
+      {
+        resources: ["account-a/*"],
+        consumers: ["account-x/repo-x"],
+        permissions: { contents: "write", metadata: "read" },
+      },
+      {
+        resources: ["account-a/repo-*"],
+        consumers: ["account-x/repo-x"],
+        permissions: { contents: "none" },
+      },
+    ],
   });
 
   expect(
@@ -128,25 +122,23 @@ it(`allows tokens when a later account-scoped non-"all" rule denies access to a 
 
 it("allows tokens when a later unrelated rule denies access to the requested permission", () => {
   const authorizer = createTokenAuthorizer({
-    rules: {
-      repos: [
-        {
-          resources: ["account-a/*"],
-          consumers: ["account-x/repo-x"],
-          permissions: { contents: "write", metadata: "read" },
-        },
-        {
-          resources: ["account-b/*"],
-          consumers: ["account-x/repo-x"],
-          permissions: { contents: "none" },
-        },
-        {
-          resources: ["account-b/repo-b"],
-          consumers: ["account-x/repo-x"],
-          permissions: { metadata: "none" },
-        },
-      ],
-    },
+    rules: [
+      {
+        resources: ["account-a/*"],
+        consumers: ["account-x/repo-x"],
+        permissions: { contents: "write", metadata: "read" },
+      },
+      {
+        resources: ["account-b/*"],
+        consumers: ["account-x/repo-x"],
+        permissions: { contents: "none" },
+      },
+      {
+        resources: ["account-b/repo-b"],
+        consumers: ["account-x/repo-x"],
+        permissions: { metadata: "none" },
+      },
+    ],
   });
 
   expect(
@@ -169,20 +161,18 @@ it("allows tokens when a later unrelated rule denies access to the requested per
 
 it("doesn't allow tokens for all resource repos unless a resource rule matches all repos in the account", () => {
   const authorizer = createTokenAuthorizer({
-    rules: {
-      repos: [
-        {
-          resources: ["account-a/repo-a"],
-          consumers: ["account-x/repo-x"],
-          permissions: { contents: "read" },
-        },
-        {
-          resources: ["account-b/*"],
-          consumers: ["account-x/repo-x"],
-          permissions: { contents: "read" },
-        },
-      ],
-    },
+    rules: [
+      {
+        resources: ["account-a/repo-a"],
+        consumers: ["account-x/repo-x"],
+        permissions: { contents: "read" },
+      },
+      {
+        resources: ["account-b/*"],
+        consumers: ["account-x/repo-x"],
+        permissions: { contents: "read" },
+      },
+    ],
   });
 
   expect(
@@ -202,20 +192,18 @@ it("doesn't allow tokens for all resource repos unless a resource rule matches a
 
 it(`doesn't allow tokens for all resource repos when a later account-scoped "all" rule denies access that a previous rule allowed`, () => {
   const authorizer = createTokenAuthorizer({
-    rules: {
-      repos: [
-        {
-          resources: ["account-a/*"],
-          consumers: ["account-x/repo-x"],
-          permissions: { contents: "write" },
-        },
-        {
-          resources: ["account-a/*"],
-          consumers: ["account-x/repo-x"],
-          permissions: { contents: "read" },
-        },
-      ],
-    },
+    rules: [
+      {
+        resources: ["account-a/*"],
+        consumers: ["account-x/repo-x"],
+        permissions: { contents: "write" },
+      },
+      {
+        resources: ["account-a/*"],
+        consumers: ["account-x/repo-x"],
+        permissions: { contents: "read" },
+      },
+    ],
   });
 
   expect(
@@ -239,20 +227,18 @@ it(`doesn't allow tokens for all resource repos when a later account-scoped "all
 
 it(`doesn't allow tokens for all resource repos when a later account-scoped "all" rule removes access that a previous rule allowed`, () => {
   const authorizer = createTokenAuthorizer({
-    rules: {
-      repos: [
-        {
-          resources: ["account-a/*"],
-          consumers: ["account-x/repo-x"],
-          permissions: { contents: "write" },
-        },
-        {
-          resources: ["account-a/*"],
-          consumers: ["account-x/repo-x"],
-          permissions: { contents: "none" },
-        },
-      ],
-    },
+    rules: [
+      {
+        resources: ["account-a/*"],
+        consumers: ["account-x/repo-x"],
+        permissions: { contents: "write" },
+      },
+      {
+        resources: ["account-a/*"],
+        consumers: ["account-x/repo-x"],
+        permissions: { contents: "none" },
+      },
+    ],
   });
 
   expect(
@@ -276,20 +262,18 @@ it(`doesn't allow tokens for all resource repos when a later account-scoped "all
 
 it(`doesn't allow tokens for all resource repos when a later account-scoped non-"all" rule denies access that a previous rule allowed`, () => {
   const authorizer = createTokenAuthorizer({
-    rules: {
-      repos: [
-        {
-          resources: ["account-a/*"],
-          consumers: ["account-x/repo-x"],
-          permissions: { contents: "write" },
-        },
-        {
-          resources: ["account-a/repo-*"],
-          consumers: ["account-x/repo-x"],
-          permissions: { contents: "read" },
-        },
-      ],
-    },
+    rules: [
+      {
+        resources: ["account-a/*"],
+        consumers: ["account-x/repo-x"],
+        permissions: { contents: "write" },
+      },
+      {
+        resources: ["account-a/repo-*"],
+        consumers: ["account-x/repo-x"],
+        permissions: { contents: "read" },
+      },
+    ],
   });
 
   expect(
@@ -313,20 +297,18 @@ it(`doesn't allow tokens for all resource repos when a later account-scoped non-
 
 it(`doesn't allow tokens for all resource repos when a later account-scoped non-"all" rule removes access that a previous rule allowed`, () => {
   const authorizer = createTokenAuthorizer({
-    rules: {
-      repos: [
-        {
-          resources: ["account-a/*"],
-          consumers: ["account-x/repo-x"],
-          permissions: { contents: "write" },
-        },
-        {
-          resources: ["account-a/repo-*"],
-          consumers: ["account-x/repo-x"],
-          permissions: { contents: "none" },
-        },
-      ],
-    },
+    rules: [
+      {
+        resources: ["account-a/*"],
+        consumers: ["account-x/repo-x"],
+        permissions: { contents: "write" },
+      },
+      {
+        resources: ["account-a/repo-*"],
+        consumers: ["account-x/repo-x"],
+        permissions: { contents: "none" },
+      },
+    ],
   });
 
   expect(

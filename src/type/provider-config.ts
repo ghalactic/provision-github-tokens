@@ -1,4 +1,4 @@
-import type { PermissionsRules } from "./permission-rule.js";
+import type { PermissionsRule } from "./permissions-rule.js";
 
 export type ProviderConfig = {
   $schema?: string;
@@ -23,7 +23,7 @@ export type ProviderConfig = {
 };
 
 export type ProviderPermissionsConfig = {
-  rules: PermissionsRules;
+  rules: PermissionsRule[];
 };
 
 type ProviderConfigGitHubAccountSecretTypes = {

@@ -36,14 +36,14 @@ export function createTokenAuthorizer(
   const repoResourcePatterns: Record<number, GitHubPattern[]> = {};
   const repoConsumerPatterns: Record<number, GitHubPattern[]> = {};
 
-  for (let i = 0; i < config.rules.repos.length; ++i) {
+  for (let i = 0; i < config.rules.length; ++i) {
     const resourcePatterns: GitHubPattern[] = [];
     const consumerPatterns: GitHubPattern[] = [];
 
-    for (const resource of config.rules.repos[i].resources) {
+    for (const resource of config.rules[i].resources) {
       resourcePatterns.push(createGitHubPattern(resource));
     }
-    for (const consumer of config.rules.repos[i].consumers) {
+    for (const consumer of config.rules[i].consumers) {
       consumerPatterns.push(createGitHubPattern(consumer));
     }
 
@@ -74,7 +74,7 @@ export function createTokenAuthorizer(
         const have: InstallationPermissions = {};
 
         for (const i of rules) {
-          const rule = config.rules.repos[i];
+          const rule = config.rules[i];
           const patternsForAccount = gitHubPatternsForAccount(
             resourceAccount,
             repoResourcePatterns[i],
@@ -135,7 +135,7 @@ export function createTokenAuthorizer(
         for (const i of rules) {
           if (!anyPatternMatches(repoResourcePatterns[i], resource)) continue;
 
-          const rule = config.rules.repos[i];
+          const rule = config.rules[i];
           updatePermissions(have, rule.permissions);
 
           // Resource is allowed if last rule is allowed
@@ -171,7 +171,7 @@ export function createTokenAuthorizer(
   function rulesForConsumer(consumer: string): number[] {
     const indices: number[] = [];
 
-    for (let i = 0; i < config.rules.repos.length; ++i) {
+    for (let i = 0; i < config.rules.length; ++i) {
       if (anyPatternMatches(repoConsumerPatterns[i], consumer)) indices.push(i);
     }
 

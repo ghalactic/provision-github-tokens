@@ -1,5 +1,5 @@
 import type { InstallationPermissions } from "./github-api.js";
-import type { RepoPermissionRule } from "./permission-rule.js";
+import type { PermissionsRule } from "./permissions-rule.js";
 
 export type RepoTokenAuthorizationResultExplainer<T> = (
   result: RepoTokenAuthorizationResult,
@@ -21,7 +21,7 @@ export type RepoTokenAuthorizationResourceResult = {
 
 export type RepoTokenAuthorizationResourceResultRuleResult = {
   index: number;
-  rule: RepoPermissionRule;
+  rule: PermissionsRule;
   have: InstallationPermissions;
   isAllowed: boolean;
 };
