@@ -4,7 +4,18 @@ $schema: https://ghalactic.github.io/provision-github-tokens/schema/provider.v1.
 permissions:
   rules:
     # TODO: Re-do these rules with the new schema
-    []
+    - description: Access to anything from anywhere
+      resources:
+        - accounts: ["*"]
+          noRepos: true
+          allRepos: true
+          selectedRepos: ["*"]
+      consumers: ["*/*"]
+      permissions:
+        contents: read
+        issues: read
+        metadata: read
+        pull_requests: read
 
     # - description: Access across all accounts and repos
     #   resources: ["*/*"]

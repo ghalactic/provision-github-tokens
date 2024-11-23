@@ -51199,7 +51199,7 @@ var provider_v1_schema_default = {
                   type: "object",
                   additionalProperties: false,
                   required: ["accounts"],
-                  oneOf: [
+                  anyOf: [
                     { required: ["noRepos"] },
                     { required: ["allRepos"] },
                     { required: ["selectedRepos"] }
