@@ -491,19 +491,19 @@ it("parses provider configs that are empty", async () => {
   } satisfies ProviderConfig);
 });
 
-it("throws when an invalid pattern is used in /permissions/rules/<n>/resources/<n>", async () => {
+it("throws when an invalid pattern is used in /permissions/rules/<n>/resources/<n>/accounts/<n>", async () => {
   const fixturePath = join(
     fixturesPath,
-    "invalid-pattern-permissions-rules-resources.yml",
+    "invalid-pattern-permissions-rules-resources-accounts.yml",
   );
   const yaml = await readFile(fixturePath, "utf-8");
 
   expect(throws(() => parseProviderConfig("account-self", "repo-self", yaml)))
     .toMatchInlineSnapshot(`
-      "Parsing of provider configuration failed for "# yaml-language-server: $schema=https://ghalactic.github.io/provision-github-tokens/schema/provider.v1.schema.json\\n$schema: https://ghalactic.github.io/provision-github-tokens/schema/provider.v1.schema.json\\n\\npermissions:\\n  rules:\\n    - resources: [/repo-x]\\n      consumers: [./repo-a]\\n"
+      "Parsing of provider configuration failed for "# yaml-language-server: $schema=https://ghalactic.github.io/provision-github-tokens/schema/provider.v1.schema.json\\n$schema: https://ghalactic.github.io/provision-github-tokens/schema/provider.v1.schema.json\\n\\npermissions:\\n  rules:\\n    - resources:\\n        - accounts: [-account-a]\\n          noRepos: true\\n      consumers: [./repo-a]\\n"
 
       Caused by: Invalid provider configuration:
-        - must be a repo pattern in the form of "account/repo", or "./repo" (/permissions/rules/0/resources/0)"
+        - must only contain alphanumeric characters, hyphens, or asterisks, and cannot begin or end with a hyphen (/permissions/rules/0/resources/0/accounts/0)"
     `);
 });
 
@@ -516,7 +516,7 @@ it("throws when an invalid pattern is used in /permissions/rules/<n>/consumers/<
 
   expect(throws(() => parseProviderConfig("account-self", "repo-self", yaml)))
     .toMatchInlineSnapshot(`
-      "Parsing of provider configuration failed for "# yaml-language-server: $schema=https://ghalactic.github.io/provision-github-tokens/schema/provider.v1.schema.json\\n$schema: https://ghalactic.github.io/provision-github-tokens/schema/provider.v1.schema.json\\n\\npermissions:\\n  rules:\\n    - resources: [./repo-a]\\n      consumers: [/repo-x]\\n"
+      "Parsing of provider configuration failed for "# yaml-language-server: $schema=https://ghalactic.github.io/provision-github-tokens/schema/provider.v1.schema.json\\n$schema: https://ghalactic.github.io/provision-github-tokens/schema/provider.v1.schema.json\\n\\npermissions:\\n  rules:\\n    - resources:\\n        - accounts: [account-a]\\n          noRepos: true\\n      consumers: [/repo-x]\\n"
 
       Caused by: Invalid provider configuration:
         - must be a repo pattern in the form of "account/repo", or "./repo" (/permissions/rules/0/consumers/0)"
