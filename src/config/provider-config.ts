@@ -33,12 +33,7 @@ function normalizeProviderConfig(
   for (let i = 0; i < config.permissions.rules.length; ++i) {
     const rule = config.permissions.rules[i];
 
-    for (let j = 0; j < rule.resources.length; ++j) {
-      rule.resources[j] = normalizeGitHubPattern(
-        definingAccount,
-        rule.resources[j],
-      );
-    }
+    // TODO: Normalize resources
 
     for (let j = 0; j < rule.consumers.length; ++j) {
       rule.consumers[j] = normalizeGitHubPattern(
