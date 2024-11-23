@@ -494,7 +494,7 @@ it("parses provider configs that are empty", async () => {
 it("throws when an invalid pattern is used in /permissions/rules/<n>/resources/<n>", async () => {
   const fixturePath = join(
     fixturesPath,
-    "invalid-pattern-permissions-rules-repos-resources.yml",
+    "invalid-pattern-permissions-rules-resources.yml",
   );
   const yaml = await readFile(fixturePath, "utf-8");
 
@@ -510,7 +510,7 @@ it("throws when an invalid pattern is used in /permissions/rules/<n>/resources/<
 it("throws when an invalid pattern is used in /permissions/rules/<n>/consumers/<n>", async () => {
   const fixturePath = join(
     fixturesPath,
-    "invalid-pattern-permissions-rules-repos-consumers.yml",
+    "invalid-pattern-permissions-rules-consumers.yml",
   );
   const yaml = await readFile(fixturePath, "utf-8");
 
