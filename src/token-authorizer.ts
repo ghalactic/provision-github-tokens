@@ -1,4 +1,3 @@
-import { isSufficientAccess } from "./access-level.js";
 import { createGitHubPattern, type GitHubPattern } from "./github-pattern.js";
 import { createNamePattern } from "./name-pattern.js";
 import { anyPatternMatches, type Pattern } from "./pattern.js";
@@ -250,32 +249,6 @@ export function createTokenAuthorizer(
         have[permission] = access;
       }
     }
-  }
-
-  function reducePermissions(
-    have: InstallationPermissions,
-    boundary: InstallationPermissionsWithNone,
-  ): boolean {
-    let wasReduced = false;
-
-    for (let permission of Object.keys(have)) {
-      // Boundary doesn't constrain access
-      if (!(permission in boundary)) continue;
-
-      const maxAccess = boundary[permission];
-
-      if (maxAccess === "none") {
-        // Boundary removes access
-        delete have[permission];
-        wasReduced = true;
-      } else if (!isSufficientAccess(maxAccess, have[permission])) {
-        // Boundary reduces access
-        have[permission] = maxAccess;
-        wasReduced = true;
-      }
-    }
-
-    return wasReduced;
   }
 }
 
