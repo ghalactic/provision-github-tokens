@@ -3,5 +3,7 @@ $schema: https://ghalactic.github.io/provision-github-tokens/schema/provider.v1.
 
 permissions:
   rules:
-    - resources: [/repo-x]
+    - resources:
+        - accounts: [-account-a]
+          noRepos: true
       consumers: [./repo-a]

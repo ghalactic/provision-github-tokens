@@ -51191,24 +51191,70 @@ var provider_v1_schema_default = {
                 type: "string"
               },
               resources: {
-                description: "A list of patterns to match against resource repos when applying the rule.",
+                description: "Sets of criteria that determine whether this rule matches the requested resources.",
                 type: "array",
                 minItems: 1,
                 items: {
-                  description: "A pattern which matches repos.",
-                  type: "string",
-                  minLength: 1,
-                  pattern: "^(?:\\.|[*a-zA-Z](?:[*a-zA-Z-]*[*a-zA-Z])?)\\/[*a-zA-Z0-9-_.]+$",
-                  errorMessage: 'must be a repo pattern in the form of "account/repo", or "./repo"',
-                  examples: [
-                    "./repo-a",
-                    "account-a/repo-a",
-                    "./*",
-                    "*/*",
-                    "*/repo-a",
-                    "account-a/*",
-                    "prefix-*/*-suffix"
-                  ]
+                  description: "A set of criteria that determine whether this rule matches the requested resources.",
+                  type: "object",
+                  additionalProperties: false,
+                  required: ["accounts"],
+                  anyOf: [
+                    { required: ["noRepos"] },
+                    { required: ["allRepos"] },
+                    { required: ["selectedRepos"] }
+                  ],
+                  properties: {
+                    accounts: {
+                      description: "A list of patterns to match against accounts when applying the rule.",
+                      type: "array",
+                      minItems: 1,
+                      items: {
+                        description: "A pattern which matches accounts.",
+                        type: "string",
+                        minLength: 1,
+                        pattern: "^(?:.|[*a-zA-Z](?:[*a-zA-Z-]*[*a-zA-Z])?)$",
+                        errorMessage: "must be a single period, or only contain alphanumeric characters, hyphens, or asterisks, and cannot begin or end with a hyphen",
+                        examples: [
+                          ".",
+                          "account-a",
+                          "*",
+                          "with-prefix-*",
+                          "*-with-suffix",
+                          "with-*-infix"
+                        ]
+                      }
+                    },
+                    noRepos: {
+                      description: "Whether this rule should apply to requests for tokens that can't access any repos in the account(s). When true, this rule will apply when the token request is for account-only access.",
+                      type: "boolean",
+                      default: false
+                    },
+                    allRepos: {
+                      description: "Whether this rule should apply to requests for tokens that can access all repos in the account(s). When true, this rule will match when the token request doesn't specify a selected set of repos, but instead asks for access to all current and future repos.",
+                      type: "boolean",
+                      default: false
+                    },
+                    selectedRepos: {
+                      description: "A list of patterns to match against repos when applying the rule.",
+                      type: "array",
+                      default: [],
+                      items: {
+                        description: "A pattern which matches repos without their account prefix.",
+                        type: "string",
+                        minLength: 1,
+                        pattern: "^[*a-zA-Z0-9-_.]+$",
+                        errorMessage: "must only contain alphanumeric characters, hyphens, underscores, periods, or asterisks",
+                        examples: [
+                          "repo-a",
+                          "*",
+                          "with-prefix-*",
+                          "*-with-suffix",
+                          "with-*-infix"
+                        ]
+                      }
+                    }
+                  }
                 }
               },
               consumers: {

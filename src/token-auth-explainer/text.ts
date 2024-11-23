@@ -5,7 +5,10 @@ import type {
   RepoTokenAuthorizationResourceResult,
   RepoTokenAuthorizationResourceResultRuleResult,
   RepoTokenAuthorizationResult,
+  RepoTokenAuthorizationResultAllRepos,
   RepoTokenAuthorizationResultExplainer,
+  RepoTokenAuthorizationResultNoRepos,
+  RepoTokenAuthorizationResultSelectedRepos,
 } from "../type/token-auth-result.js";
 
 const ALLOWED_ICON = "✅";
@@ -13,19 +16,52 @@ const DENIED_ICON = "❌";
 
 export function createTextRepoAuthExplainer(): RepoTokenAuthorizationResultExplainer<string> {
   return (result) => {
-    const { resourceAccount, resources, want } = result;
-    const resourceEntries = Object.entries(resources).sort(([a], [b]) =>
+    if (result.type === "ALL_REPOS") return explainAllRepos(result);
+    if (result.type === "NO_REPOS") return explainNoRepos(result);
+
+    return explainSelectedRepos(result);
+  };
+
+  function explainAllRepos(
+    result: RepoTokenAuthorizationResultAllRepos,
+  ): string {
+    const { account, isAllowed, rules, want } = result;
+    const icon = isAllowed ? ALLOWED_ICON : DENIED_ICON;
+
+    return (
+      `${explainSummary(result)}\n` +
+      `  ${icon} ${isAllowed ? "Sufficient" : "Insufficient"} ` +
+      `access to all repos in ${account} ${explainBasedOnRules(want, rules)}`
+    );
+  }
+
+  function explainNoRepos(result: RepoTokenAuthorizationResultNoRepos): string {
+    const { account, isAllowed, rules, want } = result;
+    const icon = isAllowed ? ALLOWED_ICON : DENIED_ICON;
+
+    return (
+      `${explainSummary(result)}\n` +
+      `  ${icon} ${isAllowed ? "Sufficient" : "Insufficient"} ` +
+      `access to ${account} ${explainBasedOnRules(want, rules)}`
+    );
+  }
+
+  function explainSelectedRepos(
+    result: RepoTokenAuthorizationResultSelectedRepos,
+  ): string {
+    const { results, want } = result;
+    const resourceEntries = Object.entries(results).sort(([a], [b]) =>
       a.localeCompare(b),
     );
-
     let explainedResources = "";
-    for (const [resource, resourceResult] of resourceEntries) {
+
+    for (const [resourceRepo, resourceResult] of resourceEntries) {
       explainedResources +=
-        "\n" + explainResource(resourceAccount, resource, want, resourceResult);
+        "\n" + explainResourceRepo(resourceRepo, want, resourceResult);
     }
 
     return explainSummary(result) + explainedResources;
-  };
+  }
 
   function explainSummary({
     consumer,
@@ -39,36 +75,23 @@ export function createTextRepoAuthExplainer(): RepoTokenAuthorizationResultExpla
     );
   }
 
-  function explainResource(
-    resourceAccount: string,
+  function explainResourceRepo(
     resource: string,
     want: InstallationPermissions,
-    resourceResult: RepoTokenAuthorizationResourceResult,
-  ): string {
-    const summary = explainResourceSummary(
-      resourceAccount,
-      resource,
-      resourceResult,
-    );
-    const ruleCount = resourceResult.rules.length;
-
-    if (ruleCount < 1) return summary;
-
-    let explainedRules = "";
-    for (const ruleResult of resourceResult.rules) {
-      explainedRules += "\n" + explainRule(want, ruleResult);
-    }
-
-    return `${summary}:${explainedRules}`;
-  }
-
-  function explainResourceSummary(
-    resourceAccount: string,
-    resource: string,
-    { rules, isAllowed }: RepoTokenAuthorizationResourceResult,
+    { isAllowed, rules }: RepoTokenAuthorizationResourceResult,
   ): string {
     const icon = isAllowed ? ALLOWED_ICON : DENIED_ICON;
-    const renderedResource = renderResource(resourceAccount, resource);
+
+    return (
+      `  ${icon} ${isAllowed ? "Sufficient" : "Insufficient"} ` +
+      `access to repo ${resource} ${explainBasedOnRules(want, rules)}`
+    );
+  }
+
+  function explainBasedOnRules(
+    want: InstallationPermissions,
+    rules: RepoTokenAuthorizationResourceResultRuleResult[],
+  ): string {
     const ruleCount = rules.length;
     const ruleOrRules = ruleCount === 1 ? "rule" : "rules";
     const basedOn =
@@ -76,10 +99,14 @@ export function createTextRepoAuthExplainer(): RepoTokenAuthorizationResultExpla
         ? "(no matching rules)"
         : `based on ${ruleCount} ${ruleOrRules}`;
 
-    return (
-      `  ${icon} ${isAllowed ? "Sufficient" : "Insufficient"} ` +
-      `access to ${renderedResource} ${basedOn}`
-    );
+    if (ruleCount < 1) return basedOn;
+
+    let explainedRules = "";
+    for (const ruleResult of rules) {
+      explainedRules += "\n" + explainRule(want, ruleResult);
+    }
+
+    return `${basedOn}:${explainedRules}`;
   }
 
   function explainRule(
@@ -98,12 +125,6 @@ export function createTextRepoAuthExplainer(): RepoTokenAuthorizationResultExpla
       `gave ${isAllowed ? "sufficient" : "insufficient"} access:` +
       renderPermissionComparison("      ", have, want)
     );
-  }
-
-  function renderResource(resourceAccount: string, resource: string): string {
-    return resource === "*"
-      ? `all repos in ${resourceAccount}`
-      : `repo ${resource}`;
   }
 
   function renderRule(index: number, { description }: PermissionsRule): string {

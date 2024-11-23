@@ -3,8 +3,12 @@ $schema: https://ghalactic.github.io/provision-github-tokens/schema/provider.v1.
 
 permissions:
   rules:
-    - description: Access across all accounts and repos
-      resources: ["*/*"]
+    - description: Access to anything from anywhere
+      resources:
+        - accounts: ["*"]
+          noRepos: true
+          allRepos: true
+          selectedRepos: ["*"]
       consumers: ["*/*"]
       permissions:
         contents: read
@@ -13,77 +17,175 @@ permissions:
         pull_requests: read
 
     - description: Access to a specific account from anywhere
-      resources: [account-a/*]
+      resources:
+        - accounts: [account-a]
+          noRepos: true
+          allRepos: false
+          selectedRepos: []
       consumers: ["*/*"]
-      permissions: { metadata: read }
+      permissions:
+        metadata: read
+
+    - description: Access to all repos in a specific account from anywhere
+      resources:
+        - accounts: [account-a]
+          noRepos: false
+          allRepos: true
+          selectedRepos: []
+      consumers: ["*/*"]
+      permissions:
+        contents: write
+
+    - description: Access to selected repos in a specific account from anywhere
+      resources:
+        - accounts: [account-a]
+          noRepos: false
+          allRepos: false
+          selectedRepos: [repo-a, repo-*]
+      consumers: ["*/*"]
+      permissions:
+        contents: write
 
     - description: Access to a specific account from the same account
-      resources: [account-a/*]
+      resources:
+        - accounts: [account-a]
+          noRepos: true
+          allRepos: false
+          selectedRepos: []
       consumers: [account-a/*]
-      permissions: { issues: write }
+      permissions:
+        metadata: read
 
-    - description: Access within the same account
-      resources: ["*/*"]
+    - description: Access when the consuming account is the same as the resource account
+      resources:
+        - accounts: ["*"]
+          noRepos: true
+          allRepos: false
+          selectedRepos: []
       consumers: [<account>/*]
-      permissions: { issues: write, pull_requests: write }
+      permissions:
+        metadata: read
 
     - description: Access to same-named repos (weird, but possible)
-      resources: ["*/*"]
+      resources:
+        - accounts: ["*"]
+          noRepos: false
+          allRepos: false
+          selectedRepos: ["*"]
       consumers: ["*/<repo>"]
-      permissions: { metadata: read }
+      permissions:
+        contents: write
 
-    - description: Self-access
-      resources: ["*/*"]
+    - description: Repo self-access
+      resources:
+        - accounts: ["*"]
+          noRepos: false
+          allRepos: false
+          selectedRepos: ["*"]
       consumers: [<account>/<repo>]
-      permissions: { contents: write, metadata: write }
+      permissions:
+        contents: write
 
     - description: Access to repos with a specific name in any account (weird, but possible)
-      resources: ["*/repo-a"]
+      resources:
+        - accounts: ["*"]
+          noRepos: false
+          allRepos: false
+          selectedRepos: [repo-a]
       consumers: ["*/*"]
-      permissions: { metadata: read }
+      permissions:
+        contents: write
 
     - description: Cross-repo access (in the provider's account)
-      resources: [./repo-a]
+      resources:
+        - accounts: [.]
+          noRepos: false
+          allRepos: false
+          selectedRepos: [repo-a]
       consumers: [./repo-b]
-      permissions: { contents: read }
+      permissions:
+        contents: write
 
     - description: All-repo access (in the provider's account)
-      resources: [./*]
+      resources:
+        - accounts: [.]
+          noRepos: false
+          allRepos: true
+          selectedRepos: []
       consumers: [./repo-a]
-      permissions: { contents: read }
+      permissions:
+        contents: write
 
     - description: Cross-account access
-      resources: [account-a/repo-a]
+      resources:
+        - accounts: [account-a]
+          noRepos: false
+          allRepos: false
+          selectedRepos: [repo-a]
       consumers: [account-b/repo-b]
-      permissions: { contents: read }
+      permissions:
+        contents: write
 
     - description: Revocation of access
-      resources: [./repo-a]
+      resources:
+        - accounts: [.]
+          noRepos: false
+          allRepos: false
+          selectedRepos: [repo-a]
       consumers: [./repo-b]
-      permissions: { contents: none }
+      permissions:
+        contents: none
 
     - description: Escalation of access
-      resources: [./repo-a]
+      resources:
+        - accounts: [.]
+          noRepos: false
+          allRepos: false
+          selectedRepos: [repo-a]
       consumers: [./repo-b]
-      permissions: { contents: write }
+      permissions:
+        contents: write
 
     - description: De-escalation of access
-      resources: [./repo-a]
+      resources:
+        - accounts: [.]
+          noRepos: false
+          allRepos: false
+          selectedRepos: [repo-a]
       consumers: [./repo-b]
-      permissions: { contents: read }
+      permissions:
+        contents: read
 
     - description: Multiple resources and consumers
-      resources: [./repo-a, ./repo-b]
-      consumers: [./repo-c, ./repo-d]
-      permissions: { contents: read }
+      resources:
+        - accounts: [account-a, account-b]
+          noRepos: false
+          allRepos: false
+          selectedRepos: [repo-a, repo-b]
+        - accounts: [account-c, account-d]
+          noRepos: false
+          allRepos: false
+          selectedRepos: [repo-c, repo-d]
+      consumers: [account-e/repo-e, account-f/repo-f]
+      permissions:
+        contents: write
 
     - description: Wildcards
-      resources: [account-*/repo-*]
+      resources:
+        - accounts: [account-*]
+          noRepos: false
+          allRepos: false
+          selectedRepos: [repo-*]
       consumers: ["*-account/*-repo"]
-      permissions: { contents: read }
+      permissions:
+        contents: write
 
     - description: All permissions
-      resources: [./repo-a]
+      resources:
+        - accounts: [.]
+          noRepos: true
+          allRepos: true
+          selectedRepos: ["*"]
       consumers: [./repo-b]
       permissions:
         actions: write
