@@ -38,6 +38,319 @@ it("parses comprehensive provider config", async () => {
             pull_requests: "read",
           },
         },
+        {
+          consumers: ["*/*"],
+          description: "Access to a specific account from anywhere",
+          permissions: {
+            metadata: "read",
+          },
+          resources: [
+            {
+              accounts: ["account-a"],
+              allRepos: false,
+              noRepos: true,
+              selectedRepos: [],
+            },
+          ],
+        },
+        {
+          consumers: ["*/*"],
+          description:
+            "Access to all repos in a specific account from anywhere",
+          permissions: {
+            contents: "write",
+          },
+          resources: [
+            {
+              accounts: ["account-a"],
+              allRepos: true,
+              noRepos: false,
+              selectedRepos: [],
+            },
+          ],
+        },
+        {
+          consumers: ["*/*"],
+          description:
+            "Access to selected repos in a specific account from anywhere",
+          permissions: {
+            contents: "write",
+          },
+          resources: [
+            {
+              accounts: ["account-a"],
+              allRepos: false,
+              noRepos: false,
+              selectedRepos: ["repo-a", "repo-*"],
+            },
+          ],
+        },
+        {
+          consumers: ["account-a/*"],
+          description: "Access to a specific account from the same account",
+          permissions: {
+            metadata: "read",
+          },
+          resources: [
+            {
+              accounts: ["account-a"],
+              allRepos: false,
+              noRepos: true,
+              selectedRepos: [],
+            },
+          ],
+        },
+        {
+          consumers: ["<account>/*"],
+          description:
+            "Access when the consuming account is the same as the resource account",
+          permissions: {
+            metadata: "read",
+          },
+          resources: [
+            {
+              accounts: ["*"],
+              allRepos: false,
+              noRepos: true,
+              selectedRepos: [],
+            },
+          ],
+        },
+        {
+          consumers: ["*/<repo>"],
+          description: "Access to same-named repos (weird, but possible)",
+          permissions: {
+            contents: "write",
+          },
+          resources: [
+            {
+              accounts: ["*"],
+              allRepos: false,
+              noRepos: false,
+              selectedRepos: ["*"],
+            },
+          ],
+        },
+        {
+          consumers: ["<account>/<repo>"],
+          description: "Repo self-access",
+          permissions: {
+            contents: "write",
+          },
+          resources: [
+            {
+              accounts: ["*"],
+              allRepos: false,
+              noRepos: false,
+              selectedRepos: ["*"],
+            },
+          ],
+        },
+        {
+          consumers: ["*/*"],
+          description:
+            "Access to repos with a specific name in any account (weird, but possible)",
+          permissions: {
+            contents: "write",
+          },
+          resources: [
+            {
+              accounts: ["*"],
+              allRepos: false,
+              noRepos: false,
+              selectedRepos: ["repo-a"],
+            },
+          ],
+        },
+        {
+          consumers: ["account-self/repo-b"],
+          description: "Cross-repo access (in the provider's account)",
+          permissions: {
+            contents: "write",
+          },
+          resources: [
+            {
+              accounts: ["."],
+              allRepos: false,
+              noRepos: false,
+              selectedRepos: ["repo-a"],
+            },
+          ],
+        },
+        {
+          consumers: ["account-self/repo-a"],
+          description: "All-repo access (in the provider's account)",
+          permissions: {
+            contents: "write",
+          },
+          resources: [
+            {
+              accounts: ["."],
+              allRepos: true,
+              noRepos: false,
+              selectedRepos: [],
+            },
+          ],
+        },
+        {
+          consumers: ["account-b/repo-b"],
+          description: "Cross-account access",
+          permissions: {
+            contents: "write",
+          },
+          resources: [
+            {
+              accounts: ["account-a"],
+              allRepos: false,
+              noRepos: false,
+              selectedRepos: ["repo-a"],
+            },
+          ],
+        },
+        {
+          consumers: ["account-self/repo-b"],
+          description: "Revocation of access",
+          permissions: {
+            contents: "none",
+          },
+          resources: [
+            {
+              accounts: ["."],
+              allRepos: false,
+              noRepos: false,
+              selectedRepos: ["repo-a"],
+            },
+          ],
+        },
+        {
+          consumers: ["account-self/repo-b"],
+          description: "Escalation of access",
+          permissions: {
+            contents: "write",
+          },
+          resources: [
+            {
+              accounts: ["."],
+              allRepos: false,
+              noRepos: false,
+              selectedRepos: ["repo-a"],
+            },
+          ],
+        },
+        {
+          consumers: ["account-self/repo-b"],
+          description: "De-escalation of access",
+          permissions: {
+            contents: "read",
+          },
+          resources: [
+            {
+              accounts: ["."],
+              allRepos: false,
+              noRepos: false,
+              selectedRepos: ["repo-a"],
+            },
+          ],
+        },
+        {
+          consumers: ["account-e/repo-e", "account-f/repo-f"],
+          description: "Multiple resources and consumers",
+          permissions: {
+            contents: "write",
+          },
+          resources: [
+            {
+              accounts: ["account-a", "account-b"],
+              allRepos: false,
+              noRepos: false,
+              selectedRepos: ["repo-a", "repo-b"],
+            },
+            {
+              accounts: ["account-c", "account-d"],
+              allRepos: false,
+              noRepos: false,
+              selectedRepos: ["repo-c", "repo-d"],
+            },
+          ],
+        },
+        {
+          consumers: ["*-account/*-repo"],
+          description: "Wildcards",
+          permissions: {
+            contents: "write",
+          },
+          resources: [
+            {
+              accounts: ["account-*"],
+              allRepos: false,
+              noRepos: false,
+              selectedRepos: ["repo-*"],
+            },
+          ],
+        },
+        {
+          consumers: ["account-self/repo-b"],
+          description: "All permissions",
+          permissions: {
+            actions: "write",
+            administration: "write",
+            checks: "write",
+            codespaces: "write",
+            contents: "write",
+            dependabot_secrets: "write",
+            deployments: "write",
+            email_addresses: "write",
+            environments: "write",
+            followers: "write",
+            git_ssh_keys: "write",
+            gpg_keys: "write",
+            interaction_limits: "write",
+            issues: "write",
+            members: "write",
+            metadata: "write",
+            organization_administration: "write",
+            organization_announcement_banners: "write",
+            organization_copilot_seat_management: "write",
+            organization_custom_org_roles: "write",
+            organization_custom_properties: "admin",
+            organization_custom_roles: "write",
+            organization_events: "read",
+            organization_hooks: "write",
+            organization_packages: "write",
+            organization_personal_access_token_requests: "write",
+            organization_personal_access_tokens: "write",
+            organization_plan: "read",
+            organization_projects: "admin",
+            organization_secrets: "write",
+            organization_self_hosted_runners: "write",
+            organization_user_blocking: "write",
+            packages: "write",
+            pages: "write",
+            profile: "write",
+            pull_requests: "write",
+            repository_custom_properties: "write",
+            repository_hooks: "write",
+            repository_projects: "admin",
+            secret_scanning_alerts: "write",
+            secrets: "write",
+            security_events: "write",
+            single_file: "write",
+            starring: "write",
+            statuses: "write",
+            team_discussions: "write",
+            vulnerability_alerts: "write",
+            workflows: "write",
+            xxx: "admin",
+          },
+          resources: [
+            {
+              accounts: ["."],
+              allRepos: true,
+              noRepos: true,
+              selectedRepos: ["*"],
+            },
+          ],
+        },
       ],
     },
 
@@ -369,7 +682,7 @@ it("throws when an invalid pattern is used in /permissions/rules/<n>/resources/<
       "Parsing of provider configuration failed for "# yaml-language-server: $schema=https://ghalactic.github.io/provision-github-tokens/schema/provider.v1.schema.json\\n$schema: https://ghalactic.github.io/provision-github-tokens/schema/provider.v1.schema.json\\n\\npermissions:\\n  rules:\\n    - resources:\\n        - accounts: [-account-a]\\n          noRepos: true\\n      consumers: [./repo-a]\\n"
 
       Caused by: Invalid provider configuration:
-        - must only contain alphanumeric characters, hyphens, or asterisks, and cannot begin or end with a hyphen (/permissions/rules/0/resources/0/accounts/0)"
+        - must be a single period, or only contain alphanumeric characters, hyphens, or asterisks, and cannot begin or end with a hyphen (/permissions/rules/0/resources/0/accounts/0)"
     `);
 });
 

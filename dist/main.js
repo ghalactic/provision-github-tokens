@@ -51213,9 +51213,10 @@ var provider_v1_schema_default = {
                         description: "A pattern which matches accounts.",
                         type: "string",
                         minLength: 1,
-                        pattern: "^[*a-zA-Z](?:[*a-zA-Z-]*[*a-zA-Z])?$",
-                        errorMessage: "must only contain alphanumeric characters, hyphens, or asterisks, and cannot begin or end with a hyphen",
+                        pattern: "^(?:.|[*a-zA-Z](?:[*a-zA-Z-]*[*a-zA-Z])?)$",
+                        errorMessage: "must be a single period, or only contain alphanumeric characters, hyphens, or asterisks, and cannot begin or end with a hyphen",
                         examples: [
+                          ".",
                           "account-a",
                           "*",
                           "with-prefix-*",
