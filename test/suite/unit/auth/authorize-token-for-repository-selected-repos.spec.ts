@@ -212,6 +212,66 @@ it("allows tokens when a later rule allows access that a previous rule denied", 
   `);
 });
 
+it("allows tokens when a later unrelated rule denies access to the requested permission", () => {
+  const authorizer = createTokenAuthorizer({
+    rules: [
+      {
+        resources: [
+          {
+            accounts: ["account-a"],
+            noRepos: false,
+            allRepos: false,
+            selectedRepos: ["repo-a"],
+          },
+        ],
+        consumers: ["account-x/repo-x"],
+        permissions: { contents: "write", metadata: "read" },
+      },
+      {
+        resources: [
+          {
+            accounts: ["account-b"],
+            noRepos: false,
+            allRepos: false,
+            selectedRepos: ["repo-b"],
+          },
+        ],
+        consumers: ["account-x/repo-x"],
+        permissions: { contents: "none" },
+      },
+      {
+        resources: [
+          {
+            accounts: ["account-b"],
+            noRepos: false,
+            allRepos: false,
+            selectedRepos: ["repo-b"],
+          },
+        ],
+        consumers: ["account-x/repo-x"],
+        permissions: { metadata: "none" },
+      },
+    ],
+  });
+
+  expect(
+    explain(
+      authorizer.authorizeForRepo("account-x/repo-x", {
+        role: undefined,
+        account: "account-a",
+        repos: ["repo-a"],
+        permissions: { contents: "write", metadata: "read" },
+      }),
+    ),
+  ).toMatchInlineSnapshot(`
+    "✅ Repo account-x/repo-x was allowed access to a token:
+      ✅ Sufficient access to repo account-a/repo-a based on 1 rule:
+        ✅ Rule #1 gave sufficient access:
+          ✅ contents: have write, wanted write
+          ✅ metadata: have read, wanted read"
+  `);
+});
+
 it("supports rule descriptions", () => {
   const authorizer = createTokenAuthorizer({
     rules: [
