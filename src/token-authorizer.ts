@@ -56,8 +56,54 @@ export function createTokenAuthorizer(
     consumer: string,
     request: TokenRequest,
   ): RepoTokenAuthorizationResult {
-    // TODO: Implement
-    throw new Error("Not implemented");
+    const want = request.permissions;
+    const resourceAccount = request.account;
+    const rules = rulesForConsumer(consumer);
+    let isAllowed = false;
+
+    const ruleResults: RepoTokenAuthorizationResourceResultRuleResult[] = [];
+    const have: InstallationPermissions = {};
+
+    for (const i of rules) {
+      const rule = config.rules[i];
+      let isRelevant = false;
+
+      for (let j = 0; j < rule.resources.length; ++j) {
+        isRelevant =
+          rule.resources[j].noRepos === true &&
+          anyPatternMatches(resourcePatterns[i][j].accounts, resourceAccount);
+
+        if (isRelevant) break;
+      }
+
+      if (!isRelevant) continue;
+
+      updatePermissions(have, rule.permissions);
+
+      // Token is allowed if last rule is allowed
+      isAllowed = isSufficientPermissions(have, want);
+
+      ruleResults.push({
+        index: i,
+        rule,
+        have: structuredClone(have),
+        isAllowed,
+      });
+    }
+
+    return {
+      consumer,
+      resourceAccount,
+      resources: {
+        "*": {
+          rules: ruleResults,
+          have,
+          isAllowed,
+        },
+      },
+      want,
+      isAllowed,
+    };
   }
 
   function authorizeSelectedReposForRepo(
