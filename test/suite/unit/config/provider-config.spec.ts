@@ -170,7 +170,7 @@ it("parses comprehensive provider config", async () => {
           },
           resources: [
             {
-              accounts: ["."],
+              accounts: ["account-self"],
               allRepos: false,
               noRepos: false,
               selectedRepos: ["repo-a"],
@@ -185,7 +185,7 @@ it("parses comprehensive provider config", async () => {
           },
           resources: [
             {
-              accounts: ["."],
+              accounts: ["account-self"],
               allRepos: true,
               noRepos: false,
               selectedRepos: [],
@@ -215,7 +215,7 @@ it("parses comprehensive provider config", async () => {
           },
           resources: [
             {
-              accounts: ["."],
+              accounts: ["account-self"],
               allRepos: false,
               noRepos: false,
               selectedRepos: ["repo-a"],
@@ -230,7 +230,7 @@ it("parses comprehensive provider config", async () => {
           },
           resources: [
             {
-              accounts: ["."],
+              accounts: ["account-self"],
               allRepos: false,
               noRepos: false,
               selectedRepos: ["repo-a"],
@@ -245,7 +245,7 @@ it("parses comprehensive provider config", async () => {
           },
           resources: [
             {
-              accounts: ["."],
+              accounts: ["account-self"],
               allRepos: false,
               noRepos: false,
               selectedRepos: ["repo-a"],
@@ -344,7 +344,7 @@ it("parses comprehensive provider config", async () => {
           },
           resources: [
             {
-              accounts: ["."],
+              accounts: ["account-self"],
               allRepos: true,
               noRepos: true,
               selectedRepos: ["*"],

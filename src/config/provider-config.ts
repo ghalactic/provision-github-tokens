@@ -1,4 +1,5 @@
 import { load } from "js-yaml";
+import { normalizeAccountPattern } from "../account.js";
 import { normalizeGitHubPattern } from "../github-pattern.js";
 import type { ProviderConfig } from "../type/provider-config.js";
 import { validateProvider } from "./validation.js";
@@ -33,7 +34,14 @@ function normalizeProviderConfig(
   for (let i = 0; i < config.permissions.rules.length; ++i) {
     const rule = config.permissions.rules[i];
 
-    // TODO: Normalize resources
+    for (let j = 0; j < rule.resources.length; ++j) {
+      for (let k = 0; k < rule.resources[j].accounts.length; ++k) {
+        rule.resources[j].accounts[k] = normalizeAccountPattern(
+          definingAccount,
+          rule.resources[j].accounts[k],
+        );
+      }
+    }
 
     for (let j = 0; j < rule.consumers.length; ++j) {
       rule.consumers[j] = normalizeGitHubPattern(
