@@ -3,7 +3,7 @@ import { join } from "path";
 import { fileURLToPath } from "url";
 import { expect, it } from "vitest";
 import { parseProviderConfig } from "../../../../src/config/provider-config.js";
-import providerSchema from "../../../../src/schema/provider.v1.schema.json";
+import providerSchema from "../../../../src/schema/provider.v1.schema.json" with { type: "json" };
 import type { ProviderConfig } from "../../../../src/type/provider-config.js";
 import { throws } from "../../../error.js";
 

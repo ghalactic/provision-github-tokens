@@ -1,10 +1,10 @@
 import ajvModule, { ErrorObject } from "ajv";
 import ajvErrorsModule from "ajv-errors";
-import appsSchema from "../schema/apps.v1.schema.json";
-import consumerSchema from "../schema/consumer.v1.schema.json";
-import consumerTokenPermissionsSchema from "../schema/generated.consumer-token-permissions.v1.schema.json";
-import providerRulePermissionsSchema from "../schema/generated.provider-rule-permissions.v1.schema.json";
-import providerSchema from "../schema/provider.v1.schema.json";
+import appsSchema from "../schema/apps.v1.schema.json" with { type: "json" };
+import consumerSchema from "../schema/consumer.v1.schema.json" with { type: "json" };
+import consumerTokenPermissionsSchema from "../schema/generated.consumer-token-permissions.v1.schema.json" with { type: "json" };
+import providerRulePermissionsSchema from "../schema/generated.provider-rule-permissions.v1.schema.json" with { type: "json" };
+import providerSchema from "../schema/provider.v1.schema.json" with { type: "json" };
 import type { PartialConsumerConfig } from "../type/consumer-config.js";
 import type { AppInput } from "../type/input.js";
 import type { ProviderConfig } from "../type/provider-config.js";

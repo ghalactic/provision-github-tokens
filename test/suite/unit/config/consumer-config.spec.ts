@@ -3,7 +3,7 @@ import { join } from "path";
 import { fileURLToPath } from "url";
 import { expect, it } from "vitest";
 import { parseConsumerConfig } from "../../../../src/config/consumer-config.js";
-import consumerSchema from "../../../../src/schema/consumer.v1.schema.json";
+import consumerSchema from "../../../../src/schema/consumer.v1.schema.json" with { type: "json" };
 import type { ConsumerConfig } from "../../../../src/type/consumer-config.js";
 import { throws } from "../../../error.js";
 
