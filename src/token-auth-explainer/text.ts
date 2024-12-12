@@ -2,19 +2,19 @@ import { isSufficientAccess } from "../access-level.js";
 import type { InstallationPermissions } from "../type/github-api.js";
 import type { PermissionsRule } from "../type/permissions-rule.js";
 import type {
-  RepoTokenAuthorizationResourceResult,
-  RepoTokenAuthorizationResourceResultRuleResult,
-  RepoTokenAuthorizationResult,
-  RepoTokenAuthorizationResultAllRepos,
-  RepoTokenAuthorizationResultExplainer,
-  RepoTokenAuthorizationResultNoRepos,
-  RepoTokenAuthorizationResultSelectedRepos,
+  TokenAuthResourceResult,
+  TokenAuthResourceResultRuleResult,
+  TokenAuthResult,
+  TokenAuthResultAllRepos,
+  TokenAuthResultExplainer,
+  TokenAuthResultNoRepos,
+  TokenAuthResultSelectedRepos,
 } from "../type/token-auth-result.js";
 
 const ALLOWED_ICON = "✅";
 const DENIED_ICON = "❌";
 
-export function createTextRepoAuthExplainer(): RepoTokenAuthorizationResultExplainer<string> {
+export function createTextAuthExplainer(): TokenAuthResultExplainer<string> {
   return (result) => {
     if (result.type === "ALL_REPOS") return explainAllRepos(result);
     if (result.type === "NO_REPOS") return explainNoRepos(result);
@@ -22,9 +22,7 @@ export function createTextRepoAuthExplainer(): RepoTokenAuthorizationResultExpla
     return explainSelectedRepos(result);
   };
 
-  function explainAllRepos(
-    result: RepoTokenAuthorizationResultAllRepos,
-  ): string {
+  function explainAllRepos(result: TokenAuthResultAllRepos): string {
     const { account, isAllowed, rules, want } = result;
 
     return (
@@ -34,7 +32,7 @@ export function createTextRepoAuthExplainer(): RepoTokenAuthorizationResultExpla
     );
   }
 
-  function explainNoRepos(result: RepoTokenAuthorizationResultNoRepos): string {
+  function explainNoRepos(result: TokenAuthResultNoRepos): string {
     const { account, isAllowed, rules, want } = result;
 
     return (
@@ -44,9 +42,7 @@ export function createTextRepoAuthExplainer(): RepoTokenAuthorizationResultExpla
     );
   }
 
-  function explainSelectedRepos(
-    result: RepoTokenAuthorizationResultSelectedRepos,
-  ): string {
+  function explainSelectedRepos(result: TokenAuthResultSelectedRepos): string {
     const { results, want } = result;
     const resourceEntries = Object.entries(results).sort(([a], [b]) =>
       a.localeCompare(b),
@@ -61,10 +57,7 @@ export function createTextRepoAuthExplainer(): RepoTokenAuthorizationResultExpla
     return explainSummary(result) + explainedResources;
   }
 
-  function explainSummary({
-    consumer,
-    isAllowed,
-  }: RepoTokenAuthorizationResult): string {
+  function explainSummary({ consumer, isAllowed }: TokenAuthResult): string {
     return (
       `${renderIcon(isAllowed)} Repo ${consumer} ` +
       `was ${isAllowed ? "allowed" : "denied"} access to a token:`
@@ -74,7 +67,7 @@ export function createTextRepoAuthExplainer(): RepoTokenAuthorizationResultExpla
   function explainResourceRepo(
     resource: string,
     want: InstallationPermissions,
-    { isAllowed, rules }: RepoTokenAuthorizationResourceResult,
+    { isAllowed, rules }: TokenAuthResourceResult,
   ): string {
     return (
       `  ` +
@@ -85,7 +78,7 @@ export function createTextRepoAuthExplainer(): RepoTokenAuthorizationResultExpla
 
   function explainBasedOnRules(
     want: InstallationPermissions,
-    rules: RepoTokenAuthorizationResourceResultRuleResult[],
+    rules: TokenAuthResourceResultRuleResult[],
   ): string {
     const ruleCount = rules.length;
     const ruleOrRules = ruleCount === 1 ? "rule" : "rules";
@@ -107,12 +100,7 @@ export function createTextRepoAuthExplainer(): RepoTokenAuthorizationResultExpla
 
   function explainRule(
     want: InstallationPermissions,
-    {
-      index,
-      rule,
-      have,
-      isAllowed,
-    }: RepoTokenAuthorizationResourceResultRuleResult,
+    { index, rule, have, isAllowed }: TokenAuthResourceResultRuleResult,
   ): string {
     return (
       `    ${renderIcon(isAllowed)} Rule ${renderRule(index, rule)} ` +

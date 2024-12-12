@@ -1,50 +1,45 @@
 import type { InstallationPermissions } from "./github-api.js";
 import type { PermissionsRule } from "./permissions-rule.js";
 
-export type RepoTokenAuthorizationResultExplainer<T> = (
-  result: RepoTokenAuthorizationResult,
-) => T;
+export type TokenAuthResultExplainer<T> = (result: TokenAuthResult) => T;
 
-export type RepoTokenAuthorizationResult =
-  | RepoTokenAuthorizationResultAllRepos
-  | RepoTokenAuthorizationResultNoRepos
-  | RepoTokenAuthorizationResultSelectedRepos;
+export type TokenAuthResult =
+  | TokenAuthResultAllRepos
+  | TokenAuthResultNoRepos
+  | TokenAuthResultSelectedRepos;
 
-export type RepoTokenAuthorizationResultAllRepos =
-  RepoTokenAuthorizationResultCommon &
-    RepoTokenAuthorizationResourceResult & {
-      type: "ALL_REPOS";
-      account: string;
-    };
-
-export type RepoTokenAuthorizationResultNoRepos =
-  RepoTokenAuthorizationResultCommon &
-    RepoTokenAuthorizationResourceResult & {
-      type: "NO_REPOS";
-      account: string;
-    };
-
-export type RepoTokenAuthorizationResultSelectedRepos =
-  RepoTokenAuthorizationResultCommon & {
-    type: "SELECTED_REPOS";
+export type TokenAuthResultAllRepos = TokenAuthResultCommon &
+  TokenAuthResourceResult & {
+    type: "ALL_REPOS";
     account: string;
-    results: Record<string, RepoTokenAuthorizationResourceResult>;
   };
 
-export type RepoTokenAuthorizationResourceResult = {
-  rules: RepoTokenAuthorizationResourceResultRuleResult[];
+export type TokenAuthResultNoRepos = TokenAuthResultCommon &
+  TokenAuthResourceResult & {
+    type: "NO_REPOS";
+    account: string;
+  };
+
+export type TokenAuthResultSelectedRepos = TokenAuthResultCommon & {
+  type: "SELECTED_REPOS";
+  account: string;
+  results: Record<string, TokenAuthResourceResult>;
+};
+
+export type TokenAuthResourceResult = {
+  rules: TokenAuthResourceResultRuleResult[];
   have: InstallationPermissions;
   isAllowed: boolean;
 };
 
-export type RepoTokenAuthorizationResourceResultRuleResult = {
+export type TokenAuthResourceResultRuleResult = {
   index: number;
   rule: PermissionsRule;
   have: InstallationPermissions;
   isAllowed: boolean;
 };
 
-type RepoTokenAuthorizationResultCommon = {
+type TokenAuthResultCommon = {
   account: string;
   consumer: string;
   want: InstallationPermissions;

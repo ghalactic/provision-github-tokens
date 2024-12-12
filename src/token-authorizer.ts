@@ -12,9 +12,9 @@ import type {
 } from "./type/permissions-rule.js";
 import type { ProviderPermissionsConfig } from "./type/provider-config.js";
 import {
-  type RepoTokenAuthorizationResourceResult,
-  type RepoTokenAuthorizationResourceResultRuleResult,
-  type RepoTokenAuthorizationResult,
+  type TokenAuthResourceResult,
+  type TokenAuthResourceResultRuleResult,
+  type TokenAuthResult,
 } from "./type/token-auth-result.js";
 import type { TokenRequest } from "./type/token-request.js";
 
@@ -25,7 +25,7 @@ export type TokenAuthorizer = {
   authorizeForRepo: (
     consumer: string,
     request: TokenRequest,
-  ) => RepoTokenAuthorizationResult;
+  ) => TokenAuthResult;
 };
 
 export function createTokenAuthorizer(
@@ -55,12 +55,12 @@ export function createTokenAuthorizer(
   function authorizeAllReposForRepo(
     consumer: string,
     request: TokenRequest,
-  ): RepoTokenAuthorizationResult {
+  ): TokenAuthResult {
     const { account: resourceAccount, permissions: want } = request;
     const rules = rulesForConsumer(consumer);
     let isAllowed = false;
 
-    const ruleResults: RepoTokenAuthorizationResourceResultRuleResult[] = [];
+    const ruleResults: TokenAuthResourceResultRuleResult[] = [];
     const have: InstallationPermissions = {};
 
     for (const i of rules) {
@@ -104,12 +104,12 @@ export function createTokenAuthorizer(
   function authorizeNoReposForRepo(
     consumer: string,
     request: TokenRequest,
-  ): RepoTokenAuthorizationResult {
+  ): TokenAuthResult {
     const { account: resourceAccount, permissions: want } = request;
     const rules = rulesForConsumer(consumer);
     let isAllowed = false;
 
-    const ruleResults: RepoTokenAuthorizationResourceResultRuleResult[] = [];
+    const ruleResults: TokenAuthResourceResultRuleResult[] = [];
     const have: InstallationPermissions = {};
 
     for (const i of rules) {
@@ -153,19 +153,16 @@ export function createTokenAuthorizer(
   function authorizeSelectedReposForRepo(
     consumer: string,
     request: TokenRequest,
-  ): RepoTokenAuthorizationResult {
+  ): TokenAuthResult {
     const { account: resourceAccount, permissions: want } = request;
     const rules = rulesForConsumer(consumer);
     let isAllowed = true;
 
-    const resourceResults: Record<
-      string,
-      RepoTokenAuthorizationResourceResult
-    > = {};
+    const resourceResults: Record<string, TokenAuthResourceResult> = {};
 
     for (const resourceRepo of request.repos) {
       const resource = `${resourceAccount}/${resourceRepo}`;
-      const ruleResults: RepoTokenAuthorizationResourceResultRuleResult[] = [];
+      const ruleResults: TokenAuthResourceResultRuleResult[] = [];
       const have: InstallationPermissions = {};
       let isResourceAllowed = false;
 
