@@ -26,22 +26,20 @@ export function createTextRepoAuthExplainer(): RepoTokenAuthorizationResultExpla
     result: RepoTokenAuthorizationResultAllRepos,
   ): string {
     const { account, isAllowed, rules, want } = result;
-    const icon = isAllowed ? ALLOWED_ICON : DENIED_ICON;
 
     return (
-      `${explainSummary(result)}\n` +
-      `  ${icon} ${isAllowed ? "Sufficient" : "Insufficient"} ` +
+      `${explainSummary(result)}\n  ` +
+      `${renderIcon(isAllowed)} ${isAllowed ? "Sufficient" : "Insufficient"} ` +
       `access to all repos in ${account} ${explainBasedOnRules(want, rules)}`
     );
   }
 
   function explainNoRepos(result: RepoTokenAuthorizationResultNoRepos): string {
     const { account, isAllowed, rules, want } = result;
-    const icon = isAllowed ? ALLOWED_ICON : DENIED_ICON;
 
     return (
-      `${explainSummary(result)}\n` +
-      `  ${icon} ${isAllowed ? "Sufficient" : "Insufficient"} ` +
+      `${explainSummary(result)}\n  ` +
+      `${renderIcon(isAllowed)} ${isAllowed ? "Sufficient" : "Insufficient"} ` +
       `access to ${account} ${explainBasedOnRules(want, rules)}`
     );
   }
@@ -67,10 +65,8 @@ export function createTextRepoAuthExplainer(): RepoTokenAuthorizationResultExpla
     consumer,
     isAllowed,
   }: RepoTokenAuthorizationResult): string {
-    const icon = isAllowed ? ALLOWED_ICON : DENIED_ICON;
-
     return (
-      `${icon} Repo ${consumer} ` +
+      `${renderIcon(isAllowed)} Repo ${consumer} ` +
       `was ${isAllowed ? "allowed" : "denied"} access to a token:`
     );
   }
@@ -80,10 +76,9 @@ export function createTextRepoAuthExplainer(): RepoTokenAuthorizationResultExpla
     want: InstallationPermissions,
     { isAllowed, rules }: RepoTokenAuthorizationResourceResult,
   ): string {
-    const icon = isAllowed ? ALLOWED_ICON : DENIED_ICON;
-
     return (
-      `  ${icon} ${isAllowed ? "Sufficient" : "Insufficient"} ` +
+      `  ` +
+      `${renderIcon(isAllowed)} ${isAllowed ? "Sufficient" : "Insufficient"} ` +
       `access to repo ${resource} ${explainBasedOnRules(want, rules)}`
     );
   }
@@ -102,6 +97,7 @@ export function createTextRepoAuthExplainer(): RepoTokenAuthorizationResultExpla
     if (ruleCount < 1) return basedOn;
 
     let explainedRules = "";
+
     for (const ruleResult of rules) {
       explainedRules += "\n" + explainRule(want, ruleResult);
     }
@@ -118,10 +114,8 @@ export function createTextRepoAuthExplainer(): RepoTokenAuthorizationResultExpla
       isAllowed,
     }: RepoTokenAuthorizationResourceResultRuleResult,
   ): string {
-    const icon = isAllowed ? ALLOWED_ICON : DENIED_ICON;
-
     return (
-      `    ${icon} Rule ${renderRule(index, rule)} ` +
+      `    ${renderIcon(isAllowed)} Rule ${renderRule(index, rule)} ` +
       `gave ${isAllowed ? "sufficient" : "insufficient"} access:` +
       renderPermissionComparison("      ", have, want)
     );
@@ -133,23 +127,13 @@ export function createTextRepoAuthExplainer(): RepoTokenAuthorizationResultExpla
     return description ? `${n}: ${JSON.stringify(description)}` : n;
   }
 
-  function renderAllowDenyList(
-    indent: string,
-    items: [boolean, string][],
-  ): string {
-    let list = "";
-    for (const [isAllowed, entry] of items)
-      list += `\n${indent}${isAllowed ? ALLOWED_ICON : DENIED_ICON} ${entry}`;
-
-    return list;
-  }
-
   function renderPermissionComparison(
     indent: string,
     have: InstallationPermissions,
     want: InstallationPermissions,
   ): string {
     const entries: [boolean, string][] = [];
+
     for (const p of Object.keys(want).sort((a, b) => a.localeCompare(b))) {
       const h = have[p];
       const w = want[p];
@@ -161,5 +145,22 @@ export function createTextRepoAuthExplainer(): RepoTokenAuthorizationResultExpla
     }
 
     return renderAllowDenyList(indent, entries);
+  }
+
+  function renderAllowDenyList(
+    indent: string,
+    items: [boolean, string][],
+  ): string {
+    let list = "";
+
+    for (const [isAllowed, entry] of items) {
+      list += `\n${indent}${renderIcon(isAllowed)} ${entry}`;
+    }
+
+    return list;
+  }
+
+  function renderIcon(isAllowed: boolean): string {
+    return isAllowed ? ALLOWED_ICON : DENIED_ICON;
   }
 }
