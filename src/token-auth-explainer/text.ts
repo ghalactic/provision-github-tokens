@@ -57,11 +57,19 @@ export function createTextAuthExplainer(): TokenAuthResultExplainer<string> {
     return explainSummary(result) + explainedResources;
   }
 
-  function explainSummary({ consumer, isAllowed }: TokenAuthResult): string {
-    return (
-      `${renderIcon(isAllowed)} Repo ${consumer} ` +
-      `was ${isAllowed ? "allowed" : "denied"} access to a token:`
-    );
+  function explainSummary({
+    consumer: { type, name },
+    isAllowed,
+  }: TokenAuthResult): string {
+    if (type === "REPO") {
+      return (
+        `${renderIcon(isAllowed)} Repo ${name} ` +
+        `was ${isAllowed ? "allowed" : "denied"} access to a token:`
+      );
+    }
+
+    // TODO: Support accounts
+    throw new Error("Not implemented");
   }
 
   function explainResourceRepo(

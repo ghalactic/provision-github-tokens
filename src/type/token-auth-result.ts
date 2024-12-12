@@ -39,9 +39,23 @@ export type TokenAuthResourceResultRuleResult = {
   isAllowed: boolean;
 };
 
+export type TokenAuthConsumer =
+  | TokenAuthConsumerAccount
+  | TokenAuthConsumerRepo;
+
+export type TokenAuthConsumerAccount = {
+  type: "ACCOUNT";
+  name: string;
+};
+
+export type TokenAuthConsumerRepo = {
+  type: "REPO";
+  name: string;
+};
+
 type TokenAuthResultCommon = {
   account: string;
-  consumer: string;
+  consumer: TokenAuthConsumer;
   want: InstallationPermissions;
   isAllowed: boolean;
 };

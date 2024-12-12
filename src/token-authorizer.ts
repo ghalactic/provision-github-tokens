@@ -92,7 +92,10 @@ export function createTokenAuthorizer(
 
     return {
       type: "ALL_REPOS",
-      consumer,
+      consumer: {
+        type: "REPO",
+        name: consumer,
+      },
       account: resourceAccount,
       rules: ruleResults,
       have,
@@ -141,7 +144,10 @@ export function createTokenAuthorizer(
 
     return {
       type: "NO_REPOS",
-      consumer,
+      consumer: {
+        type: "REPO",
+        name: consumer,
+      },
       account: resourceAccount,
       rules: ruleResults,
       have,
@@ -205,7 +211,10 @@ export function createTokenAuthorizer(
 
     return {
       type: "SELECTED_REPOS",
-      consumer,
+      consumer: {
+        type: "REPO",
+        name: consumer,
+      },
       account: resourceAccount,
       results: resourceResults,
       want,
