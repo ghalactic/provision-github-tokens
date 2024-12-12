@@ -68,8 +68,10 @@ export function createTextAuthExplainer(): TokenAuthResultExplainer<string> {
       );
     }
 
-    // TODO: Support accounts
-    throw new Error("Not implemented");
+    return (
+      `${renderIcon(isAllowed)} Account ${name} ` +
+      `was ${isAllowed ? "allowed" : "denied"} access to a token:`
+    );
   }
 
   function explainResourceRepo(

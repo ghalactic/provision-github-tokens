@@ -12,6 +12,7 @@ import type {
 } from "./type/permissions-rule.js";
 import type { ProviderPermissionsConfig } from "./type/provider-config.js";
 import {
+  type TokenAuthConsumer,
   type TokenAuthResourceResult,
   type TokenAuthResourceResultRuleResult,
   type TokenAuthResult,
@@ -20,12 +21,17 @@ import type { TokenRequest } from "./type/token-request.js";
 
 export type TokenAuthorizer = {
   /**
-   * Authorize a token request for a single consuming repo.
+   * Authorize a token to be consumed by an account.
    */
-  authorizeForRepo: (
-    consumer: string,
+  authorizeForAccount: (
+    account: string,
     request: TokenRequest,
   ) => TokenAuthResult;
+
+  /**
+   * Authorize a token to be consumed by a repo.
+   */
+  authorizeForRepo: (repo: string, request: TokenRequest) => TokenAuthResult;
 };
 
 export function createTokenAuthorizer(
@@ -34,26 +40,30 @@ export function createTokenAuthorizer(
   const [resourcePatterns, consumerPatterns] = patternsForRules(config.rules);
 
   return {
-    authorizeForRepo(consumer, request) {
-      const want = request.permissions;
+    authorizeForAccount(account, request) {
+      return authorizeForConsumer({ type: "ACCOUNT", name: account }, request);
+    },
 
-      if (Object.keys(want).length < 1) {
-        throw new Error("No permissions requested");
-      }
-
-      if (request.repos === "all") {
-        return authorizeAllReposForRepo(consumer, request);
-      }
-      if (request.repos.length < 1) {
-        return authorizeNoReposForRepo(consumer, request);
-      }
-
-      return authorizeSelectedReposForRepo(consumer, request);
+    authorizeForRepo(repo, request) {
+      return authorizeForConsumer({ type: "REPO", name: repo }, request);
     },
   };
 
-  function authorizeAllReposForRepo(
-    consumer: string,
+  function authorizeForConsumer(
+    consumer: TokenAuthConsumer,
+    request: TokenRequest,
+  ): TokenAuthResult {
+    if (Object.keys(request.permissions).length < 1) {
+      throw new Error("No permissions requested");
+    }
+
+    if (request.repos === "all") return authorizeAllRepos(consumer, request);
+    if (request.repos.length < 1) return authorizeNoRepos(consumer, request);
+    return authorizeSelectedRepos(consumer, request);
+  }
+
+  function authorizeAllRepos(
+    consumer: TokenAuthConsumer,
     request: TokenRequest,
   ): TokenAuthResult {
     const { account: resourceAccount, permissions: want } = request;
@@ -92,10 +102,7 @@ export function createTokenAuthorizer(
 
     return {
       type: "ALL_REPOS",
-      consumer: {
-        type: "REPO",
-        name: consumer,
-      },
+      consumer,
       account: resourceAccount,
       rules: ruleResults,
       have,
@@ -104,8 +111,8 @@ export function createTokenAuthorizer(
     };
   }
 
-  function authorizeNoReposForRepo(
-    consumer: string,
+  function authorizeNoRepos(
+    consumer: TokenAuthConsumer,
     request: TokenRequest,
   ): TokenAuthResult {
     const { account: resourceAccount, permissions: want } = request;
@@ -144,10 +151,7 @@ export function createTokenAuthorizer(
 
     return {
       type: "NO_REPOS",
-      consumer: {
-        type: "REPO",
-        name: consumer,
-      },
+      consumer,
       account: resourceAccount,
       rules: ruleResults,
       have,
@@ -156,8 +160,8 @@ export function createTokenAuthorizer(
     };
   }
 
-  function authorizeSelectedReposForRepo(
-    consumer: string,
+  function authorizeSelectedRepos(
+    consumer: TokenAuthConsumer,
     request: TokenRequest,
   ): TokenAuthResult {
     const { account: resourceAccount, permissions: want } = request;
@@ -211,10 +215,7 @@ export function createTokenAuthorizer(
 
     return {
       type: "SELECTED_REPOS",
-      consumer: {
-        type: "REPO",
-        name: consumer,
-      },
+      consumer,
       account: resourceAccount,
       results: resourceResults,
       want,
@@ -270,11 +271,13 @@ export function createTokenAuthorizer(
     return { accounts, selectedRepos };
   }
 
-  function rulesForConsumer(consumer: string): number[] {
+  function rulesForConsumer(consumer: TokenAuthConsumer): number[] {
     const indices: number[] = [];
 
     for (let i = 0; i < config.rules.length; ++i) {
-      if (anyPatternMatches(consumerPatterns[i], consumer)) indices.push(i);
+      if (anyPatternMatches(consumerPatterns[i], consumer.name)) {
+        indices.push(i);
+      }
     }
 
     return indices;

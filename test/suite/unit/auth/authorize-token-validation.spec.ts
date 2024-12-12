@@ -7,6 +7,16 @@ it("throws if the requested permissions are empty", () => {
 
   expect(
     throws(() =>
+      authorizer.authorizeForAccount("account-x", {
+        role: undefined,
+        account: "account-a",
+        repos: ["repo-a"],
+        permissions: {},
+      }),
+    ),
+  ).toMatchInlineSnapshot(`"No permissions requested"`);
+  expect(
+    throws(() =>
       authorizer.authorizeForRepo("account-x/repo-x", {
         role: undefined,
         account: "account-a",
