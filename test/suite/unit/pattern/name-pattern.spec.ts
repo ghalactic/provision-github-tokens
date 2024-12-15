@@ -18,20 +18,6 @@ it("can be converted to a string", () => {
   expect(String(createNamePattern("a*b"))).toBe("a*b");
 });
 
-it.each([["*"], ["**"], ["**********"]])(
-  "knows that %s matches all",
-  (pattern) => {
-    expect(createNamePattern(pattern).isAll).toBe(true);
-  },
-);
-
-it.each([["a"], ["a*"], ["*a"], ["*a*"]])(
-  "knows that %s doesn't match all",
-  (pattern) => {
-    expect(createNamePattern(pattern).isAll).toBe(false);
-  },
-);
-
 const patterns: [pattern: string, matches: string[], nonMatches: string[]][] = [
   ["name-a", ["name-a"], ["name-b"]],
   ["name.a", ["name.a"], ["name-b"]],

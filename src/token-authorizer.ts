@@ -1,4 +1,4 @@
-import { createGitHubPattern, type GitHubPattern } from "./github-pattern.js";
+import { createGitHubPattern } from "./github-pattern.js";
 import { createNamePattern } from "./name-pattern.js";
 import { anyPatternMatches, type Pattern } from "./pattern.js";
 import { isSufficientPermissions } from "./permissions.js";
@@ -225,12 +225,9 @@ export function createTokenAuthorizer(
 
   function patternsForRules(
     rules: PermissionsRule[],
-  ): [
-    Record<number, ResourceCriteriaPatterns[]>,
-    Record<number, GitHubPattern[]>,
-  ] {
+  ): [Record<number, ResourceCriteriaPatterns[]>, Record<number, Pattern[]>] {
     const resourcePatterns: Record<number, ResourceCriteriaPatterns[]> = {};
-    const consumerPatterns: Record<number, GitHubPattern[]> = {};
+    const consumerPatterns: Record<number, Pattern[]> = {};
 
     for (let i = 0; i < rules.length; ++i) {
       [resourcePatterns[i], consumerPatterns[i]] = patternsForRule(rules[i]);
@@ -241,9 +238,9 @@ export function createTokenAuthorizer(
 
   function patternsForRule(
     rule: PermissionsRule,
-  ): [ResourceCriteriaPatterns[], GitHubPattern[]] {
+  ): [ResourceCriteriaPatterns[], Pattern[]] {
     const resourcePatterns: ResourceCriteriaPatterns[] = [];
-    const consumerPatterns: GitHubPattern[] = [];
+    const consumerPatterns: Pattern[] = [];
 
     for (const criteria of rule.resources) {
       resourcePatterns.push(patternsForResourceCriteria(criteria));

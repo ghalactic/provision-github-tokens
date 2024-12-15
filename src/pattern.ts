@@ -1,5 +1,4 @@
 export type Pattern = {
-  readonly isAll: boolean;
   test: (string: string) => boolean;
   toString: () => string;
 };

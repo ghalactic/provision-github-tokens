@@ -11,14 +11,7 @@ export function createNamePattern(pattern: string): Pattern {
   const literals = pattern.split("*");
   const expression = patternRegExp(literals);
 
-  let isAll = true;
-  for (const l of literals) if (l) isAll = false;
-
   return {
-    get isAll() {
-      return isAll;
-    },
-
     test: (string) => expression.test(string),
     toString: () => pattern,
   };

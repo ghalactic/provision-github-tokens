@@ -1,30 +1,12 @@
 import { createNamePattern } from "./name-pattern.js";
 import type { Pattern } from "./pattern.js";
 
-export type GitHubPattern = Pattern & {
-  readonly account: Pattern;
-  readonly repo: Pattern | undefined;
-  isAllForAccount: (forAccount: string) => boolean;
-};
-
-export function createGitHubPattern(pattern: string): GitHubPattern {
+export function createGitHubPattern(pattern: string): Pattern {
   const [accountPart, repoPart] = splitGitHubPattern(pattern);
   const account = createNamePattern(accountPart);
   const repo = repoPart ? createNamePattern(repoPart) : undefined;
 
   return {
-    get isAll() {
-      return repo ? account.isAll && repo.isAll : false;
-    },
-
-    get account() {
-      return account;
-    },
-
-    get repo() {
-      return repo;
-    },
-
     test: (string) => {
       const parts = string.split("/");
 
@@ -35,10 +17,6 @@ export function createGitHubPattern(pattern: string): GitHubPattern {
     },
 
     toString: () => pattern,
-
-    isAllForAccount: (forAccount: string) => {
-      return repo ? account.test(forAccount) && repo.isAll : false;
-    },
   };
 }
 
@@ -50,23 +28,6 @@ export function normalizeGitHubPattern(
 
   if (accountPart !== ".") return pattern;
   return repoPart == null ? definingAccount : `${definingAccount}/${repoPart}`;
-}
-
-export function gitHubPatternsForAccount(
-  account: string,
-  patterns: GitHubPattern[],
-): GitHubPattern[] {
-  const result: GitHubPattern[] = [];
-  for (const pattern of patterns) {
-    if (pattern.account.test(account)) result.push(pattern);
-  }
-
-  return result;
-}
-
-export function anyGitHubPatternIsAllRepos(patterns: GitHubPattern[]): boolean {
-  for (const pattern of patterns) if (pattern.repo?.isAll) return true;
-  return false;
 }
 
 function splitGitHubPattern(pattern: string): [string, string | undefined] {
