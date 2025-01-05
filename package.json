@@ -10,7 +10,7 @@
     "@octokit/action": "^7.0.0",
     "@octokit/auth-app": "^7.1.3",
     "@octokit/plugin-retry": "^7.1.2",
-    "@octokit/request-error": "^6.1.5",
+    "@octokit/request-error": "^6.1.6",
     "ajv": "^8.17.1",
     "ajv-errors": "^3.0.0",
     "js-yaml": "^4.1.0",
