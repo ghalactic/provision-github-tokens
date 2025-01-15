@@ -28575,6 +28575,102 @@ var require_dist = __commonJS({
   }
 });
 
+// node_modules/fast-content-type-parse/index.js
+var require_fast_content_type_parse = __commonJS({
+  "node_modules/fast-content-type-parse/index.js"(exports, module) {
+    "use strict";
+    var NullObject = function NullObject2() {
+    };
+    NullObject.prototype = /* @__PURE__ */ Object.create(null);
+    var paramRE = /; *([!#$%&'*+.^\w`|~-]+)=("(?:[\v\u0020\u0021\u0023-\u005b\u005d-\u007e\u0080-\u00ff]|\\[\v\u0020-\u00ff])*"|[!#$%&'*+.^\w`|~-]+) */gu;
+    var quotedPairRE = /\\([\v\u0020-\u00ff])/gu;
+    var mediaTypeRE = /^[!#$%&'*+.^\w|~-]+\/[!#$%&'*+.^\w|~-]+$/u;
+    var defaultContentType = { type: "", parameters: new NullObject() };
+    Object.freeze(defaultContentType.parameters);
+    Object.freeze(defaultContentType);
+    function parse2(header) {
+      if (typeof header !== "string") {
+        throw new TypeError("argument header is required and must be a string");
+      }
+      let index = header.indexOf(";");
+      const type2 = index !== -1 ? header.slice(0, index).trim() : header.trim();
+      if (mediaTypeRE.test(type2) === false) {
+        throw new TypeError("invalid media type");
+      }
+      const result = {
+        type: type2.toLowerCase(),
+        parameters: new NullObject()
+      };
+      if (index === -1) {
+        return result;
+      }
+      let key;
+      let match;
+      let value;
+      paramRE.lastIndex = index;
+      while (match = paramRE.exec(header)) {
+        if (match.index !== index) {
+          throw new TypeError("invalid parameter format");
+        }
+        index += match[0].length;
+        key = match[1].toLowerCase();
+        value = match[2];
+        if (value[0] === '"') {
+          value = value.slice(1, value.length - 1);
+          quotedPairRE.test(value) && (value = value.replace(quotedPairRE, "$1"));
+        }
+        result.parameters[key] = value;
+      }
+      if (index !== header.length) {
+        throw new TypeError("invalid parameter format");
+      }
+      return result;
+    }
+    function safeParse2(header) {
+      if (typeof header !== "string") {
+        return defaultContentType;
+      }
+      let index = header.indexOf(";");
+      const type2 = index !== -1 ? header.slice(0, index).trim() : header.trim();
+      if (mediaTypeRE.test(type2) === false) {
+        return defaultContentType;
+      }
+      const result = {
+        type: type2.toLowerCase(),
+        parameters: new NullObject()
+      };
+      if (index === -1) {
+        return result;
+      }
+      let key;
+      let match;
+      let value;
+      paramRE.lastIndex = index;
+      while (match = paramRE.exec(header)) {
+        if (match.index !== index) {
+          return defaultContentType;
+        }
+        index += match[0].length;
+        key = match[1].toLowerCase();
+        value = match[2];
+        if (value[0] === '"') {
+          value = value.slice(1, value.length - 1);
+          quotedPairRE.test(value) && (value = value.replace(quotedPairRE, "$1"));
+        }
+        result.parameters[key] = value;
+      }
+      if (index !== header.length) {
+        return defaultContentType;
+      }
+      return result;
+    }
+    module.exports.default = { parse: parse2, safeParse: safeParse2 };
+    module.exports.parse = parse2;
+    module.exports.safeParse = safeParse2;
+    module.exports.defaultContentType = defaultContentType;
+  }
+});
+
 // node_modules/@octokit/action/node_modules/undici/lib/core/symbols.js
 var require_symbols6 = __commonJS({
   "node_modules/@octokit/action/node_modules/undici/lib/core/symbols.js"(exports, module) {
@@ -52024,6 +52120,9 @@ function withDefaults(oldDefaults, newDefaults) {
 }
 var endpoint = withDefaults(null, DEFAULTS);
 
+// node_modules/@octokit/request/dist-bundle/index.js
+var import_fast_content_type_parse = __toESM(require_fast_content_type_parse(), 1);
+
 // node_modules/@octokit/request-error/dist-src/index.js
 var RequestError = class extends Error {
   name;
@@ -52178,13 +52277,23 @@ async function fetchWrapper(requestOptions) {
 }
 async function getResponseData(response) {
   const contentType = response.headers.get("content-type");
-  if (/application\/json/.test(contentType)) {
-    return response.json().catch(() => response.text()).catch(() => "");
+  if (!contentType) {
+    return response.text().catch(() => "");
   }
-  if (!contentType || /^text\/|charset=utf-8$/.test(contentType)) {
-    return response.text();
+  const mimetype = (0, import_fast_content_type_parse.safeParse)(contentType);
+  if (mimetype.type === "application/json") {
+    let text = "";
+    try {
+      text = await response.text();
+      return JSON.parse(text);
+    } catch (err) {
+      return text;
+    }
+  } else if (mimetype.type.startsWith("text/") || mimetype.parameters.charset?.toLowerCase() === "utf-8") {
+    return response.text().catch(() => "");
+  } else {
+    return response.arrayBuffer().catch(() => new ArrayBuffer(0));
   }
-  return response.arrayBuffer();
 }
 function toErrorMessage(data) {
   if (typeof data === "string") {
@@ -54996,8 +55105,7 @@ async function deleteAuthorization(options) {
 // node_modules/@octokit/auth-oauth-device/dist-bundle/index.js
 async function getOAuthAccessToken(state, options) {
   const cachedAuthentication = getCachedAuthentication(state, options.auth);
-  if (cachedAuthentication)
-    return cachedAuthentication;
+  if (cachedAuthentication) return cachedAuthentication;
   const { data: verification } = await createDeviceCode({
     clientType: state.clientType,
     clientId: state.clientId,
@@ -55016,10 +55124,8 @@ async function getOAuthAccessToken(state, options) {
   return authentication;
 }
 function getCachedAuthentication(state, auth22) {
-  if (auth22.refresh === true)
-    return false;
-  if (!state.authentication)
-    return false;
+  if (auth22.refresh === true) return false;
+  if (!state.authentication) return false;
   if (state.clientType === "github-app") {
     return state.authentication;
   }
@@ -55053,8 +55159,7 @@ async function waitForAccessToken(request2, clientId, clientType, verification) 
       ...authentication
     };
   } catch (error) {
-    if (!error.response)
-      throw error;
+    if (!error.response) throw error;
     const errorType = error.response.data.error;
     if (errorType === "authorization_pending") {
       await wait(verification.interval);
@@ -55247,8 +55352,7 @@ async function auth3(state, options = {}) {
         request: state.request
       });
     } catch (error) {
-      if (error.status !== 404)
-        throw error;
+      if (error.status !== 404) throw error;
     }
     state.authentication.invalid = true;
     return state.authentication;
@@ -55358,8 +55462,7 @@ async function hook4(state, request2, route, parameters) {
   try {
     return await request2(endpoint2);
   } catch (error) {
-    if (error.status !== 401)
-      throw error;
+    if (error.status !== 401) throw error;
     error.message = `[@octokit/auth-oauth-app] "${endpoint2.method} ${endpoint2.url}" does not support clientId/clientSecret basic authentication.`;
     throw error;
   }
@@ -56020,7 +56123,7 @@ async function sendRequestWithRetries(state, request2, options, createdAt, retri
     return sendRequestWithRetries(state, request2, options, createdAt, retries);
   }
 }
-var VERSION11 = "7.1.3";
+var VERSION11 = "7.1.4";
 function createAppAuth(options) {
   if (!options.appId) {
     throw new Error("[@octokit/auth-app] appId option is required");
