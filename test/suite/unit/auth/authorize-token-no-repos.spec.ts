@@ -25,7 +25,7 @@ it("allows tokens that should be allowed", () => {
   expect(
     explain(
       authorizer.authorizeForAccount("account-x", {
-        role: undefined,
+        role: "role-a",
         account: "account-a",
         repos: [],
         permissions: { members: "write" },
@@ -33,6 +33,7 @@ it("allows tokens that should be allowed", () => {
     ),
   ).toMatchInlineSnapshot(`
     "✅ Account account-x was allowed access to a token:
+      ✅ Write access to account-a was requested with role role-a
       ✅ Sufficient access to account-a based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ members: have write, wanted write"
@@ -40,7 +41,7 @@ it("allows tokens that should be allowed", () => {
   expect(
     explain(
       authorizer.authorizeForAccount("account-x", {
-        role: undefined,
+        role: "role-a",
         account: "account-a",
         repos: [],
         permissions: { members: "write", metadata: "read" },
@@ -48,6 +49,7 @@ it("allows tokens that should be allowed", () => {
     ),
   ).toMatchInlineSnapshot(`
     "✅ Account account-x was allowed access to a token:
+      ✅ Write access to account-a was requested with role role-a
       ✅ Sufficient access to account-a based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ members: have write, wanted write
@@ -56,7 +58,7 @@ it("allows tokens that should be allowed", () => {
   expect(
     explain(
       authorizer.authorizeForRepo("account-x/repo-x", {
-        role: undefined,
+        role: "role-a",
         account: "account-a",
         repos: [],
         permissions: { members: "write" },
@@ -64,6 +66,7 @@ it("allows tokens that should be allowed", () => {
     ),
   ).toMatchInlineSnapshot(`
     "✅ Repo account-x/repo-x was allowed access to a token:
+      ✅ Write access to account-a was requested with role role-a
       ✅ Sufficient access to account-a based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ members: have write, wanted write"
@@ -71,7 +74,7 @@ it("allows tokens that should be allowed", () => {
   expect(
     explain(
       authorizer.authorizeForRepo("account-x/repo-x", {
-        role: undefined,
+        role: "role-a",
         account: "account-a",
         repos: [],
         permissions: { members: "write", metadata: "read" },
@@ -79,6 +82,7 @@ it("allows tokens that should be allowed", () => {
     ),
   ).toMatchInlineSnapshot(`
     "✅ Repo account-x/repo-x was allowed access to a token:
+      ✅ Write access to account-a was requested with role role-a
       ✅ Sufficient access to account-a based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ members: have write, wanted write
@@ -107,7 +111,7 @@ it("allows tokens when the actual access level is higher than requested", () => 
   expect(
     explain(
       authorizer.authorizeForAccount("account-x", {
-        role: undefined,
+        role: "role-a",
         account: "account-a",
         repos: [],
         permissions: { metadata: "read", repository_projects: "write" },
@@ -115,6 +119,7 @@ it("allows tokens when the actual access level is higher than requested", () => 
     ),
   ).toMatchInlineSnapshot(`
     "✅ Account account-x was allowed access to a token:
+      ✅ Write access to account-a was requested with role role-a
       ✅ Sufficient access to account-a based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ metadata: have write, wanted read
@@ -123,7 +128,7 @@ it("allows tokens when the actual access level is higher than requested", () => 
   expect(
     explain(
       authorizer.authorizeForRepo("account-x/repo-x", {
-        role: undefined,
+        role: "role-a",
         account: "account-a",
         repos: [],
         permissions: { metadata: "read", repository_projects: "write" },
@@ -131,6 +136,7 @@ it("allows tokens when the actual access level is higher than requested", () => 
     ),
   ).toMatchInlineSnapshot(`
     "✅ Repo account-x/repo-x was allowed access to a token:
+      ✅ Write access to account-a was requested with role role-a
       ✅ Sufficient access to account-a based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ metadata: have write, wanted read
@@ -171,7 +177,7 @@ it("allows tokens when a later rule allows access that a previous rule denied", 
   expect(
     explain(
       authorizer.authorizeForAccount("account-x", {
-        role: undefined,
+        role: "role-a",
         account: "account-a",
         repos: [],
         permissions: { contents: "write", metadata: "read" },
@@ -179,6 +185,7 @@ it("allows tokens when a later rule allows access that a previous rule denied", 
     ),
   ).toMatchInlineSnapshot(`
     "✅ Account account-x was allowed access to a token:
+      ✅ Write access to account-a was requested with role role-a
       ✅ Sufficient access to account-a based on 2 rules:
         ❌ Rule #1 gave insufficient access:
           ❌ contents: have read, wanted write
@@ -190,7 +197,7 @@ it("allows tokens when a later rule allows access that a previous rule denied", 
   expect(
     explain(
       authorizer.authorizeForRepo("account-x/repo-x", {
-        role: undefined,
+        role: "role-a",
         account: "account-a",
         repos: [],
         permissions: { contents: "write", metadata: "read" },
@@ -198,6 +205,7 @@ it("allows tokens when a later rule allows access that a previous rule denied", 
     ),
   ).toMatchInlineSnapshot(`
     "✅ Repo account-x/repo-x was allowed access to a token:
+      ✅ Write access to account-a was requested with role role-a
       ✅ Sufficient access to account-a based on 2 rules:
         ❌ Rule #1 gave insufficient access:
           ❌ contents: have read, wanted write
@@ -253,7 +261,7 @@ it("allows tokens when a later unrelated rule denies access to the requested per
   expect(
     explain(
       authorizer.authorizeForAccount("account-x", {
-        role: undefined,
+        role: "role-a",
         account: "account-a",
         repos: [],
         permissions: { contents: "write", metadata: "read" },
@@ -261,6 +269,7 @@ it("allows tokens when a later unrelated rule denies access to the requested per
     ),
   ).toMatchInlineSnapshot(`
     "✅ Account account-x was allowed access to a token:
+      ✅ Write access to account-a was requested with role role-a
       ✅ Sufficient access to account-a based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ contents: have write, wanted write
@@ -269,7 +278,7 @@ it("allows tokens when a later unrelated rule denies access to the requested per
   expect(
     explain(
       authorizer.authorizeForRepo("account-x/repo-x", {
-        role: undefined,
+        role: "role-a",
         account: "account-a",
         repos: [],
         permissions: { contents: "write", metadata: "read" },
@@ -277,9 +286,64 @@ it("allows tokens when a later unrelated rule denies access to the requested per
     ),
   ).toMatchInlineSnapshot(`
     "✅ Repo account-x/repo-x was allowed access to a token:
+      ✅ Write access to account-a was requested with role role-a
       ✅ Sufficient access to account-a based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ contents: have write, wanted write
+          ✅ metadata: have read, wanted read"
+  `);
+});
+
+it("allows read-only tokens without a role", () => {
+  const authorizer = createTokenAuthorizer({
+    rules: [
+      {
+        resources: [
+          {
+            accounts: ["account-a"],
+            noRepos: true,
+            allRepos: false,
+            selectedRepos: [],
+          },
+        ],
+        consumers: ["account-x", "account-x/repo-x"],
+        permissions: { contents: "write", metadata: "read" },
+      },
+    ],
+  });
+
+  expect(
+    explain(
+      authorizer.authorizeForAccount("account-x", {
+        role: undefined,
+        account: "account-a",
+        repos: [],
+        permissions: { contents: "read", metadata: "read" },
+      }),
+    ),
+  ).toMatchInlineSnapshot(`
+    "✅ Account account-x was allowed access to a token:
+      ✅ Read access to account-a was requested without a role
+      ✅ Sufficient access to account-a based on 1 rule:
+        ✅ Rule #1 gave sufficient access:
+          ✅ contents: have write, wanted read
+          ✅ metadata: have read, wanted read"
+  `);
+  expect(
+    explain(
+      authorizer.authorizeForRepo("account-x/repo-x", {
+        role: undefined,
+        account: "account-a",
+        repos: [],
+        permissions: { contents: "read", metadata: "read" },
+      }),
+    ),
+  ).toMatchInlineSnapshot(`
+    "✅ Repo account-x/repo-x was allowed access to a token:
+      ✅ Read access to account-a was requested without a role
+      ✅ Sufficient access to account-a based on 1 rule:
+        ✅ Rule #1 gave sufficient access:
+          ✅ contents: have write, wanted read
           ✅ metadata: have read, wanted read"
   `);
 });
@@ -306,7 +370,7 @@ it("supports rule descriptions", () => {
   expect(
     explain(
       authorizer.authorizeForAccount("account-x", {
-        role: undefined,
+        role: "role-a",
         account: "account-a",
         repos: [],
         permissions: { metadata: "read" },
@@ -314,6 +378,7 @@ it("supports rule descriptions", () => {
     ),
   ).toMatchInlineSnapshot(`
     "✅ Account account-x was allowed access to a token:
+      ✅ Read access to account-a was requested with role role-a
       ✅ Sufficient access to account-a based on 1 rule:
         ✅ Rule #1: "<description>" gave sufficient access:
           ✅ metadata: have read, wanted read"
@@ -321,7 +386,7 @@ it("supports rule descriptions", () => {
   expect(
     explain(
       authorizer.authorizeForRepo("account-x/repo-x", {
-        role: undefined,
+        role: "role-a",
         account: "account-a",
         repos: [],
         permissions: { metadata: "read" },
@@ -329,6 +394,7 @@ it("supports rule descriptions", () => {
     ),
   ).toMatchInlineSnapshot(`
     "✅ Repo account-x/repo-x was allowed access to a token:
+      ✅ Read access to account-a was requested with role role-a
       ✅ Sufficient access to account-a based on 1 rule:
         ✅ Rule #1: "<description>" gave sufficient access:
           ✅ metadata: have read, wanted read"
@@ -356,7 +422,7 @@ it("sorts permissions in the explanation", () => {
   expect(
     explain(
       authorizer.authorizeForAccount("account-x", {
-        role: undefined,
+        role: "role-a",
         account: "account-a",
         repos: [],
         permissions: { metadata: "read", contents: "write" },
@@ -364,6 +430,7 @@ it("sorts permissions in the explanation", () => {
     ),
   ).toMatchInlineSnapshot(`
     "✅ Account account-x was allowed access to a token:
+      ✅ Write access to account-a was requested with role role-a
       ✅ Sufficient access to account-a based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ contents: have write, wanted write
@@ -372,7 +439,7 @@ it("sorts permissions in the explanation", () => {
   expect(
     explain(
       authorizer.authorizeForRepo("account-x/repo-x", {
-        role: undefined,
+        role: "role-a",
         account: "account-a",
         repos: [],
         permissions: { metadata: "read", contents: "write" },
@@ -380,6 +447,7 @@ it("sorts permissions in the explanation", () => {
     ),
   ).toMatchInlineSnapshot(`
     "✅ Repo account-x/repo-x was allowed access to a token:
+      ✅ Write access to account-a was requested with role role-a
       ✅ Sufficient access to account-a based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ contents: have write, wanted write
@@ -408,7 +476,7 @@ it("doesn't allow tokens for unauthorized consumers", () => {
   expect(
     explain(
       authorizer.authorizeForAccount("account-y", {
-        role: undefined,
+        role: "role-a",
         account: "account-a",
         repos: [],
         permissions: { metadata: "read" },
@@ -416,12 +484,13 @@ it("doesn't allow tokens for unauthorized consumers", () => {
     ),
   ).toMatchInlineSnapshot(`
     "❌ Account account-y was denied access to a token:
+      ✅ Read access to account-a was requested with role role-a
       ❌ Insufficient access to account-a (no matching rules)"
   `);
   expect(
     explain(
       authorizer.authorizeForRepo("account-y/repo-x", {
-        role: undefined,
+        role: "role-a",
         account: "account-a",
         repos: [],
         permissions: { metadata: "read" },
@@ -429,12 +498,13 @@ it("doesn't allow tokens for unauthorized consumers", () => {
     ),
   ).toMatchInlineSnapshot(`
     "❌ Repo account-y/repo-x was denied access to a token:
+      ✅ Read access to account-a was requested with role role-a
       ❌ Insufficient access to account-a (no matching rules)"
   `);
   expect(
     explain(
       authorizer.authorizeForRepo("account-x/repo-y", {
-        role: undefined,
+        role: "role-a",
         account: "account-a",
         repos: [],
         permissions: { metadata: "read" },
@@ -442,12 +512,13 @@ it("doesn't allow tokens for unauthorized consumers", () => {
     ),
   ).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-y was denied access to a token:
+      ✅ Read access to account-a was requested with role role-a
       ❌ Insufficient access to account-a (no matching rules)"
   `);
   expect(
     explain(
       authorizer.authorizeForRepo("account-y/repo-y", {
-        role: undefined,
+        role: "role-a",
         account: "account-a",
         repos: [],
         permissions: { metadata: "read" },
@@ -455,6 +526,7 @@ it("doesn't allow tokens for unauthorized consumers", () => {
     ),
   ).toMatchInlineSnapshot(`
     "❌ Repo account-y/repo-y was denied access to a token:
+      ✅ Read access to account-a was requested with role role-a
       ❌ Insufficient access to account-a (no matching rules)"
   `);
 });
@@ -480,7 +552,7 @@ it("doesn't allow tokens for unauthorized resource repos", () => {
   expect(
     explain(
       authorizer.authorizeForAccount("account-x", {
-        role: undefined,
+        role: "role-a",
         account: "account-a",
         repos: ["repo-y"],
         permissions: { contents: "write" },
@@ -488,12 +560,13 @@ it("doesn't allow tokens for unauthorized resource repos", () => {
     ),
   ).toMatchInlineSnapshot(`
     "❌ Account account-x was denied access to a token:
+      ✅ Write access to repos in account-a was requested with role role-a
       ❌ Insufficient access to repo account-a/repo-y (no matching rules)"
   `);
   expect(
     explain(
       authorizer.authorizeForAccount("account-x", {
-        role: undefined,
+        role: "role-a",
         account: "account-y",
         repos: [],
         permissions: { contents: "write" },
@@ -501,12 +574,13 @@ it("doesn't allow tokens for unauthorized resource repos", () => {
     ),
   ).toMatchInlineSnapshot(`
     "❌ Account account-x was denied access to a token:
+      ✅ Write access to account-y was requested with role role-a
       ❌ Insufficient access to account-y (no matching rules)"
   `);
   expect(
     explain(
       authorizer.authorizeForRepo("account-x/repo-x", {
-        role: undefined,
+        role: "role-a",
         account: "account-a",
         repos: ["repo-y"],
         permissions: { contents: "write" },
@@ -514,12 +588,13 @@ it("doesn't allow tokens for unauthorized resource repos", () => {
     ),
   ).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x was denied access to a token:
+      ✅ Write access to repos in account-a was requested with role role-a
       ❌ Insufficient access to repo account-a/repo-y (no matching rules)"
   `);
   expect(
     explain(
       authorizer.authorizeForRepo("account-x/repo-x", {
-        role: undefined,
+        role: "role-a",
         account: "account-y",
         repos: [],
         permissions: { contents: "write" },
@@ -527,6 +602,7 @@ it("doesn't allow tokens for unauthorized resource repos", () => {
     ),
   ).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x was denied access to a token:
+      ✅ Write access to account-y was requested with role role-a
       ❌ Insufficient access to account-y (no matching rules)"
   `);
 });
@@ -552,7 +628,7 @@ it("doesn't allow tokens for unauthorized permissions", () => {
   expect(
     explain(
       authorizer.authorizeForAccount("account-x", {
-        role: undefined,
+        role: "role-a",
         account: "account-a",
         repos: [],
         permissions: { contents: "read" },
@@ -560,6 +636,7 @@ it("doesn't allow tokens for unauthorized permissions", () => {
     ),
   ).toMatchInlineSnapshot(`
     "❌ Account account-x was denied access to a token:
+      ✅ Read access to account-a was requested with role role-a
       ❌ Insufficient access to account-a based on 1 rule:
         ❌ Rule #1 gave insufficient access:
           ❌ contents: have none, wanted read"
@@ -567,7 +644,7 @@ it("doesn't allow tokens for unauthorized permissions", () => {
   expect(
     explain(
       authorizer.authorizeForRepo("account-x/repo-x", {
-        role: undefined,
+        role: "role-a",
         account: "account-a",
         repos: [],
         permissions: { contents: "read" },
@@ -575,6 +652,7 @@ it("doesn't allow tokens for unauthorized permissions", () => {
     ),
   ).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x was denied access to a token:
+      ✅ Read access to account-a was requested with role role-a
       ❌ Insufficient access to account-a based on 1 rule:
         ❌ Rule #1 gave insufficient access:
           ❌ contents: have none, wanted read"
@@ -602,7 +680,7 @@ it("doesn't allow tokens where only some of the permissions are authorized", () 
   expect(
     explain(
       authorizer.authorizeForAccount("account-x", {
-        role: undefined,
+        role: "role-a",
         account: "account-a",
         repos: [],
         permissions: { contents: "read", metadata: "read" },
@@ -610,6 +688,7 @@ it("doesn't allow tokens where only some of the permissions are authorized", () 
     ),
   ).toMatchInlineSnapshot(`
     "❌ Account account-x was denied access to a token:
+      ✅ Read access to account-a was requested with role role-a
       ❌ Insufficient access to account-a based on 1 rule:
         ❌ Rule #1 gave insufficient access:
           ❌ contents: have none, wanted read
@@ -618,7 +697,7 @@ it("doesn't allow tokens where only some of the permissions are authorized", () 
   expect(
     explain(
       authorizer.authorizeForRepo("account-x/repo-x", {
-        role: undefined,
+        role: "role-a",
         account: "account-a",
         repos: [],
         permissions: { contents: "read", metadata: "read" },
@@ -626,6 +705,7 @@ it("doesn't allow tokens where only some of the permissions are authorized", () 
     ),
   ).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x was denied access to a token:
+      ✅ Read access to account-a was requested with role role-a
       ❌ Insufficient access to account-a based on 1 rule:
         ❌ Rule #1 gave insufficient access:
           ❌ contents: have none, wanted read
@@ -666,7 +746,7 @@ it("doesn't allow tokens that are denied by a wildcard rule", () => {
   expect(
     explain(
       authorizer.authorizeForAccount("account-x", {
-        role: undefined,
+        role: "role-a",
         account: "account-a",
         repos: [],
         permissions: { metadata: "read" },
@@ -674,6 +754,7 @@ it("doesn't allow tokens that are denied by a wildcard rule", () => {
     ),
   ).toMatchInlineSnapshot(`
     "❌ Account account-x was denied access to a token:
+      ✅ Read access to account-a was requested with role role-a
       ❌ Insufficient access to account-a based on 2 rules:
         ✅ Rule #1 gave sufficient access:
           ✅ metadata: have read, wanted read
@@ -683,7 +764,7 @@ it("doesn't allow tokens that are denied by a wildcard rule", () => {
   expect(
     explain(
       authorizer.authorizeForRepo("account-x/repo-x", {
-        role: undefined,
+        role: "role-a",
         account: "account-a",
         repos: [],
         permissions: { metadata: "read" },
@@ -691,6 +772,7 @@ it("doesn't allow tokens that are denied by a wildcard rule", () => {
     ),
   ).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x was denied access to a token:
+      ✅ Read access to account-a was requested with role role-a
       ❌ Insufficient access to account-a based on 2 rules:
         ✅ Rule #1 gave sufficient access:
           ✅ metadata: have read, wanted read
@@ -720,7 +802,7 @@ it("doesn't allow tokens when the actual access level is lower than requested", 
   expect(
     explain(
       authorizer.authorizeForAccount("account-x", {
-        role: undefined,
+        role: "role-a",
         account: "account-a",
         repos: [],
         permissions: { repository_projects: "admin" },
@@ -728,6 +810,7 @@ it("doesn't allow tokens when the actual access level is lower than requested", 
     ),
   ).toMatchInlineSnapshot(`
     "❌ Account account-x was denied access to a token:
+      ✅ Admin access to account-a was requested with role role-a
       ❌ Insufficient access to account-a based on 1 rule:
         ❌ Rule #1 gave insufficient access:
           ❌ repository_projects: have write, wanted admin"
@@ -735,7 +818,7 @@ it("doesn't allow tokens when the actual access level is lower than requested", 
   expect(
     explain(
       authorizer.authorizeForRepo("account-x/repo-x", {
-        role: undefined,
+        role: "role-a",
         account: "account-a",
         repos: [],
         permissions: { repository_projects: "admin" },
@@ -743,6 +826,7 @@ it("doesn't allow tokens when the actual access level is lower than requested", 
     ),
   ).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x was denied access to a token:
+      ✅ Admin access to account-a was requested with role role-a
       ❌ Insufficient access to account-a based on 1 rule:
         ❌ Rule #1 gave insufficient access:
           ❌ repository_projects: have write, wanted admin"
@@ -782,7 +866,7 @@ it("doesn't allow tokens for no repos in an account unless a resource rule expli
   expect(
     explain(
       authorizer.authorizeForAccount("account-x", {
-        role: undefined,
+        role: "role-a",
         account: "account-a",
         repos: [],
         permissions: { contents: "read" },
@@ -790,12 +874,13 @@ it("doesn't allow tokens for no repos in an account unless a resource rule expli
     ),
   ).toMatchInlineSnapshot(`
     "❌ Account account-x was denied access to a token:
+      ✅ Read access to account-a was requested with role role-a
       ❌ Insufficient access to account-a (no matching rules)"
   `);
   expect(
     explain(
       authorizer.authorizeForRepo("account-x/repo-x", {
-        role: undefined,
+        role: "role-a",
         account: "account-a",
         repos: [],
         permissions: { contents: "read" },
@@ -803,6 +888,7 @@ it("doesn't allow tokens for no repos in an account unless a resource rule expli
     ),
   ).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x was denied access to a token:
+      ✅ Read access to account-a was requested with role role-a
       ❌ Insufficient access to account-a (no matching rules)"
   `);
 });
@@ -840,7 +926,7 @@ it("doesn't allow tokens when a later rule denies access that a previous rule al
   expect(
     explain(
       authorizer.authorizeForAccount("account-x", {
-        role: undefined,
+        role: "role-a",
         account: "account-a",
         repos: [],
         permissions: { contents: "write" },
@@ -848,6 +934,7 @@ it("doesn't allow tokens when a later rule denies access that a previous rule al
     ),
   ).toMatchInlineSnapshot(`
     "❌ Account account-x was denied access to a token:
+      ✅ Write access to account-a was requested with role role-a
       ❌ Insufficient access to account-a based on 2 rules:
         ✅ Rule #1 gave sufficient access:
           ✅ contents: have write, wanted write
@@ -857,7 +944,7 @@ it("doesn't allow tokens when a later rule denies access that a previous rule al
   expect(
     explain(
       authorizer.authorizeForRepo("account-x/repo-x", {
-        role: undefined,
+        role: "role-a",
         account: "account-a",
         repos: [],
         permissions: { contents: "write" },
@@ -865,6 +952,7 @@ it("doesn't allow tokens when a later rule denies access that a previous rule al
     ),
   ).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x was denied access to a token:
+      ✅ Write access to account-a was requested with role role-a
       ❌ Insufficient access to account-a based on 2 rules:
         ✅ Rule #1 gave sufficient access:
           ✅ contents: have write, wanted write
@@ -906,7 +994,7 @@ it("doesn't allow tokens when a later rule removes access that a previous rule a
   expect(
     explain(
       authorizer.authorizeForAccount("account-x", {
-        role: undefined,
+        role: "role-a",
         account: "account-a",
         repos: [],
         permissions: { contents: "write" },
@@ -914,6 +1002,7 @@ it("doesn't allow tokens when a later rule removes access that a previous rule a
     ),
   ).toMatchInlineSnapshot(`
     "❌ Account account-x was denied access to a token:
+      ✅ Write access to account-a was requested with role role-a
       ❌ Insufficient access to account-a based on 2 rules:
         ✅ Rule #1 gave sufficient access:
           ✅ contents: have write, wanted write
@@ -923,7 +1012,7 @@ it("doesn't allow tokens when a later rule removes access that a previous rule a
   expect(
     explain(
       authorizer.authorizeForRepo("account-x/repo-x", {
-        role: undefined,
+        role: "role-a",
         account: "account-a",
         repos: [],
         permissions: { contents: "write" },
@@ -931,10 +1020,114 @@ it("doesn't allow tokens when a later rule removes access that a previous rule a
     ),
   ).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x was denied access to a token:
+      ✅ Write access to account-a was requested with role role-a
       ❌ Insufficient access to account-a based on 2 rules:
         ✅ Rule #1 gave sufficient access:
           ✅ contents: have write, wanted write
         ❌ Rule #2 gave insufficient access:
           ❌ contents: have none, wanted write"
+  `);
+});
+
+it("doesn't allow write tokens if no role is specified", () => {
+  const authorizer = createTokenAuthorizer({
+    rules: [
+      {
+        resources: [
+          {
+            accounts: ["account-a"],
+            noRepos: true,
+            allRepos: false,
+            selectedRepos: [],
+          },
+        ],
+        consumers: ["account-x", "account-x/repo-x"],
+        permissions: {
+          repository_hooks: "write",
+          repository_projects: "admin",
+        },
+      },
+    ],
+  });
+
+  expect(
+    explain(
+      authorizer.authorizeForAccount("account-x", {
+        role: undefined,
+        account: "account-a",
+        repos: [],
+        permissions: {
+          repository_hooks: "read",
+          repository_projects: "write",
+        },
+      }),
+    ),
+  ).toMatchInlineSnapshot(`
+    "❌ Account account-x was denied access to a token:
+      ❌ Write access to account-a was requested without a role
+      ✅ Sufficient access to account-a based on 1 rule:
+        ✅ Rule #1 gave sufficient access:
+          ✅ repository_hooks: have write, wanted read
+          ✅ repository_projects: have admin, wanted write"
+  `);
+  expect(
+    explain(
+      authorizer.authorizeForAccount("account-x", {
+        role: undefined,
+        account: "account-a",
+        repos: [],
+        permissions: {
+          repository_hooks: "write",
+          repository_projects: "admin",
+        },
+      }),
+    ),
+  ).toMatchInlineSnapshot(`
+    "❌ Account account-x was denied access to a token:
+      ❌ Admin access to account-a was requested without a role
+      ✅ Sufficient access to account-a based on 1 rule:
+        ✅ Rule #1 gave sufficient access:
+          ✅ repository_hooks: have write, wanted write
+          ✅ repository_projects: have admin, wanted admin"
+  `);
+  expect(
+    explain(
+      authorizer.authorizeForRepo("account-x/repo-x", {
+        role: undefined,
+        account: "account-a",
+        repos: [],
+        permissions: {
+          repository_hooks: "read",
+          repository_projects: "write",
+        },
+      }),
+    ),
+  ).toMatchInlineSnapshot(`
+    "❌ Repo account-x/repo-x was denied access to a token:
+      ❌ Write access to account-a was requested without a role
+      ✅ Sufficient access to account-a based on 1 rule:
+        ✅ Rule #1 gave sufficient access:
+          ✅ repository_hooks: have write, wanted read
+          ✅ repository_projects: have admin, wanted write"
+  `);
+  expect(
+    explain(
+      authorizer.authorizeForRepo("account-x/repo-x", {
+        role: undefined,
+        account: "account-a",
+        repos: [],
+        permissions: {
+          repository_hooks: "write",
+          repository_projects: "admin",
+        },
+      }),
+    ),
+  ).toMatchInlineSnapshot(`
+    "❌ Repo account-x/repo-x was denied access to a token:
+      ❌ Admin access to account-a was requested without a role
+      ✅ Sufficient access to account-a based on 1 rule:
+        ✅ Rule #1 gave sufficient access:
+          ✅ repository_hooks: have write, wanted write
+          ✅ repository_projects: have admin, wanted admin"
   `);
 });

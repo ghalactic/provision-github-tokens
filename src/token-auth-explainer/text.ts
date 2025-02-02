@@ -1,5 +1,8 @@
 import { isSufficientAccess } from "../access-level.js";
-import type { InstallationPermissions } from "../type/github-api.js";
+import type {
+  InstallationPermissions,
+  PermissionAccess,
+} from "../type/github-api.js";
 import type { PermissionsRule } from "../type/permissions-rule.js";
 import type {
   TokenAuthResourceResult,
@@ -14,6 +17,12 @@ import type {
 const ALLOWED_ICON = "✅";
 const DENIED_ICON = "❌";
 
+const ACCESS_LEVELS: Record<PermissionAccess, string> = {
+  admin: "Admin",
+  read: "Read",
+  write: "Write",
+};
+
 export function createTextAuthExplainer(): TokenAuthResultExplainer<string> {
   return (result) => {
     if (result.type === "ALL_REPOS") return explainAllRepos(result);
@@ -23,27 +32,34 @@ export function createTextAuthExplainer(): TokenAuthResultExplainer<string> {
   };
 
   function explainAllRepos(result: TokenAuthResultAllRepos): string {
-    const { account, isAllowed, rules, want } = result;
+    const { account, isSufficient, rules, want } = result;
+    const subject = `all repos in ${account}`;
 
     return (
       `${explainSummary(result)}\n  ` +
-      `${renderIcon(isAllowed)} ${isAllowed ? "Sufficient" : "Insufficient"} ` +
-      `access to all repos in ${account} ${explainBasedOnRules(want, rules)}`
+      `${explainMaxAccessAndRole(result, subject)}\n  ` +
+      `${renderIcon(isSufficient)} ` +
+      `${isSufficient ? "Sufficient" : "Insufficient"} ` +
+      `access to ${subject} ${explainBasedOnRules(want, rules)}`
     );
   }
 
   function explainNoRepos(result: TokenAuthResultNoRepos): string {
-    const { account, isAllowed, rules, want } = result;
+    const { account, isSufficient, rules, want } = result;
 
     return (
       `${explainSummary(result)}\n  ` +
-      `${renderIcon(isAllowed)} ${isAllowed ? "Sufficient" : "Insufficient"} ` +
+      `${explainMaxAccessAndRole(result, account)}\n  ` +
+      `${renderIcon(isSufficient)} ` +
+      `${isSufficient ? "Sufficient" : "Insufficient"} ` +
       `access to ${account} ${explainBasedOnRules(want, rules)}`
     );
   }
 
   function explainSelectedRepos(result: TokenAuthResultSelectedRepos): string {
-    const { results, want } = result;
+    const { account, results, want } = result;
+    const subject = `repos in ${account}`;
+
     const resourceEntries = Object.entries(results).sort(([a], [b]) =>
       a.localeCompare(b),
     );
@@ -54,7 +70,11 @@ export function createTextAuthExplainer(): TokenAuthResultExplainer<string> {
         "\n" + explainResourceRepo(resourceRepo, want, resourceResult);
     }
 
-    return explainSummary(result) + explainedResources;
+    return (
+      `${explainSummary(result)}\n  ` +
+      `${explainMaxAccessAndRole(result, subject)}` +
+      explainedResources
+    );
   }
 
   function explainSummary({
@@ -74,14 +94,27 @@ export function createTextAuthExplainer(): TokenAuthResultExplainer<string> {
     );
   }
 
+  function explainMaxAccessAndRole(
+    { role, maxWant, isMissingRole }: TokenAuthResult,
+    accessTo: string,
+  ): string {
+    return (
+      `${renderIcon(!isMissingRole)} ${ACCESS_LEVELS[maxWant]} ` +
+      `access to ${accessTo} ` +
+      (role
+        ? `was requested with role ${role}`
+        : "was requested without a role")
+    );
+  }
+
   function explainResourceRepo(
     resource: string,
     want: InstallationPermissions,
-    { isAllowed, rules }: TokenAuthResourceResult,
+    { isSufficient, rules }: TokenAuthResourceResult,
   ): string {
     return (
-      `  ` +
-      `${renderIcon(isAllowed)} ${isAllowed ? "Sufficient" : "Insufficient"} ` +
+      `  ${renderIcon(isSufficient)} ` +
+      `${isSufficient ? "Sufficient" : "Insufficient"} ` +
       `access to repo ${resource} ${explainBasedOnRules(want, rules)}`
     );
   }
@@ -110,11 +143,11 @@ export function createTextAuthExplainer(): TokenAuthResultExplainer<string> {
 
   function explainRule(
     want: InstallationPermissions,
-    { index, rule, have, isAllowed }: TokenAuthResourceResultRuleResult,
+    { index, rule, have, isSufficient }: TokenAuthResourceResultRuleResult,
   ): string {
     return (
-      `    ${renderIcon(isAllowed)} Rule ${renderRule(index, rule)} ` +
-      `gave ${isAllowed ? "sufficient" : "insufficient"} access:` +
+      `    ${renderIcon(isSufficient)} Rule ${renderRule(index, rule)} ` +
+      `gave ${isSufficient ? "sufficient" : "insufficient"} access:` +
       renderPermissionComparison("      ", have, want)
     );
   }

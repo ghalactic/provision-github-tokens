@@ -1,3 +1,4 @@
+import { isWriteAccess, maxAccess } from "./access-level.js";
 import { createGitHubPattern } from "./github-pattern.js";
 import { createNamePattern } from "./name-pattern.js";
 import { anyPatternMatches, type Pattern } from "./pattern.js";
@@ -66,9 +67,9 @@ export function createTokenAuthorizer(
     consumer: TokenAuthConsumer,
     request: TokenRequest,
   ): TokenAuthResult {
-    const { account: resourceAccount, permissions: want } = request;
+    const { role, account: resourceAccount, permissions: want } = request;
     const rules = rulesForConsumer(consumer);
-    let isAllowed = false;
+    let isSufficient = false;
 
     const ruleResults: TokenAuthResourceResultRuleResult[] = [];
     const have: InstallationPermissions = {};
@@ -90,23 +91,32 @@ export function createTokenAuthorizer(
       updatePermissions(have, rule.permissions);
 
       // Token is allowed if last rule is allowed
-      isAllowed = isSufficientPermissions(have, want);
+      isSufficient = isSufficientPermissions(have, want);
 
       ruleResults.push({
         index: i,
         rule,
         have: structuredClone(have),
-        isAllowed,
+        isSufficient,
       });
     }
+
+    const maxWant = maxAccess(want);
+    const isWrite = isWriteAccess(maxWant);
+    const isMissingRole = isWrite && !role;
+    const isAllowed = isSufficient && !isMissingRole;
 
     return {
       type: "ALL_REPOS",
       consumer,
+      role,
       account: resourceAccount,
       rules: ruleResults,
       have,
       want,
+      maxWant,
+      isSufficient,
+      isMissingRole,
       isAllowed,
     };
   }
@@ -115,9 +125,9 @@ export function createTokenAuthorizer(
     consumer: TokenAuthConsumer,
     request: TokenRequest,
   ): TokenAuthResult {
-    const { account: resourceAccount, permissions: want } = request;
+    const { role, account: resourceAccount, permissions: want } = request;
     const rules = rulesForConsumer(consumer);
-    let isAllowed = false;
+    let isSufficient = false;
 
     const ruleResults: TokenAuthResourceResultRuleResult[] = [];
     const have: InstallationPermissions = {};
@@ -139,23 +149,32 @@ export function createTokenAuthorizer(
       updatePermissions(have, rule.permissions);
 
       // Token is allowed if last rule is allowed
-      isAllowed = isSufficientPermissions(have, want);
+      isSufficient = isSufficientPermissions(have, want);
 
       ruleResults.push({
         index: i,
         rule,
         have: structuredClone(have),
-        isAllowed,
+        isSufficient,
       });
     }
+
+    const maxWant = maxAccess(want);
+    const isWrite = isWriteAccess(maxWant);
+    const isMissingRole = isWrite && !role;
+    const isAllowed = isSufficient && !isMissingRole;
 
     return {
       type: "NO_REPOS",
       consumer,
+      role,
       account: resourceAccount,
       rules: ruleResults,
       have,
       want,
+      maxWant,
+      isSufficient,
+      isMissingRole,
       isAllowed,
     };
   }
@@ -164,9 +183,9 @@ export function createTokenAuthorizer(
     consumer: TokenAuthConsumer,
     request: TokenRequest,
   ): TokenAuthResult {
-    const { account: resourceAccount, permissions: want } = request;
+    const { role, account: resourceAccount, permissions: want } = request;
     const rules = rulesForConsumer(consumer);
-    let isAllowed = true;
+    let isSufficient = true;
 
     const resourceResults: Record<string, TokenAuthResourceResult> = {};
 
@@ -174,7 +193,7 @@ export function createTokenAuthorizer(
       const resource = `${resourceAccount}/${resourceRepo}`;
       const ruleResults: TokenAuthResourceResultRuleResult[] = [];
       const have: InstallationPermissions = {};
-      let isResourceAllowed = false;
+      let isResourceSufficient = false;
 
       for (const i of rules) {
         const rule = config.rules[i];
@@ -194,31 +213,40 @@ export function createTokenAuthorizer(
         updatePermissions(have, rule.permissions);
 
         // Resource is allowed if last rule is allowed
-        isResourceAllowed = isSufficientPermissions(have, want);
+        isResourceSufficient = isSufficientPermissions(have, want);
 
         ruleResults.push({
           index: i,
           rule,
           have: structuredClone(have),
-          isAllowed: isResourceAllowed,
+          isSufficient: isResourceSufficient,
         });
       }
 
       // Token is allowed if all resources are allowed
-      isAllowed &&= isResourceAllowed;
+      isSufficient &&= isResourceSufficient;
       resourceResults[resource] = {
         rules: ruleResults,
         have,
-        isAllowed: isResourceAllowed,
+        isSufficient: isResourceSufficient,
       };
     }
+
+    const maxWant = maxAccess(want);
+    const isWrite = isWriteAccess(maxWant);
+    const isMissingRole = isWrite && !role;
+    const isAllowed = isSufficient && !isMissingRole;
 
     return {
       type: "SELECTED_REPOS",
       consumer,
+      role,
       account: resourceAccount,
       results: resourceResults,
       want,
+      maxWant,
+      isSufficient,
+      isMissingRole,
       isAllowed,
     };
   }
