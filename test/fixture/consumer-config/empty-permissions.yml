@@ -1,0 +1,7 @@
+# yaml-language-server: $schema=https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json
+$schema: https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json
+
+tokens:
+  emptyPermissions:
+    repos: [repo-a]
+    permissions: {}

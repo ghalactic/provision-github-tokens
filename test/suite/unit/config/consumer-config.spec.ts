@@ -279,6 +279,33 @@ it("parses consumer configs that are empty", async () => {
   } satisfies ConsumerConfig);
 });
 
+it("throws when an invalid token name is defined", async () => {
+  const fixturePath = join(fixturesPath, "invalid-token-name.yml");
+  const yaml = await readFile(fixturePath, "utf-8");
+
+  expect(throws(() => parseConsumerConfig("account-self", "repo-self", yaml)))
+    .toMatchInlineSnapshot(`
+      "Parsing of consumer configuration failed for "# yaml-language-server: $schema=https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json\\n$schema: https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json\\n\\ntokens:\\n  invalid.token.name:\\n    repos: [repo-a]\\n    permissions: { contents: read }\\n"
+
+      Caused by: Invalid consumer configuration:
+        - must only contain alphanumeric characters, hyphens, or underscores (/tokens)
+        - property name must be valid (/tokens)"
+    `);
+});
+
+it("throws when empty permissions are specified", async () => {
+  const fixturePath = join(fixturesPath, "empty-permissions.yml");
+  const yaml = await readFile(fixturePath, "utf-8");
+
+  expect(throws(() => parseConsumerConfig("account-self", "repo-self", yaml)))
+    .toMatchInlineSnapshot(`
+      "Parsing of consumer configuration failed for "# yaml-language-server: $schema=https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json\\n$schema: https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json\\n\\ntokens:\\n  emptyPermissions:\\n    repos: [repo-a]\\n    permissions: {}\\n"
+
+      Caused by: Invalid consumer configuration:
+        - must NOT have fewer than 1 properties (/tokens/emptyPermissions/permissions)"
+    `);
+});
+
 it("throws when an invalid pattern is used in /provision/secrets/<name>/github/repos/<pattern>", async () => {
   const fixturePath = join(
     fixturesPath,
@@ -293,20 +320,6 @@ it("throws when an invalid pattern is used in /provision/secrets/<name>/github/r
       Caused by: Invalid consumer configuration:
         - must be a repo pattern in the form of "account/repo", or "./repo" (/provision/secrets/SECRET_A/github/repos)
         - property name must be valid (/provision/secrets/SECRET_A/github/repos)"
-    `);
-});
-
-it("throws when an invalid token name is defined", async () => {
-  const fixturePath = join(fixturesPath, "invalid-token-name.yml");
-  const yaml = await readFile(fixturePath, "utf-8");
-
-  expect(throws(() => parseConsumerConfig("account-self", "repo-self", yaml)))
-    .toMatchInlineSnapshot(`
-      "Parsing of consumer configuration failed for "# yaml-language-server: $schema=https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json\\n$schema: https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json\\n\\ntokens:\\n  invalid.token.name:\\n    repos: [repo-a]\\n    permissions: { contents: read }\\n"
-
-      Caused by: Invalid consumer configuration:
-        - must only contain alphanumeric characters, hyphens, or underscores (/tokens)
-        - property name must be valid (/tokens)"
     `);
 });
 

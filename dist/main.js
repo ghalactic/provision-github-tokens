@@ -50775,6 +50775,7 @@ var generated_consumer_token_permissions_v1_schema_default = {
       ]
     }
   },
+  minProperties: 1,
   additionalProperties: {
     type: "string",
     description: "The level of permission to grant the access token.",

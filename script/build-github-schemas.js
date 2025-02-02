@@ -16,6 +16,7 @@ await writeSchema(
       description:
         "The permissions that the consumer is requesting for the specified repos.",
       title: undefined,
+      minProperties: 1,
       additionalProperties: {
         type: "string",
         description: "The level of permission to grant the access token.",
