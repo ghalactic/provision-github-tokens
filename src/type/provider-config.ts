@@ -1,40 +1,18 @@
 import type { PermissionsRule } from "./permissions-rule.js";
+import type { ProvisionSecretsRule } from "./provision-rule.js";
 
 export type ProviderConfig = {
   $schema?: string;
   permissions: ProviderPermissionsConfig;
-  provision: {
-    rules: {
-      secrets: {
-        description?: string;
-        secrets: string[];
-        requesters: string[];
-        to: {
-          github: {
-            account: ProviderConfigGitHubAccountSecretTypes;
-            accounts: Record<string, ProviderConfigGitHubAccountSecretTypes>;
-            repo: ProviderConfigGitHubRepoSecretTypes;
-            repos: Record<string, ProviderConfigGitHubRepoSecretTypes>;
-          };
-        };
-      }[];
-    };
-  };
+  provision: ProviderProvisionConfig;
 };
 
 export type ProviderPermissionsConfig = {
   rules: PermissionsRule[];
 };
 
-type ProviderConfigGitHubAccountSecretTypes = {
-  actions?: "allow" | "deny";
-  codespaces?: "allow" | "deny";
-  dependabot?: "allow" | "deny";
-};
-
-type ProviderConfigGitHubRepoSecretTypes = {
-  actions?: "allow" | "deny";
-  codespaces?: "allow" | "deny";
-  dependabot?: "allow" | "deny";
-  environments: Record<string, "allow" | "deny">;
+export type ProviderProvisionConfig = {
+  rules: {
+    secrets: ProvisionSecretsRule[];
+  };
 };
