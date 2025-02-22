@@ -57137,8 +57137,7 @@ async function discoverInstallation(octokitFactory, registry, appInput, installa
       installationOctokit.rest.apps.listReposAccessibleToInstallation
     );
     for await (const { data } of repoPages) {
-      const repositories = data;
-      for (const repo of repositories) repos.push(repo);
+      for (const repo of data) repos.push(repo);
     }
   }
   const accountDescription = account && "login" in account ? `account ${account.login}` : "unknown account";
