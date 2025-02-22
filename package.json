@@ -19,7 +19,7 @@
   },
   "devDependencies": {
     "@octokit/openapi": "^18.0.0",
-    "@octokit/openapi-types": "^23.0.1",
+    "@octokit/openapi-types": "^24.0.0",
     "@octokit/types": "^13.8.0",
     "@types/js-yaml": "^4.0.9",
     "@types/json-schema": "^7.0.15",
