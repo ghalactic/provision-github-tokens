@@ -3,6 +3,7 @@ import type {
   PermissionAccess,
 } from "./github-api.js";
 import type { PermissionsRule } from "./permissions-rule.js";
+import type { TokenRequest } from "./token-request.js";
 
 export type TokenAuthResultExplainer<T> = (result: TokenAuthResult) => T;
 
@@ -12,20 +13,13 @@ export type TokenAuthResult =
   | TokenAuthResultSelectedRepos;
 
 export type TokenAuthResultAllRepos = TokenAuthResultCommon &
-  TokenAuthResourceResult & {
-    type: "ALL_REPOS";
-    account: string;
-  };
+  TokenAuthResourceResult & { type: "ALL_REPOS" };
 
 export type TokenAuthResultNoRepos = TokenAuthResultCommon &
-  TokenAuthResourceResult & {
-    type: "NO_REPOS";
-    account: string;
-  };
+  TokenAuthResourceResult & { type: "NO_REPOS" };
 
 export type TokenAuthResultSelectedRepos = TokenAuthResultCommon & {
   type: "SELECTED_REPOS";
-  account: string;
   results: Record<string, TokenAuthResourceResult>;
 };
 
@@ -57,9 +51,8 @@ export type TokenAuthConsumerRepo = {
 };
 
 type TokenAuthResultCommon = {
-  role: string | undefined;
-  account: string;
   consumer: TokenAuthConsumer;
+  request: TokenRequest;
   want: InstallationPermissions;
   maxWant: PermissionAccess;
   isSufficient: boolean;

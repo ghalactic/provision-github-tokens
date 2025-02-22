@@ -32,7 +32,8 @@ export function createTextAuthExplainer(): TokenAuthResultExplainer<string> {
   };
 
   function explainAllRepos(result: TokenAuthResultAllRepos): string {
-    const { account, isSufficient, rules, want } = result;
+    const { request, isSufficient, rules, want } = result;
+    const { account } = request;
     const subject = `all repos in ${account}`;
 
     return (
@@ -45,7 +46,8 @@ export function createTextAuthExplainer(): TokenAuthResultExplainer<string> {
   }
 
   function explainNoRepos(result: TokenAuthResultNoRepos): string {
-    const { account, isSufficient, rules, want } = result;
+    const { request, isSufficient, rules, want } = result;
+    const { account } = request;
 
     return (
       `${explainSummary(result)}\n  ` +
@@ -57,7 +59,8 @@ export function createTextAuthExplainer(): TokenAuthResultExplainer<string> {
   }
 
   function explainSelectedRepos(result: TokenAuthResultSelectedRepos): string {
-    const { account, results, want } = result;
+    const { request, results, want } = result;
+    const { account } = request;
     const subject = `repos in ${account}`;
 
     const resourceEntries = Object.entries(results).sort(([a], [b]) =>
@@ -95,9 +98,11 @@ export function createTextAuthExplainer(): TokenAuthResultExplainer<string> {
   }
 
   function explainMaxAccessAndRole(
-    { role, maxWant, isMissingRole }: TokenAuthResult,
+    { request, maxWant, isMissingRole }: TokenAuthResult,
     accessTo: string,
   ): string {
+    const { role } = request;
+
     return (
       `${renderIcon(!isMissingRole)} ${ACCESS_LEVELS[maxWant]} ` +
       `access to ${accessTo} ` +

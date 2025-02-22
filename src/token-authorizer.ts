@@ -107,10 +107,9 @@ export function createTokenAuthorizer(
     const isAllowed = isSufficient && !isMissingRole;
 
     return {
-      type: "ALL_REPOS",
       consumer,
-      role,
-      account: resourceAccount,
+      request,
+      type: "ALL_REPOS",
       rules: ruleResults,
       have,
       want,
@@ -165,10 +164,9 @@ export function createTokenAuthorizer(
     const isAllowed = isSufficient && !isMissingRole;
 
     return {
-      type: "NO_REPOS",
       consumer,
-      role,
-      account: resourceAccount,
+      request,
+      type: "NO_REPOS",
       rules: ruleResults,
       have,
       want,
@@ -238,10 +236,9 @@ export function createTokenAuthorizer(
     const isAllowed = isSufficient && !isMissingRole;
 
     return {
-      type: "SELECTED_REPOS",
       consumer,
-      role,
-      account: resourceAccount,
+      request,
+      type: "SELECTED_REPOS",
       results: resourceResults,
       want,
       maxWant,
