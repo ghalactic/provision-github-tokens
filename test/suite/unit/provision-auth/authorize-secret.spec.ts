@@ -4,6 +4,114 @@ import { createProvisionAuthorizer } from "../../../../src/provision-authorizer.
 
 const explain = createTextAuthExplainer();
 
+it("supports multiple secrets per rule", () => {
+  const authorizer = createProvisionAuthorizer({
+    rules: {
+      secrets: [
+        {
+          secrets: ["SECRET_A", "SECRET_B"],
+          requesters: ["account-x/repo-x"],
+          to: {
+            github: {
+              account: {},
+              accounts: {
+                "account-a": {
+                  actions: "allow",
+                },
+              },
+              repo: { environments: {} },
+              repos: {},
+            },
+          },
+        },
+      ],
+    },
+  });
+
+  expect(
+    explain(
+      authorizer.authorizeSecret("account-x/repo-x", {
+        name: "SECRET_A",
+        platform: "github",
+        type: "actions",
+        account: "account-a",
+      }),
+    ),
+  ).toMatchInlineSnapshot(`
+    "✅ Repo account-x/repo-x was allowed to provision secret SECRET_A:
+      ✅ Can provision to Actions in account-a based on 1 rule:
+        ✅ Allowed by rule #1"
+  `);
+  expect(
+    explain(
+      authorizer.authorizeSecret("account-x/repo-x", {
+        name: "SECRET_B",
+        platform: "github",
+        type: "actions",
+        account: "account-a",
+      }),
+    ),
+  ).toMatchInlineSnapshot(`
+    "✅ Repo account-x/repo-x was allowed to provision secret SECRET_B:
+      ✅ Can provision to Actions in account-a based on 1 rule:
+        ✅ Allowed by rule #1"
+  `);
+});
+
+it("supports wildcards in secret names", () => {
+  const authorizer = createProvisionAuthorizer({
+    rules: {
+      secrets: [
+        {
+          secrets: ["SECRET_*"],
+          requesters: ["account-x/repo-x"],
+          to: {
+            github: {
+              account: {},
+              accounts: {
+                "account-a": {
+                  actions: "allow",
+                },
+              },
+              repo: { environments: {} },
+              repos: {},
+            },
+          },
+        },
+      ],
+    },
+  });
+
+  expect(
+    explain(
+      authorizer.authorizeSecret("account-x/repo-x", {
+        name: "SECRET_A",
+        platform: "github",
+        type: "actions",
+        account: "account-a",
+      }),
+    ),
+  ).toMatchInlineSnapshot(`
+    "✅ Repo account-x/repo-x was allowed to provision secret SECRET_A:
+      ✅ Can provision to Actions in account-a based on 1 rule:
+        ✅ Allowed by rule #1"
+  `);
+  expect(
+    explain(
+      authorizer.authorizeSecret("account-x/repo-x", {
+        name: "SECRET_B",
+        platform: "github",
+        type: "actions",
+        account: "account-a",
+      }),
+    ),
+  ).toMatchInlineSnapshot(`
+    "✅ Repo account-x/repo-x was allowed to provision secret SECRET_B:
+      ✅ Can provision to Actions in account-a based on 1 rule:
+        ✅ Allowed by rule #1"
+  `);
+});
+
 it("supports rule descriptions", () => {
   const authorizer = createProvisionAuthorizer({
     rules: {
