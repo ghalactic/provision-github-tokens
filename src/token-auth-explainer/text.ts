@@ -32,7 +32,7 @@ export function createTextAuthExplainer(): TokenAuthResultExplainer<string> {
   };
 
   function explainAllRepos(result: TokenAuthResultAllRepos): string {
-    const { request, isSufficient, rules, want } = result;
+    const { request, isSufficient, rules } = result;
     const { account } = request;
     const subject = `all repos in ${account}`;
 
@@ -41,12 +41,12 @@ export function createTextAuthExplainer(): TokenAuthResultExplainer<string> {
       `${explainMaxAccessAndRole(result, subject)}\n  ` +
       `${renderIcon(isSufficient)} ` +
       `${isSufficient ? "Sufficient" : "Insufficient"} ` +
-      `access to ${subject} ${explainBasedOnRules(want, rules)}`
+      `access to ${subject} ${explainBasedOnRules(request.permissions, rules)}`
     );
   }
 
   function explainNoRepos(result: TokenAuthResultNoRepos): string {
-    const { request, isSufficient, rules, want } = result;
+    const { request, isSufficient, rules } = result;
     const { account } = request;
 
     return (
@@ -54,12 +54,12 @@ export function createTextAuthExplainer(): TokenAuthResultExplainer<string> {
       `${explainMaxAccessAndRole(result, account)}\n  ` +
       `${renderIcon(isSufficient)} ` +
       `${isSufficient ? "Sufficient" : "Insufficient"} ` +
-      `access to ${account} ${explainBasedOnRules(want, rules)}`
+      `access to ${account} ${explainBasedOnRules(request.permissions, rules)}`
     );
   }
 
   function explainSelectedRepos(result: TokenAuthResultSelectedRepos): string {
-    const { request, results, want } = result;
+    const { request, results } = result;
     const { account } = request;
     const subject = `repos in ${account}`;
 
@@ -70,7 +70,8 @@ export function createTextAuthExplainer(): TokenAuthResultExplainer<string> {
 
     for (const [resourceRepo, resourceResult] of resourceEntries) {
       explainedResources +=
-        "\n" + explainResourceRepo(resourceRepo, want, resourceResult);
+        "\n" +
+        explainResourceRepo(resourceRepo, request.permissions, resourceResult);
     }
 
     return (

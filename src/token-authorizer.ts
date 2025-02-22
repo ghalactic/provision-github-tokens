@@ -67,7 +67,6 @@ export function createTokenAuthorizer(
     consumer: TokenAuthConsumer,
     request: TokenRequest,
   ): TokenAuthResult {
-    const { role, account: resourceAccount, permissions: want } = request;
     const rules = rulesForConsumer(consumer);
     let isSufficient = false;
 
@@ -81,7 +80,7 @@ export function createTokenAuthorizer(
       for (let j = 0; j < rule.resources.length; ++j) {
         isRelevant =
           rule.resources[j].allRepos === true &&
-          anyPatternMatches(resourcePatterns[i][j].accounts, resourceAccount);
+          anyPatternMatches(resourcePatterns[i][j].accounts, request.account);
 
         if (isRelevant) break;
       }
@@ -91,7 +90,7 @@ export function createTokenAuthorizer(
       updatePermissions(have, rule.permissions);
 
       // Token is allowed if last rule is allowed
-      isSufficient = isSufficientPermissions(have, want);
+      isSufficient = isSufficientPermissions(have, request.permissions);
 
       ruleResults.push({
         index: i,
@@ -101,9 +100,9 @@ export function createTokenAuthorizer(
       });
     }
 
-    const maxWant = maxAccess(want);
+    const maxWant = maxAccess(request.permissions);
     const isWrite = isWriteAccess(maxWant);
-    const isMissingRole = isWrite && !role;
+    const isMissingRole = isWrite && !request.role;
     const isAllowed = isSufficient && !isMissingRole;
 
     return {
@@ -112,7 +111,6 @@ export function createTokenAuthorizer(
       type: "ALL_REPOS",
       rules: ruleResults,
       have,
-      want,
       maxWant,
       isSufficient,
       isMissingRole,
@@ -124,7 +122,6 @@ export function createTokenAuthorizer(
     consumer: TokenAuthConsumer,
     request: TokenRequest,
   ): TokenAuthResult {
-    const { role, account: resourceAccount, permissions: want } = request;
     const rules = rulesForConsumer(consumer);
     let isSufficient = false;
 
@@ -138,7 +135,7 @@ export function createTokenAuthorizer(
       for (let j = 0; j < rule.resources.length; ++j) {
         isRelevant =
           rule.resources[j].noRepos === true &&
-          anyPatternMatches(resourcePatterns[i][j].accounts, resourceAccount);
+          anyPatternMatches(resourcePatterns[i][j].accounts, request.account);
 
         if (isRelevant) break;
       }
@@ -148,7 +145,7 @@ export function createTokenAuthorizer(
       updatePermissions(have, rule.permissions);
 
       // Token is allowed if last rule is allowed
-      isSufficient = isSufficientPermissions(have, want);
+      isSufficient = isSufficientPermissions(have, request.permissions);
 
       ruleResults.push({
         index: i,
@@ -158,9 +155,9 @@ export function createTokenAuthorizer(
       });
     }
 
-    const maxWant = maxAccess(want);
+    const maxWant = maxAccess(request.permissions);
     const isWrite = isWriteAccess(maxWant);
-    const isMissingRole = isWrite && !role;
+    const isMissingRole = isWrite && !request.role;
     const isAllowed = isSufficient && !isMissingRole;
 
     return {
@@ -169,7 +166,6 @@ export function createTokenAuthorizer(
       type: "NO_REPOS",
       rules: ruleResults,
       have,
-      want,
       maxWant,
       isSufficient,
       isMissingRole,
@@ -181,14 +177,13 @@ export function createTokenAuthorizer(
     consumer: TokenAuthConsumer,
     request: TokenRequest,
   ): TokenAuthResult {
-    const { role, account: resourceAccount, permissions: want } = request;
     const rules = rulesForConsumer(consumer);
     let isSufficient = true;
 
     const resourceResults: Record<string, TokenAuthResourceResult> = {};
 
-    for (const resourceRepo of request.repos) {
-      const resource = `${resourceAccount}/${resourceRepo}`;
+    for (const reqRepo of request.repos) {
+      const reqResource = `${request.account}/${reqRepo}`;
       const ruleResults: TokenAuthResourceResultRuleResult[] = [];
       const have: InstallationPermissions = {};
       let isResourceSufficient = false;
@@ -200,8 +195,8 @@ export function createTokenAuthorizer(
         for (let j = 0; j < rule.resources.length; ++j) {
           const { accounts, repos } = resourcePatterns[i][j];
           isRelevant =
-            anyPatternMatches(accounts, resourceAccount) &&
-            anyPatternMatches(repos, resourceRepo);
+            anyPatternMatches(accounts, request.account) &&
+            anyPatternMatches(repos, reqRepo);
 
           if (isRelevant) break;
         }
@@ -211,7 +206,10 @@ export function createTokenAuthorizer(
         updatePermissions(have, rule.permissions);
 
         // Resource is allowed if last rule is allowed
-        isResourceSufficient = isSufficientPermissions(have, want);
+        isResourceSufficient = isSufficientPermissions(
+          have,
+          request.permissions,
+        );
 
         ruleResults.push({
           index: i,
@@ -223,16 +221,16 @@ export function createTokenAuthorizer(
 
       // Token is allowed if all resources are allowed
       isSufficient &&= isResourceSufficient;
-      resourceResults[resource] = {
+      resourceResults[reqResource] = {
         rules: ruleResults,
         have,
         isSufficient: isResourceSufficient,
       };
     }
 
-    const maxWant = maxAccess(want);
+    const maxWant = maxAccess(request.permissions);
     const isWrite = isWriteAccess(maxWant);
-    const isMissingRole = isWrite && !role;
+    const isMissingRole = isWrite && !request.role;
     const isAllowed = isSufficient && !isMissingRole;
 
     return {
@@ -240,7 +238,6 @@ export function createTokenAuthorizer(
       request,
       type: "SELECTED_REPOS",
       results: resourceResults,
-      want,
       maxWant,
       isSufficient,
       isMissingRole,

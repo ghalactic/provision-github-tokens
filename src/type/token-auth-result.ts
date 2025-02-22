@@ -53,7 +53,6 @@ export type TokenAuthConsumerRepo = {
 type TokenAuthResultCommon = {
   consumer: TokenAuthConsumer;
   request: TokenRequest;
-  want: InstallationPermissions;
   maxWant: PermissionAccess;
   isSufficient: boolean;
   isMissingRole: boolean;
