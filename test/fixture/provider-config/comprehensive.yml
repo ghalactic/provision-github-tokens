@@ -9,7 +9,7 @@ permissions:
           noRepos: true
           allRepos: true
           selectedRepos: ["*"]
-      consumers: ["*/*"]
+      consumers: ["*", "*/*"]
       permissions:
         contents: read
         issues: read
@@ -22,7 +22,7 @@ permissions:
           noRepos: true
           allRepos: false
           selectedRepos: []
-      consumers: ["*/*"]
+      consumers: ["*", "*/*"]
       permissions:
         metadata: read
 
@@ -32,7 +32,7 @@ permissions:
           noRepos: false
           allRepos: true
           selectedRepos: []
-      consumers: ["*/*"]
+      consumers: ["*", "*/*"]
       permissions:
         contents: write
 
@@ -42,7 +42,7 @@ permissions:
           noRepos: false
           allRepos: false
           selectedRepos: [repo-a, repo-*]
-      consumers: ["*/*"]
+      consumers: ["*", "*/*"]
       permissions:
         contents: write
 
@@ -52,7 +52,7 @@ permissions:
           noRepos: true
           allRepos: false
           selectedRepos: []
-      consumers: [account-a/*]
+      consumers: [account-a]
       permissions:
         metadata: read
 
@@ -62,11 +62,11 @@ permissions:
           noRepos: true
           allRepos: false
           selectedRepos: []
-      consumers: [<account>/*]
+      consumers: [<account>]
       permissions:
         metadata: read
 
-    - description: Access to same-named repos (weird, but possible)
+    - description: Access to same-named repos in any account (weird, but possible)
       resources:
         - accounts: ["*"]
           noRepos: false
@@ -86,13 +86,13 @@ permissions:
       permissions:
         contents: write
 
-    - description: Access to repos with a specific name in any account (weird, but possible)
+    - description: Access to repos with a specific name from anywhere (weird, but possible)
       resources:
         - accounts: ["*"]
           noRepos: false
           allRepos: false
           selectedRepos: [repo-a]
-      consumers: ["*/*"]
+      consumers: ["*", "*/*"]
       permissions:
         contents: write
 
@@ -116,7 +116,7 @@ permissions:
       permissions:
         contents: write
 
-    - description: Cross-account access
+    - description: Cross-account repo access
       resources:
         - accounts: [account-a]
           noRepos: false
@@ -166,7 +166,7 @@ permissions:
           noRepos: false
           allRepos: false
           selectedRepos: [repo-c, repo-d]
-      consumers: [account-e/repo-e, account-f/repo-f]
+      consumers: [account-e, account-f/repo-f, account-g/repo-g]
       permissions:
         contents: write
 
@@ -176,7 +176,7 @@ permissions:
           noRepos: false
           allRepos: false
           selectedRepos: [repo-*]
-      consumers: ["*-account/*-repo"]
+      consumers: ["*-account", "*-account/*-repo"]
       permissions:
         contents: write
 

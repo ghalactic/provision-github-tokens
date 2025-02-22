@@ -30,7 +30,7 @@ it("parses comprehensive provider config", async () => {
               selectedRepos: ["*"],
             },
           ],
-          consumers: ["*/*"],
+          consumers: ["*", "*/*"],
           permissions: {
             contents: "read",
             issues: "read",
@@ -39,11 +39,8 @@ it("parses comprehensive provider config", async () => {
           },
         },
         {
-          consumers: ["*/*"],
           description: "Access to a specific account from anywhere",
-          permissions: {
-            metadata: "read",
-          },
+          consumers: ["*", "*/*"],
           resources: [
             {
               accounts: ["account-a"],
@@ -52,14 +49,13 @@ it("parses comprehensive provider config", async () => {
               selectedRepos: [],
             },
           ],
+          permissions: {
+            metadata: "read",
+          },
         },
         {
-          consumers: ["*/*"],
           description:
             "Access to all repos in a specific account from anywhere",
-          permissions: {
-            contents: "write",
-          },
           resources: [
             {
               accounts: ["account-a"],
@@ -68,14 +64,14 @@ it("parses comprehensive provider config", async () => {
               selectedRepos: [],
             },
           ],
-        },
-        {
-          consumers: ["*/*"],
-          description:
-            "Access to selected repos in a specific account from anywhere",
+          consumers: ["*", "*/*"],
           permissions: {
             contents: "write",
           },
+        },
+        {
+          description:
+            "Access to selected repos in a specific account from anywhere",
           resources: [
             {
               accounts: ["account-a"],
@@ -84,13 +80,13 @@ it("parses comprehensive provider config", async () => {
               selectedRepos: ["repo-a", "repo-*"],
             },
           ],
+          consumers: ["*", "*/*"],
+          permissions: {
+            contents: "write",
+          },
         },
         {
-          consumers: ["account-a/*"],
           description: "Access to a specific account from the same account",
-          permissions: {
-            metadata: "read",
-          },
           resources: [
             {
               accounts: ["account-a"],
@@ -99,14 +95,14 @@ it("parses comprehensive provider config", async () => {
               selectedRepos: [],
             },
           ],
-        },
-        {
-          consumers: ["<account>/*"],
-          description:
-            "Access when the consuming account is the same as the resource account",
+          consumers: ["account-a"],
           permissions: {
             metadata: "read",
           },
+        },
+        {
+          description:
+            "Access when the consuming account is the same as the resource account",
           resources: [
             {
               accounts: ["*"],
@@ -115,44 +111,45 @@ it("parses comprehensive provider config", async () => {
               selectedRepos: [],
             },
           ],
-        },
-        {
-          consumers: ["*/<repo>"],
-          description: "Access to same-named repos (weird, but possible)",
+          consumers: ["<account>"],
           permissions: {
-            contents: "write",
+            metadata: "read",
           },
-          resources: [
-            {
-              accounts: ["*"],
-              allRepos: false,
-              noRepos: false,
-              selectedRepos: ["*"],
-            },
-          ],
         },
         {
-          consumers: ["<account>/<repo>"],
-          description: "Repo self-access",
-          permissions: {
-            contents: "write",
-          },
-          resources: [
-            {
-              accounts: ["*"],
-              allRepos: false,
-              noRepos: false,
-              selectedRepos: ["*"],
-            },
-          ],
-        },
-        {
-          consumers: ["*/*"],
           description:
-            "Access to repos with a specific name in any account (weird, but possible)",
+            "Access to same-named repos in any account (weird, but possible)",
+          resources: [
+            {
+              accounts: ["*"],
+              allRepos: false,
+              noRepos: false,
+              selectedRepos: ["*"],
+            },
+          ],
+          consumers: ["*/<repo>"],
           permissions: {
             contents: "write",
           },
+        },
+        {
+          description: "Repo self-access",
+          resources: [
+            {
+              accounts: ["*"],
+              allRepos: false,
+              noRepos: false,
+              selectedRepos: ["*"],
+            },
+          ],
+          consumers: ["<account>/<repo>"],
+          permissions: {
+            contents: "write",
+          },
+        },
+        {
+          description:
+            "Access to repos with a specific name from anywhere (weird, but possible)",
           resources: [
             {
               accounts: ["*"],
@@ -161,13 +158,13 @@ it("parses comprehensive provider config", async () => {
               selectedRepos: ["repo-a"],
             },
           ],
-        },
-        {
-          consumers: ["account-self/repo-b"],
-          description: "Cross-repo access (in the provider's account)",
+          consumers: ["*", "*/*"],
           permissions: {
             contents: "write",
           },
+        },
+        {
+          description: "Cross-repo access (in the provider's account)",
           resources: [
             {
               accounts: ["account-self"],
@@ -176,13 +173,13 @@ it("parses comprehensive provider config", async () => {
               selectedRepos: ["repo-a"],
             },
           ],
-        },
-        {
-          consumers: ["account-self/repo-a"],
-          description: "All-repo access (in the provider's account)",
+          consumers: ["account-self/repo-b"],
           permissions: {
             contents: "write",
           },
+        },
+        {
+          description: "All-repo access (in the provider's account)",
           resources: [
             {
               accounts: ["account-self"],
@@ -191,13 +188,13 @@ it("parses comprehensive provider config", async () => {
               selectedRepos: [],
             },
           ],
-        },
-        {
-          consumers: ["account-b/repo-b"],
-          description: "Cross-account access",
+          consumers: ["account-self/repo-a"],
           permissions: {
             contents: "write",
           },
+        },
+        {
+          description: "Cross-account repo access",
           resources: [
             {
               accounts: ["account-a"],
@@ -206,13 +203,28 @@ it("parses comprehensive provider config", async () => {
               selectedRepos: ["repo-a"],
             },
           ],
+          consumers: ["account-b/repo-b"],
+          permissions: {
+            contents: "write",
+          },
         },
         {
-          consumers: ["account-self/repo-b"],
           description: "Revocation of access",
+          consumers: ["account-self/repo-b"],
+          resources: [
+            {
+              accounts: ["account-self"],
+              allRepos: false,
+              noRepos: false,
+              selectedRepos: ["repo-a"],
+            },
+          ],
           permissions: {
             contents: "none",
           },
+        },
+        {
+          description: "Escalation of access",
           resources: [
             {
               accounts: ["account-self"],
@@ -221,13 +233,13 @@ it("parses comprehensive provider config", async () => {
               selectedRepos: ["repo-a"],
             },
           ],
-        },
-        {
           consumers: ["account-self/repo-b"],
-          description: "Escalation of access",
           permissions: {
             contents: "write",
           },
+        },
+        {
+          description: "De-escalation of access",
           resources: [
             {
               accounts: ["account-self"],
@@ -236,28 +248,13 @@ it("parses comprehensive provider config", async () => {
               selectedRepos: ["repo-a"],
             },
           ],
-        },
-        {
           consumers: ["account-self/repo-b"],
-          description: "De-escalation of access",
           permissions: {
             contents: "read",
           },
-          resources: [
-            {
-              accounts: ["account-self"],
-              allRepos: false,
-              noRepos: false,
-              selectedRepos: ["repo-a"],
-            },
-          ],
         },
         {
-          consumers: ["account-e/repo-e", "account-f/repo-f"],
           description: "Multiple resources and consumers",
-          permissions: {
-            contents: "write",
-          },
           resources: [
             {
               accounts: ["account-a", "account-b"],
@@ -272,13 +269,13 @@ it("parses comprehensive provider config", async () => {
               selectedRepos: ["repo-c", "repo-d"],
             },
           ],
-        },
-        {
-          consumers: ["*-account/*-repo"],
-          description: "Wildcards",
+          consumers: ["account-e", "account-f/repo-f", "account-g/repo-g"],
           permissions: {
             contents: "write",
           },
+        },
+        {
+          description: "Wildcards",
           resources: [
             {
               accounts: ["account-*"],
@@ -287,10 +284,22 @@ it("parses comprehensive provider config", async () => {
               selectedRepos: ["repo-*"],
             },
           ],
+          consumers: ["*-account", "*-account/*-repo"],
+          permissions: {
+            contents: "write",
+          },
         },
         {
-          consumers: ["account-self/repo-b"],
           description: "All permissions",
+          resources: [
+            {
+              accounts: ["account-self"],
+              allRepos: true,
+              noRepos: true,
+              selectedRepos: ["*"],
+            },
+          ],
+          consumers: ["account-self/repo-b"],
           permissions: {
             actions: "write",
             administration: "write",
@@ -342,14 +351,6 @@ it("parses comprehensive provider config", async () => {
             workflows: "write",
             xxx: "admin",
           },
-          resources: [
-            {
-              accounts: ["account-self"],
-              allRepos: true,
-              noRepos: true,
-              selectedRepos: ["*"],
-            },
-          ],
         },
       ],
     },
@@ -698,7 +699,7 @@ it("throws when an invalid pattern is used in /permissions/rules/<n>/consumers/<
       "Parsing of provider configuration failed for "# yaml-language-server: $schema=https://ghalactic.github.io/provision-github-tokens/schema/provider.v1.schema.json\\n$schema: https://ghalactic.github.io/provision-github-tokens/schema/provider.v1.schema.json\\n\\npermissions:\\n  rules:\\n    - resources:\\n        - accounts: [account-a]\\n          noRepos: true\\n      consumers: [/repo-x]\\n"
 
       Caused by: Invalid provider configuration:
-        - must be a repo pattern in the form of "account/repo", or "./repo" (/permissions/rules/0/consumers/0)"
+        - must be a pattern in the form of "account", "account/repo", or "./repo" (/permissions/rules/0/consumers/0)"
     `);
 });
 
