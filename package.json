@@ -7,7 +7,7 @@
   },
   "dependencies": {
     "@actions/core": "^1.11.1",
-    "@octokit/action": "^7.0.0",
+    "@octokit/action": "^7.0.1",
     "@octokit/auth-app": "^7.1.5",
     "@octokit/plugin-retry": "^7.1.4",
     "@octokit/request-error": "^6.1.7",

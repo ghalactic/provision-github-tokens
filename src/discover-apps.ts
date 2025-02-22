@@ -166,10 +166,7 @@ async function discoverInstallation(
     );
 
     for await (const { data } of repoPages) {
-      // Octokit type is broken, this is correct
-      const repositories = data as unknown as (typeof data)["repositories"];
-
-      for (const repo of repositories) repos.push(repo);
+      for (const repo of data) repos.push(repo);
     }
   }
 
