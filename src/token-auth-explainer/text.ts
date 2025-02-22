@@ -107,9 +107,7 @@ export function createTextAuthExplainer(): TokenAuthResultExplainer<string> {
     return (
       `${renderIcon(!isMissingRole)} ${ACCESS_LEVELS[maxWant]} ` +
       `access to ${accessTo} ` +
-      (role
-        ? `was requested with role ${role}`
-        : "was requested without a role")
+      (role ? `requested with role ${role}` : "requested without a role")
     );
   }
 
