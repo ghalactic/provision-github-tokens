@@ -200,10 +200,10 @@ export function createTokenAuthorizer(
         let isRelevant = false;
 
         for (let j = 0; j < rule.resources.length; ++j) {
-          const { accounts, selectedRepos } = resourcePatterns[i][j];
+          const { accounts, repos } = resourcePatterns[i][j];
           isRelevant =
             anyPatternMatches(accounts, resourceAccount) &&
-            anyPatternMatches(selectedRepos, resourceRepo);
+            anyPatternMatches(repos, resourceRepo);
 
           if (isRelevant) break;
         }
@@ -266,7 +266,10 @@ export function createTokenAuthorizer(
 
   function patternsForRule(
     rule: PermissionsRule,
-  ): [ResourceCriteriaPatterns[], Pattern[]] {
+  ): [
+    resourcePatterns: ResourceCriteriaPatterns[],
+    consumerPatterns: Pattern[],
+  ] {
     const resourcePatterns: ResourceCriteriaPatterns[] = [];
     const consumerPatterns: Pattern[] = [];
 
@@ -284,16 +287,16 @@ export function createTokenAuthorizer(
     criteria: PermissionsRuleResourceCriteria,
   ): ResourceCriteriaPatterns {
     const accounts: Pattern[] = [];
-    const selectedRepos: Pattern[] = [];
+    const repos: Pattern[] = [];
 
     for (const pattern of criteria.accounts) {
       accounts.push(createNamePattern(pattern));
     }
     for (const pattern of criteria.selectedRepos) {
-      selectedRepos.push(createNamePattern(pattern));
+      repos.push(createNamePattern(pattern));
     }
 
-    return { accounts, selectedRepos };
+    return { accounts, repos };
   }
 
   function rulesForConsumer(consumer: TokenAuthConsumer): number[] {
@@ -324,5 +327,5 @@ export function createTokenAuthorizer(
 
 type ResourceCriteriaPatterns = {
   accounts: Pattern[];
-  selectedRepos: Pattern[];
+  repos: Pattern[];
 };
