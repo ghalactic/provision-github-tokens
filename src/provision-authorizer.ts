@@ -66,8 +66,10 @@ export function createProvisionAuthorizer(
 
             if (repoPatternHave) {
               isRelevant = true;
-              if (ruleHave !== "deny") ruleHave = repoPatternHave;
+              ruleHave = repoPatternHave;
             }
+
+            if (ruleHave === "deny") break;
           }
 
           if (isSelfRepo) {
@@ -98,8 +100,10 @@ export function createProvisionAuthorizer(
 
             if (accountPatternHave) {
               isRelevant = true;
-              if (ruleHave !== "deny") ruleHave = accountPatternHave;
+              ruleHave = accountPatternHave;
             }
+
+            if (ruleHave === "deny") break;
           }
 
           if (isSelfAccount) {
