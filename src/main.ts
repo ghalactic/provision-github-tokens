@@ -19,4 +19,4 @@ async function main(): Promise<void> {
     await discoverApps(octokitFactory, registry, readAppsInput());
   });
 }
-/* v8 ignore end */
+/* v8 ignore stop */
