@@ -42,7 +42,7 @@ it("allows GitHub Codespaces account secrets that should be allowed", () => {
     ),
   ).toMatchInlineSnapshot(`
     "✅ Repo account-x/repo-x was allowed to provision secret SECRET_A:
-      ✅ Can provision to GitHub Codespaces in account-a based on 1 rule:
+      ✅ Can provision to Codespaces in account-a based on 1 rule:
         ✅ Allowed by rule #1"
   `);
   expect(
@@ -56,7 +56,7 @@ it("allows GitHub Codespaces account secrets that should be allowed", () => {
     ),
   ).toMatchInlineSnapshot(`
     "✅ Repo account-y-1/repo-y-1 was allowed to provision secret SECRET_A:
-      ✅ Can provision to GitHub Codespaces in account-b-1 based on 1 rule:
+      ✅ Can provision to Codespaces in account-b-1 based on 1 rule:
         ✅ Allowed by rule #1"
   `);
 });
@@ -94,7 +94,7 @@ it("allows GitHub Codespaces account secrets that should be allowed within the r
     ),
   ).toMatchInlineSnapshot(`
     "✅ Repo account-a/repo-a was allowed to provision secret SECRET_A:
-      ✅ Can provision to GitHub Codespaces in account-a based on 1 rule:
+      ✅ Can provision to Codespaces in account-a based on 1 rule:
         ✅ Allowed by rule #1"
   `);
   expect(
@@ -108,7 +108,7 @@ it("allows GitHub Codespaces account secrets that should be allowed within the r
     ),
   ).toMatchInlineSnapshot(`
     "✅ Repo account-b-1/repo-b-1 was allowed to provision secret SECRET_A:
-      ✅ Can provision to GitHub Codespaces in account-b-1 based on 1 rule:
+      ✅ Can provision to Codespaces in account-b-1 based on 1 rule:
         ✅ Allowed by rule #1"
   `);
 });
@@ -150,7 +150,7 @@ it("allows GitHub Codespaces account secrets that should be allowed within the r
     ),
   ).toMatchInlineSnapshot(`
     "✅ Repo account-a/repo-a was allowed to provision secret SECRET_A:
-      ✅ Can provision to GitHub Codespaces in account-a based on 1 rule:
+      ✅ Can provision to Codespaces in account-a based on 1 rule:
         ✅ Allowed by rule #1"
   `);
 });
@@ -196,7 +196,7 @@ it("allows GitHub Codespaces repo secrets that should be allowed", () => {
     ),
   ).toMatchInlineSnapshot(`
     "✅ Repo account-x/repo-x was allowed to provision secret SECRET_A:
-      ✅ Can provision to GitHub Codespaces in account-a/repo-a based on 1 rule:
+      ✅ Can provision to Codespaces in account-a/repo-a based on 1 rule:
         ✅ Allowed by rule #1"
   `);
   expect(
@@ -211,7 +211,7 @@ it("allows GitHub Codespaces repo secrets that should be allowed", () => {
     ),
   ).toMatchInlineSnapshot(`
     "✅ Repo account-y-1/repo-y-1 was allowed to provision secret SECRET_A:
-      ✅ Can provision to GitHub Codespaces in account-b-1/repo-b-1 based on 1 rule:
+      ✅ Can provision to Codespaces in account-b-1/repo-b-1 based on 1 rule:
         ✅ Allowed by rule #1"
   `);
 });
@@ -251,7 +251,7 @@ it("allows GitHub Codespaces repo secrets that should be allowed within the requ
     ),
   ).toMatchInlineSnapshot(`
     "✅ Repo account-a/repo-a was allowed to provision secret SECRET_A:
-      ✅ Can provision to GitHub Codespaces in account-a/repo-a based on 1 rule:
+      ✅ Can provision to Codespaces in account-a/repo-a based on 1 rule:
         ✅ Allowed by rule #1"
   `);
   expect(
@@ -266,7 +266,7 @@ it("allows GitHub Codespaces repo secrets that should be allowed within the requ
     ),
   ).toMatchInlineSnapshot(`
     "✅ Repo account-b-1/repo-b-1 was allowed to provision secret SECRET_A:
-      ✅ Can provision to GitHub Codespaces in account-b-1/repo-b-1 based on 1 rule:
+      ✅ Can provision to Codespaces in account-b-1/repo-b-1 based on 1 rule:
         ✅ Allowed by rule #1"
   `);
 });
@@ -311,7 +311,7 @@ it("allows GitHub Codespaces repo secrets that should be allowed within the requ
     ),
   ).toMatchInlineSnapshot(`
     "✅ Repo account-a/repo-a was allowed to provision secret SECRET_A:
-      ✅ Can provision to GitHub Codespaces in account-a/repo-a based on 1 rule:
+      ✅ Can provision to Codespaces in account-a/repo-a based on 1 rule:
         ✅ Allowed by rule #1"
   `);
   expect(
@@ -326,7 +326,7 @@ it("allows GitHub Codespaces repo secrets that should be allowed within the requ
     ),
   ).toMatchInlineSnapshot(`
     "✅ Repo account-b-1/repo-b-1 was allowed to provision secret SECRET_A:
-      ✅ Can provision to GitHub Codespaces in account-b-1/repo-b-1 based on 1 rule:
+      ✅ Can provision to Codespaces in account-b-1/repo-b-1 based on 1 rule:
         ✅ Allowed by rule #1"
   `);
 });
@@ -366,7 +366,7 @@ it("doesn't allow GitHub Codespaces account secrets for unauthorized requesters"
     ),
   ).toMatchInlineSnapshot(`
     "❌ Repo account-y/repo-y wasn't allowed to provision secret SECRET_A:
-      ❌ Can't provision to GitHub Codespaces in account-a (no matching rules)"
+      ❌ Can't provision to Codespaces in account-a (no matching rules)"
   `);
 });
 
@@ -403,7 +403,7 @@ it("doesn't allow GitHub Codespaces account secrets within the requesting accoun
     ),
   ).toMatchInlineSnapshot(`
     "❌ Repo account-y/repo-y wasn't allowed to provision secret SECRET_A:
-      ❌ Can't provision to GitHub Codespaces in account-x (no matching rules)"
+      ❌ Can't provision to Codespaces in account-x (no matching rules)"
   `);
   expect(
     explain(
@@ -416,7 +416,7 @@ it("doesn't allow GitHub Codespaces account secrets within the requesting accoun
     ),
   ).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-y wasn't allowed to provision secret SECRET_A:
-      ❌ Can't provision to GitHub Codespaces in account-x (no matching rules)"
+      ❌ Can't provision to Codespaces in account-x (no matching rules)"
   `);
   expect(
     explain(
@@ -429,7 +429,7 @@ it("doesn't allow GitHub Codespaces account secrets within the requesting accoun
     ),
   ).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x wasn't allowed to provision secret SECRET_A:
-      ❌ Can't provision to GitHub Codespaces in account-y (no matching rules)"
+      ❌ Can't provision to Codespaces in account-y (no matching rules)"
   `);
 });
 
@@ -470,7 +470,7 @@ it("doesn't allow GitHub Codespaces account secrets within the requesting accoun
     ),
   ).toMatchInlineSnapshot(`
     "❌ Repo account-a/repo-a wasn't allowed to provision secret SECRET_A:
-      ❌ Can't provision to GitHub Codespaces in account-a based on 1 rule:
+      ❌ Can't provision to Codespaces in account-a based on 1 rule:
         ❌ Denied by rule #1"
   `);
 });
@@ -512,7 +512,7 @@ it("doesn't allow GitHub Codespaces repo secrets for unauthorized requesters", (
     ),
   ).toMatchInlineSnapshot(`
     "❌ Repo account-y/repo-y wasn't allowed to provision secret SECRET_A:
-      ❌ Can't provision to GitHub Codespaces in account-a/repo-a (no matching rules)"
+      ❌ Can't provision to Codespaces in account-a/repo-a (no matching rules)"
   `);
 });
 
@@ -551,7 +551,7 @@ it("doesn't allow GitHub Codespaces repo secrets within the requesting repo for 
     ),
   ).toMatchInlineSnapshot(`
     "❌ Repo account-y/repo-y wasn't allowed to provision secret SECRET_A:
-      ❌ Can't provision to GitHub Codespaces in account-x/repo-x (no matching rules)"
+      ❌ Can't provision to Codespaces in account-x/repo-x (no matching rules)"
   `);
   expect(
     explain(
@@ -565,7 +565,7 @@ it("doesn't allow GitHub Codespaces repo secrets within the requesting repo for 
     ),
   ).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-y wasn't allowed to provision secret SECRET_A:
-      ❌ Can't provision to GitHub Codespaces in account-x/repo-x (no matching rules)"
+      ❌ Can't provision to Codespaces in account-x/repo-x (no matching rules)"
   `);
   expect(
     explain(
@@ -579,7 +579,7 @@ it("doesn't allow GitHub Codespaces repo secrets within the requesting repo for 
     ),
   ).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x wasn't allowed to provision secret SECRET_A:
-      ❌ Can't provision to GitHub Codespaces in account-x/repo-y (no matching rules)"
+      ❌ Can't provision to Codespaces in account-x/repo-y (no matching rules)"
   `);
 });
 
@@ -623,7 +623,7 @@ it("doesn't allow GitHub Codespaces repo secrets within the requesting repo when
     ),
   ).toMatchInlineSnapshot(`
     "❌ Repo account-a/repo-a wasn't allowed to provision secret SECRET_A:
-      ❌ Can't provision to GitHub Codespaces in account-a/repo-a based on 1 rule:
+      ❌ Can't provision to Codespaces in account-a/repo-a based on 1 rule:
         ❌ Denied by rule #1"
   `);
 });

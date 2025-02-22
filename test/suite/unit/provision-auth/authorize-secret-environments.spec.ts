@@ -48,7 +48,7 @@ it("allows GitHub environment secrets that should be allowed", () => {
     ),
   ).toMatchInlineSnapshot(`
     "✅ Repo account-x/repo-x was allowed to provision secret SECRET_A:
-      ✅ Can provision to GitHub environment env-a in account-a/repo-a based on 1 rule:
+      ✅ Can provision to environment env-a in account-a/repo-a based on 1 rule:
         ✅ Allowed by rule #1"
   `);
   expect(
@@ -64,7 +64,7 @@ it("allows GitHub environment secrets that should be allowed", () => {
     ),
   ).toMatchInlineSnapshot(`
     "✅ Repo account-y-1/repo-y-1 was allowed to provision secret SECRET_A:
-      ✅ Can provision to GitHub environment env-b-1 in account-b-1/repo-b-1 based on 1 rule:
+      ✅ Can provision to environment env-b-1 in account-b-1/repo-b-1 based on 1 rule:
         ✅ Allowed by rule #1"
   `);
 });
@@ -107,7 +107,7 @@ it("allows GitHub environment secrets that should be allowed within the requesti
     ),
   ).toMatchInlineSnapshot(`
     "✅ Repo account-a/repo-a was allowed to provision secret SECRET_A:
-      ✅ Can provision to GitHub environment env-a in account-a/repo-a based on 1 rule:
+      ✅ Can provision to environment env-a in account-a/repo-a based on 1 rule:
         ✅ Allowed by rule #1"
   `);
   expect(
@@ -123,7 +123,7 @@ it("allows GitHub environment secrets that should be allowed within the requesti
     ),
   ).toMatchInlineSnapshot(`
     "✅ Repo account-b-1/repo-b-1 was allowed to provision secret SECRET_A:
-      ✅ Can provision to GitHub environment env-b-1 in account-b-1/repo-b-1 based on 1 rule:
+      ✅ Can provision to environment env-b-1 in account-b-1/repo-b-1 based on 1 rule:
         ✅ Allowed by rule #1"
   `);
 });
@@ -172,7 +172,7 @@ it("allows GitHub environment secrets that should be allowed within the requesti
     ),
   ).toMatchInlineSnapshot(`
     "✅ Repo account-a/repo-a was allowed to provision secret SECRET_A:
-      ✅ Can provision to GitHub environment env-a in account-a/repo-a based on 1 rule:
+      ✅ Can provision to environment env-a in account-a/repo-a based on 1 rule:
         ✅ Allowed by rule #1"
   `);
   expect(
@@ -188,7 +188,7 @@ it("allows GitHub environment secrets that should be allowed within the requesti
     ),
   ).toMatchInlineSnapshot(`
     "✅ Repo account-b-1/repo-b-1 was allowed to provision secret SECRET_A:
-      ✅ Can provision to GitHub environment env-b-1 in account-b-1/repo-b-1 based on 1 rule:
+      ✅ Can provision to environment env-b-1 in account-b-1/repo-b-1 based on 1 rule:
         ✅ Allowed by rule #1"
   `);
 });
@@ -232,7 +232,7 @@ it("doesn't allow GitHub environment secrets for unauthorized requesters", () =>
     ),
   ).toMatchInlineSnapshot(`
     "❌ Repo account-y/repo-y wasn't allowed to provision secret SECRET_A:
-      ❌ Can't provision to GitHub environment env-a in account-a/repo-a (no matching rules)"
+      ❌ Can't provision to environment env-a in account-a/repo-a (no matching rules)"
   `);
 });
 
@@ -273,7 +273,7 @@ it("doesn't allow GitHub environment secrets within the requesting repo for unau
     ),
   ).toMatchInlineSnapshot(`
     "❌ Repo account-y/repo-y wasn't allowed to provision secret SECRET_A:
-      ❌ Can't provision to GitHub environment env-x in account-x/repo-x (no matching rules)"
+      ❌ Can't provision to environment env-x in account-x/repo-x (no matching rules)"
   `);
   expect(
     explain(
@@ -288,7 +288,7 @@ it("doesn't allow GitHub environment secrets within the requesting repo for unau
     ),
   ).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-y wasn't allowed to provision secret SECRET_A:
-      ❌ Can't provision to GitHub environment env-x in account-x/repo-x (no matching rules)"
+      ❌ Can't provision to environment env-x in account-x/repo-x (no matching rules)"
   `);
   expect(
     explain(
@@ -303,7 +303,7 @@ it("doesn't allow GitHub environment secrets within the requesting repo for unau
     ),
   ).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x wasn't allowed to provision secret SECRET_A:
-      ❌ Can't provision to GitHub environment env-x in account-x/repo-y (no matching rules)"
+      ❌ Can't provision to environment env-x in account-x/repo-y (no matching rules)"
   `);
   expect(
     explain(
@@ -318,7 +318,7 @@ it("doesn't allow GitHub environment secrets within the requesting repo for unau
     ),
   ).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x wasn't allowed to provision secret SECRET_A:
-      ❌ Can't provision to GitHub environment env-y in account-x/repo-x (no matching rules)"
+      ❌ Can't provision to environment env-y in account-x/repo-x (no matching rules)"
   `);
 });
 
@@ -365,7 +365,7 @@ it("doesn't allow GitHub environment secrets within the requesting repo when den
     ),
   ).toMatchInlineSnapshot(`
     "❌ Repo account-a/repo-a wasn't allowed to provision secret SECRET_A:
-      ❌ Can't provision to GitHub environment env-a in account-a/repo-a based on 1 rule:
+      ❌ Can't provision to environment env-a in account-a/repo-a based on 1 rule:
         ❌ Denied by rule #1"
   `);
 });

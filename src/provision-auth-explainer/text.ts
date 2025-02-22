@@ -56,7 +56,7 @@ export function createTextAuthExplainer(): ProvisionAuthResultExplainer<string> 
     })(request);
     const target = repo ? `${account}/${repo}` : account;
 
-    return `GitHub ${type} in ${target}`;
+    return `${type} in ${target}`;
   }
 
   function explainBasedOnRules(rules: ProvisionAuthRuleResult[]): string {
