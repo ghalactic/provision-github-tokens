@@ -364,3 +364,92 @@ it("doesn't allow secrets when no rule matches the secret name", () => {
       ❌ Can't provision to Actions in account-a (no matching rules)"
   `);
 });
+
+it("doesn't allow secrets when two account patterns match but one allows and one denies", () => {
+  const authorizer = createProvisionAuthorizer({
+    rules: {
+      secrets: [
+        {
+          secrets: ["SECRET_A"],
+          requesters: ["account-x/repo-x"],
+          to: {
+            github: {
+              account: {},
+              accounts: {
+                "*": {
+                  actions: "deny",
+                },
+                "account-a": {
+                  actions: "allow",
+                },
+              },
+              repo: { environments: {} },
+              repos: {},
+            },
+          },
+        },
+      ],
+    },
+  });
+
+  expect(
+    explain(
+      authorizer.authorizeSecret("account-x/repo-x", {
+        name: "SECRET_A",
+        platform: "github",
+        type: "actions",
+        account: "account-a",
+      }),
+    ),
+  ).toMatchInlineSnapshot(`
+    "❌ Repo account-x/repo-x wasn't allowed to provision secret SECRET_A:
+      ❌ Can't provision to Actions in account-a based on 1 rule:
+        ❌ Denied by rule #1"
+  `);
+});
+
+it("doesn't allow secrets when two repo patterns match but one allows and one denies", () => {
+  const authorizer = createProvisionAuthorizer({
+    rules: {
+      secrets: [
+        {
+          secrets: ["SECRET_A"],
+          requesters: ["account-x/repo-x"],
+          to: {
+            github: {
+              account: {},
+              accounts: {},
+              repo: { environments: {} },
+              repos: {
+                "*/*": {
+                  actions: "deny",
+                  environments: {},
+                },
+                "account-a/repo-a": {
+                  actions: "allow",
+                  environments: {},
+                },
+              },
+            },
+          },
+        },
+      ],
+    },
+  });
+
+  expect(
+    explain(
+      authorizer.authorizeSecret("account-x/repo-x", {
+        name: "SECRET_A",
+        platform: "github",
+        type: "actions",
+        account: "account-a",
+        repo: "repo-a",
+      }),
+    ),
+  ).toMatchInlineSnapshot(`
+    "❌ Repo account-x/repo-x wasn't allowed to provision secret SECRET_A:
+      ❌ Can't provision to Actions in account-a/repo-a based on 1 rule:
+        ❌ Denied by rule #1"
+  `);
+});

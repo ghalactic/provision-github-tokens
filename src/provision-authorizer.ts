@@ -64,8 +64,10 @@ export function createProvisionAuthorizer(
                   )
                 : selectBySecretType(rule.to.github.repos[repo], request.type);
 
-            if (repoPatternHave) ruleHave = repoPatternHave;
-            isRelevant = isRelevant || repoPatternHave != null;
+            if (repoPatternHave) {
+              isRelevant = true;
+              if (ruleHave !== "deny") ruleHave = repoPatternHave;
+            }
           }
 
           if (isSelfRepo) {
@@ -78,8 +80,10 @@ export function createProvisionAuthorizer(
                   )
                 : selectBySecretType(rule.to.github.repo, request.type);
 
-            if (selfHave) ruleHave = selfHave;
-            isRelevant = isRelevant || selfHave != null;
+            if (selfHave) {
+              isRelevant = true;
+              ruleHave = selfHave;
+            }
           }
         } else {
           for (let j = 0; j < targetPatterns[i].accounts.length; ++j) {
@@ -92,8 +96,10 @@ export function createProvisionAuthorizer(
               request.type,
             );
 
-            if (accountPatternHave) ruleHave = accountPatternHave;
-            isRelevant = isRelevant || accountPatternHave != null;
+            if (accountPatternHave) {
+              isRelevant = true;
+              if (ruleHave !== "deny") ruleHave = accountPatternHave;
+            }
           }
 
           if (isSelfAccount) {
@@ -102,8 +108,10 @@ export function createProvisionAuthorizer(
               request.type,
             );
 
-            if (selfHave) ruleHave = selfHave;
-            isRelevant = isRelevant || selfHave != null;
+            if (selfHave) {
+              isRelevant = true;
+              ruleHave = selfHave;
+            }
           }
         }
 
