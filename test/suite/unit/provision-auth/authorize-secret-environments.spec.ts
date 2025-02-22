@@ -369,3 +369,48 @@ it("doesn't allow GitHub environment secrets within the requesting repo when den
         ❌ Denied by rule #1"
   `);
 });
+
+it("doesn't allow GitHub environment secrets when two environment patterns match but one allows and one denies", () => {
+  const authorizer = createProvisionAuthorizer({
+    rules: {
+      secrets: [
+        {
+          secrets: ["SECRET_A"],
+          requesters: ["account-x/repo-x"],
+          to: {
+            github: {
+              account: {},
+              accounts: {},
+              repo: { environments: {} },
+              repos: {
+                "account-a/repo-a": {
+                  environments: {
+                    "*": "deny",
+                    "env-a": "allow",
+                  },
+                },
+              },
+            },
+          },
+        },
+      ],
+    },
+  });
+
+  expect(
+    explain(
+      authorizer.authorizeSecret("account-x/repo-x", {
+        name: "SECRET_A",
+        platform: "github",
+        type: "environment",
+        account: "account-a",
+        repo: "repo-a",
+        environment: "env-a",
+      }),
+    ),
+  ).toMatchInlineSnapshot(`
+    "❌ Repo account-x/repo-x wasn't allowed to provision secret SECRET_A:
+      ❌ Can't provision to environment env-a in account-a/repo-a based on 1 rule:
+        ❌ Denied by rule #1"
+  `);
+});

@@ -212,11 +212,15 @@ export function createProvisionAuthorizer(
     environments: Record<string, "allow" | "deny">,
     envPatterns: [env: string, pattern: Pattern][],
   ): "allow" | "deny" | undefined {
-    let have: "allow" | "deny" | undefined;
+    let have: "allow" | undefined;
 
     for (let i = 0; i < envPatterns.length; ++i) {
       const [env, envPattern] = envPatterns[i];
-      if (envPattern.test(reqEnv)) have = environments[env];
+
+      if (!envPattern.test(reqEnv)) continue;
+      if (environments[env] === "deny") return "deny";
+
+      have = environments[env];
     }
 
     return have;
