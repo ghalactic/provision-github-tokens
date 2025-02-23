@@ -8,14 +8,14 @@ import type {
 } from "./type/github-api.js";
 import type { TokenRequest } from "./type/token-request.js";
 
-export type AppRegistry = {
+export type ProvisionAppRegistry = {
   registerApp: (roles: string[], app: App) => void;
   registerInstallation: (installation: Installation) => void;
   registerInstallationRepos: (installationId: number, repos: Repo[]) => void;
   findInstallationForToken: (request: TokenRequest) => number | undefined;
 };
 
-export function createAppRegistry(): AppRegistry {
+export function createProvisionAppRegistry(): ProvisionAppRegistry {
   const apps: Map<number, AppWithRoles> = new Map();
   const installations: Map<number, Installation> = new Map();
   const installationRepos: Map<Installation, Repo[]> = new Map();

@@ -48046,99 +48046,7 @@ require_source_map_support().install();
 // src/main.ts
 var import_core4 = __toESM(require_core(), 1);
 
-// src/access-level.ts
-var ACCESS_RANK = {
-  read: 1,
-  write: 2,
-  admin: 3
-};
-function isSufficientAccess(have, want) {
-  return ACCESS_RANK[have] >= ACCESS_RANK[want];
-}
-function isWriteAccess(access) {
-  return ACCESS_RANK[access] > ACCESS_RANK.read;
-}
-
-// src/app-registry.ts
-function createAppRegistry() {
-  const apps = /* @__PURE__ */ new Map();
-  const installations = /* @__PURE__ */ new Map();
-  const installationRepos = /* @__PURE__ */ new Map();
-  return {
-    registerApp: (roles, app) => {
-      apps.set(app.id, [roles, app]);
-    },
-    registerInstallation: (installation) => {
-      installations.set(installation.id, installation);
-    },
-    registerInstallationRepos: (installationId, repos) => {
-      const installation = installations.get(installationId);
-      if (!installation) {
-        throw new Error(`Installation ${installationId} not registered`);
-      }
-      installationRepos.set(installation, repos);
-    },
-    findInstallationForToken: (request2) => {
-      const tokenHasRole = typeof request2.role === "string";
-      const tokenPerms = Object.entries(request2.permissions);
-      if (!tokenHasRole) {
-        for (const [, access] of tokenPerms) {
-          if (isWriteAccess(access)) return void 0;
-        }
-      }
-      const tokenRepos = Array.isArray(request2.repos) ? request2.repos.reduce(
-        (repos, name) => {
-          repos[name] = true;
-          return repos;
-        },
-        {}
-      ) : {};
-      for (const [installation, repos] of installationRepos) {
-        const appWithRoles = apps.get(installation.app_id);
-        if (!appWithRoles) {
-          throw new Error(
-            `Invariant violation: App ${installation.app_id} not registered`
-          );
-        }
-        const [appRoles] = appWithRoles;
-        if (tokenHasRole) {
-          let appHasRole = false;
-          for (const role of appRoles) {
-            if (role === request2.role) {
-              appHasRole = true;
-              break;
-            }
-          }
-          if (!appHasRole) continue;
-        }
-        let permMatchCount = 0;
-        let repoMatchCount = 0;
-        for (const [name, access] of tokenPerms) {
-          const instAccess = installation.permissions[name];
-          if (!instAccess) continue;
-          if (isSufficientAccess(instAccess, access)) ++permMatchCount;
-        }
-        if (permMatchCount !== tokenPerms.length) continue;
-        if (installation.repository_selection === "all") {
-          if (installation.account && "login" in installation.account && installation.account.login === request2.account) {
-            return installation.id;
-          }
-          continue;
-        }
-        for (const repo of repos) {
-          if (repo.owner.login === request2.account && tokenRepos[repo.name]) {
-            ++repoMatchCount;
-          }
-        }
-        if (repoMatchCount !== request2.repos.length) continue;
-        return installation.id;
-      }
-      return void 0;
-    }
-  };
-}
-
-// src/config/apps-input.ts
+// src/config/provision-apps-input.ts
 var import_core = __toESM(require_core(), 1);
 
 // node_modules/js-yaml/dist/js-yaml.mjs
@@ -50728,44 +50636,6 @@ var safeDump = renamed("safeDump", "dump");
 var import_ajv = __toESM(require_ajv(), 1);
 var import_ajv_errors = __toESM(require_dist(), 1);
 
-// src/schema/apps.v1.schema.json
-var apps_v1_schema_default = {
-  $schema: "http://json-schema.org/draft-07/schema#",
-  $id: "https://ghalactic.github.io/provision-github-tokens/schema/apps.v1.schema.json",
-  title: "Provision GitHub Tokens (apps input)",
-  description: "Apps to use for provisioning tokens.",
-  type: "array",
-  items: {
-    description: "An app to use for provisioning tokens.",
-    type: "object",
-    additionalProperties: false,
-    required: ["appId", "privateKey"],
-    properties: {
-      appId: {
-        description: "The GitHub app ID.",
-        type: "string",
-        minLength: 1
-      },
-      privateKey: {
-        description: "The GitHub app private key in PEM format.",
-        type: "string",
-        minLength: 1
-      },
-      roles: {
-        description: "The roles of the app.",
-        type: "array",
-        uniqueItems: true,
-        default: [],
-        items: {
-          description: "An app role.",
-          type: "string",
-          minLength: 1
-        }
-      }
-    }
-  }
-};
-
 // src/schema/consumer.v1.schema.json
 var consumer_v1_schema_default = {
   $schema: "http://json-schema.org/draft-07/schema#",
@@ -52239,12 +52109,50 @@ var provider_v1_schema_default = {
   }
 };
 
+// src/schema/provision-apps.v1.schema.json
+var provision_apps_v1_schema_default = {
+  $schema: "http://json-schema.org/draft-07/schema#",
+  $id: "https://ghalactic.github.io/provision-github-tokens/schema/provision-apps.v1.schema.json",
+  title: "Provision GitHub Tokens (provisionApps input)",
+  description: "Apps to use for provisioning tokens.",
+  type: "array",
+  items: {
+    description: "An app to use for provisioning tokens.",
+    type: "object",
+    additionalProperties: false,
+    required: ["appId", "privateKey"],
+    properties: {
+      appId: {
+        description: "The GitHub app ID.",
+        type: "string",
+        minLength: 1
+      },
+      privateKey: {
+        description: "The GitHub app private key in PEM format.",
+        type: "string",
+        minLength: 1
+      },
+      roles: {
+        description: "The roles of the app.",
+        type: "array",
+        uniqueItems: true,
+        default: [],
+        items: {
+          description: "An app role.",
+          type: "string",
+          minLength: 1
+        }
+      }
+    }
+  }
+};
+
 // src/config/validation.ts
 var Ajv = import_ajv.default.default;
 var ajvErrors = import_ajv_errors.default.default;
 var ajv = new Ajv({
   schemas: [
-    apps_v1_schema_default,
+    provision_apps_v1_schema_default,
     consumer_v1_schema_default,
     generated_consumer_token_permissions_v1_schema_default,
     provider_v1_schema_default,
@@ -52254,9 +52162,9 @@ var ajv = new Ajv({
   useDefaults: true
 });
 ajvErrors(ajv);
-var validateApps = createValidate(
-  apps_v1_schema_default.$id,
-  "apps input"
+var validateProvisionApps = createValidate(
+  provision_apps_v1_schema_default.$id,
+  "provisionApps input"
 );
 var validateConsumer = createValidate(
   consumer_v1_schema_default.$id,
@@ -52299,23 +52207,25 @@ function renderError(error) {
   return `${message}${subject}`;
 }
 
-// src/config/apps-input.ts
-function readAppsInput() {
-  const yaml = (0, import_core.getInput)("apps");
+// src/config/provision-apps-input.ts
+function readProvisionAppsInput() {
+  const yaml = (0, import_core.getInput)("provisionApps");
   let parsed;
   try {
     parsed = load(yaml);
   } catch (cause) {
-    throw new Error("Parsing of apps action input failed", { cause });
+    throw new Error("Parsing of provisionApps action input failed", { cause });
   }
   try {
-    return validateApps(parsed);
+    return validateProvisionApps(parsed);
   } catch (cause) {
-    throw new Error("Validation of apps action input failed", { cause });
+    throw new Error("Validation of provisionApps action input failed", {
+      cause
+    });
   }
 }
 
-// src/discover-apps.ts
+// src/discover-provision-apps.ts
 var import_core3 = __toESM(require_core(), 1);
 
 // src/error.ts
@@ -57037,8 +56947,8 @@ function pluralize(amount, singular, plural) {
   return amount === 1 ? singular : plural;
 }
 
-// src/discover-apps.ts
-async function discoverApps(octokitFactory, registry, appsInput) {
+// src/discover-provision-apps.ts
+async function discoverProvisionApps(octokitFactory, registry, appsInput) {
   let appIndex = 0;
   for (const appInput of appsInput) {
     try {
@@ -57173,15 +57083,111 @@ async function discoverInstallation(octokitFactory, registry, appInput, installa
   registry.registerInstallationRepos(installationId, repos);
 }
 
+// src/access-level.ts
+var ACCESS_RANK = {
+  read: 1,
+  write: 2,
+  admin: 3
+};
+function isSufficientAccess(have, want) {
+  return ACCESS_RANK[have] >= ACCESS_RANK[want];
+}
+function isWriteAccess(access) {
+  return ACCESS_RANK[access] > ACCESS_RANK.read;
+}
+
+// src/provision-app-registry.ts
+function createProvisionAppRegistry() {
+  const apps = /* @__PURE__ */ new Map();
+  const installations = /* @__PURE__ */ new Map();
+  const installationRepos = /* @__PURE__ */ new Map();
+  return {
+    registerApp: (roles, app) => {
+      apps.set(app.id, [roles, app]);
+    },
+    registerInstallation: (installation) => {
+      installations.set(installation.id, installation);
+    },
+    registerInstallationRepos: (installationId, repos) => {
+      const installation = installations.get(installationId);
+      if (!installation) {
+        throw new Error(`Installation ${installationId} not registered`);
+      }
+      installationRepos.set(installation, repos);
+    },
+    findInstallationForToken: (request2) => {
+      const tokenHasRole = typeof request2.role === "string";
+      const tokenPerms = Object.entries(request2.permissions);
+      if (!tokenHasRole) {
+        for (const [, access] of tokenPerms) {
+          if (isWriteAccess(access)) return void 0;
+        }
+      }
+      const tokenRepos = Array.isArray(request2.repos) ? request2.repos.reduce(
+        (repos, name) => {
+          repos[name] = true;
+          return repos;
+        },
+        {}
+      ) : {};
+      for (const [installation, repos] of installationRepos) {
+        const appWithRoles = apps.get(installation.app_id);
+        if (!appWithRoles) {
+          throw new Error(
+            `Invariant violation: App ${installation.app_id} not registered`
+          );
+        }
+        const [appRoles] = appWithRoles;
+        if (tokenHasRole) {
+          let appHasRole = false;
+          for (const role of appRoles) {
+            if (role === request2.role) {
+              appHasRole = true;
+              break;
+            }
+          }
+          if (!appHasRole) continue;
+        }
+        let permMatchCount = 0;
+        let repoMatchCount = 0;
+        for (const [name, access] of tokenPerms) {
+          const instAccess = installation.permissions[name];
+          if (!instAccess) continue;
+          if (isSufficientAccess(instAccess, access)) ++permMatchCount;
+        }
+        if (permMatchCount !== tokenPerms.length) continue;
+        if (installation.repository_selection === "all") {
+          if (installation.account && "login" in installation.account && installation.account.login === request2.account) {
+            return installation.id;
+          }
+          continue;
+        }
+        for (const repo of repos) {
+          if (repo.owner.login === request2.account && tokenRepos[repo.name]) {
+            ++repoMatchCount;
+          }
+        }
+        if (repoMatchCount !== request2.repos.length) continue;
+        return installation.id;
+      }
+      return void 0;
+    }
+  };
+}
+
 // src/main.ts
 main().catch((error) => {
   (0, import_core4.setFailed)(error instanceof Error ? error : String(error));
 });
 async function main() {
   const octokitFactory = createOctokitFactory();
-  const registry = createAppRegistry();
-  await (0, import_core4.group)("Discovering apps", async () => {
-    await discoverApps(octokitFactory, registry, readAppsInput());
+  const registry = createProvisionAppRegistry();
+  await (0, import_core4.group)("Discovering provision apps", async () => {
+    await discoverProvisionApps(
+      octokitFactory,
+      registry,
+      readProvisionAppsInput()
+    );
   });
 }
 /*! Bundled license information:
