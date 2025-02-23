@@ -1,11 +1,11 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "https://ghalactic.github.io/provision-github-tokens/schema/provision-apps.v1.schema.json",
-  "title": "Provision GitHub Tokens (provisionApps input)",
-  "description": "Apps to use for provisioning tokens.",
+  "$id": "https://ghalactic.github.io/provision-github-tokens/schema/token-apps.v1.schema.json",
+  "title": "Provision GitHub Tokens (tokenApps input)",
+  "description": "Apps to use for creating tokens.",
   "type": "array",
   "items": {
-    "description": "An app to use for provisioning tokens.",
+    "description": "An app to use for creating tokens.",
     "type": "object",
     "additionalProperties": false,
     "required": ["appId", "privateKey"],
