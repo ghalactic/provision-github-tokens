@@ -1,4 +1,5 @@
 import { debug, info, error as logError } from "@actions/core";
+import type { AppRegistry } from "./app-registry.js";
 import { errorStack } from "./error.js";
 import {
   handleRequestError,
@@ -6,14 +7,13 @@ import {
   type OctokitFactory,
 } from "./octokit.js";
 import { pluralize } from "./pluralize.js";
-import type { TokenAppRegistry } from "./token-app-registry.js";
 import type { App, Installation, InstallationRepo } from "./type/github-api.js";
-import type { TokenAppsInputApp } from "./type/input.js";
+import type { AppsInputApp } from "./type/input.js";
 
-export async function discoverTokenApps(
+export async function discoverApps(
   octokitFactory: OctokitFactory,
-  registry: TokenAppRegistry,
-  appsInput: TokenAppsInputApp[],
+  registry: AppRegistry,
+  appsInput: AppsInputApp[],
 ): Promise<void> {
   let appIndex = 0;
 
@@ -29,8 +29,8 @@ export async function discoverTokenApps(
 
 async function discoverApp(
   octokitFactory: OctokitFactory,
-  registry: TokenAppRegistry,
-  appInput: TokenAppsInputApp,
+  registry: AppRegistry,
+  appInput: AppsInputApp,
   appIndex: number,
 ): Promise<void> {
   const appOctokit = octokitFactory.appOctokit(appInput);
@@ -65,13 +65,15 @@ async function discoverApp(
 
   debug(`Discovered app ${JSON.stringify(app.name)} (${app.slug} / ${app.id})`);
 
-  if (appInput.roles.length < 1) {
-    debug(`App ${app.id} has no roles`);
-  } else {
-    debug(`App ${app.id} has roles ${JSON.stringify(appInput.roles)}`);
+  if (appInput.roles) {
+    if (appInput.roles.length < 1) {
+      debug(`App ${app.id} has no roles`);
+    } else {
+      debug(`App ${app.id} has roles ${JSON.stringify(appInput.roles)}`);
+    }
   }
 
-  registry.registerApp(appInput.roles, app);
+  registry.registerApp(appInput.roles ?? [], app);
   await discoverInstallations(
     octokitFactory,
     registry,
@@ -84,8 +86,8 @@ async function discoverApp(
 
 async function discoverInstallations(
   octokitFactory: OctokitFactory,
-  registry: TokenAppRegistry,
-  appInput: TokenAppsInputApp,
+  registry: AppRegistry,
+  appInput: AppsInputApp,
   appOctokit: Octokit,
   app: App,
   appIndex: number,
@@ -120,7 +122,7 @@ async function discoverInstallations(
   }
 
   const rolesSuffix =
-    appInput.roles.length < 1
+    !appInput.roles || appInput.roles.length < 1
       ? ""
       : ` with ${pluralize(appInput.roles.length, "role", "roles")} ` +
         `${appInput.roles.map((r) => JSON.stringify(r)).join(", ")}`;
@@ -142,8 +144,8 @@ async function discoverInstallations(
 
 async function discoverInstallation(
   octokitFactory: OctokitFactory,
-  registry: TokenAppRegistry,
-  appInput: TokenAppsInputApp,
+  registry: AppRegistry,
+  appInput: AppsInputApp,
   installation: Installation,
 ): Promise<void> {
   const {

@@ -1,0 +1,25 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://ghalactic.github.io/provision-github-tokens/schema/provision-apps.v1.schema.json",
+  "title": "Provision GitHub Tokens (provisionApps input)",
+  "description": "Apps to use for provisioning tokens.",
+  "type": "array",
+  "items": {
+    "description": "An app to use for provisioning tokens.",
+    "type": "object",
+    "additionalProperties": false,
+    "required": ["appId", "privateKey"],
+    "properties": {
+      "appId": {
+        "description": "The GitHub app ID.",
+        "type": "string",
+        "minLength": 1
+      },
+      "privateKey": {
+        "description": "The GitHub app private key in PEM format.",
+        "type": "string",
+        "minLength": 1
+      }
+    }
+  }
+}

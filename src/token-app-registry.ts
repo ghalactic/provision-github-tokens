@@ -1,42 +1,21 @@
 import { isSufficientAccess, isWriteAccess } from "./access-level.js";
+import { createAppRegistry, type AppRegistry } from "./app-registry.js";
 import type {
   App,
-  Installation,
   PermissionAccess,
   PermissionName,
-  Repo,
 } from "./type/github-api.js";
 import type { TokenRequest } from "./type/token-request.js";
 
-export type TokenAppRegistry = {
-  registerApp: (roles: string[], app: App) => void;
-  registerInstallation: (installation: Installation) => void;
-  registerInstallationRepos: (installationId: number, repos: Repo[]) => void;
+export type TokenAppRegistry = AppRegistry & {
   findInstallationForToken: (request: TokenRequest) => number | undefined;
 };
 
 export function createTokenAppRegistry(): TokenAppRegistry {
-  const apps: Map<number, AppWithRoles> = new Map();
-  const installations: Map<number, Installation> = new Map();
-  const installationRepos: Map<Installation, Repo[]> = new Map();
+  const registry = createAppRegistry();
 
   return {
-    registerApp: (roles, app) => {
-      apps.set(app.id, [roles, app]);
-    },
-
-    registerInstallation: (installation) => {
-      installations.set(installation.id, installation);
-    },
-
-    registerInstallationRepos: (installationId, repos) => {
-      const installation = installations.get(installationId);
-      if (!installation) {
-        throw new Error(`Installation ${installationId} not registered`);
-      }
-
-      installationRepos.set(installation, repos);
-    },
+    ...registry,
 
     findInstallationForToken: (request) => {
       const tokenHasRole = typeof request.role === "string";
@@ -62,8 +41,8 @@ export function createTokenAppRegistry(): TokenAppRegistry {
           )
         : {};
 
-      for (const [installation, repos] of installationRepos) {
-        const appWithRoles = apps.get(installation.app_id);
+      for (const [installation, repos] of registry.installationRepos) {
+        const appWithRoles = registry.apps.get(installation.app_id);
 
         /* v8 ignore start */
         if (!appWithRoles) {

@@ -1,5 +1,5 @@
-export type TokenAppsInputApp = {
+export type AppsInputApp = {
   appId: string;
   privateKey: string;
-  roles: string[];
+  roles?: string[];
 };

@@ -4,9 +4,10 @@ import consumerSchema from "../schema/consumer.v1.schema.json" with { type: "jso
 import consumerTokenPermissionsSchema from "../schema/generated.consumer-token-permissions.v1.schema.json" with { type: "json" };
 import providerRulePermissionsSchema from "../schema/generated.provider-rule-permissions.v1.schema.json" with { type: "json" };
 import providerSchema from "../schema/provider.v1.schema.json" with { type: "json" };
+import provisionAppsSchema from "../schema/provision-apps.v1.schema.json" with { type: "json" };
 import tokenAppsSchema from "../schema/token-apps.v1.schema.json" with { type: "json" };
 import type { PartialConsumerConfig } from "../type/consumer-config.js";
-import type { TokenAppsInputApp } from "../type/input.js";
+import type { AppsInputApp } from "../type/input.js";
 import type { ProviderConfig } from "../type/provider-config.js";
 
 // see https://github.com/ajv-validator/ajv/issues/2132
@@ -15,21 +16,17 @@ const ajvErrors = ajvErrorsModule.default;
 
 const ajv = new Ajv({
   schemas: [
-    tokenAppsSchema,
     consumerSchema,
     consumerTokenPermissionsSchema,
-    providerSchema,
     providerRulePermissionsSchema,
+    providerSchema,
+    provisionAppsSchema,
+    tokenAppsSchema,
   ],
   allErrors: true,
   useDefaults: true,
 });
 ajvErrors(ajv);
-
-export const validateTokenApps = createValidate<TokenAppsInputApp[]>(
-  tokenAppsSchema.$id,
-  "tokenApps input",
-);
 
 export const validateConsumer = createValidate<PartialConsumerConfig>(
   consumerSchema.$id,
@@ -39,6 +36,16 @@ export const validateConsumer = createValidate<PartialConsumerConfig>(
 export const validateProvider = createValidate<ProviderConfig>(
   providerSchema.$id,
   "provider configuration",
+);
+
+export const validateProvisionApps = createValidate<AppsInputApp[]>(
+  provisionAppsSchema.$id,
+  "provisionApps input",
+);
+
+export const validateTokenApps = createValidate<AppsInputApp[]>(
+  tokenAppsSchema.$id,
+  "tokenApps input",
 );
 
 class ValidateError extends Error {

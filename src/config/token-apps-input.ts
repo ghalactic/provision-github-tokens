@@ -1,9 +1,9 @@
 import { getInput } from "@actions/core";
 import { load } from "js-yaml";
-import type { TokenAppsInputApp } from "../type/input.js";
+import type { AppsInputApp } from "../type/input.js";
 import { validateTokenApps } from "./validation.js";
 
-export function readTokenAppsInput(): TokenAppsInputApp[] {
+export function readTokenAppsInput(): AppsInputApp[] {
   const yaml = getInput("tokenApps");
   let parsed;
 
