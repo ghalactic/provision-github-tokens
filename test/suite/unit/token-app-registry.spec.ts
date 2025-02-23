@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { createProvisionAppRegistry } from "../../../src/provision-app-registry.js";
+import { createTokenAppRegistry } from "../../../src/token-app-registry.js";
 import { throws } from "../../error.js";
 import {
   createTestApp,
@@ -13,7 +13,7 @@ it("finds an installation for all repos in an account with one permission", () =
   const appA = createTestApp(110, "app-a", "App A", { contents: "write" });
   const appAInstallationA = createTestInstallation(111, appA, orgA, "all", []);
 
-  const registry = createProvisionAppRegistry();
+  const registry = createTokenAppRegistry();
   registry.registerApp(["role-a"], appA);
   registry.registerInstallation(appAInstallationA);
   registry.registerInstallationRepos(
@@ -43,7 +43,7 @@ it("finds an installation for one selected repo with one permission", () => {
     [repoA],
   );
 
-  const registry = createProvisionAppRegistry();
+  const registry = createTokenAppRegistry();
   registry.registerApp(["role-a"], appA);
   registry.registerInstallation(appAInstallationA);
   registry.registerInstallationRepos(
@@ -77,7 +77,7 @@ it("finds an installation for multiple selected repos with multiple permissions"
     [repoA, repoB],
   );
 
-  const registry = createProvisionAppRegistry();
+  const registry = createTokenAppRegistry();
   registry.registerApp(["role-a"], appA);
   registry.registerInstallation(appAInstallationA);
   registry.registerInstallationRepos(
@@ -106,7 +106,7 @@ it("finds an installation for no repos with no permissions", () => {
     [],
   );
 
-  const registry = createProvisionAppRegistry();
+  const registry = createTokenAppRegistry();
   registry.registerApp(["role-a"], appA);
   registry.registerInstallation(appAInstallationA);
   registry.registerInstallationRepos(
@@ -144,7 +144,7 @@ it.each([
       [repoA],
     );
 
-    const registry = createProvisionAppRegistry();
+    const registry = createTokenAppRegistry();
     registry.registerApp(["role-a"], appA);
     registry.registerInstallation(appAInstallationA);
     registry.registerInstallationRepos(
@@ -170,7 +170,7 @@ it("finds an installation for the correct account when there are multiple instal
   const appAInstallationA = createTestInstallation(111, appA, orgA, "all", []);
   const appAInstallationB = createTestInstallation(112, appA, orgB, "all", []);
 
-  const registry = createProvisionAppRegistry();
+  const registry = createTokenAppRegistry();
   registry.registerApp([], appA);
   registry.registerInstallation(appAInstallationA);
   registry.registerInstallationRepos(
@@ -250,7 +250,7 @@ it("finds an installation by role", () => {
     [repoB, repoC, repoD],
   );
 
-  const registry = createProvisionAppRegistry();
+  const registry = createTokenAppRegistry();
   registry.registerApp([], appA);
   registry.registerInstallation(appAInstallationA);
   registry.registerInstallationRepos(
@@ -326,7 +326,7 @@ it("finds an installation for read access when the role is undefined", () => {
   });
   const appAInstallationA = createTestInstallation(111, appA, orgA, "all", []);
 
-  const registry = createProvisionAppRegistry();
+  const registry = createTokenAppRegistry();
   registry.registerApp([], appA);
   registry.registerInstallation(appAInstallationA);
   registry.registerInstallationRepos(
@@ -360,7 +360,7 @@ it("doesn't find an installation for write or admin access when the role is unde
   });
   const appAInstallationA = createTestInstallation(111, appA, orgA, "all", []);
 
-  const registry = createProvisionAppRegistry();
+  const registry = createTokenAppRegistry();
   registry.registerApp([], appA);
   registry.registerInstallation(appAInstallationA);
   registry.registerInstallationRepos(
@@ -398,7 +398,7 @@ it("doesn't find an installation when it can't access all repos in an account", 
     [repoA],
   );
 
-  const registry = createProvisionAppRegistry();
+  const registry = createTokenAppRegistry();
   registry.registerApp(["role-a"], appA);
   registry.registerInstallation(appAInstallationA);
   registry.registerInstallationRepos(
@@ -428,7 +428,7 @@ it("doesn't find an installation for an unknown account", () => {
     [repoA],
   );
 
-  const registry = createProvisionAppRegistry();
+  const registry = createTokenAppRegistry();
   registry.registerApp(["role-a"], appA);
   registry.registerInstallation(appAInstallationA);
   registry.registerInstallationRepos(
@@ -458,7 +458,7 @@ it("doesn't find an installation for an unknown repo", () => {
     [repoA],
   );
 
-  const registry = createProvisionAppRegistry();
+  const registry = createTokenAppRegistry();
   registry.registerApp(["role-a"], appA);
   registry.registerInstallation(appAInstallationA);
   registry.registerInstallationRepos(
@@ -488,7 +488,7 @@ it("doesn't find an installation that can't access all requested repos", () => {
     [repoA],
   );
 
-  const registry = createProvisionAppRegistry();
+  const registry = createTokenAppRegistry();
   registry.registerApp(["role-a"], appA);
   registry.registerInstallation(appAInstallationA);
   registry.registerInstallationRepos(
@@ -511,7 +511,7 @@ it("doesn't find an installation that doesn't have all permissions", () => {
   const appA = createTestApp(110, "app-a", "App A", { contents: "write" });
   const appAInstallationA = createTestInstallation(111, appA, orgA, "all", []);
 
-  const registry = createProvisionAppRegistry();
+  const registry = createTokenAppRegistry();
   registry.registerApp(["role-a"], appA);
   registry.registerInstallation(appAInstallationA);
   registry.registerInstallationRepos(
@@ -548,7 +548,7 @@ it.each([
       [],
     );
 
-    const registry = createProvisionAppRegistry();
+    const registry = createTokenAppRegistry();
     registry.registerApp(["role-a"], appA);
     registry.registerInstallation(appAInstallationA);
     registry.registerInstallationRepos(
@@ -568,7 +568,7 @@ it.each([
 );
 
 it("throws when registering repos for an unknown installation", () => {
-  const registry = createProvisionAppRegistry();
+  const registry = createTokenAppRegistry();
 
   expect(
     throws(() => {

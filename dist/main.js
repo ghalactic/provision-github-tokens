@@ -48046,7 +48046,7 @@ require_source_map_support().install();
 // src/main.ts
 var import_core4 = __toESM(require_core(), 1);
 
-// src/config/provision-apps-input.ts
+// src/config/token-apps-input.ts
 var import_core = __toESM(require_core(), 1);
 
 // node_modules/js-yaml/dist/js-yaml.mjs
@@ -52109,15 +52109,15 @@ var provider_v1_schema_default = {
   }
 };
 
-// src/schema/provision-apps.v1.schema.json
-var provision_apps_v1_schema_default = {
+// src/schema/token-apps.v1.schema.json
+var token_apps_v1_schema_default = {
   $schema: "http://json-schema.org/draft-07/schema#",
-  $id: "https://ghalactic.github.io/provision-github-tokens/schema/provision-apps.v1.schema.json",
-  title: "Provision GitHub Tokens (provisionApps input)",
-  description: "Apps to use for provisioning tokens.",
+  $id: "https://ghalactic.github.io/provision-github-tokens/schema/token-apps.v1.schema.json",
+  title: "Provision GitHub Tokens (tokenApps input)",
+  description: "Apps to use for creating tokens.",
   type: "array",
   items: {
-    description: "An app to use for provisioning tokens.",
+    description: "An app to use for creating tokens.",
     type: "object",
     additionalProperties: false,
     required: ["appId", "privateKey"],
@@ -52152,7 +52152,7 @@ var Ajv = import_ajv.default.default;
 var ajvErrors = import_ajv_errors.default.default;
 var ajv = new Ajv({
   schemas: [
-    provision_apps_v1_schema_default,
+    token_apps_v1_schema_default,
     consumer_v1_schema_default,
     generated_consumer_token_permissions_v1_schema_default,
     provider_v1_schema_default,
@@ -52162,9 +52162,9 @@ var ajv = new Ajv({
   useDefaults: true
 });
 ajvErrors(ajv);
-var validateProvisionApps = createValidate(
-  provision_apps_v1_schema_default.$id,
-  "provisionApps input"
+var validateTokenApps = createValidate(
+  token_apps_v1_schema_default.$id,
+  "tokenApps input"
 );
 var validateConsumer = createValidate(
   consumer_v1_schema_default.$id,
@@ -52207,25 +52207,25 @@ function renderError(error) {
   return `${message}${subject}`;
 }
 
-// src/config/provision-apps-input.ts
-function readProvisionAppsInput() {
-  const yaml = (0, import_core.getInput)("provisionApps");
+// src/config/token-apps-input.ts
+function readTokenAppsInput() {
+  const yaml = (0, import_core.getInput)("tokenApps");
   let parsed;
   try {
     parsed = load(yaml);
   } catch (cause) {
-    throw new Error("Parsing of provisionApps action input failed", { cause });
+    throw new Error("Parsing of tokenApps action input failed", { cause });
   }
   try {
-    return validateProvisionApps(parsed);
+    return validateTokenApps(parsed);
   } catch (cause) {
-    throw new Error("Validation of provisionApps action input failed", {
+    throw new Error("Validation of tokenApps action input failed", {
       cause
     });
   }
 }
 
-// src/discover-provision-apps.ts
+// src/discover-token-apps.ts
 var import_core3 = __toESM(require_core(), 1);
 
 // src/error.ts
@@ -56947,8 +56947,8 @@ function pluralize(amount, singular, plural) {
   return amount === 1 ? singular : plural;
 }
 
-// src/discover-provision-apps.ts
-async function discoverProvisionApps(octokitFactory, registry, appsInput) {
+// src/discover-token-apps.ts
+async function discoverTokenApps(octokitFactory, registry, appsInput) {
   let appIndex = 0;
   for (const appInput of appsInput) {
     try {
@@ -57096,8 +57096,8 @@ function isWriteAccess(access) {
   return ACCESS_RANK[access] > ACCESS_RANK.read;
 }
 
-// src/provision-app-registry.ts
-function createProvisionAppRegistry() {
+// src/token-app-registry.ts
+function createTokenAppRegistry() {
   const apps = /* @__PURE__ */ new Map();
   const installations = /* @__PURE__ */ new Map();
   const installationRepos = /* @__PURE__ */ new Map();
@@ -57181,13 +57181,9 @@ main().catch((error) => {
 });
 async function main() {
   const octokitFactory = createOctokitFactory();
-  const registry = createProvisionAppRegistry();
+  const registry = createTokenAppRegistry();
   await (0, import_core4.group)("Discovering provision apps", async () => {
-    await discoverProvisionApps(
-      octokitFactory,
-      registry,
-      readProvisionAppsInput()
-    );
+    await discoverTokenApps(octokitFactory, registry, readTokenAppsInput());
   });
 }
 /*! Bundled license information:

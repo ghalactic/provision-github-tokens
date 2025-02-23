@@ -7,9 +7,9 @@ import {
   __setErrors,
   __setInstallations,
 } from "../../../__mocks__/@octokit/action.js";
-import { discoverProvisionApps } from "../../../src/discover-provision-apps.js";
+import { discoverTokenApps } from "../../../src/discover-token-apps.js";
 import { createOctokitFactory } from "../../../src/octokit.js";
-import { createProvisionAppRegistry } from "../../../src/provision-app-registry.js";
+import { createTokenAppRegistry } from "../../../src/token-app-registry.js";
 import {
   createTestApp,
   createTestInstallation,
@@ -49,8 +49,8 @@ it("discovers installations with access to all repos", async () => {
   __setInstallations([appAInstallationA]);
 
   const octokitFactory = createOctokitFactory();
-  const registry = createProvisionAppRegistry();
-  await discoverProvisionApps(octokitFactory, registry, [
+  const registry = createTokenAppRegistry();
+  await discoverTokenApps(octokitFactory, registry, [
     {
       appId: String(appA.id),
       privateKey: appA.privateKey,
@@ -94,8 +94,8 @@ it("discovers installations with access to selected repos", async () => {
   __setInstallations([appAInstallationA]);
 
   const octokitFactory = createOctokitFactory();
-  const registry = createProvisionAppRegistry();
-  await discoverProvisionApps(octokitFactory, registry, [
+  const registry = createTokenAppRegistry();
+  await discoverTokenApps(octokitFactory, registry, [
     {
       appId: String(appA.id),
       privateKey: appA.privateKey,
@@ -137,8 +137,8 @@ it("discovers installations with access to no repos", async () => {
   __setInstallations([appAInstallationA]);
 
   const octokitFactory = createOctokitFactory();
-  const registry = createProvisionAppRegistry();
-  await discoverProvisionApps(octokitFactory, registry, [
+  const registry = createTokenAppRegistry();
+  await discoverTokenApps(octokitFactory, registry, [
     {
       appId: String(appA.id),
       privateKey: appA.privateKey,
@@ -174,8 +174,8 @@ it("discovers installations with no permissions", async () => {
   __setInstallations([appAInstallationA]);
 
   const octokitFactory = createOctokitFactory();
-  const registry = createProvisionAppRegistry();
-  await discoverProvisionApps(octokitFactory, registry, [
+  const registry = createTokenAppRegistry();
+  await discoverTokenApps(octokitFactory, registry, [
     {
       appId: String(appA.id),
       privateKey: appA.privateKey,
@@ -213,8 +213,8 @@ it("discovers installations with roles", async () => {
   __setInstallations([appAInstallationA, appBInstallationA]);
 
   const octokitFactory = createOctokitFactory();
-  const registry = createProvisionAppRegistry();
-  await discoverProvisionApps(octokitFactory, registry, [
+  const registry = createTokenAppRegistry();
+  await discoverTokenApps(octokitFactory, registry, [
     {
       appId: String(appA.id),
       privateKey: appA.privateKey,
@@ -279,8 +279,8 @@ it("discovers multiple installations of an app", async () => {
   __setInstallations([appAInstallationA, appAInstallationB]);
 
   const octokitFactory = createOctokitFactory();
-  const registry = createProvisionAppRegistry();
-  await discoverProvisionApps(octokitFactory, registry, [
+  const registry = createTokenAppRegistry();
+  await discoverTokenApps(octokitFactory, registry, [
     {
       appId: String(appA.id),
       privateKey: appA.privateKey,
@@ -321,8 +321,8 @@ it("discovers multiple apps", async () => {
   __setInstallations([appAInstallationA, appBInstallationA]);
 
   const octokitFactory = createOctokitFactory();
-  const registry = createProvisionAppRegistry();
-  await discoverProvisionApps(octokitFactory, registry, [
+  const registry = createTokenAppRegistry();
+  await discoverTokenApps(octokitFactory, registry, [
     {
       appId: String(appA.id),
       privateKey: appA.privateKey,
@@ -379,8 +379,8 @@ it("skips apps with incorrect credentials", async () => {
   __setInstallations([appAInstallationA, appBInstallationA]);
 
   const octokitFactory = createOctokitFactory();
-  const registry = createProvisionAppRegistry();
-  await discoverProvisionApps(octokitFactory, registry, [
+  const registry = createTokenAppRegistry();
+  await discoverTokenApps(octokitFactory, registry, [
     {
       appId: String(appA.id),
       privateKey: "incorrect",
@@ -424,8 +424,8 @@ it("skips non-existent apps", async () => {
   __setInstallations([appAInstallationA]);
 
   const octokitFactory = createOctokitFactory();
-  const registry = createProvisionAppRegistry();
-  await discoverProvisionApps(octokitFactory, registry, [
+  const registry = createTokenAppRegistry();
+  await discoverTokenApps(octokitFactory, registry, [
     {
       appId: String(appX.id),
       privateKey: appX.privateKey,
@@ -478,8 +478,8 @@ it("reports unexpected HTTP statuses", async () => {
   ]);
 
   const octokitFactory = createOctokitFactory();
-  const registry = createProvisionAppRegistry();
-  await discoverProvisionApps(octokitFactory, registry, [
+  const registry = createTokenAppRegistry();
+  await discoverTokenApps(octokitFactory, registry, [
     {
       appId: String(appA.id),
       privateKey: appA.privateKey,
@@ -546,8 +546,8 @@ it("skips apps when discovery throws", async () => {
   __setErrors("apps.getAuthenticated", [undefined, new Error("<ERROR>")]);
 
   const octokitFactory = createOctokitFactory();
-  const registry = createProvisionAppRegistry();
-  await discoverProvisionApps(octokitFactory, registry, [
+  const registry = createTokenAppRegistry();
+  await discoverTokenApps(octokitFactory, registry, [
     {
       appId: String(appA.id),
       privateKey: appA.privateKey,
@@ -620,8 +620,8 @@ it("skips installations when discovery throws", async () => {
   __setErrors("apps.listReposAccessibleToInstallation", [new Error("<ERROR>")]);
 
   const octokitFactory = createOctokitFactory();
-  const registry = createProvisionAppRegistry();
-  await discoverProvisionApps(octokitFactory, registry, [
+  const registry = createTokenAppRegistry();
+  await discoverTokenApps(octokitFactory, registry, [
     {
       appId: String(appA.id),
       privateKey: appA.privateKey,

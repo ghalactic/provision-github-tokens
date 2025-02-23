@@ -2,16 +2,16 @@ import { Octokit as OctokitAction } from "@octokit/action";
 import { createAppAuth } from "@octokit/auth-app";
 import { retry } from "@octokit/plugin-retry";
 import { RequestError } from "@octokit/request-error";
-import type { ProvisionAppsInputApp } from "./type/input.js";
+import type { TokenAppsInputApp } from "./type/input.js";
 
 const CustomOctokit = OctokitAction.plugin(retry);
 
 export type Octokit = InstanceType<typeof CustomOctokit>;
 
 export type OctokitFactory = {
-  appOctokit: (input: ProvisionAppsInputApp) => Octokit;
+  appOctokit: (input: TokenAppsInputApp) => Octokit;
   installationOctokit: (
-    input: ProvisionAppsInputApp,
+    input: TokenAppsInputApp,
     installationId: number,
   ) => Octokit;
 };

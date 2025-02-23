@@ -6,14 +6,14 @@ import {
   type OctokitFactory,
 } from "./octokit.js";
 import { pluralize } from "./pluralize.js";
-import type { ProvisionAppRegistry } from "./provision-app-registry.js";
+import type { TokenAppRegistry } from "./token-app-registry.js";
 import type { App, Installation, InstallationRepo } from "./type/github-api.js";
-import type { ProvisionAppsInputApp } from "./type/input.js";
+import type { TokenAppsInputApp } from "./type/input.js";
 
-export async function discoverProvisionApps(
+export async function discoverTokenApps(
   octokitFactory: OctokitFactory,
-  registry: ProvisionAppRegistry,
-  appsInput: ProvisionAppsInputApp[],
+  registry: TokenAppRegistry,
+  appsInput: TokenAppsInputApp[],
 ): Promise<void> {
   let appIndex = 0;
 
@@ -29,8 +29,8 @@ export async function discoverProvisionApps(
 
 async function discoverApp(
   octokitFactory: OctokitFactory,
-  registry: ProvisionAppRegistry,
-  appInput: ProvisionAppsInputApp,
+  registry: TokenAppRegistry,
+  appInput: TokenAppsInputApp,
   appIndex: number,
 ): Promise<void> {
   const appOctokit = octokitFactory.appOctokit(appInput);
@@ -84,8 +84,8 @@ async function discoverApp(
 
 async function discoverInstallations(
   octokitFactory: OctokitFactory,
-  registry: ProvisionAppRegistry,
-  appInput: ProvisionAppsInputApp,
+  registry: TokenAppRegistry,
+  appInput: TokenAppsInputApp,
   appOctokit: Octokit,
   app: App,
   appIndex: number,
@@ -142,8 +142,8 @@ async function discoverInstallations(
 
 async function discoverInstallation(
   octokitFactory: OctokitFactory,
-  registry: ProvisionAppRegistry,
-  appInput: ProvisionAppsInputApp,
+  registry: TokenAppRegistry,
+  appInput: TokenAppsInputApp,
   installation: Installation,
 ): Promise<void> {
   const {

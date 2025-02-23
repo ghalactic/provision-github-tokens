@@ -2,10 +2,10 @@
 import "source-map-support/register";
 
 import { group, setFailed } from "@actions/core";
-import { readProvisionAppsInput } from "./config/provision-apps-input.js";
-import { discoverProvisionApps } from "./discover-provision-apps.js";
+import { readTokenAppsInput } from "./config/token-apps-input.js";
+import { discoverTokenApps } from "./discover-token-apps.js";
 import { createOctokitFactory } from "./octokit.js";
-import { createProvisionAppRegistry } from "./provision-app-registry.js";
+import { createTokenAppRegistry } from "./token-app-registry.js";
 
 main().catch((error) => {
   setFailed(error instanceof Error ? error : String(error));
@@ -13,14 +13,10 @@ main().catch((error) => {
 
 async function main(): Promise<void> {
   const octokitFactory = createOctokitFactory();
-  const registry = createProvisionAppRegistry();
+  const registry = createTokenAppRegistry();
 
   await group("Discovering provision apps", async () => {
-    await discoverProvisionApps(
-      octokitFactory,
-      registry,
-      readProvisionAppsInput(),
-    );
+    await discoverTokenApps(octokitFactory, registry, readTokenAppsInput());
   });
 }
 /* v8 ignore stop */
