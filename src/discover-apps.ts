@@ -71,10 +71,17 @@ async function discoverApp(
 
   debug(`Discovered app ${JSON.stringify(app.name)} (${app.slug} / ${app.id})`);
 
-  if (appInput.issuer.roles.length < 1) {
-    debug(`App ${app.id} has no roles`);
-  } else {
-    debug(`App ${app.id} has roles ${JSON.stringify(appInput.issuer.roles)}`);
+  if (appInput.issuer.enabled) {
+    const roles =
+      appInput.issuer.roles.length < 1
+        ? "no roles"
+        : `roles ${JSON.stringify(appInput.issuer.roles)}`;
+
+    debug(`App ${app.id} is a token issuer with ${roles}`);
+  }
+
+  if (appInput.provisioner.enabled) {
+    debug(`App ${app.id} is a token provisioner`);
   }
 
   registry.registerApp(appInput.issuer, appInput.provisioner, app);

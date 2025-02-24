@@ -57104,10 +57104,12 @@ async function discoverApp(octokitFactory, registry, appInput, appIndex) {
     );
   }
   (0, import_core3.debug)(`Discovered app ${JSON.stringify(app.name)} (${app.slug} / ${app.id})`);
-  if (appInput.issuer.roles.length < 1) {
-    (0, import_core3.debug)(`App ${app.id} has no roles`);
-  } else {
-    (0, import_core3.debug)(`App ${app.id} has roles ${JSON.stringify(appInput.issuer.roles)}`);
+  if (appInput.issuer.enabled) {
+    const roles = appInput.issuer.roles.length < 1 ? "no roles" : `roles ${JSON.stringify(appInput.issuer.roles)}`;
+    (0, import_core3.debug)(`App ${app.id} is a token issuer with ${roles}`);
+  }
+  if (appInput.provisioner.enabled) {
+    (0, import_core3.debug)(`App ${app.id} is a token provisioner`);
   }
   registry.registerApp(appInput.issuer, appInput.provisioner, app);
   await discoverInstallations(
