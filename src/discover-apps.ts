@@ -33,6 +33,12 @@ async function discoverApp(
   appInput: AppInput,
   appIndex: number,
 ): Promise<void> {
+  if (!appInput.issuer.enabled && !appInput.provisioner.enabled) {
+    debug(`Skipping discovery of disabled app ${appInput.appId}`);
+
+    return;
+  }
+
   const appOctokit = octokitFactory.appOctokit(appInput);
   let app: App | null;
 
@@ -65,13 +71,13 @@ async function discoverApp(
 
   debug(`Discovered app ${JSON.stringify(app.name)} (${app.slug} / ${app.id})`);
 
-  if (appInput.roles.length < 1) {
+  if (appInput.issuer.roles.length < 1) {
     debug(`App ${app.id} has no roles`);
   } else {
-    debug(`App ${app.id} has roles ${JSON.stringify(appInput.roles)}`);
+    debug(`App ${app.id} has roles ${JSON.stringify(appInput.issuer.roles)}`);
   }
 
-  registry.registerApp(appInput.roles, app);
+  registry.registerApp(appInput.issuer, appInput.provisioner, app);
   await discoverInstallations(
     octokitFactory,
     registry,
@@ -120,10 +126,10 @@ async function discoverInstallations(
   }
 
   const rolesSuffix =
-    appInput.roles.length < 1
+    appInput.issuer.roles.length < 1
       ? ""
-      : ` with ${pluralize(appInput.roles.length, "role", "roles")} ` +
-        `${appInput.roles.map((r) => JSON.stringify(r)).join(", ")}`;
+      : ` with ${pluralize(appInput.issuer.roles.length, "role", "roles")} ` +
+        `${appInput.issuer.roles.map((r) => JSON.stringify(r)).join(", ")}`;
 
   info(
     `Discovered ${successCount} ` +

@@ -14,29 +14,55 @@ it("can parse valid input", () => {
   vi.mocked(getInput).mockReturnValue(`
     - appId: "100"
       privateKey: <private key A>
+      issuer:
+        enabled: true
+        roles: []
+      provisioner:
+        enabled: false
     - appId: "200"
       privateKey: <private key B>
-      roles: []
+      issuer:
+        enabled: true
+        roles: ["role-a", "role-b"]
     - appId: "300"
       privateKey: <private key C>
-      roles: ["role-a", "role-b"]
+      provisioner:
+        enabled: true
   `);
 
   expect(readAppsInput()).toEqual([
     {
       appId: "100",
       privateKey: "<private key A>",
-      roles: [],
+      issuer: {
+        enabled: true,
+        roles: [],
+      },
+      provisioner: {
+        enabled: false,
+      },
     },
     {
       appId: "200",
       privateKey: "<private key B>",
-      roles: [],
+      issuer: {
+        enabled: true,
+        roles: ["role-a", "role-b"],
+      },
+      provisioner: {
+        enabled: false,
+      },
     },
     {
       appId: "300",
       privateKey: "<private key C>",
-      roles: ["role-a", "role-b"],
+      issuer: {
+        enabled: false,
+        roles: [],
+      },
+      provisioner: {
+        enabled: true,
+      },
     },
   ] satisfies AppInput[]);
 });
@@ -45,6 +71,9 @@ it("throws if the input doesn't match the schema", () => {
   vi.mocked(getInput).mockReturnValue(`
     - appId: 100
       privateKey: <private key A>
+      issuer:
+        enabled: true
+        roles: []
   `);
 
   expect(

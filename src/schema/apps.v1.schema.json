@@ -20,15 +20,41 @@
         "type": "string",
         "minLength": 1
       },
-      "roles": {
-        "description": "The roles of the app.",
-        "type": "array",
-        "uniqueItems": true,
-        "default": [],
-        "items": {
-          "description": "An app role.",
-          "type": "string",
-          "minLength": 1
+      "issuer": {
+        "description": "Options for using this app as a token issuer.",
+        "type": "object",
+        "additionalProperties": false,
+        "default": {},
+        "properties": {
+          "enabled": {
+            "description": "Whether the app should be used as a token issuer.",
+            "type": "boolean",
+            "default": false
+          },
+          "roles": {
+            "description": "The roles of the app.",
+            "type": "array",
+            "uniqueItems": true,
+            "default": [],
+            "items": {
+              "description": "An app role.",
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      },
+      "provisioner": {
+        "description": "Options for using this app as a token provisioner.",
+        "type": "object",
+        "additionalProperties": false,
+        "default": {},
+        "properties": {
+          "enabled": {
+            "description": "Whether the app should be used as a token provisioner.",
+            "type": "boolean",
+            "default": false
+          }
         }
       }
     }

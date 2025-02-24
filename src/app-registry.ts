@@ -6,23 +6,28 @@ import type {
   PermissionName,
   Repo,
 } from "./type/github-api.js";
+import type { AppInputIssuer, AppInputProvisioner } from "./type/input.js";
 import type { TokenRequest } from "./type/token-request.js";
 
 export type AppRegistry = {
-  registerApp: (roles: string[], app: App) => void;
+  registerApp: (
+    issuer: AppInputIssuer,
+    provisioner: AppInputProvisioner,
+    app: App,
+  ) => void;
   registerInstallation: (installation: Installation) => void;
   registerInstallationRepos: (installationId: number, repos: Repo[]) => void;
-  findInstallationForToken: (request: TokenRequest) => number | undefined;
+  findTokenIssuer: (request: TokenRequest) => number | undefined;
 };
 
 export function createAppRegistry(): AppRegistry {
-  const apps: Map<number, AppWithRoles> = new Map();
+  const apps: Map<number, RegisteredApp> = new Map();
   const installations: Map<number, Installation> = new Map();
   const installationRepos: Map<Installation, Repo[]> = new Map();
 
   return {
-    registerApp: (roles, app) => {
-      apps.set(app.id, [roles, app]);
+    registerApp: (issuer, provisioner, app) => {
+      apps.set(app.id, { issuer, provisioner, app });
     },
 
     registerInstallation: (installation) => {
@@ -38,7 +43,7 @@ export function createAppRegistry(): AppRegistry {
       installationRepos.set(installation, repos);
     },
 
-    findInstallationForToken: (request) => {
+    findTokenIssuer: (request) => {
       const tokenHasRole = typeof request.role === "string";
       const tokenPerms = Object.entries(request.permissions) as [
         PermissionName,
@@ -63,22 +68,22 @@ export function createAppRegistry(): AppRegistry {
         : {};
 
       for (const [installation, repos] of installationRepos) {
-        const appWithRoles = apps.get(installation.app_id);
+        const registered = apps.get(installation.app_id);
 
         /* v8 ignore start */
-        if (!appWithRoles) {
+        if (!registered) {
           throw new Error(
             `Invariant violation: App ${installation.app_id} not registered`,
           );
         }
         /* v8 ignore stop */
 
-        const [appRoles] = appWithRoles;
+        if (!registered.issuer.enabled) continue;
 
         if (tokenHasRole) {
           let appHasRole = false;
 
-          for (const role of appRoles) {
+          for (const role of registered.issuer.roles) {
             if (role === request.role) {
               appHasRole = true;
               break;
@@ -127,4 +132,8 @@ export function createAppRegistry(): AppRegistry {
   };
 }
 
-type AppWithRoles = [string[], App];
+type RegisteredApp = {
+  issuer: AppInputIssuer;
+  provisioner: AppInputProvisioner;
+  app: App;
+};

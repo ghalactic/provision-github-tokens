@@ -48065,8 +48065,8 @@ function createAppRegistry() {
   const installations = /* @__PURE__ */ new Map();
   const installationRepos = /* @__PURE__ */ new Map();
   return {
-    registerApp: (roles, app) => {
-      apps.set(app.id, [roles, app]);
+    registerApp: (issuer, provisioner, app) => {
+      apps.set(app.id, { issuer, provisioner, app });
     },
     registerInstallation: (installation) => {
       installations.set(installation.id, installation);
@@ -48078,7 +48078,7 @@ function createAppRegistry() {
       }
       installationRepos.set(installation, repos);
     },
-    findInstallationForToken: (request2) => {
+    findTokenIssuer: (request2) => {
       const tokenHasRole = typeof request2.role === "string";
       const tokenPerms = Object.entries(request2.permissions);
       if (!tokenHasRole) {
@@ -48094,16 +48094,16 @@ function createAppRegistry() {
         {}
       ) : {};
       for (const [installation, repos] of installationRepos) {
-        const appWithRoles = apps.get(installation.app_id);
-        if (!appWithRoles) {
+        const registered = apps.get(installation.app_id);
+        if (!registered) {
           throw new Error(
             `Invariant violation: App ${installation.app_id} not registered`
           );
         }
-        const [appRoles] = appWithRoles;
+        if (!registered.issuer.enabled) continue;
         if (tokenHasRole) {
           let appHasRole = false;
-          for (const role of appRoles) {
+          for (const role of registered.issuer.roles) {
             if (role === request2.role) {
               appHasRole = true;
               break;
@@ -50751,15 +50751,41 @@ var apps_v1_schema_default = {
         type: "string",
         minLength: 1
       },
-      roles: {
-        description: "The roles of the app.",
-        type: "array",
-        uniqueItems: true,
-        default: [],
-        items: {
-          description: "An app role.",
-          type: "string",
-          minLength: 1
+      issuer: {
+        description: "Options for using this app as a token issuer.",
+        type: "object",
+        additionalProperties: false,
+        default: {},
+        properties: {
+          enabled: {
+            description: "Whether the app should be used as a token issuer.",
+            type: "boolean",
+            default: false
+          },
+          roles: {
+            description: "The roles of the app.",
+            type: "array",
+            uniqueItems: true,
+            default: [],
+            items: {
+              description: "An app role.",
+              type: "string",
+              minLength: 1
+            }
+          }
+        }
+      },
+      provisioner: {
+        description: "Options for using this app as a token provisioner.",
+        type: "object",
+        additionalProperties: false,
+        default: {},
+        properties: {
+          enabled: {
+            description: "Whether the app should be used as a token provisioner.",
+            type: "boolean",
+            default: false
+          }
         }
       }
     }
@@ -57050,6 +57076,10 @@ async function discoverApps(octokitFactory, registry, appsInput) {
   }
 }
 async function discoverApp(octokitFactory, registry, appInput, appIndex) {
+  if (!appInput.issuer.enabled && !appInput.provisioner.enabled) {
+    (0, import_core3.debug)(`Skipping discovery of disabled app ${appInput.appId}`);
+    return;
+  }
   const appOctokit = octokitFactory.appOctokit(appInput);
   let app;
   try {
@@ -57074,12 +57104,12 @@ async function discoverApp(octokitFactory, registry, appInput, appIndex) {
     );
   }
   (0, import_core3.debug)(`Discovered app ${JSON.stringify(app.name)} (${app.slug} / ${app.id})`);
-  if (appInput.roles.length < 1) {
+  if (appInput.issuer.roles.length < 1) {
     (0, import_core3.debug)(`App ${app.id} has no roles`);
   } else {
-    (0, import_core3.debug)(`App ${app.id} has roles ${JSON.stringify(appInput.roles)}`);
+    (0, import_core3.debug)(`App ${app.id} has roles ${JSON.stringify(appInput.issuer.roles)}`);
   }
-  registry.registerApp(appInput.roles, app);
+  registry.registerApp(appInput.issuer, appInput.provisioner, app);
   await discoverInstallations(
     octokitFactory,
     registry,
@@ -57116,7 +57146,7 @@ async function discoverInstallations(octokitFactory, registry, appInput, appOcto
       }
     }
   }
-  const rolesSuffix = appInput.roles.length < 1 ? "" : ` with ${pluralize(appInput.roles.length, "role", "roles")} ${appInput.roles.map((r) => JSON.stringify(r)).join(", ")}`;
+  const rolesSuffix = appInput.issuer.roles.length < 1 ? "" : ` with ${pluralize(appInput.issuer.roles.length, "role", "roles")} ${appInput.issuer.roles.map((r) => JSON.stringify(r)).join(", ")}`;
   (0, import_core3.info)(
     `Discovered ${successCount} ${pluralize(successCount, "installation", "installations")} of ${JSON.stringify(app.name)}${rolesSuffix}`
   );

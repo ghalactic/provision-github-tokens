@@ -8,7 +8,13 @@ it("can create app octokit instances", () => {
   const octokitA = factory.appOctokit({
     appId: "100",
     privateKey: "<private key A>",
-    roles: [],
+    issuer: {
+      enabled: true,
+      roles: [],
+    },
+    provisioner: {
+      enabled: false,
+    },
   });
 
   expect(octokitA).toBeInstanceOf(Octokit);
@@ -20,12 +26,24 @@ it("re-uses the same app octokit instance for the same credentials", () => {
   const octokitA = factory.appOctokit({
     appId: "100",
     privateKey: "<private key A>",
-    roles: [],
+    issuer: {
+      enabled: true,
+      roles: [],
+    },
+    provisioner: {
+      enabled: false,
+    },
   });
   const octokitB = factory.appOctokit({
     appId: "100",
     privateKey: "<private key A>",
-    roles: [],
+    issuer: {
+      enabled: true,
+      roles: [],
+    },
+    provisioner: {
+      enabled: false,
+    },
   });
 
   expect(octokitA).toBe(octokitB);
@@ -37,17 +55,35 @@ it("doesn't re-use the same app octokit instance for different credentials", () 
   const octokitA = factory.appOctokit({
     appId: "100",
     privateKey: "<private key A>",
-    roles: [],
+    issuer: {
+      enabled: true,
+      roles: [],
+    },
+    provisioner: {
+      enabled: false,
+    },
   });
   const octokitB = factory.appOctokit({
     appId: "200",
     privateKey: "<private key A>",
-    roles: [],
+    issuer: {
+      enabled: true,
+      roles: [],
+    },
+    provisioner: {
+      enabled: false,
+    },
   });
   const octokitC = factory.appOctokit({
     appId: "100",
     privateKey: "<private key B>",
-    roles: [],
+    issuer: {
+      enabled: true,
+      roles: [],
+    },
+    provisioner: {
+      enabled: false,
+    },
   });
 
   expect(octokitA).not.toBe(octokitB);
@@ -62,7 +98,13 @@ it("can create installation octokit instances", () => {
     {
       appId: "100",
       privateKey: "<private key A>",
-      roles: [],
+      issuer: {
+        enabled: true,
+        roles: [],
+      },
+      provisioner: {
+        enabled: false,
+      },
     },
     101,
   );
@@ -77,7 +119,13 @@ it("re-uses the same installation octokit instance for the same credentials", ()
     {
       appId: "100",
       privateKey: "<private key A>",
-      roles: [],
+      issuer: {
+        enabled: true,
+        roles: [],
+      },
+      provisioner: {
+        enabled: false,
+      },
     },
     101,
   );
@@ -85,7 +133,13 @@ it("re-uses the same installation octokit instance for the same credentials", ()
     {
       appId: "100",
       privateKey: "<private key A>",
-      roles: [],
+      issuer: {
+        enabled: true,
+        roles: [],
+      },
+      provisioner: {
+        enabled: false,
+      },
     },
     101,
   );
@@ -100,7 +154,13 @@ it("doesn't re-use the same installation octokit instance for different credenti
     {
       appId: "100",
       privateKey: "<private key A>",
-      roles: [],
+      issuer: {
+        enabled: true,
+        roles: [],
+      },
+      provisioner: {
+        enabled: false,
+      },
     },
     101,
   );
@@ -108,7 +168,13 @@ it("doesn't re-use the same installation octokit instance for different credenti
     {
       appId: "200",
       privateKey: "<private key A>",
-      roles: [],
+      issuer: {
+        enabled: true,
+        roles: [],
+      },
+      provisioner: {
+        enabled: false,
+      },
     },
     101,
   );
@@ -116,7 +182,13 @@ it("doesn't re-use the same installation octokit instance for different credenti
     {
       appId: "100",
       privateKey: "<private key B>",
-      roles: [],
+      issuer: {
+        enabled: true,
+        roles: [],
+      },
+      provisioner: {
+        enabled: false,
+      },
     },
     101,
   );
@@ -124,7 +196,13 @@ it("doesn't re-use the same installation octokit instance for different credenti
     {
       appId: "100",
       privateKey: "<private key A>",
-      roles: [],
+      issuer: {
+        enabled: true,
+        roles: [],
+      },
+      provisioner: {
+        enabled: false,
+      },
     },
     102,
   );

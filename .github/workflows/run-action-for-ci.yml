@@ -18,12 +18,24 @@ jobs:
           apps: |
             - appId: ${{ toJSON(vars.APP_ID_A) }}
               privateKey: ${{ toJSON(secrets.APP_PK_A) }}
-              roles:
-                - role-a
-                - role-b
+              issuer:
+                enabled: true
+                roles:
+                  - role-a
+                  - role-b
+              provisioner:
+                enabled: true
             - appId: ${{ toJSON(vars.APP_ID_B) }}
               privateKey: ${{ toJSON(secrets.APP_PK_B) }}
-              roles:
-                - role-b
+              issuer:
+                enabled: true
+                roles:
+                  - role-b
+              provisioner:
+                enabled: true
             - appId: ${{ toJSON(vars.APP_ID_C) }}
               privateKey: ${{ toJSON(secrets.APP_PK_C) }}
+              issuer:
+                enabled: true
+              provisioner:
+                enabled: true

@@ -54,7 +54,13 @@ it("discovers installations with access to all repos", async () => {
     {
       appId: String(appA.id),
       privateKey: appA.privateKey,
-      roles: [],
+      issuer: {
+        enabled: true,
+        roles: [],
+      },
+      provisioner: {
+        enabled: false,
+      },
     },
   ]);
 
@@ -68,7 +74,7 @@ it("discovers installations with access to all repos", async () => {
     "
   `);
   expect(
-    registry.findInstallationForToken({
+    registry.findTokenIssuer({
       role: undefined,
       account: orgA.login,
       repos: "all",
@@ -99,7 +105,13 @@ it("discovers installations with access to selected repos", async () => {
     {
       appId: String(appA.id),
       privateKey: appA.privateKey,
-      roles: [],
+      issuer: {
+        enabled: true,
+        roles: [],
+      },
+      provisioner: {
+        enabled: false,
+      },
     },
   ]);
 
@@ -113,7 +125,7 @@ it("discovers installations with access to selected repos", async () => {
     "
   `);
   expect(
-    registry.findInstallationForToken({
+    registry.findTokenIssuer({
       role: undefined,
       account: orgA.login,
       repos: [repoA.name, repoB.name],
@@ -142,7 +154,13 @@ it("discovers installations with access to no repos", async () => {
     {
       appId: String(appA.id),
       privateKey: appA.privateKey,
-      roles: [],
+      issuer: {
+        enabled: true,
+        roles: [],
+      },
+      provisioner: {
+        enabled: false,
+      },
     },
   ]);
 
@@ -156,7 +174,7 @@ it("discovers installations with access to no repos", async () => {
     "
   `);
   expect(
-    registry.findInstallationForToken({
+    registry.findTokenIssuer({
       role: undefined,
       account: orgA.login,
       repos: [],
@@ -179,7 +197,13 @@ it("discovers installations with no permissions", async () => {
     {
       appId: String(appA.id),
       privateKey: appA.privateKey,
-      roles: [],
+      issuer: {
+        enabled: true,
+        roles: [],
+      },
+      provisioner: {
+        enabled: false,
+      },
     },
   ]);
 
@@ -193,7 +217,7 @@ it("discovers installations with no permissions", async () => {
     "
   `);
   expect(
-    registry.findInstallationForToken({
+    registry.findTokenIssuer({
       role: undefined,
       account: orgA.login,
       repos: "all",
@@ -218,12 +242,24 @@ it("discovers installations with roles", async () => {
     {
       appId: String(appA.id),
       privateKey: appA.privateKey,
-      roles: ["role-a"],
+      issuer: {
+        enabled: true,
+        roles: ["role-a"],
+      },
+      provisioner: {
+        enabled: false,
+      },
     },
     {
       appId: String(appB.id),
       privateKey: appB.privateKey,
-      roles: ["role-b", "role-c"],
+      issuer: {
+        enabled: true,
+        roles: ["role-b", "role-c"],
+      },
+      provisioner: {
+        enabled: false,
+      },
     },
   ]);
 
@@ -243,7 +279,7 @@ it("discovers installations with roles", async () => {
     "
   `);
   expect(
-    registry.findInstallationForToken({
+    registry.findTokenIssuer({
       role: "role-a",
       account: orgA.login,
       repos: "all",
@@ -251,7 +287,7 @@ it("discovers installations with roles", async () => {
     }),
   ).toBe(appAInstallationA.id);
   expect(
-    registry.findInstallationForToken({
+    registry.findTokenIssuer({
       role: "role-b",
       account: orgA.login,
       repos: "all",
@@ -259,7 +295,7 @@ it("discovers installations with roles", async () => {
     }),
   ).toBe(appBInstallationA.id);
   expect(
-    registry.findInstallationForToken({
+    registry.findTokenIssuer({
       role: "role-c",
       account: orgA.login,
       repos: "all",
@@ -284,7 +320,13 @@ it("discovers multiple installations of an app", async () => {
     {
       appId: String(appA.id),
       privateKey: appA.privateKey,
-      roles: [],
+      issuer: {
+        enabled: true,
+        roles: [],
+      },
+      provisioner: {
+        enabled: false,
+      },
     },
   ]);
 
@@ -301,7 +343,7 @@ it("discovers multiple installations of an app", async () => {
     "
   `);
   expect(
-    registry.findInstallationForToken({
+    registry.findTokenIssuer({
       role: undefined,
       account: orgA.login,
       repos: "all",
@@ -326,12 +368,24 @@ it("discovers multiple apps", async () => {
     {
       appId: String(appA.id),
       privateKey: appA.privateKey,
-      roles: [],
+      issuer: {
+        enabled: true,
+        roles: [],
+      },
+      provisioner: {
+        enabled: false,
+      },
     },
     {
       appId: String(appB.id),
       privateKey: appB.privateKey,
-      roles: [],
+      issuer: {
+        enabled: true,
+        roles: [],
+      },
+      provisioner: {
+        enabled: false,
+      },
     },
   ]);
 
@@ -351,7 +405,7 @@ it("discovers multiple apps", async () => {
     "
   `);
   expect(
-    registry.findInstallationForToken({
+    registry.findTokenIssuer({
       role: undefined,
       account: orgA.login,
       repos: "all",
@@ -359,7 +413,7 @@ it("discovers multiple apps", async () => {
     }),
   ).toBe(appAInstallationA.id);
   expect(
-    registry.findInstallationForToken({
+    registry.findTokenIssuer({
       role: undefined,
       account: orgA.login,
       repos: "all",
@@ -384,12 +438,24 @@ it("skips apps with incorrect credentials", async () => {
     {
       appId: String(appA.id),
       privateKey: "incorrect",
-      roles: [],
+      issuer: {
+        enabled: true,
+        roles: [],
+      },
+      provisioner: {
+        enabled: false,
+      },
     },
     {
       appId: String(appB.id),
       privateKey: appB.privateKey,
-      roles: [],
+      issuer: {
+        enabled: true,
+        roles: [],
+      },
+      provisioner: {
+        enabled: false,
+      },
     },
   ]);
 
@@ -405,7 +471,7 @@ it("skips apps with incorrect credentials", async () => {
     "
   `);
   expect(
-    registry.findInstallationForToken({
+    registry.findTokenIssuer({
       role: undefined,
       account: orgA.login,
       repos: "all",
@@ -429,12 +495,24 @@ it("skips non-existent apps", async () => {
     {
       appId: String(appX.id),
       privateKey: appX.privateKey,
-      roles: [],
+      issuer: {
+        enabled: true,
+        roles: [],
+      },
+      provisioner: {
+        enabled: false,
+      },
     },
     {
       appId: String(appA.id),
       privateKey: appA.privateKey,
-      roles: [],
+      issuer: {
+        enabled: true,
+        roles: [],
+      },
+      provisioner: {
+        enabled: false,
+      },
     },
   ]);
 
@@ -450,7 +528,7 @@ it("skips non-existent apps", async () => {
     "
   `);
   expect(
-    registry.findInstallationForToken({
+    registry.findTokenIssuer({
       role: undefined,
       account: orgA.login,
       repos: "all",
@@ -483,17 +561,35 @@ it("reports unexpected HTTP statuses", async () => {
     {
       appId: String(appA.id),
       privateKey: appA.privateKey,
-      roles: [],
+      issuer: {
+        enabled: true,
+        roles: [],
+      },
+      provisioner: {
+        enabled: false,
+      },
     },
     {
       appId: String(appB.id),
       privateKey: appB.privateKey,
-      roles: [],
+      issuer: {
+        enabled: true,
+        roles: [],
+      },
+      provisioner: {
+        enabled: false,
+      },
     },
     {
       appId: String(appC.id),
       privateKey: appC.privateKey,
-      roles: [],
+      issuer: {
+        enabled: true,
+        roles: [],
+      },
+      provisioner: {
+        enabled: false,
+      },
     },
   ]);
 
@@ -515,7 +611,7 @@ it("reports unexpected HTTP statuses", async () => {
     "
   `);
   expect(
-    registry.findInstallationForToken({
+    registry.findTokenIssuer({
       role: undefined,
       account: orgA.login,
       repos: "all",
@@ -523,7 +619,7 @@ it("reports unexpected HTTP statuses", async () => {
     }),
   ).toBe(appAInstallationA.id);
   expect(
-    registry.findInstallationForToken({
+    registry.findTokenIssuer({
       role: undefined,
       account: orgA.login,
       repos: "all",
@@ -551,17 +647,35 @@ it("skips apps when discovery throws", async () => {
     {
       appId: String(appA.id),
       privateKey: appA.privateKey,
-      roles: [],
+      issuer: {
+        enabled: true,
+        roles: [],
+      },
+      provisioner: {
+        enabled: false,
+      },
     },
     {
       appId: String(appB.id),
       privateKey: appB.privateKey,
-      roles: [],
+      issuer: {
+        enabled: true,
+        roles: [],
+      },
+      provisioner: {
+        enabled: false,
+      },
     },
     {
       appId: String(appC.id),
       privateKey: appC.privateKey,
-      roles: [],
+      issuer: {
+        enabled: true,
+        roles: [],
+      },
+      provisioner: {
+        enabled: false,
+      },
     },
   ]);
 
@@ -583,7 +697,7 @@ it("skips apps when discovery throws", async () => {
     "
   `);
   expect(
-    registry.findInstallationForToken({
+    registry.findTokenIssuer({
       role: undefined,
       account: orgA.login,
       repos: "all",
@@ -591,7 +705,7 @@ it("skips apps when discovery throws", async () => {
     }),
   ).toBe(appAInstallationA.id);
   expect(
-    registry.findInstallationForToken({
+    registry.findTokenIssuer({
       role: undefined,
       account: orgA.login,
       repos: "all",
@@ -625,7 +739,13 @@ it("skips installations when discovery throws", async () => {
     {
       appId: String(appA.id),
       privateKey: appA.privateKey,
-      roles: [],
+      issuer: {
+        enabled: true,
+        roles: [],
+      },
+      provisioner: {
+        enabled: false,
+      },
     },
   ]);
 
@@ -645,7 +765,7 @@ it("skips installations when discovery throws", async () => {
     "
   `);
   expect(
-    registry.findInstallationForToken({
+    registry.findTokenIssuer({
       role: undefined,
       account: orgA.login,
       repos: "all",
@@ -653,11 +773,95 @@ it("skips installations when discovery throws", async () => {
     }),
   ).toBe(appAInstallationA.id);
   expect(
-    registry.findInstallationForToken({
+    registry.findTokenIssuer({
       role: undefined,
       account: orgC.login,
       repos: "all",
       permissions: { contents: "read" },
     }),
   ).toBe(appAInstallationC.id);
+});
+
+it("skips apps when they're fully disabled", async () => {
+  const orgA = createTestInstallationAccount("Organization", 100, "org-a");
+  const appA = createTestApp(110, "app-a", "App A", { contents: "read" });
+  const appB = createTestApp(120, "app-b", "App B", { contents: "read" });
+  const appC = createTestApp(130, "app-c", "App C", { actions: "read" });
+  const appAInstallationA = createTestInstallation(111, appA, orgA, "all", []);
+  const appBInstallationA = createTestInstallation(121, appB, orgA, "all", []);
+  const appCInstallationA = createTestInstallation(131, appC, orgA, "all", []);
+
+  __setApps([appA, appB, appC]);
+  __setInstallations([appAInstallationA, appBInstallationA, appCInstallationA]);
+
+  const octokitFactory = createOctokitFactory();
+  const registry = createAppRegistry();
+  await discoverApps(octokitFactory, registry, [
+    {
+      appId: String(appA.id),
+      privateKey: appA.privateKey,
+      issuer: {
+        enabled: true,
+        roles: [],
+      },
+      provisioner: {
+        enabled: false,
+      },
+    },
+    {
+      appId: String(appB.id),
+      privateKey: appB.privateKey,
+      issuer: {
+        enabled: false,
+        roles: [],
+      },
+      provisioner: {
+        enabled: false,
+      },
+    },
+    {
+      appId: String(appC.id),
+      privateKey: appC.privateKey,
+      issuer: {
+        enabled: true,
+        roles: [],
+      },
+      provisioner: {
+        enabled: false,
+      },
+    },
+  ]);
+
+  expect(stripStacks(output)).toMatchInlineSnapshot(`
+    "::debug::Discovered app "App A" (app-a / 110)
+    ::debug::App 110 has no roles
+    ::debug::Discovered app installation 111 for account org-a
+    ::debug::Installation 111 has permissions {"contents":"read"}
+    ::debug::Installation 111 has access to all repos in account org-a
+    Discovered 1 installation of "App A"
+    ::debug::Skipping discovery of disabled app 120
+    ::debug::Discovered app "App C" (app-c / 130)
+    ::debug::App 130 has no roles
+    ::debug::Discovered app installation 131 for account org-a
+    ::debug::Installation 131 has permissions {"actions":"read"}
+    ::debug::Installation 131 has access to all repos in account org-a
+    Discovered 1 installation of "App C"
+    "
+  `);
+  expect(
+    registry.findTokenIssuer({
+      role: undefined,
+      account: orgA.login,
+      repos: "all",
+      permissions: { contents: "read" },
+    }),
+  ).toBe(appAInstallationA.id);
+  expect(
+    registry.findTokenIssuer({
+      role: undefined,
+      account: orgA.login,
+      repos: "all",
+      permissions: { actions: "read" },
+    }),
+  ).toBe(appCInstallationA.id);
 });
