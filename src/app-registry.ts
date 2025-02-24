@@ -17,7 +17,7 @@ export type AppRegistry = {
   ) => void;
   registerInstallation: (installation: Installation) => void;
   registerInstallationRepos: (installationId: number, repos: Repo[]) => void;
-  findTokenIssuer: (request: TokenRequest) => number | undefined;
+  findTokenIssuers: (request: TokenRequest) => number[];
 };
 
 export function createAppRegistry(): AppRegistry {
@@ -43,7 +43,7 @@ export function createAppRegistry(): AppRegistry {
       installationRepos.set(installation, repos);
     },
 
-    findTokenIssuer: (request) => {
+    findTokenIssuers: (request) => {
       const tokenHasRole = typeof request.role === "string";
       const tokenPerms = Object.entries(request.permissions) as [
         PermissionName,
@@ -53,7 +53,7 @@ export function createAppRegistry(): AppRegistry {
       // Require an explicit role for write/admin access
       if (!tokenHasRole) {
         for (const [, access] of tokenPerms) {
-          if (isWriteAccess(access)) return undefined;
+          if (isWriteAccess(access)) return [];
         }
       }
 
@@ -66,6 +66,8 @@ export function createAppRegistry(): AppRegistry {
             {} as Record<string, true>,
           )
         : {};
+
+      const issuers: number[] = [];
 
       for (const [installation, repos] of installationRepos) {
         const registered = apps.get(installation.app_id);
@@ -110,7 +112,7 @@ export function createAppRegistry(): AppRegistry {
             "login" in installation.account &&
             installation.account.login === request.account
           ) {
-            return installation.id;
+            issuers.push(installation.id);
           }
 
           continue;
@@ -124,10 +126,10 @@ export function createAppRegistry(): AppRegistry {
 
         if (repoMatchCount !== request.repos.length) continue;
 
-        return installation.id;
+        issuers.push(installation.id);
       }
 
-      return undefined;
+      return issuers;
     },
   };
 }

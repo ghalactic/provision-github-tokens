@@ -48078,12 +48078,12 @@ function createAppRegistry() {
       }
       installationRepos.set(installation, repos);
     },
-    findTokenIssuer: (request2) => {
+    findTokenIssuers: (request2) => {
       const tokenHasRole = typeof request2.role === "string";
       const tokenPerms = Object.entries(request2.permissions);
       if (!tokenHasRole) {
         for (const [, access] of tokenPerms) {
-          if (isWriteAccess(access)) return void 0;
+          if (isWriteAccess(access)) return [];
         }
       }
       const tokenRepos = Array.isArray(request2.repos) ? request2.repos.reduce(
@@ -48093,6 +48093,7 @@ function createAppRegistry() {
         },
         {}
       ) : {};
+      const issuers = [];
       for (const [installation, repos] of installationRepos) {
         const registered = apps.get(installation.app_id);
         if (!registered) {
@@ -48121,7 +48122,7 @@ function createAppRegistry() {
         if (permMatchCount !== tokenPerms.length) continue;
         if (installation.repository_selection === "all") {
           if (installation.account && "login" in installation.account && installation.account.login === request2.account) {
-            return installation.id;
+            issuers.push(installation.id);
           }
           continue;
         }
@@ -48131,9 +48132,9 @@ function createAppRegistry() {
           }
         }
         if (repoMatchCount !== request2.repos.length) continue;
-        return installation.id;
+        issuers.push(installation.id);
       }
-      return void 0;
+      return issuers;
     }
   };
 }

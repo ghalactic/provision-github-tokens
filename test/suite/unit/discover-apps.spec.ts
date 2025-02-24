@@ -74,13 +74,13 @@ it("discovers installations with access to all repos", async () => {
     "
   `);
   expect(
-    registry.findTokenIssuer({
+    registry.findTokenIssuers({
       role: undefined,
       account: orgA.login,
       repos: "all",
       permissions: { contents: "read" },
     }),
-  ).toBe(appAInstallationA.id);
+  ).toEqual([appAInstallationA.id]);
 });
 
 it("discovers installations with access to selected repos", async () => {
@@ -125,13 +125,13 @@ it("discovers installations with access to selected repos", async () => {
     "
   `);
   expect(
-    registry.findTokenIssuer({
+    registry.findTokenIssuers({
       role: undefined,
       account: orgA.login,
       repos: [repoA.name, repoB.name],
       permissions: { contents: "read" },
     }),
-  ).toBe(appAInstallationA.id);
+  ).toEqual([appAInstallationA.id]);
 });
 
 it("discovers installations with access to no repos", async () => {
@@ -174,13 +174,13 @@ it("discovers installations with access to no repos", async () => {
     "
   `);
   expect(
-    registry.findTokenIssuer({
+    registry.findTokenIssuers({
       role: undefined,
       account: orgA.login,
       repos: [],
       permissions: { members: "read" },
     }),
-  ).toBe(appAInstallationA.id);
+  ).toEqual([appAInstallationA.id]);
 });
 
 it("discovers installations with no permissions", async () => {
@@ -217,13 +217,13 @@ it("discovers installations with no permissions", async () => {
     "
   `);
   expect(
-    registry.findTokenIssuer({
+    registry.findTokenIssuers({
       role: undefined,
       account: orgA.login,
       repos: "all",
       permissions: {},
     }),
-  ).toBe(appAInstallationA.id);
+  ).toEqual([appAInstallationA.id]);
 });
 
 it("discovers installations with roles", async () => {
@@ -279,34 +279,34 @@ it("discovers installations with roles", async () => {
     "
   `);
   expect(
-    registry.findTokenIssuer({
+    registry.findTokenIssuers({
       role: "role-a",
       account: orgA.login,
       repos: "all",
       permissions: { contents: "write" },
     }),
-  ).toBe(appAInstallationA.id);
+  ).toEqual([appAInstallationA.id]);
   expect(
-    registry.findTokenIssuer({
+    registry.findTokenIssuers({
       role: "role-b",
       account: orgA.login,
       repos: "all",
       permissions: { contents: "write" },
     }),
-  ).toBe(appBInstallationA.id);
+  ).toEqual([appBInstallationA.id]);
   expect(
-    registry.findTokenIssuer({
+    registry.findTokenIssuers({
       role: "role-c",
       account: orgA.login,
       repos: "all",
       permissions: { contents: "write" },
     }),
-  ).toBe(appBInstallationA.id);
+  ).toEqual([appBInstallationA.id]);
 });
 
 it("discovers multiple installations of an app", async () => {
   const orgA = createTestInstallationAccount("Organization", 1000, "org-a");
-  const orgB = createTestInstallationAccount("Organization", 2000, "org-a");
+  const orgB = createTestInstallationAccount("Organization", 2000, "org-b");
   const appA = createTestApp(100, "app-a", "App A", { contents: "read" });
   const appAInstallationA = createTestInstallation(101, appA, orgA, "all", []);
   const appAInstallationB = createTestInstallation(102, appA, orgB, "all", []);
@@ -336,20 +336,20 @@ it("discovers multiple installations of an app", async () => {
     ::debug::Discovered app installation 101 for account org-a
     ::debug::Installation 101 has permissions {"contents":"read"}
     ::debug::Installation 101 has access to all repos in account org-a
-    ::debug::Discovered app installation 102 for account org-a
+    ::debug::Discovered app installation 102 for account org-b
     ::debug::Installation 102 has permissions {"contents":"read"}
-    ::debug::Installation 102 has access to all repos in account org-a
+    ::debug::Installation 102 has access to all repos in account org-b
     Discovered 2 installations of "App A"
     "
   `);
   expect(
-    registry.findTokenIssuer({
+    registry.findTokenIssuers({
       role: undefined,
       account: orgA.login,
       repos: "all",
       permissions: { contents: "read" },
     }),
-  ).toBe(appAInstallationA.id);
+  ).toEqual([appAInstallationA.id]);
 });
 
 it("discovers multiple apps", async () => {
@@ -407,21 +407,21 @@ it("discovers multiple apps", async () => {
     "
   `);
   expect(
-    registry.findTokenIssuer({
+    registry.findTokenIssuers({
       role: undefined,
       account: orgA.login,
       repos: "all",
       permissions: { contents: "read" },
     }),
-  ).toBe(appAInstallationA.id);
+  ).toEqual([appAInstallationA.id]);
   expect(
-    registry.findTokenIssuer({
+    registry.findTokenIssuers({
       role: undefined,
       account: orgA.login,
       repos: "all",
       permissions: { actions: "read" },
     }),
-  ).toBe(appBInstallationA.id);
+  ).toEqual([appBInstallationA.id]);
 });
 
 it("skips apps with incorrect credentials", async () => {
@@ -473,13 +473,13 @@ it("skips apps with incorrect credentials", async () => {
     "
   `);
   expect(
-    registry.findTokenIssuer({
+    registry.findTokenIssuers({
       role: undefined,
       account: orgA.login,
       repos: "all",
       permissions: { contents: "read" },
     }),
-  ).toBe(appBInstallationA.id);
+  ).toEqual([appBInstallationA.id]);
 });
 
 it("skips non-existent apps", async () => {
@@ -530,13 +530,13 @@ it("skips non-existent apps", async () => {
     "
   `);
   expect(
-    registry.findTokenIssuer({
+    registry.findTokenIssuers({
       role: undefined,
       account: orgA.login,
       repos: "all",
       permissions: { contents: "read" },
     }),
-  ).toBe(appAInstallationA.id);
+  ).toEqual([appAInstallationA.id]);
 });
 
 it("reports unexpected HTTP statuses", async () => {
@@ -613,21 +613,21 @@ it("reports unexpected HTTP statuses", async () => {
     "
   `);
   expect(
-    registry.findTokenIssuer({
+    registry.findTokenIssuers({
       role: undefined,
       account: orgA.login,
       repos: "all",
       permissions: { contents: "read" },
     }),
-  ).toBe(appAInstallationA.id);
+  ).toEqual([appAInstallationA.id]);
   expect(
-    registry.findTokenIssuer({
+    registry.findTokenIssuers({
       role: undefined,
       account: orgA.login,
       repos: "all",
       permissions: { actions: "read" },
     }),
-  ).toBe(appCInstallationA.id);
+  ).toEqual([appCInstallationA.id]);
 });
 
 it("skips apps when discovery throws", async () => {
@@ -699,21 +699,21 @@ it("skips apps when discovery throws", async () => {
     "
   `);
   expect(
-    registry.findTokenIssuer({
+    registry.findTokenIssuers({
       role: undefined,
       account: orgA.login,
       repos: "all",
       permissions: { contents: "read" },
     }),
-  ).toBe(appAInstallationA.id);
+  ).toEqual([appAInstallationA.id]);
   expect(
-    registry.findTokenIssuer({
+    registry.findTokenIssuers({
       role: undefined,
       account: orgA.login,
       repos: "all",
       permissions: { actions: "read" },
     }),
-  ).toBe(appCInstallationA.id);
+  ).toEqual([appCInstallationA.id]);
 });
 
 it("skips installations when discovery throws", async () => {
@@ -767,21 +767,21 @@ it("skips installations when discovery throws", async () => {
     "
   `);
   expect(
-    registry.findTokenIssuer({
+    registry.findTokenIssuers({
       role: undefined,
       account: orgA.login,
       repos: "all",
       permissions: { contents: "read" },
     }),
-  ).toBe(appAInstallationA.id);
+  ).toEqual([appAInstallationA.id]);
   expect(
-    registry.findTokenIssuer({
+    registry.findTokenIssuers({
       role: undefined,
       account: orgC.login,
       repos: "all",
       permissions: { contents: "read" },
     }),
-  ).toBe(appAInstallationC.id);
+  ).toEqual([appAInstallationC.id]);
 });
 
 it("skips apps when they're fully disabled", async () => {
@@ -851,19 +851,19 @@ it("skips apps when they're fully disabled", async () => {
     "
   `);
   expect(
-    registry.findTokenIssuer({
+    registry.findTokenIssuers({
       role: undefined,
       account: orgA.login,
       repos: "all",
       permissions: { contents: "read" },
     }),
-  ).toBe(appAInstallationA.id);
+  ).toEqual([appAInstallationA.id]);
   expect(
-    registry.findTokenIssuer({
+    registry.findTokenIssuers({
       role: undefined,
       account: orgA.login,
       repos: "all",
       permissions: { actions: "read" },
     }),
-  ).toBe(appCInstallationA.id);
+  ).toEqual([appCInstallationA.id]);
 });
