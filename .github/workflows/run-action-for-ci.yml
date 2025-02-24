@@ -15,14 +15,7 @@ jobs:
       - name: Run action
         uses: ./
         with:
-          provisionApps: |
-            - appId: ${{ toJSON(vars.APP_ID_A) }}
-              privateKey: ${{ toJSON(secrets.APP_PK_A) }}
-            - appId: ${{ toJSON(vars.APP_ID_B) }}
-              privateKey: ${{ toJSON(secrets.APP_PK_B) }}
-            - appId: ${{ toJSON(vars.APP_ID_C) }}
-              privateKey: ${{ toJSON(secrets.APP_PK_C) }}
-          tokenApps: |
+          apps: |
             - appId: ${{ toJSON(vars.APP_ID_A) }}
               privateKey: ${{ toJSON(secrets.APP_PK_A) }}
               roles:

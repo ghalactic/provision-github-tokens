@@ -2,18 +2,11 @@ name: Provision GitHub Tokens
 description: Declare GitHub tokens in your repos, and rotate them automatically
 author: Ghalactic
 inputs:
-  provisionApps:
+  apps:
     description: >-
       Apps to use for provisioning tokens, encoded as a YAML (or JSON) array.
       The schema at
-      https://ghalactic.github.io/provision-github-tokens/schema/provision-apps.v1.schema.json
-      can be used to validate the input.
-    required: true
-  tokenApps:
-    description: >-
-      Apps to use for creating tokens, encoded as a YAML (or JSON) array. The
-      schema at
-      https://ghalactic.github.io/provision-github-tokens/schema/token-apps.v1.schema.json
+      https://ghalactic.github.io/provision-github-tokens/schema/apps.v1.schema.json
       can be used to validate the input.
     required: true
 branding:

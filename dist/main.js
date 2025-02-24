@@ -21767,7 +21767,7 @@ var require_core = __commonJS({
       process.env["PATH"] = `${inputPath}${path.delimiter}${process.env["PATH"]}`;
     }
     exports.addPath = addPath;
-    function getInput3(name, options) {
+    function getInput2(name, options) {
       const val = process.env[`INPUT_${name.replace(/ /g, "_").toUpperCase()}`] || "";
       if (options && options.required && !val) {
         throw new Error(`Input required and not supplied: ${name}`);
@@ -21777,9 +21777,9 @@ var require_core = __commonJS({
       }
       return val.trim();
     }
-    exports.getInput = getInput3;
+    exports.getInput = getInput2;
     function getMultilineInput(name, options) {
-      const inputs = getInput3(name, options).split("\n").filter((x) => x !== "");
+      const inputs = getInput2(name, options).split("\n").filter((x) => x !== "");
       if (options && options.trimWhitespace === false) {
         return inputs;
       }
@@ -21789,7 +21789,7 @@ var require_core = __commonJS({
     function getBooleanInput(name, options) {
       const trueValue = ["true", "True", "TRUE"];
       const falseValue = ["false", "False", "FALSE"];
-      const val = getInput3(name, options);
+      const val = getInput2(name, options);
       if (trueValue.includes(val))
         return true;
       if (falseValue.includes(val))
@@ -48044,7 +48044,20 @@ var require_light = __commonJS({
 require_source_map_support().install();
 
 // src/main.ts
-var import_core5 = __toESM(require_core(), 1);
+var import_core4 = __toESM(require_core(), 1);
+
+// src/access-level.ts
+var ACCESS_RANK = {
+  read: 1,
+  write: 2,
+  admin: 3
+};
+function isSufficientAccess(have, want) {
+  return ACCESS_RANK[have] >= ACCESS_RANK[want];
+}
+function isWriteAccess(access) {
+  return ACCESS_RANK[access] > ACCESS_RANK.read;
+}
 
 // src/app-registry.ts
 function createAppRegistry() {
@@ -48052,9 +48065,6 @@ function createAppRegistry() {
   const installations = /* @__PURE__ */ new Map();
   const installationRepos = /* @__PURE__ */ new Map();
   return {
-    apps,
-    installations,
-    installationRepos,
     registerApp: (roles, app) => {
       apps.set(app.id, [roles, app]);
     },
@@ -48067,11 +48077,68 @@ function createAppRegistry() {
         throw new Error(`Installation ${installationId} not registered`);
       }
       installationRepos.set(installation, repos);
+    },
+    findInstallationForToken: (request2) => {
+      const tokenHasRole = typeof request2.role === "string";
+      const tokenPerms = Object.entries(request2.permissions);
+      if (!tokenHasRole) {
+        for (const [, access] of tokenPerms) {
+          if (isWriteAccess(access)) return void 0;
+        }
+      }
+      const tokenRepos = Array.isArray(request2.repos) ? request2.repos.reduce(
+        (repos, name) => {
+          repos[name] = true;
+          return repos;
+        },
+        {}
+      ) : {};
+      for (const [installation, repos] of installationRepos) {
+        const appWithRoles = apps.get(installation.app_id);
+        if (!appWithRoles) {
+          throw new Error(
+            `Invariant violation: App ${installation.app_id} not registered`
+          );
+        }
+        const [appRoles] = appWithRoles;
+        if (tokenHasRole) {
+          let appHasRole = false;
+          for (const role of appRoles) {
+            if (role === request2.role) {
+              appHasRole = true;
+              break;
+            }
+          }
+          if (!appHasRole) continue;
+        }
+        let permMatchCount = 0;
+        let repoMatchCount = 0;
+        for (const [name, access] of tokenPerms) {
+          const instAccess = installation.permissions[name];
+          if (!instAccess) continue;
+          if (isSufficientAccess(instAccess, access)) ++permMatchCount;
+        }
+        if (permMatchCount !== tokenPerms.length) continue;
+        if (installation.repository_selection === "all") {
+          if (installation.account && "login" in installation.account && installation.account.login === request2.account) {
+            return installation.id;
+          }
+          continue;
+        }
+        for (const repo of repos) {
+          if (repo.owner.login === request2.account && tokenRepos[repo.name]) {
+            ++repoMatchCount;
+          }
+        }
+        if (repoMatchCount !== request2.repos.length) continue;
+        return installation.id;
+      }
+      return void 0;
     }
   };
 }
 
-// src/config/provision-apps-input.ts
+// src/config/apps-input.ts
 var import_core = __toESM(require_core(), 1);
 
 // node_modules/js-yaml/dist/js-yaml.mjs
@@ -50661,6 +50728,44 @@ var safeDump = renamed("safeDump", "dump");
 var import_ajv = __toESM(require_ajv(), 1);
 var import_ajv_errors = __toESM(require_dist(), 1);
 
+// src/schema/apps.v1.schema.json
+var apps_v1_schema_default = {
+  $schema: "http://json-schema.org/draft-07/schema#",
+  $id: "https://ghalactic.github.io/provision-github-tokens/schema/apps.v1.schema.json",
+  title: "Provision GitHub Tokens (apps input)",
+  description: "Apps to use for provisioning tokens.",
+  type: "array",
+  items: {
+    description: "An app to use for provisioning tokens.",
+    type: "object",
+    additionalProperties: false,
+    required: ["appId", "privateKey"],
+    properties: {
+      appId: {
+        description: "The GitHub app ID.",
+        type: "string",
+        minLength: 1
+      },
+      privateKey: {
+        description: "The GitHub app private key in PEM format.",
+        type: "string",
+        minLength: 1
+      },
+      roles: {
+        description: "The roles of the app.",
+        type: "array",
+        uniqueItems: true,
+        default: [],
+        items: {
+          description: "An app role.",
+          type: "string",
+          minLength: 1
+        }
+      }
+    }
+  }
+};
+
 // src/schema/consumer.v1.schema.json
 var consumer_v1_schema_default = {
   $schema: "http://json-schema.org/draft-07/schema#",
@@ -52134,87 +52239,25 @@ var provider_v1_schema_default = {
   }
 };
 
-// src/schema/provision-apps.v1.schema.json
-var provision_apps_v1_schema_default = {
-  $schema: "http://json-schema.org/draft-07/schema#",
-  $id: "https://ghalactic.github.io/provision-github-tokens/schema/provision-apps.v1.schema.json",
-  title: "Provision GitHub Tokens (provisionApps input)",
-  description: "Apps to use for provisioning tokens.",
-  type: "array",
-  items: {
-    description: "An app to use for provisioning tokens.",
-    type: "object",
-    additionalProperties: false,
-    required: ["appId", "privateKey"],
-    properties: {
-      appId: {
-        description: "The GitHub app ID.",
-        type: "string",
-        minLength: 1
-      },
-      privateKey: {
-        description: "The GitHub app private key in PEM format.",
-        type: "string",
-        minLength: 1
-      }
-    }
-  }
-};
-
-// src/schema/token-apps.v1.schema.json
-var token_apps_v1_schema_default = {
-  $schema: "http://json-schema.org/draft-07/schema#",
-  $id: "https://ghalactic.github.io/provision-github-tokens/schema/token-apps.v1.schema.json",
-  title: "Provision GitHub Tokens (tokenApps input)",
-  description: "Apps to use for creating tokens.",
-  type: "array",
-  items: {
-    description: "An app to use for creating tokens.",
-    type: "object",
-    additionalProperties: false,
-    required: ["appId", "privateKey"],
-    properties: {
-      appId: {
-        description: "The GitHub app ID.",
-        type: "string",
-        minLength: 1
-      },
-      privateKey: {
-        description: "The GitHub app private key in PEM format.",
-        type: "string",
-        minLength: 1
-      },
-      roles: {
-        description: "The roles of the app.",
-        type: "array",
-        uniqueItems: true,
-        default: [],
-        items: {
-          description: "An app role.",
-          type: "string",
-          minLength: 1
-        }
-      }
-    }
-  }
-};
-
 // src/config/validation.ts
 var Ajv = import_ajv.default.default;
 var ajvErrors = import_ajv_errors.default.default;
 var ajv = new Ajv({
   schemas: [
+    apps_v1_schema_default,
     consumer_v1_schema_default,
     generated_consumer_token_permissions_v1_schema_default,
-    generated_provider_rule_permissions_v1_schema_default,
     provider_v1_schema_default,
-    provision_apps_v1_schema_default,
-    token_apps_v1_schema_default
+    generated_provider_rule_permissions_v1_schema_default
   ],
   allErrors: true,
   useDefaults: true
 });
 ajvErrors(ajv);
+var validateApps = createValidate(
+  apps_v1_schema_default.$id,
+  "apps input"
+);
 var validateConsumer = createValidate(
   consumer_v1_schema_default.$id,
   "consumer configuration"
@@ -52222,14 +52265,6 @@ var validateConsumer = createValidate(
 var validateProvider = createValidate(
   provider_v1_schema_default.$id,
   "provider configuration"
-);
-var validateProvisionApps = createValidate(
-  provision_apps_v1_schema_default.$id,
-  "provisionApps input"
-);
-var validateTokenApps = createValidate(
-  token_apps_v1_schema_default.$id,
-  "tokenApps input"
 );
 var ValidateError = class extends Error {
   errors;
@@ -52264,45 +52299,24 @@ function renderError(error) {
   return `${message}${subject}`;
 }
 
-// src/config/provision-apps-input.ts
-function readProvisionAppsInput() {
-  const yaml = (0, import_core.getInput)("provisionApps");
+// src/config/apps-input.ts
+function readAppsInput() {
+  const yaml = (0, import_core.getInput)("apps");
   let parsed;
   try {
     parsed = load(yaml);
   } catch (cause) {
-    throw new Error("Parsing of provisionApps action input failed", { cause });
+    throw new Error("Parsing of apps action input failed", { cause });
   }
   try {
-    return validateProvisionApps(parsed);
+    return validateApps(parsed);
   } catch (cause) {
-    throw new Error("Validation of provisionApps action input failed", {
-      cause
-    });
-  }
-}
-
-// src/config/token-apps-input.ts
-var import_core2 = __toESM(require_core(), 1);
-function readTokenAppsInput() {
-  const yaml = (0, import_core2.getInput)("tokenApps");
-  let parsed;
-  try {
-    parsed = load(yaml);
-  } catch (cause) {
-    throw new Error("Parsing of tokenApps action input failed", { cause });
-  }
-  try {
-    return validateTokenApps(parsed);
-  } catch (cause) {
-    throw new Error("Validation of tokenApps action input failed", {
-      cause
-    });
+    throw new Error("Validation of apps action input failed", { cause });
   }
 }
 
 // src/discover-apps.ts
-var import_core4 = __toESM(require_core(), 1);
+var import_core3 = __toESM(require_core(), 1);
 
 // src/error.ts
 function errorStack(error) {
@@ -57030,8 +57044,8 @@ async function discoverApps(octokitFactory, registry, appsInput) {
     try {
       await discoverApp(octokitFactory, registry, appInput, appIndex++);
     } catch (cause) {
-      (0, import_core4.debug)(`Failed to discover app ${appInput.appId}: ${errorStack(cause)}`);
-      (0, import_core4.error)(`Failed to discover app at index ${appIndex}`);
+      (0, import_core3.debug)(`Failed to discover app ${appInput.appId}: ${errorStack(cause)}`);
+      (0, import_core3.error)(`Failed to discover app at index ${appIndex}`);
     }
   }
 }
@@ -57043,31 +57057,29 @@ async function discoverApp(octokitFactory, registry, appInput, appIndex) {
   } catch (error) {
     handleRequestError(error, {
       401: () => {
-        (0, import_core4.debug)(`App ${appInput.appId} has incorrect credentials - skipping`);
-        (0, import_core4.info)(`App at index ${appIndex} has incorrect credentials - skipping`);
+        (0, import_core3.debug)(`App ${appInput.appId} has incorrect credentials - skipping`);
+        (0, import_core3.info)(`App at index ${appIndex} has incorrect credentials - skipping`);
       },
       404: () => {
-        (0, import_core4.debug)(`App ${appInput.appId} not found - skipping`);
-        (0, import_core4.info)(`App at index ${appIndex} not found - skipping`);
+        (0, import_core3.debug)(`App ${appInput.appId} not found - skipping`);
+        (0, import_core3.info)(`App at index ${appIndex} not found - skipping`);
       }
     });
     return;
   }
   if (!app) {
-    (0, import_core4.debug)(`App ${appInput.appId} can't access itself`);
+    (0, import_core3.debug)(`App ${appInput.appId} can't access itself`);
     throw new Error(
       `Invariant violation: App at index ${appIndex} can't access itself`
     );
   }
-  (0, import_core4.debug)(`Discovered app ${JSON.stringify(app.name)} (${app.slug} / ${app.id})`);
-  if (appInput.roles) {
-    if (appInput.roles.length < 1) {
-      (0, import_core4.debug)(`App ${app.id} has no roles`);
-    } else {
-      (0, import_core4.debug)(`App ${app.id} has roles ${JSON.stringify(appInput.roles)}`);
-    }
+  (0, import_core3.debug)(`Discovered app ${JSON.stringify(app.name)} (${app.slug} / ${app.id})`);
+  if (appInput.roles.length < 1) {
+    (0, import_core3.debug)(`App ${app.id} has no roles`);
+  } else {
+    (0, import_core3.debug)(`App ${app.id} has roles ${JSON.stringify(appInput.roles)}`);
   }
-  registry.registerApp(appInput.roles ?? [], app);
+  registry.registerApp(appInput.roles, app);
   await discoverInstallations(
     octokitFactory,
     registry,
@@ -57095,21 +57107,21 @@ async function discoverInstallations(octokitFactory, registry, appInput, appOcto
         ++successCount;
       } catch (cause) {
         ++failureCount;
-        (0, import_core4.debug)(
+        (0, import_core3.debug)(
           `Failed to discover installation ${installation.id} for app ${appInput.appId}: ${errorStack(cause)}`
         );
-        (0, import_core4.error)(
+        (0, import_core3.error)(
           `Failed to discover installation for app at index ${appIndex}`
         );
       }
     }
   }
-  const rolesSuffix = !appInput.roles || appInput.roles.length < 1 ? "" : ` with ${pluralize(appInput.roles.length, "role", "roles")} ${appInput.roles.map((r) => JSON.stringify(r)).join(", ")}`;
-  (0, import_core4.info)(
+  const rolesSuffix = appInput.roles.length < 1 ? "" : ` with ${pluralize(appInput.roles.length, "role", "roles")} ${appInput.roles.map((r) => JSON.stringify(r)).join(", ")}`;
+  (0, import_core3.info)(
     `Discovered ${successCount} ${pluralize(successCount, "installation", "installations")} of ${JSON.stringify(app.name)}${rolesSuffix}`
   );
   if (failureCount > 0) {
-    (0, import_core4.info)(
+    (0, import_core3.info)(
       `Failed to discover ${failureCount} ${pluralize(failureCount, "installation", "installations")} of ${JSON.stringify(app.name)}${rolesSuffix}`
     );
   }
@@ -57135,25 +57147,25 @@ async function discoverInstallation(octokitFactory, registry, appInput, installa
     }
   }
   const accountDescription = account && "login" in account ? `account ${account.login}` : "unknown account";
-  (0, import_core4.debug)(
+  (0, import_core3.debug)(
     `Discovered app installation ${installationId} for ${accountDescription}`
   );
   if (Object.keys(permissions).length < 1) {
-    (0, import_core4.debug)(`Installation ${installationId} has no permissions`);
+    (0, import_core3.debug)(`Installation ${installationId} has no permissions`);
   } else {
-    (0, import_core4.debug)(
+    (0, import_core3.debug)(
       `Installation ${installationId} has permissions ${JSON.stringify(permissions)}`
     );
   }
   if (repository_selection === "all") {
-    (0, import_core4.debug)(
+    (0, import_core3.debug)(
       `Installation ${installationId} has access to all repos in ${accountDescription}`
     );
   } else if (repos.length < 1) {
-    (0, import_core4.debug)(`Installation ${installationId} has access to no repos`);
+    (0, import_core3.debug)(`Installation ${installationId} has access to no repos`);
   } else {
     const repoNames = repos.map(({ full_name }) => full_name);
-    (0, import_core4.debug)(
+    (0, import_core3.debug)(
       `Installation ${installationId} has access to repos ${JSON.stringify(repoNames)}`
     );
   }
@@ -57161,101 +57173,15 @@ async function discoverInstallation(octokitFactory, registry, appInput, installa
   registry.registerInstallationRepos(installationId, repos);
 }
 
-// src/access-level.ts
-var ACCESS_RANK = {
-  read: 1,
-  write: 2,
-  admin: 3
-};
-function isSufficientAccess(have, want) {
-  return ACCESS_RANK[have] >= ACCESS_RANK[want];
-}
-function isWriteAccess(access) {
-  return ACCESS_RANK[access] > ACCESS_RANK.read;
-}
-
-// src/token-app-registry.ts
-function createTokenAppRegistry() {
-  const registry = createAppRegistry();
-  return {
-    ...registry,
-    findInstallationForToken: (request2) => {
-      const tokenHasRole = typeof request2.role === "string";
-      const tokenPerms = Object.entries(request2.permissions);
-      if (!tokenHasRole) {
-        for (const [, access] of tokenPerms) {
-          if (isWriteAccess(access)) return void 0;
-        }
-      }
-      const tokenRepos = Array.isArray(request2.repos) ? request2.repos.reduce(
-        (repos, name) => {
-          repos[name] = true;
-          return repos;
-        },
-        {}
-      ) : {};
-      for (const [installation, repos] of registry.installationRepos) {
-        const appWithRoles = registry.apps.get(installation.app_id);
-        if (!appWithRoles) {
-          throw new Error(
-            `Invariant violation: App ${installation.app_id} not registered`
-          );
-        }
-        const [appRoles] = appWithRoles;
-        if (tokenHasRole) {
-          let appHasRole = false;
-          for (const role of appRoles) {
-            if (role === request2.role) {
-              appHasRole = true;
-              break;
-            }
-          }
-          if (!appHasRole) continue;
-        }
-        let permMatchCount = 0;
-        let repoMatchCount = 0;
-        for (const [name, access] of tokenPerms) {
-          const instAccess = installation.permissions[name];
-          if (!instAccess) continue;
-          if (isSufficientAccess(instAccess, access)) ++permMatchCount;
-        }
-        if (permMatchCount !== tokenPerms.length) continue;
-        if (installation.repository_selection === "all") {
-          if (installation.account && "login" in installation.account && installation.account.login === request2.account) {
-            return installation.id;
-          }
-          continue;
-        }
-        for (const repo of repos) {
-          if (repo.owner.login === request2.account && tokenRepos[repo.name]) {
-            ++repoMatchCount;
-          }
-        }
-        if (repoMatchCount !== request2.repos.length) continue;
-        return installation.id;
-      }
-      return void 0;
-    }
-  };
-}
-
 // src/main.ts
 main().catch((error) => {
-  (0, import_core5.setFailed)(error instanceof Error ? error : String(error));
+  (0, import_core4.setFailed)(error instanceof Error ? error : String(error));
 });
 async function main() {
   const octokitFactory = createOctokitFactory();
-  const provisionAppRegistry = createAppRegistry();
-  const tokenAppRegistry = createTokenAppRegistry();
-  await (0, import_core5.group)("Discovering provision apps", async () => {
-    await discoverApps(
-      octokitFactory,
-      provisionAppRegistry,
-      readProvisionAppsInput()
-    );
-  });
-  await (0, import_core5.group)("Discovering token apps", async () => {
-    await discoverApps(octokitFactory, tokenAppRegistry, readTokenAppsInput());
+  const registry = createAppRegistry();
+  await (0, import_core4.group)("Discovering apps", async () => {
+    await discoverApps(octokitFactory, registry, readAppsInput());
   });
 }
 /*! Bundled license information:

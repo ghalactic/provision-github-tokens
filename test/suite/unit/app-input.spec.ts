@@ -1,7 +1,7 @@
 import { getInput } from "@actions/core";
 import { beforeEach, expect, it, vi } from "vitest";
-import { readTokenAppsInput } from "../../../src/config/token-apps-input.js";
-import type { AppsInputApp } from "../../../src/type/input.js";
+import { readAppsInput } from "../../../src/config/apps-input.js";
+import type { AppInput } from "../../../src/type/input.js";
 import { throws } from "../../error.js";
 
 vi.mock("@actions/core");
@@ -22,7 +22,7 @@ it("can parse valid input", () => {
       roles: ["role-a", "role-b"]
   `);
 
-  expect(readTokenAppsInput()).toEqual([
+  expect(readAppsInput()).toEqual([
     {
       appId: "100",
       privateKey: "<private key A>",
@@ -38,7 +38,7 @@ it("can parse valid input", () => {
       privateKey: "<private key C>",
       roles: ["role-a", "role-b"],
     },
-  ] satisfies AppsInputApp[]);
+  ] satisfies AppInput[]);
 });
 
 it("throws if the input doesn't match the schema", () => {
@@ -49,12 +49,12 @@ it("throws if the input doesn't match the schema", () => {
 
   expect(
     throws(() => {
-      readTokenAppsInput();
+      readAppsInput();
     }),
   ).toMatchInlineSnapshot(`
-    "Validation of tokenApps action input failed
+    "Validation of apps action input failed
 
-    Caused by: Invalid tokenApps input:
+    Caused by: Invalid apps input:
       - must be string (/0/appId)"
   `);
 });
@@ -64,10 +64,10 @@ it("throws if the input isn't valid YAML", () => {
 
   expect(
     throws(() => {
-      readTokenAppsInput();
+      readAppsInput();
     }),
   ).toMatchInlineSnapshot(`
-    "Parsing of tokenApps action input failed
+    "Parsing of apps action input failed
 
     Caused by: unexpected end of the stream within a flow collection (2:1)
 

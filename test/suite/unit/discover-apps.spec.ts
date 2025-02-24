@@ -7,9 +7,9 @@ import {
   __setErrors,
   __setInstallations,
 } from "../../../__mocks__/@octokit/action.js";
+import { createAppRegistry } from "../../../src/app-registry.js";
 import { discoverApps } from "../../../src/discover-apps.js";
 import { createOctokitFactory } from "../../../src/octokit.js";
-import { createTokenAppRegistry } from "../../../src/token-app-registry.js";
 import {
   createTestApp,
   createTestInstallation,
@@ -49,7 +49,7 @@ it("discovers installations with access to all repos", async () => {
   __setInstallations([appAInstallationA]);
 
   const octokitFactory = createOctokitFactory();
-  const registry = createTokenAppRegistry();
+  const registry = createAppRegistry();
   await discoverApps(octokitFactory, registry, [
     {
       appId: String(appA.id),
@@ -94,7 +94,7 @@ it("discovers installations with access to selected repos", async () => {
   __setInstallations([appAInstallationA]);
 
   const octokitFactory = createOctokitFactory();
-  const registry = createTokenAppRegistry();
+  const registry = createAppRegistry();
   await discoverApps(octokitFactory, registry, [
     {
       appId: String(appA.id),
@@ -137,7 +137,7 @@ it("discovers installations with access to no repos", async () => {
   __setInstallations([appAInstallationA]);
 
   const octokitFactory = createOctokitFactory();
-  const registry = createTokenAppRegistry();
+  const registry = createAppRegistry();
   await discoverApps(octokitFactory, registry, [
     {
       appId: String(appA.id),
@@ -174,7 +174,7 @@ it("discovers installations with no permissions", async () => {
   __setInstallations([appAInstallationA]);
 
   const octokitFactory = createOctokitFactory();
-  const registry = createTokenAppRegistry();
+  const registry = createAppRegistry();
   await discoverApps(octokitFactory, registry, [
     {
       appId: String(appA.id),
@@ -213,7 +213,7 @@ it("discovers installations with roles", async () => {
   __setInstallations([appAInstallationA, appBInstallationA]);
 
   const octokitFactory = createOctokitFactory();
-  const registry = createTokenAppRegistry();
+  const registry = createAppRegistry();
   await discoverApps(octokitFactory, registry, [
     {
       appId: String(appA.id),
@@ -279,7 +279,7 @@ it("discovers multiple installations of an app", async () => {
   __setInstallations([appAInstallationA, appAInstallationB]);
 
   const octokitFactory = createOctokitFactory();
-  const registry = createTokenAppRegistry();
+  const registry = createAppRegistry();
   await discoverApps(octokitFactory, registry, [
     {
       appId: String(appA.id),
@@ -321,7 +321,7 @@ it("discovers multiple apps", async () => {
   __setInstallations([appAInstallationA, appBInstallationA]);
 
   const octokitFactory = createOctokitFactory();
-  const registry = createTokenAppRegistry();
+  const registry = createAppRegistry();
   await discoverApps(octokitFactory, registry, [
     {
       appId: String(appA.id),
@@ -368,41 +368,6 @@ it("discovers multiple apps", async () => {
   ).toBe(appBInstallationA.id);
 });
 
-it("discovers apps that don't support roles", async () => {
-  const orgA = createTestInstallationAccount("Organization", 100, "org-a");
-  const appA = createTestApp(110, "app-a", "App A", { contents: "read" });
-  const appAInstallationA = createTestInstallation(111, appA, orgA, "all", []);
-
-  __setApps([appA]);
-  __setInstallations([appAInstallationA]);
-
-  const octokitFactory = createOctokitFactory();
-  const registry = createTokenAppRegistry();
-  await discoverApps(octokitFactory, registry, [
-    {
-      appId: String(appA.id),
-      privateKey: appA.privateKey,
-    },
-  ]);
-
-  expect(output).toMatchInlineSnapshot(`
-    "::debug::Discovered app "App A" (app-a / 110)
-    ::debug::Discovered app installation 111 for account org-a
-    ::debug::Installation 111 has permissions {"contents":"read"}
-    ::debug::Installation 111 has access to all repos in account org-a
-    Discovered 1 installation of "App A"
-    "
-  `);
-  expect(
-    registry.findInstallationForToken({
-      role: undefined,
-      account: orgA.login,
-      repos: "all",
-      permissions: { contents: "read" },
-    }),
-  ).toBe(appAInstallationA.id);
-});
-
 it("skips apps with incorrect credentials", async () => {
   const orgA = createTestInstallationAccount("Organization", 100, "org-a");
   const appA = createTestApp(110, "app-a", "App A", { contents: "read" });
@@ -414,7 +379,7 @@ it("skips apps with incorrect credentials", async () => {
   __setInstallations([appAInstallationA, appBInstallationA]);
 
   const octokitFactory = createOctokitFactory();
-  const registry = createTokenAppRegistry();
+  const registry = createAppRegistry();
   await discoverApps(octokitFactory, registry, [
     {
       appId: String(appA.id),
@@ -459,7 +424,7 @@ it("skips non-existent apps", async () => {
   __setInstallations([appAInstallationA]);
 
   const octokitFactory = createOctokitFactory();
-  const registry = createTokenAppRegistry();
+  const registry = createAppRegistry();
   await discoverApps(octokitFactory, registry, [
     {
       appId: String(appX.id),
@@ -513,7 +478,7 @@ it("reports unexpected HTTP statuses", async () => {
   ]);
 
   const octokitFactory = createOctokitFactory();
-  const registry = createTokenAppRegistry();
+  const registry = createAppRegistry();
   await discoverApps(octokitFactory, registry, [
     {
       appId: String(appA.id),
@@ -581,7 +546,7 @@ it("skips apps when discovery throws", async () => {
   __setErrors("apps.getAuthenticated", [undefined, new Error("<ERROR>")]);
 
   const octokitFactory = createOctokitFactory();
-  const registry = createTokenAppRegistry();
+  const registry = createAppRegistry();
   await discoverApps(octokitFactory, registry, [
     {
       appId: String(appA.id),
@@ -655,7 +620,7 @@ it("skips installations when discovery throws", async () => {
   __setErrors("apps.listReposAccessibleToInstallation", [new Error("<ERROR>")]);
 
   const octokitFactory = createOctokitFactory();
-  const registry = createTokenAppRegistry();
+  const registry = createAppRegistry();
   await discoverApps(octokitFactory, registry, [
     {
       appId: String(appA.id),

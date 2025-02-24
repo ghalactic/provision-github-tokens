@@ -8,12 +8,12 @@ import {
 } from "./octokit.js";
 import { pluralize } from "./pluralize.js";
 import type { App, Installation, InstallationRepo } from "./type/github-api.js";
-import type { AppsInputApp } from "./type/input.js";
+import type { AppInput } from "./type/input.js";
 
 export async function discoverApps(
   octokitFactory: OctokitFactory,
   registry: AppRegistry,
-  appsInput: AppsInputApp[],
+  appsInput: AppInput[],
 ): Promise<void> {
   let appIndex = 0;
 
@@ -30,7 +30,7 @@ export async function discoverApps(
 async function discoverApp(
   octokitFactory: OctokitFactory,
   registry: AppRegistry,
-  appInput: AppsInputApp,
+  appInput: AppInput,
   appIndex: number,
 ): Promise<void> {
   const appOctokit = octokitFactory.appOctokit(appInput);
@@ -65,15 +65,13 @@ async function discoverApp(
 
   debug(`Discovered app ${JSON.stringify(app.name)} (${app.slug} / ${app.id})`);
 
-  if (appInput.roles) {
-    if (appInput.roles.length < 1) {
-      debug(`App ${app.id} has no roles`);
-    } else {
-      debug(`App ${app.id} has roles ${JSON.stringify(appInput.roles)}`);
-    }
+  if (appInput.roles.length < 1) {
+    debug(`App ${app.id} has no roles`);
+  } else {
+    debug(`App ${app.id} has roles ${JSON.stringify(appInput.roles)}`);
   }
 
-  registry.registerApp(appInput.roles ?? [], app);
+  registry.registerApp(appInput.roles, app);
   await discoverInstallations(
     octokitFactory,
     registry,
@@ -87,7 +85,7 @@ async function discoverApp(
 async function discoverInstallations(
   octokitFactory: OctokitFactory,
   registry: AppRegistry,
-  appInput: AppsInputApp,
+  appInput: AppInput,
   appOctokit: Octokit,
   app: App,
   appIndex: number,
@@ -122,7 +120,7 @@ async function discoverInstallations(
   }
 
   const rolesSuffix =
-    !appInput.roles || appInput.roles.length < 1
+    appInput.roles.length < 1
       ? ""
       : ` with ${pluralize(appInput.roles.length, "role", "roles")} ` +
         `${appInput.roles.map((r) => JSON.stringify(r)).join(", ")}`;
@@ -145,7 +143,7 @@ async function discoverInstallations(
 async function discoverInstallation(
   octokitFactory: OctokitFactory,
   registry: AppRegistry,
-  appInput: AppsInputApp,
+  appInput: AppInput,
   installation: Installation,
 ): Promise<void> {
   const {
