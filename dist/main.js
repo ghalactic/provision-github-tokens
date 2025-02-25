@@ -48088,7 +48088,8 @@ function createAppRegistry() {
         {}
       ) : {};
       const issuers = [];
-      for (const [, { installation, repos }] of installations) {
+      for (const [, installationRegistration] of installations) {
+        const { installation, repos } = installationRegistration;
         const appRegistration = apps.get(installation.app_id);
         if (!appRegistration) {
           throw new Error(
@@ -48116,7 +48117,7 @@ function createAppRegistry() {
         if (permMatchCount !== tokenPerms.length) continue;
         if (installation.repository_selection === "all") {
           if (installation.account && "login" in installation.account && installation.account.login === request2.account) {
-            issuers.push(installation.id);
+            issuers.push(installationRegistration);
           }
           continue;
         }
@@ -48126,7 +48127,7 @@ function createAppRegistry() {
           }
         }
         if (repoMatchCount !== request2.repos.length) continue;
-        issuers.push(installation.id);
+        issuers.push(installationRegistration);
       }
       return issuers;
     }

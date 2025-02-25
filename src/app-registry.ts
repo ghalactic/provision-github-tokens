@@ -14,7 +14,7 @@ export type AppRegistry = {
   readonly installations: Map<number, InstallationRegistration>;
   registerApp: (app: AppRegistration) => void;
   registerInstallation: (installation: InstallationRegistration) => void;
-  findTokenIssuers: (request: TokenRequest) => number[];
+  findTokenIssuers: (request: TokenRequest) => InstallationRegistration[];
 };
 
 export type AppRegistration = {
@@ -68,9 +68,10 @@ export function createAppRegistry(): AppRegistry {
           )
         : {};
 
-      const issuers: number[] = [];
+      const issuers: InstallationRegistration[] = [];
 
-      for (const [, { installation, repos }] of installations) {
+      for (const [, installationRegistration] of installations) {
+        const { installation, repos } = installationRegistration;
         const appRegistration = apps.get(installation.app_id);
 
         /* v8 ignore start */
@@ -113,7 +114,7 @@ export function createAppRegistry(): AppRegistry {
             "login" in installation.account &&
             installation.account.login === request.account
           ) {
-            issuers.push(installation.id);
+            issuers.push(installationRegistration);
           }
 
           continue;
@@ -127,7 +128,7 @@ export function createAppRegistry(): AppRegistry {
 
         if (repoMatchCount !== request.repos.length) continue;
 
-        issuers.push(installation.id);
+        issuers.push(installationRegistration);
       }
 
       return issuers;

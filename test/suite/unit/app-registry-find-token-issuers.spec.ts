@@ -34,7 +34,7 @@ it("finds token issuers for all repos in an account with one permission", () => 
       repos: "all",
       permissions: { contents: "write" },
     }),
-  ).toEqual([appAInstallationA.installation.id]);
+  ).toEqual([appAInstallationA]);
 });
 
 it("finds token issuers for one selected repo with one permission", () => {
@@ -61,7 +61,7 @@ it("finds token issuers for one selected repo with one permission", () => {
       repos: [repoA.name],
       permissions: { contents: "write" },
     }),
-  ).toEqual([appAInstallationA.installation.id]);
+  ).toEqual([appAInstallationA]);
 });
 
 it("finds token issuers for multiple selected repos with multiple permissions", () => {
@@ -92,7 +92,7 @@ it("finds token issuers for multiple selected repos with multiple permissions", 
       repos: [repoA.name, repoB.name],
       permissions: { contents: "write", metadata: "read" },
     }),
-  ).toEqual([appAInstallationA.installation.id]);
+  ).toEqual([appAInstallationA]);
 });
 
 it("finds token issuers for no repos with no permissions", () => {
@@ -118,7 +118,7 @@ it("finds token issuers for no repos with no permissions", () => {
       repos: [],
       permissions: {},
     }),
-  ).toEqual([appAInstallationA.installation.id]);
+  ).toEqual([appAInstallationA]);
 });
 
 it.each([
@@ -151,7 +151,7 @@ it.each([
         repos: [repoA.name],
         permissions: { repository_projects: want },
       }),
-    ).toEqual([appAInstallationA.installation.id]);
+    ).toEqual([appAInstallationA]);
   },
 );
 
@@ -184,7 +184,7 @@ it("finds token issuers for the correct account when there are multiple installa
       repos: "all",
       permissions: {},
     }),
-  ).toEqual([appAInstallationA.installation.id]);
+  ).toEqual([appAInstallationA]);
   expect(
     registry.findTokenIssuers({
       role: undefined,
@@ -192,7 +192,7 @@ it("finds token issuers for the correct account when there are multiple installa
       repos: [],
       permissions: {},
     }),
-  ).toEqual([appAInstallationA.installation.id]);
+  ).toEqual([appAInstallationA]);
   expect(
     registry.findTokenIssuers({
       role: undefined,
@@ -200,7 +200,7 @@ it("finds token issuers for the correct account when there are multiple installa
       repos: "all",
       permissions: {},
     }),
-  ).toEqual([appAInstallationB.installation.id]);
+  ).toEqual([appAInstallationB]);
   expect(
     registry.findTokenIssuers({
       role: undefined,
@@ -208,7 +208,7 @@ it("finds token issuers for the correct account when there are multiple installa
       repos: [],
       permissions: {},
     }),
-  ).toEqual([appAInstallationB.installation.id]);
+  ).toEqual([appAInstallationB]);
 });
 
 it("finds token issuers by role", () => {
@@ -271,7 +271,7 @@ it("finds token issuers by role", () => {
       repos: [repoA.name],
       permissions: { contents: "write" },
     }),
-  ).toEqual([appBInstallationA.installation.id]);
+  ).toEqual([appBInstallationA]);
   expect(
     registry.findTokenIssuers({
       role: "role-a",
@@ -279,10 +279,7 @@ it("finds token issuers by role", () => {
       repos: [repoB.name],
       permissions: { contents: "write" },
     }),
-  ).toEqual([
-    appBInstallationA.installation.id,
-    appDInstallationA.installation.id,
-  ]);
+  ).toEqual([appBInstallationA, appDInstallationA]);
   expect(
     registry.findTokenIssuers({
       role: "role-a",
@@ -290,7 +287,7 @@ it("finds token issuers by role", () => {
       repos: [repoC.name],
       permissions: { contents: "write" },
     }),
-  ).toEqual([appDInstallationA.installation.id]);
+  ).toEqual([appDInstallationA]);
   expect(
     registry.findTokenIssuers({
       role: "role-b",
@@ -298,7 +295,7 @@ it("finds token issuers by role", () => {
       repos: [repoA.name],
       permissions: { contents: "write" },
     }),
-  ).toEqual([appCInstallationA.installation.id]);
+  ).toEqual([appCInstallationA]);
   expect(
     registry.findTokenIssuers({
       role: "role-b",
@@ -306,7 +303,7 @@ it("finds token issuers by role", () => {
       repos: [repoD.name],
       permissions: { contents: "write" },
     }),
-  ).toEqual([appDInstallationA.installation.id]);
+  ).toEqual([appDInstallationA]);
 });
 
 it("finds token issuers for read access when the role is undefined", () => {
@@ -346,10 +343,7 @@ it("finds token issuers for read access when the role is undefined", () => {
       repos: [],
       permissions: { contents: "read" },
     }),
-  ).toEqual([
-    appAInstallationA.installation.id,
-    appBInstallationA.installation.id,
-  ]);
+  ).toEqual([appAInstallationA, appBInstallationA]);
   expect(
     registry.findTokenIssuers({
       role: undefined,
@@ -357,7 +351,7 @@ it("finds token issuers for read access when the role is undefined", () => {
       repos: [],
       permissions: { repository_projects: "read" },
     }),
-  ).toEqual([appBInstallationA.installation.id]);
+  ).toEqual([appBInstallationA]);
 });
 
 it("doesn't find token issuers for write or admin access when the role is undefined", () => {
