@@ -15,7 +15,7 @@ export type AppRegistry = {
   readonly installations: Map<number, InstallationRegistration>;
   registerApp: (app: AppRegistration) => void;
   registerInstallation: (installation: InstallationRegistration) => void;
-  findTokenIssuers: (request: TokenRequest) => InstallationRegistration[];
+  findIssuers: (request: TokenRequest) => InstallationRegistration[];
   findProvisioners: (request: ProvisionRequest) => InstallationRegistration[];
 };
 
@@ -46,7 +46,7 @@ export function createAppRegistry(): AppRegistry {
       installations.set(registration.installation.id, registration);
     },
 
-    findTokenIssuers: (request) => {
+    findIssuers: (request) => {
       const tokenHasRole = typeof request.role === "string";
       const tokenPerms = Object.entries(request.permissions) as [
         PermissionName,

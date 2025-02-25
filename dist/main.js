@@ -48072,7 +48072,7 @@ function createAppRegistry() {
     registerInstallation: (registration) => {
       installations.set(registration.installation.id, registration);
     },
-    findTokenIssuers: (request2) => {
+    findIssuers: (request2) => {
       const tokenHasRole = typeof request2.role === "string";
       const tokenPerms = Object.entries(request2.permissions);
       if (!tokenHasRole) {

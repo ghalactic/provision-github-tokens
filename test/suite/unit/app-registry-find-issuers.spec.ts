@@ -11,7 +11,7 @@ import {
   createTestInstallationRepo,
 } from "../../github-api.js";
 
-it("finds token issuers for all repos in an account with one permission", () => {
+it("finds issuers for all repos in an account with one permission", () => {
   const orgA = createTestInstallationAccount("Organization", 100, "org-a");
   const appA: AppRegistration = {
     app: createTestApp(110, "app-a", "App A", { contents: "write" }),
@@ -28,7 +28,7 @@ it("finds token issuers for all repos in an account with one permission", () => 
   registry.registerInstallation(appAInstallationA);
 
   expect(
-    registry.findTokenIssuers({
+    registry.findIssuers({
       role: "role-a",
       account: orgA.login,
       repos: "all",
@@ -37,7 +37,7 @@ it("finds token issuers for all repos in an account with one permission", () => 
   ).toEqual([appAInstallationA]);
 });
 
-it("finds token issuers for one selected repo with one permission", () => {
+it("finds issuers for one selected repo with one permission", () => {
   const orgA = createTestInstallationAccount("Organization", 100, "org-a");
   const repoA = createTestInstallationRepo(orgA, "repo-a");
   const appA: AppRegistration = {
@@ -55,7 +55,7 @@ it("finds token issuers for one selected repo with one permission", () => {
   registry.registerInstallation(appAInstallationA);
 
   expect(
-    registry.findTokenIssuers({
+    registry.findIssuers({
       role: "role-a",
       account: orgA.login,
       repos: [repoA.name],
@@ -64,7 +64,7 @@ it("finds token issuers for one selected repo with one permission", () => {
   ).toEqual([appAInstallationA]);
 });
 
-it("finds token issuers for multiple selected repos with multiple permissions", () => {
+it("finds issuers for multiple selected repos with multiple permissions", () => {
   const orgA = createTestInstallationAccount("Organization", 100, "org-a");
   const repoA = createTestInstallationRepo(orgA, "repo-a");
   const repoB = createTestInstallationRepo(orgA, "repo-b");
@@ -86,7 +86,7 @@ it("finds token issuers for multiple selected repos with multiple permissions", 
   registry.registerInstallation(appAInstallationA);
 
   expect(
-    registry.findTokenIssuers({
+    registry.findIssuers({
       role: "role-a",
       account: orgA.login,
       repos: [repoA.name, repoB.name],
@@ -95,7 +95,7 @@ it("finds token issuers for multiple selected repos with multiple permissions", 
   ).toEqual([appAInstallationA]);
 });
 
-it("finds token issuers for no repos with no permissions", () => {
+it("finds issuers for no repos with no permissions", () => {
   const orgA = createTestInstallationAccount("Organization", 100, "org-a");
   const appA: AppRegistration = {
     app: createTestApp(110, "app-a", "App A"),
@@ -112,7 +112,7 @@ it("finds token issuers for no repos with no permissions", () => {
   registry.registerInstallation(appAInstallationA);
 
   expect(
-    registry.findTokenIssuers({
+    registry.findIssuers({
       role: "role-a",
       account: orgA.login,
       repos: [],
@@ -126,7 +126,7 @@ it.each([
   ["read", "admin"],
   ["write", "admin"],
 ] as const)(
-  "finds token issuers when it has higher access (want %s, have %s)",
+  "finds issuers when it has higher access (want %s, have %s)",
   (want, have) => {
     const orgA = createTestInstallationAccount("Organization", 100, "org-a");
     const repoA = createTestInstallationRepo(orgA, "repo-a");
@@ -145,7 +145,7 @@ it.each([
     registry.registerInstallation(appAInstallationA);
 
     expect(
-      registry.findTokenIssuers({
+      registry.findIssuers({
         role: "role-a",
         account: orgA.login,
         repos: [repoA.name],
@@ -155,7 +155,7 @@ it.each([
   },
 );
 
-it("finds token issuers for the correct account when there are multiple installations", () => {
+it("finds issuers for the correct account when there are multiple installations", () => {
   const orgA = createTestInstallationAccount("Organization", 100, "org-a");
   const orgB = createTestInstallationAccount("Organization", 200, "org-b");
   const appA: AppRegistration = {
@@ -178,7 +178,7 @@ it("finds token issuers for the correct account when there are multiple installa
   registry.registerInstallation(appAInstallationB);
 
   expect(
-    registry.findTokenIssuers({
+    registry.findIssuers({
       role: undefined,
       account: orgA.login,
       repos: "all",
@@ -186,7 +186,7 @@ it("finds token issuers for the correct account when there are multiple installa
     }),
   ).toEqual([appAInstallationA]);
   expect(
-    registry.findTokenIssuers({
+    registry.findIssuers({
       role: undefined,
       account: orgA.login,
       repos: [],
@@ -194,7 +194,7 @@ it("finds token issuers for the correct account when there are multiple installa
     }),
   ).toEqual([appAInstallationA]);
   expect(
-    registry.findTokenIssuers({
+    registry.findIssuers({
       role: undefined,
       account: orgB.login,
       repos: "all",
@@ -202,7 +202,7 @@ it("finds token issuers for the correct account when there are multiple installa
     }),
   ).toEqual([appAInstallationB]);
   expect(
-    registry.findTokenIssuers({
+    registry.findIssuers({
       role: undefined,
       account: orgB.login,
       repos: [],
@@ -211,7 +211,7 @@ it("finds token issuers for the correct account when there are multiple installa
   ).toEqual([appAInstallationB]);
 });
 
-it("finds token issuers by role", () => {
+it("finds issuers by role", () => {
   const orgA = createTestInstallationAccount("Organization", 100, "org-a");
   const repoA = createTestInstallationRepo(orgA, "repo-a");
   const repoB = createTestInstallationRepo(orgA, "repo-b");
@@ -265,7 +265,7 @@ it("finds token issuers by role", () => {
   registry.registerInstallation(appDInstallationA);
 
   expect(
-    registry.findTokenIssuers({
+    registry.findIssuers({
       role: "role-a",
       account: orgA.login,
       repos: [repoA.name],
@@ -273,7 +273,7 @@ it("finds token issuers by role", () => {
     }),
   ).toEqual([appBInstallationA]);
   expect(
-    registry.findTokenIssuers({
+    registry.findIssuers({
       role: "role-a",
       account: orgA.login,
       repos: [repoB.name],
@@ -281,7 +281,7 @@ it("finds token issuers by role", () => {
     }),
   ).toEqual([appBInstallationA, appDInstallationA]);
   expect(
-    registry.findTokenIssuers({
+    registry.findIssuers({
       role: "role-a",
       account: orgA.login,
       repos: [repoC.name],
@@ -289,7 +289,7 @@ it("finds token issuers by role", () => {
     }),
   ).toEqual([appDInstallationA]);
   expect(
-    registry.findTokenIssuers({
+    registry.findIssuers({
       role: "role-b",
       account: orgA.login,
       repos: [repoA.name],
@@ -297,7 +297,7 @@ it("finds token issuers by role", () => {
     }),
   ).toEqual([appCInstallationA]);
   expect(
-    registry.findTokenIssuers({
+    registry.findIssuers({
       role: "role-b",
       account: orgA.login,
       repos: [repoD.name],
@@ -306,7 +306,7 @@ it("finds token issuers by role", () => {
   ).toEqual([appDInstallationA]);
 });
 
-it("finds token issuers for read access when the role is undefined", () => {
+it("finds issuers for read access when the role is undefined", () => {
   const orgA = createTestInstallationAccount("Organization", 100, "org-a");
   const appA: AppRegistration = {
     app: createTestApp(110, "app-a", "App A", { contents: "write" }),
@@ -337,7 +337,7 @@ it("finds token issuers for read access when the role is undefined", () => {
   registry.registerInstallation(appBInstallationA);
 
   expect(
-    registry.findTokenIssuers({
+    registry.findIssuers({
       role: undefined,
       account: orgA.login,
       repos: [],
@@ -345,7 +345,7 @@ it("finds token issuers for read access when the role is undefined", () => {
     }),
   ).toEqual([appAInstallationA, appBInstallationA]);
   expect(
-    registry.findTokenIssuers({
+    registry.findIssuers({
       role: undefined,
       account: orgA.login,
       repos: [],
@@ -354,7 +354,7 @@ it("finds token issuers for read access when the role is undefined", () => {
   ).toEqual([appBInstallationA]);
 });
 
-it("doesn't find token issuers for write or admin access when the role is undefined", () => {
+it("doesn't find issuers for write or admin access when the role is undefined", () => {
   const orgA = createTestInstallationAccount("Organization", 100, "org-a");
   const appA: AppRegistration = {
     app: createTestApp(110, "app-a", "App A", {
@@ -374,7 +374,7 @@ it("doesn't find token issuers for write or admin access when the role is undefi
   registry.registerInstallation(appAInstallationA);
 
   expect(
-    registry.findTokenIssuers({
+    registry.findIssuers({
       role: undefined,
       account: orgA.login,
       repos: [],
@@ -382,7 +382,7 @@ it("doesn't find token issuers for write or admin access when the role is undefi
     }),
   ).toHaveLength(0);
   expect(
-    registry.findTokenIssuers({
+    registry.findIssuers({
       role: undefined,
       account: orgA.login,
       repos: [],
@@ -391,7 +391,7 @@ it("doesn't find token issuers for write or admin access when the role is undefi
   ).toHaveLength(0);
 });
 
-it("doesn't find token issuers when it can't access all repos in an account", () => {
+it("doesn't find issuers when it can't access all repos in an account", () => {
   const orgA = createTestInstallationAccount("Organization", 100, "org-a");
   const repoA = createTestInstallationRepo(orgA, "repo-a");
   const appA: AppRegistration = {
@@ -409,7 +409,7 @@ it("doesn't find token issuers when it can't access all repos in an account", ()
   registry.registerInstallation(appAInstallationA);
 
   expect(
-    registry.findTokenIssuers({
+    registry.findIssuers({
       role: "role-a",
       account: orgA.login,
       repos: "all",
@@ -418,7 +418,7 @@ it("doesn't find token issuers when it can't access all repos in an account", ()
   ).toHaveLength(0);
 });
 
-it("doesn't find token issuers for an unknown account", () => {
+it("doesn't find issuers for an unknown account", () => {
   const orgA = createTestInstallationAccount("Organization", 100, "org-a");
   const repoA = createTestInstallationRepo(orgA, "repo-a");
   const appA: AppRegistration = {
@@ -436,7 +436,7 @@ it("doesn't find token issuers for an unknown account", () => {
   registry.registerInstallation(appAInstallationA);
 
   expect(
-    registry.findTokenIssuers({
+    registry.findIssuers({
       role: "role-a",
       account: "account-x",
       repos: [repoA.name],
@@ -445,7 +445,7 @@ it("doesn't find token issuers for an unknown account", () => {
   ).toHaveLength(0);
 });
 
-it("doesn't find token issuers for an unknown repo", () => {
+it("doesn't find issuers for an unknown repo", () => {
   const orgA = createTestInstallationAccount("Organization", 100, "org-a");
   const repoA = createTestInstallationRepo(orgA, "repo-a");
   const appA: AppRegistration = {
@@ -463,7 +463,7 @@ it("doesn't find token issuers for an unknown repo", () => {
   registry.registerInstallation(appAInstallationA);
 
   expect(
-    registry.findTokenIssuers({
+    registry.findIssuers({
       role: "role-a",
       account: orgA.login,
       repos: ["repo-x"],
@@ -472,7 +472,7 @@ it("doesn't find token issuers for an unknown repo", () => {
   ).toHaveLength(0);
 });
 
-it("doesn't find token issuers that can't access all requested repos", () => {
+it("doesn't find issuers that can't access all requested repos", () => {
   const orgA = createTestInstallationAccount("Organization", 100, "org-a");
   const repoA = createTestInstallationRepo(orgA, "repo-a");
   const appA: AppRegistration = {
@@ -490,7 +490,7 @@ it("doesn't find token issuers that can't access all requested repos", () => {
   registry.registerInstallation(appAInstallationA);
 
   expect(
-    registry.findTokenIssuers({
+    registry.findIssuers({
       role: "role-a",
       account: orgA.login,
       repos: [repoA.name, "repo-x"],
@@ -499,7 +499,7 @@ it("doesn't find token issuers that can't access all requested repos", () => {
   ).toHaveLength(0);
 });
 
-it("doesn't find token issuers that don't have all permissions", () => {
+it("doesn't find issuers that don't have all permissions", () => {
   const orgA = createTestInstallationAccount("Organization", 100, "org-a");
   const appA: AppRegistration = {
     app: createTestApp(110, "app-a", "App A", { contents: "write" }),
@@ -516,7 +516,7 @@ it("doesn't find token issuers that don't have all permissions", () => {
   registry.registerInstallation(appAInstallationA);
 
   expect(
-    registry.findTokenIssuers({
+    registry.findIssuers({
       role: "role-a",
       account: orgA.login,
       repos: ["repo-a"],
@@ -530,7 +530,7 @@ it.each([
   ["admin", "read"],
   ["admin", "write"],
 ] as const)(
-  "doesn't find token issuers when it has lower access (want %s, have %s)",
+  "doesn't find issuers when it has lower access (want %s, have %s)",
   (want, have) => {
     const orgA = createTestInstallationAccount("Organization", 100, "org-a");
     const appA: AppRegistration = {
@@ -548,7 +548,7 @@ it.each([
     registry.registerInstallation(appAInstallationA);
 
     expect(
-      registry.findTokenIssuers({
+      registry.findIssuers({
         role: "role-a",
         account: orgA.login,
         repos: ["repo-a"],
@@ -558,7 +558,7 @@ it.each([
   },
 );
 
-it("doesn't find token issuers from non-issuer apps", () => {
+it("doesn't find issuers from non-issuer apps", () => {
   const orgA = createTestInstallationAccount("Organization", 100, "org-a");
   const appA: AppRegistration = {
     app: createTestApp(110, "app-a", "App A", { contents: "write" }),
@@ -575,7 +575,7 @@ it("doesn't find token issuers from non-issuer apps", () => {
   registry.registerInstallation(appAInstallationA);
 
   expect(
-    registry.findTokenIssuers({
+    registry.findIssuers({
       role: undefined,
       account: orgA.login,
       repos: "all",
@@ -583,7 +583,7 @@ it("doesn't find token issuers from non-issuer apps", () => {
     }),
   ).toHaveLength(0);
   expect(
-    registry.findTokenIssuers({
+    registry.findIssuers({
       role: "role-a",
       account: orgA.login,
       repos: "all",
