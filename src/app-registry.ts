@@ -10,6 +10,9 @@ import type { AppInputIssuer, AppInputProvisioner } from "./type/input.js";
 import type { TokenRequest } from "./type/token-request.js";
 
 export type AppRegistry = {
+  readonly apps: Map<number, RegisteredApp>;
+  readonly installations: Map<number, Installation>;
+  readonly installationRepos: Map<Installation, Repo[]>;
   registerApp: (
     issuer: AppInputIssuer,
     provisioner: AppInputProvisioner,
@@ -26,6 +29,10 @@ export function createAppRegistry(): AppRegistry {
   const installationRepos: Map<Installation, Repo[]> = new Map();
 
   return {
+    apps,
+    installations,
+    installationRepos,
+
     registerApp: (issuer, provisioner, app) => {
       apps.set(app.id, { issuer, provisioner, app });
     },

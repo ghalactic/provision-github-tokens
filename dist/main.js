@@ -48065,6 +48065,9 @@ function createAppRegistry() {
   const installations = /* @__PURE__ */ new Map();
   const installationRepos = /* @__PURE__ */ new Map();
   return {
+    apps,
+    installations,
+    installationRepos,
     registerApp: (issuer, provisioner, app) => {
       apps.set(app.id, { issuer, provisioner, app });
     },
