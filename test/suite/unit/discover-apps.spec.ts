@@ -43,10 +43,10 @@ beforeEach(() => {
 it("discovers installations with access to all repos", async () => {
   const orgA = createTestInstallationAccount("Organization", 100, "org-a");
   const appA = createTestApp(110, "app-a", "App A", { contents: "read" });
-  const appAInstallationA = createTestInstallation(111, appA, orgA, "all", []);
+  const appAInstallationA = createTestInstallation(111, appA, orgA, "all");
 
   __setApps([appA]);
-  __setInstallations([appAInstallationA]);
+  __setInstallations([[appAInstallationA, []]]);
 
   const octokitFactory = createOctokitFactory();
   const registry = createAppRegistry();
@@ -78,12 +78,10 @@ it("discovers installations with access to all repos", async () => {
     provisioner: { enabled: false },
     app: appA,
   });
-  expect(registry.installations.get(appAInstallationA.id)).toEqual(
-    appAInstallationA,
-  );
-  expect(registry.installationRepos.get(appAInstallationA)).toEqual(
-    appAInstallationA.repos,
-  );
+  expect(registry.installations.get(appAInstallationA.id)).toEqual({
+    installation: appAInstallationA,
+    repos: [],
+  });
 });
 
 it("discovers installations with access to selected repos", async () => {
@@ -91,16 +89,10 @@ it("discovers installations with access to selected repos", async () => {
   const repoA = createTestInstallationRepo(orgA, "repo-a");
   const repoB = createTestInstallationRepo(orgA, "repo-b");
   const appA = createTestApp(110, "app-a", "App A", { contents: "read" });
-  const appAInstallationA = createTestInstallation(
-    111,
-    appA,
-    orgA,
-    "selected",
-    [repoA, repoB],
-  );
+  const appAInstallationA = createTestInstallation(111, appA, orgA, "selected");
 
   __setApps([appA]);
-  __setInstallations([appAInstallationA]);
+  __setInstallations([[appAInstallationA, [repoA, repoB]]]);
 
   const octokitFactory = createOctokitFactory();
   const registry = createAppRegistry();
@@ -132,27 +124,19 @@ it("discovers installations with access to selected repos", async () => {
     provisioner: { enabled: false },
     app: appA,
   });
-  expect(registry.installations.get(appAInstallationA.id)).toEqual(
-    appAInstallationA,
-  );
-  expect(registry.installationRepos.get(appAInstallationA)).toEqual(
-    appAInstallationA.repos,
-  );
+  expect(registry.installations.get(appAInstallationA.id)).toEqual({
+    installation: appAInstallationA,
+    repos: [repoA, repoB],
+  });
 });
 
 it("discovers installations with access to no repos", async () => {
   const orgA = createTestInstallationAccount("Organization", 100, "org-a");
   const appA = createTestApp(110, "app-a", "App A", { members: "read" });
-  const appAInstallationA = createTestInstallation(
-    111,
-    appA,
-    orgA,
-    "selected",
-    [],
-  );
+  const appAInstallationA = createTestInstallation(111, appA, orgA, "selected");
 
   __setApps([appA]);
-  __setInstallations([appAInstallationA]);
+  __setInstallations([[appAInstallationA, []]]);
 
   const octokitFactory = createOctokitFactory();
   const registry = createAppRegistry();
@@ -184,21 +168,19 @@ it("discovers installations with access to no repos", async () => {
     provisioner: { enabled: false },
     app: appA,
   });
-  expect(registry.installations.get(appAInstallationA.id)).toEqual(
-    appAInstallationA,
-  );
-  expect(registry.installationRepos.get(appAInstallationA)).toEqual(
-    appAInstallationA.repos,
-  );
+  expect(registry.installations.get(appAInstallationA.id)).toEqual({
+    installation: appAInstallationA,
+    repos: [],
+  });
 });
 
 it("discovers installations with no permissions", async () => {
   const orgA = createTestInstallationAccount("Organization", 100, "org-a");
   const appA = createTestApp(110, "app-a", "App A");
-  const appAInstallationA = createTestInstallation(111, appA, orgA, "all", []);
+  const appAInstallationA = createTestInstallation(111, appA, orgA, "all");
 
   __setApps([appA]);
-  __setInstallations([appAInstallationA]);
+  __setInstallations([[appAInstallationA, []]]);
 
   const octokitFactory = createOctokitFactory();
   const registry = createAppRegistry();
@@ -230,23 +212,24 @@ it("discovers installations with no permissions", async () => {
     provisioner: { enabled: false },
     app: appA,
   });
-  expect(registry.installations.get(appAInstallationA.id)).toEqual(
-    appAInstallationA,
-  );
-  expect(registry.installationRepos.get(appAInstallationA)).toEqual(
-    appAInstallationA.repos,
-  );
+  expect(registry.installations.get(appAInstallationA.id)).toEqual({
+    installation: appAInstallationA,
+    repos: [],
+  });
 });
 
 it("discovers installations with roles", async () => {
   const orgA = createTestInstallationAccount("Organization", 100, "org-a");
   const appA = createTestApp(110, "app-a", "App A", { contents: "write" });
   const appB = createTestApp(120, "app-b", "App B", { contents: "write" });
-  const appAInstallationA = createTestInstallation(111, appA, orgA, "all", []);
-  const appBInstallationA = createTestInstallation(121, appB, orgA, "all", []);
+  const appAInstallationA = createTestInstallation(111, appA, orgA, "all");
+  const appBInstallationA = createTestInstallation(121, appB, orgA, "all");
 
   __setApps([appA, appB]);
-  __setInstallations([appAInstallationA, appBInstallationA]);
+  __setInstallations([
+    [appAInstallationA, []],
+    [appBInstallationA, []],
+  ]);
 
   const octokitFactory = createOctokitFactory();
   const registry = createAppRegistry();
@@ -295,34 +278,33 @@ it("discovers installations with roles", async () => {
     provisioner: { enabled: false },
     app: appA,
   });
-  expect(registry.installations.get(appAInstallationA.id)).toEqual(
-    appAInstallationA,
-  );
-  expect(registry.installationRepos.get(appAInstallationA)).toEqual(
-    appAInstallationA.repos,
-  );
+  expect(registry.installations.get(appAInstallationA.id)).toEqual({
+    installation: appAInstallationA,
+    repos: [],
+  });
   expect(registry.apps.get(appB.id)).toEqual({
     issuer: { enabled: true, roles: ["role-b", "role-c"] },
     provisioner: { enabled: false },
     app: appB,
   });
-  expect(registry.installations.get(appBInstallationA.id)).toEqual(
-    appBInstallationA,
-  );
-  expect(registry.installationRepos.get(appBInstallationA)).toEqual(
-    appBInstallationA.repos,
-  );
+  expect(registry.installations.get(appBInstallationA.id)).toEqual({
+    installation: appBInstallationA,
+    repos: [],
+  });
 });
 
 it("discovers multiple installations of an app", async () => {
   const orgA = createTestInstallationAccount("Organization", 1000, "org-a");
   const orgB = createTestInstallationAccount("Organization", 2000, "org-b");
   const appA = createTestApp(100, "app-a", "App A", { contents: "read" });
-  const appAInstallationA = createTestInstallation(101, appA, orgA, "all", []);
-  const appAInstallationB = createTestInstallation(102, appA, orgB, "all", []);
+  const appAInstallationA = createTestInstallation(101, appA, orgA, "all");
+  const appAInstallationB = createTestInstallation(102, appA, orgB, "all");
 
   __setApps([appA]);
-  __setInstallations([appAInstallationA, appAInstallationB]);
+  __setInstallations([
+    [appAInstallationA, []],
+    [appAInstallationB, []],
+  ]);
 
   const octokitFactory = createOctokitFactory();
   const registry = createAppRegistry();
@@ -357,29 +339,28 @@ it("discovers multiple installations of an app", async () => {
     provisioner: { enabled: false },
     app: appA,
   });
-  expect(registry.installations.get(appAInstallationA.id)).toEqual(
-    appAInstallationA,
-  );
-  expect(registry.installationRepos.get(appAInstallationA)).toEqual(
-    appAInstallationA.repos,
-  );
-  expect(registry.installations.get(appAInstallationB.id)).toEqual(
-    appAInstallationB,
-  );
-  expect(registry.installationRepos.get(appAInstallationB)).toEqual(
-    appAInstallationB.repos,
-  );
+  expect(registry.installations.get(appAInstallationA.id)).toEqual({
+    installation: appAInstallationA,
+    repos: [],
+  });
+  expect(registry.installations.get(appAInstallationB.id)).toEqual({
+    installation: appAInstallationB,
+    repos: [],
+  });
 });
 
 it("discovers multiple apps", async () => {
   const orgA = createTestInstallationAccount("Organization", 100, "org-a");
   const appA = createTestApp(110, "app-a", "App A", { contents: "read" });
   const appB = createTestApp(120, "app-b", "App B", { actions: "read" });
-  const appAInstallationA = createTestInstallation(111, appA, orgA, "all", []);
-  const appBInstallationA = createTestInstallation(121, appB, orgA, "all", []);
+  const appAInstallationA = createTestInstallation(111, appA, orgA, "all");
+  const appBInstallationA = createTestInstallation(121, appB, orgA, "all");
 
   __setApps([appA, appB]);
-  __setInstallations([appAInstallationA, appBInstallationA]);
+  __setInstallations([
+    [appAInstallationA, []],
+    [appBInstallationA, []],
+  ]);
 
   const octokitFactory = createOctokitFactory();
   const registry = createAppRegistry();
@@ -430,34 +411,33 @@ it("discovers multiple apps", async () => {
     provisioner: { enabled: true },
     app: appA,
   });
-  expect(registry.installations.get(appAInstallationA.id)).toEqual(
-    appAInstallationA,
-  );
-  expect(registry.installationRepos.get(appAInstallationA)).toEqual(
-    appAInstallationA.repos,
-  );
+  expect(registry.installations.get(appAInstallationA.id)).toEqual({
+    installation: appAInstallationA,
+    repos: [],
+  });
   expect(registry.apps.get(appB.id)).toEqual({
     issuer: { enabled: true, roles: [] },
     provisioner: { enabled: true },
     app: appB,
   });
-  expect(registry.installations.get(appBInstallationA.id)).toEqual(
-    appBInstallationA,
-  );
-  expect(registry.installationRepos.get(appBInstallationA)).toEqual(
-    appBInstallationA.repos,
-  );
+  expect(registry.installations.get(appBInstallationA.id)).toEqual({
+    installation: appBInstallationA,
+    repos: [],
+  });
 });
 
 it("skips apps with incorrect credentials", async () => {
   const orgA = createTestInstallationAccount("Organization", 100, "org-a");
   const appA = createTestApp(110, "app-a", "App A", { contents: "read" });
   const appB = createTestApp(120, "app-b", "App B", { contents: "read" });
-  const appAInstallationA = createTestInstallation(101, appA, orgA, "all", []);
-  const appBInstallationA = createTestInstallation(102, appB, orgA, "all", []);
+  const appAInstallationA = createTestInstallation(101, appA, orgA, "all");
+  const appBInstallationA = createTestInstallation(102, appB, orgA, "all");
 
   __setApps([appA, appB]);
-  __setInstallations([appAInstallationA, appBInstallationA]);
+  __setInstallations([
+    [appAInstallationA, []],
+    [appBInstallationA, []],
+  ]);
 
   const octokitFactory = createOctokitFactory();
   const registry = createAppRegistry();
@@ -503,22 +483,20 @@ it("skips apps with incorrect credentials", async () => {
     provisioner: { enabled: false },
     app: appB,
   });
-  expect(registry.installations.get(appBInstallationA.id)).toEqual(
-    appBInstallationA,
-  );
-  expect(registry.installationRepos.get(appBInstallationA)).toEqual(
-    appBInstallationA.repos,
-  );
+  expect(registry.installations.get(appBInstallationA.id)).toEqual({
+    installation: appBInstallationA,
+    repos: [],
+  });
 });
 
 it("skips non-existent apps", async () => {
   const orgA = createTestInstallationAccount("Organization", 100, "org-a");
   const appX = createTestApp(999, "app-x", "App X");
   const appA = createTestApp(110, "app-a", "App A", { contents: "read" });
-  const appAInstallationA = createTestInstallation(101, appA, orgA, "all", []);
+  const appAInstallationA = createTestInstallation(101, appA, orgA, "all");
 
   __setApps([appA]);
-  __setInstallations([appAInstallationA]);
+  __setInstallations([[appAInstallationA, []]]);
 
   const octokitFactory = createOctokitFactory();
   const registry = createAppRegistry();
@@ -564,12 +542,10 @@ it("skips non-existent apps", async () => {
     provisioner: { enabled: false },
     app: appA,
   });
-  expect(registry.installations.get(appAInstallationA.id)).toEqual(
-    appAInstallationA,
-  );
-  expect(registry.installationRepos.get(appAInstallationA)).toEqual(
-    appAInstallationA.repos,
-  );
+  expect(registry.installations.get(appAInstallationA.id)).toEqual({
+    installation: appAInstallationA,
+    repos: [],
+  });
 });
 
 it("reports unexpected HTTP statuses", async () => {
@@ -577,12 +553,16 @@ it("reports unexpected HTTP statuses", async () => {
   const appA = createTestApp(110, "app-a", "App A", { contents: "read" });
   const appB = createTestApp(120, "app-b", "App B", { contents: "read" });
   const appC = createTestApp(130, "app-c", "App C", { actions: "read" });
-  const appAInstallationA = createTestInstallation(111, appA, orgA, "all", []);
-  const appBInstallationA = createTestInstallation(121, appB, orgA, "all", []);
-  const appCInstallationA = createTestInstallation(131, appC, orgA, "all", []);
+  const appAInstallationA = createTestInstallation(111, appA, orgA, "all");
+  const appBInstallationA = createTestInstallation(121, appB, orgA, "all");
+  const appCInstallationA = createTestInstallation(131, appC, orgA, "all");
 
   __setApps([appA, appB, appC]);
-  __setInstallations([appAInstallationA, appBInstallationA, appCInstallationA]);
+  __setInstallations([
+    [appAInstallationA, []],
+    [appBInstallationA, []],
+    [appCInstallationA, []],
+  ]);
   __setErrors("apps.getAuthenticated", [
     undefined,
     new RequestError("<ERROR>", 999, {
@@ -650,24 +630,20 @@ it("reports unexpected HTTP statuses", async () => {
     provisioner: { enabled: false },
     app: appA,
   });
-  expect(registry.installations.get(appAInstallationA.id)).toEqual(
-    appAInstallationA,
-  );
-  expect(registry.installationRepos.get(appAInstallationA)).toEqual(
-    appAInstallationA.repos,
-  );
+  expect(registry.installations.get(appAInstallationA.id)).toEqual({
+    installation: appAInstallationA,
+    repos: [],
+  });
   expect(registry.apps.get(appB.id)).toBeUndefined();
   expect(registry.apps.get(appC.id)).toEqual({
     issuer: { enabled: true, roles: [] },
     provisioner: { enabled: false },
     app: appC,
   });
-  expect(registry.installations.get(appCInstallationA.id)).toEqual(
-    appCInstallationA,
-  );
-  expect(registry.installationRepos.get(appCInstallationA)).toEqual(
-    appCInstallationA.repos,
-  );
+  expect(registry.installations.get(appCInstallationA.id)).toEqual({
+    installation: appCInstallationA,
+    repos: [],
+  });
 });
 
 it("skips apps when discovery throws", async () => {
@@ -675,12 +651,16 @@ it("skips apps when discovery throws", async () => {
   const appA = createTestApp(110, "app-a", "App A", { contents: "read" });
   const appB = createTestApp(120, "app-b", "App B", { contents: "read" });
   const appC = createTestApp(130, "app-c", "App C", { actions: "read" });
-  const appAInstallationA = createTestInstallation(111, appA, orgA, "all", []);
-  const appBInstallationA = createTestInstallation(121, appB, orgA, "all", []);
-  const appCInstallationA = createTestInstallation(131, appC, orgA, "all", []);
+  const appAInstallationA = createTestInstallation(111, appA, orgA, "all");
+  const appBInstallationA = createTestInstallation(121, appB, orgA, "all");
+  const appCInstallationA = createTestInstallation(131, appC, orgA, "all");
 
   __setApps([appA, appB, appC]);
-  __setInstallations([appAInstallationA, appBInstallationA, appCInstallationA]);
+  __setInstallations([
+    [appAInstallationA, []],
+    [appBInstallationA, []],
+    [appCInstallationA, []],
+  ]);
   __setErrors("apps.getAuthenticated", [undefined, new Error("<ERROR>")]);
 
   const octokitFactory = createOctokitFactory();
@@ -743,24 +723,20 @@ it("skips apps when discovery throws", async () => {
     provisioner: { enabled: false },
     app: appA,
   });
-  expect(registry.installations.get(appAInstallationA.id)).toEqual(
-    appAInstallationA,
-  );
-  expect(registry.installationRepos.get(appAInstallationA)).toEqual(
-    appAInstallationA.repos,
-  );
+  expect(registry.installations.get(appAInstallationA.id)).toEqual({
+    installation: appAInstallationA,
+    repos: [],
+  });
   expect(registry.apps.get(appB.id)).toBeUndefined();
   expect(registry.apps.get(appC.id)).toEqual({
     issuer: { enabled: true, roles: [] },
     provisioner: { enabled: false },
     app: appC,
   });
-  expect(registry.installations.get(appCInstallationA.id)).toEqual(
-    appCInstallationA,
-  );
-  expect(registry.installationRepos.get(appCInstallationA)).toEqual(
-    appCInstallationA.repos,
-  );
+  expect(registry.installations.get(appCInstallationA.id)).toEqual({
+    installation: appCInstallationA,
+    repos: [],
+  });
 });
 
 it("skips installations when discovery throws", async () => {
@@ -768,18 +744,16 @@ it("skips installations when discovery throws", async () => {
   const orgB = createTestInstallationAccount("Organization", 200, "org-b");
   const orgC = createTestInstallationAccount("Organization", 300, "org-b");
   const appA = createTestApp(110, "app-a", "App A", { contents: "read" });
-  const appAInstallationA = createTestInstallation(111, appA, orgA, "all", []);
-  const appAInstallationB = createTestInstallation(
-    112,
-    appA,
-    orgB,
-    "selected",
-    [],
-  );
-  const appAInstallationC = createTestInstallation(113, appA, orgC, "all", []);
+  const appAInstallationA = createTestInstallation(111, appA, orgA, "all");
+  const appAInstallationB = createTestInstallation(112, appA, orgB, "selected");
+  const appAInstallationC = createTestInstallation(113, appA, orgC, "all");
 
   __setApps([appA]);
-  __setInstallations([appAInstallationA, appAInstallationB, appAInstallationC]);
+  __setInstallations([
+    [appAInstallationA, []],
+    [appAInstallationB, []],
+    [appAInstallationC, []],
+  ]);
   __setErrors("apps.listReposAccessibleToInstallation", [new Error("<ERROR>")]);
 
   const octokitFactory = createOctokitFactory();
@@ -818,19 +792,15 @@ it("skips installations when discovery throws", async () => {
     provisioner: { enabled: false },
     app: appA,
   });
-  expect(registry.installations.get(appAInstallationA.id)).toEqual(
-    appAInstallationA,
-  );
-  expect(registry.installationRepos.get(appAInstallationA)).toEqual(
-    appAInstallationA.repos,
-  );
+  expect(registry.installations.get(appAInstallationA.id)).toEqual({
+    installation: appAInstallationA,
+    repos: [],
+  });
   expect(registry.installations.get(appAInstallationB.id)).toBeUndefined();
-  expect(registry.installations.get(appAInstallationC.id)).toEqual(
-    appAInstallationC,
-  );
-  expect(registry.installationRepos.get(appAInstallationC)).toEqual(
-    appAInstallationC.repos,
-  );
+  expect(registry.installations.get(appAInstallationC.id)).toEqual({
+    installation: appAInstallationC,
+    repos: [],
+  });
 });
 
 it("skips apps when they're fully disabled", async () => {
@@ -838,12 +808,16 @@ it("skips apps when they're fully disabled", async () => {
   const appA = createTestApp(110, "app-a", "App A", { contents: "read" });
   const appB = createTestApp(120, "app-b", "App B", { contents: "read" });
   const appC = createTestApp(130, "app-c", "App C", { actions: "read" });
-  const appAInstallationA = createTestInstallation(111, appA, orgA, "all", []);
-  const appBInstallationA = createTestInstallation(121, appB, orgA, "all", []);
-  const appCInstallationA = createTestInstallation(131, appC, orgA, "all", []);
+  const appAInstallationA = createTestInstallation(111, appA, orgA, "all");
+  const appBInstallationA = createTestInstallation(121, appB, orgA, "all");
+  const appCInstallationA = createTestInstallation(131, appC, orgA, "all");
 
   __setApps([appA, appB, appC]);
-  __setInstallations([appAInstallationA, appBInstallationA, appCInstallationA]);
+  __setInstallations([
+    [appAInstallationA, []],
+    [appBInstallationA, []],
+    [appCInstallationA, []],
+  ]);
 
   const octokitFactory = createOctokitFactory();
   const registry = createAppRegistry();
@@ -904,22 +878,18 @@ it("skips apps when they're fully disabled", async () => {
     provisioner: { enabled: false },
     app: appA,
   });
-  expect(registry.installations.get(appAInstallationA.id)).toEqual(
-    appAInstallationA,
-  );
-  expect(registry.installationRepos.get(appAInstallationA)).toEqual(
-    appAInstallationA.repos,
-  );
+  expect(registry.installations.get(appAInstallationA.id)).toEqual({
+    installation: appAInstallationA,
+    repos: [],
+  });
   expect(registry.apps.get(appB.id)).toBeUndefined();
   expect(registry.apps.get(appC.id)).toEqual({
     issuer: { enabled: true, roles: [] },
     provisioner: { enabled: false },
     app: appC,
   });
-  expect(registry.installations.get(appCInstallationA.id)).toEqual(
-    appCInstallationA,
-  );
-  expect(registry.installationRepos.get(appCInstallationA)).toEqual(
-    appCInstallationA.repos,
-  );
+  expect(registry.installations.get(appCInstallationA.id)).toEqual({
+    installation: appCInstallationA,
+    repos: [],
+  });
 });

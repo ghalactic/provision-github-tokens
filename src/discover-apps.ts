@@ -84,7 +84,12 @@ async function discoverApp(
     debug(`App ${app.id} is a token provisioner`);
   }
 
-  registry.registerApp(appInput.issuer, appInput.provisioner, app);
+  registry.registerApp({
+    app,
+    issuer: appInput.issuer,
+    provisioner: appInput.provisioner,
+  });
+
   await discoverInstallations(
     octokitFactory,
     registry,
@@ -219,6 +224,5 @@ async function discoverInstallation(
     );
   }
 
-  registry.registerInstallation(installation);
-  registry.registerInstallationRepos(installationId, repos);
+  registry.registerInstallation({ installation, repos });
 }

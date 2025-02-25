@@ -48063,23 +48063,14 @@ function isWriteAccess(access) {
 function createAppRegistry() {
   const apps = /* @__PURE__ */ new Map();
   const installations = /* @__PURE__ */ new Map();
-  const installationRepos = /* @__PURE__ */ new Map();
   return {
     apps,
     installations,
-    installationRepos,
-    registerApp: (issuer, provisioner, app) => {
-      apps.set(app.id, { issuer, provisioner, app });
+    registerApp: (registration) => {
+      apps.set(registration.app.id, registration);
     },
-    registerInstallation: (installation) => {
-      installations.set(installation.id, installation);
-    },
-    registerInstallationRepos: (installationId, repos) => {
-      const installation = installations.get(installationId);
-      if (!installation) {
-        throw new Error(`Installation ${installationId} not registered`);
-      }
-      installationRepos.set(installation, repos);
+    registerInstallation: (registration) => {
+      installations.set(registration.installation.id, registration);
     },
     findTokenIssuers: (request2) => {
       const tokenHasRole = typeof request2.role === "string";
@@ -48097,17 +48088,17 @@ function createAppRegistry() {
         {}
       ) : {};
       const issuers = [];
-      for (const [installation, repos] of installationRepos) {
-        const registered = apps.get(installation.app_id);
-        if (!registered) {
+      for (const [, { installation, repos }] of installations) {
+        const appRegistration = apps.get(installation.app_id);
+        if (!appRegistration) {
           throw new Error(
             `Invariant violation: App ${installation.app_id} not registered`
           );
         }
-        if (!registered.issuer.enabled) continue;
+        if (!appRegistration.issuer.enabled) continue;
         if (tokenHasRole) {
           let appHasRole = false;
-          for (const role of registered.issuer.roles) {
+          for (const role of appRegistration.issuer.roles) {
             if (role === request2.role) {
               appHasRole = true;
               break;
@@ -57115,7 +57106,11 @@ async function discoverApp(octokitFactory, registry, appInput, appIndex) {
   if (appInput.provisioner.enabled) {
     (0, import_core3.debug)(`App ${app.id} is a token provisioner`);
   }
-  registry.registerApp(appInput.issuer, appInput.provisioner, app);
+  registry.registerApp({
+    app,
+    issuer: appInput.issuer,
+    provisioner: appInput.provisioner
+  });
   await discoverInstallations(
     octokitFactory,
     registry,
@@ -57205,8 +57200,7 @@ async function discoverInstallation(octokitFactory, registry, appInput, installa
       `Installation ${installationId} has access to repos ${JSON.stringify(repoNames)}`
     );
   }
-  registry.registerInstallation(installation);
-  registry.registerInstallationRepos(installationId, repos);
+  registry.registerInstallation({ installation, repos });
 }
 
 // src/main.ts

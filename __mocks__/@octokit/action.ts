@@ -1,7 +1,7 @@
 import { RequestError } from "@octokit/request-error";
 
 let apps: any[];
-let installations: any[];
+let installations: [installation: any, repos: any[]][];
 let errorsByEndpoint: Record<string, (Error | undefined)[]> = {};
 
 export function __reset() {
@@ -14,7 +14,9 @@ export function __setApps(newApps: any[]) {
   apps = newApps;
 }
 
-export function __setInstallations(newInstallations: any[]) {
+export function __setInstallations(
+  newInstallations: [installation: any, repos: any[]][],
+) {
   installations = newInstallations;
 }
 
@@ -51,7 +53,7 @@ export function Octokit({
         getAuthenticated: async () => {
           throwIfEndpointError("apps.getAuthenticated");
 
-          for (const [, app] of Object.entries(apps)) {
+          for (const app of apps) {
             if (app.id === appId) {
               if (privateKey !== app.privateKey) {
                 throw new TestRequestError(401);
@@ -82,7 +84,7 @@ async function* listInstallations(appId: number) {
   const per_page = 2;
   let page = [];
 
-  for (const [, installation] of Object.entries(installations)) {
+  for (const [installation] of installations) {
     if (installation.app_id !== appId) continue;
 
     page.push(installation);
@@ -105,11 +107,11 @@ async function* listReposAccessibleToInstallation(
   const per_page = 2;
   let page = [];
 
-  for (const [, installation] of Object.entries(installations)) {
+  for (const [installation, repos] of installations) {
     if (installation.app_id !== appId) continue;
     if (installation.id !== installationId) continue;
 
-    for (const repo of installation.repos) {
+    for (const repo of repos) {
       page.push(repo);
 
       if (page.length >= per_page) {

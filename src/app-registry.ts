@@ -10,44 +10,38 @@ import type { AppInputIssuer, AppInputProvisioner } from "./type/input.js";
 import type { TokenRequest } from "./type/token-request.js";
 
 export type AppRegistry = {
-  readonly apps: Map<number, RegisteredApp>;
-  readonly installations: Map<number, Installation>;
-  readonly installationRepos: Map<Installation, Repo[]>;
-  registerApp: (
-    issuer: AppInputIssuer,
-    provisioner: AppInputProvisioner,
-    app: App,
-  ) => void;
-  registerInstallation: (installation: Installation) => void;
-  registerInstallationRepos: (installationId: number, repos: Repo[]) => void;
+  readonly apps: Map<number, AppRegistration>;
+  readonly installations: Map<number, InstallationRegistration>;
+  registerApp: (app: AppRegistration) => void;
+  registerInstallation: (installation: InstallationRegistration) => void;
   findTokenIssuers: (request: TokenRequest) => number[];
 };
 
+export type AppRegistration = {
+  app: App;
+  issuer: AppInputIssuer;
+  provisioner: AppInputProvisioner;
+};
+
+export type InstallationRegistration = {
+  installation: Installation;
+  repos: Repo[];
+};
+
 export function createAppRegistry(): AppRegistry {
-  const apps: Map<number, RegisteredApp> = new Map();
-  const installations: Map<number, Installation> = new Map();
-  const installationRepos: Map<Installation, Repo[]> = new Map();
+  const apps: Map<number, AppRegistration> = new Map();
+  const installations: Map<number, InstallationRegistration> = new Map();
 
   return {
     apps,
     installations,
-    installationRepos,
 
-    registerApp: (issuer, provisioner, app) => {
-      apps.set(app.id, { issuer, provisioner, app });
+    registerApp: (registration) => {
+      apps.set(registration.app.id, registration);
     },
 
-    registerInstallation: (installation) => {
-      installations.set(installation.id, installation);
-    },
-
-    registerInstallationRepos: (installationId, repos) => {
-      const installation = installations.get(installationId);
-      if (!installation) {
-        throw new Error(`Installation ${installationId} not registered`);
-      }
-
-      installationRepos.set(installation, repos);
+    registerInstallation: (registration) => {
+      installations.set(registration.installation.id, registration);
     },
 
     findTokenIssuers: (request) => {
@@ -76,23 +70,23 @@ export function createAppRegistry(): AppRegistry {
 
       const issuers: number[] = [];
 
-      for (const [installation, repos] of installationRepos) {
-        const registered = apps.get(installation.app_id);
+      for (const [, { installation, repos }] of installations) {
+        const appRegistration = apps.get(installation.app_id);
 
         /* v8 ignore start */
-        if (!registered) {
+        if (!appRegistration) {
           throw new Error(
             `Invariant violation: App ${installation.app_id} not registered`,
           );
         }
         /* v8 ignore stop */
 
-        if (!registered.issuer.enabled) continue;
+        if (!appRegistration.issuer.enabled) continue;
 
         if (tokenHasRole) {
           let appHasRole = false;
 
-          for (const role of registered.issuer.roles) {
+          for (const role of appRegistration.issuer.roles) {
             if (role === request.role) {
               appHasRole = true;
               break;
@@ -140,9 +134,3 @@ export function createAppRegistry(): AppRegistry {
     },
   };
 }
-
-type RegisteredApp = {
-  issuer: AppInputIssuer;
-  provisioner: AppInputProvisioner;
-  app: App;
-};
