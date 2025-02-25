@@ -349,6 +349,7 @@ it("parses comprehensive provider config", async () => {
             team_discussions: "write",
             vulnerability_alerts: "write",
             workflows: "write",
+            // @ts-expect-error - example future permission
             xxx: "admin",
           },
         },

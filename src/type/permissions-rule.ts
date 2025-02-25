@@ -1,14 +1,10 @@
-import type { InstallationPermissions } from "./github-api.js";
+import type { PermissionsWithNone } from "./github-api.js";
 
 export type PermissionsRule = {
   description?: string;
   resources: PermissionsRuleResourceCriteria[];
   consumers: string[];
-  permissions: {
-    [Property in keyof InstallationPermissions]:
-      | InstallationPermissions[Property]
-      | "none";
-  };
+  permissions: PermissionsWithNone;
 };
 
 export type PermissionsRuleResourceCriteria = {

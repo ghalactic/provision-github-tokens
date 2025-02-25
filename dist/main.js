@@ -48048,6 +48048,7 @@ var import_core4 = __toESM(require_core(), 1);
 
 // src/access-level.ts
 var ACCESS_RANK = {
+  none: 0,
   read: 1,
   write: 2,
   admin: 3

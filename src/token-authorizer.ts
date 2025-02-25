@@ -4,8 +4,10 @@ import { createNamePattern } from "./name-pattern.js";
 import { anyPatternMatches, type Pattern } from "./pattern.js";
 import { isSufficientPermissions } from "./permissions.js";
 import type {
-  InstallationPermissions,
-  InstallationPermissionsWithNone,
+  PermissionAccessWithNone,
+  PermissionName,
+  Permissions,
+  PermissionsWithNone,
 } from "./type/github-api.js";
 import type {
   PermissionsRule,
@@ -71,7 +73,7 @@ export function createTokenAuthorizer(
     let isSufficient = false;
 
     const ruleResults: TokenAuthResourceResultRuleResult[] = [];
-    const have: InstallationPermissions = {};
+    const have: Permissions = {};
 
     for (const i of rules) {
       const rule = config.rules[i];
@@ -126,7 +128,7 @@ export function createTokenAuthorizer(
     let isSufficient = false;
 
     const ruleResults: TokenAuthResourceResultRuleResult[] = [];
-    const have: InstallationPermissions = {};
+    const have: Permissions = {};
 
     for (const i of rules) {
       const rule = config.rules[i];
@@ -185,7 +187,7 @@ export function createTokenAuthorizer(
     for (const reqRepo of request.repos) {
       const reqResource = `${request.account}/${reqRepo}`;
       const ruleResults: TokenAuthResourceResultRuleResult[] = [];
-      const have: InstallationPermissions = {};
+      const have: Permissions = {};
       let isResourceSufficient = false;
 
       for (const i of rules) {
@@ -306,15 +308,16 @@ export function createTokenAuthorizer(
   }
 
   function updatePermissions(
-    have: InstallationPermissions,
-    permissions: InstallationPermissionsWithNone,
+    have: Permissions,
+    permissions: PermissionsWithNone,
   ): void {
-    for (let [permission, access] of Object.entries(permissions)) {
-      if (access === "none") {
-        delete have[permission];
-      } else {
-        have[permission] = access;
-      }
+    Object.assign(have, permissions);
+
+    for (const [permission, access] of Object.entries(have) as [
+      PermissionName,
+      PermissionAccessWithNone,
+    ][]) {
+      if (access === "none") delete have[permission];
     }
   }
 }

@@ -15,6 +15,9 @@ it.each`
 
 it.each`
   have       | want
+  ${"none"}  | ${"read"}
+  ${"none"}  | ${"write"}
+  ${"none"}  | ${"admin"}
   ${"read"}  | ${"write"}
   ${"read"}  | ${"admin"}
   ${"write"} | ${"admin"}

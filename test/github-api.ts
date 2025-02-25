@@ -5,8 +5,8 @@ import type {
   App,
   Installation,
   InstallationAccount,
-  InstallationPermissions,
   InstallationRepo,
+  Permissions,
 } from "../src/type/github-api.js";
 
 // App
@@ -20,7 +20,7 @@ export function createTestApp(
   id: number,
   slug: string,
   name: string,
-  permissions: InstallationPermissions = {},
+  permissions: Permissions = {},
 ): App & {
   privateKey: string;
 } {
@@ -55,7 +55,7 @@ export function createTestInstallation(
     app_id: app.id,
     app_slug: app.slug ?? "",
     repository_selection: repoSelection,
-    permissions: app.permissions as InstallationPermissions,
+    permissions: app.permissions as Permissions,
     suspended_by: null,
     suspended_at: null,
     target_type: account.type,

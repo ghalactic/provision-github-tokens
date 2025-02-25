@@ -1,7 +1,8 @@
 import { isSufficientAccess } from "../access-level.js";
 import type {
-  InstallationPermissions,
   PermissionAccess,
+  PermissionName,
+  Permissions,
 } from "../type/github-api.js";
 import type { PermissionsRule } from "../type/permissions-rule.js";
 import type {
@@ -113,7 +114,7 @@ export function createTextAuthExplainer(): TokenAuthResultExplainer<string> {
 
   function explainResourceRepo(
     resource: string,
-    want: InstallationPermissions,
+    want: Permissions,
     { isSufficient, rules }: TokenAuthResourceResult,
   ): string {
     return (
@@ -124,7 +125,7 @@ export function createTextAuthExplainer(): TokenAuthResultExplainer<string> {
   }
 
   function explainBasedOnRules(
-    want: InstallationPermissions,
+    want: Permissions,
     rules: TokenAuthResourceResultRuleResult[],
   ): string {
     const ruleCount = rules.length;
@@ -146,7 +147,7 @@ export function createTextAuthExplainer(): TokenAuthResultExplainer<string> {
   }
 
   function explainRule(
-    want: InstallationPermissions,
+    want: Permissions,
     { index, rule, have, isSufficient }: TokenAuthResourceResultRuleResult,
   ): string {
     return (
@@ -164,19 +165,18 @@ export function createTextAuthExplainer(): TokenAuthResultExplainer<string> {
 
   function renderPermissionComparison(
     indent: string,
-    have: InstallationPermissions,
-    want: InstallationPermissions,
+    have: Permissions,
+    want: Permissions,
   ): string {
     const entries: [boolean, string][] = [];
 
-    for (const p of Object.keys(want).sort((a, b) => a.localeCompare(b))) {
-      const h = have[p];
-      const w = want[p];
+    for (const p of Object.keys(want).sort((a, b) =>
+      a.localeCompare(b),
+    ) as PermissionName[]) {
+      const h = have[p] ?? "none";
+      const w = want[p] as PermissionAccess;
 
-      entries.push([
-        isSufficientAccess(h, w),
-        `${p}: have ${h ?? "none"}, wanted ${w}`,
-      ]);
+      entries.push([isSufficientAccess(h, w), `${p}: have ${h}, wanted ${w}`]);
     }
 
     return renderAllowDenyList(indent, entries);
