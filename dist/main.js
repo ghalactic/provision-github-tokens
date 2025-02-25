@@ -48088,18 +48088,18 @@ function createAppRegistry() {
         {}
       ) : {};
       const issuers = [];
-      for (const [, installationRegistration] of installations) {
-        const { installation, repos } = installationRegistration;
-        const appRegistration = apps.get(installation.app_id);
-        if (!appRegistration) {
+      for (const [, instReg] of installations) {
+        const { installation, repos } = instReg;
+        const appReg = apps.get(installation.app_id);
+        if (!appReg) {
           throw new Error(
             `Invariant violation: App ${installation.app_id} not registered`
           );
         }
-        if (!appRegistration.issuer.enabled) continue;
+        if (!appReg.issuer.enabled) continue;
         if (tokenHasRole) {
           let appHasRole = false;
-          for (const role of appRegistration.issuer.roles) {
+          for (const role of appReg.issuer.roles) {
             if (role === request2.role) {
               appHasRole = true;
               break;
@@ -48117,7 +48117,7 @@ function createAppRegistry() {
         if (permMatchCount !== tokenPerms.length) continue;
         if (installation.repository_selection === "all") {
           if (installation.account && "login" in installation.account && installation.account.login === request2.account) {
-            issuers.push(installationRegistration);
+            issuers.push(instReg);
           }
           continue;
         }
@@ -48127,9 +48127,35 @@ function createAppRegistry() {
           }
         }
         if (repoMatchCount !== request2.repos.length) continue;
-        issuers.push(installationRegistration);
+        issuers.push(instReg);
       }
       return issuers;
+    },
+    findProvisioners: (request2) => {
+      const provisioners = [];
+      for (const [, instReg] of installations) {
+        const { installation, repos } = instReg;
+        const appRegistration = apps.get(installation.app_id);
+        if (!appRegistration) {
+          throw new Error(
+            `Invariant violation: App ${installation.app_id} not registered`
+          );
+        }
+        if (!appRegistration.provisioner.enabled) continue;
+        if (request2.repo) {
+          for (const repo of repos) {
+            if (repo.owner.login === request2.account && repo.name === request2.repo) {
+              provisioners.push(instReg);
+              break;
+            }
+          }
+          continue;
+        }
+        if (installation.account && "login" in installation.account && installation.account.login === request2.account) {
+          provisioners.push(instReg);
+        }
+      }
+      return provisioners;
     }
   };
 }

@@ -7,6 +7,7 @@ import type {
   Repo,
 } from "./type/github-api.js";
 import type { AppInputIssuer, AppInputProvisioner } from "./type/input.js";
+import type { ProvisionRequest } from "./type/provision-request.js";
 import type { TokenRequest } from "./type/token-request.js";
 
 export type AppRegistry = {
@@ -15,6 +16,7 @@ export type AppRegistry = {
   registerApp: (app: AppRegistration) => void;
   registerInstallation: (installation: InstallationRegistration) => void;
   findTokenIssuers: (request: TokenRequest) => InstallationRegistration[];
+  findProvisioners: (request: ProvisionRequest) => InstallationRegistration[];
 };
 
 export type AppRegistration = {
@@ -70,24 +72,24 @@ export function createAppRegistry(): AppRegistry {
 
       const issuers: InstallationRegistration[] = [];
 
-      for (const [, installationRegistration] of installations) {
-        const { installation, repos } = installationRegistration;
-        const appRegistration = apps.get(installation.app_id);
+      for (const [, instReg] of installations) {
+        const { installation, repos } = instReg;
+        const appReg = apps.get(installation.app_id);
 
         /* v8 ignore start */
-        if (!appRegistration) {
+        if (!appReg) {
           throw new Error(
             `Invariant violation: App ${installation.app_id} not registered`,
           );
         }
         /* v8 ignore stop */
 
-        if (!appRegistration.issuer.enabled) continue;
+        if (!appReg.issuer.enabled) continue;
 
         if (tokenHasRole) {
           let appHasRole = false;
 
-          for (const role of appRegistration.issuer.roles) {
+          for (const role of appReg.issuer.roles) {
             if (role === request.role) {
               appHasRole = true;
               break;
@@ -114,7 +116,7 @@ export function createAppRegistry(): AppRegistry {
             "login" in installation.account &&
             installation.account.login === request.account
           ) {
-            issuers.push(installationRegistration);
+            issuers.push(instReg);
           }
 
           continue;
@@ -128,10 +130,54 @@ export function createAppRegistry(): AppRegistry {
 
         if (repoMatchCount !== request.repos.length) continue;
 
-        issuers.push(installationRegistration);
+        issuers.push(instReg);
       }
 
       return issuers;
+    },
+
+    findProvisioners: (request) => {
+      const provisioners: InstallationRegistration[] = [];
+
+      for (const [, instReg] of installations) {
+        const { installation, repos } = instReg;
+        const appRegistration = apps.get(installation.app_id);
+
+        /* v8 ignore start */
+        if (!appRegistration) {
+          throw new Error(
+            `Invariant violation: App ${installation.app_id} not registered`,
+          );
+        }
+        /* v8 ignore stop */
+
+        if (!appRegistration.provisioner.enabled) continue;
+
+        if (request.repo) {
+          for (const repo of repos) {
+            if (
+              repo.owner.login === request.account &&
+              repo.name === request.repo
+            ) {
+              provisioners.push(instReg);
+
+              break;
+            }
+          }
+
+          continue;
+        }
+
+        if (
+          installation.account &&
+          "login" in installation.account &&
+          installation.account.login === request.account
+        ) {
+          provisioners.push(instReg);
+        }
+      }
+
+      return provisioners;
     },
   };
 }
