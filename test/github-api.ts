@@ -6,8 +6,8 @@ import type {
   Installation,
   InstallationAccount,
   InstallationRepo,
-  Permissions,
 } from "../src/type/github-api.js";
+import type { Permissions } from "../src/type/permissions.js";
 
 // App
 

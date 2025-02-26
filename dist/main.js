@@ -48060,6 +48060,22 @@ function isWriteAccess(access) {
   return ACCESS_RANK[access] > ACCESS_RANK.read;
 }
 
+// src/permissions.ts
+function permissionAccess(permissions, permission) {
+  return permissions[permission] ?? "none";
+}
+function isEmptyPermissions(permissions) {
+  for (const access of Object.values(permissions)) {
+    switch (access) {
+      case "read":
+      case "write":
+      case "admin":
+        return false;
+    }
+  }
+  return true;
+}
+
 // src/app-registry.ts
 function createAppRegistry() {
   const apps = /* @__PURE__ */ new Map();
@@ -48074,11 +48090,14 @@ function createAppRegistry() {
       installations.set(registration.installation.id, registration);
     },
     findIssuers: (request2) => {
+      if (isEmptyPermissions(request2.permissions)) return [];
       const tokenHasRole = typeof request2.role === "string";
-      const tokenPerms = Object.entries(request2.permissions);
+      const tokenPerms = Object.keys(request2.permissions);
       if (!tokenHasRole) {
-        for (const [, access] of tokenPerms) {
-          if (isWriteAccess(access)) return [];
+        for (const permission of tokenPerms) {
+          if (isWriteAccess(permissionAccess(request2.permissions, permission))) {
+            return [];
+          }
         }
       }
       const tokenRepos = Array.isArray(request2.repos) ? request2.repos.reduce(
@@ -48110,10 +48129,13 @@ function createAppRegistry() {
         }
         let permMatchCount = 0;
         let repoMatchCount = 0;
-        for (const [name, access] of tokenPerms) {
-          const instAccess = installation.permissions[name];
-          if (!instAccess) continue;
-          if (isSufficientAccess(instAccess, access)) ++permMatchCount;
+        for (const permission of tokenPerms) {
+          if (isSufficientAccess(
+            permissionAccess(installation.permissions, permission),
+            permissionAccess(request2.permissions, permission)
+          )) {
+            ++permMatchCount;
+          }
         }
         if (permMatchCount !== tokenPerms.length) continue;
         if (installation.repository_selection === "all") {
@@ -57209,7 +57231,7 @@ async function discoverInstallation(octokitFactory, registry, appInput, installa
   (0, import_core3.debug)(
     `Discovered app installation ${installationId} for ${accountDescription}`
   );
-  if (Object.keys(permissions).length < 1) {
+  if (isEmptyPermissions(permissions)) {
     (0, import_core3.debug)(`Installation ${installationId} has no permissions`);
   } else {
     (0, import_core3.debug)(

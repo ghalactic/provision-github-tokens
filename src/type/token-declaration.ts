@@ -1,4 +1,4 @@
-import type { Permissions } from "./github-api.js";
+import type { Permissions } from "./permissions.js";
 
 export type TokenDeclaration = {
   shared: boolean;

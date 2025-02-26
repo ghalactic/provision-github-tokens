@@ -6,6 +6,7 @@ import {
   type Octokit,
   type OctokitFactory,
 } from "./octokit.js";
+import { isEmptyPermissions } from "./permissions.js";
 import { pluralize } from "./pluralize.js";
 import type { App, Installation, InstallationRepo } from "./type/github-api.js";
 import type { AppInput } from "./type/input.js";
@@ -200,7 +201,7 @@ async function discoverInstallation(
       `${accountDescription}`,
   );
 
-  if (Object.keys(permissions).length < 1) {
+  if (isEmptyPermissions(permissions)) {
     debug(`Installation ${installationId} has no permissions`);
   } else {
     debug(

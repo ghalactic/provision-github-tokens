@@ -6,10 +6,22 @@ it("throws for empty wanted permissions", () => {
   expect(
     throws(() => isSufficientPermissions({ contents: "read" }, {})),
   ).toMatchInlineSnapshot(`"Empty permissions"`);
+  expect(
+    throws(() =>
+      isSufficientPermissions({ contents: "read" }, { contents: undefined }),
+    ),
+  ).toMatchInlineSnapshot(`"Empty permissions"`);
+  expect(
+    throws(() =>
+      isSufficientPermissions({ contents: "read" }, { contents: "none" }),
+    ),
+  ).toMatchInlineSnapshot(`"Empty permissions"`);
 });
 
 it.each`
   have       | want
+  ${"none"}  | ${"none"}
+  ${"read"}  | ${"read"}
   ${"read"}  | ${"read"}
   ${"write"} | ${"read"}
   ${"write"} | ${"write"}
@@ -19,22 +31,25 @@ it.each`
 `("knows that $have is sufficient for $want", ({ have, want }) => {
   expect(
     isSufficientPermissions(
-      { repository_projects: have },
-      { repository_projects: want },
+      { metadata: "read", repository_projects: have },
+      { metadata: "read", repository_projects: want },
     ),
   ).toBe(true);
 });
 
 it.each`
   have       | want
+  ${"none"}  | ${"read"}
+  ${"none"}  | ${"write"}
+  ${"none"}  | ${"admin"}
   ${"read"}  | ${"write"}
   ${"read"}  | ${"admin"}
   ${"write"} | ${"admin"}
 `("knows that $have is not sufficient for $want", ({ have, want }) => {
   expect(
     isSufficientPermissions(
-      { repository_projects: have },
-      { repository_projects: want },
+      { metadata: "read", repository_projects: have },
+      { metadata: "read", repository_projects: want },
     ),
   ).toBe(false);
 });

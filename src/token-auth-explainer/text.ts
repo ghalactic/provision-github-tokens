@@ -1,10 +1,7 @@
 import { isSufficientAccess } from "../access-level.js";
-import type {
-  PermissionAccess,
-  PermissionName,
-  Permissions,
-} from "../type/github-api.js";
+import { permissionAccess } from "../permissions.js";
 import type { PermissionsRule } from "../type/permissions-rule.js";
+import type { PermissionAccess, Permissions } from "../type/permissions.js";
 import type {
   TokenAuthResourceResult,
   TokenAuthResourceResultRuleResult,
@@ -19,6 +16,7 @@ const ALLOWED_ICON = "✅";
 const DENIED_ICON = "❌";
 
 const ACCESS_LEVELS: Record<PermissionAccess, string> = {
+  none: "No",
   admin: "Admin",
   read: "Read",
   write: "Write",
@@ -170,11 +168,9 @@ export function createTextAuthExplainer(): TokenAuthResultExplainer<string> {
   ): string {
     const entries: [boolean, string][] = [];
 
-    for (const p of Object.keys(want).sort((a, b) =>
-      a.localeCompare(b),
-    ) as PermissionName[]) {
-      const h = have[p] ?? "none";
-      const w = want[p] as PermissionAccess;
+    for (const p of Object.keys(want).sort((a, b) => a.localeCompare(b))) {
+      const h = permissionAccess(have, p);
+      const w = permissionAccess(want, p);
 
       entries.push([isSufficientAccess(h, w), `${p}: have ${h}, wanted ${w}`]);
     }

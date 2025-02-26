@@ -2,17 +2,12 @@ import { isWriteAccess, maxAccess } from "./access-level.js";
 import { createGitHubPattern } from "./github-pattern.js";
 import { createNamePattern } from "./name-pattern.js";
 import { anyPatternMatches, type Pattern } from "./pattern.js";
-import { isSufficientPermissions } from "./permissions.js";
-import type {
-  PermissionAccessWithNone,
-  PermissionName,
-  Permissions,
-  PermissionsWithNone,
-} from "./type/github-api.js";
+import { isEmptyPermissions, isSufficientPermissions } from "./permissions.js";
 import type {
   PermissionsRule,
   PermissionsRuleResourceCriteria,
 } from "./type/permissions-rule.js";
+import type { Permissions } from "./type/permissions.js";
 import type { ProviderPermissionsConfig } from "./type/provider-config.js";
 import {
   type TokenAuthConsumer,
@@ -56,7 +51,7 @@ export function createTokenAuthorizer(
     consumer: TokenAuthConsumer,
     request: TokenRequest,
   ): TokenAuthResult {
-    if (Object.keys(request.permissions).length < 1) {
+    if (isEmptyPermissions(request.permissions)) {
       throw new Error("No permissions requested");
     }
 
@@ -309,14 +304,11 @@ export function createTokenAuthorizer(
 
   function updatePermissions(
     have: Permissions,
-    permissions: PermissionsWithNone,
+    permissions: Permissions,
   ): void {
     Object.assign(have, permissions);
 
-    for (const [permission, access] of Object.entries(have) as [
-      PermissionName,
-      PermissionAccessWithNone,
-    ][]) {
+    for (const [permission, access = "none"] of Object.entries(have)) {
       if (access === "none") delete have[permission];
     }
   }

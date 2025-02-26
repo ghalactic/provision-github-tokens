@@ -3,6 +3,7 @@ import { isSufficientAccess } from "../../../../src/access-level.js";
 
 it.each`
   have       | want
+  ${"none"}  | ${"none"}
   ${"read"}  | ${"read"}
   ${"write"} | ${"read"}
   ${"write"} | ${"write"}

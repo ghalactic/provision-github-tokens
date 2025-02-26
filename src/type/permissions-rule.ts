@@ -1,10 +1,10 @@
-import type { PermissionsWithNone } from "./github-api.js";
+import type { Permissions } from "./permissions.js";
 
 export type PermissionsRule = {
   description?: string;
   resources: PermissionsRuleResourceCriteria[];
   consumers: string[];
-  permissions: PermissionsWithNone;
+  permissions: Permissions;
 };
 
 export type PermissionsRuleResourceCriteria = {

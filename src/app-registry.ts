@@ -1,11 +1,6 @@
 import { isSufficientAccess, isWriteAccess } from "./access-level.js";
-import type {
-  App,
-  Installation,
-  PermissionAccess,
-  PermissionName,
-  Repo,
-} from "./type/github-api.js";
+import { isEmptyPermissions, permissionAccess } from "./permissions.js";
+import type { App, Installation, Repo } from "./type/github-api.js";
 import type { AppInputIssuer, AppInputProvisioner } from "./type/input.js";
 import type { ProvisionRequest } from "./type/provision-request.js";
 import type { TokenRequest } from "./type/token-request.js";
@@ -47,16 +42,20 @@ export function createAppRegistry(): AppRegistry {
     },
 
     findIssuers: (request) => {
+      // Disallow empty permissions requests
+      if (isEmptyPermissions(request.permissions)) return [];
+
       const tokenHasRole = typeof request.role === "string";
-      const tokenPerms = Object.entries(request.permissions) as [
-        PermissionName,
-        PermissionAccess,
-      ][];
+      const tokenPerms = Object.keys(request.permissions);
 
       // Require an explicit role for write/admin access
       if (!tokenHasRole) {
-        for (const [, access] of tokenPerms) {
-          if (isWriteAccess(access)) return [];
+        for (const permission of tokenPerms) {
+          if (
+            isWriteAccess(permissionAccess(request.permissions, permission))
+          ) {
+            return [];
+          }
         }
       }
 
@@ -102,10 +101,15 @@ export function createAppRegistry(): AppRegistry {
         let permMatchCount = 0;
         let repoMatchCount = 0;
 
-        for (const [name, access] of tokenPerms) {
-          const instAccess = installation.permissions[name];
-          if (!instAccess) continue;
-          if (isSufficientAccess(instAccess, access)) ++permMatchCount;
+        for (const permission of tokenPerms) {
+          if (
+            isSufficientAccess(
+              permissionAccess(installation.permissions, permission),
+              permissionAccess(request.permissions, permission),
+            )
+          ) {
+            ++permMatchCount;
+          }
         }
 
         if (permMatchCount !== tokenPerms.length) continue;

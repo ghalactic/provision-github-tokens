@@ -1,23 +1,43 @@
 import { isSufficientAccess } from "./access-level.js";
-import type {
-  PermissionAccess,
-  PermissionName,
-  Permissions,
-} from "./type/github-api.js";
+import type { PermissionAccess, Permissions } from "./type/permissions.js";
+
+export function permissionAccess(
+  permissions: Permissions,
+  permission: string,
+): PermissionAccess {
+  return permissions[permission] ?? "none";
+}
+
+export function isEmptyPermissions(permissions: Permissions): boolean {
+  for (const access of Object.values(permissions)) {
+    switch (access) {
+      case "read":
+      case "write":
+      case "admin":
+        return false;
+    }
+  }
+
+  return true;
+}
 
 export function isSufficientPermissions(
   have: Permissions,
   want: Permissions,
 ): boolean {
-  const wantEntries = Object.entries(want) as [
-    PermissionName,
-    PermissionAccess,
-  ][];
+  const permissions = Object.keys(want);
 
-  if (wantEntries.length < 1) throw new Error("Empty permissions");
+  if (isEmptyPermissions(want)) throw new Error("Empty permissions");
 
-  for (const [permission, access] of wantEntries) {
-    if (!isSufficientAccess(have[permission] ?? "none", access)) return false;
+  for (const permission of permissions) {
+    if (
+      !isSufficientAccess(
+        permissionAccess(have, permission),
+        permissionAccess(want, permission),
+      )
+    ) {
+      return false;
+    }
   }
 
   return true;

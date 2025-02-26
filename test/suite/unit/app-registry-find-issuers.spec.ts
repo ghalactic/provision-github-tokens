@@ -95,10 +95,10 @@ it("finds issuers for multiple selected repos with multiple permissions", () => 
   ).toEqual([appAInstallationA]);
 });
 
-it("finds issuers for no repos with no permissions", () => {
+it("finds issuers for no repos", () => {
   const orgA = createTestInstallationAccount("Organization", 100, "org-a");
   const appA: AppRegistration = {
-    app: createTestApp(110, "app-a", "App A"),
+    app: createTestApp(110, "app-a", "App A", { metadata: "read" }),
     issuer: { enabled: true, roles: ["role-a"] },
     provisioner: { enabled: false },
   };
@@ -116,7 +116,7 @@ it("finds issuers for no repos with no permissions", () => {
       role: "role-a",
       account: orgA.login,
       repos: [],
-      permissions: {},
+      permissions: { metadata: "read" },
     }),
   ).toEqual([appAInstallationA]);
 });
@@ -159,7 +159,7 @@ it("finds issuers for the correct account when there are multiple installations"
   const orgA = createTestInstallationAccount("Organization", 100, "org-a");
   const orgB = createTestInstallationAccount("Organization", 200, "org-b");
   const appA: AppRegistration = {
-    app: createTestApp(110, "app-a", "App A"),
+    app: createTestApp(110, "app-a", "App A", { metadata: "read" }),
     issuer: { enabled: true, roles: [] },
     provisioner: { enabled: false },
   };
@@ -182,7 +182,7 @@ it("finds issuers for the correct account when there are multiple installations"
       role: undefined,
       account: orgA.login,
       repos: "all",
-      permissions: {},
+      permissions: { metadata: "read" },
     }),
   ).toEqual([appAInstallationA]);
   expect(
@@ -190,7 +190,7 @@ it("finds issuers for the correct account when there are multiple installations"
       role: undefined,
       account: orgA.login,
       repos: [],
-      permissions: {},
+      permissions: { metadata: "read" },
     }),
   ).toEqual([appAInstallationA]);
   expect(
@@ -198,7 +198,7 @@ it("finds issuers for the correct account when there are multiple installations"
       role: undefined,
       account: orgB.login,
       repos: "all",
-      permissions: {},
+      permissions: { metadata: "read" },
     }),
   ).toEqual([appAInstallationB]);
   expect(
@@ -206,7 +206,7 @@ it("finds issuers for the correct account when there are multiple installations"
       role: undefined,
       account: orgB.login,
       repos: [],
-      permissions: {},
+      permissions: { metadata: "read" },
     }),
   ).toEqual([appAInstallationB]);
 });
@@ -557,6 +557,32 @@ it.each([
     ).toHaveLength(0);
   },
 );
+
+it("doesn't find issuers for no permissions", () => {
+  const orgA = createTestInstallationAccount("Organization", 100, "org-a");
+  const appA: AppRegistration = {
+    app: createTestApp(110, "app-a", "App A"),
+    issuer: { enabled: true, roles: ["role-a"] },
+    provisioner: { enabled: false },
+  };
+  const appAInstallationA: InstallationRegistration = {
+    installation: createTestInstallation(111, appA.app, orgA, "selected"),
+    repos: [],
+  };
+
+  const registry = createAppRegistry();
+  registry.registerApp(appA);
+  registry.registerInstallation(appAInstallationA);
+
+  expect(
+    registry.findIssuers({
+      role: "role-a",
+      account: orgA.login,
+      repos: [],
+      permissions: {},
+    }),
+  ).toHaveLength(0);
+});
 
 it("doesn't find issuers from non-issuer apps", () => {
   const orgA = createTestInstallationAccount("Organization", 100, "org-a");

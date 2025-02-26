@@ -1,15 +1,17 @@
 import { expect, it } from "vitest";
 import { maxAccess } from "../../../../src/access-level.js";
 
-it("throws for empty permissions", () => {
-  expect(() => {
-    maxAccess({});
-  }).toThrow("Empty permissions");
+it('returns "none" for empty permissions', () => {
+  expect(maxAccess({})).toBe("none");
+  expect(maxAccess({ contents: undefined, metadata: undefined })).toBe("none");
+  expect(maxAccess({ contents: "none", metadata: "none" })).toBe("none");
 });
 
 it('returns "read" for read-only permissions', () => {
   expect(
     maxAccess({
+      contents: undefined,
+      metadata: "none",
       repository_hooks: "read",
       repository_projects: "read",
     }),
@@ -19,6 +21,8 @@ it('returns "read" for read-only permissions', () => {
 it('returns "write" for write permissions', () => {
   expect(
     maxAccess({
+      contents: undefined,
+      metadata: "none",
       repository_hooks: "read",
       repository_projects: "write",
     }),
@@ -28,6 +32,8 @@ it('returns "write" for write permissions', () => {
 it('returns "admin" for admin permissions', () => {
   expect(
     maxAccess({
+      contents: undefined,
+      metadata: "none",
       repository_hooks: "write",
       repository_projects: "admin",
       secret_scanning_alerts: "read",

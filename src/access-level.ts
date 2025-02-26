@@ -1,8 +1,4 @@
-import type {
-  PermissionAccess,
-  PermissionAccessWithNone,
-  Permissions,
-} from "./type/github-api.js";
+import type { PermissionAccess, Permissions } from "./type/permissions.js";
 
 const ACCESS_RANK = {
   none: 0,
@@ -12,7 +8,7 @@ const ACCESS_RANK = {
 } as const;
 
 export function isSufficientAccess(
-  have: PermissionAccessWithNone,
+  have: PermissionAccess,
   want: PermissionAccess,
 ): boolean {
   return ACCESS_RANK[have] >= ACCESS_RANK[want];
@@ -23,18 +19,18 @@ export function isWriteAccess(access: PermissionAccess): boolean {
 }
 
 export function maxAccess(permissions: Permissions): PermissionAccess {
-  let max: PermissionAccess | undefined;
+  let max: PermissionAccess = "none";
   let maxRank = 0;
 
   for (const access of Object.values(permissions)) {
-    const rank = ACCESS_RANK[access];
+    const definedAccess = access ?? "none";
+    const rank = ACCESS_RANK[definedAccess];
 
     if (rank > maxRank) {
-      max = access;
+      max = definedAccess;
       maxRank = rank;
     }
   }
 
-  if (max) return max;
-  throw new Error("Empty permissions");
+  return max;
 }
