@@ -3,13 +3,13 @@ import {
   createAppRegistry,
   type AppRegistration,
   type InstallationRegistration,
-} from "../../../src/app-registry.js";
+} from "../../../../src/app-registry.js";
 import {
   createTestApp,
   createTestInstallation,
   createTestInstallationAccount,
   createTestInstallationRepo,
-} from "../../github-api.js";
+} from "../../../github-api.js";
 
 it("finds provisioners for secrets in a GitHub account", () => {
   const orgA = createTestInstallationAccount("Organization", 100, "org-a");
@@ -56,16 +56,15 @@ it("finds provisioners for secrets in a GitHub account", () => {
     account: "org-a",
   } as const;
 
-  expect(registry.findProvisioners({ ...request, type: "actions" })).toEqual([
-    appAInstallationA,
-    appBInstallationA,
-  ]);
-  expect(registry.findProvisioners({ ...request, type: "codespaces" })).toEqual(
-    [appAInstallationA, appBInstallationA],
-  );
-  expect(registry.findProvisioners({ ...request, type: "dependabot" })).toEqual(
-    [appAInstallationA, appBInstallationA],
-  );
+  expect(
+    registry.findProvisionersForRequest({ ...request, type: "actions" }),
+  ).toEqual([appAInstallationA, appBInstallationA]);
+  expect(
+    registry.findProvisionersForRequest({ ...request, type: "codespaces" }),
+  ).toEqual([appAInstallationA, appBInstallationA]);
+  expect(
+    registry.findProvisionersForRequest({ ...request, type: "dependabot" }),
+  ).toEqual([appAInstallationA, appBInstallationA]);
 });
 
 it("finds provisioners for secrets in a GitHub repo", () => {
@@ -122,34 +121,33 @@ it("finds provisioners for secrets in a GitHub repo", () => {
     repo: "repo-b",
   } as const;
 
-  expect(registry.findProvisioners({ ...requestA, type: "actions" })).toEqual([
-    appAInstallationA,
-  ]);
-  expect(registry.findProvisioners({ ...requestB, type: "actions" })).toEqual([
-    appBInstallationA,
-    appCInstallationA,
-  ]);
   expect(
-    registry.findProvisioners({ ...requestA, type: "codespaces" }),
+    registry.findProvisionersForRequest({ ...requestA, type: "actions" }),
   ).toEqual([appAInstallationA]);
   expect(
-    registry.findProvisioners({ ...requestB, type: "codespaces" }),
+    registry.findProvisionersForRequest({ ...requestB, type: "actions" }),
   ).toEqual([appBInstallationA, appCInstallationA]);
   expect(
-    registry.findProvisioners({ ...requestA, type: "dependabot" }),
+    registry.findProvisionersForRequest({ ...requestA, type: "codespaces" }),
   ).toEqual([appAInstallationA]);
   expect(
-    registry.findProvisioners({ ...requestB, type: "dependabot" }),
+    registry.findProvisionersForRequest({ ...requestB, type: "codespaces" }),
   ).toEqual([appBInstallationA, appCInstallationA]);
   expect(
-    registry.findProvisioners({
+    registry.findProvisionersForRequest({ ...requestA, type: "dependabot" }),
+  ).toEqual([appAInstallationA]);
+  expect(
+    registry.findProvisionersForRequest({ ...requestB, type: "dependabot" }),
+  ).toEqual([appBInstallationA, appCInstallationA]);
+  expect(
+    registry.findProvisionersForRequest({
       ...requestA,
       type: "environment",
       environment: "env-a",
     }),
   ).toEqual([appAInstallationA]);
   expect(
-    registry.findProvisioners({
+    registry.findProvisionersForRequest({
       ...requestB,
       type: "environment",
       environment: "env-b",
@@ -180,7 +178,7 @@ it("finds provisioners for the correct account when there are multiple installat
   registry.registerInstallation(appAInstallationB);
 
   expect(
-    registry.findProvisioners({
+    registry.findProvisionersForRequest({
       name: "SECRET_A",
       platform: "github",
       type: "actions",
@@ -188,7 +186,7 @@ it("finds provisioners for the correct account when there are multiple installat
     }),
   ).toEqual([appAInstallationA]);
   expect(
-    registry.findProvisioners({
+    registry.findProvisionersForRequest({
       name: "SECRET_A",
       platform: "github",
       type: "actions",
@@ -214,7 +212,7 @@ it("doesn't find provisioners for an unknown account", () => {
   registry.registerInstallation(appAInstallationA);
 
   expect(
-    registry.findProvisioners({
+    registry.findProvisionersForRequest({
       name: "SECRET_A",
       platform: "github",
       type: "actions",
@@ -240,7 +238,7 @@ it("doesn't find provisioners from non-provisioner apps", () => {
   registry.registerInstallation(appAInstallationA);
 
   expect(
-    registry.findProvisioners({
+    registry.findProvisionersForRequest({
       name: "SECRET_A",
       platform: "github",
       type: "actions",
@@ -248,7 +246,7 @@ it("doesn't find provisioners from non-provisioner apps", () => {
     }),
   ).toHaveLength(0);
   expect(
-    registry.findProvisioners({
+    registry.findProvisionersForRequest({
       name: "SECRET_A",
       platform: "github",
       type: "actions",

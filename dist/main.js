@@ -48089,7 +48089,7 @@ function createAppRegistry() {
     registerInstallation: (registration) => {
       installations.set(registration.installation.id, registration);
     },
-    findIssuers: (request2) => {
+    findIssuersForRequest: (request2) => {
       if (isEmptyPermissions(request2.permissions)) return [];
       const tokenHasRole = typeof request2.role === "string";
       const tokenPerms = Object.keys(request2.permissions);
@@ -48154,7 +48154,7 @@ function createAppRegistry() {
       }
       return issuers;
     },
-    findProvisioners: (request2) => {
+    findProvisionersForRequest: (request2) => {
       const provisioners = [];
       for (const [, instReg] of installations) {
         const { installation, repos } = instReg;

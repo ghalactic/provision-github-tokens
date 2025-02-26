@@ -10,8 +10,10 @@ export type AppRegistry = {
   readonly installations: Map<number, InstallationRegistration>;
   registerApp: (app: AppRegistration) => void;
   registerInstallation: (installation: InstallationRegistration) => void;
-  findIssuers: (request: TokenRequest) => InstallationRegistration[];
-  findProvisioners: (request: ProvisionRequest) => InstallationRegistration[];
+  findIssuersForRequest: (request: TokenRequest) => InstallationRegistration[];
+  findProvisionersForRequest: (
+    request: ProvisionRequest,
+  ) => InstallationRegistration[];
 };
 
 export type AppRegistration = {
@@ -41,7 +43,7 @@ export function createAppRegistry(): AppRegistry {
       installations.set(registration.installation.id, registration);
     },
 
-    findIssuers: (request) => {
+    findIssuersForRequest: (request) => {
       // Disallow empty permissions requests
       if (isEmptyPermissions(request.permissions)) return [];
 
@@ -140,7 +142,7 @@ export function createAppRegistry(): AppRegistry {
       return issuers;
     },
 
-    findProvisioners: (request) => {
+    findProvisionersForRequest: (request) => {
       const provisioners: InstallationRegistration[] = [];
 
       for (const [, instReg] of installations) {

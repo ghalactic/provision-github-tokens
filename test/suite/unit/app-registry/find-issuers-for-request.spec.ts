@@ -3,13 +3,13 @@ import {
   createAppRegistry,
   type AppRegistration,
   type InstallationRegistration,
-} from "../../../src/app-registry.js";
+} from "../../../../src/app-registry.js";
 import {
   createTestApp,
   createTestInstallation,
   createTestInstallationAccount,
   createTestInstallationRepo,
-} from "../../github-api.js";
+} from "../../../github-api.js";
 
 it("finds issuers for all repos in an account with one permission", () => {
   const orgA = createTestInstallationAccount("Organization", 100, "org-a");
@@ -28,7 +28,7 @@ it("finds issuers for all repos in an account with one permission", () => {
   registry.registerInstallation(appAInstallationA);
 
   expect(
-    registry.findIssuers({
+    registry.findIssuersForRequest({
       role: "role-a",
       account: orgA.login,
       repos: "all",
@@ -55,7 +55,7 @@ it("finds issuers for one selected repo with one permission", () => {
   registry.registerInstallation(appAInstallationA);
 
   expect(
-    registry.findIssuers({
+    registry.findIssuersForRequest({
       role: "role-a",
       account: orgA.login,
       repos: [repoA.name],
@@ -86,7 +86,7 @@ it("finds issuers for multiple selected repos with multiple permissions", () => 
   registry.registerInstallation(appAInstallationA);
 
   expect(
-    registry.findIssuers({
+    registry.findIssuersForRequest({
       role: "role-a",
       account: orgA.login,
       repos: [repoA.name, repoB.name],
@@ -112,7 +112,7 @@ it("finds issuers for no repos", () => {
   registry.registerInstallation(appAInstallationA);
 
   expect(
-    registry.findIssuers({
+    registry.findIssuersForRequest({
       role: "role-a",
       account: orgA.login,
       repos: [],
@@ -145,7 +145,7 @@ it.each([
     registry.registerInstallation(appAInstallationA);
 
     expect(
-      registry.findIssuers({
+      registry.findIssuersForRequest({
         role: "role-a",
         account: orgA.login,
         repos: [repoA.name],
@@ -178,7 +178,7 @@ it("finds issuers for the correct account when there are multiple installations"
   registry.registerInstallation(appAInstallationB);
 
   expect(
-    registry.findIssuers({
+    registry.findIssuersForRequest({
       role: undefined,
       account: orgA.login,
       repos: "all",
@@ -186,7 +186,7 @@ it("finds issuers for the correct account when there are multiple installations"
     }),
   ).toEqual([appAInstallationA]);
   expect(
-    registry.findIssuers({
+    registry.findIssuersForRequest({
       role: undefined,
       account: orgA.login,
       repos: [],
@@ -194,7 +194,7 @@ it("finds issuers for the correct account when there are multiple installations"
     }),
   ).toEqual([appAInstallationA]);
   expect(
-    registry.findIssuers({
+    registry.findIssuersForRequest({
       role: undefined,
       account: orgB.login,
       repos: "all",
@@ -202,7 +202,7 @@ it("finds issuers for the correct account when there are multiple installations"
     }),
   ).toEqual([appAInstallationB]);
   expect(
-    registry.findIssuers({
+    registry.findIssuersForRequest({
       role: undefined,
       account: orgB.login,
       repos: [],
@@ -265,7 +265,7 @@ it("finds issuers by role", () => {
   registry.registerInstallation(appDInstallationA);
 
   expect(
-    registry.findIssuers({
+    registry.findIssuersForRequest({
       role: "role-a",
       account: orgA.login,
       repos: [repoA.name],
@@ -273,7 +273,7 @@ it("finds issuers by role", () => {
     }),
   ).toEqual([appBInstallationA]);
   expect(
-    registry.findIssuers({
+    registry.findIssuersForRequest({
       role: "role-a",
       account: orgA.login,
       repos: [repoB.name],
@@ -281,7 +281,7 @@ it("finds issuers by role", () => {
     }),
   ).toEqual([appBInstallationA, appDInstallationA]);
   expect(
-    registry.findIssuers({
+    registry.findIssuersForRequest({
       role: "role-a",
       account: orgA.login,
       repos: [repoC.name],
@@ -289,7 +289,7 @@ it("finds issuers by role", () => {
     }),
   ).toEqual([appDInstallationA]);
   expect(
-    registry.findIssuers({
+    registry.findIssuersForRequest({
       role: "role-b",
       account: orgA.login,
       repos: [repoA.name],
@@ -297,7 +297,7 @@ it("finds issuers by role", () => {
     }),
   ).toEqual([appCInstallationA]);
   expect(
-    registry.findIssuers({
+    registry.findIssuersForRequest({
       role: "role-b",
       account: orgA.login,
       repos: [repoD.name],
@@ -337,7 +337,7 @@ it("finds issuers for read access when the role is undefined", () => {
   registry.registerInstallation(appBInstallationA);
 
   expect(
-    registry.findIssuers({
+    registry.findIssuersForRequest({
       role: undefined,
       account: orgA.login,
       repos: [],
@@ -345,7 +345,7 @@ it("finds issuers for read access when the role is undefined", () => {
     }),
   ).toEqual([appAInstallationA, appBInstallationA]);
   expect(
-    registry.findIssuers({
+    registry.findIssuersForRequest({
       role: undefined,
       account: orgA.login,
       repos: [],
@@ -374,7 +374,7 @@ it("doesn't find issuers for write or admin access when the role is undefined", 
   registry.registerInstallation(appAInstallationA);
 
   expect(
-    registry.findIssuers({
+    registry.findIssuersForRequest({
       role: undefined,
       account: orgA.login,
       repos: [],
@@ -382,7 +382,7 @@ it("doesn't find issuers for write or admin access when the role is undefined", 
     }),
   ).toHaveLength(0);
   expect(
-    registry.findIssuers({
+    registry.findIssuersForRequest({
       role: undefined,
       account: orgA.login,
       repos: [],
@@ -409,7 +409,7 @@ it("doesn't find issuers when it can't access all repos in an account", () => {
   registry.registerInstallation(appAInstallationA);
 
   expect(
-    registry.findIssuers({
+    registry.findIssuersForRequest({
       role: "role-a",
       account: orgA.login,
       repos: "all",
@@ -436,7 +436,7 @@ it("doesn't find issuers for an unknown account", () => {
   registry.registerInstallation(appAInstallationA);
 
   expect(
-    registry.findIssuers({
+    registry.findIssuersForRequest({
       role: "role-a",
       account: "account-x",
       repos: [repoA.name],
@@ -463,7 +463,7 @@ it("doesn't find issuers for an unknown repo", () => {
   registry.registerInstallation(appAInstallationA);
 
   expect(
-    registry.findIssuers({
+    registry.findIssuersForRequest({
       role: "role-a",
       account: orgA.login,
       repos: ["repo-x"],
@@ -490,7 +490,7 @@ it("doesn't find issuers that can't access all requested repos", () => {
   registry.registerInstallation(appAInstallationA);
 
   expect(
-    registry.findIssuers({
+    registry.findIssuersForRequest({
       role: "role-a",
       account: orgA.login,
       repos: [repoA.name, "repo-x"],
@@ -516,7 +516,7 @@ it("doesn't find issuers that don't have all permissions", () => {
   registry.registerInstallation(appAInstallationA);
 
   expect(
-    registry.findIssuers({
+    registry.findIssuersForRequest({
       role: "role-a",
       account: orgA.login,
       repos: ["repo-a"],
@@ -548,7 +548,7 @@ it.each([
     registry.registerInstallation(appAInstallationA);
 
     expect(
-      registry.findIssuers({
+      registry.findIssuersForRequest({
         role: "role-a",
         account: orgA.login,
         repos: ["repo-a"],
@@ -575,7 +575,7 @@ it("doesn't find issuers for no permissions", () => {
   registry.registerInstallation(appAInstallationA);
 
   expect(
-    registry.findIssuers({
+    registry.findIssuersForRequest({
       role: "role-a",
       account: orgA.login,
       repos: [],
@@ -601,7 +601,7 @@ it("doesn't find issuers from non-issuer apps", () => {
   registry.registerInstallation(appAInstallationA);
 
   expect(
-    registry.findIssuers({
+    registry.findIssuersForRequest({
       role: undefined,
       account: orgA.login,
       repos: "all",
@@ -609,7 +609,7 @@ it("doesn't find issuers from non-issuer apps", () => {
     }),
   ).toHaveLength(0);
   expect(
-    registry.findIssuers({
+    registry.findIssuersForRequest({
       role: "role-a",
       account: orgA.login,
       repos: "all",
