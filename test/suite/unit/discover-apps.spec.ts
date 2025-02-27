@@ -42,11 +42,13 @@ beforeEach(() => {
 
 it("discovers installations with access to all repos", async () => {
   const orgA = createTestInstallationAccount("Organization", 100, "org-a");
+  const repoA = createTestInstallationRepo(orgA, "repo-a");
+  const repoB = createTestInstallationRepo(orgA, "repo-b");
   const appA = createTestApp(110, "app-a", "App A", { contents: "read" });
   const appAInstallationA = createTestInstallation(111, appA, orgA, "all");
 
   __setApps([appA]);
-  __setInstallations([[appAInstallationA, []]]);
+  __setInstallations([[appAInstallationA, [repoA, repoB]]]);
 
   const octokitFactory = createOctokitFactory();
   const registry = createAppRegistry();
@@ -69,7 +71,7 @@ it("discovers installations with access to all repos", async () => {
     ::debug::App 110 is a token issuer with no roles
     ::debug::Discovered app installation 111 for account org-a
     ::debug::Installation 111 has permissions {"contents":"read"}
-    ::debug::Installation 111 has access to all repos in account org-a
+    ::debug::Installation 111 has access to all repos ["org-a/repo-a","org-a/repo-b"]
     Discovered 1 installation of "App A"
     "
   `);
@@ -80,7 +82,7 @@ it("discovers installations with access to all repos", async () => {
   });
   expect(registry.installations.get(appAInstallationA.id)).toEqual({
     installation: appAInstallationA,
-    repos: [],
+    repos: [repoA, repoB],
   });
 });
 
@@ -115,7 +117,7 @@ it("discovers installations with access to selected repos", async () => {
     ::debug::App 110 is a token issuer with no roles
     ::debug::Discovered app installation 111 for account org-a
     ::debug::Installation 111 has permissions {"contents":"read"}
-    ::debug::Installation 111 has access to repos ["org-a/repo-a","org-a/repo-b"]
+    ::debug::Installation 111 has access to selected repos ["org-a/repo-a","org-a/repo-b"]
     Discovered 1 installation of "App A"
     "
   `);
@@ -176,11 +178,13 @@ it("discovers installations with access to no repos", async () => {
 
 it("discovers installations with no permissions", async () => {
   const orgA = createTestInstallationAccount("Organization", 100, "org-a");
+  const repoA = createTestInstallationRepo(orgA, "repo-a");
+  const repoB = createTestInstallationRepo(orgA, "repo-b");
   const appA = createTestApp(110, "app-a", "App A");
   const appAInstallationA = createTestInstallation(111, appA, orgA, "all");
 
   __setApps([appA]);
-  __setInstallations([[appAInstallationA, []]]);
+  __setInstallations([[appAInstallationA, [repoA, repoB]]]);
 
   const octokitFactory = createOctokitFactory();
   const registry = createAppRegistry();
@@ -203,7 +207,7 @@ it("discovers installations with no permissions", async () => {
     ::debug::App 110 is a token issuer with no roles
     ::debug::Discovered app installation 111 for account org-a
     ::debug::Installation 111 has no permissions
-    ::debug::Installation 111 has access to all repos in account org-a
+    ::debug::Installation 111 has access to all repos ["org-a/repo-a","org-a/repo-b"]
     Discovered 1 installation of "App A"
     "
   `);
@@ -214,12 +218,14 @@ it("discovers installations with no permissions", async () => {
   });
   expect(registry.installations.get(appAInstallationA.id)).toEqual({
     installation: appAInstallationA,
-    repos: [],
+    repos: [repoA, repoB],
   });
 });
 
 it("discovers installations with roles", async () => {
   const orgA = createTestInstallationAccount("Organization", 100, "org-a");
+  const repoA = createTestInstallationRepo(orgA, "repo-a");
+  const repoB = createTestInstallationRepo(orgA, "repo-b");
   const appA = createTestApp(110, "app-a", "App A", { contents: "write" });
   const appB = createTestApp(120, "app-b", "App B", { contents: "write" });
   const appAInstallationA = createTestInstallation(111, appA, orgA, "all");
@@ -227,8 +233,8 @@ it("discovers installations with roles", async () => {
 
   __setApps([appA, appB]);
   __setInstallations([
-    [appAInstallationA, []],
-    [appBInstallationA, []],
+    [appAInstallationA, [repoA, repoB]],
+    [appBInstallationA, [repoA, repoB]],
   ]);
 
   const octokitFactory = createOctokitFactory();
@@ -263,13 +269,13 @@ it("discovers installations with roles", async () => {
     ::debug::App 110 is a token issuer with roles ["role-a"]
     ::debug::Discovered app installation 111 for account org-a
     ::debug::Installation 111 has permissions {"contents":"write"}
-    ::debug::Installation 111 has access to all repos in account org-a
+    ::debug::Installation 111 has access to all repos ["org-a/repo-a","org-a/repo-b"]
     Discovered 1 installation of "App A" with role "role-a"
     ::debug::Discovered app "App B" (app-b / 120)
     ::debug::App 120 is a token issuer with roles ["role-b","role-c"]
     ::debug::Discovered app installation 121 for account org-a
     ::debug::Installation 121 has permissions {"contents":"write"}
-    ::debug::Installation 121 has access to all repos in account org-a
+    ::debug::Installation 121 has access to all repos ["org-a/repo-a","org-a/repo-b"]
     Discovered 1 installation of "App B" with roles "role-b", "role-c"
     "
   `);
@@ -280,7 +286,7 @@ it("discovers installations with roles", async () => {
   });
   expect(registry.installations.get(appAInstallationA.id)).toEqual({
     installation: appAInstallationA,
-    repos: [],
+    repos: [repoA, repoB],
   });
   expect(registry.apps.get(appB.id)).toEqual({
     issuer: { enabled: true, roles: ["role-b", "role-c"] },
@@ -289,21 +295,23 @@ it("discovers installations with roles", async () => {
   });
   expect(registry.installations.get(appBInstallationA.id)).toEqual({
     installation: appBInstallationA,
-    repos: [],
+    repos: [repoA, repoB],
   });
 });
 
 it("discovers multiple installations of an app", async () => {
   const orgA = createTestInstallationAccount("Organization", 1000, "org-a");
+  const repoA = createTestInstallationRepo(orgA, "repo-a");
   const orgB = createTestInstallationAccount("Organization", 2000, "org-b");
+  const repoB = createTestInstallationRepo(orgB, "repo-b");
   const appA = createTestApp(100, "app-a", "App A", { contents: "read" });
   const appAInstallationA = createTestInstallation(101, appA, orgA, "all");
   const appAInstallationB = createTestInstallation(102, appA, orgB, "all");
 
   __setApps([appA]);
   __setInstallations([
-    [appAInstallationA, []],
-    [appAInstallationB, []],
+    [appAInstallationA, [repoA]],
+    [appAInstallationB, [repoB]],
   ]);
 
   const octokitFactory = createOctokitFactory();
@@ -327,10 +335,10 @@ it("discovers multiple installations of an app", async () => {
     ::debug::App 100 is a token issuer with no roles
     ::debug::Discovered app installation 101 for account org-a
     ::debug::Installation 101 has permissions {"contents":"read"}
-    ::debug::Installation 101 has access to all repos in account org-a
+    ::debug::Installation 101 has access to all repos ["org-a/repo-a"]
     ::debug::Discovered app installation 102 for account org-b
     ::debug::Installation 102 has permissions {"contents":"read"}
-    ::debug::Installation 102 has access to all repos in account org-b
+    ::debug::Installation 102 has access to all repos ["org-b/repo-b"]
     Discovered 2 installations of "App A"
     "
   `);
@@ -341,16 +349,18 @@ it("discovers multiple installations of an app", async () => {
   });
   expect(registry.installations.get(appAInstallationA.id)).toEqual({
     installation: appAInstallationA,
-    repos: [],
+    repos: [repoA],
   });
   expect(registry.installations.get(appAInstallationB.id)).toEqual({
     installation: appAInstallationB,
-    repos: [],
+    repos: [repoB],
   });
 });
 
 it("discovers multiple apps", async () => {
   const orgA = createTestInstallationAccount("Organization", 100, "org-a");
+  const repoA = createTestInstallationRepo(orgA, "repo-a");
+  const repoB = createTestInstallationRepo(orgA, "repo-b");
   const appA = createTestApp(110, "app-a", "App A", { contents: "read" });
   const appB = createTestApp(120, "app-b", "App B", { actions: "read" });
   const appAInstallationA = createTestInstallation(111, appA, orgA, "all");
@@ -358,8 +368,8 @@ it("discovers multiple apps", async () => {
 
   __setApps([appA, appB]);
   __setInstallations([
-    [appAInstallationA, []],
-    [appBInstallationA, []],
+    [appAInstallationA, [repoA, repoB]],
+    [appBInstallationA, [repoA, repoB]],
   ]);
 
   const octokitFactory = createOctokitFactory();
@@ -395,14 +405,14 @@ it("discovers multiple apps", async () => {
     ::debug::App 110 is a token provisioner
     ::debug::Discovered app installation 111 for account org-a
     ::debug::Installation 111 has permissions {"contents":"read"}
-    ::debug::Installation 111 has access to all repos in account org-a
+    ::debug::Installation 111 has access to all repos ["org-a/repo-a","org-a/repo-b"]
     Discovered 1 installation of "App A"
     ::debug::Discovered app "App B" (app-b / 120)
     ::debug::App 120 is a token issuer with no roles
     ::debug::App 120 is a token provisioner
     ::debug::Discovered app installation 121 for account org-a
     ::debug::Installation 121 has permissions {"actions":"read"}
-    ::debug::Installation 121 has access to all repos in account org-a
+    ::debug::Installation 121 has access to all repos ["org-a/repo-a","org-a/repo-b"]
     Discovered 1 installation of "App B"
     "
   `);
@@ -413,7 +423,7 @@ it("discovers multiple apps", async () => {
   });
   expect(registry.installations.get(appAInstallationA.id)).toEqual({
     installation: appAInstallationA,
-    repos: [],
+    repos: [repoA, repoB],
   });
   expect(registry.apps.get(appB.id)).toEqual({
     issuer: { enabled: true, roles: [] },
@@ -422,12 +432,14 @@ it("discovers multiple apps", async () => {
   });
   expect(registry.installations.get(appBInstallationA.id)).toEqual({
     installation: appBInstallationA,
-    repos: [],
+    repos: [repoA, repoB],
   });
 });
 
 it("skips apps with incorrect credentials", async () => {
   const orgA = createTestInstallationAccount("Organization", 100, "org-a");
+  const repoA = createTestInstallationRepo(orgA, "repo-a");
+  const repoB = createTestInstallationRepo(orgA, "repo-b");
   const appA = createTestApp(110, "app-a", "App A", { contents: "read" });
   const appB = createTestApp(120, "app-b", "App B", { contents: "read" });
   const appAInstallationA = createTestInstallation(101, appA, orgA, "all");
@@ -435,8 +447,8 @@ it("skips apps with incorrect credentials", async () => {
 
   __setApps([appA, appB]);
   __setInstallations([
-    [appAInstallationA, []],
-    [appBInstallationA, []],
+    [appAInstallationA, [repoA, repoB]],
+    [appBInstallationA, [repoA, repoB]],
   ]);
 
   const octokitFactory = createOctokitFactory();
@@ -473,7 +485,7 @@ it("skips apps with incorrect credentials", async () => {
     ::debug::App 120 is a token issuer with no roles
     ::debug::Discovered app installation 102 for account org-a
     ::debug::Installation 102 has permissions {"contents":"read"}
-    ::debug::Installation 102 has access to all repos in account org-a
+    ::debug::Installation 102 has access to all repos ["org-a/repo-a","org-a/repo-b"]
     Discovered 1 installation of "App B"
     "
   `);
@@ -485,18 +497,20 @@ it("skips apps with incorrect credentials", async () => {
   });
   expect(registry.installations.get(appBInstallationA.id)).toEqual({
     installation: appBInstallationA,
-    repos: [],
+    repos: [repoA, repoB],
   });
 });
 
 it("skips non-existent apps", async () => {
   const orgA = createTestInstallationAccount("Organization", 100, "org-a");
+  const repoA = createTestInstallationRepo(orgA, "repo-a");
+  const repoB = createTestInstallationRepo(orgA, "repo-b");
   const appX = createTestApp(999, "app-x", "App X");
   const appA = createTestApp(110, "app-a", "App A", { contents: "read" });
   const appAInstallationA = createTestInstallation(101, appA, orgA, "all");
 
   __setApps([appA]);
-  __setInstallations([[appAInstallationA, []]]);
+  __setInstallations([[appAInstallationA, [repoA, repoB]]]);
 
   const octokitFactory = createOctokitFactory();
   const registry = createAppRegistry();
@@ -532,7 +546,7 @@ it("skips non-existent apps", async () => {
     ::debug::App 110 is a token issuer with no roles
     ::debug::Discovered app installation 101 for account org-a
     ::debug::Installation 101 has permissions {"contents":"read"}
-    ::debug::Installation 101 has access to all repos in account org-a
+    ::debug::Installation 101 has access to all repos ["org-a/repo-a","org-a/repo-b"]
     Discovered 1 installation of "App A"
     "
   `);
@@ -544,12 +558,14 @@ it("skips non-existent apps", async () => {
   });
   expect(registry.installations.get(appAInstallationA.id)).toEqual({
     installation: appAInstallationA,
-    repos: [],
+    repos: [repoA, repoB],
   });
 });
 
 it("reports unexpected HTTP statuses", async () => {
   const orgA = createTestInstallationAccount("Organization", 100, "org-a");
+  const repoA = createTestInstallationRepo(orgA, "repo-a");
+  const repoB = createTestInstallationRepo(orgA, "repo-b");
   const appA = createTestApp(110, "app-a", "App A", { contents: "read" });
   const appB = createTestApp(120, "app-b", "App B", { contents: "read" });
   const appC = createTestApp(130, "app-c", "App C", { actions: "read" });
@@ -559,9 +575,9 @@ it("reports unexpected HTTP statuses", async () => {
 
   __setApps([appA, appB, appC]);
   __setInstallations([
-    [appAInstallationA, []],
-    [appBInstallationA, []],
-    [appCInstallationA, []],
+    [appAInstallationA, [repoA, repoB]],
+    [appBInstallationA, [repoA, repoB]],
+    [appCInstallationA, [repoA, repoB]],
   ]);
   __setErrors("apps.getAuthenticated", [
     undefined,
@@ -613,7 +629,7 @@ it("reports unexpected HTTP statuses", async () => {
     ::debug::App 110 is a token issuer with no roles
     ::debug::Discovered app installation 111 for account org-a
     ::debug::Installation 111 has permissions {"contents":"read"}
-    ::debug::Installation 111 has access to all repos in account org-a
+    ::debug::Installation 111 has access to all repos ["org-a/repo-a","org-a/repo-b"]
     Discovered 1 installation of "App A"
     ::debug::Failed to discover app 120: Error: Unexpected HTTP status 999 from GitHub API: <ERROR>
     ::error::Failed to discover app at index 2
@@ -621,7 +637,7 @@ it("reports unexpected HTTP statuses", async () => {
     ::debug::App 130 is a token issuer with no roles
     ::debug::Discovered app installation 131 for account org-a
     ::debug::Installation 131 has permissions {"actions":"read"}
-    ::debug::Installation 131 has access to all repos in account org-a
+    ::debug::Installation 131 has access to all repos ["org-a/repo-a","org-a/repo-b"]
     Discovered 1 installation of "App C"
     "
   `);
@@ -632,7 +648,7 @@ it("reports unexpected HTTP statuses", async () => {
   });
   expect(registry.installations.get(appAInstallationA.id)).toEqual({
     installation: appAInstallationA,
-    repos: [],
+    repos: [repoA, repoB],
   });
   expect(registry.apps.get(appB.id)).toBeUndefined();
   expect(registry.apps.get(appC.id)).toEqual({
@@ -642,12 +658,14 @@ it("reports unexpected HTTP statuses", async () => {
   });
   expect(registry.installations.get(appCInstallationA.id)).toEqual({
     installation: appCInstallationA,
-    repos: [],
+    repos: [repoA, repoB],
   });
 });
 
 it("skips apps when discovery throws", async () => {
   const orgA = createTestInstallationAccount("Organization", 100, "org-a");
+  const repoA = createTestInstallationRepo(orgA, "repo-a");
+  const repoB = createTestInstallationRepo(orgA, "repo-b");
   const appA = createTestApp(110, "app-a", "App A", { contents: "read" });
   const appB = createTestApp(120, "app-b", "App B", { contents: "read" });
   const appC = createTestApp(130, "app-c", "App C", { actions: "read" });
@@ -657,9 +675,9 @@ it("skips apps when discovery throws", async () => {
 
   __setApps([appA, appB, appC]);
   __setInstallations([
-    [appAInstallationA, []],
-    [appBInstallationA, []],
-    [appCInstallationA, []],
+    [appAInstallationA, [repoA, repoB]],
+    [appBInstallationA, [repoA, repoB]],
+    [appCInstallationA, [repoA, repoB]],
   ]);
   __setErrors("apps.getAuthenticated", [undefined, new Error("<ERROR>")]);
 
@@ -706,7 +724,7 @@ it("skips apps when discovery throws", async () => {
     ::debug::App 110 is a token issuer with no roles
     ::debug::Discovered app installation 111 for account org-a
     ::debug::Installation 111 has permissions {"contents":"read"}
-    ::debug::Installation 111 has access to all repos in account org-a
+    ::debug::Installation 111 has access to all repos ["org-a/repo-a","org-a/repo-b"]
     Discovered 1 installation of "App A"
     ::debug::Failed to discover app 120: Error: <ERROR>
     ::error::Failed to discover app at index 2
@@ -714,7 +732,7 @@ it("skips apps when discovery throws", async () => {
     ::debug::App 130 is a token issuer with no roles
     ::debug::Discovered app installation 131 for account org-a
     ::debug::Installation 131 has permissions {"actions":"read"}
-    ::debug::Installation 131 has access to all repos in account org-a
+    ::debug::Installation 131 has access to all repos ["org-a/repo-a","org-a/repo-b"]
     Discovered 1 installation of "App C"
     "
   `);
@@ -725,7 +743,7 @@ it("skips apps when discovery throws", async () => {
   });
   expect(registry.installations.get(appAInstallationA.id)).toEqual({
     installation: appAInstallationA,
-    repos: [],
+    repos: [repoA, repoB],
   });
   expect(registry.apps.get(appB.id)).toBeUndefined();
   expect(registry.apps.get(appC.id)).toEqual({
@@ -735,26 +753,32 @@ it("skips apps when discovery throws", async () => {
   });
   expect(registry.installations.get(appCInstallationA.id)).toEqual({
     installation: appCInstallationA,
-    repos: [],
+    repos: [repoA, repoB],
   });
 });
 
 it("skips installations when discovery throws", async () => {
   const orgA = createTestInstallationAccount("Organization", 100, "org-a");
+  const repoA = createTestInstallationRepo(orgA, "repo-a");
   const orgB = createTestInstallationAccount("Organization", 200, "org-b");
-  const orgC = createTestInstallationAccount("Organization", 300, "org-b");
+  const repoB = createTestInstallationRepo(orgB, "repo-b");
+  const orgC = createTestInstallationAccount("Organization", 300, "org-c");
+  const repoC = createTestInstallationRepo(orgC, "repo-c");
   const appA = createTestApp(110, "app-a", "App A", { contents: "read" });
-  const appAInstallationA = createTestInstallation(111, appA, orgA, "all");
+  const appAInstallationA = createTestInstallation(111, appA, orgA, "selected");
   const appAInstallationB = createTestInstallation(112, appA, orgB, "selected");
-  const appAInstallationC = createTestInstallation(113, appA, orgC, "all");
+  const appAInstallationC = createTestInstallation(113, appA, orgC, "selected");
 
   __setApps([appA]);
   __setInstallations([
-    [appAInstallationA, []],
-    [appAInstallationB, []],
-    [appAInstallationC, []],
+    [appAInstallationA, [repoA]],
+    [appAInstallationB, [repoB]],
+    [appAInstallationC, [repoC]],
   ]);
-  __setErrors("apps.listReposAccessibleToInstallation", [new Error("<ERROR>")]);
+  __setErrors("apps.listReposAccessibleToInstallation", [
+    undefined,
+    new Error("<ERROR>"),
+  ]);
 
   const octokitFactory = createOctokitFactory();
   const registry = createAppRegistry();
@@ -777,12 +801,12 @@ it("skips installations when discovery throws", async () => {
     ::debug::App 110 is a token issuer with no roles
     ::debug::Discovered app installation 111 for account org-a
     ::debug::Installation 111 has permissions {"contents":"read"}
-    ::debug::Installation 111 has access to all repos in account org-a
+    ::debug::Installation 111 has access to selected repos ["org-a/repo-a"]
     ::debug::Failed to discover installation 112 for app 110: Error: <ERROR>
     ::error::Failed to discover installation for app at index 0
-    ::debug::Discovered app installation 113 for account org-b
+    ::debug::Discovered app installation 113 for account org-c
     ::debug::Installation 113 has permissions {"contents":"read"}
-    ::debug::Installation 113 has access to all repos in account org-b
+    ::debug::Installation 113 has access to selected repos ["org-c/repo-c"]
     Discovered 2 installations of "App A"
     Failed to discover 1 installation of "App A"
     "
@@ -794,17 +818,19 @@ it("skips installations when discovery throws", async () => {
   });
   expect(registry.installations.get(appAInstallationA.id)).toEqual({
     installation: appAInstallationA,
-    repos: [],
+    repos: [repoA],
   });
   expect(registry.installations.get(appAInstallationB.id)).toBeUndefined();
   expect(registry.installations.get(appAInstallationC.id)).toEqual({
     installation: appAInstallationC,
-    repos: [],
+    repos: [repoC],
   });
 });
 
 it("skips apps when they're fully disabled", async () => {
   const orgA = createTestInstallationAccount("Organization", 100, "org-a");
+  const repoA = createTestInstallationRepo(orgA, "repo-a");
+  const repoB = createTestInstallationRepo(orgA, "repo-b");
   const appA = createTestApp(110, "app-a", "App A", { contents: "read" });
   const appB = createTestApp(120, "app-b", "App B", { contents: "read" });
   const appC = createTestApp(130, "app-c", "App C", { actions: "read" });
@@ -814,9 +840,9 @@ it("skips apps when they're fully disabled", async () => {
 
   __setApps([appA, appB, appC]);
   __setInstallations([
-    [appAInstallationA, []],
-    [appBInstallationA, []],
-    [appCInstallationA, []],
+    [appAInstallationA, [repoA, repoB]],
+    [appBInstallationA, [repoA, repoB]],
+    [appCInstallationA, [repoA, repoB]],
   ]);
 
   const octokitFactory = createOctokitFactory();
@@ -862,14 +888,14 @@ it("skips apps when they're fully disabled", async () => {
     ::debug::App 110 is a token issuer with no roles
     ::debug::Discovered app installation 111 for account org-a
     ::debug::Installation 111 has permissions {"contents":"read"}
-    ::debug::Installation 111 has access to all repos in account org-a
+    ::debug::Installation 111 has access to all repos ["org-a/repo-a","org-a/repo-b"]
     Discovered 1 installation of "App A"
     ::debug::Skipping discovery of disabled app 120
     ::debug::Discovered app "App C" (app-c / 130)
     ::debug::App 130 is a token issuer with no roles
     ::debug::Discovered app installation 131 for account org-a
     ::debug::Installation 131 has permissions {"actions":"read"}
-    ::debug::Installation 131 has access to all repos in account org-a
+    ::debug::Installation 131 has access to all repos ["org-a/repo-a","org-a/repo-b"]
     Discovered 1 installation of "App C"
     "
   `);
@@ -880,7 +906,7 @@ it("skips apps when they're fully disabled", async () => {
   });
   expect(registry.installations.get(appAInstallationA.id)).toEqual({
     installation: appAInstallationA,
-    repos: [],
+    repos: [repoA, repoB],
   });
   expect(registry.apps.get(appB.id)).toBeUndefined();
   expect(registry.apps.get(appC.id)).toEqual({
@@ -890,6 +916,6 @@ it("skips apps when they're fully disabled", async () => {
   });
   expect(registry.installations.get(appCInstallationA.id)).toEqual({
     installation: appCInstallationA,
-    repos: [],
+    repos: [repoA, repoB],
   });
 });

@@ -172,20 +172,21 @@ async function discoverInstallation(
     permissions,
   } = installation;
 
+  const installationOctokit = octokitFactory.installationOctokit(
+    appInput,
+    installationId,
+  );
+
+  const repoPages = installationOctokit.paginate.iterator(
+    installationOctokit.rest.apps.listReposAccessibleToInstallation,
+  );
   const repos: InstallationRepo[] = [];
+  const repoNames: string[] = [];
 
-  if (repository_selection === "selected") {
-    const installationOctokit = octokitFactory.installationOctokit(
-      appInput,
-      installationId,
-    );
-
-    const repoPages = installationOctokit.paginate.iterator(
-      installationOctokit.rest.apps.listReposAccessibleToInstallation,
-    );
-
-    for await (const { data } of repoPages) {
-      for (const repo of data) repos.push(repo);
+  for await (const { data } of repoPages) {
+    for (const repo of data) {
+      repos.push(repo);
+      repoNames.push(repo.full_name);
     }
   }
 
@@ -213,14 +214,13 @@ async function discoverInstallation(
   if (repository_selection === "all") {
     debug(
       `Installation ${installationId} has access to all repos ` +
-        `in ${accountDescription}`,
+        `${JSON.stringify(repoNames)}`,
     );
   } else if (repos.length < 1) {
     debug(`Installation ${installationId} has access to no repos`);
   } else {
-    const repoNames = repos.map(({ full_name }) => full_name);
     debug(
-      `Installation ${installationId} has access to repos ` +
+      `Installation ${installationId} has access to selected repos ` +
         `${JSON.stringify(repoNames)}`,
     );
   }

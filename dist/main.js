@@ -57214,17 +57214,19 @@ async function discoverInstallation(octokitFactory, registry, appInput, installa
     repository_selection,
     permissions
   } = installation;
+  const installationOctokit = octokitFactory.installationOctokit(
+    appInput,
+    installationId
+  );
+  const repoPages = installationOctokit.paginate.iterator(
+    installationOctokit.rest.apps.listReposAccessibleToInstallation
+  );
   const repos = [];
-  if (repository_selection === "selected") {
-    const installationOctokit = octokitFactory.installationOctokit(
-      appInput,
-      installationId
-    );
-    const repoPages = installationOctokit.paginate.iterator(
-      installationOctokit.rest.apps.listReposAccessibleToInstallation
-    );
-    for await (const { data } of repoPages) {
-      for (const repo of data) repos.push(repo);
+  const repoNames = [];
+  for await (const { data } of repoPages) {
+    for (const repo of data) {
+      repos.push(repo);
+      repoNames.push(repo.full_name);
     }
   }
   const accountDescription = account && "login" in account ? `account ${account.login}` : "unknown account";
@@ -57240,14 +57242,13 @@ async function discoverInstallation(octokitFactory, registry, appInput, installa
   }
   if (repository_selection === "all") {
     (0, import_core3.debug)(
-      `Installation ${installationId} has access to all repos in ${accountDescription}`
+      `Installation ${installationId} has access to all repos ${JSON.stringify(repoNames)}`
     );
   } else if (repos.length < 1) {
     (0, import_core3.debug)(`Installation ${installationId} has access to no repos`);
   } else {
-    const repoNames = repos.map(({ full_name }) => full_name);
     (0, import_core3.debug)(
-      `Installation ${installationId} has access to repos ${JSON.stringify(repoNames)}`
+      `Installation ${installationId} has access to selected repos ${JSON.stringify(repoNames)}`
     );
   }
   registry.registerInstallation({ installation, repos });
