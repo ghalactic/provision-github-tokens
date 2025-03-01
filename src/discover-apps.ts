@@ -13,14 +13,14 @@ import type { AppInput } from "./type/input.js";
 
 export async function discoverApps(
   octokitFactory: OctokitFactory,
-  registry: AppRegistry,
+  appRegistry: AppRegistry,
   appsInput: AppInput[],
 ): Promise<void> {
   let appIndex = 0;
 
   for (const appInput of appsInput) {
     try {
-      await discoverApp(octokitFactory, registry, appInput, appIndex++);
+      await discoverApp(octokitFactory, appRegistry, appInput, appIndex++);
     } catch (cause) {
       debug(`Failed to discover app ${appInput.appId}: ${errorStack(cause)}`);
       logError(`Failed to discover app at index ${appIndex}`);
@@ -30,7 +30,7 @@ export async function discoverApps(
 
 async function discoverApp(
   octokitFactory: OctokitFactory,
-  registry: AppRegistry,
+  appRegistry: AppRegistry,
   appInput: AppInput,
   appIndex: number,
 ): Promise<void> {
@@ -85,7 +85,7 @@ async function discoverApp(
     debug(`App ${app.id} is a token provisioner`);
   }
 
-  registry.registerApp({
+  appRegistry.registerApp({
     app,
     issuer: appInput.issuer,
     provisioner: appInput.provisioner,
@@ -93,7 +93,7 @@ async function discoverApp(
 
   await discoverInstallations(
     octokitFactory,
-    registry,
+    appRegistry,
     appInput,
     appOctokit,
     app,
@@ -103,7 +103,7 @@ async function discoverApp(
 
 async function discoverInstallations(
   octokitFactory: OctokitFactory,
-  registry: AppRegistry,
+  appRegistry: AppRegistry,
   appInput: AppInput,
   appOctokit: Octokit,
   app: App,
@@ -120,7 +120,7 @@ async function discoverInstallations(
       try {
         await discoverInstallation(
           octokitFactory,
-          registry,
+          appRegistry,
           appInput,
           installation,
         );
@@ -161,7 +161,7 @@ async function discoverInstallations(
 
 async function discoverInstallation(
   octokitFactory: OctokitFactory,
-  registry: AppRegistry,
+  appRegistry: AppRegistry,
   appInput: AppInput,
   installation: Installation,
 ): Promise<void> {
@@ -225,5 +225,5 @@ async function discoverInstallation(
     );
   }
 
-  registry.registerInstallation({ installation, repos });
+  appRegistry.registerInstallation({ installation, repos });
 }

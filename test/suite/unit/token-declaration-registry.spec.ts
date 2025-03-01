@@ -14,19 +14,29 @@ it("finds local token declarations", () => {
     permissions: { contents: "write" },
   };
 
-  const registry = createTokenDeclarationRegistry();
-  registry.registerDeclaration("account-a", "repo-a", "token-a", declarationA);
-  registry.registerDeclaration("account-b", "repo-b", "token-b", declarationB);
+  const declarationRegistry = createTokenDeclarationRegistry();
+  declarationRegistry.registerDeclaration(
+    "account-a",
+    "repo-a",
+    "token-a",
+    declarationA,
+  );
+  declarationRegistry.registerDeclaration(
+    "account-b",
+    "repo-b",
+    "token-b",
+    declarationB,
+  );
 
   expect(
-    registry.findDeclarationForRequester(
+    declarationRegistry.findDeclarationForRequester(
       "account-a",
       "repo-a",
       "account-a/repo-a.token-a",
     ),
   ).toEqual([declarationA, true]);
   expect(
-    registry.findDeclarationForRequester(
+    declarationRegistry.findDeclarationForRequester(
       "account-b",
       "repo-b",
       "account-b/repo-b.token-b",
@@ -46,19 +56,29 @@ it("finds shared token declarations", () => {
     permissions: { contents: "write" },
   };
 
-  const registry = createTokenDeclarationRegistry();
-  registry.registerDeclaration("account-a", "repo-a", "token-a", declarationA);
-  registry.registerDeclaration("account-b", "repo-b", "token-b", declarationB);
+  const declarationRegistry = createTokenDeclarationRegistry();
+  declarationRegistry.registerDeclaration(
+    "account-a",
+    "repo-a",
+    "token-a",
+    declarationA,
+  );
+  declarationRegistry.registerDeclaration(
+    "account-b",
+    "repo-b",
+    "token-b",
+    declarationB,
+  );
 
   expect(
-    registry.findDeclarationForRequester(
+    declarationRegistry.findDeclarationForRequester(
       "account-b",
       "repo-b",
       "account-a/repo-a.token-a",
     ),
   ).toEqual([declarationA, true]);
   expect(
-    registry.findDeclarationForRequester(
+    declarationRegistry.findDeclarationForRequester(
       "account-a",
       "repo-a",
       "account-b/repo-b.token-b",
@@ -78,19 +98,29 @@ it("doesn't find unshared tokens in other repos", () => {
     permissions: { contents: "write" },
   };
 
-  const registry = createTokenDeclarationRegistry();
-  registry.registerDeclaration("account-a", "repo-a", "token-a", declarationA);
-  registry.registerDeclaration("account-b", "repo-b", "token-b", declarationB);
+  const declarationRegistry = createTokenDeclarationRegistry();
+  declarationRegistry.registerDeclaration(
+    "account-a",
+    "repo-a",
+    "token-a",
+    declarationA,
+  );
+  declarationRegistry.registerDeclaration(
+    "account-b",
+    "repo-b",
+    "token-b",
+    declarationB,
+  );
 
   expect(
-    registry.findDeclarationForRequester(
+    declarationRegistry.findDeclarationForRequester(
       "account-b",
       "repo-b",
       "account-a/repo-a.token-a",
     ),
   ).toEqual([undefined, true]);
   expect(
-    registry.findDeclarationForRequester(
+    declarationRegistry.findDeclarationForRequester(
       "account-a",
       "repo-a",
       "account-b/repo-b.token-b",
@@ -99,10 +129,10 @@ it("doesn't find unshared tokens in other repos", () => {
 });
 
 it("doesn't find unregistered tokens", () => {
-  const registry = createTokenDeclarationRegistry();
+  const declarationRegistry = createTokenDeclarationRegistry();
 
   expect(
-    registry.findDeclarationForRequester(
+    declarationRegistry.findDeclarationForRequester(
       "account-a",
       "repo-a",
       "account-a/repo-a.token-a",

@@ -51,8 +51,8 @@ it("discovers installations with access to all repos", async () => {
   __setInstallations([[appAInstallationA, [repoA, repoB]]]);
 
   const octokitFactory = createOctokitFactory();
-  const registry = createAppRegistry();
-  await discoverApps(octokitFactory, registry, [
+  const appRegistry = createAppRegistry();
+  await discoverApps(octokitFactory, appRegistry, [
     {
       appId: String(appA.id),
       privateKey: appA.privateKey,
@@ -75,12 +75,12 @@ it("discovers installations with access to all repos", async () => {
     Discovered 1 installation of "App A"
     "
   `);
-  expect(registry.apps.get(appA.id)).toEqual({
+  expect(appRegistry.apps.get(appA.id)).toEqual({
     issuer: { enabled: true, roles: [] },
     provisioner: { enabled: false },
     app: appA,
   });
-  expect(registry.installations.get(appAInstallationA.id)).toEqual({
+  expect(appRegistry.installations.get(appAInstallationA.id)).toEqual({
     installation: appAInstallationA,
     repos: [repoA, repoB],
   });
@@ -97,8 +97,8 @@ it("discovers installations with access to selected repos", async () => {
   __setInstallations([[appAInstallationA, [repoA, repoB]]]);
 
   const octokitFactory = createOctokitFactory();
-  const registry = createAppRegistry();
-  await discoverApps(octokitFactory, registry, [
+  const appRegistry = createAppRegistry();
+  await discoverApps(octokitFactory, appRegistry, [
     {
       appId: String(appA.id),
       privateKey: appA.privateKey,
@@ -121,12 +121,12 @@ it("discovers installations with access to selected repos", async () => {
     Discovered 1 installation of "App A"
     "
   `);
-  expect(registry.apps.get(appA.id)).toEqual({
+  expect(appRegistry.apps.get(appA.id)).toEqual({
     issuer: { enabled: true, roles: [] },
     provisioner: { enabled: false },
     app: appA,
   });
-  expect(registry.installations.get(appAInstallationA.id)).toEqual({
+  expect(appRegistry.installations.get(appAInstallationA.id)).toEqual({
     installation: appAInstallationA,
     repos: [repoA, repoB],
   });
@@ -141,8 +141,8 @@ it("discovers installations with access to no repos", async () => {
   __setInstallations([[appAInstallationA, []]]);
 
   const octokitFactory = createOctokitFactory();
-  const registry = createAppRegistry();
-  await discoverApps(octokitFactory, registry, [
+  const appRegistry = createAppRegistry();
+  await discoverApps(octokitFactory, appRegistry, [
     {
       appId: String(appA.id),
       privateKey: appA.privateKey,
@@ -165,12 +165,12 @@ it("discovers installations with access to no repos", async () => {
     Discovered 1 installation of "App A"
     "
   `);
-  expect(registry.apps.get(appA.id)).toEqual({
+  expect(appRegistry.apps.get(appA.id)).toEqual({
     issuer: { enabled: true, roles: [] },
     provisioner: { enabled: false },
     app: appA,
   });
-  expect(registry.installations.get(appAInstallationA.id)).toEqual({
+  expect(appRegistry.installations.get(appAInstallationA.id)).toEqual({
     installation: appAInstallationA,
     repos: [],
   });
@@ -187,8 +187,8 @@ it("discovers installations with no permissions", async () => {
   __setInstallations([[appAInstallationA, [repoA, repoB]]]);
 
   const octokitFactory = createOctokitFactory();
-  const registry = createAppRegistry();
-  await discoverApps(octokitFactory, registry, [
+  const appRegistry = createAppRegistry();
+  await discoverApps(octokitFactory, appRegistry, [
     {
       appId: String(appA.id),
       privateKey: appA.privateKey,
@@ -211,12 +211,12 @@ it("discovers installations with no permissions", async () => {
     Discovered 1 installation of "App A"
     "
   `);
-  expect(registry.apps.get(appA.id)).toEqual({
+  expect(appRegistry.apps.get(appA.id)).toEqual({
     issuer: { enabled: true, roles: [] },
     provisioner: { enabled: false },
     app: appA,
   });
-  expect(registry.installations.get(appAInstallationA.id)).toEqual({
+  expect(appRegistry.installations.get(appAInstallationA.id)).toEqual({
     installation: appAInstallationA,
     repos: [repoA, repoB],
   });
@@ -238,8 +238,8 @@ it("discovers installations with roles", async () => {
   ]);
 
   const octokitFactory = createOctokitFactory();
-  const registry = createAppRegistry();
-  await discoverApps(octokitFactory, registry, [
+  const appRegistry = createAppRegistry();
+  await discoverApps(octokitFactory, appRegistry, [
     {
       appId: String(appA.id),
       privateKey: appA.privateKey,
@@ -279,21 +279,21 @@ it("discovers installations with roles", async () => {
     Discovered 1 installation of "App B" with roles "role-b", "role-c"
     "
   `);
-  expect(registry.apps.get(appA.id)).toEqual({
+  expect(appRegistry.apps.get(appA.id)).toEqual({
     issuer: { enabled: true, roles: ["role-a"] },
     provisioner: { enabled: false },
     app: appA,
   });
-  expect(registry.installations.get(appAInstallationA.id)).toEqual({
+  expect(appRegistry.installations.get(appAInstallationA.id)).toEqual({
     installation: appAInstallationA,
     repos: [repoA, repoB],
   });
-  expect(registry.apps.get(appB.id)).toEqual({
+  expect(appRegistry.apps.get(appB.id)).toEqual({
     issuer: { enabled: true, roles: ["role-b", "role-c"] },
     provisioner: { enabled: false },
     app: appB,
   });
-  expect(registry.installations.get(appBInstallationA.id)).toEqual({
+  expect(appRegistry.installations.get(appBInstallationA.id)).toEqual({
     installation: appBInstallationA,
     repos: [repoA, repoB],
   });
@@ -315,8 +315,8 @@ it("discovers multiple installations of an app", async () => {
   ]);
 
   const octokitFactory = createOctokitFactory();
-  const registry = createAppRegistry();
-  await discoverApps(octokitFactory, registry, [
+  const appRegistry = createAppRegistry();
+  await discoverApps(octokitFactory, appRegistry, [
     {
       appId: String(appA.id),
       privateKey: appA.privateKey,
@@ -342,16 +342,16 @@ it("discovers multiple installations of an app", async () => {
     Discovered 2 installations of "App A"
     "
   `);
-  expect(registry.apps.get(appA.id)).toEqual({
+  expect(appRegistry.apps.get(appA.id)).toEqual({
     issuer: { enabled: true, roles: [] },
     provisioner: { enabled: false },
     app: appA,
   });
-  expect(registry.installations.get(appAInstallationA.id)).toEqual({
+  expect(appRegistry.installations.get(appAInstallationA.id)).toEqual({
     installation: appAInstallationA,
     repos: [repoA],
   });
-  expect(registry.installations.get(appAInstallationB.id)).toEqual({
+  expect(appRegistry.installations.get(appAInstallationB.id)).toEqual({
     installation: appAInstallationB,
     repos: [repoB],
   });
@@ -373,8 +373,8 @@ it("discovers multiple apps", async () => {
   ]);
 
   const octokitFactory = createOctokitFactory();
-  const registry = createAppRegistry();
-  await discoverApps(octokitFactory, registry, [
+  const appRegistry = createAppRegistry();
+  await discoverApps(octokitFactory, appRegistry, [
     {
       appId: String(appA.id),
       privateKey: appA.privateKey,
@@ -416,21 +416,21 @@ it("discovers multiple apps", async () => {
     Discovered 1 installation of "App B"
     "
   `);
-  expect(registry.apps.get(appA.id)).toEqual({
+  expect(appRegistry.apps.get(appA.id)).toEqual({
     issuer: { enabled: true, roles: [] },
     provisioner: { enabled: true },
     app: appA,
   });
-  expect(registry.installations.get(appAInstallationA.id)).toEqual({
+  expect(appRegistry.installations.get(appAInstallationA.id)).toEqual({
     installation: appAInstallationA,
     repos: [repoA, repoB],
   });
-  expect(registry.apps.get(appB.id)).toEqual({
+  expect(appRegistry.apps.get(appB.id)).toEqual({
     issuer: { enabled: true, roles: [] },
     provisioner: { enabled: true },
     app: appB,
   });
-  expect(registry.installations.get(appBInstallationA.id)).toEqual({
+  expect(appRegistry.installations.get(appBInstallationA.id)).toEqual({
     installation: appBInstallationA,
     repos: [repoA, repoB],
   });
@@ -452,8 +452,8 @@ it("skips apps with incorrect credentials", async () => {
   ]);
 
   const octokitFactory = createOctokitFactory();
-  const registry = createAppRegistry();
-  await discoverApps(octokitFactory, registry, [
+  const appRegistry = createAppRegistry();
+  await discoverApps(octokitFactory, appRegistry, [
     {
       appId: String(appA.id),
       privateKey: "incorrect",
@@ -489,13 +489,13 @@ it("skips apps with incorrect credentials", async () => {
     Discovered 1 installation of "App B"
     "
   `);
-  expect(registry.apps.get(appA.id)).toBeUndefined();
-  expect(registry.apps.get(appB.id)).toEqual({
+  expect(appRegistry.apps.get(appA.id)).toBeUndefined();
+  expect(appRegistry.apps.get(appB.id)).toEqual({
     issuer: { enabled: true, roles: [] },
     provisioner: { enabled: false },
     app: appB,
   });
-  expect(registry.installations.get(appBInstallationA.id)).toEqual({
+  expect(appRegistry.installations.get(appBInstallationA.id)).toEqual({
     installation: appBInstallationA,
     repos: [repoA, repoB],
   });
@@ -513,8 +513,8 @@ it("skips non-existent apps", async () => {
   __setInstallations([[appAInstallationA, [repoA, repoB]]]);
 
   const octokitFactory = createOctokitFactory();
-  const registry = createAppRegistry();
-  await discoverApps(octokitFactory, registry, [
+  const appRegistry = createAppRegistry();
+  await discoverApps(octokitFactory, appRegistry, [
     {
       appId: String(appX.id),
       privateKey: appX.privateKey,
@@ -550,13 +550,13 @@ it("skips non-existent apps", async () => {
     Discovered 1 installation of "App A"
     "
   `);
-  expect(registry.apps.get(appX.id)).toBeUndefined();
-  expect(registry.apps.get(appA.id)).toEqual({
+  expect(appRegistry.apps.get(appX.id)).toBeUndefined();
+  expect(appRegistry.apps.get(appA.id)).toEqual({
     issuer: { enabled: true, roles: [] },
     provisioner: { enabled: false },
     app: appA,
   });
-  expect(registry.installations.get(appAInstallationA.id)).toEqual({
+  expect(appRegistry.installations.get(appAInstallationA.id)).toEqual({
     installation: appAInstallationA,
     repos: [repoA, repoB],
   });
@@ -587,8 +587,8 @@ it("reports unexpected HTTP statuses", async () => {
   ]);
 
   const octokitFactory = createOctokitFactory();
-  const registry = createAppRegistry();
-  await discoverApps(octokitFactory, registry, [
+  const appRegistry = createAppRegistry();
+  await discoverApps(octokitFactory, appRegistry, [
     {
       appId: String(appA.id),
       privateKey: appA.privateKey,
@@ -641,22 +641,22 @@ it("reports unexpected HTTP statuses", async () => {
     Discovered 1 installation of "App C"
     "
   `);
-  expect(registry.apps.get(appA.id)).toEqual({
+  expect(appRegistry.apps.get(appA.id)).toEqual({
     issuer: { enabled: true, roles: [] },
     provisioner: { enabled: false },
     app: appA,
   });
-  expect(registry.installations.get(appAInstallationA.id)).toEqual({
+  expect(appRegistry.installations.get(appAInstallationA.id)).toEqual({
     installation: appAInstallationA,
     repos: [repoA, repoB],
   });
-  expect(registry.apps.get(appB.id)).toBeUndefined();
-  expect(registry.apps.get(appC.id)).toEqual({
+  expect(appRegistry.apps.get(appB.id)).toBeUndefined();
+  expect(appRegistry.apps.get(appC.id)).toEqual({
     issuer: { enabled: true, roles: [] },
     provisioner: { enabled: false },
     app: appC,
   });
-  expect(registry.installations.get(appCInstallationA.id)).toEqual({
+  expect(appRegistry.installations.get(appCInstallationA.id)).toEqual({
     installation: appCInstallationA,
     repos: [repoA, repoB],
   });
@@ -682,8 +682,8 @@ it("skips apps when discovery throws", async () => {
   __setErrors("apps.getAuthenticated", [undefined, new Error("<ERROR>")]);
 
   const octokitFactory = createOctokitFactory();
-  const registry = createAppRegistry();
-  await discoverApps(octokitFactory, registry, [
+  const appRegistry = createAppRegistry();
+  await discoverApps(octokitFactory, appRegistry, [
     {
       appId: String(appA.id),
       privateKey: appA.privateKey,
@@ -736,22 +736,22 @@ it("skips apps when discovery throws", async () => {
     Discovered 1 installation of "App C"
     "
   `);
-  expect(registry.apps.get(appA.id)).toEqual({
+  expect(appRegistry.apps.get(appA.id)).toEqual({
     issuer: { enabled: true, roles: [] },
     provisioner: { enabled: false },
     app: appA,
   });
-  expect(registry.installations.get(appAInstallationA.id)).toEqual({
+  expect(appRegistry.installations.get(appAInstallationA.id)).toEqual({
     installation: appAInstallationA,
     repos: [repoA, repoB],
   });
-  expect(registry.apps.get(appB.id)).toBeUndefined();
-  expect(registry.apps.get(appC.id)).toEqual({
+  expect(appRegistry.apps.get(appB.id)).toBeUndefined();
+  expect(appRegistry.apps.get(appC.id)).toEqual({
     issuer: { enabled: true, roles: [] },
     provisioner: { enabled: false },
     app: appC,
   });
-  expect(registry.installations.get(appCInstallationA.id)).toEqual({
+  expect(appRegistry.installations.get(appCInstallationA.id)).toEqual({
     installation: appCInstallationA,
     repos: [repoA, repoB],
   });
@@ -781,8 +781,8 @@ it("skips installations when discovery throws", async () => {
   ]);
 
   const octokitFactory = createOctokitFactory();
-  const registry = createAppRegistry();
-  await discoverApps(octokitFactory, registry, [
+  const appRegistry = createAppRegistry();
+  await discoverApps(octokitFactory, appRegistry, [
     {
       appId: String(appA.id),
       privateKey: appA.privateKey,
@@ -811,17 +811,17 @@ it("skips installations when discovery throws", async () => {
     Failed to discover 1 installation of "App A"
     "
   `);
-  expect(registry.apps.get(appA.id)).toEqual({
+  expect(appRegistry.apps.get(appA.id)).toEqual({
     issuer: { enabled: true, roles: [] },
     provisioner: { enabled: false },
     app: appA,
   });
-  expect(registry.installations.get(appAInstallationA.id)).toEqual({
+  expect(appRegistry.installations.get(appAInstallationA.id)).toEqual({
     installation: appAInstallationA,
     repos: [repoA],
   });
-  expect(registry.installations.get(appAInstallationB.id)).toBeUndefined();
-  expect(registry.installations.get(appAInstallationC.id)).toEqual({
+  expect(appRegistry.installations.get(appAInstallationB.id)).toBeUndefined();
+  expect(appRegistry.installations.get(appAInstallationC.id)).toEqual({
     installation: appAInstallationC,
     repos: [repoC],
   });
@@ -846,8 +846,8 @@ it("skips apps when they're fully disabled", async () => {
   ]);
 
   const octokitFactory = createOctokitFactory();
-  const registry = createAppRegistry();
-  await discoverApps(octokitFactory, registry, [
+  const appRegistry = createAppRegistry();
+  await discoverApps(octokitFactory, appRegistry, [
     {
       appId: String(appA.id),
       privateKey: appA.privateKey,
@@ -899,22 +899,22 @@ it("skips apps when they're fully disabled", async () => {
     Discovered 1 installation of "App C"
     "
   `);
-  expect(registry.apps.get(appA.id)).toEqual({
+  expect(appRegistry.apps.get(appA.id)).toEqual({
     issuer: { enabled: true, roles: [] },
     provisioner: { enabled: false },
     app: appA,
   });
-  expect(registry.installations.get(appAInstallationA.id)).toEqual({
+  expect(appRegistry.installations.get(appAInstallationA.id)).toEqual({
     installation: appAInstallationA,
     repos: [repoA, repoB],
   });
-  expect(registry.apps.get(appB.id)).toBeUndefined();
-  expect(registry.apps.get(appC.id)).toEqual({
+  expect(appRegistry.apps.get(appB.id)).toBeUndefined();
+  expect(appRegistry.apps.get(appC.id)).toEqual({
     issuer: { enabled: true, roles: [] },
     provisioner: { enabled: false },
     app: appC,
   });
-  expect(registry.installations.get(appCInstallationA.id)).toEqual({
+  expect(appRegistry.installations.get(appCInstallationA.id)).toEqual({
     installation: appCInstallationA,
     repos: [repoA, repoB],
   });

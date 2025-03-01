@@ -13,10 +13,10 @@ main().catch((error) => {
 
 async function main(): Promise<void> {
   const octokitFactory = createOctokitFactory();
-  const registry = createAppRegistry();
+  const appRegistry = createAppRegistry();
 
   await group("Discovering apps", async () => {
-    await discoverApps(octokitFactory, registry, readAppsInput());
+    await discoverApps(octokitFactory, appRegistry, readAppsInput());
   });
 }
 /* v8 ignore stop */

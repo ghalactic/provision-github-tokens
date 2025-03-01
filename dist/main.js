@@ -57109,18 +57109,18 @@ function pluralize(amount, singular, plural) {
 }
 
 // src/discover-apps.ts
-async function discoverApps(octokitFactory, registry, appsInput) {
+async function discoverApps(octokitFactory, appRegistry, appsInput) {
   let appIndex = 0;
   for (const appInput of appsInput) {
     try {
-      await discoverApp(octokitFactory, registry, appInput, appIndex++);
+      await discoverApp(octokitFactory, appRegistry, appInput, appIndex++);
     } catch (cause) {
       (0, import_core3.debug)(`Failed to discover app ${appInput.appId}: ${errorStack(cause)}`);
       (0, import_core3.error)(`Failed to discover app at index ${appIndex}`);
     }
   }
 }
-async function discoverApp(octokitFactory, registry, appInput, appIndex) {
+async function discoverApp(octokitFactory, appRegistry, appInput, appIndex) {
   if (!appInput.issuer.enabled && !appInput.provisioner.enabled) {
     (0, import_core3.debug)(`Skipping discovery of disabled app ${appInput.appId}`);
     return;
@@ -57156,21 +57156,21 @@ async function discoverApp(octokitFactory, registry, appInput, appIndex) {
   if (appInput.provisioner.enabled) {
     (0, import_core3.debug)(`App ${app.id} is a token provisioner`);
   }
-  registry.registerApp({
+  appRegistry.registerApp({
     app,
     issuer: appInput.issuer,
     provisioner: appInput.provisioner
   });
   await discoverInstallations(
     octokitFactory,
-    registry,
+    appRegistry,
     appInput,
     appOctokit,
     app,
     appIndex
   );
 }
-async function discoverInstallations(octokitFactory, registry, appInput, appOctokit, app, appIndex) {
+async function discoverInstallations(octokitFactory, appRegistry, appInput, appOctokit, app, appIndex) {
   const installationPages = appOctokit.paginate.iterator(
     appOctokit.rest.apps.listInstallations
   );
@@ -57181,7 +57181,7 @@ async function discoverInstallations(octokitFactory, registry, appInput, appOcto
       try {
         await discoverInstallation(
           octokitFactory,
-          registry,
+          appRegistry,
           appInput,
           installation
         );
@@ -57207,7 +57207,7 @@ async function discoverInstallations(octokitFactory, registry, appInput, appOcto
     );
   }
 }
-async function discoverInstallation(octokitFactory, registry, appInput, installation) {
+async function discoverInstallation(octokitFactory, appRegistry, appInput, installation) {
   const {
     account,
     id: installationId,
@@ -57251,7 +57251,7 @@ async function discoverInstallation(octokitFactory, registry, appInput, installa
       `Installation ${installationId} has access to selected repos ${JSON.stringify(repoNames)}`
     );
   }
-  registry.registerInstallation({ installation, repos });
+  appRegistry.registerInstallation({ installation, repos });
 }
 
 // src/main.ts
@@ -57260,9 +57260,9 @@ main().catch((error) => {
 });
 async function main() {
   const octokitFactory = createOctokitFactory();
-  const registry = createAppRegistry();
+  const appRegistry = createAppRegistry();
   await (0, import_core4.group)("Discovering apps", async () => {
-    await discoverApps(octokitFactory, registry, readAppsInput());
+    await discoverApps(octokitFactory, appRegistry, readAppsInput());
   });
 }
 /*! Bundled license information:

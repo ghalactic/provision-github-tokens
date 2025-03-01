@@ -42,13 +42,13 @@ it("finds provisioners for secrets in a GitHub account", () => {
     repos: [],
   };
 
-  const registry = createAppRegistry();
-  registry.registerApp(appA);
-  registry.registerInstallation(appAInstallationA);
-  registry.registerApp(appB);
-  registry.registerInstallation(appBInstallationA);
-  registry.registerApp(appC);
-  registry.registerInstallation(appCInstallationA);
+  const appRegistry = createAppRegistry();
+  appRegistry.registerApp(appA);
+  appRegistry.registerInstallation(appAInstallationA);
+  appRegistry.registerApp(appB);
+  appRegistry.registerInstallation(appBInstallationA);
+  appRegistry.registerApp(appC);
+  appRegistry.registerInstallation(appCInstallationA);
 
   const request = {
     name: "SECRET_A",
@@ -57,13 +57,13 @@ it("finds provisioners for secrets in a GitHub account", () => {
   } as const;
 
   expect(
-    registry.findProvisionersForRequest({ ...request, type: "actions" }),
+    appRegistry.findProvisionersForRequest({ ...request, type: "actions" }),
   ).toEqual([appAInstallationA, appBInstallationA]);
   expect(
-    registry.findProvisionersForRequest({ ...request, type: "codespaces" }),
+    appRegistry.findProvisionersForRequest({ ...request, type: "codespaces" }),
   ).toEqual([appAInstallationA, appBInstallationA]);
   expect(
-    registry.findProvisionersForRequest({ ...request, type: "dependabot" }),
+    appRegistry.findProvisionersForRequest({ ...request, type: "dependabot" }),
   ).toEqual([appAInstallationA, appBInstallationA]);
 });
 
@@ -100,13 +100,13 @@ it("finds provisioners for secrets in a GitHub repo", () => {
     repos: [repoB, repoC],
   };
 
-  const registry = createAppRegistry();
-  registry.registerApp(appA);
-  registry.registerInstallation(appAInstallationA);
-  registry.registerApp(appB);
-  registry.registerInstallation(appBInstallationA);
-  registry.registerApp(appC);
-  registry.registerInstallation(appCInstallationA);
+  const appRegistry = createAppRegistry();
+  appRegistry.registerApp(appA);
+  appRegistry.registerInstallation(appAInstallationA);
+  appRegistry.registerApp(appB);
+  appRegistry.registerInstallation(appBInstallationA);
+  appRegistry.registerApp(appC);
+  appRegistry.registerInstallation(appCInstallationA);
 
   const requestA = {
     name: "SECRET_A",
@@ -122,32 +122,32 @@ it("finds provisioners for secrets in a GitHub repo", () => {
   } as const;
 
   expect(
-    registry.findProvisionersForRequest({ ...requestA, type: "actions" }),
+    appRegistry.findProvisionersForRequest({ ...requestA, type: "actions" }),
   ).toEqual([appAInstallationA]);
   expect(
-    registry.findProvisionersForRequest({ ...requestB, type: "actions" }),
+    appRegistry.findProvisionersForRequest({ ...requestB, type: "actions" }),
   ).toEqual([appBInstallationA, appCInstallationA]);
   expect(
-    registry.findProvisionersForRequest({ ...requestA, type: "codespaces" }),
+    appRegistry.findProvisionersForRequest({ ...requestA, type: "codespaces" }),
   ).toEqual([appAInstallationA]);
   expect(
-    registry.findProvisionersForRequest({ ...requestB, type: "codespaces" }),
+    appRegistry.findProvisionersForRequest({ ...requestB, type: "codespaces" }),
   ).toEqual([appBInstallationA, appCInstallationA]);
   expect(
-    registry.findProvisionersForRequest({ ...requestA, type: "dependabot" }),
+    appRegistry.findProvisionersForRequest({ ...requestA, type: "dependabot" }),
   ).toEqual([appAInstallationA]);
   expect(
-    registry.findProvisionersForRequest({ ...requestB, type: "dependabot" }),
+    appRegistry.findProvisionersForRequest({ ...requestB, type: "dependabot" }),
   ).toEqual([appBInstallationA, appCInstallationA]);
   expect(
-    registry.findProvisionersForRequest({
+    appRegistry.findProvisionersForRequest({
       ...requestA,
       type: "environment",
       environment: "env-a",
     }),
   ).toEqual([appAInstallationA]);
   expect(
-    registry.findProvisionersForRequest({
+    appRegistry.findProvisionersForRequest({
       ...requestB,
       type: "environment",
       environment: "env-b",
@@ -172,13 +172,13 @@ it("finds provisioners for the correct account when there are multiple installat
     repos: [],
   };
 
-  const registry = createAppRegistry();
-  registry.registerApp(appA);
-  registry.registerInstallation(appAInstallationA);
-  registry.registerInstallation(appAInstallationB);
+  const appRegistry = createAppRegistry();
+  appRegistry.registerApp(appA);
+  appRegistry.registerInstallation(appAInstallationA);
+  appRegistry.registerInstallation(appAInstallationB);
 
   expect(
-    registry.findProvisionersForRequest({
+    appRegistry.findProvisionersForRequest({
       name: "SECRET_A",
       platform: "github",
       type: "actions",
@@ -186,7 +186,7 @@ it("finds provisioners for the correct account when there are multiple installat
     }),
   ).toEqual([appAInstallationA]);
   expect(
-    registry.findProvisionersForRequest({
+    appRegistry.findProvisionersForRequest({
       name: "SECRET_A",
       platform: "github",
       type: "actions",
@@ -207,12 +207,12 @@ it("doesn't find provisioners for an unknown account", () => {
     repos: [],
   };
 
-  const registry = createAppRegistry();
-  registry.registerApp(appA);
-  registry.registerInstallation(appAInstallationA);
+  const appRegistry = createAppRegistry();
+  appRegistry.registerApp(appA);
+  appRegistry.registerInstallation(appAInstallationA);
 
   expect(
-    registry.findProvisionersForRequest({
+    appRegistry.findProvisionersForRequest({
       name: "SECRET_A",
       platform: "github",
       type: "actions",
@@ -233,12 +233,12 @@ it("doesn't find provisioners from non-provisioner apps", () => {
     repos: [],
   };
 
-  const registry = createAppRegistry();
-  registry.registerApp(appA);
-  registry.registerInstallation(appAInstallationA);
+  const appRegistry = createAppRegistry();
+  appRegistry.registerApp(appA);
+  appRegistry.registerInstallation(appAInstallationA);
 
   expect(
-    registry.findProvisionersForRequest({
+    appRegistry.findProvisionersForRequest({
       name: "SECRET_A",
       platform: "github",
       type: "actions",
@@ -246,7 +246,7 @@ it("doesn't find provisioners from non-provisioner apps", () => {
     }),
   ).toHaveLength(0);
   expect(
-    registry.findProvisionersForRequest({
+    appRegistry.findProvisionersForRequest({
       name: "SECRET_A",
       platform: "github",
       type: "actions",
