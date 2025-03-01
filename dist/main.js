@@ -57090,25 +57090,33 @@ function createOctokitFactory() {
   const appOctokits = {};
   const installationOctokits = {};
   return {
-    appOctokit: (appInput) => {
-      const { appId, privateKey } = appInput;
-      const key = JSON.stringify({ appId, privateKey });
+    appOctokit: (appsInput, appId) => {
+      const key = JSON.stringify({ appId });
       appOctokits[key] ??= new CustomOctokit({
         authStrategy: createAppAuth,
-        auth: { appId, privateKey }
+        auth: { appId, privateKey: findPrivateKey(appsInput, appId) }
       });
       return appOctokits[key];
     },
-    installationOctokit: (appInput, installationId) => {
-      const { appId, privateKey } = appInput;
-      const key = JSON.stringify({ appId, privateKey, installationId });
+    installationOctokit: (appsInput, appId, installationId) => {
+      const key = JSON.stringify({ appId, installationId });
       installationOctokits[key] ??= new CustomOctokit({
         authStrategy: createAppAuth,
-        auth: { appId, privateKey, installationId }
+        auth: {
+          appId,
+          installationId,
+          privateKey: findPrivateKey(appsInput, appId)
+        }
       });
       return installationOctokits[key];
     }
   };
+  function findPrivateKey(appsInput, appId) {
+    for (const i of appsInput) {
+      if (i.appId === appId) return i.privateKey;
+    }
+    throw new Error(`Unable to find app input for ID ${appId}`);
+  }
 }
 function handleRequestError(error, handlers = {}) {
   if (!(error instanceof RequestError)) throw error;
@@ -57132,19 +57140,25 @@ async function discoverApps(octokitFactory, appRegistry, appsInput) {
   let appIndex = 0;
   for (const appInput of appsInput) {
     try {
-      await discoverApp(octokitFactory, appRegistry, appInput, appIndex++);
+      await discoverApp(
+        octokitFactory,
+        appRegistry,
+        appsInput,
+        appInput,
+        appIndex++
+      );
     } catch (cause) {
       (0, import_core3.debug)(`Failed to discover app ${appInput.appId}: ${errorStack(cause)}`);
       (0, import_core3.error)(`Failed to discover app at index ${appIndex}`);
     }
   }
 }
-async function discoverApp(octokitFactory, appRegistry, appInput, appIndex) {
+async function discoverApp(octokitFactory, appRegistry, appsInput, appInput, appIndex) {
   if (!appInput.issuer.enabled && !appInput.provisioner.enabled) {
     (0, import_core3.debug)(`Skipping discovery of disabled app ${appInput.appId}`);
     return;
   }
-  const appOctokit = octokitFactory.appOctokit(appInput);
+  const appOctokit = octokitFactory.appOctokit(appsInput, appInput.appId);
   let app;
   try {
     ({ data: app } = await appOctokit.rest.apps.getAuthenticated());
@@ -57183,13 +57197,14 @@ async function discoverApp(octokitFactory, appRegistry, appInput, appIndex) {
   await discoverInstallations(
     octokitFactory,
     appRegistry,
+    appsInput,
     appInput,
     appOctokit,
     app,
     appIndex
   );
 }
-async function discoverInstallations(octokitFactory, appRegistry, appInput, appOctokit, app, appIndex) {
+async function discoverInstallations(octokitFactory, appRegistry, appsInput, appInput, appOctokit, app, appIndex) {
   const installationPages = appOctokit.paginate.iterator(
     appOctokit.rest.apps.listInstallations
   );
@@ -57201,6 +57216,7 @@ async function discoverInstallations(octokitFactory, appRegistry, appInput, appO
         await discoverInstallation(
           octokitFactory,
           appRegistry,
+          appsInput,
           appInput,
           installation
         );
@@ -57226,7 +57242,7 @@ async function discoverInstallations(octokitFactory, appRegistry, appInput, appO
     );
   }
 }
-async function discoverInstallation(octokitFactory, appRegistry, appInput, installation) {
+async function discoverInstallation(octokitFactory, appRegistry, appsInput, appInput, installation) {
   const {
     account,
     id: installationId,
@@ -57234,7 +57250,8 @@ async function discoverInstallation(octokitFactory, appRegistry, appInput, insta
     permissions
   } = installation;
   const installationOctokit = octokitFactory.installationOctokit(
-    appInput,
+    appsInput,
+    appInput.appId,
     installationId
   );
   const repoPages = installationOctokit.paginate.iterator(

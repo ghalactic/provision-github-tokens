@@ -9,8 +9,12 @@ const CustomOctokit = OctokitAction.plugin(retry);
 export type Octokit = InstanceType<typeof CustomOctokit>;
 
 export type OctokitFactory = {
-  appOctokit: (input: AppInput) => Octokit;
-  installationOctokit: (input: AppInput, installationId: number) => Octokit;
+  appOctokit: (appsInput: AppInput[], appId: number) => Octokit;
+  installationOctokit: (
+    appsInput: AppInput[],
+    appId: number,
+    installationId: number,
+  ) => Octokit;
 };
 
 export function createOctokitFactory(): OctokitFactory {
@@ -18,28 +22,38 @@ export function createOctokitFactory(): OctokitFactory {
   const installationOctokits: Record<string, Octokit> = {};
 
   return {
-    appOctokit: (appInput) => {
-      const { appId, privateKey } = appInput;
-      const key = JSON.stringify({ appId, privateKey });
+    appOctokit: (appsInput, appId) => {
+      const key = JSON.stringify({ appId });
       appOctokits[key] ??= new CustomOctokit({
         authStrategy: createAppAuth,
-        auth: { appId, privateKey },
+        auth: { appId, privateKey: findPrivateKey(appsInput, appId) },
       });
 
       return appOctokits[key];
     },
 
-    installationOctokit: (appInput, installationId) => {
-      const { appId, privateKey } = appInput;
-      const key = JSON.stringify({ appId, privateKey, installationId });
+    installationOctokit: (appsInput, appId, installationId) => {
+      const key = JSON.stringify({ appId, installationId });
       installationOctokits[key] ??= new CustomOctokit({
         authStrategy: createAppAuth,
-        auth: { appId, privateKey, installationId },
+        auth: {
+          appId,
+          installationId,
+          privateKey: findPrivateKey(appsInput, appId),
+        },
       });
 
       return installationOctokits[key];
     },
   };
+
+  function findPrivateKey(appsInput: AppInput[], appId: number): string {
+    for (const i of appsInput) {
+      if (i.appId === appId) return i.privateKey;
+    }
+
+    throw new Error(`Unable to find app input for ID ${appId}`);
+  }
 }
 
 export function handleRequestError(

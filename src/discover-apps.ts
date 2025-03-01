@@ -20,7 +20,13 @@ export async function discoverApps(
 
   for (const appInput of appsInput) {
     try {
-      await discoverApp(octokitFactory, appRegistry, appInput, appIndex++);
+      await discoverApp(
+        octokitFactory,
+        appRegistry,
+        appsInput,
+        appInput,
+        appIndex++,
+      );
     } catch (cause) {
       debug(`Failed to discover app ${appInput.appId}: ${errorStack(cause)}`);
       logError(`Failed to discover app at index ${appIndex}`);
@@ -31,6 +37,7 @@ export async function discoverApps(
 async function discoverApp(
   octokitFactory: OctokitFactory,
   appRegistry: AppRegistry,
+  appsInput: AppInput[],
   appInput: AppInput,
   appIndex: number,
 ): Promise<void> {
@@ -40,7 +47,7 @@ async function discoverApp(
     return;
   }
 
-  const appOctokit = octokitFactory.appOctokit(appInput);
+  const appOctokit = octokitFactory.appOctokit(appsInput, appInput.appId);
   let app: App | null;
 
   try {
@@ -94,6 +101,7 @@ async function discoverApp(
   await discoverInstallations(
     octokitFactory,
     appRegistry,
+    appsInput,
     appInput,
     appOctokit,
     app,
@@ -104,6 +112,7 @@ async function discoverApp(
 async function discoverInstallations(
   octokitFactory: OctokitFactory,
   appRegistry: AppRegistry,
+  appsInput: AppInput[],
   appInput: AppInput,
   appOctokit: Octokit,
   app: App,
@@ -121,6 +130,7 @@ async function discoverInstallations(
         await discoverInstallation(
           octokitFactory,
           appRegistry,
+          appsInput,
           appInput,
           installation,
         );
@@ -162,6 +172,7 @@ async function discoverInstallations(
 async function discoverInstallation(
   octokitFactory: OctokitFactory,
   appRegistry: AppRegistry,
+  appsInput: AppInput[],
   appInput: AppInput,
   installation: Installation,
 ): Promise<void> {
@@ -173,7 +184,8 @@ async function discoverInstallation(
   } = installation;
 
   const installationOctokit = octokitFactory.installationOctokit(
-    appInput,
+    appsInput,
+    appInput.appId,
     installationId,
   );
 
