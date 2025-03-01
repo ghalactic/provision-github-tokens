@@ -6,7 +6,7 @@ import consumerTokenPermissionsSchema from "../schema/generated.consumer-token-p
 import providerRulePermissionsSchema from "../schema/generated.provider-rule-permissions.v1.schema.json" with { type: "json" };
 import providerSchema from "../schema/provider.v1.schema.json" with { type: "json" };
 import type { PartialConsumerConfig } from "../type/consumer-config.js";
-import type { AppInput } from "../type/input.js";
+import type { RawAppInput } from "../type/input.js";
 import type { ProviderConfig } from "../type/provider-config.js";
 
 // see https://github.com/ajv-validator/ajv/issues/2132
@@ -26,7 +26,7 @@ const ajv = new Ajv({
 });
 ajvErrors(ajv);
 
-export const validateApps = createValidate<AppInput[]>(
+export const validateApps = createValidate<RawAppInput[]>(
   appsSchema.$id,
   "apps input",
 );

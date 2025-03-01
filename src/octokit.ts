@@ -23,7 +23,7 @@ export function createOctokitFactory(): OctokitFactory {
       const key = JSON.stringify({ appId, privateKey });
       appOctokits[key] ??= new CustomOctokit({
         authStrategy: createAppAuth,
-        auth: { appId: parseInt(appId, 10), privateKey },
+        auth: { appId, privateKey },
       });
 
       return appOctokits[key];
@@ -34,7 +34,7 @@ export function createOctokitFactory(): OctokitFactory {
       const key = JSON.stringify({ appId, privateKey, installationId });
       installationOctokits[key] ??= new CustomOctokit({
         authStrategy: createAppAuth,
-        auth: { appId: parseInt(appId, 10), privateKey, installationId },
+        auth: { appId, privateKey, installationId },
       });
 
       return installationOctokits[key];

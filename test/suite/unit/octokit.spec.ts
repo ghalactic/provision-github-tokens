@@ -6,7 +6,7 @@ it("can create app octokit instances", () => {
   const factory = createOctokitFactory();
 
   const octokitA = factory.appOctokit({
-    appId: "100",
+    appId: 100,
     privateKey: "<private key A>",
     issuer: {
       enabled: true,
@@ -24,7 +24,7 @@ it("re-uses the same app octokit instance for the same credentials", () => {
   const factory = createOctokitFactory();
 
   const octokitA = factory.appOctokit({
-    appId: "100",
+    appId: 100,
     privateKey: "<private key A>",
     issuer: {
       enabled: true,
@@ -35,7 +35,7 @@ it("re-uses the same app octokit instance for the same credentials", () => {
     },
   });
   const octokitB = factory.appOctokit({
-    appId: "100",
+    appId: 100,
     privateKey: "<private key A>",
     issuer: {
       enabled: true,
@@ -53,7 +53,7 @@ it("doesn't re-use the same app octokit instance for different credentials", () 
   const factory = createOctokitFactory();
 
   const octokitA = factory.appOctokit({
-    appId: "100",
+    appId: 100,
     privateKey: "<private key A>",
     issuer: {
       enabled: true,
@@ -64,7 +64,7 @@ it("doesn't re-use the same app octokit instance for different credentials", () 
     },
   });
   const octokitB = factory.appOctokit({
-    appId: "200",
+    appId: 200,
     privateKey: "<private key A>",
     issuer: {
       enabled: true,
@@ -75,7 +75,7 @@ it("doesn't re-use the same app octokit instance for different credentials", () 
     },
   });
   const octokitC = factory.appOctokit({
-    appId: "100",
+    appId: 100,
     privateKey: "<private key B>",
     issuer: {
       enabled: true,
@@ -96,7 +96,7 @@ it("can create installation octokit instances", () => {
 
   const octokitA = factory.installationOctokit(
     {
-      appId: "100",
+      appId: 100,
       privateKey: "<private key A>",
       issuer: {
         enabled: true,
@@ -117,7 +117,7 @@ it("re-uses the same installation octokit instance for the same credentials", ()
 
   const octokitA = factory.installationOctokit(
     {
-      appId: "100",
+      appId: 100,
       privateKey: "<private key A>",
       issuer: {
         enabled: true,
@@ -131,7 +131,7 @@ it("re-uses the same installation octokit instance for the same credentials", ()
   );
   const octokitB = factory.installationOctokit(
     {
-      appId: "100",
+      appId: 100,
       privateKey: "<private key A>",
       issuer: {
         enabled: true,
@@ -152,7 +152,7 @@ it("doesn't re-use the same installation octokit instance for different credenti
 
   const octokitA = factory.installationOctokit(
     {
-      appId: "100",
+      appId: 100,
       privateKey: "<private key A>",
       issuer: {
         enabled: true,
@@ -166,7 +166,7 @@ it("doesn't re-use the same installation octokit instance for different credenti
   );
   const octokitB = factory.installationOctokit(
     {
-      appId: "200",
+      appId: 200,
       privateKey: "<private key A>",
       issuer: {
         enabled: true,
@@ -180,7 +180,7 @@ it("doesn't re-use the same installation octokit instance for different credenti
   );
   const octokitC = factory.installationOctokit(
     {
-      appId: "100",
+      appId: 100,
       privateKey: "<private key B>",
       issuer: {
         enabled: true,
@@ -194,7 +194,7 @@ it("doesn't re-use the same installation octokit instance for different credenti
   );
   const octokitD = factory.installationOctokit(
     {
-      appId: "100",
+      appId: 100,
       privateKey: "<private key A>",
       issuer: {
         enabled: true,

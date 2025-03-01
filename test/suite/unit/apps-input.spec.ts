@@ -12,7 +12,7 @@ beforeEach(() => {
 
 it("can parse valid input", () => {
   vi.mocked(getInput).mockReturnValue(`
-    - appId: "100"
+    - appId: 100
       privateKey: <private key A>
       issuer:
         enabled: true
@@ -24,7 +24,7 @@ it("can parse valid input", () => {
       issuer:
         enabled: true
         roles: ["role-a", "role-b"]
-    - appId: "300"
+    - appId: 300
       privateKey: <private key C>
       provisioner:
         enabled: true
@@ -32,7 +32,7 @@ it("can parse valid input", () => {
 
   expect(readAppsInput()).toEqual([
     {
-      appId: "100",
+      appId: 100,
       privateKey: "<private key A>",
       issuer: {
         enabled: true,
@@ -43,7 +43,7 @@ it("can parse valid input", () => {
       },
     },
     {
-      appId: "200",
+      appId: 200,
       privateKey: "<private key B>",
       issuer: {
         enabled: true,
@@ -54,7 +54,7 @@ it("can parse valid input", () => {
       },
     },
     {
-      appId: "300",
+      appId: 300,
       privateKey: "<private key C>",
       issuer: {
         enabled: false,
@@ -69,7 +69,7 @@ it("can parse valid input", () => {
 
 it("throws if the input doesn't match the schema", () => {
   vi.mocked(getInput).mockReturnValue(`
-    - appId: 100
+    - appId: 0.100
       privateKey: <private key A>
       issuer:
         enabled: true
@@ -81,10 +81,10 @@ it("throws if the input doesn't match the schema", () => {
       readAppsInput();
     }),
   ).toMatchInlineSnapshot(`
-    "Validation of apps action input failed
+    "Parsing of apps action input failed
 
     Caused by: Invalid apps input:
-      - must be string (/0/appId)"
+      - must be a GitHub app ID (/0/appId)"
   `);
 });
 

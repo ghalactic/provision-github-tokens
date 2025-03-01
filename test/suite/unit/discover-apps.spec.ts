@@ -54,7 +54,7 @@ it("discovers installations with access to all repos", async () => {
   const appRegistry = createAppRegistry();
   await discoverApps(octokitFactory, appRegistry, [
     {
-      appId: String(appA.id),
+      appId: appA.id,
       privateKey: appA.privateKey,
       issuer: {
         enabled: true,
@@ -100,7 +100,7 @@ it("discovers installations with access to selected repos", async () => {
   const appRegistry = createAppRegistry();
   await discoverApps(octokitFactory, appRegistry, [
     {
-      appId: String(appA.id),
+      appId: appA.id,
       privateKey: appA.privateKey,
       issuer: {
         enabled: true,
@@ -144,7 +144,7 @@ it("discovers installations with access to no repos", async () => {
   const appRegistry = createAppRegistry();
   await discoverApps(octokitFactory, appRegistry, [
     {
-      appId: String(appA.id),
+      appId: appA.id,
       privateKey: appA.privateKey,
       issuer: {
         enabled: true,
@@ -190,7 +190,7 @@ it("discovers installations with no permissions", async () => {
   const appRegistry = createAppRegistry();
   await discoverApps(octokitFactory, appRegistry, [
     {
-      appId: String(appA.id),
+      appId: appA.id,
       privateKey: appA.privateKey,
       issuer: {
         enabled: true,
@@ -241,7 +241,7 @@ it("discovers installations with roles", async () => {
   const appRegistry = createAppRegistry();
   await discoverApps(octokitFactory, appRegistry, [
     {
-      appId: String(appA.id),
+      appId: appA.id,
       privateKey: appA.privateKey,
       issuer: {
         enabled: true,
@@ -252,7 +252,7 @@ it("discovers installations with roles", async () => {
       },
     },
     {
-      appId: String(appB.id),
+      appId: appB.id,
       privateKey: appB.privateKey,
       issuer: {
         enabled: true,
@@ -318,7 +318,7 @@ it("discovers multiple installations of an app", async () => {
   const appRegistry = createAppRegistry();
   await discoverApps(octokitFactory, appRegistry, [
     {
-      appId: String(appA.id),
+      appId: appA.id,
       privateKey: appA.privateKey,
       issuer: {
         enabled: true,
@@ -376,7 +376,7 @@ it("discovers multiple apps", async () => {
   const appRegistry = createAppRegistry();
   await discoverApps(octokitFactory, appRegistry, [
     {
-      appId: String(appA.id),
+      appId: appA.id,
       privateKey: appA.privateKey,
       issuer: {
         enabled: true,
@@ -387,7 +387,7 @@ it("discovers multiple apps", async () => {
       },
     },
     {
-      appId: String(appB.id),
+      appId: appB.id,
       privateKey: appB.privateKey,
       issuer: {
         enabled: true,
@@ -455,7 +455,7 @@ it("skips apps with incorrect credentials", async () => {
   const appRegistry = createAppRegistry();
   await discoverApps(octokitFactory, appRegistry, [
     {
-      appId: String(appA.id),
+      appId: appA.id,
       privateKey: "incorrect",
       issuer: {
         enabled: true,
@@ -466,7 +466,7 @@ it("skips apps with incorrect credentials", async () => {
       },
     },
     {
-      appId: String(appB.id),
+      appId: appB.id,
       privateKey: appB.privateKey,
       issuer: {
         enabled: true,
@@ -516,7 +516,7 @@ it("skips non-existent apps", async () => {
   const appRegistry = createAppRegistry();
   await discoverApps(octokitFactory, appRegistry, [
     {
-      appId: String(appX.id),
+      appId: appX.id,
       privateKey: appX.privateKey,
       issuer: {
         enabled: true,
@@ -527,7 +527,7 @@ it("skips non-existent apps", async () => {
       },
     },
     {
-      appId: String(appA.id),
+      appId: appA.id,
       privateKey: appA.privateKey,
       issuer: {
         enabled: true,
@@ -590,7 +590,7 @@ it("reports unexpected HTTP statuses", async () => {
   const appRegistry = createAppRegistry();
   await discoverApps(octokitFactory, appRegistry, [
     {
-      appId: String(appA.id),
+      appId: appA.id,
       privateKey: appA.privateKey,
       issuer: {
         enabled: true,
@@ -601,7 +601,7 @@ it("reports unexpected HTTP statuses", async () => {
       },
     },
     {
-      appId: String(appB.id),
+      appId: appB.id,
       privateKey: appB.privateKey,
       issuer: {
         enabled: true,
@@ -612,7 +612,7 @@ it("reports unexpected HTTP statuses", async () => {
       },
     },
     {
-      appId: String(appC.id),
+      appId: appC.id,
       privateKey: appC.privateKey,
       issuer: {
         enabled: true,
@@ -685,7 +685,7 @@ it("skips apps when discovery throws", async () => {
   const appRegistry = createAppRegistry();
   await discoverApps(octokitFactory, appRegistry, [
     {
-      appId: String(appA.id),
+      appId: appA.id,
       privateKey: appA.privateKey,
       issuer: {
         enabled: true,
@@ -696,7 +696,7 @@ it("skips apps when discovery throws", async () => {
       },
     },
     {
-      appId: String(appB.id),
+      appId: appB.id,
       privateKey: appB.privateKey,
       issuer: {
         enabled: true,
@@ -707,7 +707,7 @@ it("skips apps when discovery throws", async () => {
       },
     },
     {
-      appId: String(appC.id),
+      appId: appC.id,
       privateKey: appC.privateKey,
       issuer: {
         enabled: true,
@@ -784,7 +784,7 @@ it("skips installations when discovery throws", async () => {
   const appRegistry = createAppRegistry();
   await discoverApps(octokitFactory, appRegistry, [
     {
-      appId: String(appA.id),
+      appId: appA.id,
       privateKey: appA.privateKey,
       issuer: {
         enabled: true,
@@ -849,7 +849,7 @@ it("skips apps when they're fully disabled", async () => {
   const appRegistry = createAppRegistry();
   await discoverApps(octokitFactory, appRegistry, [
     {
-      appId: String(appA.id),
+      appId: appA.id,
       privateKey: appA.privateKey,
       issuer: {
         enabled: true,
@@ -860,7 +860,7 @@ it("skips apps when they're fully disabled", async () => {
       },
     },
     {
-      appId: String(appB.id),
+      appId: appB.id,
       privateKey: appB.privateKey,
       issuer: {
         enabled: false,
@@ -871,7 +871,7 @@ it("skips apps when they're fully disabled", async () => {
       },
     },
     {
-      appId: String(appC.id),
+      appId: appC.id,
       privateKey: appC.privateKey,
       issuer: {
         enabled: true,

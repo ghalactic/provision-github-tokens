@@ -1,5 +1,12 @@
 export type AppInput = {
-  appId: string;
+  appId: number;
+  privateKey: string;
+  issuer: AppInputIssuer;
+  provisioner: AppInputProvisioner;
+};
+
+export type RawAppInput = {
+  appId: number | string;
   privateKey: string;
   issuer: AppInputIssuer;
   provisioner: AppInputProvisioner;

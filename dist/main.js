@@ -2662,7 +2662,7 @@ var require_tunnel = __commonJS({
         connectOptions.headers = connectOptions.headers || {};
         connectOptions.headers["Proxy-Authorization"] = "Basic " + new Buffer(connectOptions.proxyAuth).toString("base64");
       }
-      debug2("making CONNECT request");
+      debug3("making CONNECT request");
       var connectReq = self2.request(connectOptions);
       connectReq.useChunkedEncodingByDefault = false;
       connectReq.once("response", onResponse);
@@ -2682,7 +2682,7 @@ var require_tunnel = __commonJS({
         connectReq.removeAllListeners();
         socket.removeAllListeners();
         if (res.statusCode !== 200) {
-          debug2(
+          debug3(
             "tunneling socket could not be established, statusCode=%d",
             res.statusCode
           );
@@ -2694,7 +2694,7 @@ var require_tunnel = __commonJS({
           return;
         }
         if (head.length > 0) {
-          debug2("got illegal response body from proxy");
+          debug3("got illegal response body from proxy");
           socket.destroy();
           var error = new Error("got illegal response body from proxy");
           error.code = "ECONNRESET";
@@ -2702,13 +2702,13 @@ var require_tunnel = __commonJS({
           self2.removeSocket(placeholder);
           return;
         }
-        debug2("tunneling connection has established");
+        debug3("tunneling connection has established");
         self2.sockets[self2.sockets.indexOf(placeholder)] = socket;
         return cb(socket);
       }
       function onError(cause) {
         connectReq.removeAllListeners();
-        debug2(
+        debug3(
           "tunneling socket could not be established, cause=%s\n",
           cause.message,
           cause.stack
@@ -2770,9 +2770,9 @@ var require_tunnel = __commonJS({
       }
       return target;
     }
-    var debug2;
+    var debug3;
     if (process.env.NODE_DEBUG && /\btunnel\b/.test(process.env.NODE_DEBUG)) {
-      debug2 = function() {
+      debug3 = function() {
         var args = Array.prototype.slice.call(arguments);
         if (typeof args[0] === "string") {
           args[0] = "TUNNEL: " + args[0];
@@ -2782,10 +2782,10 @@ var require_tunnel = __commonJS({
         console.error.apply(console, args);
       };
     } else {
-      debug2 = function() {
+      debug3 = function() {
       };
     }
-    exports.debug = debug2;
+    exports.debug = debug3;
   }
 });
 
@@ -21820,10 +21820,10 @@ Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
       return process.env["RUNNER_DEBUG"] === "1";
     }
     exports.isDebug = isDebug;
-    function debug2(message) {
+    function debug3(message) {
       (0, command_1.issueCommand)("debug", {}, message);
     }
-    exports.debug = debug2;
+    exports.debug = debug3;
     function error(message, properties = {}) {
       (0, command_1.issueCommand)("error", (0, utils_1.toCommandProperties)(properties), message instanceof Error ? message.toString() : message);
     }
@@ -28316,7 +28316,7 @@ var require_dist = __commonJS({
     var INTERPOLATION = /\$\{[^}]+\}/;
     var INTERPOLATION_REPLACE = /\$\{([^}]+)\}/g;
     var EMPTY_STR = /^""\s*\+\s*|\s*\+\s*""$/g;
-    function errorMessage(options) {
+    function errorMessage2(options) {
       return {
         keyword,
         schemaType: ["string", "object"],
@@ -28567,7 +28567,7 @@ var require_dist = __commonJS({
       if (ajv2.opts.jsPropertySyntax) {
         throw new Error("ajv-errors: ajv option jsPropertySyntax is not supported");
       }
-      return ajv2.addKeyword(errorMessage(options));
+      return ajv2.addKeyword(errorMessage2(options));
     };
     exports.default = ajvErrors2;
     module.exports = ajvErrors2;
@@ -50769,6 +50769,14 @@ var safeLoad = renamed("safeLoad", "load");
 var safeLoadAll = renamed("safeLoadAll", "loadAll");
 var safeDump = renamed("safeDump", "dump");
 
+// src/error.ts
+function errorMessage(error) {
+  return (error instanceof Error ? error.message : String(error)).trim();
+}
+function errorStack(error) {
+  return error instanceof Error ? error.stack ?? error.message : String(error);
+}
+
 // src/config/validation.ts
 var import_ajv = __toESM(require_ajv(), 1);
 var import_ajv_errors = __toESM(require_dist(), 1);
@@ -50788,8 +50796,18 @@ var apps_v1_schema_default = {
     properties: {
       appId: {
         description: "The GitHub app ID.",
-        type: "string",
-        minLength: 1
+        errorMessage: "must be a GitHub app ID",
+        oneOf: [
+          {
+            type: "integer",
+            minimum: 1
+          },
+          {
+            type: "string",
+            minLength: 1,
+            pattern: "^[1-9]\\d*$"
+          }
+        ]
       },
       privateKey: {
         description: "The GitHub app private key in PEM format.",
@@ -52373,26 +52391,27 @@ function renderError(error) {
 // src/config/apps-input.ts
 function readAppsInput() {
   const yaml = (0, import_core.getInput)("apps");
-  let parsed;
   try {
-    parsed = load(yaml);
+    const parsed = load(yaml);
+    return normalizeAppsInput(validateApps(parsed));
   } catch (cause) {
+    (0, import_core.debug)(`Parsing of apps action input failed: ${errorMessage(cause)}`);
     throw new Error("Parsing of apps action input failed", { cause });
   }
-  try {
-    return validateApps(parsed);
-  } catch (cause) {
-    throw new Error("Validation of apps action input failed", { cause });
+}
+function normalizeAppsInput(apps) {
+  const normalized = [];
+  for (const app of apps) {
+    normalized.push({
+      ...app,
+      appId: typeof app.appId === "number" ? app.appId : parseInt(app.appId, 10)
+    });
   }
+  return normalized;
 }
 
 // src/discover-apps.ts
 var import_core3 = __toESM(require_core(), 1);
-
-// src/error.ts
-function errorStack(error) {
-  return error instanceof Error ? error.stack ?? error.message : String(error);
-}
 
 // node_modules/universal-user-agent/index.js
 function getUserAgent() {
@@ -57076,7 +57095,7 @@ function createOctokitFactory() {
       const key = JSON.stringify({ appId, privateKey });
       appOctokits[key] ??= new CustomOctokit({
         authStrategy: createAppAuth,
-        auth: { appId: parseInt(appId, 10), privateKey }
+        auth: { appId, privateKey }
       });
       return appOctokits[key];
     },
@@ -57085,7 +57104,7 @@ function createOctokitFactory() {
       const key = JSON.stringify({ appId, privateKey, installationId });
       installationOctokits[key] ??= new CustomOctokit({
         authStrategy: createAppAuth,
-        auth: { appId: parseInt(appId, 10), privateKey, installationId }
+        auth: { appId, privateKey, installationId }
       });
       return installationOctokits[key];
     }
