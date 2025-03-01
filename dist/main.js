@@ -48083,6 +48083,20 @@ function createAppRegistry() {
   return {
     apps,
     installations,
+    get provisioners() {
+      const provisioners = /* @__PURE__ */ new Map();
+      for (const [instId, instReg] of installations) {
+        const { installation } = instReg;
+        const appReg = apps.get(installation.app_id);
+        if (!appReg) {
+          throw new Error(
+            `Invariant violation: App ${installation.app_id} not registered`
+          );
+        }
+        if (appReg.provisioner.enabled) provisioners.set(instId, instReg);
+      }
+      return provisioners;
+    },
     registerApp: (registration) => {
       apps.set(registration.app.id, registration);
     },

@@ -8,6 +8,7 @@ import type { TokenRequest } from "./type/token-request.js";
 export type AppRegistry = {
   readonly apps: Map<number, AppRegistration>;
   readonly installations: Map<number, InstallationRegistration>;
+  readonly provisioners: Map<number, InstallationRegistration>;
   registerApp: (app: AppRegistration) => void;
   registerInstallation: (installation: InstallationRegistration) => void;
   findIssuersForRequest: (request: TokenRequest) => InstallationRegistration[];
@@ -34,6 +35,27 @@ export function createAppRegistry(): AppRegistry {
   return {
     apps,
     installations,
+
+    get provisioners() {
+      const provisioners = new Map<number, InstallationRegistration>();
+
+      for (const [instId, instReg] of installations) {
+        const { installation } = instReg;
+        const appReg = apps.get(installation.app_id);
+
+        /* v8 ignore start */
+        if (!appReg) {
+          throw new Error(
+            `Invariant violation: App ${installation.app_id} not registered`,
+          );
+        }
+        /* v8 ignore stop */
+
+        if (appReg.provisioner.enabled) provisioners.set(instId, instReg);
+      }
+
+      return provisioners;
+    },
 
     registerApp: (registration) => {
       apps.set(registration.app.id, registration);
