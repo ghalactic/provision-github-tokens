@@ -6,7 +6,7 @@ import { createAppRegistry } from "./app-registry.js";
 import { readAppsInput } from "./config/apps-input.js";
 import { discoverApps } from "./discover-apps.js";
 import { discoverConsumers } from "./discover-consumers.js";
-import { errorMessage } from "./error.js";
+import { errorStack } from "./error.js";
 import { createNamePattern } from "./name-pattern.js";
 import { createOctokitFactory } from "./octokit.js";
 import { createProvisionAuthorizer } from "./provision-authorizer.js";
@@ -17,7 +17,7 @@ import type { ProvisionAuthResult } from "./type/provision-auth-result.js";
 import type { ProvisionRequest } from "./type/provision-request.js";
 
 main().catch((error) => {
-  setFailed(errorMessage(error));
+  setFailed(errorStack(error));
 });
 
 async function main(): Promise<void> {
