@@ -8,25 +8,30 @@ import { discoverApps } from "./discover-apps.js";
 import { discoverConsumers } from "./discover-consumers.js";
 import { errorMessage } from "./error.js";
 import { createOctokitFactory } from "./octokit.js";
+import { registerTokenDeclarations } from "./register-token-declarations.js";
+import { createTokenDeclarationRegistry } from "./token-declaration-registry.js";
 
 main().catch((error) => {
   setFailed(errorMessage(error));
 });
 
 async function main(): Promise<void> {
+  const appsInput = readAppsInput();
+
   const octokitFactory = createOctokitFactory();
   const appRegistry = createAppRegistry();
-  const appsInput = readAppsInput();
+  const declarationRegistry = createTokenDeclarationRegistry();
 
   await group("Discovering apps", async () => {
     await discoverApps(octokitFactory, appRegistry, appsInput);
   });
 
-  const discovered = await group("Discovering consumers", async () => {
+  const consumers = await group("Discovering consumers", async () => {
     return discoverConsumers(octokitFactory, appRegistry, appsInput);
   });
 
-  // TODO: register token declarations
+  registerTokenDeclarations(declarationRegistry, consumers);
+
   // TODO: generate token requests
   // TODO: generate provision requests
   // TODO: authorize tokens

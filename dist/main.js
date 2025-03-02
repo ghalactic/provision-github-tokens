@@ -59215,20 +59215,51 @@ async function discoverConsumers(octokitFactory, appRegistry, appsInput) {
   return discovered;
 }
 
+// src/register-token-declarations.ts
+function registerTokenDeclarations(declarationRegistry, consumers) {
+  for (const [, { account, repo, config }] of consumers) {
+    for (const [name, declaration] of Object.entries(config.tokens)) {
+      declarationRegistry.registerDeclaration(account, repo, name, declaration);
+    }
+  }
+}
+
+// src/token-declaration-registry.ts
+function createTokenDeclarationRegistry() {
+  const declarations = /* @__PURE__ */ new Map();
+  return {
+    registerDeclaration(definingAccount, definingRepo, name, declaration) {
+      declarations.set(
+        `${definingAccount}/${definingRepo}.${name}`,
+        declaration
+      );
+    },
+    findDeclarationForRequester(requestingAccount, requestingRepo, reference) {
+      const declaration = declarations.get(reference);
+      if (!declaration) return [void 0, false];
+      if (declaration.shared) return [declaration, true];
+      const requiredPrefix = `${requestingAccount}/${requestingRepo}.`;
+      return reference.startsWith(requiredPrefix) ? [declaration, true] : [void 0, true];
+    }
+  };
+}
+
 // src/main.ts
 main().catch((error) => {
   (0, import_core6.setFailed)(errorMessage(error));
 });
 async function main() {
+  const appsInput = readAppsInput();
   const octokitFactory = createOctokitFactory();
   const appRegistry = createAppRegistry();
-  const appsInput = readAppsInput();
+  const declarationRegistry = createTokenDeclarationRegistry();
   await (0, import_core6.group)("Discovering apps", async () => {
     await discoverApps(octokitFactory, appRegistry, appsInput);
   });
-  const discovered = await (0, import_core6.group)("Discovering consumers", async () => {
+  const consumers = await (0, import_core6.group)("Discovering consumers", async () => {
     return discoverConsumers(octokitFactory, appRegistry, appsInput);
   });
+  registerTokenDeclarations(declarationRegistry, consumers);
 }
 /*! Bundled license information:
 
