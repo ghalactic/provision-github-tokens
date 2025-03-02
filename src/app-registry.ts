@@ -1,4 +1,5 @@
 import { isSufficientAccess, isWriteAccess } from "./access-level.js";
+import { anyPatternMatches, type Pattern } from "./pattern.js";
 import { isEmptyPermissions, permissionAccess } from "./permissions.js";
 import type { App, Installation, Repo } from "./type/github-api.js";
 import type { AppInputIssuer, AppInputProvisioner } from "./type/input.js";
@@ -11,6 +12,7 @@ export type AppRegistry = {
   readonly provisioners: Map<number, InstallationRegistration>;
   registerApp: (app: AppRegistration) => void;
   registerInstallation: (installation: InstallationRegistration) => void;
+  resolveAccounts: (...patterns: Pattern[]) => string[];
   findIssuersForRequest: (request: TokenRequest) => InstallationRegistration[];
   findProvisionersForRequest: (
     request: ProvisionRequest,
@@ -30,30 +32,17 @@ export type InstallationRegistration = {
 
 export function createAppRegistry(): AppRegistry {
   const apps: Map<number, AppRegistration> = new Map();
+  const appsByInstallation: Map<InstallationRegistration, AppRegistration> =
+    new Map();
   const installations: Map<number, InstallationRegistration> = new Map();
+  const provisioners: Map<number, InstallationRegistration> = new Map();
+  const accounts: Set<string> = new Set();
 
   return {
     apps,
     installations,
 
     get provisioners() {
-      const provisioners = new Map<number, InstallationRegistration>();
-
-      for (const [instId, instReg] of installations) {
-        const { installation } = instReg;
-        const appReg = apps.get(installation.app_id);
-
-        /* v8 ignore start */
-        if (!appReg) {
-          throw new Error(
-            `Invariant violation: App ${installation.app_id} not registered`,
-          );
-        }
-        /* v8 ignore stop */
-
-        if (appReg.provisioner.enabled) provisioners.set(instId, instReg);
-      }
-
       return provisioners;
     },
 
@@ -62,7 +51,27 @@ export function createAppRegistry(): AppRegistry {
     },
 
     registerInstallation: (registration) => {
+      const appReg = apps.get(registration.installation.app_id);
+
+      if (!appReg) {
+        throw new Error(
+          `App ${registration.installation.app_id} not registered`,
+        );
+      }
+
       installations.set(registration.installation.id, registration);
+      appsByInstallation.set(registration, appReg);
+      accounts.add(installationAccount(registration.installation));
+
+      if (appReg.provisioner.enabled) {
+        provisioners.set(registration.installation.id, registration);
+      }
+    },
+
+    resolveAccounts: (...patterns) => {
+      return Array.from(accounts).filter((account) =>
+        anyPatternMatches(patterns, account),
+      );
     },
 
     findIssuersForRequest: (request) => {
@@ -97,15 +106,7 @@ export function createAppRegistry(): AppRegistry {
 
       for (const [, instReg] of installations) {
         const { installation, repos } = instReg;
-        const appReg = apps.get(installation.app_id);
-
-        /* v8 ignore start */
-        if (!appReg) {
-          throw new Error(
-            `Invariant violation: App ${installation.app_id} not registered`,
-          );
-        }
-        /* v8 ignore stop */
+        const appReg = appRegForInstReg(instReg);
 
         if (!appReg.issuer.enabled) continue;
 
@@ -139,11 +140,7 @@ export function createAppRegistry(): AppRegistry {
         if (permMatchCount !== tokenPerms.length) continue;
 
         if (installation.repository_selection === "all") {
-          if (
-            installation.account &&
-            "login" in installation.account &&
-            installation.account.login === request.account
-          ) {
+          if (installationAccount(installation) === request.account) {
             issuers.push(instReg);
           }
 
@@ -169,17 +166,9 @@ export function createAppRegistry(): AppRegistry {
 
       for (const [, instReg] of installations) {
         const { installation, repos } = instReg;
-        const appRegistration = apps.get(installation.app_id);
+        const appReg = appRegForInstReg(instReg);
 
-        /* v8 ignore start */
-        if (!appRegistration) {
-          throw new Error(
-            `Invariant violation: App ${installation.app_id} not registered`,
-          );
-        }
-        /* v8 ignore stop */
-
-        if (!appRegistration.provisioner.enabled) continue;
+        if (!appReg.provisioner.enabled) continue;
 
         if (request.repo) {
           for (const repo of repos) {
@@ -196,11 +185,7 @@ export function createAppRegistry(): AppRegistry {
           continue;
         }
 
-        if (
-          installation.account &&
-          "login" in installation.account &&
-          installation.account.login === request.account
-        ) {
+        if (installationAccount(installation) === request.account) {
           provisioners.push(instReg);
         }
       }
@@ -208,4 +193,39 @@ export function createAppRegistry(): AppRegistry {
       return provisioners;
     },
   };
+
+  function appRegForInstReg(
+    instReg: InstallationRegistration,
+  ): AppRegistration {
+    const appReg = appsByInstallation.get(instReg);
+
+    /* v8 ignore start - Prevented at registration time */
+    if (!appReg) {
+      throw new Error(
+        "Invariant violation: " +
+          `App ${instReg.installation.app_id} not registered`,
+      );
+    }
+    /* v8 ignore stop */
+
+    return appReg;
+  }
+
+  function installationAccount(installation: Installation): string {
+    /* v8 ignore start - Prevented at discovery time */
+    if (
+      !installation.account ||
+      !("login" in installation.account) ||
+      typeof installation.account.login !== "string"
+    ) {
+      throw new Error(
+        "Invariant violation: " +
+          `Installation ${installation.id} ` +
+          "is not associated with a named account",
+      );
+    }
+    /* v8 ignore stop */
+
+    return installation.account.login;
+  }
 }

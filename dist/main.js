@@ -49801,6 +49801,12 @@ function isWriteAccess(access) {
   return ACCESS_RANK[access] > ACCESS_RANK.read;
 }
 
+// src/pattern.ts
+function anyPatternMatches(patterns, string) {
+  for (const pattern of patterns) if (pattern.test(string)) return true;
+  return false;
+}
+
 // src/permissions.ts
 function permissionAccess(permissions, permission) {
   return permissions[permission] ?? "none";
@@ -49820,29 +49826,37 @@ function isEmptyPermissions(permissions) {
 // src/app-registry.ts
 function createAppRegistry() {
   const apps = /* @__PURE__ */ new Map();
+  const appsByInstallation = /* @__PURE__ */ new Map();
   const installations = /* @__PURE__ */ new Map();
+  const provisioners = /* @__PURE__ */ new Map();
+  const accounts = /* @__PURE__ */ new Set();
   return {
     apps,
     installations,
     get provisioners() {
-      const provisioners = /* @__PURE__ */ new Map();
-      for (const [instId, instReg] of installations) {
-        const { installation } = instReg;
-        const appReg = apps.get(installation.app_id);
-        if (!appReg) {
-          throw new Error(
-            `Invariant violation: App ${installation.app_id} not registered`
-          );
-        }
-        if (appReg.provisioner.enabled) provisioners.set(instId, instReg);
-      }
       return provisioners;
     },
     registerApp: (registration) => {
       apps.set(registration.app.id, registration);
     },
     registerInstallation: (registration) => {
+      const appReg = apps.get(registration.installation.app_id);
+      if (!appReg) {
+        throw new Error(
+          `App ${registration.installation.app_id} not registered`
+        );
+      }
       installations.set(registration.installation.id, registration);
+      appsByInstallation.set(registration, appReg);
+      accounts.add(installationAccount(registration.installation));
+      if (appReg.provisioner.enabled) {
+        provisioners.set(registration.installation.id, registration);
+      }
+    },
+    resolveAccounts: (...patterns) => {
+      return Array.from(accounts).filter(
+        (account) => anyPatternMatches(patterns, account)
+      );
     },
     findIssuersForRequest: (request2) => {
       if (isEmptyPermissions(request2.permissions)) return [];
@@ -49865,12 +49879,7 @@ function createAppRegistry() {
       const issuers = [];
       for (const [, instReg] of installations) {
         const { installation, repos } = instReg;
-        const appReg = apps.get(installation.app_id);
-        if (!appReg) {
-          throw new Error(
-            `Invariant violation: App ${installation.app_id} not registered`
-          );
-        }
+        const appReg = appRegForInstReg(instReg);
         if (!appReg.issuer.enabled) continue;
         if (tokenHasRole) {
           let appHasRole = false;
@@ -49894,7 +49903,7 @@ function createAppRegistry() {
         }
         if (permMatchCount !== tokenPerms.length) continue;
         if (installation.repository_selection === "all") {
-          if (installation.account && "login" in installation.account && installation.account.login === request2.account) {
+          if (installationAccount(installation) === request2.account) {
             issuers.push(instReg);
           }
           continue;
@@ -49910,32 +49919,44 @@ function createAppRegistry() {
       return issuers;
     },
     findProvisionersForRequest: (request2) => {
-      const provisioners = [];
+      const provisioners2 = [];
       for (const [, instReg] of installations) {
         const { installation, repos } = instReg;
-        const appRegistration = apps.get(installation.app_id);
-        if (!appRegistration) {
-          throw new Error(
-            `Invariant violation: App ${installation.app_id} not registered`
-          );
-        }
-        if (!appRegistration.provisioner.enabled) continue;
+        const appReg = appRegForInstReg(instReg);
+        if (!appReg.provisioner.enabled) continue;
         if (request2.repo) {
           for (const repo of repos) {
             if (repo.owner.login === request2.account && repo.name === request2.repo) {
-              provisioners.push(instReg);
+              provisioners2.push(instReg);
               break;
             }
           }
           continue;
         }
-        if (installation.account && "login" in installation.account && installation.account.login === request2.account) {
-          provisioners.push(instReg);
+        if (installationAccount(installation) === request2.account) {
+          provisioners2.push(instReg);
         }
       }
-      return provisioners;
+      return provisioners2;
     }
   };
+  function appRegForInstReg(instReg) {
+    const appReg = appsByInstallation.get(instReg);
+    if (!appReg) {
+      throw new Error(
+        `Invariant violation: App ${instReg.installation.app_id} not registered`
+      );
+    }
+    return appReg;
+  }
+  function installationAccount(installation) {
+    if (!installation.account || !("login" in installation.account) || typeof installation.account.login !== "string") {
+      throw new Error(
+        `Invariant violation: Installation ${installation.id} is not associated with a named account`
+      );
+    }
+    return installation.account.login;
+  }
 }
 
 // src/config/apps-input.ts
@@ -59062,8 +59083,43 @@ var import_core4 = __toESM(require_core(), 1);
 
 // src/name-pattern.ts
 var import_regexp = __toESM(require_regexp(), 1);
+function createNamePattern(pattern) {
+  if (!pattern) throw new Error("Pattern cannot be empty");
+  if (pattern.includes("/")) {
+    throw new Error(`Pattern ${JSON.stringify(pattern)} cannot contain /`);
+  }
+  const literals = pattern.split("*");
+  const expression = patternRegExp(literals);
+  return {
+    test: (string) => expression.test(string),
+    toString: () => pattern
+  };
+}
+function patternRegExp(literals) {
+  let exp = "^";
+  for (let i = 0; i < literals.length; ++i) {
+    if (i) exp += "[^/]*";
+    exp += (0, import_regexp.default)(literals[i]);
+  }
+  exp += "$";
+  return new RegExp(exp);
+}
 
 // src/github-pattern.ts
+function createGitHubPattern(pattern) {
+  const [accountPart, repoPart] = splitGitHubPattern(pattern);
+  const account = createNamePattern(accountPart);
+  const repo = repoPart ? createNamePattern(repoPart) : void 0;
+  return {
+    test: (string) => {
+      const parts = string.split("/");
+      if (parts.length === 1) return repo ? false : account.test(parts[0]);
+      if (parts.length !== 2 || !repo) return false;
+      return account.test(parts[0]) && repo.test(parts[1]);
+    },
+    toString: () => pattern
+  };
+}
 function normalizeGitHubPattern(definingAccount, pattern) {
   const [accountPart, repoPart] = splitGitHubPattern(pattern);
   if (accountPart !== ".") return pattern;
@@ -59215,6 +59271,153 @@ async function discoverConsumers(octokitFactory, appRegistry, appsInput) {
   return discovered;
 }
 
+// src/provision-authorizer.ts
+function createProvisionAuthorizer(config) {
+  const [namePatterns, targetPatterns, requesterPatterns] = patternsForRules(
+    config.rules.secrets
+  );
+  return {
+    authorizeSecret(requester, request2) {
+      const isSelfAccount = requester.startsWith(`${request2.account}/`);
+      const isSelfRepo = request2.repo ? requester === `${request2.account}/${request2.repo}` : false;
+      const ruleResults = [];
+      let have;
+      for (let i = 0; i < config.rules.secrets.length; ++i) {
+        if (!anyPatternMatches(namePatterns[i], request2.name)) continue;
+        if (!anyPatternMatches(requesterPatterns[i], requester)) continue;
+        const rule = config.rules.secrets[i];
+        let ruleHave;
+        let isRelevant = false;
+        if (request2.repo) {
+          const reqFullRepo = `${request2.account}/${request2.repo}`;
+          for (let j = 0; j < targetPatterns[i].repos.length; ++j) {
+            const [repo, repoPattern, envPatterns] = targetPatterns[i].repos[j];
+            if (!repoPattern.test(reqFullRepo)) continue;
+            const repoPatternHave = request2.type === "environment" ? applyEnvPatterns(
+              request2.environment,
+              rule.to.github.repos[repo].environments,
+              envPatterns
+            ) : selectBySecretType(rule.to.github.repos[repo], request2.type);
+            if (repoPatternHave) {
+              isRelevant = true;
+              ruleHave = repoPatternHave;
+            }
+            if (ruleHave === "deny") break;
+          }
+          if (isSelfRepo) {
+            const selfHave = request2.type === "environment" ? applyEnvPatterns(
+              request2.environment,
+              rule.to.github.repo.environments,
+              targetPatterns[i].selfRepoEnvs
+            ) : selectBySecretType(rule.to.github.repo, request2.type);
+            if (selfHave) {
+              isRelevant = true;
+              ruleHave = selfHave;
+            }
+          }
+        } else {
+          for (let j = 0; j < targetPatterns[i].accounts.length; ++j) {
+            const [account, accountPattern] = targetPatterns[i].accounts[j];
+            if (!accountPattern.test(request2.account)) continue;
+            const accountPatternHave = selectBySecretType(
+              rule.to.github.accounts[account],
+              request2.type
+            );
+            if (accountPatternHave) {
+              isRelevant = true;
+              ruleHave = accountPatternHave;
+            }
+            if (ruleHave === "deny") break;
+          }
+          if (isSelfAccount) {
+            const selfHave = selectBySecretType(
+              rule.to.github.account,
+              request2.type
+            );
+            if (selfHave) {
+              isRelevant = true;
+              ruleHave = selfHave;
+            }
+          }
+        }
+        if (!isRelevant) continue;
+        if (ruleHave) have = ruleHave;
+        ruleResults.push({
+          index: i,
+          rule,
+          have: ruleHave
+        });
+      }
+      return {
+        requester,
+        request: request2,
+        rules: ruleResults,
+        have,
+        isAllowed: have === "allow"
+      };
+    }
+  };
+  function patternsForRules(rules) {
+    const namePatterns2 = {};
+    const targetPatterns2 = {};
+    const requesterPatterns2 = {};
+    for (let i = 0; i < rules.length; ++i) {
+      [namePatterns2[i], targetPatterns2[i], requesterPatterns2[i]] = patternsForRule(rules[i]);
+    }
+    return [namePatterns2, targetPatterns2, requesterPatterns2];
+  }
+  function patternsForRule(rule) {
+    const namePatterns2 = [];
+    const targetPatterns2 = {
+      accounts: [],
+      repos: [],
+      selfRepoEnvs: []
+    };
+    const requesterPatterns2 = [];
+    for (const name of rule.secrets) namePatterns2.push(createNamePattern(name));
+    for (const account of Object.keys(rule.to.github.accounts)) {
+      targetPatterns2.accounts.push([account, createGitHubPattern(account)]);
+    }
+    for (const repo of Object.keys(rule.to.github.repos)) {
+      const envPatterns = [];
+      for (const env of Object.keys(rule.to.github.repos[repo].environments)) {
+        envPatterns.push([env, createNamePattern(env)]);
+      }
+      targetPatterns2.repos.push([repo, createGitHubPattern(repo), envPatterns]);
+    }
+    for (const env of Object.keys(rule.to.github.repo.environments)) {
+      targetPatterns2.selfRepoEnvs.push([env, createNamePattern(env)]);
+    }
+    for (const requester of rule.requesters) {
+      requesterPatterns2.push(createGitHubPattern(requester));
+    }
+    return [namePatterns2, targetPatterns2, requesterPatterns2];
+  }
+  function selectBySecretType(types, type2) {
+    switch (type2) {
+      case "actions":
+        return types.actions;
+      case "codespaces":
+        return types.codespaces;
+      case "dependabot":
+        return types.dependabot;
+    }
+    throw new Error(
+      `Invariant violation: Unexpected secret type ${JSON.stringify(type2)}`
+    );
+  }
+  function applyEnvPatterns(reqEnv, environments, envPatterns) {
+    let have;
+    for (let i = 0; i < envPatterns.length; ++i) {
+      const [env, envPattern] = envPatterns[i];
+      if (!envPattern.test(reqEnv)) continue;
+      if (environments[env] === "deny") return "deny";
+      have = environments[env];
+    }
+    return have;
+  }
+}
+
 // src/register-token-declarations.ts
 function registerTokenDeclarations(declarationRegistry, consumers) {
   for (const [, { account, repo, config }] of consumers) {
@@ -59253,6 +59456,9 @@ async function main() {
   const octokitFactory = createOctokitFactory();
   const appRegistry = createAppRegistry();
   const declarationRegistry = createTokenDeclarationRegistry();
+  const provisionAuthorizer = createProvisionAuthorizer(
+    {}
+  );
   await (0, import_core6.group)("Discovering apps", async () => {
     await discoverApps(octokitFactory, appRegistry, appsInput);
   });
@@ -59260,6 +59466,41 @@ async function main() {
     return discoverConsumers(octokitFactory, appRegistry, appsInput);
   });
   registerTokenDeclarations(declarationRegistry, consumers);
+  for (const [, requester] of consumers) {
+    const provisionRequests = [];
+    for (const secretName in requester.config.provision.secrets) {
+      const secretDec = requester.config.provision.secrets[secretName];
+      for (const typeString of ["actions", "codespaces", "dependabot"]) {
+        const type2 = typeString;
+        if (secretDec.github.account[type2]) {
+          provisionRequests.push({
+            name: secretName,
+            platform: "github",
+            account: requester.account,
+            type: type2
+          });
+        }
+        for (const accountPattern in secretDec.github.accounts[type2]) {
+          for (const account of appRegistry.resolveAccounts(
+            createNamePattern(accountPattern)
+          )) {
+            provisionRequests.push({
+              name: secretName,
+              platform: "github",
+              account,
+              type: type2
+            });
+          }
+        }
+      }
+    }
+    for (const request2 of provisionRequests) {
+      const result = provisionAuthorizer.authorizeSecret(
+        `${requester.account}/${requester.repo}`,
+        request2
+      );
+    }
+  }
 }
 /*! Bundled license information:
 
