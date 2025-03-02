@@ -12,8 +12,8 @@ export type AppRegistry = {
   readonly provisioners: Map<number, InstallationRegistration>;
   registerApp: (app: AppRegistration) => void;
   registerInstallation: (installation: InstallationRegistration) => void;
-  resolveAccounts: (...patterns: Pattern[]) => string[];
-  resolveRepos: (...patterns: Pattern[]) => string[];
+  resolveProvisionerAccounts: (...patterns: Pattern[]) => string[];
+  resolveProvisionerRepos: (...patterns: Pattern[]) => string[];
   findIssuersForRequest: (request: TokenRequest) => InstallationRegistration[];
   findProvisionersForRequest: (
     request: ProvisionRequest,
@@ -37,8 +37,8 @@ export function createAppRegistry(): AppRegistry {
     new Map();
   const installations: Map<number, InstallationRegistration> = new Map();
   const provisioners: Map<number, InstallationRegistration> = new Map();
-  const accounts: Set<string> = new Set();
-  const repos: Set<string> = new Set();
+  const provisionerAccounts: Set<string> = new Set();
+  const provisionerRepos: Set<string> = new Set();
 
   return {
     apps,
@@ -64,22 +64,24 @@ export function createAppRegistry(): AppRegistry {
       installations.set(registration.installation.id, registration);
       appsByInstallation.set(registration, appReg);
 
-      accounts.add(installationAccount(registration.installation));
-      for (const { full_name } of registration.repos) repos.add(full_name);
-
       if (appReg.provisioner.enabled) {
         provisioners.set(registration.installation.id, registration);
+        provisionerAccounts.add(installationAccount(registration.installation));
+
+        for (const { full_name } of registration.repos) {
+          provisionerRepos.add(full_name);
+        }
       }
     },
 
-    resolveAccounts: (...patterns) => {
-      return Array.from(accounts).filter((account) =>
+    resolveProvisionerAccounts: (...patterns) => {
+      return Array.from(provisionerAccounts).filter((account) =>
         anyPatternMatches(patterns, account),
       );
     },
 
-    resolveRepos: (...patterns) => {
-      return Array.from(repos).filter((repo) =>
+    resolveProvisionerRepos: (...patterns) => {
+      return Array.from(provisionerRepos).filter((repo) =>
         anyPatternMatches(patterns, repo),
       );
     },

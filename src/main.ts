@@ -65,7 +65,7 @@ async function main(): Promise<void> {
         }
 
         for (const accountPattern in secretDec.github.accounts[type]) {
-          for (const account of appRegistry.resolveAccounts(
+          for (const account of appRegistry.resolveProvisionerAccounts(
             createNamePattern(accountPattern),
           )) {
             provisionRequests.push({

@@ -49829,8 +49829,8 @@ function createAppRegistry() {
   const appsByInstallation = /* @__PURE__ */ new Map();
   const installations = /* @__PURE__ */ new Map();
   const provisioners = /* @__PURE__ */ new Map();
-  const accounts = /* @__PURE__ */ new Set();
-  const repos = /* @__PURE__ */ new Set();
+  const provisionerAccounts = /* @__PURE__ */ new Set();
+  const provisionerRepos = /* @__PURE__ */ new Set();
   return {
     apps,
     installations,
@@ -49849,19 +49849,21 @@ function createAppRegistry() {
       }
       installations.set(registration.installation.id, registration);
       appsByInstallation.set(registration, appReg);
-      accounts.add(installationAccount(registration.installation));
-      for (const { full_name } of registration.repos) repos.add(full_name);
       if (appReg.provisioner.enabled) {
         provisioners.set(registration.installation.id, registration);
+        provisionerAccounts.add(installationAccount(registration.installation));
+        for (const { full_name } of registration.repos) {
+          provisionerRepos.add(full_name);
+        }
       }
     },
-    resolveAccounts: (...patterns) => {
-      return Array.from(accounts).filter(
+    resolveProvisionerAccounts: (...patterns) => {
+      return Array.from(provisionerAccounts).filter(
         (account) => anyPatternMatches(patterns, account)
       );
     },
-    resolveRepos: (...patterns) => {
-      return Array.from(repos).filter(
+    resolveProvisionerRepos: (...patterns) => {
+      return Array.from(provisionerRepos).filter(
         (repo) => anyPatternMatches(patterns, repo)
       );
     },
@@ -49877,15 +49879,15 @@ function createAppRegistry() {
         }
       }
       const tokenRepos = Array.isArray(request2.repos) ? request2.repos.reduce(
-        (repos2, name) => {
-          repos2[name] = true;
-          return repos2;
+        (repos, name) => {
+          repos[name] = true;
+          return repos;
         },
         {}
       ) : {};
       const issuers = [];
       for (const [, instReg] of installations) {
-        const { installation, repos: repos2 } = instReg;
+        const { installation, repos } = instReg;
         const appReg = appRegForInstReg(instReg);
         if (!appReg.issuer.enabled) continue;
         if (tokenHasRole) {
@@ -49915,7 +49917,7 @@ function createAppRegistry() {
           }
           continue;
         }
-        for (const repo of repos2) {
+        for (const repo of repos) {
           if (repo.owner.login === request2.account && tokenRepos[repo.name]) {
             ++repoMatchCount;
           }
@@ -49928,11 +49930,11 @@ function createAppRegistry() {
     findProvisionersForRequest: (request2) => {
       const provisioners2 = [];
       for (const [, instReg] of installations) {
-        const { installation, repos: repos2 } = instReg;
+        const { installation, repos } = instReg;
         const appReg = appRegForInstReg(instReg);
         if (!appReg.provisioner.enabled) continue;
         if (request2.repo) {
-          for (const repo of repos2) {
+          for (const repo of repos) {
             if (repo.owner.login === request2.account && repo.name === request2.repo) {
               provisioners2.push(instReg);
               break;
@@ -59488,7 +59490,7 @@ async function main() {
           });
         }
         for (const accountPattern in secretDec.github.accounts[type2]) {
-          for (const account of appRegistry.resolveAccounts(
+          for (const account of appRegistry.resolveProvisionerAccounts(
             createNamePattern(accountPattern)
           )) {
             provisionRequests.push({
