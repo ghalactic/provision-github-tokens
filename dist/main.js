@@ -59484,12 +59484,47 @@ main().catch((error) => {
 });
 async function main() {
   const appsInput = readAppsInput();
+  const config = await (0, import_core6.group)("Reading provider configuration", async () => {
+    const config2 = {
+      permissions: { rules: [] },
+      provision: {
+        rules: {
+          secrets: [
+            {
+              secrets: ["*"],
+              requesters: ["*/*"],
+              to: {
+                github: {
+                  account: {},
+                  accounts: {
+                    "*": {
+                      actions: "allow",
+                      codespaces: "allow",
+                      dependabot: "allow"
+                    }
+                  },
+                  repo: { environments: {} },
+                  repos: {
+                    "*/*": {
+                      actions: "allow",
+                      codespaces: "allow",
+                      dependabot: "allow",
+                      environments: {}
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    };
+    return config2;
+  });
   const octokitFactory = createOctokitFactory();
   const appRegistry = createAppRegistry();
   const declarationRegistry = createTokenDeclarationRegistry();
-  const provisionAuthorizer = createProvisionAuthorizer(
-    {}
-  );
+  const provisionAuthorizer = createProvisionAuthorizer(config.provision);
   await (0, import_core6.group)("Discovering apps", async () => {
     await discoverApps(octokitFactory, appRegistry, appsInput);
   });

@@ -12,7 +12,7 @@ import { createOctokitFactory } from "./octokit.js";
 import { createProvisionAuthorizer } from "./provision-authorizer.js";
 import { registerTokenDeclarations } from "./register-token-declarations.js";
 import { createTokenDeclarationRegistry } from "./token-declaration-registry.js";
-import type { ProviderProvisionConfig } from "./type/provider-config.js";
+import type { ProviderConfig } from "./type/provider-config.js";
 import type { ProvisionAuthResult } from "./type/provision-auth-result.js";
 import type { ProvisionRequest } from "./type/provision-request.js";
 
@@ -23,12 +23,50 @@ main().catch((error) => {
 async function main(): Promise<void> {
   const appsInput = readAppsInput();
 
+  const config = await group("Reading provider configuration", async () => {
+    // TODO: read from file
+    const config: ProviderConfig = {
+      permissions: { rules: [] },
+      provision: {
+        rules: {
+          secrets: [
+            {
+              secrets: ["*"],
+              requesters: ["*/*"],
+              to: {
+                github: {
+                  account: {},
+                  accounts: {
+                    "*": {
+                      actions: "allow",
+                      codespaces: "allow",
+                      dependabot: "allow",
+                    },
+                  },
+                  repo: { environments: {} },
+                  repos: {
+                    "*/*": {
+                      actions: "allow",
+                      codespaces: "allow",
+                      dependabot: "allow",
+                      environments: {},
+                    },
+                  },
+                },
+              },
+            },
+          ],
+        },
+      },
+    };
+
+    return config;
+  });
+
   const octokitFactory = createOctokitFactory();
   const appRegistry = createAppRegistry();
   const declarationRegistry = createTokenDeclarationRegistry();
-  const provisionAuthorizer = createProvisionAuthorizer(
-    {} as ProviderProvisionConfig,
-  );
+  const provisionAuthorizer = createProvisionAuthorizer(config.provision);
 
   await group("Discovering apps", async () => {
     await discoverApps(octokitFactory, appRegistry, appsInput);
