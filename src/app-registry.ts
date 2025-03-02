@@ -12,6 +12,8 @@ export type AppRegistry = {
   readonly provisioners: Map<number, InstallationRegistration>;
   registerApp: (app: AppRegistration) => void;
   registerInstallation: (installation: InstallationRegistration) => void;
+  resolveIssuerAccounts: (...patterns: Pattern[]) => string[];
+  resolveIssuerRepos: (...patterns: Pattern[]) => string[];
   resolveProvisionerAccounts: (...patterns: Pattern[]) => string[];
   resolveProvisionerRepos: (...patterns: Pattern[]) => string[];
   findIssuersForRequest: (request: TokenRequest) => InstallationRegistration[];
@@ -32,13 +34,17 @@ export type InstallationRegistration = {
 };
 
 export function createAppRegistry(): AppRegistry {
-  const apps: Map<number, AppRegistration> = new Map();
-  const appsByInstallation: Map<InstallationRegistration, AppRegistration> =
-    new Map();
-  const installations: Map<number, InstallationRegistration> = new Map();
-  const provisioners: Map<number, InstallationRegistration> = new Map();
-  const provisionerAccounts: Set<string> = new Set();
-  const provisionerRepos: Set<string> = new Set();
+  const apps = new Map<number, AppRegistration>();
+  const appsByInstallation = new Map<
+    InstallationRegistration,
+    AppRegistration
+  >();
+  const installations = new Map<number, InstallationRegistration>();
+  const issuerAccounts = new Set<string>();
+  const issuerRepos = new Set<string>();
+  const provisioners = new Map<number, InstallationRegistration>();
+  const provisionerAccounts = new Set<string>();
+  const provisionerRepos = new Set<string>();
 
   return {
     apps,
@@ -61,17 +67,39 @@ export function createAppRegistry(): AppRegistry {
         );
       }
 
+      const account = installationAccount(registration.installation);
+
       installations.set(registration.installation.id, registration);
       appsByInstallation.set(registration, appReg);
 
+      if (appReg.issuer.enabled) {
+        issuerAccounts.add(account);
+
+        for (const { full_name } of registration.repos) {
+          issuerRepos.add(full_name);
+        }
+      }
+
       if (appReg.provisioner.enabled) {
         provisioners.set(registration.installation.id, registration);
-        provisionerAccounts.add(installationAccount(registration.installation));
+        provisionerAccounts.add(account);
 
         for (const { full_name } of registration.repos) {
           provisionerRepos.add(full_name);
         }
       }
+    },
+
+    resolveIssuerAccounts: (...patterns) => {
+      return Array.from(issuerAccounts).filter((account) =>
+        anyPatternMatches(patterns, account),
+      );
+    },
+
+    resolveIssuerRepos: (...patterns) => {
+      return Array.from(issuerRepos).filter((repo) =>
+        anyPatternMatches(patterns, repo),
+      );
     },
 
     resolveProvisionerAccounts: (...patterns) => {

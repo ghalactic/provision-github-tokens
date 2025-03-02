@@ -49828,6 +49828,8 @@ function createAppRegistry() {
   const apps = /* @__PURE__ */ new Map();
   const appsByInstallation = /* @__PURE__ */ new Map();
   const installations = /* @__PURE__ */ new Map();
+  const issuerAccounts = /* @__PURE__ */ new Set();
+  const issuerRepos = /* @__PURE__ */ new Set();
   const provisioners = /* @__PURE__ */ new Map();
   const provisionerAccounts = /* @__PURE__ */ new Set();
   const provisionerRepos = /* @__PURE__ */ new Set();
@@ -49847,15 +49849,32 @@ function createAppRegistry() {
           `App ${registration.installation.app_id} not registered`
         );
       }
+      const account = installationAccount(registration.installation);
       installations.set(registration.installation.id, registration);
       appsByInstallation.set(registration, appReg);
+      if (appReg.issuer.enabled) {
+        issuerAccounts.add(account);
+        for (const { full_name } of registration.repos) {
+          issuerRepos.add(full_name);
+        }
+      }
       if (appReg.provisioner.enabled) {
         provisioners.set(registration.installation.id, registration);
-        provisionerAccounts.add(installationAccount(registration.installation));
+        provisionerAccounts.add(account);
         for (const { full_name } of registration.repos) {
           provisionerRepos.add(full_name);
         }
       }
+    },
+    resolveIssuerAccounts: (...patterns) => {
+      return Array.from(issuerAccounts).filter(
+        (account) => anyPatternMatches(patterns, account)
+      );
+    },
+    resolveIssuerRepos: (...patterns) => {
+      return Array.from(issuerRepos).filter(
+        (repo) => anyPatternMatches(patterns, repo)
+      );
     },
     resolveProvisionerAccounts: (...patterns) => {
       return Array.from(provisionerAccounts).filter(
