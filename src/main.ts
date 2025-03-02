@@ -6,10 +6,11 @@ import { createAppRegistry } from "./app-registry.js";
 import { readAppsInput } from "./config/apps-input.js";
 import { discoverApps } from "./discover-apps.js";
 import { discoverConsumers } from "./discover-consumers.js";
+import { errorMessage } from "./error.js";
 import { createOctokitFactory } from "./octokit.js";
 
 main().catch((error) => {
-  setFailed(error instanceof Error ? error : String(error));
+  setFailed(errorMessage(error));
 });
 
 async function main(): Promise<void> {

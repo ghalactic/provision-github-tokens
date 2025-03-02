@@ -59217,7 +59217,7 @@ async function discoverConsumers(octokitFactory, appRegistry, appsInput) {
 
 // src/main.ts
 main().catch((error) => {
-  (0, import_core6.setFailed)(error instanceof Error ? error : String(error));
+  (0, import_core6.setFailed)(errorMessage(error));
 });
 async function main() {
   const octokitFactory = createOctokitFactory();
