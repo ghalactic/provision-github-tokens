@@ -59535,7 +59535,6 @@ async function main() {
   for (const [, requester] of consumers) {
     const provisionRequests = [];
     const platform = "github";
-    console.log(requester);
     for (const name in requester.config.provision.secrets) {
       const secretDec = requester.config.provision.secrets[name];
       for (const type2 of ["actions", "codespaces", "dependabot"]) {
