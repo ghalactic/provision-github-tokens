@@ -19,7 +19,6 @@ import {
   createTestInstallationAccount,
   createTestInstallationRepo,
 } from "../../github-api.js";
-import { stripStacks } from "../../output.js";
 
 vi.mock("@actions/core");
 vi.mock("@octokit/action");
@@ -613,14 +612,14 @@ it("reports unexpected HTTP statuses", async () => {
     },
   ]);
 
-  expect(stripStacks(__getOutput())).toMatchInlineSnapshot(`
+  expect(__getOutput()).toMatchInlineSnapshot(`
     "::debug::Discovered app "App A" (app-a / 110)
     ::debug::App 110 is a token issuer with no roles
     ::debug::Discovered app installation 111 for account org-a
     ::debug::Installation 111 has permissions {"contents":"read"}
     ::debug::Installation 111 has access to all repos ["org-a/repo-a","org-a/repo-b"]
     Discovered 1 installation of "App A"
-    ::debug::Failed to discover app 120: Error: Unexpected HTTP status 999 from GitHub API: <ERROR>
+    ::debug::Failed to discover app 120: Unexpected HTTP status 999 from GitHub API: <ERROR>
     ::error::Failed to discover app at index 2
     ::debug::Discovered app "App C" (app-c / 130)
     ::debug::App 130 is a token issuer with no roles
@@ -708,14 +707,14 @@ it("skips apps when discovery throws", async () => {
     },
   ]);
 
-  expect(stripStacks(__getOutput())).toMatchInlineSnapshot(`
+  expect(__getOutput()).toMatchInlineSnapshot(`
     "::debug::Discovered app "App A" (app-a / 110)
     ::debug::App 110 is a token issuer with no roles
     ::debug::Discovered app installation 111 for account org-a
     ::debug::Installation 111 has permissions {"contents":"read"}
     ::debug::Installation 111 has access to all repos ["org-a/repo-a","org-a/repo-b"]
     Discovered 1 installation of "App A"
-    ::debug::Failed to discover app 120: Error: <ERROR>
+    ::debug::Failed to discover app 120: <ERROR>
     ::error::Failed to discover app at index 2
     ::debug::Discovered app "App C" (app-c / 130)
     ::debug::App 130 is a token issuer with no roles
@@ -785,13 +784,13 @@ it("skips installations when discovery throws", async () => {
     },
   ]);
 
-  expect(stripStacks(__getOutput())).toMatchInlineSnapshot(`
+  expect(__getOutput()).toMatchInlineSnapshot(`
     "::debug::Discovered app "App A" (app-a / 110)
     ::debug::App 110 is a token issuer with no roles
     ::debug::Discovered app installation 111 for account org-a
     ::debug::Installation 111 has permissions {"contents":"read"}
     ::debug::Installation 111 has access to selected repos ["org-a/repo-a"]
-    ::debug::Failed to discover installation 112 for app 110: Error: <ERROR>
+    ::debug::Failed to discover installation 112 for app 110: <ERROR>
     ::error::Failed to discover installation for app at index 0
     ::debug::Discovered app installation 113 for account org-c
     ::debug::Installation 113 has permissions {"contents":"read"}

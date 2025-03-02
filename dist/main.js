@@ -50787,9 +50787,6 @@ var safeDump = renamed("safeDump", "dump");
 function errorMessage(error) {
   return (error instanceof Error ? error.message : String(error)).trim();
 }
-function errorStack(error) {
-  return error instanceof Error ? error.stack ?? error.message : String(error);
-}
 
 // src/config/validation.ts
 var import_ajv = __toESM(require_ajv(), 1);
@@ -57162,7 +57159,7 @@ async function discoverApps(octokitFactory, appRegistry, appsInput) {
         appIndex++
       );
     } catch (cause) {
-      (0, import_core3.debug)(`Failed to discover app ${appInput.appId}: ${errorStack(cause)}`);
+      (0, import_core3.debug)(`Failed to discover app ${appInput.appId}: ${errorMessage(cause)}`);
       (0, import_core3.error)(`Failed to discover app at index ${appIndex}`);
     }
   }
@@ -57238,7 +57235,7 @@ async function discoverInstallations(octokitFactory, appRegistry, appsInput, app
       } catch (cause) {
         ++failureCount;
         (0, import_core3.debug)(
-          `Failed to discover installation ${installation.id} for app ${appInput.appId}: ${errorStack(cause)}`
+          `Failed to discover installation ${installation.id} for app ${appInput.appId}: ${errorMessage(cause)}`
         );
         (0, import_core3.error)(
           `Failed to discover installation for app at index ${appIndex}`
@@ -57258,7 +57255,6 @@ async function discoverInstallations(octokitFactory, appRegistry, appsInput, app
 }
 async function discoverInstallation(octokitFactory, appRegistry, appsInput, appInput, installation) {
   const {
-    account,
     id: installationId,
     repository_selection,
     permissions
@@ -57279,10 +57275,14 @@ async function discoverInstallation(octokitFactory, appRegistry, appsInput, appI
       repoNames.push(repo.full_name);
     }
   }
-  const accountDescription = account && "login" in account ? `account ${account.login}` : "unknown account";
-  (0, import_core3.debug)(
-    `Discovered app installation ${installationId} for ${accountDescription}`
-  );
+  const account = installation.account && "login" in installation.account ? installation.account.login : void 0;
+  if (account == null) {
+    (0, import_core3.debug)(
+      `Skipping discovery of app installation ${installationId}  because it is not associated with a named account`
+    );
+    return;
+  }
+  (0, import_core3.debug)(`Discovered app installation ${installationId} for account ${account}`);
   if (isEmptyPermissions(permissions)) {
     (0, import_core3.debug)(`Installation ${installationId} has no permissions`);
   } else {

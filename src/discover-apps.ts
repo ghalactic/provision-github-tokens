@@ -1,6 +1,6 @@
 import { debug, info, error as logError } from "@actions/core";
 import type { AppRegistry } from "./app-registry.js";
-import { errorStack } from "./error.js";
+import { errorMessage } from "./error.js";
 import {
   handleRequestError,
   type Octokit,
@@ -28,7 +28,7 @@ export async function discoverApps(
         appIndex++,
       );
     } catch (cause) {
-      debug(`Failed to discover app ${appInput.appId}: ${errorStack(cause)}`);
+      debug(`Failed to discover app ${appInput.appId}: ${errorMessage(cause)}`);
       logError(`Failed to discover app at index ${appIndex}`);
     }
   }
@@ -139,7 +139,7 @@ async function discoverInstallations(
         ++failureCount;
         debug(
           `Failed to discover installation ${installation.id} ` +
-            `for app ${appInput.appId}: ${errorStack(cause)}`,
+            `for app ${appInput.appId}: ${errorMessage(cause)}`,
         );
         logError(
           `Failed to discover installation for app at index ${appIndex}`,
@@ -177,7 +177,6 @@ async function discoverInstallation(
   installation: Installation,
 ): Promise<void> {
   const {
-    account,
     id: installationId,
     repository_selection,
     permissions,
@@ -203,16 +202,22 @@ async function discoverInstallation(
   }
 
   /* v8 ignore start - never seen without an account login */
-  const accountDescription =
-    account && "login" in account
-      ? `account ${account.login}`
-      : "unknown account";
+  const account =
+    installation.account && "login" in installation.account
+      ? installation.account.login
+      : undefined;
+
+  if (account == null) {
+    debug(
+      `Skipping discovery of app installation ${installationId} ` +
+        ` because it is not associated with a named account`,
+    );
+
+    return;
+  }
   /* v8 ignore stop */
 
-  debug(
-    `Discovered app installation ${installationId} for ` +
-      `${accountDescription}`,
-  );
+  debug(`Discovered app installation ${installationId} for account ${account}`);
 
   if (isEmptyPermissions(permissions)) {
     debug(`Installation ${installationId} has no permissions`);
