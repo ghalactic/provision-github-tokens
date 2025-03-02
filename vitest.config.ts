@@ -8,15 +8,7 @@ export default defineConfig({
       exclude: ["src/type/**"],
     },
     workspace: ((isGHA) => {
-      const projects: TestProjectConfiguration[] = [
-        {
-          extends: true,
-          test: {
-            name: "unit",
-            include: ["test/suite/unit/**/*.spec.ts"],
-          },
-        },
-      ];
+      const projects: TestProjectConfiguration[] = [];
 
       if (isGHA) {
         projects.push({
@@ -27,6 +19,14 @@ export default defineConfig({
           },
         });
       }
+
+      projects.push({
+        extends: true,
+        test: {
+          name: "unit",
+          include: ["test/suite/unit/**/*.spec.ts"],
+        },
+      });
 
       return projects;
     })(process.env.GITHUB_ACTIONS === "true"),
