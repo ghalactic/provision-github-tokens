@@ -4,24 +4,22 @@ import {
   E2E_TIMEOUT,
   waitForWorkflowRunToSucceed,
 } from "../../e2e.js";
-import { getGHAContext, underGHA } from "../../gha.js";
+import { getGHAContext } from "../../gha.js";
 
-underGHA(() => {
-  const ghaContext = getGHAContext();
+const ghaContext = getGHAContext();
 
-  it(
-    "can run itself via workflow_dispatch",
-    async ({ onTestFinished }) => {
-      const run = await createSelfRunWorkflow(
-        onTestFinished,
-        ghaContext,
-        "example-label",
-      );
+it(
+  "can run itself via workflow_dispatch",
+  async ({ onTestFinished }) => {
+    const run = await createSelfRunWorkflow(
+      onTestFinished,
+      ghaContext,
+      "example-label",
+    );
 
-      await expect(
-        waitForWorkflowRunToSucceed(ghaContext, run),
-      ).resolves.toBeUndefined();
-    },
-    E2E_TIMEOUT,
-  );
-});
+    await expect(
+      waitForWorkflowRunToSucceed(ghaContext, run),
+    ).resolves.toBeUndefined();
+  },
+  E2E_TIMEOUT,
+);

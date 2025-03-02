@@ -1,15 +1,4 @@
-import { describe } from "vitest";
 import { createTestOctokit, type TestOctokit } from "./octokit.js";
-
-export function underGHA(fn: () => void): void {
-  const isGHA = process.env.GITHUB_ACTIONS === "true";
-
-  (isGHA ? describe : describe.skip)("Under GitHub Actions", () => {
-    if (!isGHA) return;
-
-    fn();
-  });
-}
 
 export type GitHubActionsContext = {
   octokit: TestOctokit;
