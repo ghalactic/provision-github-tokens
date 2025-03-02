@@ -16,26 +16,32 @@ jobs:
         uses: ./
         with:
           apps: |
-            - appId: ${{ toJSON(vars.APP_ID_A) }}
-              privateKey: ${{ toJSON(secrets.APP_PK_A) }}
+            - appId: ${{ toJSON(vars.ISSUER_APP_A_ID) }}
+              privateKey: ${{ toJSON(secrets.ISSUER_APP_A_PK) }}
               issuer:
                 enabled: true
                 roles:
                   - role-a
                   - role-b
+            - appId: ${{ toJSON(vars.PROVISIONER_APP_A_ID) }}
+              privateKey: ${{ toJSON(secrets.PROVISIONER_APP_A_PK) }}
               provisioner:
                 enabled: true
-            - appId: ${{ toJSON(vars.APP_ID_B) }}
-              privateKey: ${{ toJSON(secrets.APP_PK_B) }}
+            - appId: ${{ toJSON(vars.ISSUER_APP_B_ID) }}
+              privateKey: ${{ toJSON(secrets.ISSUER_APP_B_PK) }}
               issuer:
                 enabled: true
                 roles:
                   - role-b
+            - appId: ${{ toJSON(vars.PROVISIONER_APP_B_ID) }}
+              privateKey: ${{ toJSON(secrets.PROVISIONER_APP_B_PK) }}
               provisioner:
                 enabled: true
-            - appId: ${{ toJSON(vars.APP_ID_C) }}
-              privateKey: ${{ toJSON(secrets.APP_PK_C) }}
+            - appId: ${{ toJSON(vars.ISSUER_APP_C_ID) }}
+              privateKey: ${{ toJSON(secrets.ISSUER_APP_C_PK) }}
               issuer:
                 enabled: true
+            - appId: ${{ toJSON(vars.PROVISIONER_APP_C_ID) }}
+              privateKey: ${{ toJSON(secrets.PROVISIONER_APP_C_PK) }}
               provisioner:
                 enabled: true
