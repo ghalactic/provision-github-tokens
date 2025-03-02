@@ -2662,7 +2662,7 @@ var require_tunnel = __commonJS({
         connectOptions.headers = connectOptions.headers || {};
         connectOptions.headers["Proxy-Authorization"] = "Basic " + new Buffer(connectOptions.proxyAuth).toString("base64");
       }
-      debug5("making CONNECT request");
+      debug6("making CONNECT request");
       var connectReq = self2.request(connectOptions);
       connectReq.useChunkedEncodingByDefault = false;
       connectReq.once("response", onResponse);
@@ -2682,7 +2682,7 @@ var require_tunnel = __commonJS({
         connectReq.removeAllListeners();
         socket.removeAllListeners();
         if (res.statusCode !== 200) {
-          debug5(
+          debug6(
             "tunneling socket could not be established, statusCode=%d",
             res.statusCode
           );
@@ -2694,7 +2694,7 @@ var require_tunnel = __commonJS({
           return;
         }
         if (head.length > 0) {
-          debug5("got illegal response body from proxy");
+          debug6("got illegal response body from proxy");
           socket.destroy();
           var error = new Error("got illegal response body from proxy");
           error.code = "ECONNRESET";
@@ -2702,13 +2702,13 @@ var require_tunnel = __commonJS({
           self2.removeSocket(placeholder);
           return;
         }
-        debug5("tunneling connection has established");
+        debug6("tunneling connection has established");
         self2.sockets[self2.sockets.indexOf(placeholder)] = socket;
         return cb(socket);
       }
       function onError(cause) {
         connectReq.removeAllListeners();
-        debug5(
+        debug6(
           "tunneling socket could not be established, cause=%s\n",
           cause.message,
           cause.stack
@@ -2770,9 +2770,9 @@ var require_tunnel = __commonJS({
       }
       return target;
     }
-    var debug5;
+    var debug6;
     if (process.env.NODE_DEBUG && /\btunnel\b/.test(process.env.NODE_DEBUG)) {
-      debug5 = function() {
+      debug6 = function() {
         var args = Array.prototype.slice.call(arguments);
         if (typeof args[0] === "string") {
           args[0] = "TUNNEL: " + args[0];
@@ -2782,10 +2782,10 @@ var require_tunnel = __commonJS({
         console.error.apply(console, args);
       };
     } else {
-      debug5 = function() {
+      debug6 = function() {
       };
     }
-    exports.debug = debug5;
+    exports.debug = debug6;
   }
 });
 
@@ -5689,9 +5689,9 @@ var require_constants = __commonJS({
       }
     })();
     var channel;
-    var structuredClone = globalThis.structuredClone ?? // https://github.com/nodejs/node/blob/b27ae24dcc4251bad726d9d84baf678d1f707fed/lib/internal/structured_clone.js
+    var structuredClone2 = globalThis.structuredClone ?? // https://github.com/nodejs/node/blob/b27ae24dcc4251bad726d9d84baf678d1f707fed/lib/internal/structured_clone.js
     // structuredClone was added in v17.0.0, but fetch supports v16.8
-    function structuredClone2(value, options = void 0) {
+    function structuredClone3(value, options = void 0) {
       if (arguments.length === 0) {
         throw new TypeError("missing argument");
       }
@@ -5705,7 +5705,7 @@ var require_constants = __commonJS({
     };
     module.exports = {
       DOMException: DOMException2,
-      structuredClone,
+      structuredClone: structuredClone2,
       subresource,
       forbiddenMethods,
       requestBodyHeader,
@@ -7369,7 +7369,7 @@ var require_body = __commonJS({
     var { FormData } = require_formdata();
     var { kState } = require_symbols2();
     var { webidl } = require_webidl();
-    var { DOMException: DOMException2, structuredClone } = require_constants();
+    var { DOMException: DOMException2, structuredClone: structuredClone2 } = require_constants();
     var { Blob: Blob2, File: NativeFile } = __require("buffer");
     var { kBodyUsed } = require_symbols();
     var assert = __require("assert");
@@ -7526,7 +7526,7 @@ Content-Type: ${value.type || "application/octet-stream"}\r
     }
     function cloneBody(body) {
       const [out1, out2] = body.stream.tee();
-      const out2Clone = structuredClone(out2, { transfer: [out2] });
+      const out2Clone = structuredClone2(out2, { transfer: [out2] });
       const [, finalClone] = out2Clone.tee();
       body.stream = out1;
       return {
@@ -19674,12 +19674,12 @@ var require_lib = __commonJS({
             throw new Error("Client has already been disposed.");
           }
           const parsedUrl = new URL(requestUrl);
-          let info3 = this._prepareRequest(verb, parsedUrl, headers);
+          let info4 = this._prepareRequest(verb, parsedUrl, headers);
           const maxTries = this._allowRetries && RetryableHttpVerbs.includes(verb) ? this._maxRetries + 1 : 1;
           let numTries = 0;
           let response;
           do {
-            response = yield this.requestRaw(info3, data);
+            response = yield this.requestRaw(info4, data);
             if (response && response.message && response.message.statusCode === HttpCodes.Unauthorized) {
               let authenticationHandler;
               for (const handler2 of this.handlers) {
@@ -19689,7 +19689,7 @@ var require_lib = __commonJS({
                 }
               }
               if (authenticationHandler) {
-                return authenticationHandler.handleAuthentication(this, info3, data);
+                return authenticationHandler.handleAuthentication(this, info4, data);
               } else {
                 return response;
               }
@@ -19712,8 +19712,8 @@ var require_lib = __commonJS({
                   }
                 }
               }
-              info3 = this._prepareRequest(verb, parsedRedirectUrl, headers);
-              response = yield this.requestRaw(info3, data);
+              info4 = this._prepareRequest(verb, parsedRedirectUrl, headers);
+              response = yield this.requestRaw(info4, data);
               redirectsRemaining--;
             }
             if (!response.message.statusCode || !HttpResponseRetryCodes.includes(response.message.statusCode)) {
@@ -19742,7 +19742,7 @@ var require_lib = __commonJS({
        * @param info
        * @param data
        */
-      requestRaw(info3, data) {
+      requestRaw(info4, data) {
         return __awaiter(this, void 0, void 0, function* () {
           return new Promise((resolve, reject) => {
             function callbackForResult(err, res) {
@@ -19754,7 +19754,7 @@ var require_lib = __commonJS({
                 resolve(res);
               }
             }
-            this.requestRawWithCallback(info3, data, callbackForResult);
+            this.requestRawWithCallback(info4, data, callbackForResult);
           });
         });
       }
@@ -19764,12 +19764,12 @@ var require_lib = __commonJS({
        * @param data
        * @param onResult
        */
-      requestRawWithCallback(info3, data, onResult) {
+      requestRawWithCallback(info4, data, onResult) {
         if (typeof data === "string") {
-          if (!info3.options.headers) {
-            info3.options.headers = {};
+          if (!info4.options.headers) {
+            info4.options.headers = {};
           }
-          info3.options.headers["Content-Length"] = Buffer.byteLength(data, "utf8");
+          info4.options.headers["Content-Length"] = Buffer.byteLength(data, "utf8");
         }
         let callbackCalled = false;
         function handleResult(err, res) {
@@ -19778,7 +19778,7 @@ var require_lib = __commonJS({
             onResult(err, res);
           }
         }
-        const req = info3.httpModule.request(info3.options, (msg) => {
+        const req = info4.httpModule.request(info4.options, (msg) => {
           const res = new HttpClientResponse(msg);
           handleResult(void 0, res);
         });
@@ -19790,7 +19790,7 @@ var require_lib = __commonJS({
           if (socket) {
             socket.end();
           }
-          handleResult(new Error(`Request timeout: ${info3.options.path}`));
+          handleResult(new Error(`Request timeout: ${info4.options.path}`));
         });
         req.on("error", function(err) {
           handleResult(err);
@@ -19826,27 +19826,27 @@ var require_lib = __commonJS({
         return this._getProxyAgentDispatcher(parsedUrl, proxyUrl);
       }
       _prepareRequest(method, requestUrl, headers) {
-        const info3 = {};
-        info3.parsedUrl = requestUrl;
-        const usingSsl = info3.parsedUrl.protocol === "https:";
-        info3.httpModule = usingSsl ? https : http;
+        const info4 = {};
+        info4.parsedUrl = requestUrl;
+        const usingSsl = info4.parsedUrl.protocol === "https:";
+        info4.httpModule = usingSsl ? https : http;
         const defaultPort = usingSsl ? 443 : 80;
-        info3.options = {};
-        info3.options.host = info3.parsedUrl.hostname;
-        info3.options.port = info3.parsedUrl.port ? parseInt(info3.parsedUrl.port) : defaultPort;
-        info3.options.path = (info3.parsedUrl.pathname || "") + (info3.parsedUrl.search || "");
-        info3.options.method = method;
-        info3.options.headers = this._mergeHeaders(headers);
+        info4.options = {};
+        info4.options.host = info4.parsedUrl.hostname;
+        info4.options.port = info4.parsedUrl.port ? parseInt(info4.parsedUrl.port) : defaultPort;
+        info4.options.path = (info4.parsedUrl.pathname || "") + (info4.parsedUrl.search || "");
+        info4.options.method = method;
+        info4.options.headers = this._mergeHeaders(headers);
         if (this.userAgent != null) {
-          info3.options.headers["user-agent"] = this.userAgent;
+          info4.options.headers["user-agent"] = this.userAgent;
         }
-        info3.options.agent = this._getAgent(info3.parsedUrl);
+        info4.options.agent = this._getAgent(info4.parsedUrl);
         if (this.handlers) {
           for (const handler2 of this.handlers) {
-            handler2.prepareRequest(info3.options);
+            handler2.prepareRequest(info4.options);
           }
         }
-        return info3;
+        return info4;
       }
       _mergeHeaders(headers) {
         if (this.requestOptions && this.requestOptions.headers) {
@@ -21820,26 +21820,26 @@ Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
       return process.env["RUNNER_DEBUG"] === "1";
     }
     exports.isDebug = isDebug;
-    function debug5(message) {
+    function debug6(message) {
       (0, command_1.issueCommand)("debug", {}, message);
     }
-    exports.debug = debug5;
+    exports.debug = debug6;
     function error(message, properties = {}) {
       (0, command_1.issueCommand)("error", (0, utils_1.toCommandProperties)(properties), message instanceof Error ? message.toString() : message);
     }
     exports.error = error;
-    function warning2(message, properties = {}) {
+    function warning3(message, properties = {}) {
       (0, command_1.issueCommand)("warning", (0, utils_1.toCommandProperties)(properties), message instanceof Error ? message.toString() : message);
     }
-    exports.warning = warning2;
+    exports.warning = warning3;
     function notice(message, properties = {}) {
       (0, command_1.issueCommand)("notice", (0, utils_1.toCommandProperties)(properties), message instanceof Error ? message.toString() : message);
     }
     exports.notice = notice;
-    function info3(message) {
+    function info4(message) {
       process.stdout.write(message + os.EOL);
     }
-    exports.info = info3;
+    exports.info = info4;
     function startGroup(name) {
       (0, command_1.issue)("group", name);
     }
@@ -49785,7 +49785,7 @@ var require_regexp = __commonJS({
 require_source_map_support().install();
 
 // src/main.ts
-var import_core6 = __toESM(require_core(), 1);
+var import_core7 = __toESM(require_core(), 1);
 
 // src/access-level.ts
 var ACCESS_RANK = {
@@ -49800,6 +49800,19 @@ function isSufficientAccess(have, want) {
 function isWriteAccess(access) {
   return ACCESS_RANK[access] > ACCESS_RANK.read;
 }
+function maxAccess(permissions) {
+  let max = "none";
+  let maxRank = 0;
+  for (const access of Object.values(permissions)) {
+    const definedAccess = access ?? "none";
+    const rank = ACCESS_RANK[definedAccess];
+    if (rank > maxRank) {
+      max = definedAccess;
+      maxRank = rank;
+    }
+  }
+  return max;
+}
 
 // src/github-reference.ts
 function createRepoRef(account, repo) {
@@ -49807,11 +49820,30 @@ function createRepoRef(account, repo) {
   assertRepo(repo);
   return { account, repo };
 }
+function createEnvRef(account, repo, environment) {
+  assertAccount(account);
+  assertRepo(repo);
+  assertEnvironment(environment);
+  return { account, repo, environment };
+}
 function isRepoRef(ref) {
   return "repo" in ref && typeof ref.repo === "string";
 }
+function isEnvRef(ref) {
+  return isRepoRef(ref) && "environment" in ref && typeof ref.environment === "string";
+}
+function repoRefFromName(name) {
+  const parts = name.split("/");
+  if (parts.length !== 2) {
+    throw new Error(`Invalid repo name ${JSON.stringify(name)}`);
+  }
+  return createRepoRef(parts[0], parts[1]);
+}
 function repoRefToString(ref) {
   return `${ref.account}/${ref.repo}`;
+}
+function accountOrRepoRefToString(ref) {
+  return isRepoRef(ref) ? repoRefToString(ref) : ref.account;
 }
 function assertAccount(account) {
   if (typeof account !== "string" || !account || account.includes("/")) {
@@ -49821,6 +49853,11 @@ function assertAccount(account) {
 function assertRepo(repo) {
   if (typeof repo !== "string" || !repo || repo.includes("/")) {
     throw new Error(`Invalid repo name ${JSON.stringify(repo)}`);
+  }
+}
+function assertEnvironment(environment) {
+  if (typeof environment !== "string" || !environment) {
+    throw new Error(`Invalid environment name ${JSON.stringify(environment)}`);
   }
 }
 
@@ -49841,6 +49878,19 @@ function isEmptyPermissions(permissions) {
       case "write":
       case "admin":
         return false;
+    }
+  }
+  return true;
+}
+function isSufficientPermissions(have, want) {
+  const permissions = Object.keys(want);
+  if (isEmptyPermissions(want)) throw new Error("Empty permissions");
+  for (const permission of permissions) {
+    if (!isSufficientAccess(
+      permissionAccess(have, permission),
+      permissionAccess(want, permission)
+    )) {
+      return false;
     }
   }
   return true;
@@ -58871,11 +58921,11 @@ async function errorRequest(state, octokit, error, options) {
 }
 async function wrapRequest(state, octokit, request2, options) {
   const limiter = new import_light.default();
-  limiter.on("failed", function(error, info3) {
+  limiter.on("failed", function(error, info4) {
     const maxRetries = ~~error.request.request.retries;
     const after = ~~error.request.request.retryAfter;
-    options.request.retryCount = info3.retryCount + 1;
-    if (maxRetries > info3.retryCount) {
+    options.request.retryCount = info4.retryCount + 1;
+    if (maxRetries > info4.retryCount) {
       return after * state.retryAfterBaseValue;
     }
   });
@@ -59153,8 +59203,43 @@ var import_core4 = __toESM(require_core(), 1);
 
 // src/name-pattern.ts
 var import_regexp = __toESM(require_regexp(), 1);
+function createNamePattern(pattern) {
+  if (!pattern) throw new Error("Pattern cannot be empty");
+  if (pattern.includes("/")) {
+    throw new Error(`Pattern ${JSON.stringify(pattern)} cannot contain /`);
+  }
+  const literals = pattern.split("*");
+  const expression = patternRegExp(literals);
+  return {
+    test: (string) => expression.test(string),
+    toString: () => pattern
+  };
+}
+function patternRegExp(literals) {
+  let exp = "^";
+  for (let i = 0; i < literals.length; ++i) {
+    if (i) exp += "[^/]*";
+    exp += (0, import_regexp.default)(literals[i]);
+  }
+  exp += "$";
+  return new RegExp(exp);
+}
 
 // src/github-pattern.ts
+function createGitHubPattern(pattern) {
+  const [accountPart, repoPart] = splitGitHubPattern(pattern);
+  const account = createNamePattern(accountPart);
+  const repo = repoPart ? createNamePattern(repoPart) : void 0;
+  return {
+    test: (string) => {
+      const parts = string.split("/");
+      if (parts.length === 1) return repo ? false : account.test(parts[0]);
+      if (parts.length !== 2 || !repo) return false;
+      return account.test(parts[0]) && repo.test(parts[1]);
+    },
+    toString: () => pattern
+  };
+}
 function normalizeGitHubPattern(definingAccount, pattern) {
   const [accountPart, repoPart] = splitGitHubPattern(pattern);
   return accountPart === "." ? repoPart == null ? definingAccount.account : repoRefToString(createRepoRef(definingAccount.account, repoPart)) : pattern;
@@ -59297,11 +59382,573 @@ async function discoverRequesters(octokitFactory, appRegistry, appsInput) {
   return discovered;
 }
 
+// src/environment-resolver.ts
+var import_core6 = __toESM(require_core(), 1);
+function createEnvironmentResolver(octokitFactory, appRegistry, appsInput) {
+  const envsByRepo = {};
+  return {
+    async resolveEnvironments(repo, patterns) {
+      const repoName = repoRefToString(repo);
+      const resolved = (await repoEnvs(repo)).filter(
+        (env) => anyPatternMatches(patterns, env)
+      );
+      const patternStrings = patterns.map((p) => p.toString());
+      (0, import_core6.debug)(
+        `Environment patterns ${JSON.stringify(patternStrings)} for ${repoName} resolved to ${JSON.stringify(resolved)}`
+      );
+      return resolved;
+    }
+  };
+  async function repoEnvs(repo) {
+    const repoName = repoRefToString(repo);
+    if (envsByRepo[repoName]) return envsByRepo[repoName];
+    const [provisionerReg] = appRegistry.findProvisionersForRepo(repo);
+    if (!provisionerReg) {
+      throw new Error(`No provisioners found for repo ${repoName}`);
+    }
+    const { installation } = provisionerReg;
+    const octokit = octokitFactory.installationOctokit(
+      appsInput,
+      installation.app_id,
+      installation.id
+    );
+    const envPages = octokit.paginate.iterator(
+      octokit.rest.repos.getAllEnvironments,
+      { owner: repo.account, repo: repo.repo }
+    );
+    const names = [];
+    for await (const { data: envs } of envPages) {
+      for (const env of envs) names.push(env.name);
+    }
+    (0, import_core6.debug)(`Repo ${repoName} has environments ${JSON.stringify(names)}`);
+    return envsByRepo[repoName] = names;
+  }
+}
+
+// src/provision-auth-explainer/text.ts
+var ALLOWED_ICON = "\u2705";
+var DENIED_ICON = "\u274C";
+function createTextProvisionAuthExplainer() {
+  return (result) => {
+    const { isAllowed, rules } = result;
+    return `${explainSummary(result)}
+  ${renderIcon(isAllowed)} ${isAllowed ? "Can" : "Can't"} provision to ${explainSubject(result)} ${explainBasedOnRules(rules)}`;
+  };
+  function explainSummary({ request: request2, isAllowed }) {
+    return `${renderIcon(isAllowed)} Repo ${repoRefToString(request2.requester)} ` + (isAllowed ? "was allowed" : "wasn't allowed") + ` to provision secret ${request2.name}:`;
+  }
+  function explainSubject({ request: request2 }) {
+    const type2 = ((r) => {
+      const type3 = r.type;
+      switch (type3) {
+        case "actions":
+          return "Actions";
+        case "codespaces":
+          return "Codespaces";
+        case "dependabot":
+          return "Dependabot";
+        case "environment":
+          return `environment ${r.target.environment}`;
+      }
+      throw new Error(
+        `Invariant violation: Unexpected secret type ${JSON.stringify(type3)}`
+      );
+    })(request2);
+    return `${type2} in ${accountOrRepoRefToString(request2.target)}`;
+  }
+  function explainBasedOnRules(rules) {
+    const ruleCount = rules.length;
+    const ruleOrRules = ruleCount === 1 ? "rule" : "rules";
+    const basedOn = ruleCount < 1 ? "(no matching rules)" : `based on ${ruleCount} ${ruleOrRules}`;
+    if (ruleCount < 1) return basedOn;
+    let explainedRules = "";
+    for (const ruleResult of rules) {
+      explainedRules += "\n" + explainRule(ruleResult);
+    }
+    return `${basedOn}:${explainedRules}`;
+  }
+  function explainRule({ index, rule, have }) {
+    const isAllowed = have === "allow";
+    return `    ${renderIcon(isAllowed)} ${isAllowed ? "Allowed" : "Denied"} by rule ${renderRule(index, rule)}`;
+  }
+  function renderRule(index, { description }) {
+    const n = `#${index + 1}`;
+    return description ? `${n}: ${JSON.stringify(description)}` : n;
+  }
+  function renderIcon(isAllowed) {
+    return isAllowed ? ALLOWED_ICON : DENIED_ICON;
+  }
+}
+
+// src/provision-authorizer.ts
+function createProvisionAuthorizer(config) {
+  const [namePatterns, targetPatterns, requesterPatterns] = patternsForRules(
+    config.rules.secrets
+  );
+  return {
+    authorizeSecret(request2) {
+      const isSelfAccount = request2.requester.account === request2.target.account;
+      const isSelfRepo = isRepoRef(request2.target) && request2.requester.account === request2.target.account && request2.requester.repo === request2.target.repo;
+      const requester = repoRefToString(request2.requester);
+      const target = accountOrRepoRefToString(request2.target);
+      const ruleResults = [];
+      let have;
+      for (let i = 0; i < config.rules.secrets.length; ++i) {
+        if (!anyPatternMatches(namePatterns[i], request2.name)) continue;
+        if (!anyPatternMatches(requesterPatterns[i], requester)) continue;
+        const rule = config.rules.secrets[i];
+        let ruleHave;
+        let isRelevant = false;
+        if (isRepoRef(request2.target)) {
+          for (let j = 0; j < targetPatterns[i].repos.length; ++j) {
+            const [repo, repoPattern, envPatterns] = targetPatterns[i].repos[j];
+            if (!repoPattern.test(target)) continue;
+            const repoPatternHave = request2.type === "environment" && isEnvRef(request2.target) ? applyEnvPatterns(
+              request2.target.environment,
+              rule.to.github.repos[repo].environments,
+              envPatterns
+            ) : selectBySecretType(rule.to.github.repos[repo], request2.type);
+            if (repoPatternHave) {
+              isRelevant = true;
+              ruleHave = repoPatternHave;
+            }
+            if (ruleHave === "deny") break;
+          }
+          if (isSelfRepo) {
+            const selfHave = request2.type === "environment" && isEnvRef(request2.target) ? applyEnvPatterns(
+              request2.target.environment,
+              rule.to.github.repo.environments,
+              targetPatterns[i].selfRepoEnvs
+            ) : selectBySecretType(rule.to.github.repo, request2.type);
+            if (selfHave) {
+              isRelevant = true;
+              ruleHave = selfHave;
+            }
+          }
+        } else {
+          for (let j = 0; j < targetPatterns[i].accounts.length; ++j) {
+            const [account, accountPattern] = targetPatterns[i].accounts[j];
+            if (!accountPattern.test(target)) continue;
+            const accountPatternHave = selectBySecretType(
+              rule.to.github.accounts[account],
+              request2.type
+            );
+            if (accountPatternHave) {
+              isRelevant = true;
+              ruleHave = accountPatternHave;
+            }
+            if (ruleHave === "deny") break;
+          }
+          if (isSelfAccount) {
+            const selfHave = selectBySecretType(
+              rule.to.github.account,
+              request2.type
+            );
+            if (selfHave) {
+              isRelevant = true;
+              ruleHave = selfHave;
+            }
+          }
+        }
+        if (!isRelevant) continue;
+        if (ruleHave) have = ruleHave;
+        ruleResults.push({
+          index: i,
+          rule,
+          have: ruleHave
+        });
+      }
+      return {
+        request: request2,
+        rules: ruleResults,
+        have,
+        isAllowed: have === "allow"
+      };
+    }
+  };
+  function patternsForRules(rules) {
+    const namePatterns2 = {};
+    const targetPatterns2 = {};
+    const requesterPatterns2 = {};
+    for (let i = 0; i < rules.length; ++i) {
+      [namePatterns2[i], targetPatterns2[i], requesterPatterns2[i]] = patternsForRule(rules[i]);
+    }
+    return [namePatterns2, targetPatterns2, requesterPatterns2];
+  }
+  function patternsForRule(rule) {
+    const namePatterns2 = [];
+    const targetPatterns2 = {
+      accounts: [],
+      repos: [],
+      selfRepoEnvs: []
+    };
+    const requesterPatterns2 = [];
+    for (const name of rule.secrets) namePatterns2.push(createNamePattern(name));
+    for (const account of Object.keys(rule.to.github.accounts)) {
+      targetPatterns2.accounts.push([account, createGitHubPattern(account)]);
+    }
+    for (const repo of Object.keys(rule.to.github.repos)) {
+      const envPatterns = [];
+      for (const env of Object.keys(rule.to.github.repos[repo].environments)) {
+        envPatterns.push([env, createNamePattern(env)]);
+      }
+      targetPatterns2.repos.push([repo, createGitHubPattern(repo), envPatterns]);
+    }
+    for (const env of Object.keys(rule.to.github.repo.environments)) {
+      targetPatterns2.selfRepoEnvs.push([env, createNamePattern(env)]);
+    }
+    for (const requester of rule.requesters) {
+      requesterPatterns2.push(createGitHubPattern(requester));
+    }
+    return [namePatterns2, targetPatterns2, requesterPatterns2];
+  }
+  function selectBySecretType(types, type2) {
+    switch (type2) {
+      case "actions":
+        return types.actions;
+      case "codespaces":
+        return types.codespaces;
+      case "dependabot":
+        return types.dependabot;
+    }
+    throw new Error(
+      `Invariant violation: Unexpected secret type ${JSON.stringify(type2)}`
+    );
+  }
+  function applyEnvPatterns(reqEnv, environments, envPatterns) {
+    let have;
+    for (let i = 0; i < envPatterns.length; ++i) {
+      const [env, envPattern] = envPatterns[i];
+      if (!envPattern.test(reqEnv)) continue;
+      if (environments[env] === "deny") return "deny";
+      have = environments[env];
+    }
+    return have;
+  }
+}
+
 // src/register-token-declarations.ts
 function registerTokenDeclarations(declarationRegistry, requesters) {
   for (const [, { requester, config }] of requesters) {
     for (const [name, declaration] of Object.entries(config.tokens)) {
       declarationRegistry.registerDeclaration(requester, name, declaration);
+    }
+  }
+}
+
+// src/token-auth-explainer/text.ts
+var ALLOWED_ICON2 = "\u2705";
+var DENIED_ICON2 = "\u274C";
+var ACCESS_LEVELS = {
+  none: "No",
+  admin: "Admin",
+  read: "Read",
+  write: "Write"
+};
+function createTextTokenAuthExplainer() {
+  return (result) => {
+    if (result.type === "ALL_REPOS") return explainAllRepos(result);
+    if (result.type === "NO_REPOS") return explainNoRepos(result);
+    return explainSelectedRepos(result);
+  };
+  function explainAllRepos(result) {
+    const { request: request2, isSufficient, rules } = result;
+    const subject = `all repos in ${request2.declaration.account}`;
+    return `${explainSummary(result)}
+  ${explainMaxAccessAndRole(result, subject)}
+  ${renderIcon(isSufficient)} ${isSufficient ? "Sufficient" : "Insufficient"} access to ${subject} ${explainBasedOnRules(request2.declaration.permissions, rules)}`;
+  }
+  function explainNoRepos(result) {
+    const { request: request2, isSufficient, rules } = result;
+    return `${explainSummary(result)}
+  ${explainMaxAccessAndRole(result, request2.declaration.account)}
+  ${renderIcon(isSufficient)} ${isSufficient ? "Sufficient" : "Insufficient"} access to ${request2.declaration.account} ${explainBasedOnRules(request2.declaration.permissions, rules)}`;
+  }
+  function explainSelectedRepos(result) {
+    const { request: request2, results } = result;
+    const subject = `repos in ${request2.declaration.account}`;
+    const resourceEntries = Object.entries(results).sort(
+      ([a], [b]) => a.localeCompare(b)
+    );
+    let explainedResources = "";
+    for (const [resourceRepo, resourceResult] of resourceEntries) {
+      explainedResources += "\n" + explainResourceRepo(
+        resourceRepo,
+        request2.declaration.permissions,
+        resourceResult
+      );
+    }
+    return `${explainSummary(result)}
+  ${explainMaxAccessAndRole(result, subject)}
+  ${explainSelectedReposMatch(result)}` + explainedResources;
+  }
+  function explainSummary({ request: request2, isAllowed }) {
+    const name = accountOrRepoRefToString(request2.consumer);
+    if (isRepoRef(request2.consumer)) {
+      return `${renderIcon(isAllowed)} Repo ${name} was ${isAllowed ? "allowed" : "denied"} access to a token:`;
+    }
+    return `${renderIcon(isAllowed)} Account ${name} was ${isAllowed ? "allowed" : "denied"} access to a token:`;
+  }
+  function explainMaxAccessAndRole({ request: request2, maxWant, isMissingRole }, accessTo) {
+    return `${renderIcon(!isMissingRole)} ${ACCESS_LEVELS[maxWant]} access to ${accessTo} ` + (request2.declaration.as ? `requested with role ${request2.declaration.as}` : "requested without a role");
+  }
+  function explainSelectedReposMatch({
+    request: request2,
+    isMatched
+  }) {
+    const repoPatterns = pluralize(
+      request2.declaration.repos.length,
+      "repo pattern",
+      "repo patterns"
+    );
+    const repos = pluralize(request2.repos.length, "repo", "repos");
+    return `${renderIcon(isMatched)} ${repoPatterns} matched ${repos}`;
+  }
+  function explainResourceRepo(resource, want, { isSufficient, rules }) {
+    return `  ${renderIcon(isSufficient)} ${isSufficient ? "Sufficient" : "Insufficient"} access to repo ${resource} ${explainBasedOnRules(want, rules)}`;
+  }
+  function explainBasedOnRules(want, rules) {
+    const ruleCount = rules.length;
+    const ruleOrRules = ruleCount === 1 ? "rule" : "rules";
+    const basedOn = ruleCount < 1 ? "(no matching rules)" : `based on ${ruleCount} ${ruleOrRules}`;
+    if (ruleCount < 1) return basedOn;
+    let explainedRules = "";
+    for (const ruleResult of rules) {
+      explainedRules += "\n" + explainRule(want, ruleResult);
+    }
+    return `${basedOn}:${explainedRules}`;
+  }
+  function explainRule(want, { index, rule, have, isSufficient }) {
+    return `    ${renderIcon(isSufficient)} Rule ${renderRule(index, rule)} gave ${isSufficient ? "sufficient" : "insufficient"} access:` + renderPermissionComparison("      ", have, want);
+  }
+  function renderRule(index, { description }) {
+    const n = `#${index + 1}`;
+    return description ? `${n}: ${JSON.stringify(description)}` : n;
+  }
+  function renderPermissionComparison(indent, have, want) {
+    const entries = [];
+    for (const p of Object.keys(want).sort((a, b) => a.localeCompare(b))) {
+      const h = permissionAccess(have, p);
+      const w = permissionAccess(want, p);
+      entries.push([isSufficientAccess(h, w), `${p}: have ${h}, wanted ${w}`]);
+    }
+    return renderAllowDenyList(indent, entries);
+  }
+  function renderAllowDenyList(indent, items) {
+    let list = "";
+    for (const [isAllowed, entry] of items) {
+      list += `
+${indent}${renderIcon(isAllowed)} ${entry}`;
+    }
+    return list;
+  }
+  function renderIcon(isAllowed) {
+    return isAllowed ? ALLOWED_ICON2 : DENIED_ICON2;
+  }
+}
+
+// src/token-authorizer.ts
+function createTokenAuthorizer(config) {
+  const [resourcePatterns, consumerPatterns] = patternsForRules(config.rules);
+  return {
+    authorizeToken(request2) {
+      if (isEmptyPermissions(request2.declaration.permissions)) {
+        throw new Error("No permissions requested");
+      }
+      if (request2.declaration.repos === "all") {
+        return authorizeAllRepos(request2);
+      }
+      if (request2.declaration.repos.length < 1) {
+        return authorizeNoRepos(request2);
+      }
+      return authorizeSelectedRepos(request2);
+    }
+  };
+  function authorizeAllRepos(request2) {
+    const rules = rulesForConsumer(request2.consumer);
+    let isSufficient = false;
+    const ruleResults = [];
+    const have = {};
+    for (const i of rules) {
+      const rule = config.rules[i];
+      let isRelevant = false;
+      for (let j = 0; j < rule.resources.length; ++j) {
+        isRelevant = rule.resources[j].allRepos === true && anyPatternMatches(
+          resourcePatterns[i][j].accounts,
+          request2.declaration.account
+        );
+        if (isRelevant) break;
+      }
+      if (!isRelevant) continue;
+      updatePermissions(have, rule.permissions);
+      isSufficient = isSufficientPermissions(
+        have,
+        request2.declaration.permissions
+      );
+      ruleResults.push({
+        index: i,
+        rule,
+        have: structuredClone(have),
+        isSufficient
+      });
+    }
+    const maxWant = maxAccess(request2.declaration.permissions);
+    const isWrite = isWriteAccess(maxWant);
+    const isMissingRole = isWrite && !request2.declaration.as;
+    const isAllowed = isSufficient && !isMissingRole;
+    return {
+      request: request2,
+      type: "ALL_REPOS",
+      rules: ruleResults,
+      have,
+      maxWant,
+      isSufficient,
+      isMissingRole,
+      isAllowed
+    };
+  }
+  function authorizeNoRepos(request2) {
+    const rules = rulesForConsumer(request2.consumer);
+    let isSufficient = false;
+    const ruleResults = [];
+    const have = {};
+    for (const i of rules) {
+      const rule = config.rules[i];
+      let isRelevant = false;
+      for (let j = 0; j < rule.resources.length; ++j) {
+        isRelevant = rule.resources[j].noRepos === true && anyPatternMatches(
+          resourcePatterns[i][j].accounts,
+          request2.declaration.account
+        );
+        if (isRelevant) break;
+      }
+      if (!isRelevant) continue;
+      updatePermissions(have, rule.permissions);
+      isSufficient = isSufficientPermissions(
+        have,
+        request2.declaration.permissions
+      );
+      ruleResults.push({
+        index: i,
+        rule,
+        have: structuredClone(have),
+        isSufficient
+      });
+    }
+    const maxWant = maxAccess(request2.declaration.permissions);
+    const isWrite = isWriteAccess(maxWant);
+    const isMissingRole = isWrite && !request2.declaration.as;
+    const isAllowed = isSufficient && !isMissingRole;
+    return {
+      request: request2,
+      type: "NO_REPOS",
+      rules: ruleResults,
+      have,
+      maxWant,
+      isSufficient,
+      isMissingRole,
+      isAllowed
+    };
+  }
+  function authorizeSelectedRepos(request2) {
+    const rules = rulesForConsumer(request2.consumer);
+    let isSufficient = true;
+    const resourceResults = {};
+    for (const reqRepo of request2.repos) {
+      const reqResource = repoRefToString(
+        createRepoRef(request2.declaration.account, reqRepo)
+      );
+      const ruleResults = [];
+      const have = {};
+      let isResourceSufficient = false;
+      for (const i of rules) {
+        const rule = config.rules[i];
+        let isRelevant = false;
+        for (let j = 0; j < rule.resources.length; ++j) {
+          const { accounts, repos } = resourcePatterns[i][j];
+          isRelevant = anyPatternMatches(accounts, request2.declaration.account) && anyPatternMatches(repos, reqRepo);
+          if (isRelevant) break;
+        }
+        if (!isRelevant) continue;
+        updatePermissions(have, rule.permissions);
+        isResourceSufficient = isSufficientPermissions(
+          have,
+          request2.declaration.permissions
+        );
+        ruleResults.push({
+          index: i,
+          rule,
+          have: structuredClone(have),
+          isSufficient: isResourceSufficient
+        });
+      }
+      isSufficient &&= isResourceSufficient;
+      resourceResults[reqResource] = {
+        rules: ruleResults,
+        have,
+        isSufficient: isResourceSufficient
+      };
+    }
+    const maxWant = maxAccess(request2.declaration.permissions);
+    const isWrite = isWriteAccess(maxWant);
+    const isMissingRole = isWrite && !request2.declaration.as;
+    const isMatched = request2.repos.length > 0;
+    const isAllowed = isSufficient && !isMissingRole && isMatched;
+    return {
+      request: request2,
+      type: "SELECTED_REPOS",
+      results: resourceResults,
+      maxWant,
+      isSufficient,
+      isMissingRole,
+      isMatched,
+      isAllowed
+    };
+  }
+  function patternsForRules(rules) {
+    const resourcePatterns2 = {};
+    const consumerPatterns2 = {};
+    for (let i = 0; i < rules.length; ++i) {
+      [resourcePatterns2[i], consumerPatterns2[i]] = patternsForRule(rules[i]);
+    }
+    return [resourcePatterns2, consumerPatterns2];
+  }
+  function patternsForRule(rule) {
+    const resourcePatterns2 = [];
+    const consumerPatterns2 = [];
+    for (const criteria of rule.resources) {
+      resourcePatterns2.push(patternsForResourceCriteria(criteria));
+    }
+    for (const consumer of rule.consumers) {
+      consumerPatterns2.push(createGitHubPattern(consumer));
+    }
+    return [resourcePatterns2, consumerPatterns2];
+  }
+  function patternsForResourceCriteria(criteria) {
+    const accounts = [];
+    const repos = [];
+    for (const pattern of criteria.accounts) {
+      accounts.push(createNamePattern(pattern));
+    }
+    for (const pattern of criteria.selectedRepos) {
+      repos.push(createNamePattern(pattern));
+    }
+    return { accounts, repos };
+  }
+  function rulesForConsumer(consumer) {
+    const consumerName = accountOrRepoRefToString(consumer);
+    const indices = [];
+    for (let i = 0; i < config.rules.length; ++i) {
+      if (anyPatternMatches(consumerPatterns[i], consumerName)) {
+        indices.push(i);
+      }
+    }
+    return indices;
+  }
+  function updatePermissions(have, permissions) {
+    Object.assign(have, permissions);
+    for (const [permission, access = "none"] of Object.entries(have)) {
+      if (access === "none") delete have[permission];
     }
   }
 }
@@ -59324,20 +59971,247 @@ function createTokenDeclarationRegistry() {
 
 // src/main.ts
 main().catch((error) => {
-  (0, import_core6.setFailed)(errorStack(error));
+  (0, import_core7.setFailed)(errorStack(error));
 });
 async function main() {
   const appsInput = readAppsInput();
+  const config = await (0, import_core7.group)("Reading provider configuration", async () => {
+    const config2 = {
+      permissions: {
+        rules: [
+          {
+            description: "Allow all tokens",
+            resources: [
+              {
+                accounts: ["*"],
+                noRepos: true,
+                allRepos: true,
+                selectedRepos: ["*"]
+              }
+            ],
+            consumers: ["*", "*/*"],
+            permissions: {
+              metadata: "read"
+            }
+          }
+        ]
+      },
+      provision: {
+        rules: {
+          secrets: [
+            {
+              description: "Allow all secrets",
+              secrets: ["*"],
+              requesters: ["*/*"],
+              to: {
+                github: {
+                  account: {},
+                  accounts: {
+                    "*": {
+                      actions: "allow",
+                      codespaces: "allow",
+                      dependabot: "allow"
+                    }
+                  },
+                  repo: { environments: {} },
+                  repos: {
+                    "*/*": {
+                      actions: "allow",
+                      codespaces: "allow",
+                      dependabot: "allow",
+                      environments: { "*": "allow" }
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    };
+    return config2;
+  });
   const octokitFactory = createOctokitFactory();
   const appRegistry = createAppRegistry();
   const declarationRegistry = createTokenDeclarationRegistry();
-  await (0, import_core6.group)("Discovering apps", async () => {
+  const environmentResolver = createEnvironmentResolver(
+    octokitFactory,
+    appRegistry,
+    appsInput
+  );
+  const tokenAuthorizer = createTokenAuthorizer(config.permissions);
+  const tokenAuthExplainer = createTextTokenAuthExplainer();
+  const provisionAuthorizer = createProvisionAuthorizer(config.provision);
+  const provisionAuthExplainer = createTextProvisionAuthExplainer();
+  await (0, import_core7.group)("Discovering apps", async () => {
     await discoverApps(octokitFactory, appRegistry, appsInput);
   });
-  const requesters = await (0, import_core6.group)("Discovering requesters", async () => {
+  const requesters = await (0, import_core7.group)("Discovering requesters", async () => {
     return discoverRequesters(octokitFactory, appRegistry, appsInput);
   });
   registerTokenDeclarations(declarationRegistry, requesters);
+  const requests = [];
+  const platform = "github";
+  for (const [, discovered] of requesters) {
+    for (const name in discovered.config.provision.secrets) {
+      const secretDec = discovered.config.provision.secrets[name];
+      const [tokenDec] = declarationRegistry.findDeclarationForRequester(
+        discovered.requester,
+        secretDec.token
+      );
+      if (!tokenDec) {
+        (0, import_core7.warning)(`Undefined token ${secretDec.token}`);
+        continue;
+      }
+      for (const type2 of ["actions", "codespaces", "dependabot"]) {
+        if (secretDec.github.account[type2]) {
+          requests.push([
+            secretDec,
+            tokenDec,
+            {
+              requester: discovered.requester,
+              name,
+              platform,
+              target: { account: discovered.requester.account },
+              type: type2
+            }
+          ]);
+        }
+      }
+      for (const accountPattern in secretDec.github.accounts) {
+        const accounts = appRegistry.resolveProvisionerAccounts([
+          createNamePattern(accountPattern)
+        ]);
+        for (const type2 of ["actions", "codespaces", "dependabot"]) {
+          if (secretDec.github.accounts[accountPattern][type2]) {
+            for (const account of accounts) {
+              requests.push([
+                secretDec,
+                tokenDec,
+                {
+                  requester: discovered.requester,
+                  name,
+                  platform,
+                  type: type2,
+                  target: { account }
+                }
+              ]);
+            }
+          }
+        }
+      }
+      for (const type2 of ["actions", "codespaces", "dependabot"]) {
+        if (secretDec.github.repo[type2]) {
+          requests.push([
+            secretDec,
+            tokenDec,
+            {
+              requester: discovered.requester,
+              name,
+              platform,
+              type: type2,
+              target: discovered.requester
+            }
+          ]);
+        }
+      }
+      if (secretDec.github.repo.environments.length > 0) {
+        const envs = await environmentResolver.resolveEnvironments(
+          discovered.requester,
+          secretDec.github.repo.environments.map(createNamePattern)
+        );
+        for (const environment of envs) {
+          requests.push([
+            secretDec,
+            tokenDec,
+            {
+              requester: discovered.requester,
+              name,
+              platform,
+              type: "environment",
+              target: { ...discovered.requester, environment }
+            }
+          ]);
+        }
+      }
+      for (const repoPattern in secretDec.github.repos) {
+        const repos = appRegistry.resolveProvisionerRepos([
+          createNamePattern(repoPattern)
+        ]);
+        for (const repoName of repos) {
+          const repo = repoRefFromName(repoName);
+          for (const type2 of ["actions", "codespaces", "dependabot"]) {
+            if (secretDec.github.repos[repoPattern][type2]) {
+              requests.push([
+                secretDec,
+                tokenDec,
+                {
+                  requester: discovered.requester,
+                  name,
+                  platform,
+                  type: type2,
+                  target: repo
+                }
+              ]);
+            }
+          }
+          if (secretDec.github.repos[repoPattern].environments.length > 0) {
+            const envs = await environmentResolver.resolveEnvironments(
+              repo,
+              secretDec.github.repos[repoPattern].environments.map(
+                createNamePattern
+              )
+            );
+            for (const environment of envs) {
+              requests.push([
+                secretDec,
+                tokenDec,
+                {
+                  requester: discovered.requester,
+                  name,
+                  platform,
+                  type: "environment",
+                  target: createEnvRef(repo.account, repo.repo, environment)
+                }
+              ]);
+            }
+          }
+        }
+      }
+    }
+  }
+  const tokenAuthResults = {};
+  for (const [secretDec, tokenDec, provisionReq] of requests) {
+    const tokenAuthKey = JSON.stringify([
+      accountOrRepoRefToString(provisionReq.target),
+      secretDec.token
+    ]);
+    let tokenAuthResult = tokenAuthResults[tokenAuthKey];
+    if (tokenAuthResult == null) {
+      let repos;
+      if (tokenDec.repos === "all") {
+        repos = "all";
+      } else {
+        const repoPatterns = tokenDec.repos.map((repo) => {
+          return createGitHubPattern(
+            repoRefToString(createRepoRef(tokenDec.account, repo))
+          );
+        });
+        repos = appRegistry.resolveIssuerRepos(repoPatterns).map((repo) => repoRefFromName(repo).repo);
+      }
+      const tokenReq = {
+        consumer: provisionReq.target,
+        declaration: tokenDec,
+        repos
+      };
+      tokenAuthResult = tokenAuthorizer.authorizeToken(tokenReq);
+      tokenAuthResults[tokenAuthKey] = tokenAuthResult;
+      (0, import_core7.info)(tokenAuthExplainer(tokenAuthResult));
+    }
+    if (!tokenAuthResult.isAllowed) continue;
+    const provisionResult = provisionAuthorizer.authorizeSecret(provisionReq);
+    (0, import_core7.info)(provisionAuthExplainer(provisionResult));
+  }
 }
 /*! Bundled license information:
 
