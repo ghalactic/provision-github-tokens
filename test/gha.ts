@@ -1,6 +1,16 @@
 import { describe } from "vitest";
 import { createTestOctokit, type TestOctokit } from "./octokit.js";
 
+export function underGHA(fn: () => void): void {
+  const isGHA = process.env.GITHUB_ACTIONS === "true";
+
+  (isGHA ? describe : describe.skip)("Under GitHub Actions", () => {
+    if (!isGHA) return;
+
+    fn();
+  });
+}
+
 export type GitHubActionsContext = {
   octokit: TestOctokit;
   owner: string;
@@ -11,23 +21,17 @@ export type GitHubActionsContext = {
   runAttempt: string;
 };
 
-export function underGHA(fn: (context: GitHubActionsContext) => void): void {
-  const isGHA = process.env.GITHUB_ACTIONS === "true";
+export function getGHAContext(): GitHubActionsContext {
+  const {
+    GITHUB_REF: ref = "",
+    GITHUB_REPOSITORY: slug = "",
+    GITHUB_SHA: sha = "",
+    GITHUB_RUN_ID: runId = "",
+    GITHUB_RUN_ATTEMPT: runAttempt = "",
+  } = process.env;
 
-  (isGHA ? describe : describe.skip)("Under GitHub Actions", () => {
-    if (!isGHA) return;
+  const [owner, repo] = slug.split("/");
+  const octokit = createTestOctokit();
 
-    const {
-      GITHUB_REF: ref = "",
-      GITHUB_REPOSITORY: slug = "",
-      GITHUB_SHA: sha = "",
-      GITHUB_RUN_ID: runId = "",
-      GITHUB_RUN_ATTEMPT: runAttempt = "",
-    } = process.env;
-
-    const [owner, repo] = slug.split("/");
-    const octokit = createTestOctokit();
-
-    fn({ octokit, owner, repo, ref, sha, runId, runAttempt });
-  });
+  return { octokit, owner, repo, ref, sha, runId, runAttempt };
 }
