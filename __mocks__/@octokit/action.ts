@@ -1,12 +1,15 @@
+import type { RestEndpointMethodTypes } from "@octokit/action";
 import { RequestError } from "@octokit/request-error";
 
 let apps: any[];
 let installations: [installation: any, repos: any[]][];
+let files: Record<string, Record<string, string>>;
 let errorsByEndpoint: Record<string, (Error | undefined)[]> = {};
 
 export function __reset() {
   apps = [];
   installations = [];
+  files = {};
   errorsByEndpoint = {};
 }
 
@@ -18,6 +21,13 @@ export function __setInstallations(
   newInstallations: [installation: any, repos: any[]][],
 ) {
   installations = newInstallations;
+}
+
+export function __setFiles(
+  newFiles: [repo: any, files: Record<string, string>][],
+) {
+  files = {};
+  for (const [repo, f] of newFiles) files[repo.full_name] = f;
 }
 
 export function __setErrors(endpoint: string, errors: (Error | undefined)[]) {
@@ -69,6 +79,37 @@ export function Octokit({
         listInstallations: "apps.listInstallations",
         listReposAccessibleToInstallation:
           "apps.listReposAccessibleToInstallation",
+      },
+
+      repos: {
+        getContent: async ({
+          owner,
+          repo,
+          path,
+          headers,
+        }: RestEndpointMethodTypes["repos"]["getContent"]["parameters"]) => {
+          throwIfEndpointError("repos.getContent");
+
+          if (headers?.accept !== "application/vnd.github.raw+json") {
+            throw new TestRequestError(406);
+          }
+
+          for (const [installation, repos] of installations) {
+            if (installation.app_id !== appId) continue;
+            if (installation.id !== installationId) continue;
+
+            for (const r of repos) {
+              if (r.full_name !== `${owner}/${repo}`) continue;
+
+              const file = files[r.full_name]?.[path];
+
+              if (typeof file === "string") return { data: file };
+              throw new TestRequestError(404);
+            }
+          }
+
+          throw new TestRequestError(404);
+        },
       },
     },
   };
