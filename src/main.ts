@@ -51,6 +51,8 @@ async function main(): Promise<void> {
     const provisionRequests: ProvisionRequest[] = [];
     const platform = "github";
 
+    console.log(requester);
+
     for (const name in requester.config.provision.secrets) {
       const secretDec = requester.config.provision.secrets[name];
 
