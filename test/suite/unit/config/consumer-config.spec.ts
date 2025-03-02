@@ -287,7 +287,7 @@ it("throws when an invalid token name is defined", async () => {
 
   expect(throws(() => parseConsumerConfig("account-self", "repo-self", yaml)))
     .toMatchInlineSnapshot(`
-      "Parsing of consumer configuration failed for "# yaml-language-server: $schema=https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json\\n$schema: https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json\\n\\ntokens:\\n  invalid.token.name:\\n    repos: [repo-a]\\n    permissions: { contents: read }\\n"
+      "Parsing of consumer configuration failed
 
       Caused by: Invalid consumer configuration:
         - must only contain alphanumeric characters, hyphens, or underscores (/tokens)
@@ -301,7 +301,7 @@ it("throws when empty permissions are specified", async () => {
 
   expect(throws(() => parseConsumerConfig("account-self", "repo-self", yaml)))
     .toMatchInlineSnapshot(`
-      "Parsing of consumer configuration failed for "# yaml-language-server: $schema=https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json\\n$schema: https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json\\n\\ntokens:\\n  emptyPermissions:\\n    repos: [repo-a]\\n    permissions: {}\\n"
+      "Parsing of consumer configuration failed
 
       Caused by: Invalid consumer configuration:
         - must NOT have fewer than 1 properties (/tokens/emptyPermissions/permissions)"
@@ -317,7 +317,7 @@ it("throws when an invalid pattern is used in /provision/secrets/<name>/github/r
 
   expect(throws(() => parseConsumerConfig("account-self", "repo-self", yaml)))
     .toMatchInlineSnapshot(`
-      "Parsing of consumer configuration failed for "# yaml-language-server: $schema=https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json\\n$schema: https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json\\n\\nprovision:\\n  secrets:\\n    SECRET_A:\\n      token: tokenA\\n      github:\\n        repos:\\n          repo-x:\\n            actions: true\\n"
+      "Parsing of consumer configuration failed
 
       Caused by: Invalid consumer configuration:
         - must be a repo pattern in the form of "account/repo", or "./repo" (/provision/secrets/SECRET_A/github/repos)
@@ -331,7 +331,7 @@ it("throws when an invalid secret name is defined", async () => {
 
   expect(throws(() => parseConsumerConfig("account-self", "repo-self", yaml)))
     .toMatchInlineSnapshot(`
-      "Parsing of consumer configuration failed for "# yaml-language-server: $schema=https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json\\n$schema: https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json\\n\\nprovision:\\n  secrets:\\n    1_INVALID_SECRET_NAME:\\n      token: tokenA\\n      github:\\n        repo:\\n          actions: true\\n"
+      "Parsing of consumer configuration failed
 
       Caused by: Invalid consumer configuration:
         - must only contain alphanumeric characters or underscores, and cannot begin with a number (/provision/secrets)
@@ -345,7 +345,7 @@ it("throws when a secret token reference has an empty account", async () => {
 
   expect(throws(() => parseConsumerConfig("account-self", "repo-self", yaml)))
     .toMatchInlineSnapshot(`
-      "Parsing of consumer configuration failed for "# yaml-language-server: $schema=https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json\\n$schema: https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json\\n\\nprovision:\\n  secrets:\\n    TO_REPO_ACTIONS:\\n      token: /repo-a.tokenA\\n      github:\\n        repo:\\n          actions: true\\n"
+      "Parsing of consumer configuration failed
 
       Caused by: Invalid consumer configuration:
         - must be a token reference in the form of "account/repo.token-name", "./repo.token-name", or "token-name" (/provision/secrets/TO_REPO_ACTIONS/token)"
@@ -358,7 +358,7 @@ it("throws when a secret token reference has an invalid account", async () => {
 
   expect(throws(() => parseConsumerConfig("account-self", "repo-self", yaml)))
     .toMatchInlineSnapshot(`
-      "Parsing of consumer configuration failed for "# yaml-language-server: $schema=https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json\\n$schema: https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json\\n\\nprovision:\\n  secrets:\\n    TO_REPO_ACTIONS:\\n      token: account-/repo-a.tokenA\\n      github:\\n        repo:\\n          actions: true\\n"
+      "Parsing of consumer configuration failed
 
       Caused by: Invalid consumer configuration:
         - must be a token reference in the form of "account/repo.token-name", "./repo.token-name", or "token-name" (/provision/secrets/TO_REPO_ACTIONS/token)"
@@ -371,7 +371,7 @@ it("throws when a secret token reference has an empty repo", async () => {
 
   expect(throws(() => parseConsumerConfig("account-self", "repo-self", yaml)))
     .toMatchInlineSnapshot(`
-      "Parsing of consumer configuration failed for "# yaml-language-server: $schema=https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json\\n$schema: https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json\\n\\nprovision:\\n  secrets:\\n    TO_REPO_ACTIONS:\\n      token: account-a/.tokenA\\n      github:\\n        repo:\\n          actions: true\\n"
+      "Parsing of consumer configuration failed
 
       Caused by: Invalid consumer configuration:
         - must be a token reference in the form of "account/repo.token-name", "./repo.token-name", or "token-name" (/provision/secrets/TO_REPO_ACTIONS/token)"
@@ -384,7 +384,7 @@ it("throws when a secret token reference has an invalid repo", async () => {
 
   expect(throws(() => parseConsumerConfig("account-self", "repo-self", yaml)))
     .toMatchInlineSnapshot(`
-      "Parsing of consumer configuration failed for "# yaml-language-server: $schema=https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json\\n$schema: https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json\\n\\nprovision:\\n  secrets:\\n    TO_REPO_ACTIONS:\\n      token: account-a/repo-*.tokenA\\n      github:\\n        repo:\\n          actions: true\\n"
+      "Parsing of consumer configuration failed
 
       Caused by: Invalid consumer configuration:
         - must be a token reference in the form of "account/repo.token-name", "./repo.token-name", or "token-name" (/provision/secrets/TO_REPO_ACTIONS/token)"
@@ -397,7 +397,7 @@ it("throws when there are additional properties", async () => {
 
   expect(throws(() => parseConsumerConfig("account-self", "repo-self", yaml)))
     .toMatchInlineSnapshot(`
-      "Parsing of consumer configuration failed for "# yaml-language-server: $schema=https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json\\nadditional: This should not be allowed\\n"
+      "Parsing of consumer configuration failed
 
       Caused by: Invalid consumer configuration:
         - must NOT have additional properties"
@@ -407,7 +407,7 @@ it("throws when there are additional properties", async () => {
 it("throws when the YAML is invalid", async () => {
   expect(throws(() => parseConsumerConfig("account-self", "repo-self", "{")))
     .toMatchInlineSnapshot(`
-      "Parsing of consumer configuration failed for "{"
+      "Parsing of consumer configuration failed
 
       Caused by: unexpected end of the stream within a flow collection (2:1)
 

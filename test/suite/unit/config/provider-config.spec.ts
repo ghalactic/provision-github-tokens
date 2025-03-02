@@ -682,7 +682,7 @@ it("throws when an invalid pattern is used in /permissions/rules/<n>/resources/<
 
   expect(throws(() => parseProviderConfig("account-self", "repo-self", yaml)))
     .toMatchInlineSnapshot(`
-      "Parsing of provider configuration failed for "# yaml-language-server: $schema=https://ghalactic.github.io/provision-github-tokens/schema/provider.v1.schema.json\\n$schema: https://ghalactic.github.io/provision-github-tokens/schema/provider.v1.schema.json\\n\\npermissions:\\n  rules:\\n    - resources:\\n        - accounts: [-account-a]\\n          noRepos: true\\n      consumers: [./repo-a]\\n"
+      "Parsing of provider configuration failed
 
       Caused by: Invalid provider configuration:
         - must be a single period, or only contain alphanumeric characters, hyphens, or asterisks, and cannot begin or end with a hyphen (/permissions/rules/0/resources/0/accounts/0)"
@@ -698,7 +698,7 @@ it("throws when an invalid pattern is used in /permissions/rules/<n>/consumers/<
 
   expect(throws(() => parseProviderConfig("account-self", "repo-self", yaml)))
     .toMatchInlineSnapshot(`
-      "Parsing of provider configuration failed for "# yaml-language-server: $schema=https://ghalactic.github.io/provision-github-tokens/schema/provider.v1.schema.json\\n$schema: https://ghalactic.github.io/provision-github-tokens/schema/provider.v1.schema.json\\n\\npermissions:\\n  rules:\\n    - resources:\\n        - accounts: [account-a]\\n          noRepos: true\\n      consumers: [/repo-x]\\n"
+      "Parsing of provider configuration failed
 
       Caused by: Invalid provider configuration:
         - must be a pattern in the form of "account", "account/repo", or "./repo" (/permissions/rules/0/consumers/0)"
@@ -714,7 +714,7 @@ it("throws when an invalid pattern is used in /provision/rules/secrets/<n>/reque
 
   expect(throws(() => parseProviderConfig("account-self", "repo-self", yaml)))
     .toMatchInlineSnapshot(`
-      "Parsing of provider configuration failed for "# yaml-language-server: $schema=https://ghalactic.github.io/provision-github-tokens/schema/provider.v1.schema.json\\n$schema: https://ghalactic.github.io/provision-github-tokens/schema/provider.v1.schema.json\\n\\nprovision:\\n  rules:\\n    secrets:\\n      - secrets: [\\"*\\"]\\n        requesters: [repo-x]\\n        to:\\n          github:\\n            repo:\\n              actions: allow\\n"
+      "Parsing of provider configuration failed
 
       Caused by: Invalid provider configuration:
         - must be a repo pattern in the form of "account/repo", or "./repo" (/provision/rules/secrets/0/requesters/0)"
@@ -730,7 +730,7 @@ it("throws when an invalid pattern is used in /provision/rules/secrets/<n>/to/gi
 
   expect(throws(() => parseProviderConfig("account-self", "repo-self", yaml)))
     .toMatchInlineSnapshot(`
-      "Parsing of provider configuration failed for "# yaml-language-server: $schema=https://ghalactic.github.io/provision-github-tokens/schema/provider.v1.schema.json\\n$schema: https://ghalactic.github.io/provision-github-tokens/schema/provider.v1.schema.json\\n\\nprovision:\\n  rules:\\n    secrets:\\n      - secrets: [\\"*\\"]\\n        requesters: [\\"*/*\\"]\\n        to:\\n          github:\\n            repos:\\n              repo-x:\\n                actions: allow\\n"
+      "Parsing of provider configuration failed
 
       Caused by: Invalid provider configuration:
         - must be a repo pattern in the form of "account/repo", or "./repo" (/provision/rules/secrets/0/to/github/repos)
@@ -744,7 +744,7 @@ it("throws when there are additional properties", async () => {
 
   expect(throws(() => parseProviderConfig("account-self", "repo-self", yaml)))
     .toMatchInlineSnapshot(`
-      "Parsing of provider configuration failed for "# yaml-language-server: $schema=https://ghalactic.github.io/provision-github-tokens/schema/provider.v1.schema.json\\nadditional: This should not be allowed\\n"
+      "Parsing of provider configuration failed
 
       Caused by: Invalid provider configuration:
         - must NOT have additional properties"
@@ -754,7 +754,7 @@ it("throws when there are additional properties", async () => {
 it("throws when the YAML is invalid", async () => {
   expect(throws(() => parseProviderConfig("account-self", "repo-self", "{")))
     .toMatchInlineSnapshot(`
-      "Parsing of provider configuration failed for "{"
+      "Parsing of provider configuration failed
 
       Caused by: unexpected end of the stream within a flow collection (2:1)
 

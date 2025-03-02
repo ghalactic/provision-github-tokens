@@ -1,5 +1,7 @@
+import { debug } from "@actions/core";
 import { load } from "js-yaml";
 import { normalizeAccountPattern } from "../account.js";
+import { errorMessage } from "../error.js";
 import { normalizeGitHubPattern } from "../github-pattern.js";
 import type { ProviderConfig } from "../type/provider-config.js";
 import { validateProvider } from "./validation.js";
@@ -18,12 +20,8 @@ function parseYAML(yaml: string): ProviderConfig {
 
     return validateProvider(parsed == null ? {} : parsed);
   } catch (cause) {
-    const original = JSON.stringify(yaml);
-
-    throw new Error(
-      `Parsing of provider configuration failed for ${original}`,
-      { cause },
-    );
+    debug(`Parsing of provider configuration failed: ${errorMessage(cause)}`);
+    throw new Error("Parsing of provider configuration failed", { cause });
   }
 }
 

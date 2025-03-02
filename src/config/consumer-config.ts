@@ -1,4 +1,6 @@
+import { debug } from "@actions/core";
 import { load } from "js-yaml";
+import { errorMessage } from "../error.js";
 import { normalizeGitHubPattern } from "../github-pattern.js";
 import { normalizeTokenReference } from "../token-reference.js";
 import type {
@@ -25,12 +27,8 @@ function parseYAML(yaml: string): PartialConsumerConfig {
 
     return validateConsumer(parsed == null ? {} : parsed);
   } catch (cause) {
-    const original = JSON.stringify(yaml);
-
-    throw new Error(
-      `Parsing of consumer configuration failed for ${original}`,
-      { cause },
-    );
+    debug(`Parsing of consumer configuration failed: ${errorMessage(cause)}`);
+    throw new Error("Parsing of consumer configuration failed", { cause });
   }
 }
 
