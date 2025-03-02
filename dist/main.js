@@ -21828,10 +21828,10 @@ Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
       (0, command_1.issueCommand)("error", (0, utils_1.toCommandProperties)(properties), message instanceof Error ? message.toString() : message);
     }
     exports.error = error;
-    function warning(message, properties = {}) {
+    function warning2(message, properties = {}) {
       (0, command_1.issueCommand)("warning", (0, utils_1.toCommandProperties)(properties), message instanceof Error ? message.toString() : message);
     }
-    exports.warning = warning;
+    exports.warning = warning2;
     function notice(message, properties = {}) {
       (0, command_1.issueCommand)("notice", (0, utils_1.toCommandProperties)(properties), message instanceof Error ? message.toString() : message);
     }
@@ -58890,25 +58890,31 @@ function pluralize(amount, singular, plural) {
 // src/discover-apps.ts
 async function discoverApps(octokitFactory, appRegistry, appsInput) {
   let appIndex = 0;
+  let appCount = 0;
+  let instCount = 0;
   for (const appInput of appsInput) {
     try {
-      await discoverApp(
+      instCount += await discoverApp(
         octokitFactory,
         appRegistry,
         appsInput,
         appInput,
         appIndex++
       );
+      ++appCount;
     } catch (cause) {
       (0, import_core3.debug)(`Failed to discover app ${appInput.appId}: ${errorMessage(cause)}`);
       (0, import_core3.error)(`Failed to discover app at index ${appIndex}`);
     }
   }
+  (0, import_core3.info)(
+    `Discovered ${instCount} ${pluralize(instCount, "installation", "installations")} of ${appCount} ${pluralize(appCount, "app", "apps")}`
+  );
 }
 async function discoverApp(octokitFactory, appRegistry, appsInput, appInput, appIndex) {
   if (!appInput.issuer.enabled && !appInput.provisioner.enabled) {
     (0, import_core3.debug)(`Skipping discovery of disabled app ${appInput.appId}`);
-    return;
+    return 0;
   }
   const appOctokit = octokitFactory.appOctokit(appsInput, appInput.appId);
   let app;
@@ -58918,14 +58924,16 @@ async function discoverApp(octokitFactory, appRegistry, appsInput, appInput, app
     handleRequestError(error, {
       401: () => {
         (0, import_core3.debug)(`App ${appInput.appId} has incorrect credentials - skipping`);
-        (0, import_core3.info)(`App at index ${appIndex} has incorrect credentials - skipping`);
+        (0, import_core3.warning)(
+          `App at index ${appIndex} has incorrect credentials - skipping`
+        );
       },
       404: () => {
         (0, import_core3.debug)(`App ${appInput.appId} not found - skipping`);
-        (0, import_core3.info)(`App at index ${appIndex} not found - skipping`);
+        (0, import_core3.warning)(`App at index ${appIndex} not found - skipping`);
       }
     });
-    return;
+    return 0;
   }
   if (!app) {
     (0, import_core3.debug)(`App ${appInput.appId} can't access itself`);
@@ -58946,7 +58954,7 @@ async function discoverApp(octokitFactory, appRegistry, appsInput, appInput, app
     issuer: appInput.issuer,
     provisioner: appInput.provisioner
   });
-  await discoverInstallations(
+  const [instSuccessCount, instFailureCount] = await discoverInstallations(
     octokitFactory,
     appRegistry,
     appsInput,
@@ -58955,6 +58963,15 @@ async function discoverApp(octokitFactory, appRegistry, appsInput, appInput, app
     app,
     appIndex
   );
+  (0, import_core3.debug)(
+    `Discovered ${instSuccessCount} ${pluralize(instSuccessCount, "installation", "installations")} of ${JSON.stringify(app.name)}`
+  );
+  if (instFailureCount > 0) {
+    (0, import_core3.debug)(
+      `Failed to discover ${instFailureCount} ${pluralize(instFailureCount, "installation", "installations")} of ${JSON.stringify(app.name)}`
+    );
+  }
+  return instSuccessCount;
 }
 async function discoverInstallations(octokitFactory, appRegistry, appsInput, appInput, appOctokit, app, appIndex) {
   const installationPages = appOctokit.paginate.iterator(
@@ -58984,15 +59001,7 @@ async function discoverInstallations(octokitFactory, appRegistry, appsInput, app
       }
     }
   }
-  const rolesSuffix = appInput.issuer.roles.length < 1 ? "" : ` with ${pluralize(appInput.issuer.roles.length, "role", "roles")} ${appInput.issuer.roles.map((r) => JSON.stringify(r)).join(", ")}`;
-  (0, import_core3.info)(
-    `Discovered ${successCount} ${pluralize(successCount, "installation", "installations")} of ${JSON.stringify(app.name)}${rolesSuffix}`
-  );
-  if (failureCount > 0) {
-    (0, import_core3.info)(
-      `Failed to discover ${failureCount} ${pluralize(failureCount, "installation", "installations")} of ${JSON.stringify(app.name)}${rolesSuffix}`
-    );
-  }
+  return [successCount, failureCount];
 }
 async function discoverInstallation(octokitFactory, appRegistry, appsInput, appInput, installation) {
   const {

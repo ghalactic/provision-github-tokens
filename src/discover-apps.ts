@@ -1,4 +1,4 @@
-import { debug, info, error as logError } from "@actions/core";
+import { debug, info, error as logError, warning } from "@actions/core";
 import type { AppRegistry } from "./app-registry.js";
 import { errorMessage } from "./error.js";
 import {
@@ -17,21 +17,32 @@ export async function discoverApps(
   appsInput: AppInput[],
 ): Promise<void> {
   let appIndex = 0;
+  let appCount = 0;
+  let instCount = 0;
 
   for (const appInput of appsInput) {
     try {
-      await discoverApp(
+      instCount += await discoverApp(
         octokitFactory,
         appRegistry,
         appsInput,
         appInput,
         appIndex++,
       );
+
+      ++appCount;
     } catch (cause) {
       debug(`Failed to discover app ${appInput.appId}: ${errorMessage(cause)}`);
       logError(`Failed to discover app at index ${appIndex}`);
     }
   }
+
+  info(
+    "Discovered " +
+      `${instCount} ${pluralize(instCount, "installation", "installations")} ` +
+      "of " +
+      `${appCount} ${pluralize(appCount, "app", "apps")}`,
+  );
 }
 
 async function discoverApp(
@@ -40,11 +51,11 @@ async function discoverApp(
   appsInput: AppInput[],
   appInput: AppInput,
   appIndex: number,
-): Promise<void> {
+): Promise<number> {
   if (!appInput.issuer.enabled && !appInput.provisioner.enabled) {
     debug(`Skipping discovery of disabled app ${appInput.appId}`);
 
-    return;
+    return 0;
   }
 
   const appOctokit = octokitFactory.appOctokit(appsInput, appInput.appId);
@@ -56,15 +67,17 @@ async function discoverApp(
     handleRequestError(error, {
       401: () => {
         debug(`App ${appInput.appId} has incorrect credentials - skipping`);
-        info(`App at index ${appIndex} has incorrect credentials - skipping`);
+        warning(
+          `App at index ${appIndex} has incorrect credentials - skipping`,
+        );
       },
       404: () => {
         debug(`App ${appInput.appId} not found - skipping`);
-        info(`App at index ${appIndex} not found - skipping`);
+        warning(`App at index ${appIndex} not found - skipping`);
       },
     });
 
-    return;
+    return 0;
   }
 
   /* v8 ignore start */
@@ -98,7 +111,7 @@ async function discoverApp(
     provisioner: appInput.provisioner,
   });
 
-  await discoverInstallations(
+  const [instSuccessCount, instFailureCount] = await discoverInstallations(
     octokitFactory,
     appRegistry,
     appsInput,
@@ -107,6 +120,22 @@ async function discoverApp(
     app,
     appIndex,
   );
+
+  debug(
+    `Discovered ${instSuccessCount} ` +
+      `${pluralize(instSuccessCount, "installation", "installations")} ` +
+      `of ${JSON.stringify(app.name)}`,
+  );
+
+  if (instFailureCount > 0) {
+    debug(
+      `Failed to discover ${instFailureCount} ` +
+        `${pluralize(instFailureCount, "installation", "installations")} ` +
+        `of ${JSON.stringify(app.name)}`,
+    );
+  }
+
+  return instSuccessCount;
 }
 
 async function discoverInstallations(
@@ -117,7 +146,7 @@ async function discoverInstallations(
   appOctokit: Octokit,
   app: App,
   appIndex: number,
-): Promise<void> {
+): Promise<[successCount: number, failureCount: number]> {
   const installationPages = appOctokit.paginate.iterator(
     appOctokit.rest.apps.listInstallations,
   );
@@ -148,25 +177,7 @@ async function discoverInstallations(
     }
   }
 
-  const rolesSuffix =
-    appInput.issuer.roles.length < 1
-      ? ""
-      : ` with ${pluralize(appInput.issuer.roles.length, "role", "roles")} ` +
-        `${appInput.issuer.roles.map((r) => JSON.stringify(r)).join(", ")}`;
-
-  info(
-    `Discovered ${successCount} ` +
-      `${pluralize(successCount, "installation", "installations")} ` +
-      `of ${JSON.stringify(app.name)}${rolesSuffix}`,
-  );
-
-  if (failureCount > 0) {
-    info(
-      `Failed to discover ${failureCount} ` +
-        `${pluralize(failureCount, "installation", "installations")} ` +
-        `of ${JSON.stringify(app.name)}${rolesSuffix}`,
-    );
-  }
+  return [successCount, failureCount];
 }
 
 async function discoverInstallation(

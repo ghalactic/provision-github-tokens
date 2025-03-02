@@ -60,7 +60,8 @@ it("discovers installations with access to all repos", async () => {
     ::debug::Discovered app installation 111 for account org-a
     ::debug::Installation 111 has permissions {"contents":"read"}
     ::debug::Installation 111 has access to all repos ["org-a/repo-a","org-a/repo-b"]
-    Discovered 1 installation of "App A"
+    ::debug::Discovered 1 installation of "App A"
+    Discovered 1 installation of 1 app
     "
   `);
   expect(appRegistry.apps.get(appA.id)).toEqual({
@@ -106,7 +107,8 @@ it("discovers installations with access to selected repos", async () => {
     ::debug::Discovered app installation 111 for account org-a
     ::debug::Installation 111 has permissions {"contents":"read"}
     ::debug::Installation 111 has access to selected repos ["org-a/repo-a","org-a/repo-b"]
-    Discovered 1 installation of "App A"
+    ::debug::Discovered 1 installation of "App A"
+    Discovered 1 installation of 1 app
     "
   `);
   expect(appRegistry.apps.get(appA.id)).toEqual({
@@ -150,7 +152,8 @@ it("discovers installations with access to no repos", async () => {
     ::debug::Discovered app installation 111 for account org-a
     ::debug::Installation 111 has permissions {"members":"read"}
     ::debug::Installation 111 has access to no repos
-    Discovered 1 installation of "App A"
+    ::debug::Discovered 1 installation of "App A"
+    Discovered 1 installation of 1 app
     "
   `);
   expect(appRegistry.apps.get(appA.id)).toEqual({
@@ -196,7 +199,8 @@ it("discovers installations with no permissions", async () => {
     ::debug::Discovered app installation 111 for account org-a
     ::debug::Installation 111 has no permissions
     ::debug::Installation 111 has access to all repos ["org-a/repo-a","org-a/repo-b"]
-    Discovered 1 installation of "App A"
+    ::debug::Discovered 1 installation of "App A"
+    Discovered 1 installation of 1 app
     "
   `);
   expect(appRegistry.apps.get(appA.id)).toEqual({
@@ -258,13 +262,14 @@ it("discovers installations with roles", async () => {
     ::debug::Discovered app installation 111 for account org-a
     ::debug::Installation 111 has permissions {"contents":"write"}
     ::debug::Installation 111 has access to all repos ["org-a/repo-a","org-a/repo-b"]
-    Discovered 1 installation of "App A" with role "role-a"
+    ::debug::Discovered 1 installation of "App A"
     ::debug::Discovered app "App B" (app-b / 120)
     ::debug::App 120 is a token issuer with roles ["role-b","role-c"]
     ::debug::Discovered app installation 121 for account org-a
     ::debug::Installation 121 has permissions {"contents":"write"}
     ::debug::Installation 121 has access to all repos ["org-a/repo-a","org-a/repo-b"]
-    Discovered 1 installation of "App B" with roles "role-b", "role-c"
+    ::debug::Discovered 1 installation of "App B"
+    Discovered 2 installations of 2 apps
     "
   `);
   expect(appRegistry.apps.get(appA.id)).toEqual({
@@ -327,7 +332,8 @@ it("discovers multiple installations of an app", async () => {
     ::debug::Discovered app installation 102 for account org-b
     ::debug::Installation 102 has permissions {"contents":"read"}
     ::debug::Installation 102 has access to all repos ["org-b/repo-b"]
-    Discovered 2 installations of "App A"
+    ::debug::Discovered 2 installations of "App A"
+    Discovered 2 installations of 1 app
     "
   `);
   expect(appRegistry.apps.get(appA.id)).toEqual({
@@ -394,14 +400,15 @@ it("discovers multiple apps", async () => {
     ::debug::Discovered app installation 111 for account org-a
     ::debug::Installation 111 has permissions {"contents":"read"}
     ::debug::Installation 111 has access to all repos ["org-a/repo-a","org-a/repo-b"]
-    Discovered 1 installation of "App A"
+    ::debug::Discovered 1 installation of "App A"
     ::debug::Discovered app "App B" (app-b / 120)
     ::debug::App 120 is a token issuer with no roles
     ::debug::App 120 is a token provisioner
     ::debug::Discovered app installation 121 for account org-a
     ::debug::Installation 121 has permissions {"actions":"read"}
     ::debug::Installation 121 has access to all repos ["org-a/repo-a","org-a/repo-b"]
-    Discovered 1 installation of "App B"
+    ::debug::Discovered 1 installation of "App B"
+    Discovered 2 installations of 2 apps
     "
   `);
   expect(appRegistry.apps.get(appA.id)).toEqual({
@@ -468,13 +475,14 @@ it("skips apps with incorrect credentials", async () => {
 
   expect(__getOutput()).toMatchInlineSnapshot(`
     "::debug::App 110 has incorrect credentials - skipping
-    App at index 0 has incorrect credentials - skipping
+    ::warning::App at index 0 has incorrect credentials - skipping
     ::debug::Discovered app "App B" (app-b / 120)
     ::debug::App 120 is a token issuer with no roles
     ::debug::Discovered app installation 102 for account org-a
     ::debug::Installation 102 has permissions {"contents":"read"}
     ::debug::Installation 102 has access to all repos ["org-a/repo-a","org-a/repo-b"]
-    Discovered 1 installation of "App B"
+    ::debug::Discovered 1 installation of "App B"
+    Discovered 1 installation of 2 apps
     "
   `);
   expect(appRegistry.apps.get(appA.id)).toBeUndefined();
@@ -529,13 +537,14 @@ it("skips non-existent apps", async () => {
 
   expect(__getOutput()).toMatchInlineSnapshot(`
     "::debug::App 999 not found - skipping
-    App at index 0 not found - skipping
+    ::warning::App at index 0 not found - skipping
     ::debug::Discovered app "App A" (app-a / 110)
     ::debug::App 110 is a token issuer with no roles
     ::debug::Discovered app installation 101 for account org-a
     ::debug::Installation 101 has permissions {"contents":"read"}
     ::debug::Installation 101 has access to all repos ["org-a/repo-a","org-a/repo-b"]
-    Discovered 1 installation of "App A"
+    ::debug::Discovered 1 installation of "App A"
+    Discovered 1 installation of 2 apps
     "
   `);
   expect(appRegistry.apps.get(appX.id)).toBeUndefined();
@@ -618,7 +627,7 @@ it("reports unexpected HTTP statuses", async () => {
     ::debug::Discovered app installation 111 for account org-a
     ::debug::Installation 111 has permissions {"contents":"read"}
     ::debug::Installation 111 has access to all repos ["org-a/repo-a","org-a/repo-b"]
-    Discovered 1 installation of "App A"
+    ::debug::Discovered 1 installation of "App A"
     ::debug::Failed to discover app 120: Unexpected HTTP status 999 from GitHub API: <ERROR>
     ::error::Failed to discover app at index 2
     ::debug::Discovered app "App C" (app-c / 130)
@@ -626,7 +635,8 @@ it("reports unexpected HTTP statuses", async () => {
     ::debug::Discovered app installation 131 for account org-a
     ::debug::Installation 131 has permissions {"actions":"read"}
     ::debug::Installation 131 has access to all repos ["org-a/repo-a","org-a/repo-b"]
-    Discovered 1 installation of "App C"
+    ::debug::Discovered 1 installation of "App C"
+    Discovered 2 installations of 2 apps
     "
   `);
   expect(appRegistry.apps.get(appA.id)).toEqual({
@@ -713,7 +723,7 @@ it("skips apps when discovery throws", async () => {
     ::debug::Discovered app installation 111 for account org-a
     ::debug::Installation 111 has permissions {"contents":"read"}
     ::debug::Installation 111 has access to all repos ["org-a/repo-a","org-a/repo-b"]
-    Discovered 1 installation of "App A"
+    ::debug::Discovered 1 installation of "App A"
     ::debug::Failed to discover app 120: <ERROR>
     ::error::Failed to discover app at index 2
     ::debug::Discovered app "App C" (app-c / 130)
@@ -721,7 +731,8 @@ it("skips apps when discovery throws", async () => {
     ::debug::Discovered app installation 131 for account org-a
     ::debug::Installation 131 has permissions {"actions":"read"}
     ::debug::Installation 131 has access to all repos ["org-a/repo-a","org-a/repo-b"]
-    Discovered 1 installation of "App C"
+    ::debug::Discovered 1 installation of "App C"
+    Discovered 2 installations of 2 apps
     "
   `);
   expect(appRegistry.apps.get(appA.id)).toEqual({
@@ -795,8 +806,9 @@ it("skips installations when discovery throws", async () => {
     ::debug::Discovered app installation 113 for account org-c
     ::debug::Installation 113 has permissions {"contents":"read"}
     ::debug::Installation 113 has access to selected repos ["org-c/repo-c"]
-    Discovered 2 installations of "App A"
-    Failed to discover 1 installation of "App A"
+    ::debug::Discovered 2 installations of "App A"
+    ::debug::Failed to discover 1 installation of "App A"
+    Discovered 2 installations of 1 app
     "
   `);
   expect(appRegistry.apps.get(appA.id)).toEqual({
@@ -877,14 +889,15 @@ it("skips apps when they're fully disabled", async () => {
     ::debug::Discovered app installation 111 for account org-a
     ::debug::Installation 111 has permissions {"contents":"read"}
     ::debug::Installation 111 has access to all repos ["org-a/repo-a","org-a/repo-b"]
-    Discovered 1 installation of "App A"
+    ::debug::Discovered 1 installation of "App A"
     ::debug::Skipping discovery of disabled app 120
     ::debug::Discovered app "App C" (app-c / 130)
     ::debug::App 130 is a token issuer with no roles
     ::debug::Discovered app installation 131 for account org-a
     ::debug::Installation 131 has permissions {"actions":"read"}
     ::debug::Installation 131 has access to all repos ["org-a/repo-a","org-a/repo-b"]
-    Discovered 1 installation of "App C"
+    ::debug::Discovered 1 installation of "App C"
+    Discovered 2 installations of 3 apps
     "
   `);
   expect(appRegistry.apps.get(appA.id)).toEqual({

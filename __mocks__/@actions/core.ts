@@ -21,6 +21,9 @@ export const error = vi.fn((errorOrMessage) => {
 export const info = vi.fn((message) => {
   addLines("", message);
 });
+export const warning = vi.fn((message) => {
+  addLines("::warning::", message);
+});
 
 function addLines(prefix: string, lines: string): void {
   for (const line of lines.split("\n")) output += `${prefix}${line}\n`;
