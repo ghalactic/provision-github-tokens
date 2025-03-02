@@ -1,8 +1,11 @@
-import { debug, error, info } from "@actions/core";
 import { RequestError } from "@octokit/request-error";
-import { beforeAll, beforeEach, expect, it, vi } from "vitest";
+import { beforeEach, expect, it, vi } from "vitest";
 import {
-  __reset,
+  __getOutput,
+  __reset as __resetCore,
+} from "../../../__mocks__/@actions/core.js";
+import {
+  __reset as __resetOctokit,
   __setApps,
   __setErrors,
   __setInstallations,
@@ -21,23 +24,9 @@ import { stripStacks } from "../../output.js";
 vi.mock("@actions/core");
 vi.mock("@octokit/action");
 
-let output = "";
-
-beforeAll(() => {
-  vi.mocked(debug).mockImplementation((message) => {
-    output += `::debug::${message}\n`;
-  });
-  vi.mocked(error).mockImplementation((message) => {
-    output += `::error::${message}\n`;
-  });
-  vi.mocked(info).mockImplementation((message) => {
-    output += `${message}\n`;
-  });
-});
-
 beforeEach(() => {
-  output = "";
-  __reset();
+  __resetCore();
+  __resetOctokit();
 });
 
 it("discovers installations with access to all repos", async () => {
@@ -66,7 +55,7 @@ it("discovers installations with access to all repos", async () => {
     },
   ]);
 
-  expect(output).toMatchInlineSnapshot(`
+  expect(__getOutput()).toMatchInlineSnapshot(`
     "::debug::Discovered app "App A" (app-a / 110)
     ::debug::App 110 is a token issuer with no roles
     ::debug::Discovered app installation 111 for account org-a
@@ -112,7 +101,7 @@ it("discovers installations with access to selected repos", async () => {
     },
   ]);
 
-  expect(output).toMatchInlineSnapshot(`
+  expect(__getOutput()).toMatchInlineSnapshot(`
     "::debug::Discovered app "App A" (app-a / 110)
     ::debug::App 110 is a token issuer with no roles
     ::debug::Discovered app installation 111 for account org-a
@@ -156,7 +145,7 @@ it("discovers installations with access to no repos", async () => {
     },
   ]);
 
-  expect(output).toMatchInlineSnapshot(`
+  expect(__getOutput()).toMatchInlineSnapshot(`
     "::debug::Discovered app "App A" (app-a / 110)
     ::debug::App 110 is a token issuer with no roles
     ::debug::Discovered app installation 111 for account org-a
@@ -202,7 +191,7 @@ it("discovers installations with no permissions", async () => {
     },
   ]);
 
-  expect(output).toMatchInlineSnapshot(`
+  expect(__getOutput()).toMatchInlineSnapshot(`
     "::debug::Discovered app "App A" (app-a / 110)
     ::debug::App 110 is a token issuer with no roles
     ::debug::Discovered app installation 111 for account org-a
@@ -264,7 +253,7 @@ it("discovers installations with roles", async () => {
     },
   ]);
 
-  expect(output).toMatchInlineSnapshot(`
+  expect(__getOutput()).toMatchInlineSnapshot(`
     "::debug::Discovered app "App A" (app-a / 110)
     ::debug::App 110 is a token issuer with roles ["role-a"]
     ::debug::Discovered app installation 111 for account org-a
@@ -330,7 +319,7 @@ it("discovers multiple installations of an app", async () => {
     },
   ]);
 
-  expect(output).toMatchInlineSnapshot(`
+  expect(__getOutput()).toMatchInlineSnapshot(`
     "::debug::Discovered app "App A" (app-a / 100)
     ::debug::App 100 is a token issuer with no roles
     ::debug::Discovered app installation 101 for account org-a
@@ -399,7 +388,7 @@ it("discovers multiple apps", async () => {
     },
   ]);
 
-  expect(output).toMatchInlineSnapshot(`
+  expect(__getOutput()).toMatchInlineSnapshot(`
     "::debug::Discovered app "App A" (app-a / 110)
     ::debug::App 110 is a token issuer with no roles
     ::debug::App 110 is a token provisioner
@@ -478,7 +467,7 @@ it("skips apps with incorrect credentials", async () => {
     },
   ]);
 
-  expect(output).toMatchInlineSnapshot(`
+  expect(__getOutput()).toMatchInlineSnapshot(`
     "::debug::App 110 has incorrect credentials - skipping
     App at index 0 has incorrect credentials - skipping
     ::debug::Discovered app "App B" (app-b / 120)
@@ -539,7 +528,7 @@ it("skips non-existent apps", async () => {
     },
   ]);
 
-  expect(output).toMatchInlineSnapshot(`
+  expect(__getOutput()).toMatchInlineSnapshot(`
     "::debug::App 999 not found - skipping
     App at index 0 not found - skipping
     ::debug::Discovered app "App A" (app-a / 110)
@@ -624,7 +613,7 @@ it("reports unexpected HTTP statuses", async () => {
     },
   ]);
 
-  expect(stripStacks(output)).toMatchInlineSnapshot(`
+  expect(stripStacks(__getOutput())).toMatchInlineSnapshot(`
     "::debug::Discovered app "App A" (app-a / 110)
     ::debug::App 110 is a token issuer with no roles
     ::debug::Discovered app installation 111 for account org-a
@@ -719,7 +708,7 @@ it("skips apps when discovery throws", async () => {
     },
   ]);
 
-  expect(stripStacks(output)).toMatchInlineSnapshot(`
+  expect(stripStacks(__getOutput())).toMatchInlineSnapshot(`
     "::debug::Discovered app "App A" (app-a / 110)
     ::debug::App 110 is a token issuer with no roles
     ::debug::Discovered app installation 111 for account org-a
@@ -796,7 +785,7 @@ it("skips installations when discovery throws", async () => {
     },
   ]);
 
-  expect(stripStacks(output)).toMatchInlineSnapshot(`
+  expect(stripStacks(__getOutput())).toMatchInlineSnapshot(`
     "::debug::Discovered app "App A" (app-a / 110)
     ::debug::App 110 is a token issuer with no roles
     ::debug::Discovered app installation 111 for account org-a
@@ -883,7 +872,7 @@ it("skips apps when they're fully disabled", async () => {
     },
   ]);
 
-  expect(stripStacks(output)).toMatchInlineSnapshot(`
+  expect(__getOutput()).toMatchInlineSnapshot(`
     "::debug::Discovered app "App A" (app-a / 110)
     ::debug::App 110 is a token issuer with no roles
     ::debug::Discovered app installation 111 for account org-a
