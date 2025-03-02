@@ -3,5 +3,5 @@ export function pluralize(
   singular: string,
   plural: string,
 ): string {
-  return amount === 1 ? singular : plural;
+  return `${amount} ${amount === 1 ? singular : plural}`;
 }

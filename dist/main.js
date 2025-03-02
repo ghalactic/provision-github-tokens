@@ -58884,7 +58884,7 @@ function handleRequestError(error, handlers = {}) {
 
 // src/pluralize.ts
 function pluralize(amount, singular, plural) {
-  return amount === 1 ? singular : plural;
+  return `${amount} ${amount === 1 ? singular : plural}`;
 }
 
 // src/discover-apps.ts
@@ -58908,7 +58908,7 @@ async function discoverApps(octokitFactory, appRegistry, appsInput) {
     }
   }
   (0, import_core3.info)(
-    `Discovered ${instCount} ${pluralize(instCount, "installation", "installations")} of ${appCount} ${pluralize(appCount, "app", "apps")}`
+    `Discovered ${pluralize(instCount, "installation", "installations")} of ${pluralize(appCount, "app", "apps")}`
   );
 }
 async function discoverApp(octokitFactory, appRegistry, appsInput, appInput, appIndex) {
@@ -58964,11 +58964,11 @@ async function discoverApp(octokitFactory, appRegistry, appsInput, appInput, app
     appIndex
   );
   (0, import_core3.debug)(
-    `Discovered ${instSuccessCount} ${pluralize(instSuccessCount, "installation", "installations")} of ${JSON.stringify(app.name)}`
+    `Discovered ${pluralize(instSuccessCount, "installation", "installations")} of ${JSON.stringify(app.name)}`
   );
   if (instFailureCount > 0) {
     (0, import_core3.debug)(
-      `Failed to discover ${instFailureCount} ${pluralize(instFailureCount, "installation", "installations")} of ${JSON.stringify(app.name)}`
+      `Failed to discover ${pluralize(instFailureCount, "installation", "installations")} of ${JSON.stringify(app.name)}`
     );
   }
   return instSuccessCount;
@@ -59211,9 +59211,7 @@ async function discoverConsumers(octokitFactory, appRegistry, appsInput) {
       discovered.set(full_name, { account, repo, config });
     }
   }
-  (0, import_core5.info)(
-    `Discovered ${discovered.size} ${pluralize(discovered.size, "consumer", "consumers")}`
-  );
+  (0, import_core5.info)(`Discovered ${pluralize(discovered.size, "consumer", "consumers")}`);
   return discovered;
 }
 

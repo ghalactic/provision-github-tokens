@@ -38,10 +38,8 @@ export async function discoverApps(
   }
 
   info(
-    "Discovered " +
-      `${instCount} ${pluralize(instCount, "installation", "installations")} ` +
-      "of " +
-      `${appCount} ${pluralize(appCount, "app", "apps")}`,
+    `Discovered ${pluralize(instCount, "installation", "installations")} ` +
+      `of ${pluralize(appCount, "app", "apps")}`,
   );
 }
 
@@ -122,14 +120,14 @@ async function discoverApp(
   );
 
   debug(
-    `Discovered ${instSuccessCount} ` +
+    "Discovered " +
       `${pluralize(instSuccessCount, "installation", "installations")} ` +
       `of ${JSON.stringify(app.name)}`,
   );
 
   if (instFailureCount > 0) {
     debug(
-      `Failed to discover ${instFailureCount} ` +
+      "Failed to discover " +
         `${pluralize(instFailureCount, "installation", "installations")} ` +
         `of ${JSON.stringify(app.name)}`,
     );

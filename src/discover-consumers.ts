@@ -97,10 +97,7 @@ export async function discoverConsumers(
     }
   }
 
-  info(
-    `Discovered ${discovered.size} ` +
-      `${pluralize(discovered.size, "consumer", "consumers")}`,
-  );
+  info(`Discovered ${pluralize(discovered.size, "consumer", "consumers")}`);
 
   return discovered;
 }
