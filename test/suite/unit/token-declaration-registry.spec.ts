@@ -5,12 +5,16 @@ import type { TokenDeclaration } from "../../../src/type/token-declaration.js";
 it("finds local token declarations", () => {
   const declarationA: TokenDeclaration = {
     shared: false,
-    repos: ["account-x/repo-x"],
+    as: undefined,
+    account: "account-x",
+    repos: ["repo-x"],
     permissions: { metadata: "read" },
   };
   const declarationB: TokenDeclaration = {
     shared: false,
-    repos: ["account-y/repo-y"],
+    as: undefined,
+    account: "account-y",
+    repos: ["repo-y"],
     permissions: { contents: "write" },
   };
 
@@ -47,12 +51,16 @@ it("finds local token declarations", () => {
 it("finds shared token declarations", () => {
   const declarationA: TokenDeclaration = {
     shared: true,
-    repos: ["account-x/repo-x"],
+    as: undefined,
+    account: "account-x",
+    repos: ["repo-x"],
     permissions: { metadata: "read" },
   };
   const declarationB: TokenDeclaration = {
     shared: true,
-    repos: ["account-y/repo-y"],
+    as: undefined,
+    account: "account-y",
+    repos: ["repo-y"],
     permissions: { contents: "write" },
   };
 
@@ -89,12 +97,16 @@ it("finds shared token declarations", () => {
 it("doesn't find unshared tokens in other repos", () => {
   const declarationA: TokenDeclaration = {
     shared: false,
-    repos: ["account-x/repo-x"],
+    as: undefined,
+    account: "account-x",
+    repos: ["repo-x"],
     permissions: { metadata: "read" },
   };
   const declarationB: TokenDeclaration = {
     shared: false,
-    repos: ["account-y/repo-y"],
+    as: undefined,
+    account: "account-y",
+    repos: ["repo-y"],
     permissions: { contents: "write" },
   };
 
