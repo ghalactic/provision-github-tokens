@@ -49830,6 +49830,7 @@ function createAppRegistry() {
   const installations = /* @__PURE__ */ new Map();
   const provisioners = /* @__PURE__ */ new Map();
   const accounts = /* @__PURE__ */ new Set();
+  const repos = /* @__PURE__ */ new Set();
   return {
     apps,
     installations,
@@ -49849,6 +49850,7 @@ function createAppRegistry() {
       installations.set(registration.installation.id, registration);
       appsByInstallation.set(registration, appReg);
       accounts.add(installationAccount(registration.installation));
+      for (const { full_name } of registration.repos) repos.add(full_name);
       if (appReg.provisioner.enabled) {
         provisioners.set(registration.installation.id, registration);
       }
@@ -49856,6 +49858,11 @@ function createAppRegistry() {
     resolveAccounts: (...patterns) => {
       return Array.from(accounts).filter(
         (account) => anyPatternMatches(patterns, account)
+      );
+    },
+    resolveRepos: (...patterns) => {
+      return Array.from(repos).filter(
+        (repo) => anyPatternMatches(patterns, repo)
       );
     },
     findIssuersForRequest: (request2) => {
@@ -49870,15 +49877,15 @@ function createAppRegistry() {
         }
       }
       const tokenRepos = Array.isArray(request2.repos) ? request2.repos.reduce(
-        (repos, name) => {
-          repos[name] = true;
-          return repos;
+        (repos2, name) => {
+          repos2[name] = true;
+          return repos2;
         },
         {}
       ) : {};
       const issuers = [];
       for (const [, instReg] of installations) {
-        const { installation, repos } = instReg;
+        const { installation, repos: repos2 } = instReg;
         const appReg = appRegForInstReg(instReg);
         if (!appReg.issuer.enabled) continue;
         if (tokenHasRole) {
@@ -49908,7 +49915,7 @@ function createAppRegistry() {
           }
           continue;
         }
-        for (const repo of repos) {
+        for (const repo of repos2) {
           if (repo.owner.login === request2.account && tokenRepos[repo.name]) {
             ++repoMatchCount;
           }
@@ -49921,11 +49928,11 @@ function createAppRegistry() {
     findProvisionersForRequest: (request2) => {
       const provisioners2 = [];
       for (const [, instReg] of installations) {
-        const { installation, repos } = instReg;
+        const { installation, repos: repos2 } = instReg;
         const appReg = appRegForInstReg(instReg);
         if (!appReg.provisioner.enabled) continue;
         if (request2.repo) {
-          for (const repo of repos) {
+          for (const repo of repos2) {
             if (repo.owner.login === request2.account && repo.name === request2.repo) {
               provisioners2.push(instReg);
               break;

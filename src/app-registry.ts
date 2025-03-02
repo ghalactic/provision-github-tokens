@@ -13,6 +13,7 @@ export type AppRegistry = {
   registerApp: (app: AppRegistration) => void;
   registerInstallation: (installation: InstallationRegistration) => void;
   resolveAccounts: (...patterns: Pattern[]) => string[];
+  resolveRepos: (...patterns: Pattern[]) => string[];
   findIssuersForRequest: (request: TokenRequest) => InstallationRegistration[];
   findProvisionersForRequest: (
     request: ProvisionRequest,
@@ -37,6 +38,7 @@ export function createAppRegistry(): AppRegistry {
   const installations: Map<number, InstallationRegistration> = new Map();
   const provisioners: Map<number, InstallationRegistration> = new Map();
   const accounts: Set<string> = new Set();
+  const repos: Set<string> = new Set();
 
   return {
     apps,
@@ -61,7 +63,9 @@ export function createAppRegistry(): AppRegistry {
 
       installations.set(registration.installation.id, registration);
       appsByInstallation.set(registration, appReg);
+
       accounts.add(installationAccount(registration.installation));
+      for (const { full_name } of registration.repos) repos.add(full_name);
 
       if (appReg.provisioner.enabled) {
         provisioners.set(registration.installation.id, registration);
@@ -71,6 +75,12 @@ export function createAppRegistry(): AppRegistry {
     resolveAccounts: (...patterns) => {
       return Array.from(accounts).filter((account) =>
         anyPatternMatches(patterns, account),
+      );
+    },
+
+    resolveRepos: (...patterns) => {
+      return Array.from(repos).filter((repo) =>
+        anyPatternMatches(patterns, repo),
       );
     },
 
