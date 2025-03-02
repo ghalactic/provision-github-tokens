@@ -59496,38 +59496,83 @@ async function main() {
   registerTokenDeclarations(declarationRegistry, consumers);
   for (const [, requester] of consumers) {
     const provisionRequests = [];
-    for (const secretName in requester.config.provision.secrets) {
-      const secretDec = requester.config.provision.secrets[secretName];
-      for (const typeString of ["actions", "codespaces", "dependabot"]) {
-        const type2 = typeString;
+    const platform = "github";
+    for (const name in requester.config.provision.secrets) {
+      const secretDec = requester.config.provision.secrets[name];
+      for (const type2 of ["actions", "codespaces", "dependabot"]) {
         if (secretDec.github.account[type2]) {
+          const { account } = requester;
+          provisionRequests.push({ name, platform, account, type: type2 });
+        }
+      }
+      for (const accountPattern in secretDec.github.accounts) {
+        const accounts = appRegistry.resolveProvisionerAccounts(
+          createNamePattern(accountPattern)
+        );
+        for (const type2 of ["actions", "codespaces", "dependabot"]) {
+          if (secretDec.github.accounts[accountPattern][type2]) {
+            for (const account of accounts) {
+              provisionRequests.push({ name, platform, type: type2, account });
+            }
+          }
+        }
+      }
+      for (const type2 of ["actions", "codespaces", "dependabot"]) {
+        if (secretDec.github.repo[type2]) {
+          const { account, repo } = requester;
+          provisionRequests.push({ name, platform, type: type2, account, repo });
+        }
+      }
+      for (const envPattern of secretDec.github.repo.environments) {
+        const envs = ["env-a", "env-b"];
+        const { account, repo } = requester;
+        for (const environment of envs) {
           provisionRequests.push({
-            name: secretName,
-            platform: "github",
-            account: requester.account,
-            type: type2
+            name,
+            platform,
+            type: "environment",
+            account,
+            repo,
+            environment
           });
         }
-        for (const accountPattern in secretDec.github.accounts[type2]) {
-          for (const account of appRegistry.resolveProvisionerAccounts(
-            createNamePattern(accountPattern)
-          )) {
-            provisionRequests.push({
-              name: secretName,
-              platform: "github",
-              account,
-              type: type2
-            });
+      }
+      for (const repoPattern in secretDec.github.repos) {
+        const repos = appRegistry.resolveProvisionerRepos(
+          createNamePattern(repoPattern)
+        );
+        for (const fullRepo of repos) {
+          const [account, repo] = fullRepo.split("/");
+          for (const type2 of ["actions", "codespaces", "dependabot"]) {
+            if (secretDec.github.repos[repoPattern][type2]) {
+              provisionRequests.push({ name, platform, type: type2, account, repo });
+            }
+          }
+          for (const envPattern of secretDec.github.repos[repoPattern].environments) {
+            const envs = ["env-a", "env-b"];
+            for (const environment of envs) {
+              provisionRequests.push({
+                name,
+                platform,
+                type: "environment",
+                account,
+                repo,
+                environment
+              });
+            }
           }
         }
       }
     }
+    const results = [];
     for (const request2 of provisionRequests) {
       const result = provisionAuthorizer.authorizeSecret(
         `${requester.account}/${requester.repo}`,
         request2
       );
+      results.push([request2, result]);
     }
+    console.log(JSON.stringify(results, null, 2));
   }
 }
 /*! Bundled license information:
