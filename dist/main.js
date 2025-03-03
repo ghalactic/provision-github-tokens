@@ -59914,11 +59914,30 @@ async function main() {
   const appsInput = readAppsInput();
   const config = await (0, import_core6.group)("Reading provider configuration", async () => {
     const config2 = {
-      permissions: { rules: [] },
+      permissions: {
+        rules: [
+          {
+            description: "Allow all tokens",
+            resources: [
+              {
+                accounts: ["*"],
+                noRepos: true,
+                allRepos: true,
+                selectedRepos: ["*"]
+              }
+            ],
+            consumers: ["*", "*/*"],
+            permissions: {
+              metadata: "read"
+            }
+          }
+        ]
+      },
       provision: {
         rules: {
           secrets: [
             {
+              description: "Allow all secrets",
               secrets: ["*"],
               requesters: ["*/*"],
               to: {

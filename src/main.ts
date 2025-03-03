@@ -32,11 +32,30 @@ async function main(): Promise<void> {
   const config = await group("Reading provider configuration", async () => {
     // TODO: read from file
     const config: ProviderConfig = {
-      permissions: { rules: [] },
+      permissions: {
+        rules: [
+          {
+            description: "Allow all tokens",
+            resources: [
+              {
+                accounts: ["*"],
+                noRepos: true,
+                allRepos: true,
+                selectedRepos: ["*"],
+              },
+            ],
+            consumers: ["*", "*/*"],
+            permissions: {
+              metadata: "read",
+            },
+          },
+        ],
+      },
       provision: {
         rules: {
           secrets: [
             {
+              description: "Allow all secrets",
               secrets: ["*"],
               requesters: ["*/*"],
               to: {
