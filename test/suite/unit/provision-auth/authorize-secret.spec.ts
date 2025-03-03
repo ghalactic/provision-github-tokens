@@ -30,7 +30,8 @@ it("supports multiple secrets per rule", () => {
 
   expect(
     explain(
-      authorizer.authorizeSecret("account-x/repo-x", {
+      authorizer.authorizeSecret({
+        requester: { account: "account-x", repo: "repo-x" },
         name: "SECRET_A",
         platform: "github",
         type: "actions",
@@ -44,7 +45,8 @@ it("supports multiple secrets per rule", () => {
   `);
   expect(
     explain(
-      authorizer.authorizeSecret("account-x/repo-x", {
+      authorizer.authorizeSecret({
+        requester: { account: "account-x", repo: "repo-x" },
         name: "SECRET_B",
         platform: "github",
         type: "actions",
@@ -84,7 +86,8 @@ it("supports wildcards in secret names", () => {
 
   expect(
     explain(
-      authorizer.authorizeSecret("account-x/repo-x", {
+      authorizer.authorizeSecret({
+        requester: { account: "account-x", repo: "repo-x" },
         name: "SECRET_A",
         platform: "github",
         type: "actions",
@@ -98,7 +101,8 @@ it("supports wildcards in secret names", () => {
   `);
   expect(
     explain(
-      authorizer.authorizeSecret("account-x/repo-x", {
+      authorizer.authorizeSecret({
+        requester: { account: "account-x", repo: "repo-x" },
         name: "SECRET_B",
         platform: "github",
         type: "actions",
@@ -139,7 +143,8 @@ it("supports rule descriptions", () => {
 
   expect(
     explain(
-      authorizer.authorizeSecret("account-x/repo-x", {
+      authorizer.authorizeSecret({
+        requester: { account: "account-x", repo: "repo-x" },
         name: "SECRET_A",
         platform: "github",
         type: "actions",
@@ -205,7 +210,8 @@ it("allows secrets when a later rule allows access that a previous rule denied",
 
   expect(
     explain(
-      authorizer.authorizeSecret("account-x/repo-x", {
+      authorizer.authorizeSecret({
+        requester: { account: "account-x", repo: "repo-x" },
         name: "SECRET_A",
         platform: "github",
         type: "actions",
@@ -221,7 +227,8 @@ it("allows secrets when a later rule allows access that a previous rule denied",
 
   expect(
     explain(
-      authorizer.authorizeSecret("account-x/repo-x", {
+      authorizer.authorizeSecret({
+        requester: { account: "account-x", repo: "repo-x" },
         name: "SECRET_A",
         platform: "github",
         type: "actions",
@@ -289,7 +296,8 @@ it("doesn't allow secrets when a later rule denies access that a previous rule a
 
   expect(
     explain(
-      authorizer.authorizeSecret("account-x/repo-x", {
+      authorizer.authorizeSecret({
+        requester: { account: "account-x", repo: "repo-x" },
         name: "SECRET_A",
         platform: "github",
         type: "actions",
@@ -305,7 +313,8 @@ it("doesn't allow secrets when a later rule denies access that a previous rule a
 
   expect(
     explain(
-      authorizer.authorizeSecret("account-x/repo-x", {
+      authorizer.authorizeSecret({
+        requester: { account: "account-x", repo: "repo-x" },
         name: "SECRET_A",
         platform: "github",
         type: "actions",
@@ -352,7 +361,8 @@ it("doesn't allow secrets when no rule matches the secret name", () => {
 
   expect(
     explain(
-      authorizer.authorizeSecret("account-x/repo-x", {
+      authorizer.authorizeSecret({
+        requester: { account: "account-x", repo: "repo-x" },
         name: "SECRET_X",
         platform: "github",
         type: "actions",
@@ -394,7 +404,8 @@ it("doesn't allow secrets when two account patterns match but one allows and one
 
   expect(
     explain(
-      authorizer.authorizeSecret("account-x/repo-x", {
+      authorizer.authorizeSecret({
+        requester: { account: "account-x", repo: "repo-x" },
         name: "SECRET_A",
         platform: "github",
         type: "actions",
@@ -439,7 +450,8 @@ it("doesn't allow secrets when two repo patterns match but one allows and one de
 
   expect(
     explain(
-      authorizer.authorizeSecret("account-x/repo-x", {
+      authorizer.authorizeSecret({
+        requester: { account: "account-x", repo: "repo-x" },
         name: "SECRET_A",
         platform: "github",
         type: "actions",

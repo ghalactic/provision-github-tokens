@@ -31,5 +31,6 @@ type GitHubProvisionRequestCommon = ProvisionRequestCommon & {
 };
 
 type ProvisionRequestCommon = {
+  requester: { account: string; repo: string };
   name: string;
 };

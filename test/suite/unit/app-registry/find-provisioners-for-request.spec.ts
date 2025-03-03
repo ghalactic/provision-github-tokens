@@ -51,6 +51,7 @@ it("finds provisioners for secrets in a GitHub account", () => {
   appRegistry.registerInstallation(appCInstallationA);
 
   const request = {
+    requester: { account: "org-a", repo: "repo-a" },
     name: "SECRET_A",
     platform: "github",
     account: "org-a",
@@ -109,12 +110,14 @@ it("finds provisioners for secrets in a GitHub repo", () => {
   appRegistry.registerInstallation(appCInstallationA);
 
   const requestA = {
+    requester: { account: "org-a", repo: "repo-a" },
     name: "SECRET_A",
     platform: "github",
     account: "org-a",
     repo: "repo-a",
   } as const;
   const requestB = {
+    requester: { account: "org-a", repo: "repo-a" },
     name: "SECRET_A",
     platform: "github",
     account: "org-a",
@@ -179,6 +182,7 @@ it("finds provisioners for the correct account when there are multiple installat
 
   expect(
     appRegistry.findProvisionersForRequest({
+      requester: { account: "org-a", repo: "repo-a" },
       name: "SECRET_A",
       platform: "github",
       type: "actions",
@@ -187,6 +191,7 @@ it("finds provisioners for the correct account when there are multiple installat
   ).toEqual([appAInstallationA]);
   expect(
     appRegistry.findProvisionersForRequest({
+      requester: { account: "org-a", repo: "repo-a" },
       name: "SECRET_A",
       platform: "github",
       type: "actions",
@@ -213,6 +218,7 @@ it("doesn't find provisioners for an unknown account", () => {
 
   expect(
     appRegistry.findProvisionersForRequest({
+      requester: { account: "org-a", repo: "repo-a" },
       name: "SECRET_A",
       platform: "github",
       type: "actions",
@@ -239,6 +245,7 @@ it("doesn't find provisioners from non-provisioner apps", () => {
 
   expect(
     appRegistry.findProvisionersForRequest({
+      requester: { account: "org-a", repo: "repo-a" },
       name: "SECRET_A",
       platform: "github",
       type: "actions",
@@ -247,6 +254,7 @@ it("doesn't find provisioners from non-provisioner apps", () => {
   ).toHaveLength(0);
   expect(
     appRegistry.findProvisionersForRequest({
+      requester: { account: "org-a", repo: "repo-a" },
       name: "SECRET_A",
       platform: "github",
       type: "actions",

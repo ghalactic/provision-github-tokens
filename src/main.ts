@@ -19,6 +19,7 @@ import { createTokenDeclarationRegistry } from "./token-declaration-registry.js"
 import type { ProviderConfig } from "./type/provider-config.js";
 import type { ProvisionAuthResult } from "./type/provision-auth-result.js";
 import type { ProvisionRequest } from "./type/provision-request.js";
+import type { SecretDeclaration } from "./type/secret-declaration.js";
 import type { TokenAuthResult } from "./type/token-auth-result.js";
 import type { TokenRequest } from "./type/token-request.js";
 
@@ -116,23 +117,25 @@ async function main(): Promise<void> {
   // TODO: issue tokens
   // TODO: provision secrets
 
-  for (const [, requester] of consumers) {
-    const provisionRequests: ProvisionRequest[] = [];
-    const tokenRequests: [
-      account: string,
-      repo: string | undefined,
-      TokenRequest,
-    ][] = [];
-    const platform = "github";
+  const provisionRequests: [SecretDeclaration, ProvisionRequest][] = [];
+  const platform = "github";
 
+  for (const [, requester] of consumers) {
     for (const name in requester.config.provision.secrets) {
       const secretDec = requester.config.provision.secrets[name];
-      const secretProvisionRequests: ProvisionRequest[] = [];
 
       for (const type of ["actions", "codespaces", "dependabot"] as const) {
         if (secretDec.github.account[type]) {
-          const { account } = requester;
-          secretProvisionRequests.push({ name, platform, account, type });
+          provisionRequests.push([
+            secretDec,
+            {
+              requester,
+              name,
+              platform,
+              account: requester.account,
+              type,
+            },
+          ]);
         }
       }
 
@@ -144,7 +147,16 @@ async function main(): Promise<void> {
         for (const type of ["actions", "codespaces", "dependabot"] as const) {
           if (secretDec.github.accounts[accountPattern][type]) {
             for (const account of accounts) {
-              secretProvisionRequests.push({ name, platform, type, account });
+              provisionRequests.push([
+                secretDec,
+                {
+                  requester,
+                  name,
+                  platform,
+                  type,
+                  account,
+                },
+              ]);
             }
           }
         }
@@ -152,8 +164,17 @@ async function main(): Promise<void> {
 
       for (const type of ["actions", "codespaces", "dependabot"] as const) {
         if (secretDec.github.repo[type]) {
-          const { account, repo } = requester;
-          secretProvisionRequests.push({ name, platform, type, account, repo });
+          provisionRequests.push([
+            secretDec,
+            {
+              requester,
+              name,
+              platform,
+              type,
+              account: requester.account,
+              repo: requester.repo,
+            },
+          ]);
         }
       }
 
@@ -165,14 +186,18 @@ async function main(): Promise<void> {
         );
 
         for (const environment of envs) {
-          secretProvisionRequests.push({
-            name,
-            platform,
-            type: "environment",
-            account,
-            repo,
-            environment,
-          });
+          provisionRequests.push([
+            secretDec,
+            {
+              requester,
+              name,
+              platform,
+              type: "environment",
+              account,
+              repo,
+              environment,
+            },
+          ]);
         }
       }
 
@@ -186,13 +211,17 @@ async function main(): Promise<void> {
 
           for (const type of ["actions", "codespaces", "dependabot"] as const) {
             if (secretDec.github.repos[repoPattern][type]) {
-              secretProvisionRequests.push({
-                name,
-                platform,
-                type,
-                account,
-                repo,
-              });
+              provisionRequests.push([
+                secretDec,
+                {
+                  requester,
+                  name,
+                  platform,
+                  type,
+                  account,
+                  repo,
+                },
+              ]);
             }
           }
 
@@ -205,77 +234,79 @@ async function main(): Promise<void> {
             );
 
             for (const environment of envs) {
-              secretProvisionRequests.push({
-                name,
-                platform,
-                type: "environment",
-                account,
-                repo,
-                environment,
-              });
+              provisionRequests.push([
+                secretDec,
+                {
+                  requester,
+                  name,
+                  platform,
+                  type: "environment",
+                  account,
+                  repo,
+                  environment,
+                },
+              ]);
             }
           }
         }
       }
+    }
+  }
 
-      if (secretProvisionRequests.length < 1) continue;
+  const provisionAuthExplainer = createTextProvisionAuthExplainer();
+  const provisionAuthResults: [ProvisionRequest, ProvisionAuthResult][] = [];
+  const tokenRequests: [
+    account: string,
+    repo: string | undefined,
+    TokenRequest,
+  ][] = [];
 
-      const [tokenDec] = declarationRegistry.findDeclarationForRequester(
-        requester.account,
-        requester.repo,
-        secretDec.token,
-      );
+  for (const [secretDec, provisionReq] of provisionRequests) {
+    const provisionResult = provisionAuthorizer.authorizeSecret(provisionReq);
+    provisionAuthResults.push([provisionReq, provisionResult]);
+    console.log(provisionAuthExplainer(provisionResult));
 
-      if (!tokenDec) {
-        warning(`Undefined token ${secretDec.token}`);
+    if (!provisionResult.isAllowed) continue;
 
-        continue;
-      }
+    const [tokenDec] = declarationRegistry.findDeclarationForRequester(
+      provisionReq.requester.account,
+      provisionReq.requester.repo,
+      secretDec.token,
+    );
 
-      for (const { account, repo } of secretProvisionRequests) {
-        tokenRequests.push([
-          account,
-          repo,
-          {
-            role: tokenDec.as,
-            account: tokenDec.account,
-            repos:
-              tokenDec.repos === "all"
-                ? "all"
-                : appRegistry.resolveIssuerRepos(
-                    tokenDec.repos.map(createNamePattern),
-                  ),
-            permissions: tokenDec.permissions,
-          },
-        ]);
-      }
+    if (!tokenDec) {
+      warning(`Undefined token ${secretDec.token}`);
 
-      provisionRequests.push(...secretProvisionRequests);
+      continue;
     }
 
-    const provisionAuthExplainer = createTextProvisionAuthExplainer();
-    const provisionAuthResults: [ProvisionRequest, ProvisionAuthResult][] = [];
+    tokenRequests.push([
+      provisionReq.account,
+      provisionReq.repo,
+      {
+        role: tokenDec.as,
+        account: tokenDec.account,
+        repos:
+          tokenDec.repos === "all"
+            ? "all"
+            : appRegistry.resolveIssuerRepos(
+                tokenDec.repos.map(createNamePattern),
+              ),
+        permissions: tokenDec.permissions,
+      },
+    ]);
+  }
 
-    for (const request of provisionRequests) {
-      const result = provisionAuthorizer.authorizeSecret(
-        `${requester.account}/${requester.repo}`,
-        request,
-      );
-      provisionAuthResults.push([request, result]);
-      console.log(provisionAuthExplainer(result));
-    }
+  const tokenAuthExplainer = createTextTokenAuthExplainer();
+  const tokenAuthResults: [TokenRequest, TokenAuthResult][] = [];
 
-    const tokenAuthExplainer = createTextTokenAuthExplainer();
-    const tokenAuthResults: [TokenRequest, TokenAuthResult][] = [];
-
-    for (const [account, repo, request] of tokenRequests) {
-      const result =
-        repo == null
-          ? tokenAuthorizer.authorizeForAccount(account, request)
-          : tokenAuthorizer.authorizeForRepo(`${account}/${repo}`, request);
-      tokenAuthResults.push([request, result]);
-      console.log(tokenAuthExplainer(result));
-    }
+  for (const [account, repo, request] of tokenRequests) {
+    const result =
+      repo == null
+        ? tokenAuthorizer.authorizeForAccount(account, request)
+        : tokenAuthorizer.authorizeForRepo(`${account}/${repo}`, request);
+    tokenAuthResults.push([request, result]);
+    console.log(tokenAuthExplainer(result));
   }
 }
 /* v8 ignore stop */

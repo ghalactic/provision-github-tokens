@@ -16,10 +16,7 @@ export type ProvisionAuthorizer = {
   /**
    * Authorize provisioning of a secret.
    */
-  authorizeSecret: (
-    requester: string,
-    request: ProvisionRequest,
-  ) => ProvisionAuthResult;
+  authorizeSecret: (request: ProvisionRequest) => ProvisionAuthResult;
 };
 
 export function createProvisionAuthorizer(
@@ -30,11 +27,11 @@ export function createProvisionAuthorizer(
   );
 
   return {
-    authorizeSecret(requester, request) {
-      const isSelfAccount = requester.startsWith(`${request.account}/`);
-      const isSelfRepo = request.repo
-        ? requester === `${request.account}/${request.repo}`
-        : false;
+    authorizeSecret(request) {
+      const isSelfAccount = request.requester.account === request.account;
+      const isSelfRepo =
+        isSelfAccount && request.requester.repo === request.repo;
+      const requester = `${request.requester.account}/${request.requester.repo}`;
 
       const ruleResults: ProvisionAuthRuleResult[] = [];
       let have: "allow" | "deny" | undefined;
