@@ -41,20 +41,20 @@ it("resolves a list of account patterns into a list of issuer-accessible account
 
   expect(
     appRegistry.resolveIssuerAccounts(
-      ...["org-a", "user-b"].map(createNamePattern),
+      ["org-a", "user-b"].map(createNamePattern),
     ),
   ).toEqual(["org-a", "user-b"]);
   expect(
-    appRegistry.resolveIssuerAccounts(...["org-*"].map(createNamePattern)),
+    appRegistry.resolveIssuerAccounts(["org-*"].map(createNamePattern)),
   ).toEqual(["org-a", "org-c"]);
   expect(
-    appRegistry.resolveIssuerAccounts(...["user-*"].map(createNamePattern)),
+    appRegistry.resolveIssuerAccounts(["user-*"].map(createNamePattern)),
   ).toEqual(["user-b"]);
   expect(
-    appRegistry.resolveIssuerAccounts(...["*"].map(createNamePattern)),
+    appRegistry.resolveIssuerAccounts(["*"].map(createNamePattern)),
   ).toEqual(["org-a", "user-b", "org-c"]);
   expect(
-    appRegistry.resolveIssuerAccounts(...["xxx"].map(createNamePattern)),
+    appRegistry.resolveIssuerAccounts(["xxx"].map(createNamePattern)),
   ).toEqual([]);
 });
 
@@ -86,7 +86,7 @@ it("doesn't resolve accounts accessible only to non-issuer apps", async () => {
   appRegistry.registerApp(appB);
   appRegistry.registerInstallation(appBInstallationRegA);
 
-  expect(appRegistry.resolveIssuerAccounts(createNamePattern("*"))).toEqual([
+  expect(appRegistry.resolveIssuerAccounts([createNamePattern("*")])).toEqual([
     "org-b",
   ]);
 });

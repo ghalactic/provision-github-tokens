@@ -12,11 +12,12 @@ export type AppRegistry = {
   readonly provisioners: Map<number, InstallationRegistration>;
   registerApp: (app: AppRegistration) => void;
   registerInstallation: (installation: InstallationRegistration) => void;
-  resolveIssuerAccounts: (...patterns: Pattern[]) => string[];
-  resolveIssuerRepos: (...patterns: Pattern[]) => string[];
-  resolveProvisionerAccounts: (...patterns: Pattern[]) => string[];
-  resolveProvisionerRepos: (...patterns: Pattern[]) => string[];
+  resolveIssuerAccounts: (patterns: Pattern[]) => string[];
+  resolveIssuerRepos: (patterns: Pattern[]) => string[];
+  resolveProvisionerAccounts: (patterns: Pattern[]) => string[];
+  resolveProvisionerRepos: (patterns: Pattern[]) => string[];
   findIssuersForRequest: (request: TokenRequest) => InstallationRegistration[];
+  findProvisionersForRepo: (repo: string) => InstallationRegistration[];
   findProvisionersForRequest: (
     request: ProvisionRequest,
   ) => InstallationRegistration[];
@@ -40,6 +41,7 @@ export function createAppRegistry(): AppRegistry {
     AppRegistration
   >();
   const installations = new Map<number, InstallationRegistration>();
+  const issuers = new Map<number, InstallationRegistration>();
   const issuerAccounts = new Set<string>();
   const issuerRepos = new Set<string>();
   const provisioners = new Map<number, InstallationRegistration>();
@@ -73,6 +75,7 @@ export function createAppRegistry(): AppRegistry {
       appsByInstallation.set(registration, appReg);
 
       if (appReg.issuer.enabled) {
+        issuers.set(registration.installation.id, registration);
         issuerAccounts.add(account);
 
         for (const { full_name } of registration.repos) {
@@ -90,25 +93,25 @@ export function createAppRegistry(): AppRegistry {
       }
     },
 
-    resolveIssuerAccounts: (...patterns) => {
+    resolveIssuerAccounts: (patterns) => {
       return Array.from(issuerAccounts).filter((account) =>
         anyPatternMatches(patterns, account),
       );
     },
 
-    resolveIssuerRepos: (...patterns) => {
+    resolveIssuerRepos: (patterns) => {
       return Array.from(issuerRepos).filter((repo) =>
         anyPatternMatches(patterns, repo),
       );
     },
 
-    resolveProvisionerAccounts: (...patterns) => {
+    resolveProvisionerAccounts: (patterns) => {
       return Array.from(provisionerAccounts).filter((account) =>
         anyPatternMatches(patterns, account),
       );
     },
 
-    resolveProvisionerRepos: (...patterns) => {
+    resolveProvisionerRepos: (patterns) => {
       return Array.from(provisionerRepos).filter((repo) =>
         anyPatternMatches(patterns, repo),
       );
@@ -142,13 +145,11 @@ export function createAppRegistry(): AppRegistry {
           )
         : {};
 
-      const issuers: InstallationRegistration[] = [];
+      const found: InstallationRegistration[] = [];
 
-      for (const [, instReg] of installations) {
+      for (const [, instReg] of issuers) {
         const { installation, repos } = instReg;
         const appReg = appRegForInstReg(instReg);
-
-        if (!appReg.issuer.enabled) continue;
 
         if (tokenHasRole) {
           let appHasRole = false;
@@ -181,7 +182,7 @@ export function createAppRegistry(): AppRegistry {
 
         if (installation.repository_selection === "all") {
           if (installationAccount(installation) === request.account) {
-            issuers.push(instReg);
+            found.push(instReg);
           }
 
           continue;
@@ -195,20 +196,35 @@ export function createAppRegistry(): AppRegistry {
 
         if (repoMatchCount !== request.repos.length) continue;
 
-        issuers.push(instReg);
+        found.push(instReg);
       }
 
-      return issuers;
+      return found;
+    },
+
+    findProvisionersForRepo: (repo) => {
+      const found: InstallationRegistration[] = [];
+
+      for (const [, instReg] of provisioners) {
+        const { repos } = instReg;
+
+        for (const r of repos) {
+          if (r.full_name === repo) {
+            found.push(instReg);
+
+            break;
+          }
+        }
+      }
+
+      return found;
     },
 
     findProvisionersForRequest: (request) => {
-      const provisioners: InstallationRegistration[] = [];
+      const found: InstallationRegistration[] = [];
 
-      for (const [, instReg] of installations) {
+      for (const [, instReg] of provisioners) {
         const { installation, repos } = instReg;
-        const appReg = appRegForInstReg(instReg);
-
-        if (!appReg.provisioner.enabled) continue;
 
         if (request.repo) {
           for (const repo of repos) {
@@ -216,7 +232,7 @@ export function createAppRegistry(): AppRegistry {
               repo.owner.login === request.account &&
               repo.name === request.repo
             ) {
-              provisioners.push(instReg);
+              found.push(instReg);
 
               break;
             }
@@ -226,11 +242,11 @@ export function createAppRegistry(): AppRegistry {
         }
 
         if (installationAccount(installation) === request.account) {
-          provisioners.push(instReg);
+          found.push(instReg);
         }
       }
 
-      return provisioners;
+      return found;
     },
   };
 

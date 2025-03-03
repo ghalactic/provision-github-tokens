@@ -6,6 +6,7 @@ import { createAppRegistry } from "./app-registry.js";
 import { readAppsInput } from "./config/apps-input.js";
 import { discoverApps } from "./discover-apps.js";
 import { discoverConsumers } from "./discover-consumers.js";
+import { createEnvironmentResolver } from "./environment-resolver.js";
 import { errorStack } from "./error.js";
 import { createNamePattern } from "./name-pattern.js";
 import { createOctokitFactory } from "./octokit.js";
@@ -66,6 +67,11 @@ async function main(): Promise<void> {
   const octokitFactory = createOctokitFactory();
   const appRegistry = createAppRegistry();
   const declarationRegistry = createTokenDeclarationRegistry();
+  const environmentResolver = createEnvironmentResolver(
+    octokitFactory,
+    appRegistry,
+    appsInput,
+  );
   const provisionAuthorizer = createProvisionAuthorizer(config.provision);
 
   await group("Discovering apps", async () => {
@@ -100,9 +106,9 @@ async function main(): Promise<void> {
       }
 
       for (const accountPattern in secretDec.github.accounts) {
-        const accounts = appRegistry.resolveProvisionerAccounts(
+        const accounts = appRegistry.resolveProvisionerAccounts([
           createNamePattern(accountPattern),
-        );
+        ]);
 
         for (const type of ["actions", "codespaces", "dependabot"] as const) {
           if (secretDec.github.accounts[accountPattern][type]) {
@@ -120,10 +126,12 @@ async function main(): Promise<void> {
         }
       }
 
-      for (const envPattern of secretDec.github.repo.environments) {
-        // TODO: resolve environments
-        const envs = ["env-a", "env-b"];
+      if (secretDec.github.repo.environments.length > 0) {
         const { account, repo } = requester;
+        const envs = await environmentResolver.resolveEnvironments(
+          `${account}/${repo}`,
+          secretDec.github.repo.environments.map(createNamePattern),
+        );
 
         for (const environment of envs) {
           provisionRequests.push({
@@ -138,9 +146,9 @@ async function main(): Promise<void> {
       }
 
       for (const repoPattern in secretDec.github.repos) {
-        const repos = appRegistry.resolveProvisionerRepos(
+        const repos = appRegistry.resolveProvisionerRepos([
           createNamePattern(repoPattern),
-        );
+        ]);
 
         for (const fullRepo of repos) {
           const [account, repo] = fullRepo.split("/");
@@ -151,10 +159,13 @@ async function main(): Promise<void> {
             }
           }
 
-          for (const envPattern of secretDec.github.repos[repoPattern]
-            .environments) {
-            // TODO: resolve environments
-            const envs = ["env-a", "env-b"];
+          if (secretDec.github.repos[repoPattern].environments.length > 0) {
+            const envs = await environmentResolver.resolveEnvironments(
+              fullRepo,
+              secretDec.github.repos[repoPattern].environments.map(
+                createNamePattern,
+              ),
+            );
 
             for (const environment of envs) {
               provisionRequests.push({

@@ -49828,6 +49828,7 @@ function createAppRegistry() {
   const apps = /* @__PURE__ */ new Map();
   const appsByInstallation = /* @__PURE__ */ new Map();
   const installations = /* @__PURE__ */ new Map();
+  const issuers = /* @__PURE__ */ new Map();
   const issuerAccounts = /* @__PURE__ */ new Set();
   const issuerRepos = /* @__PURE__ */ new Set();
   const provisioners = /* @__PURE__ */ new Map();
@@ -49853,6 +49854,7 @@ function createAppRegistry() {
       installations.set(registration.installation.id, registration);
       appsByInstallation.set(registration, appReg);
       if (appReg.issuer.enabled) {
+        issuers.set(registration.installation.id, registration);
         issuerAccounts.add(account);
         for (const { full_name } of registration.repos) {
           issuerRepos.add(full_name);
@@ -49866,22 +49868,22 @@ function createAppRegistry() {
         }
       }
     },
-    resolveIssuerAccounts: (...patterns) => {
+    resolveIssuerAccounts: (patterns) => {
       return Array.from(issuerAccounts).filter(
         (account) => anyPatternMatches(patterns, account)
       );
     },
-    resolveIssuerRepos: (...patterns) => {
+    resolveIssuerRepos: (patterns) => {
       return Array.from(issuerRepos).filter(
         (repo) => anyPatternMatches(patterns, repo)
       );
     },
-    resolveProvisionerAccounts: (...patterns) => {
+    resolveProvisionerAccounts: (patterns) => {
       return Array.from(provisionerAccounts).filter(
         (account) => anyPatternMatches(patterns, account)
       );
     },
-    resolveProvisionerRepos: (...patterns) => {
+    resolveProvisionerRepos: (patterns) => {
       return Array.from(provisionerRepos).filter(
         (repo) => anyPatternMatches(patterns, repo)
       );
@@ -49904,11 +49906,10 @@ function createAppRegistry() {
         },
         {}
       ) : {};
-      const issuers = [];
-      for (const [, instReg] of installations) {
+      const found = [];
+      for (const [, instReg] of issuers) {
         const { installation, repos } = instReg;
         const appReg = appRegForInstReg(instReg);
-        if (!appReg.issuer.enabled) continue;
         if (tokenHasRole) {
           let appHasRole = false;
           for (const role of appReg.issuer.roles) {
@@ -49932,7 +49933,7 @@ function createAppRegistry() {
         if (permMatchCount !== tokenPerms.length) continue;
         if (installation.repository_selection === "all") {
           if (installationAccount(installation) === request2.account) {
-            issuers.push(instReg);
+            found.push(instReg);
           }
           continue;
         }
@@ -49942,30 +49943,41 @@ function createAppRegistry() {
           }
         }
         if (repoMatchCount !== request2.repos.length) continue;
-        issuers.push(instReg);
+        found.push(instReg);
       }
-      return issuers;
+      return found;
+    },
+    findProvisionersForRepo: (repo) => {
+      const found = [];
+      for (const [, instReg] of provisioners) {
+        const { repos } = instReg;
+        for (const r of repos) {
+          if (r.full_name === repo) {
+            found.push(instReg);
+            break;
+          }
+        }
+      }
+      return found;
     },
     findProvisionersForRequest: (request2) => {
-      const provisioners2 = [];
-      for (const [, instReg] of installations) {
+      const found = [];
+      for (const [, instReg] of provisioners) {
         const { installation, repos } = instReg;
-        const appReg = appRegForInstReg(instReg);
-        if (!appReg.provisioner.enabled) continue;
         if (request2.repo) {
           for (const repo of repos) {
             if (repo.owner.login === request2.account && repo.name === request2.repo) {
-              provisioners2.push(instReg);
+              found.push(instReg);
               break;
             }
           }
           continue;
         }
         if (installationAccount(installation) === request2.account) {
-          provisioners2.push(instReg);
+          found.push(instReg);
         }
       }
-      return provisioners2;
+      return found;
     }
   };
   function appRegForInstReg(instReg) {
@@ -59302,6 +59314,41 @@ async function discoverConsumers(octokitFactory, appRegistry, appsInput) {
   return discovered;
 }
 
+// src/environment-resolver.ts
+function createEnvironmentResolver(octokitFactory, appRegistry, appsInput) {
+  const envsByRepo = {};
+  return {
+    async resolveEnvironments(repo, patterns) {
+      return (await repoEnvs(repo)).filter(
+        (env) => anyPatternMatches(patterns, env)
+      );
+    }
+  };
+  async function repoEnvs(fullRepo) {
+    if (envsByRepo[fullRepo]) return envsByRepo[fullRepo];
+    const [provisionerReg] = appRegistry.findProvisionersForRepo(fullRepo);
+    if (!provisionerReg) {
+      throw new Error(`No provisioners found for repo ${fullRepo}`);
+    }
+    const { installation } = provisionerReg;
+    const octokit = octokitFactory.installationOctokit(
+      appsInput,
+      installation.app_id,
+      installation.id
+    );
+    const [account, repo] = fullRepo.split("/");
+    const envPages = octokit.paginate.iterator(
+      octokit.rest.repos.getAllEnvironments,
+      { owner: account, repo }
+    );
+    const names = [];
+    for await (const { data: envs } of envPages) {
+      for (const env of envs) names.push(env.name);
+    }
+    return envsByRepo[fullRepo] = names;
+  }
+}
+
 // src/provision-authorizer.ts
 function createProvisionAuthorizer(config) {
   const [namePatterns, targetPatterns, requesterPatterns] = patternsForRules(
@@ -59524,6 +59571,11 @@ async function main() {
   const octokitFactory = createOctokitFactory();
   const appRegistry = createAppRegistry();
   const declarationRegistry = createTokenDeclarationRegistry();
+  const environmentResolver = createEnvironmentResolver(
+    octokitFactory,
+    appRegistry,
+    appsInput
+  );
   const provisionAuthorizer = createProvisionAuthorizer(config.provision);
   await (0, import_core6.group)("Discovering apps", async () => {
     await discoverApps(octokitFactory, appRegistry, appsInput);
@@ -59544,9 +59596,9 @@ async function main() {
         }
       }
       for (const accountPattern in secretDec.github.accounts) {
-        const accounts = appRegistry.resolveProvisionerAccounts(
+        const accounts = appRegistry.resolveProvisionerAccounts([
           createNamePattern(accountPattern)
-        );
+        ]);
         for (const type2 of ["actions", "codespaces", "dependabot"]) {
           if (secretDec.github.accounts[accountPattern][type2]) {
             for (const account of accounts) {
@@ -59561,9 +59613,12 @@ async function main() {
           provisionRequests.push({ name, platform, type: type2, account, repo });
         }
       }
-      for (const envPattern of secretDec.github.repo.environments) {
-        const envs = ["env-a", "env-b"];
+      if (secretDec.github.repo.environments.length > 0) {
         const { account, repo } = requester;
+        const envs = await environmentResolver.resolveEnvironments(
+          `${account}/${repo}`,
+          secretDec.github.repo.environments.map(createNamePattern)
+        );
         for (const environment of envs) {
           provisionRequests.push({
             name,
@@ -59576,9 +59631,9 @@ async function main() {
         }
       }
       for (const repoPattern in secretDec.github.repos) {
-        const repos = appRegistry.resolveProvisionerRepos(
+        const repos = appRegistry.resolveProvisionerRepos([
           createNamePattern(repoPattern)
-        );
+        ]);
         for (const fullRepo of repos) {
           const [account, repo] = fullRepo.split("/");
           for (const type2 of ["actions", "codespaces", "dependabot"]) {
@@ -59586,8 +59641,13 @@ async function main() {
               provisionRequests.push({ name, platform, type: type2, account, repo });
             }
           }
-          for (const envPattern of secretDec.github.repos[repoPattern].environments) {
-            const envs = ["env-a", "env-b"];
+          if (secretDec.github.repos[repoPattern].environments.length > 0) {
+            const envs = await environmentResolver.resolveEnvironments(
+              fullRepo,
+              secretDec.github.repos[repoPattern].environments.map(
+                createNamePattern
+              )
+            );
             for (const environment of envs) {
               provisionRequests.push({
                 name,

@@ -40,24 +40,20 @@ it("resolves a list of repo patterns into a list of issuer-accessible repos", as
 
   expect(
     appRegistry.resolveIssuerRepos(
-      ...["org-a/repo-a", "user-b/repo-c"].map(createGitHubPattern),
+      ["org-a/repo-a", "user-b/repo-c"].map(createGitHubPattern),
     ),
   ).toEqual(["org-a/repo-a", "user-b/repo-c"]);
   expect(
-    appRegistry.resolveIssuerRepos(
-      ...["org-*/repo-*"].map(createGitHubPattern),
-    ),
+    appRegistry.resolveIssuerRepos(["org-*/repo-*"].map(createGitHubPattern)),
   ).toEqual(["org-a/repo-a", "org-a/repo-b"]);
   expect(
-    appRegistry.resolveIssuerRepos(
-      ...["user-*/repo-*"].map(createGitHubPattern),
-    ),
+    appRegistry.resolveIssuerRepos(["user-*/repo-*"].map(createGitHubPattern)),
   ).toEqual(["user-b/repo-c", "user-b/repo-d"]);
   expect(
-    appRegistry.resolveIssuerRepos(...["*/*"].map(createGitHubPattern)),
+    appRegistry.resolveIssuerRepos(["*/*"].map(createGitHubPattern)),
   ).toEqual(["org-a/repo-a", "org-a/repo-b", "user-b/repo-c", "user-b/repo-d"]);
   expect(
-    appRegistry.resolveIssuerRepos(...["xxx/xxx"].map(createGitHubPattern)),
+    appRegistry.resolveIssuerRepos(["xxx/xxx"].map(createGitHubPattern)),
   ).toEqual([]);
 });
 
@@ -91,7 +87,7 @@ it("doesn't resolve repos accessible only to non-issuer apps", async () => {
   appRegistry.registerApp(appB);
   appRegistry.registerInstallation(appBInstallationRegA);
 
-  expect(appRegistry.resolveIssuerRepos(createGitHubPattern("*/*"))).toEqual([
+  expect(appRegistry.resolveIssuerRepos([createGitHubPattern("*/*")])).toEqual([
     "org-b/repo-b",
   ]);
 });

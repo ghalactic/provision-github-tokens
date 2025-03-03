@@ -41,22 +41,20 @@ it("resolves a list of account patterns into a list of provisioner-accessible ac
 
   expect(
     appRegistry.resolveProvisionerAccounts(
-      ...["org-a", "user-b"].map(createNamePattern),
+      ["org-a", "user-b"].map(createNamePattern),
     ),
   ).toEqual(["org-a", "user-b"]);
   expect(
-    appRegistry.resolveProvisionerAccounts(...["org-*"].map(createNamePattern)),
+    appRegistry.resolveProvisionerAccounts(["org-*"].map(createNamePattern)),
   ).toEqual(["org-a", "org-c"]);
   expect(
-    appRegistry.resolveProvisionerAccounts(
-      ...["user-*"].map(createNamePattern),
-    ),
+    appRegistry.resolveProvisionerAccounts(["user-*"].map(createNamePattern)),
   ).toEqual(["user-b"]);
   expect(
-    appRegistry.resolveProvisionerAccounts(...["*"].map(createNamePattern)),
+    appRegistry.resolveProvisionerAccounts(["*"].map(createNamePattern)),
   ).toEqual(["org-a", "user-b", "org-c"]);
   expect(
-    appRegistry.resolveProvisionerAccounts(...["xxx"].map(createNamePattern)),
+    appRegistry.resolveProvisionerAccounts(["xxx"].map(createNamePattern)),
   ).toEqual([]);
 });
 
@@ -89,6 +87,6 @@ it("doesn't resolve accounts accessible only to non-provisioner apps", async () 
   appRegistry.registerInstallation(appBInstallationRegA);
 
   expect(
-    appRegistry.resolveProvisionerAccounts(createNamePattern("*")),
+    appRegistry.resolveProvisionerAccounts([createNamePattern("*")]),
   ).toEqual(["org-b"]);
 });

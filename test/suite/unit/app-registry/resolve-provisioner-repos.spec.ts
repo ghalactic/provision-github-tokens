@@ -40,26 +40,24 @@ it("resolves a list of repo patterns into a list of provisioner-accessible repos
 
   expect(
     appRegistry.resolveProvisionerRepos(
-      ...["org-a/repo-a", "user-b/repo-c"].map(createGitHubPattern),
+      ["org-a/repo-a", "user-b/repo-c"].map(createGitHubPattern),
     ),
   ).toEqual(["org-a/repo-a", "user-b/repo-c"]);
   expect(
     appRegistry.resolveProvisionerRepos(
-      ...["org-*/repo-*"].map(createGitHubPattern),
+      ["org-*/repo-*"].map(createGitHubPattern),
     ),
   ).toEqual(["org-a/repo-a", "org-a/repo-b"]);
   expect(
     appRegistry.resolveProvisionerRepos(
-      ...["user-*/repo-*"].map(createGitHubPattern),
+      ["user-*/repo-*"].map(createGitHubPattern),
     ),
   ).toEqual(["user-b/repo-c", "user-b/repo-d"]);
   expect(
-    appRegistry.resolveProvisionerRepos(...["*/*"].map(createGitHubPattern)),
+    appRegistry.resolveProvisionerRepos(["*/*"].map(createGitHubPattern)),
   ).toEqual(["org-a/repo-a", "org-a/repo-b", "user-b/repo-c", "user-b/repo-d"]);
   expect(
-    appRegistry.resolveProvisionerRepos(
-      ...["xxx/xxx"].map(createGitHubPattern),
-    ),
+    appRegistry.resolveProvisionerRepos(["xxx/xxx"].map(createGitHubPattern)),
   ).toEqual([]);
 });
 
@@ -94,6 +92,6 @@ it("doesn't resolve repos accessible only to non-provisioner apps", async () => 
   appRegistry.registerInstallation(appBInstallationRegA);
 
   expect(
-    appRegistry.resolveProvisionerRepos(createGitHubPattern("*/*")),
+    appRegistry.resolveProvisionerRepos([createGitHubPattern("*/*")]),
   ).toEqual(["org-b/repo-b"]);
 });
