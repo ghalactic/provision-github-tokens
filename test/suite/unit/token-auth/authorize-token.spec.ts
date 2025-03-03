@@ -1,9 +1,9 @@
 import { expect, it } from "vitest";
-import { createTextAuthExplainer } from "../../../../src/token-auth-explainer/text.js";
+import { createTextTokenAuthExplainer } from "../../../../src/token-auth-explainer/text.js";
 import { createTokenAuthorizer } from "../../../../src/token-authorizer.js";
 import { throws } from "../../../error.js";
 
-const explain = createTextAuthExplainer();
+const explain = createTextTokenAuthExplainer();
 
 it("supports wildcard account consumers", () => {
   const authorizer = createTokenAuthorizer({

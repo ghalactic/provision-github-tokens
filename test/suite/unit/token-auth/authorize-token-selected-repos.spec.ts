@@ -1,8 +1,8 @@
 import { expect, it } from "vitest";
-import { createTextAuthExplainer } from "../../../../src/token-auth-explainer/text.js";
+import { createTextTokenAuthExplainer } from "../../../../src/token-auth-explainer/text.js";
 import { createTokenAuthorizer } from "../../../../src/token-authorizer.js";
 
-const explain = createTextAuthExplainer();
+const explain = createTextTokenAuthExplainer();
 
 it("allows tokens that should be allowed", () => {
   const authorizer = createTokenAuthorizer({

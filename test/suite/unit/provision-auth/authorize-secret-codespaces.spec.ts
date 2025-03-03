@@ -1,8 +1,8 @@
 import { expect, it } from "vitest";
-import { createTextAuthExplainer } from "../../../../src/provision-auth-explainer/text.js";
+import { createTextProvisionAuthExplainer } from "../../../../src/provision-auth-explainer/text.js";
 import { createProvisionAuthorizer } from "../../../../src/provision-authorizer.js";
 
-const explain = createTextAuthExplainer();
+const explain = createTextProvisionAuthExplainer();
 
 it("allows GitHub Codespaces account secrets that should be allowed", () => {
   const authorizer = createProvisionAuthorizer({

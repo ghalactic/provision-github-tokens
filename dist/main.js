@@ -5689,9 +5689,9 @@ var require_constants = __commonJS({
       }
     })();
     var channel;
-    var structuredClone = globalThis.structuredClone ?? // https://github.com/nodejs/node/blob/b27ae24dcc4251bad726d9d84baf678d1f707fed/lib/internal/structured_clone.js
+    var structuredClone2 = globalThis.structuredClone ?? // https://github.com/nodejs/node/blob/b27ae24dcc4251bad726d9d84baf678d1f707fed/lib/internal/structured_clone.js
     // structuredClone was added in v17.0.0, but fetch supports v16.8
-    function structuredClone2(value, options = void 0) {
+    function structuredClone3(value, options = void 0) {
       if (arguments.length === 0) {
         throw new TypeError("missing argument");
       }
@@ -5705,7 +5705,7 @@ var require_constants = __commonJS({
     };
     module.exports = {
       DOMException: DOMException2,
-      structuredClone,
+      structuredClone: structuredClone2,
       subresource,
       forbiddenMethods,
       requestBodyHeader,
@@ -7369,7 +7369,7 @@ var require_body = __commonJS({
     var { FormData } = require_formdata();
     var { kState } = require_symbols2();
     var { webidl } = require_webidl();
-    var { DOMException: DOMException2, structuredClone } = require_constants();
+    var { DOMException: DOMException2, structuredClone: structuredClone2 } = require_constants();
     var { Blob: Blob2, File: NativeFile } = __require("buffer");
     var { kBodyUsed } = require_symbols();
     var assert = __require("assert");
@@ -7526,7 +7526,7 @@ Content-Type: ${value.type || "application/octet-stream"}\r
     }
     function cloneBody(body) {
       const [out1, out2] = body.stream.tee();
-      const out2Clone = structuredClone(out2, { transfer: [out2] });
+      const out2Clone = structuredClone2(out2, { transfer: [out2] });
       const [, finalClone] = out2Clone.tee();
       body.stream = out1;
       return {
@@ -21828,10 +21828,10 @@ Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
       (0, command_1.issueCommand)("error", (0, utils_1.toCommandProperties)(properties), message instanceof Error ? message.toString() : message);
     }
     exports.error = error;
-    function warning2(message, properties = {}) {
+    function warning3(message, properties = {}) {
       (0, command_1.issueCommand)("warning", (0, utils_1.toCommandProperties)(properties), message instanceof Error ? message.toString() : message);
     }
-    exports.warning = warning2;
+    exports.warning = warning3;
     function notice(message, properties = {}) {
       (0, command_1.issueCommand)("notice", (0, utils_1.toCommandProperties)(properties), message instanceof Error ? message.toString() : message);
     }
@@ -49800,6 +49800,19 @@ function isSufficientAccess(have, want) {
 function isWriteAccess(access) {
   return ACCESS_RANK[access] > ACCESS_RANK.read;
 }
+function maxAccess(permissions) {
+  let max = "none";
+  let maxRank = 0;
+  for (const access of Object.values(permissions)) {
+    const definedAccess = access ?? "none";
+    const rank = ACCESS_RANK[definedAccess];
+    if (rank > maxRank) {
+      max = definedAccess;
+      maxRank = rank;
+    }
+  }
+  return max;
+}
 
 // src/pattern.ts
 function anyPatternMatches(patterns, string) {
@@ -49818,6 +49831,19 @@ function isEmptyPermissions(permissions) {
       case "write":
       case "admin":
         return false;
+    }
+  }
+  return true;
+}
+function isSufficientPermissions(have, want) {
+  const permissions = Object.keys(want);
+  if (isEmptyPermissions(want)) throw new Error("Empty permissions");
+  for (const permission of permissions) {
+    if (!isSufficientAccess(
+      permissionAccess(have, permission),
+      permissionAccess(want, permission)
+    )) {
+      return false;
     }
   }
   return true;
@@ -59349,6 +59375,67 @@ function createEnvironmentResolver(octokitFactory, appRegistry, appsInput) {
   }
 }
 
+// src/provision-auth-explainer/text.ts
+var ALLOWED_ICON = "\u2705";
+var DENIED_ICON = "\u274C";
+function createTextProvisionAuthExplainer() {
+  return (result) => {
+    const { isAllowed, rules } = result;
+    return `${explainSummary(result)}
+  ${renderIcon(isAllowed)} ${isAllowed ? "Can" : "Can't"} provision to ${explainSubject(result)} ${explainBasedOnRules(rules)}`;
+  };
+  function explainSummary({
+    requester,
+    request: request2,
+    isAllowed
+  }) {
+    return `${renderIcon(isAllowed)} Repo ${requester} ` + (isAllowed ? "was allowed" : "wasn't allowed") + ` to provision secret ${request2.name}:`;
+  }
+  function explainSubject({ request: request2 }) {
+    const { account, repo } = request2;
+    const type2 = ((r) => {
+      const type3 = r.type;
+      switch (type3) {
+        case "actions":
+          return "Actions";
+        case "codespaces":
+          return "Codespaces";
+        case "dependabot":
+          return "Dependabot";
+        case "environment":
+          return `environment ${r.environment}`;
+      }
+      throw new Error(
+        `Invariant violation: Unexpected secret type ${JSON.stringify(type3)}`
+      );
+    })(request2);
+    const target = repo ? `${account}/${repo}` : account;
+    return `${type2} in ${target}`;
+  }
+  function explainBasedOnRules(rules) {
+    const ruleCount = rules.length;
+    const ruleOrRules = ruleCount === 1 ? "rule" : "rules";
+    const basedOn = ruleCount < 1 ? "(no matching rules)" : `based on ${ruleCount} ${ruleOrRules}`;
+    if (ruleCount < 1) return basedOn;
+    let explainedRules = "";
+    for (const ruleResult of rules) {
+      explainedRules += "\n" + explainRule(ruleResult);
+    }
+    return `${basedOn}:${explainedRules}`;
+  }
+  function explainRule({ index, rule, have }) {
+    const isAllowed = have === "allow";
+    return `    ${renderIcon(isAllowed)} ${isAllowed ? "Allowed" : "Denied"} by rule ${renderRule(index, rule)}`;
+  }
+  function renderRule(index, { description }) {
+    const n = `#${index + 1}`;
+    return description ? `${n}: ${JSON.stringify(description)}` : n;
+  }
+  function renderIcon(isAllowed) {
+    return isAllowed ? ALLOWED_ICON : DENIED_ICON;
+  }
+}
+
 // src/provision-authorizer.ts
 function createProvisionAuthorizer(config) {
   const [namePatterns, targetPatterns, requesterPatterns] = patternsForRules(
@@ -59505,6 +59592,300 @@ function registerTokenDeclarations(declarationRegistry, consumers) {
   }
 }
 
+// src/token-auth-explainer/text.ts
+var ALLOWED_ICON2 = "\u2705";
+var DENIED_ICON2 = "\u274C";
+var ACCESS_LEVELS = {
+  none: "No",
+  admin: "Admin",
+  read: "Read",
+  write: "Write"
+};
+function createTextTokenAuthExplainer() {
+  return (result) => {
+    if (result.type === "ALL_REPOS") return explainAllRepos(result);
+    if (result.type === "NO_REPOS") return explainNoRepos(result);
+    return explainSelectedRepos(result);
+  };
+  function explainAllRepos(result) {
+    const { request: request2, isSufficient, rules } = result;
+    const { account } = request2;
+    const subject = `all repos in ${account}`;
+    return `${explainSummary(result)}
+  ${explainMaxAccessAndRole(result, subject)}
+  ${renderIcon(isSufficient)} ${isSufficient ? "Sufficient" : "Insufficient"} access to ${subject} ${explainBasedOnRules(request2.permissions, rules)}`;
+  }
+  function explainNoRepos(result) {
+    const { request: request2, isSufficient, rules } = result;
+    const { account } = request2;
+    return `${explainSummary(result)}
+  ${explainMaxAccessAndRole(result, account)}
+  ${renderIcon(isSufficient)} ${isSufficient ? "Sufficient" : "Insufficient"} access to ${account} ${explainBasedOnRules(request2.permissions, rules)}`;
+  }
+  function explainSelectedRepos(result) {
+    const { request: request2, results } = result;
+    const { account } = request2;
+    const subject = `repos in ${account}`;
+    const resourceEntries = Object.entries(results).sort(
+      ([a], [b]) => a.localeCompare(b)
+    );
+    let explainedResources = "";
+    for (const [resourceRepo, resourceResult] of resourceEntries) {
+      explainedResources += "\n" + explainResourceRepo(resourceRepo, request2.permissions, resourceResult);
+    }
+    return `${explainSummary(result)}
+  ${explainMaxAccessAndRole(result, subject)}` + explainedResources;
+  }
+  function explainSummary({
+    consumer: { type: type2, name },
+    isAllowed
+  }) {
+    if (type2 === "REPO") {
+      return `${renderIcon(isAllowed)} Repo ${name} was ${isAllowed ? "allowed" : "denied"} access to a token:`;
+    }
+    return `${renderIcon(isAllowed)} Account ${name} was ${isAllowed ? "allowed" : "denied"} access to a token:`;
+  }
+  function explainMaxAccessAndRole({ request: request2, maxWant, isMissingRole }, accessTo) {
+    const { role } = request2;
+    return `${renderIcon(!isMissingRole)} ${ACCESS_LEVELS[maxWant]} access to ${accessTo} ` + (role ? `requested with role ${role}` : "requested without a role");
+  }
+  function explainResourceRepo(resource, want, { isSufficient, rules }) {
+    return `  ${renderIcon(isSufficient)} ${isSufficient ? "Sufficient" : "Insufficient"} access to repo ${resource} ${explainBasedOnRules(want, rules)}`;
+  }
+  function explainBasedOnRules(want, rules) {
+    const ruleCount = rules.length;
+    const ruleOrRules = ruleCount === 1 ? "rule" : "rules";
+    const basedOn = ruleCount < 1 ? "(no matching rules)" : `based on ${ruleCount} ${ruleOrRules}`;
+    if (ruleCount < 1) return basedOn;
+    let explainedRules = "";
+    for (const ruleResult of rules) {
+      explainedRules += "\n" + explainRule(want, ruleResult);
+    }
+    return `${basedOn}:${explainedRules}`;
+  }
+  function explainRule(want, { index, rule, have, isSufficient }) {
+    return `    ${renderIcon(isSufficient)} Rule ${renderRule(index, rule)} gave ${isSufficient ? "sufficient" : "insufficient"} access:` + renderPermissionComparison("      ", have, want);
+  }
+  function renderRule(index, { description }) {
+    const n = `#${index + 1}`;
+    return description ? `${n}: ${JSON.stringify(description)}` : n;
+  }
+  function renderPermissionComparison(indent, have, want) {
+    const entries = [];
+    for (const p of Object.keys(want).sort((a, b) => a.localeCompare(b))) {
+      const h = permissionAccess(have, p);
+      const w = permissionAccess(want, p);
+      entries.push([isSufficientAccess(h, w), `${p}: have ${h}, wanted ${w}`]);
+    }
+    return renderAllowDenyList(indent, entries);
+  }
+  function renderAllowDenyList(indent, items) {
+    let list = "";
+    for (const [isAllowed, entry] of items) {
+      list += `
+${indent}${renderIcon(isAllowed)} ${entry}`;
+    }
+    return list;
+  }
+  function renderIcon(isAllowed) {
+    return isAllowed ? ALLOWED_ICON2 : DENIED_ICON2;
+  }
+}
+
+// src/token-authorizer.ts
+function createTokenAuthorizer(config) {
+  const [resourcePatterns, consumerPatterns] = patternsForRules(config.rules);
+  return {
+    authorizeForAccount(account, request2) {
+      return authorizeForConsumer({ type: "ACCOUNT", name: account }, request2);
+    },
+    authorizeForRepo(repo, request2) {
+      return authorizeForConsumer({ type: "REPO", name: repo }, request2);
+    }
+  };
+  function authorizeForConsumer(consumer, request2) {
+    if (isEmptyPermissions(request2.permissions)) {
+      throw new Error("No permissions requested");
+    }
+    if (request2.repos === "all") return authorizeAllRepos(consumer, request2);
+    if (request2.repos.length < 1) return authorizeNoRepos(consumer, request2);
+    return authorizeSelectedRepos(consumer, request2);
+  }
+  function authorizeAllRepos(consumer, request2) {
+    const rules = rulesForConsumer(consumer);
+    let isSufficient = false;
+    const ruleResults = [];
+    const have = {};
+    for (const i of rules) {
+      const rule = config.rules[i];
+      let isRelevant = false;
+      for (let j = 0; j < rule.resources.length; ++j) {
+        isRelevant = rule.resources[j].allRepos === true && anyPatternMatches(resourcePatterns[i][j].accounts, request2.account);
+        if (isRelevant) break;
+      }
+      if (!isRelevant) continue;
+      updatePermissions(have, rule.permissions);
+      isSufficient = isSufficientPermissions(have, request2.permissions);
+      ruleResults.push({
+        index: i,
+        rule,
+        have: structuredClone(have),
+        isSufficient
+      });
+    }
+    const maxWant = maxAccess(request2.permissions);
+    const isWrite = isWriteAccess(maxWant);
+    const isMissingRole = isWrite && !request2.role;
+    const isAllowed = isSufficient && !isMissingRole;
+    return {
+      consumer,
+      request: request2,
+      type: "ALL_REPOS",
+      rules: ruleResults,
+      have,
+      maxWant,
+      isSufficient,
+      isMissingRole,
+      isAllowed
+    };
+  }
+  function authorizeNoRepos(consumer, request2) {
+    const rules = rulesForConsumer(consumer);
+    let isSufficient = false;
+    const ruleResults = [];
+    const have = {};
+    for (const i of rules) {
+      const rule = config.rules[i];
+      let isRelevant = false;
+      for (let j = 0; j < rule.resources.length; ++j) {
+        isRelevant = rule.resources[j].noRepos === true && anyPatternMatches(resourcePatterns[i][j].accounts, request2.account);
+        if (isRelevant) break;
+      }
+      if (!isRelevant) continue;
+      updatePermissions(have, rule.permissions);
+      isSufficient = isSufficientPermissions(have, request2.permissions);
+      ruleResults.push({
+        index: i,
+        rule,
+        have: structuredClone(have),
+        isSufficient
+      });
+    }
+    const maxWant = maxAccess(request2.permissions);
+    const isWrite = isWriteAccess(maxWant);
+    const isMissingRole = isWrite && !request2.role;
+    const isAllowed = isSufficient && !isMissingRole;
+    return {
+      consumer,
+      request: request2,
+      type: "NO_REPOS",
+      rules: ruleResults,
+      have,
+      maxWant,
+      isSufficient,
+      isMissingRole,
+      isAllowed
+    };
+  }
+  function authorizeSelectedRepos(consumer, request2) {
+    const rules = rulesForConsumer(consumer);
+    let isSufficient = true;
+    const resourceResults = {};
+    for (const reqRepo of request2.repos) {
+      const reqResource = `${request2.account}/${reqRepo}`;
+      const ruleResults = [];
+      const have = {};
+      let isResourceSufficient = false;
+      for (const i of rules) {
+        const rule = config.rules[i];
+        let isRelevant = false;
+        for (let j = 0; j < rule.resources.length; ++j) {
+          const { accounts, repos } = resourcePatterns[i][j];
+          isRelevant = anyPatternMatches(accounts, request2.account) && anyPatternMatches(repos, reqRepo);
+          if (isRelevant) break;
+        }
+        if (!isRelevant) continue;
+        updatePermissions(have, rule.permissions);
+        isResourceSufficient = isSufficientPermissions(
+          have,
+          request2.permissions
+        );
+        ruleResults.push({
+          index: i,
+          rule,
+          have: structuredClone(have),
+          isSufficient: isResourceSufficient
+        });
+      }
+      isSufficient &&= isResourceSufficient;
+      resourceResults[reqResource] = {
+        rules: ruleResults,
+        have,
+        isSufficient: isResourceSufficient
+      };
+    }
+    const maxWant = maxAccess(request2.permissions);
+    const isWrite = isWriteAccess(maxWant);
+    const isMissingRole = isWrite && !request2.role;
+    const isAllowed = isSufficient && !isMissingRole;
+    return {
+      consumer,
+      request: request2,
+      type: "SELECTED_REPOS",
+      results: resourceResults,
+      maxWant,
+      isSufficient,
+      isMissingRole,
+      isAllowed
+    };
+  }
+  function patternsForRules(rules) {
+    const resourcePatterns2 = {};
+    const consumerPatterns2 = {};
+    for (let i = 0; i < rules.length; ++i) {
+      [resourcePatterns2[i], consumerPatterns2[i]] = patternsForRule(rules[i]);
+    }
+    return [resourcePatterns2, consumerPatterns2];
+  }
+  function patternsForRule(rule) {
+    const resourcePatterns2 = [];
+    const consumerPatterns2 = [];
+    for (const criteria of rule.resources) {
+      resourcePatterns2.push(patternsForResourceCriteria(criteria));
+    }
+    for (const consumer of rule.consumers) {
+      consumerPatterns2.push(createGitHubPattern(consumer));
+    }
+    return [resourcePatterns2, consumerPatterns2];
+  }
+  function patternsForResourceCriteria(criteria) {
+    const accounts = [];
+    const repos = [];
+    for (const pattern of criteria.accounts) {
+      accounts.push(createNamePattern(pattern));
+    }
+    for (const pattern of criteria.selectedRepos) {
+      repos.push(createNamePattern(pattern));
+    }
+    return { accounts, repos };
+  }
+  function rulesForConsumer(consumer) {
+    const indices = [];
+    for (let i = 0; i < config.rules.length; ++i) {
+      if (anyPatternMatches(consumerPatterns[i], consumer.name)) {
+        indices.push(i);
+      }
+    }
+    return indices;
+  }
+  function updatePermissions(have, permissions) {
+    Object.assign(have, permissions);
+    for (const [permission, access = "none"] of Object.entries(have)) {
+      if (access === "none") delete have[permission];
+    }
+  }
+}
+
 // src/token-declaration-registry.ts
 function createTokenDeclarationRegistry() {
   const declarations = /* @__PURE__ */ new Map();
@@ -59577,6 +59958,7 @@ async function main() {
     appsInput
   );
   const provisionAuthorizer = createProvisionAuthorizer(config.provision);
+  const tokenAuthorizer = createTokenAuthorizer(config.permissions);
   await (0, import_core6.group)("Discovering apps", async () => {
     await discoverApps(octokitFactory, appRegistry, appsInput);
   });
@@ -59586,13 +59968,15 @@ async function main() {
   registerTokenDeclarations(declarationRegistry, consumers);
   for (const [, requester] of consumers) {
     const provisionRequests = [];
+    const tokenRequests = [];
     const platform = "github";
     for (const name in requester.config.provision.secrets) {
       const secretDec = requester.config.provision.secrets[name];
+      const secretProvisionRequests = [];
       for (const type2 of ["actions", "codespaces", "dependabot"]) {
         if (secretDec.github.account[type2]) {
           const { account } = requester;
-          provisionRequests.push({ name, platform, account, type: type2 });
+          secretProvisionRequests.push({ name, platform, account, type: type2 });
         }
       }
       for (const accountPattern in secretDec.github.accounts) {
@@ -59602,7 +59986,7 @@ async function main() {
         for (const type2 of ["actions", "codespaces", "dependabot"]) {
           if (secretDec.github.accounts[accountPattern][type2]) {
             for (const account of accounts) {
-              provisionRequests.push({ name, platform, type: type2, account });
+              secretProvisionRequests.push({ name, platform, type: type2, account });
             }
           }
         }
@@ -59610,7 +59994,7 @@ async function main() {
       for (const type2 of ["actions", "codespaces", "dependabot"]) {
         if (secretDec.github.repo[type2]) {
           const { account, repo } = requester;
-          provisionRequests.push({ name, platform, type: type2, account, repo });
+          secretProvisionRequests.push({ name, platform, type: type2, account, repo });
         }
       }
       if (secretDec.github.repo.environments.length > 0) {
@@ -59620,7 +60004,7 @@ async function main() {
           secretDec.github.repo.environments.map(createNamePattern)
         );
         for (const environment of envs) {
-          provisionRequests.push({
+          secretProvisionRequests.push({
             name,
             platform,
             type: "environment",
@@ -59638,7 +60022,13 @@ async function main() {
           const [account, repo] = fullRepo.split("/");
           for (const type2 of ["actions", "codespaces", "dependabot"]) {
             if (secretDec.github.repos[repoPattern][type2]) {
-              provisionRequests.push({ name, platform, type: type2, account, repo });
+              secretProvisionRequests.push({
+                name,
+                platform,
+                type: type2,
+                account,
+                repo
+              });
             }
           }
           if (secretDec.github.repos[repoPattern].environments.length > 0) {
@@ -59649,7 +60039,7 @@ async function main() {
               )
             );
             for (const environment of envs) {
-              provisionRequests.push({
+              secretProvisionRequests.push({
                 name,
                 platform,
                 type: "environment",
@@ -59661,16 +60051,49 @@ async function main() {
           }
         }
       }
+      if (secretProvisionRequests.length < 1) continue;
+      const [tokenDec] = declarationRegistry.findDeclarationForRequester(
+        requester.account,
+        requester.repo,
+        secretDec.token
+      );
+      if (!tokenDec) {
+        (0, import_core6.warning)(`Undefined token ${secretDec.token}`);
+        continue;
+      }
+      for (const { account, repo } of secretProvisionRequests) {
+        tokenRequests.push([
+          account,
+          repo,
+          {
+            role: tokenDec.as,
+            account: tokenDec.account,
+            repos: tokenDec.repos === "all" ? "all" : appRegistry.resolveIssuerRepos(
+              tokenDec.repos.map(createNamePattern)
+            ),
+            permissions: tokenDec.permissions
+          }
+        ]);
+      }
+      provisionRequests.push(...secretProvisionRequests);
     }
-    const results = [];
+    const provisionAuthExplainer = createTextProvisionAuthExplainer();
+    const provisionAuthResults = [];
     for (const request2 of provisionRequests) {
       const result = provisionAuthorizer.authorizeSecret(
         `${requester.account}/${requester.repo}`,
         request2
       );
-      results.push([request2, result]);
+      provisionAuthResults.push([request2, result]);
+      console.log(provisionAuthExplainer(result));
     }
-    console.log(JSON.stringify(results, null, 2));
+    const tokenAuthExplainer = createTextTokenAuthExplainer();
+    const tokenAuthResults = [];
+    for (const [account, repo, request2] of tokenRequests) {
+      const result = repo == null ? tokenAuthorizer.authorizeForAccount(account, request2) : tokenAuthorizer.authorizeForRepo(`${account}/${repo}`, request2);
+      tokenAuthResults.push([request2, result]);
+      console.log(tokenAuthExplainer(result));
+    }
   }
 }
 /*! Bundled license information:
