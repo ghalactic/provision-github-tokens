@@ -1,4 +1,5 @@
 import { expect, it, vi } from "vitest";
+import { __getOutput } from "../../../__mocks__/@actions/core.js";
 import {
   __setApps,
   __setEnvironments,
@@ -20,6 +21,7 @@ import {
   createTestRepoEnvironment,
 } from "../../github-api.js";
 
+vi.mock("@actions/core");
 vi.mock("@octokit/action");
 
 it("resolves environment names for a repo", async () => {
@@ -90,6 +92,14 @@ it("resolves environment names for a repo", async () => {
       createNamePattern("env-b*"),
     ]),
   ).toEqual(["env-a1", "env-a2", "env-b1", "env-b2"]);
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "::debug::Repo org-a/repo-a has environments ["env-a1","env-a2","env-b1","env-b2"]
+    ::debug::Environment patterns ["*"] for org-a/repo-a resolved to ["env-a1","env-a2","env-b1","env-b2"]
+    ::debug::Environment patterns ["env-a*"] for org-a/repo-a resolved to ["env-a1","env-a2"]
+    ::debug::Environment patterns ["env-b*"] for org-a/repo-a resolved to ["env-b1","env-b2"]
+    ::debug::Environment patterns ["env-a*","env-b*"] for org-a/repo-a resolved to ["env-a1","env-a2","env-b1","env-b2"]
+    "
+  `);
 });
 
 it("throws if no provisioner is found", async () => {

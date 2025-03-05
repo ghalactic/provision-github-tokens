@@ -1,3 +1,4 @@
+import { debug } from "@actions/core";
 import type { AppRegistry } from "./app-registry.js";
 import type { OctokitFactory } from "./octokit.js";
 import { anyPatternMatches, type Pattern } from "./pattern.js";
@@ -17,9 +18,17 @@ export function createEnvironmentResolver(
 
   return {
     async resolveEnvironments(repo, patterns) {
-      return (await repoEnvs(repo)).filter((env) =>
+      const resolved = (await repoEnvs(repo)).filter((env) =>
         anyPatternMatches(patterns, env),
       );
+
+      const patternStrings = patterns.map((p) => p.toString());
+      debug(
+        `Environment patterns ${JSON.stringify(patternStrings)} ` +
+          `for ${repo} resolved to ${JSON.stringify(resolved)}`,
+      );
+
+      return resolved;
     },
   };
 
@@ -50,6 +59,8 @@ export function createEnvironmentResolver(
     for await (const { data: envs } of envPages) {
       for (const env of envs as Environment[]) names.push(env.name);
     }
+
+    debug(`Repo ${fullRepo} has environments ${JSON.stringify(names)}`);
 
     return (envsByRepo[fullRepo] = names);
   }

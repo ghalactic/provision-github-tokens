@@ -2662,7 +2662,7 @@ var require_tunnel = __commonJS({
         connectOptions.headers = connectOptions.headers || {};
         connectOptions.headers["Proxy-Authorization"] = "Basic " + new Buffer(connectOptions.proxyAuth).toString("base64");
       }
-      debug5("making CONNECT request");
+      debug6("making CONNECT request");
       var connectReq = self2.request(connectOptions);
       connectReq.useChunkedEncodingByDefault = false;
       connectReq.once("response", onResponse);
@@ -2682,7 +2682,7 @@ var require_tunnel = __commonJS({
         connectReq.removeAllListeners();
         socket.removeAllListeners();
         if (res.statusCode !== 200) {
-          debug5(
+          debug6(
             "tunneling socket could not be established, statusCode=%d",
             res.statusCode
           );
@@ -2694,7 +2694,7 @@ var require_tunnel = __commonJS({
           return;
         }
         if (head.length > 0) {
-          debug5("got illegal response body from proxy");
+          debug6("got illegal response body from proxy");
           socket.destroy();
           var error = new Error("got illegal response body from proxy");
           error.code = "ECONNRESET";
@@ -2702,13 +2702,13 @@ var require_tunnel = __commonJS({
           self2.removeSocket(placeholder);
           return;
         }
-        debug5("tunneling connection has established");
+        debug6("tunneling connection has established");
         self2.sockets[self2.sockets.indexOf(placeholder)] = socket;
         return cb(socket);
       }
       function onError(cause) {
         connectReq.removeAllListeners();
-        debug5(
+        debug6(
           "tunneling socket could not be established, cause=%s\n",
           cause.message,
           cause.stack
@@ -2770,9 +2770,9 @@ var require_tunnel = __commonJS({
       }
       return target;
     }
-    var debug5;
+    var debug6;
     if (process.env.NODE_DEBUG && /\btunnel\b/.test(process.env.NODE_DEBUG)) {
-      debug5 = function() {
+      debug6 = function() {
         var args = Array.prototype.slice.call(arguments);
         if (typeof args[0] === "string") {
           args[0] = "TUNNEL: " + args[0];
@@ -2782,10 +2782,10 @@ var require_tunnel = __commonJS({
         console.error.apply(console, args);
       };
     } else {
-      debug5 = function() {
+      debug6 = function() {
       };
     }
-    exports.debug = debug5;
+    exports.debug = debug6;
   }
 });
 
@@ -21820,10 +21820,10 @@ Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
       return process.env["RUNNER_DEBUG"] === "1";
     }
     exports.isDebug = isDebug;
-    function debug5(message) {
+    function debug6(message) {
       (0, command_1.issueCommand)("debug", {}, message);
     }
-    exports.debug = debug5;
+    exports.debug = debug6;
     function error(message, properties = {}) {
       (0, command_1.issueCommand)("error", (0, utils_1.toCommandProperties)(properties), message instanceof Error ? message.toString() : message);
     }
@@ -49785,7 +49785,7 @@ var require_regexp = __commonJS({
 require_source_map_support().install();
 
 // src/main.ts
-var import_core6 = __toESM(require_core(), 1);
+var import_core7 = __toESM(require_core(), 1);
 
 // src/access-level.ts
 var ACCESS_RANK = {
@@ -59341,13 +59341,19 @@ async function discoverConsumers(octokitFactory, appRegistry, appsInput) {
 }
 
 // src/environment-resolver.ts
+var import_core6 = __toESM(require_core(), 1);
 function createEnvironmentResolver(octokitFactory, appRegistry, appsInput) {
   const envsByRepo = {};
   return {
     async resolveEnvironments(repo, patterns) {
-      return (await repoEnvs(repo)).filter(
+      const resolved = (await repoEnvs(repo)).filter(
         (env) => anyPatternMatches(patterns, env)
       );
+      const patternStrings = patterns.map((p) => p.toString());
+      (0, import_core6.debug)(
+        `Environment patterns ${JSON.stringify(patternStrings)} for ${repo} resolved to ${JSON.stringify(resolved)}`
+      );
+      return resolved;
     }
   };
   async function repoEnvs(fullRepo) {
@@ -59371,6 +59377,7 @@ function createEnvironmentResolver(octokitFactory, appRegistry, appsInput) {
     for await (const { data: envs } of envPages) {
       for (const env of envs) names.push(env.name);
     }
+    (0, import_core6.debug)(`Repo ${fullRepo} has environments ${JSON.stringify(names)}`);
     return envsByRepo[fullRepo] = names;
   }
 }
@@ -59909,11 +59916,11 @@ function createTokenDeclarationRegistry() {
 
 // src/main.ts
 main().catch((error) => {
-  (0, import_core6.setFailed)(errorStack(error));
+  (0, import_core7.setFailed)(errorStack(error));
 });
 async function main() {
   const appsInput = readAppsInput();
-  const config = await (0, import_core6.group)("Reading provider configuration", async () => {
+  const config = await (0, import_core7.group)("Reading provider configuration", async () => {
     const config2 = {
       permissions: {
         rules: [
@@ -59979,10 +59986,10 @@ async function main() {
   );
   const provisionAuthorizer = createProvisionAuthorizer(config.provision);
   const tokenAuthorizer = createTokenAuthorizer(config.permissions);
-  await (0, import_core6.group)("Discovering apps", async () => {
+  await (0, import_core7.group)("Discovering apps", async () => {
     await discoverApps(octokitFactory, appRegistry, appsInput);
   });
-  const consumers = await (0, import_core6.group)("Discovering consumers", async () => {
+  const consumers = await (0, import_core7.group)("Discovering consumers", async () => {
     return discoverConsumers(octokitFactory, appRegistry, appsInput);
   });
   registerTokenDeclarations(declarationRegistry, consumers);
@@ -60123,7 +60130,7 @@ async function main() {
       secretDec.token
     );
     if (!tokenDec) {
-      (0, import_core6.warning)(`Undefined token ${secretDec.token}`);
+      (0, import_core7.warning)(`Undefined token ${secretDec.token}`);
       continue;
     }
     tokenRequests.push([
