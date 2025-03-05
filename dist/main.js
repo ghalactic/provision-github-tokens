@@ -60118,7 +60118,7 @@ async function main() {
   }
   const provisionAuthExplainer = createTextProvisionAuthExplainer();
   const provisionAuthResults = [];
-  const tokenRequests = [];
+  const tokenRequests = {};
   for (const [secretDec, provisionReq] of provisionRequests) {
     const provisionResult = provisionAuthorizer.authorizeSecret(provisionReq);
     provisionAuthResults.push([provisionReq, provisionResult]);
@@ -60133,7 +60133,13 @@ async function main() {
       (0, import_core7.warning)(`Undefined token ${secretDec.token}`);
       continue;
     }
-    tokenRequests.push([
+    const key = JSON.stringify([
+      provisionReq.account,
+      provisionReq.repo,
+      secretDec.token
+    ]);
+    if (tokenRequests[key]) continue;
+    tokenRequests[key] = [
       provisionReq.account,
       provisionReq.repo,
       {
@@ -60144,11 +60150,11 @@ async function main() {
         ),
         permissions: tokenDec.permissions
       }
-    ]);
+    ];
   }
   const tokenAuthExplainer = createTextTokenAuthExplainer();
   const tokenAuthResults = [];
-  for (const [account, repo, request2] of tokenRequests) {
+  for (const [key, [account, repo, request2]] of Object.entries(tokenRequests)) {
     const result = repo == null ? tokenAuthorizer.authorizeForAccount(account, request2) : tokenAuthorizer.authorizeForRepo(`${account}/${repo}`, request2);
     tokenAuthResults.push([request2, result]);
     console.log(tokenAuthExplainer(result));

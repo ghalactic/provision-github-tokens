@@ -255,11 +255,10 @@ async function main(): Promise<void> {
 
   const provisionAuthExplainer = createTextProvisionAuthExplainer();
   const provisionAuthResults: [ProvisionRequest, ProvisionAuthResult][] = [];
-  const tokenRequests: [
-    account: string,
-    repo: string | undefined,
-    TokenRequest,
-  ][] = [];
+  const tokenRequests: Record<
+    string,
+    [account: string, repo: string | undefined, TokenRequest]
+  > = {};
 
   for (const [secretDec, provisionReq] of provisionRequests) {
     const provisionResult = provisionAuthorizer.authorizeSecret(provisionReq);
@@ -280,7 +279,15 @@ async function main(): Promise<void> {
       continue;
     }
 
-    tokenRequests.push([
+    const key = JSON.stringify([
+      provisionReq.account,
+      provisionReq.repo,
+      secretDec.token,
+    ]);
+
+    if (tokenRequests[key]) continue;
+
+    tokenRequests[key] = [
       provisionReq.account,
       provisionReq.repo,
       {
@@ -294,13 +301,13 @@ async function main(): Promise<void> {
               ),
         permissions: tokenDec.permissions,
       },
-    ]);
+    ];
   }
 
   const tokenAuthExplainer = createTextTokenAuthExplainer();
   const tokenAuthResults: [TokenRequest, TokenAuthResult][] = [];
 
-  for (const [account, repo, request] of tokenRequests) {
+  for (const [key, [account, repo, request]] of Object.entries(tokenRequests)) {
     const result =
       repo == null
         ? tokenAuthorizer.authorizeForAccount(account, request)
