@@ -75,7 +75,7 @@ async function main(): Promise<void> {
                       actions: "allow",
                       codespaces: "allow",
                       dependabot: "allow",
-                      environments: {},
+                      environments: { "*": "allow" },
                     },
                   },
                 },

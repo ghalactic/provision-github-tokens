@@ -59964,7 +59964,7 @@ async function main() {
                       actions: "allow",
                       codespaces: "allow",
                       dependabot: "allow",
-                      environments: {}
+                      environments: { "*": "allow" }
                     }
                   }
                 }
