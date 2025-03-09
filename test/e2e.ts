@@ -34,7 +34,7 @@ export async function waitForWorkflowRunToSucceed(
   { octokit, owner, repo }: GitHubActionsContext,
   run: WorkflowRun,
 ): Promise<void> {
-  return waitFor("workflow run to complete", async () => {
+  const conclusion = await waitFor("workflow run to complete", async () => {
     const {
       data: { status, conclusion },
     } = await octokit.rest.actions.getWorkflowRun({
@@ -42,15 +42,16 @@ export async function waitForWorkflowRunToSucceed(
       repo,
       run_id: run.id,
     });
+
     if (status !== "completed") {
       throw new Error(`Workflow run ${run.html_url} is ${status}`);
     }
-    if (conclusion !== "success") {
-      throw new Error(
-        `Workflow run ${run.html_url} concluded with ${conclusion}`,
-      );
-    }
+
+    return conclusion;
   });
+
+  if (conclusion === "success") return;
+  throw new Error(`Workflow run ${run.html_url} concluded with ${conclusion}`);
 }
 
 /**
