@@ -1,5 +1,6 @@
 import { isSufficientAccess, isWriteAccess } from "./access-level.js";
 import { isRepoRef, type RepoReference } from "./github-reference.js";
+import { anyPatternMatches, type Pattern } from "./pattern.js";
 import { isEmptyPermissions, permissionAccess } from "./permissions.js";
 import type { App, Installation, Repo } from "./type/github-api.js";
 import type { AppInputIssuer, AppInputProvisioner } from "./type/input.js";
@@ -12,6 +13,10 @@ export type AppRegistry = {
   readonly provisioners: Map<number, InstallationRegistration>;
   registerApp: (app: AppRegistration) => void;
   registerInstallation: (installation: InstallationRegistration) => void;
+  resolveIssuerAccounts: (patterns: Pattern[]) => string[];
+  resolveIssuerRepos: (patterns: Pattern[]) => string[];
+  resolveProvisionerAccounts: (patterns: Pattern[]) => string[];
+  resolveProvisionerRepos: (patterns: Pattern[]) => string[];
   findIssuersForRequest: (request: TokenRequest) => InstallationRegistration[];
   findProvisionersForRepo: (repo: RepoReference) => InstallationRegistration[];
   findProvisionersForRequest: (
@@ -87,6 +92,30 @@ export function createAppRegistry(): AppRegistry {
           provisionerRepos.add(full_name);
         }
       }
+    },
+
+    resolveIssuerAccounts: (patterns) => {
+      return Array.from(issuerAccounts).filter((account) =>
+        anyPatternMatches(patterns, account),
+      );
+    },
+
+    resolveIssuerRepos: (patterns) => {
+      return Array.from(issuerRepos).filter((repo) =>
+        anyPatternMatches(patterns, repo),
+      );
+    },
+
+    resolveProvisionerAccounts: (patterns) => {
+      return Array.from(provisionerAccounts).filter((account) =>
+        anyPatternMatches(patterns, account),
+      );
+    },
+
+    resolveProvisionerRepos: (patterns) => {
+      return Array.from(provisionerRepos).filter((repo) =>
+        anyPatternMatches(patterns, repo),
+      );
     },
 
     findIssuersForRequest: (request) => {

@@ -49824,6 +49824,12 @@ function assertRepo(repo) {
   }
 }
 
+// src/pattern.ts
+function anyPatternMatches(patterns, string) {
+  for (const pattern of patterns) if (pattern.test(string)) return true;
+  return false;
+}
+
 // src/permissions.ts
 function permissionAccess(permissions, permission) {
   return permissions[permission] ?? "none";
@@ -49884,6 +49890,26 @@ function createAppRegistry() {
           provisionerRepos.add(full_name);
         }
       }
+    },
+    resolveIssuerAccounts: (patterns) => {
+      return Array.from(issuerAccounts).filter(
+        (account) => anyPatternMatches(patterns, account)
+      );
+    },
+    resolveIssuerRepos: (patterns) => {
+      return Array.from(issuerRepos).filter(
+        (repo) => anyPatternMatches(patterns, repo)
+      );
+    },
+    resolveProvisionerAccounts: (patterns) => {
+      return Array.from(provisionerAccounts).filter(
+        (account) => anyPatternMatches(patterns, account)
+      );
+    },
+    resolveProvisionerRepos: (patterns) => {
+      return Array.from(provisionerRepos).filter(
+        (repo) => anyPatternMatches(patterns, repo)
+      );
     },
     findIssuersForRequest: (request2) => {
       if (isEmptyPermissions(request2.permissions)) return [];
