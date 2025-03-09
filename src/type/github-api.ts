@@ -2,7 +2,7 @@ import { components } from "@octokit/openapi-types";
 import { Endpoints } from "@octokit/types";
 
 export type Repo =
-  Endpoints["GET /installation/repositories"]["response"]["data"]["repositories"][0];
+  Endpoints["GET /installation/repositories"]["response"]["data"]["repositories"][number];
 
 export type App = NonNullable<Endpoints["GET /app"]["response"]["data"]>;
 
