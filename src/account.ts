@@ -1,6 +1,8 @@
+import type { AccountReference } from "./github-reference.js";
+
 export function normalizeAccountPattern(
-  definingAccount: string,
+  definingAccount: AccountReference,
   pattern: string,
 ): string {
-  return pattern === "." ? definingAccount : pattern;
+  return pattern === "." ? definingAccount.account : pattern;
 }

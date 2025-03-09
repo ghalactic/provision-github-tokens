@@ -134,16 +134,14 @@ it("discovers consumers in a single account", async () => {
       [
         "org-a/repo-a",
         {
-          account: "org-a",
-          repo: "repo-a",
+          consumer: { account: "org-a", repo: "repo-a" },
           config: expect.objectContaining({}),
         },
       ],
       [
         "org-a/repo-c",
         {
-          account: "org-a",
-          repo: "repo-c",
+          consumer: { account: "org-a", repo: "repo-c" },
           config: expect.objectContaining({}),
         },
       ],
@@ -273,16 +271,14 @@ it("discovers consumers in multiple account", async () => {
       [
         "org-a/repo-a",
         {
-          account: "org-a",
-          repo: "repo-a",
+          consumer: { account: "org-a", repo: "repo-a" },
           config: expect.objectContaining({}),
         },
       ],
       [
         "user-b/repo-c",
         {
-          account: "user-b",
-          repo: "repo-c",
+          consumer: { account: "user-b", repo: "repo-c" },
           config: expect.objectContaining({}),
         },
       ],
@@ -407,24 +403,21 @@ it("only discovers consumers once when multiple providers can access them", asyn
       [
         "org-a/repo-a",
         {
-          account: "org-a",
-          repo: "repo-a",
+          consumer: { account: "org-a", repo: "repo-a" },
           config: expect.objectContaining({}),
         },
       ],
       [
         "org-a/repo-b",
         {
-          account: "org-a",
-          repo: "repo-b",
+          consumer: { account: "org-a", repo: "repo-b" },
           config: expect.objectContaining({}),
         },
       ],
       [
         "org-a/repo-c",
         {
-          account: "org-a",
-          repo: "repo-c",
+          consumer: { account: "org-a", repo: "repo-c" },
           config: expect.objectContaining({}),
         },
       ],
@@ -533,16 +526,14 @@ it("skips consumers with invalid configuration", async () => {
       [
         "org-a/repo-a",
         {
-          account: "org-a",
-          repo: "repo-a",
+          consumer: { account: "org-a", repo: "repo-a" },
           config: expect.objectContaining({}),
         },
       ],
       [
         "org-a/repo-c",
         {
-          account: "org-a",
-          repo: "repo-c",
+          consumer: { account: "org-a", repo: "repo-c" },
           config: expect.objectContaining({}),
         },
       ],

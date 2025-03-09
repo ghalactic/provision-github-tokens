@@ -51,9 +51,10 @@ it("finds provisioners for secrets in a GitHub account", () => {
   appRegistry.registerInstallation(appCInstallationA);
 
   const request = {
+    requester: { account: "org-a", repo: "repo-a" },
     name: "SECRET_A",
     platform: "github",
-    account: "org-a",
+    target: { account: "org-a" },
   } as const;
 
   expect(
@@ -109,16 +110,16 @@ it("finds provisioners for secrets in a GitHub repo", () => {
   appRegistry.registerInstallation(appCInstallationA);
 
   const requestA = {
+    requester: { account: "org-a", repo: "repo-a" },
     name: "SECRET_A",
     platform: "github",
-    account: "org-a",
-    repo: "repo-a",
+    target: { account: "org-a", repo: "repo-a" },
   } as const;
   const requestB = {
+    requester: { account: "org-a", repo: "repo-a" },
     name: "SECRET_A",
     platform: "github",
-    account: "org-a",
-    repo: "repo-b",
+    target: { account: "org-a", repo: "repo-b" },
   } as const;
 
   expect(
@@ -143,14 +144,14 @@ it("finds provisioners for secrets in a GitHub repo", () => {
     appRegistry.findProvisionersForRequest({
       ...requestA,
       type: "environment",
-      environment: "env-a",
+      target: { ...requestA.target, environment: "env-a" },
     }),
   ).toEqual([appAInstallationA]);
   expect(
     appRegistry.findProvisionersForRequest({
       ...requestB,
       type: "environment",
-      environment: "env-b",
+      target: { ...requestB.target, environment: "env-b" },
     }),
   ).toEqual([appBInstallationA, appCInstallationA]);
 });
@@ -179,18 +180,20 @@ it("finds provisioners for the correct account when there are multiple installat
 
   expect(
     appRegistry.findProvisionersForRequest({
+      requester: { account: "org-a", repo: "repo-a" },
       name: "SECRET_A",
       platform: "github",
       type: "actions",
-      account: "org-a",
+      target: { account: "org-a" },
     }),
   ).toEqual([appAInstallationA]);
   expect(
     appRegistry.findProvisionersForRequest({
+      requester: { account: "org-a", repo: "repo-a" },
       name: "SECRET_A",
       platform: "github",
       type: "actions",
-      account: "org-b",
+      target: { account: "org-b" },
     }),
   ).toEqual([appAInstallationB]);
 });
@@ -213,10 +216,11 @@ it("doesn't find provisioners for an unknown account", () => {
 
   expect(
     appRegistry.findProvisionersForRequest({
+      requester: { account: "org-a", repo: "repo-a" },
       name: "SECRET_A",
       platform: "github",
       type: "actions",
-      account: "org-x",
+      target: { account: "org-x" },
     }),
   ).toHaveLength(0);
 });
@@ -239,19 +243,20 @@ it("doesn't find provisioners from non-provisioner apps", () => {
 
   expect(
     appRegistry.findProvisionersForRequest({
+      requester: { account: "org-a", repo: "repo-a" },
       name: "SECRET_A",
       platform: "github",
       type: "actions",
-      account: "org-a",
+      target: { account: "org-a" },
     }),
   ).toHaveLength(0);
   expect(
     appRegistry.findProvisionersForRequest({
+      requester: { account: "org-a", repo: "repo-a" },
       name: "SECRET_A",
       platform: "github",
       type: "actions",
-      account: "org-a",
-      repo: "repo-a",
+      target: { account: "org-a", repo: "repo-a" },
     }),
   ).toHaveLength(0);
 });

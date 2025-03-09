@@ -1,3 +1,8 @@
+import {
+  createRepoRef,
+  repoRefToString,
+  type AccountReference,
+} from "./github-reference.js";
 import { createNamePattern } from "./name-pattern.js";
 import type { Pattern } from "./pattern.js";
 
@@ -21,13 +26,16 @@ export function createGitHubPattern(pattern: string): Pattern {
 }
 
 export function normalizeGitHubPattern(
-  definingAccount: string,
+  definingAccount: AccountReference,
   pattern: string,
 ): string {
   const [accountPart, repoPart] = splitGitHubPattern(pattern);
 
-  if (accountPart !== ".") return pattern;
-  return repoPart == null ? definingAccount : `${definingAccount}/${repoPart}`;
+  return accountPart === "."
+    ? repoPart == null
+      ? definingAccount.account
+      : repoRefToString(createRepoRef(definingAccount.account, repoPart))
+    : pattern;
 }
 
 function splitGitHubPattern(pattern: string): [string, string | undefined] {
@@ -35,7 +43,8 @@ function splitGitHubPattern(pattern: string): [string, string | undefined] {
 
   if (parts.length > 2) {
     throw new Error(
-      `GitHub pattern ${JSON.stringify(pattern)} cannot have more than one slash`,
+      `GitHub pattern ${JSON.stringify(pattern)} ` +
+        `cannot have more than one slash`,
     );
   }
 

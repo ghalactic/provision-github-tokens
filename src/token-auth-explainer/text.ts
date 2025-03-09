@@ -1,4 +1,5 @@
 import { isSufficientAccess } from "../access-level.js";
+import { accountOrRepoRefToString, isRepoRef } from "../github-reference.js";
 import { permissionAccess } from "../permissions.js";
 import type { PermissionsRule } from "../type/permissions-rule.js";
 import type { PermissionAccess, Permissions } from "../type/permissions.js";
@@ -80,11 +81,10 @@ export function createTextAuthExplainer(): TokenAuthResultExplainer<string> {
     );
   }
 
-  function explainSummary({
-    consumer: { type, name },
-    isAllowed,
-  }: TokenAuthResult): string {
-    if (type === "REPO") {
+  function explainSummary({ request, isAllowed }: TokenAuthResult): string {
+    const name = accountOrRepoRefToString(request.consumer);
+
+    if (isRepoRef(request.consumer)) {
       return (
         `${renderIcon(isAllowed)} Repo ${name} ` +
         `was ${isAllowed ? "allowed" : "denied"} access to a token:`

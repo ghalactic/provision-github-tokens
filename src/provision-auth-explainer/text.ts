@@ -1,3 +1,7 @@
+import {
+  accountOrRepoRefToString,
+  repoRefToString,
+} from "../github-reference.js";
 import type {
   ProvisionAuthResult,
   ProvisionAuthResultExplainer,
@@ -20,20 +24,15 @@ export function createTextAuthExplainer(): ProvisionAuthResultExplainer<string> 
     );
   };
 
-  function explainSummary({
-    requester,
-    request,
-    isAllowed,
-  }: ProvisionAuthResult): string {
+  function explainSummary({ request, isAllowed }: ProvisionAuthResult): string {
     return (
-      `${renderIcon(isAllowed)} Repo ${requester} ` +
+      `${renderIcon(isAllowed)} Repo ${repoRefToString(request.requester)} ` +
       (isAllowed ? "was allowed" : "wasn't allowed") +
       ` to provision secret ${request.name}:`
     );
   }
 
   function explainSubject({ request }: ProvisionAuthResult): string {
-    const { account, repo } = request;
     const type = ((r) => {
       const type = r.type;
 
@@ -45,7 +44,7 @@ export function createTextAuthExplainer(): ProvisionAuthResultExplainer<string> 
         case "dependabot":
           return "Dependabot";
         case "environment":
-          return `environment ${r.environment}`;
+          return `environment ${r.target.environment}`;
         /* v8 ignore start */
       }
 
@@ -54,9 +53,8 @@ export function createTextAuthExplainer(): ProvisionAuthResultExplainer<string> 
       );
       /* v8 ignore stop */
     })(request);
-    const target = repo ? `${account}/${repo}` : account;
 
-    return `${type} in ${target}`;
+    return `${type} in ${accountOrRepoRefToString(request.target)}`;
   }
 
   function explainBasedOnRules(rules: ProvisionAuthRuleResult[]): string {

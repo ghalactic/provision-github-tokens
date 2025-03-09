@@ -25,7 +25,8 @@ it("supports wildcard account consumers", () => {
 
   expect(
     explain(
-      authorizer.authorizeForAccount("account-x", {
+      authorizer.authorizeToken({
+        consumer: { account: "account-x" },
         role: undefined,
         account: "account-a",
         repos: "all",
@@ -41,7 +42,8 @@ it("supports wildcard account consumers", () => {
   `);
   expect(
     explain(
-      authorizer.authorizeForAccount("account-y", {
+      authorizer.authorizeToken({
+        consumer: { account: "account-y" },
         role: undefined,
         account: "account-a",
         repos: "all",
@@ -77,7 +79,8 @@ it("supports wildcard repo consumers", () => {
 
   expect(
     explain(
-      authorizer.authorizeForRepo("account-x/repo-x", {
+      authorizer.authorizeToken({
+        consumer: { account: "account-x", repo: "repo-x" },
         role: undefined,
         account: "account-a",
         repos: "all",
@@ -93,7 +96,8 @@ it("supports wildcard repo consumers", () => {
   `);
   expect(
     explain(
-      authorizer.authorizeForRepo("account-y/repo-y", {
+      authorizer.authorizeToken({
+        consumer: { account: "account-y", repo: "repo-y" },
         role: undefined,
         account: "account-a",
         repos: "all",
@@ -114,7 +118,8 @@ it("throws if the requested permissions are empty", () => {
 
   expect(
     throws(() =>
-      authorizer.authorizeForAccount("account-x", {
+      authorizer.authorizeToken({
+        consumer: { account: "account-x" },
         role: undefined,
         account: "account-a",
         repos: ["repo-a"],
@@ -124,7 +129,8 @@ it("throws if the requested permissions are empty", () => {
   ).toMatchInlineSnapshot(`"No permissions requested"`);
   expect(
     throws(() =>
-      authorizer.authorizeForAccount("account-x", {
+      authorizer.authorizeToken({
+        consumer: { account: "account-x" },
         role: undefined,
         account: "account-a",
         repos: ["repo-a"],
@@ -134,7 +140,8 @@ it("throws if the requested permissions are empty", () => {
   ).toMatchInlineSnapshot(`"No permissions requested"`);
   expect(
     throws(() =>
-      authorizer.authorizeForRepo("account-x/repo-x", {
+      authorizer.authorizeToken({
+        consumer: { account: "account-x", repo: "repo-x" },
         role: undefined,
         account: "account-a",
         repos: ["repo-a"],
@@ -144,7 +151,8 @@ it("throws if the requested permissions are empty", () => {
   ).toMatchInlineSnapshot(`"No permissions requested"`);
   expect(
     throws(() =>
-      authorizer.authorizeForRepo("account-x/repo-x", {
+      authorizer.authorizeToken({
+        consumer: { account: "account-x", repo: "repo-x" },
         role: undefined,
         account: "account-a",
         repos: ["repo-a"],

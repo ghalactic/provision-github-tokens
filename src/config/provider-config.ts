@@ -3,15 +3,15 @@ import { load } from "js-yaml";
 import { normalizeAccountPattern } from "../account.js";
 import { errorMessage } from "../error.js";
 import { normalizeGitHubPattern } from "../github-pattern.js";
+import type { RepoReference } from "../github-reference.js";
 import type { ProviderConfig } from "../type/provider-config.js";
 import { validateProvider } from "./validation.js";
 
 export function parseProviderConfig(
-  definingAccount: string,
-  definingRepo: string,
+  definingRepo: RepoReference,
   yaml: string,
 ): ProviderConfig {
-  return normalizeProviderConfig(definingAccount, parseYAML(yaml));
+  return normalizeProviderConfig(definingRepo, parseYAML(yaml));
 }
 
 function parseYAML(yaml: string): ProviderConfig {
@@ -26,7 +26,7 @@ function parseYAML(yaml: string): ProviderConfig {
 }
 
 function normalizeProviderConfig(
-  definingAccount: string,
+  definingRepo: RepoReference,
   config: ProviderConfig,
 ): ProviderConfig {
   for (let i = 0; i < config.permissions.rules.length; ++i) {
@@ -35,7 +35,7 @@ function normalizeProviderConfig(
     for (let j = 0; j < rule.resources.length; ++j) {
       for (let k = 0; k < rule.resources[j].accounts.length; ++k) {
         rule.resources[j].accounts[k] = normalizeAccountPattern(
-          definingAccount,
+          definingRepo,
           rule.resources[j].accounts[k],
         );
       }
@@ -43,7 +43,7 @@ function normalizeProviderConfig(
 
     for (let j = 0; j < rule.consumers.length; ++j) {
       rule.consumers[j] = normalizeGitHubPattern(
-        definingAccount,
+        definingRepo,
         rule.consumers[j],
       );
     }
@@ -54,14 +54,14 @@ function normalizeProviderConfig(
 
     for (let j = 0; j < rule.requesters.length; ++j) {
       rule.requesters[j] = normalizeGitHubPattern(
-        definingAccount,
+        definingRepo,
         rule.requesters[j],
       );
     }
 
     const repos: typeof rule.to.github.repos = {};
     for (const pattern in rule.to.github.repos) {
-      repos[normalizeGitHubPattern(definingAccount, pattern)] =
+      repos[normalizeGitHubPattern(definingRepo, pattern)] =
         rule.to.github.repos[pattern];
     }
     rule.to.github.repos = repos;

@@ -5,7 +5,10 @@ import { throws } from "../../error.js";
 it("doesn't allow empty references", () => {
   expect(
     throws(() =>
-      normalizeTokenReference("defining-account", "defining-repo", ""),
+      normalizeTokenReference(
+        { account: "defining-account", repo: "defining-repo" },
+        "",
+      ),
     ),
   ).toMatchInlineSnapshot(`"Token reference cannot be empty"`);
 });
@@ -13,7 +16,10 @@ it("doesn't allow empty references", () => {
 it("doesn't allow references with a dot but no slash", () => {
   expect(
     throws(() =>
-      normalizeTokenReference("defining-account", "defining-repo", "a.b"),
+      normalizeTokenReference(
+        { account: "defining-account", repo: "defining-repo" },
+        "a.b",
+      ),
     ),
   ).toMatchInlineSnapshot(
     `"Token reference "a.b" repo part must contain exactly one slash"`,
@@ -24,8 +30,7 @@ it("doesn't allow references with an empty repo account part", () => {
   expect(
     throws(() =>
       normalizeTokenReference(
-        "defining-account",
-        "defining-repo",
+        { account: "defining-account", repo: "defining-repo" },
         "/repo.tokenA",
       ),
     ),
@@ -38,8 +43,7 @@ it("doesn't allow references with an empty repo name part", () => {
   expect(
     throws(() =>
       normalizeTokenReference(
-        "defining-account",
-        "defining-repo",
+        { account: "defining-account", repo: "defining-repo" },
         "account/.tokenA",
       ),
     ),
@@ -51,8 +55,7 @@ it("doesn't allow references with an empty repo name part", () => {
 it("doesn't change references with an account and repo", () => {
   expect(
     normalizeTokenReference(
-      "defining-account",
-      "defining-repo",
+      { account: "defining-account", repo: "defining-repo" },
       "account/repo.tokenA",
     ),
   ).toBe("account/repo.tokenA");
@@ -60,15 +63,17 @@ it("doesn't change references with an account and repo", () => {
 
 it("adds the defining account and repo to references without a dot", () => {
   expect(
-    normalizeTokenReference("defining-account", "defining-repo", "tokenA"),
+    normalizeTokenReference(
+      { account: "defining-account", repo: "defining-repo" },
+      "tokenA",
+    ),
   ).toBe("defining-account/defining-repo.tokenA");
 });
 
 it("adds the defining account to references with a dot account", () => {
   expect(
     normalizeTokenReference(
-      "defining-account",
-      "defining-repo",
+      { account: "defining-account", repo: "defining-repo" },
       "./repo.tokenA",
     ),
   ).toBe("defining-account/repo.tokenA");
@@ -77,15 +82,13 @@ it("adds the defining account to references with a dot account", () => {
 it("handles references with repo names that contain dots", () => {
   expect(
     normalizeTokenReference(
-      "defining-account",
-      "defining-repo",
+      { account: "defining-account", repo: "defining-repo" },
       "account/r.e.p.o.tokenA",
     ),
   ).toBe("account/r.e.p.o.tokenA");
   expect(
     normalizeTokenReference(
-      "defining-account",
-      "defining-repo",
+      { account: "defining-account", repo: "defining-repo" },
       "./r.e.p.o.tokenA",
     ),
   ).toBe("defining-account/r.e.p.o.tokenA");

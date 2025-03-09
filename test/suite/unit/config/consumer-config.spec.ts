@@ -17,7 +17,9 @@ it("parses comprehensive consumer config", async () => {
   const fixturePath = join(fixturesPath, "comprehensive.yml");
   const yaml = await readFile(fixturePath, "utf-8");
 
-  expect(parseConsumerConfig("account-self", "repo-self", yaml)).toEqual({
+  expect(
+    parseConsumerConfig({ account: "account-self", repo: "repo-self" }, yaml),
+  ).toEqual({
     $schema: consumerSchema.$id,
 
     tokens: {
@@ -266,7 +268,9 @@ it("parses consumer configs that are just comments", async () => {
   const fixturePath = join(fixturesPath, "just-comments.yml");
   const yaml = await readFile(fixturePath, "utf-8");
 
-  expect(parseConsumerConfig("account-self", "repo-self", yaml)).toEqual({
+  expect(
+    parseConsumerConfig({ account: "account-self", repo: "repo-self" }, yaml),
+  ).toEqual({
     $schema: consumerSchema.$id,
     tokens: {},
     provision: { secrets: {} },
@@ -274,7 +278,9 @@ it("parses consumer configs that are just comments", async () => {
 });
 
 it("parses consumer configs that are empty", async () => {
-  expect(parseConsumerConfig("account-self", "repo-self", "")).toEqual({
+  expect(
+    parseConsumerConfig({ account: "account-self", repo: "repo-self" }, ""),
+  ).toEqual({
     $schema: consumerSchema.$id,
     tokens: {},
     provision: { secrets: {} },
@@ -285,8 +291,11 @@ it("throws when an invalid token name is defined", async () => {
   const fixturePath = join(fixturesPath, "invalid-token-name.yml");
   const yaml = await readFile(fixturePath, "utf-8");
 
-  expect(throws(() => parseConsumerConfig("account-self", "repo-self", yaml)))
-    .toMatchInlineSnapshot(`
+  expect(
+    throws(() =>
+      parseConsumerConfig({ account: "account-self", repo: "repo-self" }, yaml),
+    ),
+  ).toMatchInlineSnapshot(`
       "Parsing of consumer configuration failed
 
       Caused by: Invalid consumer configuration:
@@ -299,8 +308,11 @@ it("throws when empty permissions are specified", async () => {
   const fixturePath = join(fixturesPath, "empty-permissions.yml");
   const yaml = await readFile(fixturePath, "utf-8");
 
-  expect(throws(() => parseConsumerConfig("account-self", "repo-self", yaml)))
-    .toMatchInlineSnapshot(`
+  expect(
+    throws(() =>
+      parseConsumerConfig({ account: "account-self", repo: "repo-self" }, yaml),
+    ),
+  ).toMatchInlineSnapshot(`
       "Parsing of consumer configuration failed
 
       Caused by: Invalid consumer configuration:
@@ -315,8 +327,11 @@ it("throws when an invalid pattern is used in /provision/secrets/<name>/github/r
   );
   const yaml = await readFile(fixturePath, "utf-8");
 
-  expect(throws(() => parseConsumerConfig("account-self", "repo-self", yaml)))
-    .toMatchInlineSnapshot(`
+  expect(
+    throws(() =>
+      parseConsumerConfig({ account: "account-self", repo: "repo-self" }, yaml),
+    ),
+  ).toMatchInlineSnapshot(`
       "Parsing of consumer configuration failed
 
       Caused by: Invalid consumer configuration:
@@ -329,8 +344,11 @@ it("throws when an invalid secret name is defined", async () => {
   const fixturePath = join(fixturesPath, "invalid-secret-name.yml");
   const yaml = await readFile(fixturePath, "utf-8");
 
-  expect(throws(() => parseConsumerConfig("account-self", "repo-self", yaml)))
-    .toMatchInlineSnapshot(`
+  expect(
+    throws(() =>
+      parseConsumerConfig({ account: "account-self", repo: "repo-self" }, yaml),
+    ),
+  ).toMatchInlineSnapshot(`
       "Parsing of consumer configuration failed
 
       Caused by: Invalid consumer configuration:
@@ -343,8 +361,11 @@ it("throws when a secret token reference has an empty account", async () => {
   const fixturePath = join(fixturesPath, "empty-token-reference-account.yml");
   const yaml = await readFile(fixturePath, "utf-8");
 
-  expect(throws(() => parseConsumerConfig("account-self", "repo-self", yaml)))
-    .toMatchInlineSnapshot(`
+  expect(
+    throws(() =>
+      parseConsumerConfig({ account: "account-self", repo: "repo-self" }, yaml),
+    ),
+  ).toMatchInlineSnapshot(`
       "Parsing of consumer configuration failed
 
       Caused by: Invalid consumer configuration:
@@ -356,8 +377,11 @@ it("throws when a secret token reference has an invalid account", async () => {
   const fixturePath = join(fixturesPath, "invalid-token-reference-account.yml");
   const yaml = await readFile(fixturePath, "utf-8");
 
-  expect(throws(() => parseConsumerConfig("account-self", "repo-self", yaml)))
-    .toMatchInlineSnapshot(`
+  expect(
+    throws(() =>
+      parseConsumerConfig({ account: "account-self", repo: "repo-self" }, yaml),
+    ),
+  ).toMatchInlineSnapshot(`
       "Parsing of consumer configuration failed
 
       Caused by: Invalid consumer configuration:
@@ -369,8 +393,11 @@ it("throws when a secret token reference has an empty repo", async () => {
   const fixturePath = join(fixturesPath, "empty-token-reference-repo.yml");
   const yaml = await readFile(fixturePath, "utf-8");
 
-  expect(throws(() => parseConsumerConfig("account-self", "repo-self", yaml)))
-    .toMatchInlineSnapshot(`
+  expect(
+    throws(() =>
+      parseConsumerConfig({ account: "account-self", repo: "repo-self" }, yaml),
+    ),
+  ).toMatchInlineSnapshot(`
       "Parsing of consumer configuration failed
 
       Caused by: Invalid consumer configuration:
@@ -382,8 +409,11 @@ it("throws when a secret token reference has an invalid repo", async () => {
   const fixturePath = join(fixturesPath, "invalid-token-reference-repo.yml");
   const yaml = await readFile(fixturePath, "utf-8");
 
-  expect(throws(() => parseConsumerConfig("account-self", "repo-self", yaml)))
-    .toMatchInlineSnapshot(`
+  expect(
+    throws(() =>
+      parseConsumerConfig({ account: "account-self", repo: "repo-self" }, yaml),
+    ),
+  ).toMatchInlineSnapshot(`
       "Parsing of consumer configuration failed
 
       Caused by: Invalid consumer configuration:
@@ -395,8 +425,11 @@ it("throws when there are additional properties", async () => {
   const fixturePath = join(fixturesPath, "additional-properties.yml");
   const yaml = await readFile(fixturePath, "utf-8");
 
-  expect(throws(() => parseConsumerConfig("account-self", "repo-self", yaml)))
-    .toMatchInlineSnapshot(`
+  expect(
+    throws(() =>
+      parseConsumerConfig({ account: "account-self", repo: "repo-self" }, yaml),
+    ),
+  ).toMatchInlineSnapshot(`
       "Parsing of consumer configuration failed
 
       Caused by: Invalid consumer configuration:
@@ -405,8 +438,11 @@ it("throws when there are additional properties", async () => {
 });
 
 it("throws when the YAML is invalid", async () => {
-  expect(throws(() => parseConsumerConfig("account-self", "repo-self", "{")))
-    .toMatchInlineSnapshot(`
+  expect(
+    throws(() =>
+      parseConsumerConfig({ account: "account-self", repo: "repo-self" }, "{"),
+    ),
+  ).toMatchInlineSnapshot(`
       "Parsing of consumer configuration failed
 
       Caused by: unexpected end of the stream within a flow collection (2:1)

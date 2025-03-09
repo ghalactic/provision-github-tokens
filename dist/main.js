@@ -49801,6 +49801,23 @@ function isWriteAccess(access) {
   return ACCESS_RANK[access] > ACCESS_RANK.read;
 }
 
+// src/github-reference.ts
+function createRepoRef(account, repo) {
+  if (typeof account !== "string" || account.includes("/")) {
+    throw new Error(`Invalid account name ${JSON.stringify(account)}`);
+  }
+  if (typeof repo !== "string" || repo.includes("/")) {
+    throw new Error(`Invalid repo name ${JSON.stringify(repo)}`);
+  }
+  return { account, repo };
+}
+function isRepoRef(ref) {
+  return "repo" in ref && typeof ref.repo === "string";
+}
+function repoRefToString(ref) {
+  return `${ref.account}/${ref.repo}`;
+}
+
 // src/permissions.ts
 function permissionAccess(permissions, permission) {
   return permissions[permission] ?? "none";
@@ -49920,16 +49937,16 @@ function createAppRegistry() {
           );
         }
         if (!appRegistration.provisioner.enabled) continue;
-        if (request2.repo) {
+        if (isRepoRef(request2.target)) {
           for (const repo of repos) {
-            if (repo.owner.login === request2.account && repo.name === request2.repo) {
+            if (repo.owner.login === request2.target.account && repo.name === request2.target.repo) {
               provisioners.push(instReg);
               break;
             }
           }
           continue;
         }
-        if (installation.account && "login" in installation.account && installation.account.login === request2.account) {
+        if (installation.account && "login" in installation.account && installation.account.login === request2.target.account) {
           provisioners.push(instReg);
         }
       }
@@ -59066,8 +59083,7 @@ var import_regexp = __toESM(require_regexp(), 1);
 // src/github-pattern.ts
 function normalizeGitHubPattern(definingAccount, pattern) {
   const [accountPart, repoPart] = splitGitHubPattern(pattern);
-  if (accountPart !== ".") return pattern;
-  return repoPart == null ? definingAccount : `${definingAccount}/${repoPart}`;
+  return accountPart === "." ? repoPart == null ? definingAccount.account : repoRefToString(createRepoRef(definingAccount.account, repoPart)) : pattern;
 }
 function splitGitHubPattern(pattern) {
   const parts = pattern.split("/");
@@ -59091,10 +59107,10 @@ function splitGitHubPattern(pattern) {
 }
 
 // src/token-reference.ts
-function normalizeTokenReference(definingAccount, definingRepo, reference) {
+function normalizeTokenReference(definingRepo, reference) {
   if (!reference) throw new Error("Token reference cannot be empty");
   const dotIdx = reference.lastIndexOf(".");
-  if (dotIdx === -1) return `${definingAccount}/${definingRepo}.${reference}`;
+  if (dotIdx === -1) return `${repoRefToString(definingRepo)}.${reference}`;
   const namePart = reference.slice(dotIdx + 1);
   const repoParts = reference.slice(0, dotIdx).split("/");
   if (repoParts.length !== 2) {
@@ -59113,16 +59129,12 @@ function normalizeTokenReference(definingAccount, definingRepo, reference) {
       `Token reference ${JSON.stringify(reference)} repo name part cannot be empty`
     );
   }
-  return accountPart === "." ? `${definingAccount}/${repoPart}.${namePart}` : reference;
+  return accountPart === "." ? `${repoRefToString(createRepoRef(definingRepo.account, repoPart))}.${namePart}` : reference;
 }
 
 // src/config/consumer-config.ts
-function parseConsumerConfig(definingAccount, definingRepo, yaml) {
-  return normalizeConsumerConfig(
-    definingAccount,
-    definingRepo,
-    parseYAML(yaml)
-  );
+function parseConsumerConfig(definingRepo, yaml) {
+  return normalizeConsumerConfig(definingRepo, parseYAML(yaml));
 }
 function parseYAML(yaml) {
   try {
@@ -59133,22 +59145,18 @@ function parseYAML(yaml) {
     throw new Error("Parsing of consumer configuration failed", { cause });
   }
 }
-function normalizeConsumerConfig(definingAccount, definingRepo, config) {
+function normalizeConsumerConfig(definingRepo, config) {
   for (const name in config.tokens) {
     const token = config.tokens[name];
     token.as ??= void 0;
-    token.account ??= definingAccount;
+    token.account ??= definingRepo.account;
   }
   for (const name in config.provision.secrets) {
     const secret = config.provision.secrets[name];
-    secret.token = normalizeTokenReference(
-      definingAccount,
-      definingRepo,
-      secret.token
-    );
+    secret.token = normalizeTokenReference(definingRepo, secret.token);
     const repos = {};
     for (const pattern in secret.github.repos) {
-      repos[normalizeGitHubPattern(definingAccount, pattern)] = secret.github.repos[pattern];
+      repos[normalizeGitHubPattern(definingRepo, pattern)] = secret.github.repos[pattern];
     }
     secret.github.repos = repos;
   }
@@ -59167,12 +59175,12 @@ async function discoverConsumers(octokitFactory, appRegistry, appsInput) {
     );
     for (const { owner, name: repo, full_name } of repos) {
       if (discovered.has(full_name)) continue;
-      const { login: account } = owner;
+      const consumer = createRepoRef(owner.login, repo);
       let configYAML;
       try {
         const res = await octokit.rest.repos.getContent({
-          owner: account,
-          repo,
+          owner: consumer.account,
+          repo: consumer.repo,
           path: ".github/ghalactic/provision-github-tokens.yml",
           headers: { accept: "application/vnd.github.raw+json" }
         });
@@ -59193,7 +59201,7 @@ async function discoverConsumers(octokitFactory, appRegistry, appsInput) {
       (0, import_core5.debug)(`Discovered consumer ${full_name}`);
       let config;
       try {
-        config = parseConsumerConfig(account, repo, configYAML);
+        config = parseConsumerConfig(consumer, configYAML);
       } catch (error) {
         (0, import_core5.error)(`Consumer ${full_name} has invalid config`);
         continue;
@@ -59208,7 +59216,7 @@ async function discoverConsumers(octokitFactory, appRegistry, appsInput) {
       (0, import_core5.debug)(
         `Consumer ${full_name} has ${secretDecs} ` + JSON.stringify(secretDecNames)
       );
-      discovered.set(full_name, { account, repo, config });
+      discovered.set(full_name, { consumer, config });
     }
   }
   (0, import_core5.info)(`Discovered ${pluralize(discovered.size, "consumer", "consumers")}`);
@@ -59217,9 +59225,9 @@ async function discoverConsumers(octokitFactory, appRegistry, appsInput) {
 
 // src/register-token-declarations.ts
 function registerTokenDeclarations(declarationRegistry, consumers) {
-  for (const [, { account, repo, config }] of consumers) {
+  for (const [, { consumer, config }] of consumers) {
     for (const [name, declaration] of Object.entries(config.tokens)) {
-      declarationRegistry.registerDeclaration(account, repo, name, declaration);
+      declarationRegistry.registerDeclaration(consumer, name, declaration);
     }
   }
 }
@@ -59228,18 +59236,14 @@ function registerTokenDeclarations(declarationRegistry, consumers) {
 function createTokenDeclarationRegistry() {
   const declarations = /* @__PURE__ */ new Map();
   return {
-    registerDeclaration(definingAccount, definingRepo, name, declaration) {
-      declarations.set(
-        `${definingAccount}/${definingRepo}.${name}`,
-        declaration
-      );
+    registerDeclaration(definingRepo, name, declaration) {
+      declarations.set(`${repoRefToString(definingRepo)}.${name}`, declaration);
     },
-    findDeclarationForRequester(requestingAccount, requestingRepo, reference) {
+    findDeclarationForRequester(requestingRepo, reference) {
       const declaration = declarations.get(reference);
       if (!declaration) return [void 0, false];
       if (declaration.shared) return [declaration, true];
-      const requiredPrefix = `${requestingAccount}/${requestingRepo}.`;
-      return reference.startsWith(requiredPrefix) ? [declaration, true] : [void 0, true];
+      return reference.startsWith(`${repoRefToString(requestingRepo)}.`) ? [declaration, true] : [void 0, true];
     }
   };
 }

@@ -1,5 +1,11 @@
 import { isWriteAccess, maxAccess } from "./access-level.js";
 import { createGitHubPattern } from "./github-pattern.js";
+import {
+  accountOrRepoRefToString,
+  createRepoRef,
+  repoRefToString,
+  type AccountOrRepoReference,
+} from "./github-reference.js";
 import { createNamePattern } from "./name-pattern.js";
 import { anyPatternMatches, type Pattern } from "./pattern.js";
 import { isEmptyPermissions, isSufficientPermissions } from "./permissions.js";
@@ -10,7 +16,6 @@ import type {
 import type { Permissions } from "./type/permissions.js";
 import type { ProviderPermissionsConfig } from "./type/provider-config.js";
 import {
-  type TokenAuthConsumer,
   type TokenAuthResourceResult,
   type TokenAuthResourceResultRuleResult,
   type TokenAuthResult,
@@ -19,17 +24,9 @@ import type { TokenRequest } from "./type/token-request.js";
 
 export type TokenAuthorizer = {
   /**
-   * Authorize a token to be consumed by an account.
+   * Authorize a token.
    */
-  authorizeForAccount: (
-    account: string,
-    request: TokenRequest,
-  ) => TokenAuthResult;
-
-  /**
-   * Authorize a token to be consumed by a repo.
-   */
-  authorizeForRepo: (repo: string, request: TokenRequest) => TokenAuthResult;
+  authorizeToken: (request: TokenRequest) => TokenAuthResult;
 };
 
 export function createTokenAuthorizer(
@@ -38,33 +35,19 @@ export function createTokenAuthorizer(
   const [resourcePatterns, consumerPatterns] = patternsForRules(config.rules);
 
   return {
-    authorizeForAccount(account, request) {
-      return authorizeForConsumer({ type: "ACCOUNT", name: account }, request);
-    },
+    authorizeToken(request) {
+      if (isEmptyPermissions(request.permissions)) {
+        throw new Error("No permissions requested");
+      }
 
-    authorizeForRepo(repo, request) {
-      return authorizeForConsumer({ type: "REPO", name: repo }, request);
+      if (request.repos === "all") return authorizeAllRepos(request);
+      if (request.repos.length < 1) return authorizeNoRepos(request);
+      return authorizeSelectedRepos(request);
     },
   };
 
-  function authorizeForConsumer(
-    consumer: TokenAuthConsumer,
-    request: TokenRequest,
-  ): TokenAuthResult {
-    if (isEmptyPermissions(request.permissions)) {
-      throw new Error("No permissions requested");
-    }
-
-    if (request.repos === "all") return authorizeAllRepos(consumer, request);
-    if (request.repos.length < 1) return authorizeNoRepos(consumer, request);
-    return authorizeSelectedRepos(consumer, request);
-  }
-
-  function authorizeAllRepos(
-    consumer: TokenAuthConsumer,
-    request: TokenRequest,
-  ): TokenAuthResult {
-    const rules = rulesForConsumer(consumer);
+  function authorizeAllRepos(request: TokenRequest): TokenAuthResult {
+    const rules = rulesForConsumer(request.consumer);
     let isSufficient = false;
 
     const ruleResults: TokenAuthResourceResultRuleResult[] = [];
@@ -103,7 +86,6 @@ export function createTokenAuthorizer(
     const isAllowed = isSufficient && !isMissingRole;
 
     return {
-      consumer,
       request,
       type: "ALL_REPOS",
       rules: ruleResults,
@@ -115,11 +97,8 @@ export function createTokenAuthorizer(
     };
   }
 
-  function authorizeNoRepos(
-    consumer: TokenAuthConsumer,
-    request: TokenRequest,
-  ): TokenAuthResult {
-    const rules = rulesForConsumer(consumer);
+  function authorizeNoRepos(request: TokenRequest): TokenAuthResult {
+    const rules = rulesForConsumer(request.consumer);
     let isSufficient = false;
 
     const ruleResults: TokenAuthResourceResultRuleResult[] = [];
@@ -158,7 +137,6 @@ export function createTokenAuthorizer(
     const isAllowed = isSufficient && !isMissingRole;
 
     return {
-      consumer,
       request,
       type: "NO_REPOS",
       rules: ruleResults,
@@ -170,17 +148,16 @@ export function createTokenAuthorizer(
     };
   }
 
-  function authorizeSelectedRepos(
-    consumer: TokenAuthConsumer,
-    request: TokenRequest,
-  ): TokenAuthResult {
-    const rules = rulesForConsumer(consumer);
+  function authorizeSelectedRepos(request: TokenRequest): TokenAuthResult {
+    const rules = rulesForConsumer(request.consumer);
     let isSufficient = true;
 
     const resourceResults: Record<string, TokenAuthResourceResult> = {};
 
     for (const reqRepo of request.repos) {
-      const reqResource = `${request.account}/${reqRepo}`;
+      const reqResource = repoRefToString(
+        createRepoRef(request.account, reqRepo),
+      );
       const ruleResults: TokenAuthResourceResultRuleResult[] = [];
       const have: Permissions = {};
       let isResourceSufficient = false;
@@ -231,7 +208,6 @@ export function createTokenAuthorizer(
     const isAllowed = isSufficient && !isMissingRole;
 
     return {
-      consumer,
       request,
       type: "SELECTED_REPOS",
       results: resourceResults,
@@ -290,11 +266,12 @@ export function createTokenAuthorizer(
     return { accounts, repos };
   }
 
-  function rulesForConsumer(consumer: TokenAuthConsumer): number[] {
+  function rulesForConsumer(consumer: AccountOrRepoReference): number[] {
+    const consumerName = accountOrRepoRefToString(consumer);
     const indices: number[] = [];
 
     for (let i = 0; i < config.rules.length; ++i) {
-      if (anyPatternMatches(consumerPatterns[i], consumer.name)) {
+      if (anyPatternMatches(consumerPatterns[i], consumerName)) {
         indices.push(i);
       }
     }

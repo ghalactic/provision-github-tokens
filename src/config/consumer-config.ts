@@ -2,6 +2,7 @@ import { debug } from "@actions/core";
 import { load } from "js-yaml";
 import { errorMessage } from "../error.js";
 import { normalizeGitHubPattern } from "../github-pattern.js";
+import type { RepoReference } from "../github-reference.js";
 import { normalizeTokenReference } from "../token-reference.js";
 import type {
   ConsumerConfig,
@@ -10,15 +11,10 @@ import type {
 import { validateConsumer } from "./validation.js";
 
 export function parseConsumerConfig(
-  definingAccount: string,
-  definingRepo: string,
+  definingRepo: RepoReference,
   yaml: string,
 ): ConsumerConfig {
-  return normalizeConsumerConfig(
-    definingAccount,
-    definingRepo,
-    parseYAML(yaml),
-  );
+  return normalizeConsumerConfig(definingRepo, parseYAML(yaml));
 }
 
 function parseYAML(yaml: string): PartialConsumerConfig {
@@ -33,29 +29,24 @@ function parseYAML(yaml: string): PartialConsumerConfig {
 }
 
 function normalizeConsumerConfig(
-  definingAccount: string,
-  definingRepo: string,
+  definingRepo: RepoReference,
   config: PartialConsumerConfig,
 ): ConsumerConfig {
   for (const name in config.tokens) {
     const token = config.tokens[name];
 
     token.as ??= undefined;
-    token.account ??= definingAccount;
+    token.account ??= definingRepo.account;
   }
 
   for (const name in config.provision.secrets) {
     const secret = config.provision.secrets[name];
 
-    secret.token = normalizeTokenReference(
-      definingAccount,
-      definingRepo,
-      secret.token,
-    );
+    secret.token = normalizeTokenReference(definingRepo, secret.token);
 
     const repos: typeof secret.github.repos = {};
     for (const pattern in secret.github.repos) {
-      repos[normalizeGitHubPattern(definingAccount, pattern)] =
+      repos[normalizeGitHubPattern(definingRepo, pattern)] =
         secret.github.repos[pattern];
     }
     secret.github.repos = repos;

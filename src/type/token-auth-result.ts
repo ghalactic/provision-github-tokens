@@ -33,22 +33,7 @@ export type TokenAuthResourceResultRuleResult = {
   isSufficient: boolean;
 };
 
-export type TokenAuthConsumer =
-  | TokenAuthConsumerAccount
-  | TokenAuthConsumerRepo;
-
-export type TokenAuthConsumerAccount = {
-  type: "ACCOUNT";
-  name: string;
-};
-
-export type TokenAuthConsumerRepo = {
-  type: "REPO";
-  name: string;
-};
-
 type TokenAuthResultCommon = {
-  consumer: TokenAuthConsumer;
   request: TokenRequest;
   maxWant: PermissionAccess;
   isSufficient: boolean;

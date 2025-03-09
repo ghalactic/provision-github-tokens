@@ -24,7 +24,8 @@ it("allows tokens that should be allowed", () => {
 
   expect(
     explain(
-      authorizer.authorizeForAccount("account-x", {
+      authorizer.authorizeToken({
+        consumer: { account: "account-x" },
         role: "role-a",
         account: "account-a",
         repos: [],
@@ -40,7 +41,8 @@ it("allows tokens that should be allowed", () => {
   `);
   expect(
     explain(
-      authorizer.authorizeForAccount("account-x", {
+      authorizer.authorizeToken({
+        consumer: { account: "account-x" },
         role: "role-a",
         account: "account-a",
         repos: [],
@@ -57,7 +59,8 @@ it("allows tokens that should be allowed", () => {
   `);
   expect(
     explain(
-      authorizer.authorizeForRepo("account-x/repo-x", {
+      authorizer.authorizeToken({
+        consumer: { account: "account-x", repo: "repo-x" },
         role: "role-a",
         account: "account-a",
         repos: [],
@@ -73,7 +76,8 @@ it("allows tokens that should be allowed", () => {
   `);
   expect(
     explain(
-      authorizer.authorizeForRepo("account-x/repo-x", {
+      authorizer.authorizeToken({
+        consumer: { account: "account-x", repo: "repo-x" },
         role: "role-a",
         account: "account-a",
         repos: [],
@@ -110,7 +114,8 @@ it("allows tokens when the actual access level is higher than requested", () => 
 
   expect(
     explain(
-      authorizer.authorizeForAccount("account-x", {
+      authorizer.authorizeToken({
+        consumer: { account: "account-x" },
         role: "role-a",
         account: "account-a",
         repos: [],
@@ -127,7 +132,8 @@ it("allows tokens when the actual access level is higher than requested", () => 
   `);
   expect(
     explain(
-      authorizer.authorizeForRepo("account-x/repo-x", {
+      authorizer.authorizeToken({
+        consumer: { account: "account-x", repo: "repo-x" },
         role: "role-a",
         account: "account-a",
         repos: [],
@@ -176,7 +182,8 @@ it("allows tokens when a later rule allows access that a previous rule denied", 
 
   expect(
     explain(
-      authorizer.authorizeForAccount("account-x", {
+      authorizer.authorizeToken({
+        consumer: { account: "account-x" },
         role: "role-a",
         account: "account-a",
         repos: [],
@@ -196,7 +203,8 @@ it("allows tokens when a later rule allows access that a previous rule denied", 
   `);
   expect(
     explain(
-      authorizer.authorizeForRepo("account-x/repo-x", {
+      authorizer.authorizeToken({
+        consumer: { account: "account-x", repo: "repo-x" },
         role: "role-a",
         account: "account-a",
         repos: [],
@@ -260,7 +268,8 @@ it("allows tokens when a later unrelated rule denies access to the requested per
 
   expect(
     explain(
-      authorizer.authorizeForAccount("account-x", {
+      authorizer.authorizeToken({
+        consumer: { account: "account-x" },
         role: "role-a",
         account: "account-a",
         repos: [],
@@ -277,7 +286,8 @@ it("allows tokens when a later unrelated rule denies access to the requested per
   `);
   expect(
     explain(
-      authorizer.authorizeForRepo("account-x/repo-x", {
+      authorizer.authorizeToken({
+        consumer: { account: "account-x", repo: "repo-x" },
         role: "role-a",
         account: "account-a",
         repos: [],
@@ -314,7 +324,8 @@ it("allows read-only tokens without a role", () => {
 
   expect(
     explain(
-      authorizer.authorizeForAccount("account-x", {
+      authorizer.authorizeToken({
+        consumer: { account: "account-x" },
         role: undefined,
         account: "account-a",
         repos: [],
@@ -331,7 +342,8 @@ it("allows read-only tokens without a role", () => {
   `);
   expect(
     explain(
-      authorizer.authorizeForRepo("account-x/repo-x", {
+      authorizer.authorizeToken({
+        consumer: { account: "account-x", repo: "repo-x" },
         role: undefined,
         account: "account-a",
         repos: [],
@@ -369,7 +381,8 @@ it("supports rule descriptions", () => {
 
   expect(
     explain(
-      authorizer.authorizeForAccount("account-x", {
+      authorizer.authorizeToken({
+        consumer: { account: "account-x" },
         role: "role-a",
         account: "account-a",
         repos: [],
@@ -385,7 +398,8 @@ it("supports rule descriptions", () => {
   `);
   expect(
     explain(
-      authorizer.authorizeForRepo("account-x/repo-x", {
+      authorizer.authorizeToken({
+        consumer: { account: "account-x", repo: "repo-x" },
         role: "role-a",
         account: "account-a",
         repos: [],
@@ -421,7 +435,8 @@ it("sorts permissions in the explanation", () => {
 
   expect(
     explain(
-      authorizer.authorizeForAccount("account-x", {
+      authorizer.authorizeToken({
+        consumer: { account: "account-x" },
         role: "role-a",
         account: "account-a",
         repos: [],
@@ -438,7 +453,8 @@ it("sorts permissions in the explanation", () => {
   `);
   expect(
     explain(
-      authorizer.authorizeForRepo("account-x/repo-x", {
+      authorizer.authorizeToken({
+        consumer: { account: "account-x", repo: "repo-x" },
         role: "role-a",
         account: "account-a",
         repos: [],
@@ -475,7 +491,8 @@ it("doesn't allow tokens for unauthorized consumers", () => {
 
   expect(
     explain(
-      authorizer.authorizeForAccount("account-y", {
+      authorizer.authorizeToken({
+        consumer: { account: "account-y" },
         role: "role-a",
         account: "account-a",
         repos: [],
@@ -489,7 +506,8 @@ it("doesn't allow tokens for unauthorized consumers", () => {
   `);
   expect(
     explain(
-      authorizer.authorizeForRepo("account-y/repo-x", {
+      authorizer.authorizeToken({
+        consumer: { account: "account-y", repo: "repo-x" },
         role: "role-a",
         account: "account-a",
         repos: [],
@@ -503,7 +521,8 @@ it("doesn't allow tokens for unauthorized consumers", () => {
   `);
   expect(
     explain(
-      authorizer.authorizeForRepo("account-x/repo-y", {
+      authorizer.authorizeToken({
+        consumer: { account: "account-x", repo: "repo-y" },
         role: "role-a",
         account: "account-a",
         repos: [],
@@ -517,7 +536,8 @@ it("doesn't allow tokens for unauthorized consumers", () => {
   `);
   expect(
     explain(
-      authorizer.authorizeForRepo("account-y/repo-y", {
+      authorizer.authorizeToken({
+        consumer: { account: "account-y", repo: "repo-y" },
         role: "role-a",
         account: "account-a",
         repos: [],
@@ -551,7 +571,8 @@ it("doesn't allow tokens for unauthorized resource repos", () => {
 
   expect(
     explain(
-      authorizer.authorizeForAccount("account-x", {
+      authorizer.authorizeToken({
+        consumer: { account: "account-x" },
         role: "role-a",
         account: "account-a",
         repos: ["repo-y"],
@@ -565,7 +586,8 @@ it("doesn't allow tokens for unauthorized resource repos", () => {
   `);
   expect(
     explain(
-      authorizer.authorizeForAccount("account-x", {
+      authorizer.authorizeToken({
+        consumer: { account: "account-x" },
         role: "role-a",
         account: "account-y",
         repos: [],
@@ -579,7 +601,8 @@ it("doesn't allow tokens for unauthorized resource repos", () => {
   `);
   expect(
     explain(
-      authorizer.authorizeForRepo("account-x/repo-x", {
+      authorizer.authorizeToken({
+        consumer: { account: "account-x", repo: "repo-x" },
         role: "role-a",
         account: "account-a",
         repos: ["repo-y"],
@@ -593,7 +616,8 @@ it("doesn't allow tokens for unauthorized resource repos", () => {
   `);
   expect(
     explain(
-      authorizer.authorizeForRepo("account-x/repo-x", {
+      authorizer.authorizeToken({
+        consumer: { account: "account-x", repo: "repo-x" },
         role: "role-a",
         account: "account-y",
         repos: [],
@@ -627,7 +651,8 @@ it("doesn't allow tokens for unauthorized permissions", () => {
 
   expect(
     explain(
-      authorizer.authorizeForAccount("account-x", {
+      authorizer.authorizeToken({
+        consumer: { account: "account-x" },
         role: "role-a",
         account: "account-a",
         repos: [],
@@ -643,7 +668,8 @@ it("doesn't allow tokens for unauthorized permissions", () => {
   `);
   expect(
     explain(
-      authorizer.authorizeForRepo("account-x/repo-x", {
+      authorizer.authorizeToken({
+        consumer: { account: "account-x", repo: "repo-x" },
         role: "role-a",
         account: "account-a",
         repos: [],
@@ -679,7 +705,8 @@ it("doesn't allow tokens where only some of the permissions are authorized", () 
 
   expect(
     explain(
-      authorizer.authorizeForAccount("account-x", {
+      authorizer.authorizeToken({
+        consumer: { account: "account-x" },
         role: "role-a",
         account: "account-a",
         repos: [],
@@ -696,7 +723,8 @@ it("doesn't allow tokens where only some of the permissions are authorized", () 
   `);
   expect(
     explain(
-      authorizer.authorizeForRepo("account-x/repo-x", {
+      authorizer.authorizeToken({
+        consumer: { account: "account-x", repo: "repo-x" },
         role: "role-a",
         account: "account-a",
         repos: [],
@@ -745,7 +773,8 @@ it("doesn't allow tokens that are denied by a wildcard rule", () => {
 
   expect(
     explain(
-      authorizer.authorizeForAccount("account-x", {
+      authorizer.authorizeToken({
+        consumer: { account: "account-x" },
         role: "role-a",
         account: "account-a",
         repos: [],
@@ -763,7 +792,8 @@ it("doesn't allow tokens that are denied by a wildcard rule", () => {
   `);
   expect(
     explain(
-      authorizer.authorizeForRepo("account-x/repo-x", {
+      authorizer.authorizeToken({
+        consumer: { account: "account-x", repo: "repo-x" },
         role: "role-a",
         account: "account-a",
         repos: [],
@@ -801,7 +831,8 @@ it("doesn't allow tokens when the actual access level is lower than requested", 
 
   expect(
     explain(
-      authorizer.authorizeForAccount("account-x", {
+      authorizer.authorizeToken({
+        consumer: { account: "account-x" },
         role: "role-a",
         account: "account-a",
         repos: [],
@@ -817,7 +848,8 @@ it("doesn't allow tokens when the actual access level is lower than requested", 
   `);
   expect(
     explain(
-      authorizer.authorizeForRepo("account-x/repo-x", {
+      authorizer.authorizeToken({
+        consumer: { account: "account-x", repo: "repo-x" },
         role: "role-a",
         account: "account-a",
         repos: [],
@@ -865,7 +897,8 @@ it("doesn't allow tokens for no repos in an account unless a resource rule expli
 
   expect(
     explain(
-      authorizer.authorizeForAccount("account-x", {
+      authorizer.authorizeToken({
+        consumer: { account: "account-x" },
         role: "role-a",
         account: "account-a",
         repos: [],
@@ -879,7 +912,8 @@ it("doesn't allow tokens for no repos in an account unless a resource rule expli
   `);
   expect(
     explain(
-      authorizer.authorizeForRepo("account-x/repo-x", {
+      authorizer.authorizeToken({
+        consumer: { account: "account-x", repo: "repo-x" },
         role: "role-a",
         account: "account-a",
         repos: [],
@@ -925,7 +959,8 @@ it("doesn't allow tokens when a later rule denies access that a previous rule al
 
   expect(
     explain(
-      authorizer.authorizeForAccount("account-x", {
+      authorizer.authorizeToken({
+        consumer: { account: "account-x" },
         role: "role-a",
         account: "account-a",
         repos: [],
@@ -943,7 +978,8 @@ it("doesn't allow tokens when a later rule denies access that a previous rule al
   `);
   expect(
     explain(
-      authorizer.authorizeForRepo("account-x/repo-x", {
+      authorizer.authorizeToken({
+        consumer: { account: "account-x", repo: "repo-x" },
         role: "role-a",
         account: "account-a",
         repos: [],
@@ -993,7 +1029,8 @@ it("doesn't allow tokens when a later rule removes access that a previous rule a
 
   expect(
     explain(
-      authorizer.authorizeForAccount("account-x", {
+      authorizer.authorizeToken({
+        consumer: { account: "account-x" },
         role: "role-a",
         account: "account-a",
         repos: [],
@@ -1011,7 +1048,8 @@ it("doesn't allow tokens when a later rule removes access that a previous rule a
   `);
   expect(
     explain(
-      authorizer.authorizeForRepo("account-x/repo-x", {
+      authorizer.authorizeToken({
+        consumer: { account: "account-x", repo: "repo-x" },
         role: "role-a",
         account: "account-a",
         repos: [],
@@ -1052,7 +1090,8 @@ it("doesn't allow write tokens if no role is specified", () => {
 
   expect(
     explain(
-      authorizer.authorizeForAccount("account-x", {
+      authorizer.authorizeToken({
+        consumer: { account: "account-x" },
         role: undefined,
         account: "account-a",
         repos: [],
@@ -1072,7 +1111,8 @@ it("doesn't allow write tokens if no role is specified", () => {
   `);
   expect(
     explain(
-      authorizer.authorizeForAccount("account-x", {
+      authorizer.authorizeToken({
+        consumer: { account: "account-x" },
         role: undefined,
         account: "account-a",
         repos: [],
@@ -1092,7 +1132,8 @@ it("doesn't allow write tokens if no role is specified", () => {
   `);
   expect(
     explain(
-      authorizer.authorizeForRepo("account-x/repo-x", {
+      authorizer.authorizeToken({
+        consumer: { account: "account-x", repo: "repo-x" },
         role: undefined,
         account: "account-a",
         repos: [],
@@ -1112,7 +1153,8 @@ it("doesn't allow write tokens if no role is specified", () => {
   `);
   expect(
     explain(
-      authorizer.authorizeForRepo("account-x/repo-x", {
+      authorizer.authorizeToken({
+        consumer: { account: "account-x", repo: "repo-x" },
         role: undefined,
         account: "account-a",
         repos: [],

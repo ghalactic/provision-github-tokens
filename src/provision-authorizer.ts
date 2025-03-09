@@ -1,4 +1,10 @@
 import { createGitHubPattern } from "./github-pattern.js";
+import {
+  accountOrRepoRefToString,
+  isEnvRef,
+  isRepoRef,
+  repoRefToString,
+} from "./github-reference.js";
 import { createNamePattern } from "./name-pattern.js";
 import { anyPatternMatches, type Pattern } from "./pattern.js";
 import type { ProviderProvisionConfig } from "./type/provider-config.js";
@@ -16,10 +22,7 @@ export type ProvisionAuthorizer = {
   /**
    * Authorize provisioning of a secret.
    */
-  authorizeSecret: (
-    requester: string,
-    request: ProvisionRequest,
-  ) => ProvisionAuthResult;
+  authorizeSecret: (request: ProvisionRequest) => ProvisionAuthResult;
 };
 
 export function createProvisionAuthorizer(
@@ -30,11 +33,15 @@ export function createProvisionAuthorizer(
   );
 
   return {
-    authorizeSecret(requester, request) {
-      const isSelfAccount = requester.startsWith(`${request.account}/`);
-      const isSelfRepo = request.repo
-        ? requester === `${request.account}/${request.repo}`
-        : false;
+    authorizeSecret(request) {
+      const isSelfAccount =
+        request.requester.account === request.target.account;
+      const isSelfRepo =
+        isRepoRef(request.target) &&
+        request.requester.account === request.target.account &&
+        request.requester.repo === request.target.repo;
+      const requester = repoRefToString(request.requester);
+      const target = accountOrRepoRefToString(request.target);
 
       const ruleResults: ProvisionAuthRuleResult[] = [];
       let have: "allow" | "deny" | undefined;
@@ -47,18 +54,16 @@ export function createProvisionAuthorizer(
         let ruleHave: "allow" | "deny" | undefined;
         let isRelevant = false;
 
-        if (request.repo) {
-          const reqFullRepo = `${request.account}/${request.repo}`;
-
+        if (isRepoRef(request.target)) {
           for (let j = 0; j < targetPatterns[i].repos.length; ++j) {
             const [repo, repoPattern, envPatterns] = targetPatterns[i].repos[j];
 
-            if (!repoPattern.test(reqFullRepo)) continue;
+            if (!repoPattern.test(target)) continue;
 
             const repoPatternHave =
-              request.type === "environment"
+              request.type === "environment" && isEnvRef(request.target)
                 ? applyEnvPatterns(
-                    request.environment,
+                    request.target.environment,
                     rule.to.github.repos[repo].environments,
                     envPatterns,
                   )
@@ -74,9 +79,9 @@ export function createProvisionAuthorizer(
 
           if (isSelfRepo) {
             const selfHave =
-              request.type === "environment"
+              request.type === "environment" && isEnvRef(request.target)
                 ? applyEnvPatterns(
-                    request.environment,
+                    request.target.environment,
                     rule.to.github.repo.environments,
                     targetPatterns[i].selfRepoEnvs,
                   )
@@ -91,7 +96,7 @@ export function createProvisionAuthorizer(
           for (let j = 0; j < targetPatterns[i].accounts.length; ++j) {
             const [account, accountPattern] = targetPatterns[i].accounts[j];
 
-            if (!accountPattern.test(request.account)) continue;
+            if (!accountPattern.test(target)) continue;
 
             const accountPatternHave = selectBySecretType(
               rule.to.github.accounts[account],
@@ -130,7 +135,6 @@ export function createProvisionAuthorizer(
       }
 
       return {
-        requester,
         request,
         rules: ruleResults,
         have,

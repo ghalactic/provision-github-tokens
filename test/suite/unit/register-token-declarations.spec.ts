@@ -8,21 +8,21 @@ it("registers token declarations from discovered consumers", async () => {
   const declarationA: TokenDeclaration = {
     shared: false,
     as: undefined,
-    account: "org-x",
+    account: "account-x",
     repos: "all",
     permissions: { metadata: "read" },
   };
   const declarationB: TokenDeclaration = {
     shared: true,
     as: "role-a",
-    account: "org-y",
+    account: "account-y",
     repos: ["repo-y", "repo-z"],
     permissions: { contents: "write", repository_projects: "admin" },
   };
   const declarationC: TokenDeclaration = {
     shared: true,
     as: "role-b",
-    account: "org-z",
+    account: "account-z",
     repos: ["repo-a"],
     permissions: { metadata: "read", contents: "read" },
   };
@@ -30,10 +30,9 @@ it("registers token declarations from discovered consumers", async () => {
   const declarationRegistry = createTokenDeclarationRegistry();
   const consumers = new Map<string, DiscoveredConsumer>([
     [
-      "org-a/repo-a",
+      "account-a/repo-a",
       {
-        account: "org-a",
-        repo: "repo-a",
+        consumer: { account: "account-a", repo: "repo-a" },
         config: {
           $schema:
             "https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json",
@@ -43,10 +42,9 @@ it("registers token declarations from discovered consumers", async () => {
       },
     ],
     [
-      "org-b/repo-b",
+      "account-b/repo-b",
       {
-        account: "org-b",
-        repo: "repo-b",
+        consumer: { account: "account-b", repo: "repo-b" },
         config: {
           $schema:
             "https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json",
@@ -61,51 +59,44 @@ it("registers token declarations from discovered consumers", async () => {
 
   expect(
     declarationRegistry.findDeclarationForRequester(
-      "org-a",
-      "repo-a",
-      "org-a/repo-a.tokenA",
+      { account: "account-a", repo: "repo-a" },
+      "account-a/repo-a.tokenA",
     ),
   ).toEqual([declarationA, true]);
   expect(
     declarationRegistry.findDeclarationForRequester(
-      "org-other",
-      "repo-other",
-      "org-a/repo-a.tokenA",
+      { account: "account-other", repo: "repo-other" },
+      "account-a/repo-a.tokenA",
     ),
   ).toEqual([undefined, true]);
   expect(
     declarationRegistry.findDeclarationForRequester(
-      "org-a",
-      "repo-a",
-      "org-a/repo-a.tokenB",
+      { account: "account-a", repo: "repo-a" },
+      "account-a/repo-a.tokenB",
     ),
   ).toEqual([declarationB, true]);
   expect(
     declarationRegistry.findDeclarationForRequester(
-      "org-other",
-      "repo-other",
-      "org-a/repo-a.tokenB",
+      { account: "account-other", repo: "repo-other" },
+      "account-a/repo-a.tokenB",
     ),
   ).toEqual([declarationB, true]);
   expect(
     declarationRegistry.findDeclarationForRequester(
-      "org-b",
-      "repo-b",
-      "org-b/repo-b.tokenC",
+      { account: "account-b", repo: "repo-b" },
+      "account-b/repo-b.tokenC",
     ),
   ).toEqual([declarationC, true]);
   expect(
     declarationRegistry.findDeclarationForRequester(
-      "org-other",
-      "repo-other",
-      "org-b/repo-b.tokenC",
+      { account: "account-other", repo: "repo-other" },
+      "account-b/repo-b.tokenC",
     ),
   ).toEqual([declarationC, true]);
   expect(
     declarationRegistry.findDeclarationForRequester(
-      "org-a",
-      "repo-a",
-      "org-other/repo-other.tokenX",
+      { account: "account-a", repo: "repo-a" },
+      "account-other/repo-other.tokenX",
     ),
   ).toEqual([undefined, false]);
 });

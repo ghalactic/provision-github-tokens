@@ -1,16 +1,15 @@
+import { repoRefToString, type RepoReference } from "./github-reference.js";
 import type { TokenDeclaration } from "./type/token-declaration.js";
 
 export type TokenDeclarationRegistry = {
   registerDeclaration: (
-    definingAccount: string,
-    definingRepo: string,
+    definingRepo: RepoReference,
     name: string,
     declaration: TokenDeclaration,
   ) => void;
 
   findDeclarationForRequester: (
-    requestingAccount: string,
-    requestingRepo: string,
+    requestingRepo: RepoReference,
     reference: string,
   ) => [declaration: TokenDeclaration | undefined, isRegistered: boolean];
 };
@@ -19,22 +18,17 @@ export function createTokenDeclarationRegistry(): TokenDeclarationRegistry {
   const declarations = new Map<string, TokenDeclaration>();
 
   return {
-    registerDeclaration(definingAccount, definingRepo, name, declaration) {
-      declarations.set(
-        `${definingAccount}/${definingRepo}.${name}`,
-        declaration,
-      );
+    registerDeclaration(definingRepo, name, declaration) {
+      declarations.set(`${repoRefToString(definingRepo)}.${name}`, declaration);
     },
 
-    findDeclarationForRequester(requestingAccount, requestingRepo, reference) {
+    findDeclarationForRequester(requestingRepo, reference) {
       const declaration = declarations.get(reference);
 
       if (!declaration) return [undefined, false];
       if (declaration.shared) return [declaration, true];
 
-      const requiredPrefix = `${requestingAccount}/${requestingRepo}.`;
-
-      return reference.startsWith(requiredPrefix)
+      return reference.startsWith(`${repoRefToString(requestingRepo)}.`)
         ? [declaration, true]
         : [undefined, true];
     },

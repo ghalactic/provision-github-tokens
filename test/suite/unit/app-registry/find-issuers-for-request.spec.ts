@@ -29,6 +29,7 @@ it("finds issuers for all repos in an account with one permission", () => {
 
   expect(
     appRegistry.findIssuersForRequest({
+      consumer: { account: "account-x" },
       role: "role-a",
       account: orgA.login,
       repos: "all",
@@ -56,6 +57,7 @@ it("finds issuers for one selected repo with one permission", () => {
 
   expect(
     appRegistry.findIssuersForRequest({
+      consumer: { account: "account-x" },
       role: "role-a",
       account: orgA.login,
       repos: [repoA.name],
@@ -87,6 +89,7 @@ it("finds issuers for multiple selected repos with multiple permissions", () => 
 
   expect(
     appRegistry.findIssuersForRequest({
+      consumer: { account: "account-x" },
       role: "role-a",
       account: orgA.login,
       repos: [repoA.name, repoB.name],
@@ -113,6 +116,7 @@ it("finds issuers for no repos", () => {
 
   expect(
     appRegistry.findIssuersForRequest({
+      consumer: { account: "account-x" },
       role: "role-a",
       account: orgA.login,
       repos: [],
@@ -146,6 +150,7 @@ it.each([
 
     expect(
       appRegistry.findIssuersForRequest({
+        consumer: { account: "account-x" },
         role: "role-a",
         account: orgA.login,
         repos: [repoA.name],
@@ -179,6 +184,7 @@ it("finds issuers for the correct account when there are multiple installations"
 
   expect(
     appRegistry.findIssuersForRequest({
+      consumer: { account: "account-x" },
       role: undefined,
       account: orgA.login,
       repos: "all",
@@ -187,6 +193,7 @@ it("finds issuers for the correct account when there are multiple installations"
   ).toEqual([appAInstallationA]);
   expect(
     appRegistry.findIssuersForRequest({
+      consumer: { account: "account-x" },
       role: undefined,
       account: orgA.login,
       repos: [],
@@ -195,6 +202,7 @@ it("finds issuers for the correct account when there are multiple installations"
   ).toEqual([appAInstallationA]);
   expect(
     appRegistry.findIssuersForRequest({
+      consumer: { account: "account-x" },
       role: undefined,
       account: orgB.login,
       repos: "all",
@@ -203,6 +211,7 @@ it("finds issuers for the correct account when there are multiple installations"
   ).toEqual([appAInstallationB]);
   expect(
     appRegistry.findIssuersForRequest({
+      consumer: { account: "account-x" },
       role: undefined,
       account: orgB.login,
       repos: [],
@@ -266,6 +275,7 @@ it("finds issuers by role", () => {
 
   expect(
     appRegistry.findIssuersForRequest({
+      consumer: { account: "account-x" },
       role: "role-a",
       account: orgA.login,
       repos: [repoA.name],
@@ -274,6 +284,7 @@ it("finds issuers by role", () => {
   ).toEqual([appBInstallationA]);
   expect(
     appRegistry.findIssuersForRequest({
+      consumer: { account: "account-x" },
       role: "role-a",
       account: orgA.login,
       repos: [repoB.name],
@@ -282,6 +293,7 @@ it("finds issuers by role", () => {
   ).toEqual([appBInstallationA, appDInstallationA]);
   expect(
     appRegistry.findIssuersForRequest({
+      consumer: { account: "account-x" },
       role: "role-a",
       account: orgA.login,
       repos: [repoC.name],
@@ -290,6 +302,7 @@ it("finds issuers by role", () => {
   ).toEqual([appDInstallationA]);
   expect(
     appRegistry.findIssuersForRequest({
+      consumer: { account: "account-x" },
       role: "role-b",
       account: orgA.login,
       repos: [repoA.name],
@@ -298,6 +311,7 @@ it("finds issuers by role", () => {
   ).toEqual([appCInstallationA]);
   expect(
     appRegistry.findIssuersForRequest({
+      consumer: { account: "account-x" },
       role: "role-b",
       account: orgA.login,
       repos: [repoD.name],
@@ -338,6 +352,7 @@ it("finds issuers for read access when the role is undefined", () => {
 
   expect(
     appRegistry.findIssuersForRequest({
+      consumer: { account: "account-x" },
       role: undefined,
       account: orgA.login,
       repos: [],
@@ -346,6 +361,7 @@ it("finds issuers for read access when the role is undefined", () => {
   ).toEqual([appAInstallationA, appBInstallationA]);
   expect(
     appRegistry.findIssuersForRequest({
+      consumer: { account: "account-x" },
       role: undefined,
       account: orgA.login,
       repos: [],
@@ -375,6 +391,7 @@ it("doesn't find issuers for write or admin access when the role is undefined", 
 
   expect(
     appRegistry.findIssuersForRequest({
+      consumer: { account: "account-x" },
       role: undefined,
       account: orgA.login,
       repos: [],
@@ -383,6 +400,7 @@ it("doesn't find issuers for write or admin access when the role is undefined", 
   ).toHaveLength(0);
   expect(
     appRegistry.findIssuersForRequest({
+      consumer: { account: "account-x" },
       role: undefined,
       account: orgA.login,
       repos: [],
@@ -410,6 +428,7 @@ it("doesn't find issuers when it can't access all repos in an account", () => {
 
   expect(
     appRegistry.findIssuersForRequest({
+      consumer: { account: "account-x" },
       role: "role-a",
       account: orgA.login,
       repos: "all",
@@ -437,6 +456,7 @@ it("doesn't find issuers for an unknown account", () => {
 
   expect(
     appRegistry.findIssuersForRequest({
+      consumer: { account: "account-x" },
       role: "role-a",
       account: "account-x",
       repos: [repoA.name],
@@ -464,6 +484,7 @@ it("doesn't find issuers for an unknown repo", () => {
 
   expect(
     appRegistry.findIssuersForRequest({
+      consumer: { account: "account-x" },
       role: "role-a",
       account: orgA.login,
       repos: ["repo-x"],
@@ -491,6 +512,7 @@ it("doesn't find issuers that can't access all requested repos", () => {
 
   expect(
     appRegistry.findIssuersForRequest({
+      consumer: { account: "account-x" },
       role: "role-a",
       account: orgA.login,
       repos: [repoA.name, "repo-x"],
@@ -517,6 +539,7 @@ it("doesn't find issuers that don't have all permissions", () => {
 
   expect(
     appRegistry.findIssuersForRequest({
+      consumer: { account: "account-x" },
       role: "role-a",
       account: orgA.login,
       repos: ["repo-a"],
@@ -549,6 +572,7 @@ it.each([
 
     expect(
       appRegistry.findIssuersForRequest({
+        consumer: { account: "account-x" },
         role: "role-a",
         account: orgA.login,
         repos: ["repo-a"],
@@ -576,6 +600,7 @@ it("doesn't find issuers for no permissions", () => {
 
   expect(
     appRegistry.findIssuersForRequest({
+      consumer: { account: "account-x" },
       role: "role-a",
       account: orgA.login,
       repos: [],
@@ -602,6 +627,7 @@ it("doesn't find issuers from non-issuer apps", () => {
 
   expect(
     appRegistry.findIssuersForRequest({
+      consumer: { account: "account-x" },
       role: undefined,
       account: orgA.login,
       repos: "all",
@@ -610,6 +636,7 @@ it("doesn't find issuers from non-issuer apps", () => {
   ).toHaveLength(0);
   expect(
     appRegistry.findIssuersForRequest({
+      consumer: { account: "account-x" },
       role: "role-a",
       account: orgA.login,
       repos: "all",

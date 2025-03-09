@@ -1,13 +1,18 @@
+import {
+  createRepoRef,
+  repoRefToString,
+  type RepoReference,
+} from "./github-reference.js";
+
 export function normalizeTokenReference(
-  definingAccount: string,
-  definingRepo: string,
+  definingRepo: RepoReference,
   reference: string,
 ): string {
   if (!reference) throw new Error("Token reference cannot be empty");
 
   const dotIdx = reference.lastIndexOf(".");
 
-  if (dotIdx === -1) return `${definingAccount}/${definingRepo}.${reference}`;
+  if (dotIdx === -1) return `${repoRefToString(definingRepo)}.${reference}`;
 
   const namePart = reference.slice(dotIdx + 1);
   const repoParts = reference.slice(0, dotIdx).split("/");
@@ -35,6 +40,7 @@ export function normalizeTokenReference(
   }
 
   return accountPart === "."
-    ? `${definingAccount}/${repoPart}.${namePart}`
+    ? `${repoRefToString(createRepoRef(definingRepo.account, repoPart))}` +
+        `.${namePart}`
     : reference;
 }

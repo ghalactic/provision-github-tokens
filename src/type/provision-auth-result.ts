@@ -6,7 +6,6 @@ export type ProvisionAuthResultExplainer<T> = (
 ) => T;
 
 export type ProvisionAuthResult = {
-  requester: string;
   request: ProvisionRequest;
   rules: ProvisionAuthRuleResult[];
   have: "allow" | "deny" | undefined;

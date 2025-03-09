@@ -20,29 +20,25 @@ it("finds local token declarations", () => {
 
   const declarationRegistry = createTokenDeclarationRegistry();
   declarationRegistry.registerDeclaration(
-    "account-a",
-    "repo-a",
+    { account: "account-a", repo: "repo-a" },
     "token-a",
     declarationA,
   );
   declarationRegistry.registerDeclaration(
-    "account-b",
-    "repo-b",
+    { account: "account-b", repo: "repo-b" },
     "token-b",
     declarationB,
   );
 
   expect(
     declarationRegistry.findDeclarationForRequester(
-      "account-a",
-      "repo-a",
+      { account: "account-a", repo: "repo-a" },
       "account-a/repo-a.token-a",
     ),
   ).toEqual([declarationA, true]);
   expect(
     declarationRegistry.findDeclarationForRequester(
-      "account-b",
-      "repo-b",
+      { account: "account-b", repo: "repo-b" },
       "account-b/repo-b.token-b",
     ),
   ).toEqual([declarationB, true]);
@@ -66,29 +62,25 @@ it("finds shared token declarations", () => {
 
   const declarationRegistry = createTokenDeclarationRegistry();
   declarationRegistry.registerDeclaration(
-    "account-a",
-    "repo-a",
+    { account: "account-a", repo: "repo-a" },
     "token-a",
     declarationA,
   );
   declarationRegistry.registerDeclaration(
-    "account-b",
-    "repo-b",
+    { account: "account-b", repo: "repo-b" },
     "token-b",
     declarationB,
   );
 
   expect(
     declarationRegistry.findDeclarationForRequester(
-      "account-b",
-      "repo-b",
+      { account: "account-b", repo: "repo-b" },
       "account-a/repo-a.token-a",
     ),
   ).toEqual([declarationA, true]);
   expect(
     declarationRegistry.findDeclarationForRequester(
-      "account-a",
-      "repo-a",
+      { account: "account-a", repo: "repo-a" },
       "account-b/repo-b.token-b",
     ),
   ).toEqual([declarationB, true]);
@@ -112,29 +104,25 @@ it("doesn't find unshared tokens in other repos", () => {
 
   const declarationRegistry = createTokenDeclarationRegistry();
   declarationRegistry.registerDeclaration(
-    "account-a",
-    "repo-a",
+    { account: "account-a", repo: "repo-a" },
     "token-a",
     declarationA,
   );
   declarationRegistry.registerDeclaration(
-    "account-b",
-    "repo-b",
+    { account: "account-b", repo: "repo-b" },
     "token-b",
     declarationB,
   );
 
   expect(
     declarationRegistry.findDeclarationForRequester(
-      "account-b",
-      "repo-b",
+      { account: "account-b", repo: "repo-b" },
       "account-a/repo-a.token-a",
     ),
   ).toEqual([undefined, true]);
   expect(
     declarationRegistry.findDeclarationForRequester(
-      "account-a",
-      "repo-a",
+      { account: "account-a", repo: "repo-a" },
       "account-b/repo-b.token-b",
     ),
   ).toEqual([undefined, true]);
@@ -145,8 +133,7 @@ it("doesn't find unregistered tokens", () => {
 
   expect(
     declarationRegistry.findDeclarationForRequester(
-      "account-a",
-      "repo-a",
+      { account: "account-a", repo: "repo-a" },
       "account-a/repo-a.token-a",
     ),
   ).toEqual([undefined, false]);

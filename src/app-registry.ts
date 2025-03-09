@@ -1,4 +1,5 @@
 import { isSufficientAccess, isWriteAccess } from "./access-level.js";
+import { isRepoRef } from "./github-reference.js";
 import { isEmptyPermissions, permissionAccess } from "./permissions.js";
 import type { App, Installation, Repo } from "./type/github-api.js";
 import type { AppInputIssuer, AppInputProvisioner } from "./type/input.js";
@@ -181,11 +182,11 @@ export function createAppRegistry(): AppRegistry {
 
         if (!appRegistration.provisioner.enabled) continue;
 
-        if (request.repo) {
+        if (isRepoRef(request.target)) {
           for (const repo of repos) {
             if (
-              repo.owner.login === request.account &&
-              repo.name === request.repo
+              repo.owner.login === request.target.account &&
+              repo.name === request.target.repo
             ) {
               provisioners.push(instReg);
 
@@ -199,7 +200,7 @@ export function createAppRegistry(): AppRegistry {
         if (
           installation.account &&
           "login" in installation.account &&
-          installation.account.login === request.account
+          installation.account.login === request.target.account
         ) {
           provisioners.push(instReg);
         }

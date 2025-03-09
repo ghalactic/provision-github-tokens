@@ -1,14 +1,14 @@
 import { debug, info, error as logError } from "@actions/core";
 import type { AppRegistry } from "./app-registry.js";
 import { parseConsumerConfig } from "./config/consumer-config.js";
+import { createRepoRef, type RepoReference } from "./github-reference.js";
 import { handleRequestError, type OctokitFactory } from "./octokit.js";
 import { pluralize } from "./pluralize.js";
 import type { ConsumerConfig } from "./type/consumer-config.js";
 import type { AppInput } from "./type/input.js";
 
 export type DiscoveredConsumer = {
-  account: string;
-  repo: string;
+  consumer: RepoReference;
   config: ConsumerConfig;
 };
 
@@ -30,13 +30,13 @@ export async function discoverConsumers(
     for (const { owner, name: repo, full_name } of repos) {
       if (discovered.has(full_name)) continue;
 
-      const { login: account } = owner;
+      const consumer = createRepoRef(owner.login, repo);
       let configYAML: string;
 
       try {
         const res = await octokit.rest.repos.getContent({
-          owner: account,
-          repo,
+          owner: consumer.account,
+          repo: consumer.repo,
           path: ".github/ghalactic/provision-github-tokens.yml",
           headers: { accept: "application/vnd.github.raw+json" },
         });
@@ -66,7 +66,7 @@ export async function discoverConsumers(
       let config: ConsumerConfig;
 
       try {
-        config = parseConsumerConfig(account, repo, configYAML);
+        config = parseConsumerConfig(consumer, configYAML);
       } catch (error) {
         logError(`Consumer ${full_name} has invalid config`);
 
@@ -93,7 +93,7 @@ export async function discoverConsumers(
           JSON.stringify(secretDecNames),
       );
 
-      discovered.set(full_name, { account, repo, config });
+      discovered.set(full_name, { consumer, config });
     }
   }
 

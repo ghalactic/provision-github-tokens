@@ -17,7 +17,9 @@ it("parses comprehensive provider config", async () => {
   const fixturePath = join(fixturesPath, "comprehensive.yml");
   const yaml = await readFile(fixturePath, "utf-8");
 
-  expect(parseProviderConfig("account-self", "repo-self", yaml)).toEqual({
+  expect(
+    parseProviderConfig({ account: "account-self", repo: "repo-self" }, yaml),
+  ).toEqual({
     $schema: providerSchema.$id,
 
     permissions: {
@@ -658,7 +660,9 @@ it("parses provider configs that are just comments", async () => {
   const fixturePath = join(fixturesPath, "just-comments.yml");
   const yaml = await readFile(fixturePath, "utf-8");
 
-  expect(parseProviderConfig("account-self", "repo-self", yaml)).toEqual({
+  expect(
+    parseProviderConfig({ account: "account-self", repo: "repo-self" }, yaml),
+  ).toEqual({
     $schema: providerSchema.$id,
     permissions: { rules: [] },
     provision: { rules: { secrets: [] } },
@@ -666,7 +670,9 @@ it("parses provider configs that are just comments", async () => {
 });
 
 it("parses provider configs that are empty", async () => {
-  expect(parseProviderConfig("account-self", "repo-self", "")).toEqual({
+  expect(
+    parseProviderConfig({ account: "account-self", repo: "repo-self" }, ""),
+  ).toEqual({
     $schema: providerSchema.$id,
     permissions: { rules: [] },
     provision: { rules: { secrets: [] } },
@@ -680,8 +686,11 @@ it("throws when an invalid pattern is used in /permissions/rules/<n>/resources/<
   );
   const yaml = await readFile(fixturePath, "utf-8");
 
-  expect(throws(() => parseProviderConfig("account-self", "repo-self", yaml)))
-    .toMatchInlineSnapshot(`
+  expect(
+    throws(() =>
+      parseProviderConfig({ account: "account-self", repo: "repo-self" }, yaml),
+    ),
+  ).toMatchInlineSnapshot(`
       "Parsing of provider configuration failed
 
       Caused by: Invalid provider configuration:
@@ -696,8 +705,11 @@ it("throws when an invalid pattern is used in /permissions/rules/<n>/consumers/<
   );
   const yaml = await readFile(fixturePath, "utf-8");
 
-  expect(throws(() => parseProviderConfig("account-self", "repo-self", yaml)))
-    .toMatchInlineSnapshot(`
+  expect(
+    throws(() =>
+      parseProviderConfig({ account: "account-self", repo: "repo-self" }, yaml),
+    ),
+  ).toMatchInlineSnapshot(`
       "Parsing of provider configuration failed
 
       Caused by: Invalid provider configuration:
@@ -712,8 +724,11 @@ it("throws when an invalid pattern is used in /provision/rules/secrets/<n>/reque
   );
   const yaml = await readFile(fixturePath, "utf-8");
 
-  expect(throws(() => parseProviderConfig("account-self", "repo-self", yaml)))
-    .toMatchInlineSnapshot(`
+  expect(
+    throws(() =>
+      parseProviderConfig({ account: "account-self", repo: "repo-self" }, yaml),
+    ),
+  ).toMatchInlineSnapshot(`
       "Parsing of provider configuration failed
 
       Caused by: Invalid provider configuration:
@@ -728,8 +743,11 @@ it("throws when an invalid pattern is used in /provision/rules/secrets/<n>/to/gi
   );
   const yaml = await readFile(fixturePath, "utf-8");
 
-  expect(throws(() => parseProviderConfig("account-self", "repo-self", yaml)))
-    .toMatchInlineSnapshot(`
+  expect(
+    throws(() =>
+      parseProviderConfig({ account: "account-self", repo: "repo-self" }, yaml),
+    ),
+  ).toMatchInlineSnapshot(`
       "Parsing of provider configuration failed
 
       Caused by: Invalid provider configuration:
@@ -742,8 +760,11 @@ it("throws when there are additional properties", async () => {
   const fixturePath = join(fixturesPath, "additional-properties.yml");
   const yaml = await readFile(fixturePath, "utf-8");
 
-  expect(throws(() => parseProviderConfig("account-self", "repo-self", yaml)))
-    .toMatchInlineSnapshot(`
+  expect(
+    throws(() =>
+      parseProviderConfig({ account: "account-self", repo: "repo-self" }, yaml),
+    ),
+  ).toMatchInlineSnapshot(`
       "Parsing of provider configuration failed
 
       Caused by: Invalid provider configuration:
@@ -752,8 +773,11 @@ it("throws when there are additional properties", async () => {
 });
 
 it("throws when the YAML is invalid", async () => {
-  expect(throws(() => parseProviderConfig("account-self", "repo-self", "{")))
-    .toMatchInlineSnapshot(`
+  expect(
+    throws(() =>
+      parseProviderConfig({ account: "account-self", repo: "repo-self" }, "{"),
+    ),
+  ).toMatchInlineSnapshot(`
       "Parsing of provider configuration failed
 
       Caused by: unexpected end of the stream within a flow collection (2:1)

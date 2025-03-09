@@ -1,3 +1,9 @@
+import type {
+  AccountOrRepoReference,
+  EnvironmentReference,
+  RepoReference,
+} from "../github-reference.js";
+
 export type ProvisionRequest =
   | GitHubActionsProvisionRequest
   | GitHubCodespacesProvisionRequest
@@ -6,30 +12,29 @@ export type ProvisionRequest =
 
 export type GitHubActionsProvisionRequest = GitHubProvisionRequestCommon & {
   type: "actions";
-  repo?: string;
+  target: AccountOrRepoReference;
 };
 
 export type GitHubCodespacesProvisionRequest = GitHubProvisionRequestCommon & {
   type: "codespaces";
-  repo?: string;
+  target: AccountOrRepoReference;
 };
 
 export type GitHubDependabotProvisionRequest = GitHubProvisionRequestCommon & {
   type: "dependabot";
-  repo?: string;
+  target: AccountOrRepoReference;
 };
 
 export type GitHubEnvironmentProvisionRequest = GitHubProvisionRequestCommon & {
   type: "environment";
-  repo: string;
-  environment: string;
+  target: EnvironmentReference;
 };
 
 type GitHubProvisionRequestCommon = ProvisionRequestCommon & {
   platform: "github";
-  account: string;
 };
 
 type ProvisionRequestCommon = {
+  requester: RepoReference;
   name: string;
 };

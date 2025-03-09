@@ -33,11 +33,12 @@ it("allows GitHub Actions account secrets that should be allowed", () => {
 
   expect(
     explain(
-      authorizer.authorizeSecret("account-x/repo-x", {
+      authorizer.authorizeSecret({
+        requester: { account: "account-x", repo: "repo-x" },
         name: "SECRET_A",
         platform: "github",
         type: "actions",
-        account: "account-a",
+        target: { account: "account-a" },
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -47,11 +48,12 @@ it("allows GitHub Actions account secrets that should be allowed", () => {
   `);
   expect(
     explain(
-      authorizer.authorizeSecret("account-y-1/repo-y-1", {
+      authorizer.authorizeSecret({
+        requester: { account: "account-y-1", repo: "repo-y-1" },
         name: "SECRET_A",
         platform: "github",
         type: "actions",
-        account: "account-b-1",
+        target: { account: "account-b-1" },
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -85,11 +87,12 @@ it("allows GitHub Actions account secrets that should be allowed within the requ
 
   expect(
     explain(
-      authorizer.authorizeSecret("account-a/repo-a", {
+      authorizer.authorizeSecret({
+        requester: { account: "account-a", repo: "repo-a" },
         name: "SECRET_A",
         platform: "github",
         type: "actions",
-        account: "account-a",
+        target: { account: "account-a" },
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -99,11 +102,12 @@ it("allows GitHub Actions account secrets that should be allowed within the requ
   `);
   expect(
     explain(
-      authorizer.authorizeSecret("account-b-1/repo-b-1", {
+      authorizer.authorizeSecret({
+        requester: { account: "account-b-1", repo: "repo-b-1" },
         name: "SECRET_A",
         platform: "github",
         type: "actions",
-        account: "account-b-1",
+        target: { account: "account-b-1" },
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -141,11 +145,12 @@ it("allows GitHub Actions account secrets that should be allowed within the requ
 
   expect(
     explain(
-      authorizer.authorizeSecret("account-a/repo-a", {
+      authorizer.authorizeSecret({
+        requester: { account: "account-a", repo: "repo-a" },
         name: "SECRET_A",
         platform: "github",
         type: "actions",
-        account: "account-a",
+        target: { account: "account-a" },
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -186,12 +191,12 @@ it("allows GitHub Actions repo secrets that should be allowed", () => {
 
   expect(
     explain(
-      authorizer.authorizeSecret("account-x/repo-x", {
+      authorizer.authorizeSecret({
+        requester: { account: "account-x", repo: "repo-x" },
         name: "SECRET_A",
         platform: "github",
         type: "actions",
-        account: "account-a",
-        repo: "repo-a",
+        target: { account: "account-a", repo: "repo-a" },
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -201,12 +206,12 @@ it("allows GitHub Actions repo secrets that should be allowed", () => {
   `);
   expect(
     explain(
-      authorizer.authorizeSecret("account-y-1/repo-y-1", {
+      authorizer.authorizeSecret({
+        requester: { account: "account-y-1", repo: "repo-y-1" },
         name: "SECRET_A",
         platform: "github",
         type: "actions",
-        account: "account-b-1",
-        repo: "repo-b-1",
+        target: { account: "account-b-1", repo: "repo-b-1" },
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -241,12 +246,12 @@ it("allows GitHub Actions repo secrets that should be allowed within the request
 
   expect(
     explain(
-      authorizer.authorizeSecret("account-a/repo-a", {
+      authorizer.authorizeSecret({
+        requester: { account: "account-a", repo: "repo-a" },
         name: "SECRET_A",
         platform: "github",
         type: "actions",
-        account: "account-a",
-        repo: "repo-a",
+        target: { account: "account-a", repo: "repo-a" },
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -256,12 +261,12 @@ it("allows GitHub Actions repo secrets that should be allowed within the request
   `);
   expect(
     explain(
-      authorizer.authorizeSecret("account-b-1/repo-b-1", {
+      authorizer.authorizeSecret({
+        requester: { account: "account-b-1", repo: "repo-b-1" },
         name: "SECRET_A",
         platform: "github",
         type: "actions",
-        account: "account-b-1",
-        repo: "repo-b-1",
+        target: { account: "account-b-1", repo: "repo-b-1" },
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -301,12 +306,12 @@ it("allows GitHub Actions repo secrets that should be allowed within the request
 
   expect(
     explain(
-      authorizer.authorizeSecret("account-a/repo-a", {
+      authorizer.authorizeSecret({
+        requester: { account: "account-a", repo: "repo-a" },
         name: "SECRET_A",
         platform: "github",
         type: "actions",
-        account: "account-a",
-        repo: "repo-a",
+        target: { account: "account-a", repo: "repo-a" },
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -316,12 +321,12 @@ it("allows GitHub Actions repo secrets that should be allowed within the request
   `);
   expect(
     explain(
-      authorizer.authorizeSecret("account-b-1/repo-b-1", {
+      authorizer.authorizeSecret({
+        requester: { account: "account-b-1", repo: "repo-b-1" },
         name: "SECRET_A",
         platform: "github",
         type: "actions",
-        account: "account-b-1",
-        repo: "repo-b-1",
+        target: { account: "account-b-1", repo: "repo-b-1" },
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -357,11 +362,12 @@ it("doesn't allow GitHub Actions account secrets for unauthorized requesters", (
 
   expect(
     explain(
-      authorizer.authorizeSecret("account-y/repo-y", {
+      authorizer.authorizeSecret({
+        requester: { account: "account-y", repo: "repo-y" },
         name: "SECRET_A",
         platform: "github",
         type: "actions",
-        account: "account-a",
+        target: { account: "account-a" },
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -394,11 +400,12 @@ it("doesn't allow GitHub Actions account secrets within the requesting account f
 
   expect(
     explain(
-      authorizer.authorizeSecret("account-y/repo-y", {
+      authorizer.authorizeSecret({
+        requester: { account: "account-y", repo: "repo-y" },
         name: "SECRET_A",
         platform: "github",
         type: "actions",
-        account: "account-x",
+        target: { account: "account-x" },
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -407,11 +414,12 @@ it("doesn't allow GitHub Actions account secrets within the requesting account f
   `);
   expect(
     explain(
-      authorizer.authorizeSecret("account-x/repo-y", {
+      authorizer.authorizeSecret({
+        requester: { account: "account-x", repo: "repo-y" },
         name: "SECRET_A",
         platform: "github",
         type: "actions",
-        account: "account-x",
+        target: { account: "account-x" },
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -420,11 +428,12 @@ it("doesn't allow GitHub Actions account secrets within the requesting account f
   `);
   expect(
     explain(
-      authorizer.authorizeSecret("account-x/repo-x", {
+      authorizer.authorizeSecret({
+        requester: { account: "account-x", repo: "repo-x" },
         name: "SECRET_A",
         platform: "github",
         type: "actions",
-        account: "account-y",
+        target: { account: "account-y" },
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -461,11 +470,12 @@ it("doesn't allow GitHub Actions account secrets within the requesting account w
 
   expect(
     explain(
-      authorizer.authorizeSecret("account-a/repo-a", {
+      authorizer.authorizeSecret({
+        requester: { account: "account-a", repo: "repo-a" },
         name: "SECRET_A",
         platform: "github",
         type: "actions",
-        account: "account-a",
+        target: { account: "account-a" },
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -502,12 +512,12 @@ it("doesn't allow GitHub Actions repo secrets for unauthorized requesters", () =
 
   expect(
     explain(
-      authorizer.authorizeSecret("account-y/repo-y", {
+      authorizer.authorizeSecret({
+        requester: { account: "account-y", repo: "repo-y" },
         name: "SECRET_A",
         platform: "github",
         type: "actions",
-        account: "account-a",
-        repo: "repo-a",
+        target: { account: "account-a", repo: "repo-a" },
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -541,12 +551,12 @@ it("doesn't allow GitHub Actions repo secrets within the requesting repo for una
 
   expect(
     explain(
-      authorizer.authorizeSecret("account-y/repo-y", {
+      authorizer.authorizeSecret({
+        requester: { account: "account-y", repo: "repo-y" },
         name: "SECRET_A",
         platform: "github",
         type: "actions",
-        account: "account-x",
-        repo: "repo-x",
+        target: { account: "account-x", repo: "repo-x" },
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -555,12 +565,12 @@ it("doesn't allow GitHub Actions repo secrets within the requesting repo for una
   `);
   expect(
     explain(
-      authorizer.authorizeSecret("account-x/repo-y", {
+      authorizer.authorizeSecret({
+        requester: { account: "account-x", repo: "repo-y" },
         name: "SECRET_A",
         platform: "github",
         type: "actions",
-        account: "account-x",
-        repo: "repo-x",
+        target: { account: "account-x", repo: "repo-x" },
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -569,12 +579,12 @@ it("doesn't allow GitHub Actions repo secrets within the requesting repo for una
   `);
   expect(
     explain(
-      authorizer.authorizeSecret("account-x/repo-x", {
+      authorizer.authorizeSecret({
+        requester: { account: "account-x", repo: "repo-x" },
         name: "SECRET_A",
         platform: "github",
         type: "actions",
-        account: "account-x",
-        repo: "repo-y",
+        target: { account: "account-x", repo: "repo-y" },
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -613,12 +623,12 @@ it("doesn't allow GitHub Actions repo secrets within the requesting repo when de
 
   expect(
     explain(
-      authorizer.authorizeSecret("account-a/repo-a", {
+      authorizer.authorizeSecret({
+        requester: { account: "account-a", repo: "repo-a" },
         name: "SECRET_A",
         platform: "github",
         type: "actions",
-        account: "account-a",
-        repo: "repo-a",
+        target: { account: "account-a", repo: "repo-a" },
       }),
     ),
   ).toMatchInlineSnapshot(`
