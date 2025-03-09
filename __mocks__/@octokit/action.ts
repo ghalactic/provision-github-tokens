@@ -1,9 +1,10 @@
 import type { RestEndpointMethodTypes } from "@octokit/action";
 import { RequestError } from "@octokit/request-error";
+import type { Installation, Repo } from "../../src/type/github-api.js";
 import type { TestApp } from "../../test/github-api.js";
 
 let apps: TestApp[];
-let installations: [installation: any, repos: any[]][];
+let installations: [installation: Installation, repos: Repo[]][];
 let files: Record<string, Record<string, string>>;
 let errorsByEndpoint: Record<string, (Error | undefined)[]> = {};
 
@@ -19,13 +20,13 @@ export function __setApps(newApps: TestApp[]) {
 }
 
 export function __setInstallations(
-  newInstallations: [installation: any, repos: any[]][],
+  newInstallations: [installation: Installation, repos: Repo[]][],
 ) {
   installations = newInstallations;
 }
 
 export function __setFiles(
-  newFiles: [repo: any, files: Record<string, string>][],
+  newFiles: [repo: Repo, files: Record<string, string>][],
 ) {
   files = {};
   for (const [repo, f] of newFiles) files[repo.full_name] = f;
