@@ -6,13 +6,13 @@ import { createAppRegistry } from "./app-registry.js";
 import { readAppsInput } from "./config/apps-input.js";
 import { discoverApps } from "./discover-apps.js";
 import { discoverConsumers } from "./discover-consumers.js";
-import { errorMessage } from "./error.js";
+import { errorStack } from "./error.js";
 import { createOctokitFactory } from "./octokit.js";
 import { registerTokenDeclarations } from "./register-token-declarations.js";
 import { createTokenDeclarationRegistry } from "./token-declaration-registry.js";
 
 main().catch((error) => {
-  setFailed(errorMessage(error));
+  setFailed(errorStack(error));
 });
 
 async function main(): Promise<void> {

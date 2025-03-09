@@ -52586,6 +52586,9 @@ var safeDump = renamed("safeDump", "dump");
 function errorMessage(error) {
   return (error instanceof Error ? error.message : String(error)).trim();
 }
+function errorStack(error) {
+  return (error instanceof Error ? error.stack ?? error.message : String(error)).trim();
+}
 
 // src/config/validation.ts
 var import_ajv = __toESM(require_ajv(), 1);
@@ -59291,7 +59294,7 @@ function createTokenDeclarationRegistry() {
 
 // src/main.ts
 main().catch((error) => {
-  (0, import_core6.setFailed)(errorMessage(error));
+  (0, import_core6.setFailed)(errorStack(error));
 });
 async function main() {
   const appsInput = readAppsInput();
