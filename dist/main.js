@@ -49803,12 +49803,8 @@ function isWriteAccess(access) {
 
 // src/github-reference.ts
 function createRepoRef(account, repo) {
-  if (typeof account !== "string" || account.includes("/")) {
-    throw new Error(`Invalid account name ${JSON.stringify(account)}`);
-  }
-  if (typeof repo !== "string" || repo.includes("/")) {
-    throw new Error(`Invalid repo name ${JSON.stringify(repo)}`);
-  }
+  assertAccount(account);
+  assertRepo(repo);
   return { account, repo };
 }
 function isRepoRef(ref) {
@@ -49816,6 +49812,16 @@ function isRepoRef(ref) {
 }
 function repoRefToString(ref) {
   return `${ref.account}/${ref.repo}`;
+}
+function assertAccount(account) {
+  if (typeof account !== "string" || !account || account.includes("/")) {
+    throw new Error(`Invalid account name ${JSON.stringify(account)}`);
+  }
+}
+function assertRepo(repo) {
+  if (typeof repo !== "string" || !repo || repo.includes("/")) {
+    throw new Error(`Invalid repo name ${JSON.stringify(repo)}`);
+  }
 }
 
 // src/permissions.ts

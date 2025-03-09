@@ -12,10 +12,12 @@ it("throws for invalid account names", () => {
   expect(() => createRepoRef("account/a", "repo-a")).toThrow(
     'Invalid account name "account/a"',
   );
+  expect(() => createRepoRef("", "repo-a")).toThrow('Invalid account name ""');
 });
 
 it("throws for invalid repo names", () => {
   expect(() => createRepoRef("account-a", "repo/a")).toThrow(
     'Invalid repo name "repo/a"',
   );
+  expect(() => createRepoRef("account-a", "")).toThrow('Invalid repo name ""');
 });

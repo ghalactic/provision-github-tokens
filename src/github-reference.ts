@@ -16,20 +16,14 @@ export type EnvironmentReference = {
 export type AccountOrRepoReference = AccountReference | RepoReference;
 
 export function createAccountRef(account: string): AccountReference {
-  if (typeof account !== "string" || account.includes("/")) {
-    throw new Error(`Invalid account name ${JSON.stringify(account)}`);
-  }
+  assertAccount(account);
 
   return { account };
 }
 
 export function createRepoRef(account: string, repo: string): RepoReference {
-  if (typeof account !== "string" || account.includes("/")) {
-    throw new Error(`Invalid account name ${JSON.stringify(account)}`);
-  }
-  if (typeof repo !== "string" || repo.includes("/")) {
-    throw new Error(`Invalid repo name ${JSON.stringify(repo)}`);
-  }
+  assertAccount(account);
+  assertRepo(repo);
 
   return { account, repo };
 }
@@ -39,15 +33,9 @@ export function createEnvRef(
   repo: string,
   environment: string,
 ): EnvironmentReference {
-  if (typeof account !== "string" || account.includes("/")) {
-    throw new Error(`Invalid account name ${JSON.stringify(account)}`);
-  }
-  if (typeof repo !== "string" || repo.includes("/")) {
-    throw new Error(`Invalid repo name ${JSON.stringify(repo)}`);
-  }
-  if (typeof environment !== "string") {
-    throw new Error(`Invalid environment name ${JSON.stringify(environment)}`);
-  }
+  assertAccount(account);
+  assertRepo(repo);
+  assertEnvironment(environment);
 
   return { account, repo, environment };
 }
@@ -68,10 +56,37 @@ export function isEnvRef(
   );
 }
 
+export function repoRefFromName(name: string): RepoReference {
+  const parts = name.split("/");
+  if (parts.length !== 2) {
+    throw new Error(`Invalid repo name ${JSON.stringify(name)}`);
+  }
+
+  return createRepoRef(parts[0], parts[1]);
+}
+
 export function repoRefToString(ref: RepoReference): string {
   return `${ref.account}/${ref.repo}`;
 }
 
 export function accountOrRepoRefToString(ref: AccountOrRepoReference): string {
   return isRepoRef(ref) ? repoRefToString(ref) : ref.account;
+}
+
+function assertAccount(account: string): void {
+  if (typeof account !== "string" || !account || account.includes("/")) {
+    throw new Error(`Invalid account name ${JSON.stringify(account)}`);
+  }
+}
+
+function assertRepo(repo: string): void {
+  if (typeof repo !== "string" || !repo || repo.includes("/")) {
+    throw new Error(`Invalid repo name ${JSON.stringify(repo)}`);
+  }
+}
+
+function assertEnvironment(environment: string): void {
+  if (typeof environment !== "string" || !environment) {
+    throw new Error(`Invalid environment name ${JSON.stringify(environment)}`);
+  }
 }

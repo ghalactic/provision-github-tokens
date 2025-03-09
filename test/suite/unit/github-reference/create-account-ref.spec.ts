@@ -9,4 +9,5 @@ it("throws for invalid account names", () => {
   expect(() => createAccountRef("account/a")).toThrow(
     'Invalid account name "account/a"',
   );
+  expect(() => createAccountRef("")).toThrow('Invalid account name ""');
 });
