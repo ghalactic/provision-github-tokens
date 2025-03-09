@@ -12,7 +12,7 @@ import type { ProvisionSecretsRule } from "../type/provision-rule.js";
 const ALLOWED_ICON = "✅";
 const DENIED_ICON = "❌";
 
-export function createTextAuthExplainer(): ProvisionAuthResultExplainer<string> {
+export function createTextProvisionAuthExplainer(): ProvisionAuthResultExplainer<string> {
   return (result) => {
     const { isAllowed, rules } = result;
 

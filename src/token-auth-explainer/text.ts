@@ -23,7 +23,7 @@ const ACCESS_LEVELS: Record<PermissionAccess, string> = {
   write: "Write",
 };
 
-export function createTextAuthExplainer(): TokenAuthResultExplainer<string> {
+export function createTextTokenAuthExplainer(): TokenAuthResultExplainer<string> {
   return (result) => {
     if (result.type === "ALL_REPOS") return explainAllRepos(result);
     if (result.type === "NO_REPOS") return explainNoRepos(result);
