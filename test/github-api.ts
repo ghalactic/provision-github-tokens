@@ -3,6 +3,7 @@ import { createHash } from "crypto";
 import openapiSampler from "openapi-sampler";
 import type {
   App,
+  Environment,
   Installation,
   InstallationAccount,
   InstallationRepo,
@@ -99,5 +100,20 @@ export function createTestInstallationRepo(
     name,
     full_name: `${account.login}/${name}`,
     owner: { ...sampleInstallationRepo.owner, login: account.login },
+  };
+}
+
+// Repo Environment
+
+const sampleEnvironment = openapiSampler.sample(
+  openapi.schemas["api.github.com.deref"].paths[
+    "/repos/{owner}/{repo}/environments/{environment_name}"
+  ].get.responses["200"].content["application/json"].schema,
+) as Environment;
+
+export function createTestRepoEnvironment(name: string): Environment {
+  return {
+    ...sampleEnvironment,
+    name,
   };
 }

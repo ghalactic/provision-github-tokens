@@ -1,16 +1,22 @@
 import type { RestEndpointMethodTypes } from "@octokit/action";
 import { RequestError } from "@octokit/request-error";
-import type { Installation, Repo } from "../../src/type/github-api.js";
+import type {
+  Environment,
+  Installation,
+  Repo,
+} from "../../src/type/github-api.js";
 import type { TestApp } from "../../test/github-api.js";
 
 let apps: TestApp[];
 let installations: [installation: Installation, repos: Repo[]][];
+let environments: Record<string, Environment[]>;
 let files: Record<string, Record<string, string>>;
 let errorsByEndpoint: Record<string, (Error | undefined)[]> = {};
 
 export function __reset() {
   apps = [];
   installations = [];
+  environments = {};
   files = {};
   errorsByEndpoint = {};
 }
@@ -23,6 +29,15 @@ export function __setInstallations(
   newInstallations: [installation: Installation, repos: Repo[]][],
 ) {
   installations = newInstallations;
+}
+
+export function __setEnvironments(
+  newEnvironments: [repo: Repo, environments: Environment[]][],
+) {
+  environments = {};
+  for (const [repo, envs] of newEnvironments) {
+    environments[repo.full_name] = envs;
+  }
 }
 
 export function __setFiles(
@@ -56,6 +71,10 @@ export function Octokit({
           return listReposAccessibleToInstallation(appId, installationId);
         }
 
+        if (endpoint === "repos.getAllEnvironments") {
+          return getAllEnvironments(appId, installationId);
+        }
+
         throw new Error("Not implemented");
       },
     },
@@ -84,6 +103,8 @@ export function Octokit({
       },
 
       repos: {
+        getAllEnvironments: "repos.getAllEnvironments",
+
         getContent: async ({
           owner,
           repo,
@@ -120,6 +141,33 @@ export function Octokit({
 Object.defineProperty(Octokit, "plugin", {
   value: () => Octokit,
 });
+
+async function* getAllEnvironments(appId: number, installationId: number) {
+  throwIfEndpointError("repos.getAllEnvironments");
+
+  const per_page = 2;
+  let page = [];
+
+  for (const [installation, repos] of installations) {
+    if (installation.app_id !== appId) continue;
+    if (installation.id !== installationId) continue;
+
+    for (const r of repos) {
+      const envs = environments[r.full_name] ?? [];
+
+      for (const env of envs) {
+        page.push(env);
+
+        if (page.length >= per_page) {
+          yield { data: page };
+          page = [];
+        }
+      }
+    }
+  }
+
+  yield { data: page };
+}
 
 async function* listInstallations(appId: number) {
   throwIfEndpointError("apps.listInstallations");
