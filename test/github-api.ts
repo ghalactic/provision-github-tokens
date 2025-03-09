@@ -16,14 +16,16 @@ const sampleApp = openapiSampler.sample(
     .content["application/json"].schema,
 ) as App;
 
+export type TestApp = App & {
+  privateKey: string;
+};
+
 export function createTestApp(
   id: number,
   slug: string,
   name: string,
   permissions: Permissions = {},
-): App & {
-  privateKey: string;
-} {
+): TestApp {
   return {
     ...sampleApp,
     id,

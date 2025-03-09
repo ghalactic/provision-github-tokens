@@ -1,7 +1,8 @@
 import type { RestEndpointMethodTypes } from "@octokit/action";
 import { RequestError } from "@octokit/request-error";
+import type { TestApp } from "../../test/github-api.js";
 
-let apps: any[];
+let apps: TestApp[];
 let installations: [installation: any, repos: any[]][];
 let files: Record<string, Record<string, string>>;
 let errorsByEndpoint: Record<string, (Error | undefined)[]> = {};
@@ -13,7 +14,7 @@ export function __reset() {
   errorsByEndpoint = {};
 }
 
-export function __setApps(newApps: any[]) {
+export function __setApps(newApps: TestApp[]) {
   apps = newApps;
 }
 
