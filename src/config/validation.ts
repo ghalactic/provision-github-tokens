@@ -1,13 +1,13 @@
 import ajvModule, { ErrorObject } from "ajv";
 import ajvErrorsModule from "ajv-errors";
 import appsSchema from "../schema/apps.v1.schema.json" with { type: "json" };
-import consumerSchema from "../schema/consumer.v1.schema.json" with { type: "json" };
-import consumerTokenPermissionsSchema from "../schema/generated.consumer-token-permissions.v1.schema.json" with { type: "json" };
 import providerRulePermissionsSchema from "../schema/generated.provider-rule-permissions.v1.schema.json" with { type: "json" };
+import requesterTokenPermissionsSchema from "../schema/generated.requester-token-permissions.v1.schema.json" with { type: "json" };
 import providerSchema from "../schema/provider.v1.schema.json" with { type: "json" };
-import type { PartialConsumerConfig } from "../type/consumer-config.js";
+import requesterSchema from "../schema/requester.v1.schema.json" with { type: "json" };
 import type { RawAppInput } from "../type/input.js";
 import type { ProviderConfig } from "../type/provider-config.js";
+import type { PartialRequesterConfig } from "../type/requester-config.js";
 
 // see https://github.com/ajv-validator/ajv/issues/2132
 const Ajv = ajvModule.default;
@@ -16,10 +16,10 @@ const ajvErrors = ajvErrorsModule.default;
 const ajv = new Ajv({
   schemas: [
     appsSchema,
-    consumerSchema,
-    consumerTokenPermissionsSchema,
-    providerSchema,
     providerRulePermissionsSchema,
+    providerSchema,
+    requesterSchema,
+    requesterTokenPermissionsSchema,
   ],
   allErrors: true,
   useDefaults: true,
@@ -31,14 +31,14 @@ export const validateApps = createValidate<RawAppInput[]>(
   "apps input",
 );
 
-export const validateConsumer = createValidate<PartialConsumerConfig>(
-  consumerSchema.$id,
-  "consumer configuration",
-);
-
 export const validateProvider = createValidate<ProviderConfig>(
   providerSchema.$id,
   "provider configuration",
+);
+
+export const validateRequester = createValidate<PartialRequesterConfig>(
+  requesterSchema.$id,
+  "requester configuration",
 );
 
 class ValidateError extends Error {

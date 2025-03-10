@@ -2,25 +2,25 @@ import { readFile } from "fs/promises";
 import { join } from "path";
 import { fileURLToPath } from "url";
 import { expect, it, vi } from "vitest";
-import { parseConsumerConfig } from "../../../../src/config/consumer-config.js";
-import consumerSchema from "../../../../src/schema/consumer.v1.schema.json" with { type: "json" };
-import type { ConsumerConfig } from "../../../../src/type/consumer-config.js";
+import { parseRequesterConfig } from "../../../../src/config/requester-config.js";
+import requesterSchema from "../../../../src/schema/requester.v1.schema.json" with { type: "json" };
+import type { RequesterConfig } from "../../../../src/type/requester-config.js";
 import { throws } from "../../../error.js";
 
 vi.mock("@actions/core");
 
 const fixturesPath = fileURLToPath(
-  new URL("../../../fixture/consumer-config", import.meta.url),
+  new URL("../../../fixture/requester-config", import.meta.url),
 );
 
-it("parses comprehensive consumer config", async () => {
+it("parses comprehensive requester config", async () => {
   const fixturePath = join(fixturesPath, "comprehensive.yml");
   const yaml = await readFile(fixturePath, "utf-8");
 
   expect(
-    parseConsumerConfig({ account: "account-self", repo: "repo-self" }, yaml),
+    parseRequesterConfig({ account: "account-self", repo: "repo-self" }, yaml),
   ).toEqual({
-    $schema: consumerSchema.$id,
+    $schema: requesterSchema.$id,
 
     tokens: {
       oneRepOnePerm: {
@@ -261,30 +261,30 @@ it("parses comprehensive consumer config", async () => {
         },
       },
     },
-  } satisfies ConsumerConfig);
+  } satisfies RequesterConfig);
 });
 
-it("parses consumer configs that are just comments", async () => {
+it("parses requester configs that are just comments", async () => {
   const fixturePath = join(fixturesPath, "just-comments.yml");
   const yaml = await readFile(fixturePath, "utf-8");
 
   expect(
-    parseConsumerConfig({ account: "account-self", repo: "repo-self" }, yaml),
+    parseRequesterConfig({ account: "account-self", repo: "repo-self" }, yaml),
   ).toEqual({
-    $schema: consumerSchema.$id,
+    $schema: requesterSchema.$id,
     tokens: {},
     provision: { secrets: {} },
-  } satisfies ConsumerConfig);
+  } satisfies RequesterConfig);
 });
 
-it("parses consumer configs that are empty", async () => {
+it("parses requester configs that are empty", async () => {
   expect(
-    parseConsumerConfig({ account: "account-self", repo: "repo-self" }, ""),
+    parseRequesterConfig({ account: "account-self", repo: "repo-self" }, ""),
   ).toEqual({
-    $schema: consumerSchema.$id,
+    $schema: requesterSchema.$id,
     tokens: {},
     provision: { secrets: {} },
-  } satisfies ConsumerConfig);
+  } satisfies RequesterConfig);
 });
 
 it("throws when an invalid token name is defined", async () => {
@@ -293,12 +293,15 @@ it("throws when an invalid token name is defined", async () => {
 
   expect(
     throws(() =>
-      parseConsumerConfig({ account: "account-self", repo: "repo-self" }, yaml),
+      parseRequesterConfig(
+        { account: "account-self", repo: "repo-self" },
+        yaml,
+      ),
     ),
   ).toMatchInlineSnapshot(`
-      "Parsing of consumer configuration failed
+      "Parsing of requester configuration failed
 
-      Caused by: Invalid consumer configuration:
+      Caused by: Invalid requester configuration:
         - must only contain alphanumeric characters, hyphens, or underscores (/tokens)
         - property name must be valid (/tokens)"
     `);
@@ -310,12 +313,15 @@ it("throws when empty permissions are specified", async () => {
 
   expect(
     throws(() =>
-      parseConsumerConfig({ account: "account-self", repo: "repo-self" }, yaml),
+      parseRequesterConfig(
+        { account: "account-self", repo: "repo-self" },
+        yaml,
+      ),
     ),
   ).toMatchInlineSnapshot(`
-      "Parsing of consumer configuration failed
+      "Parsing of requester configuration failed
 
-      Caused by: Invalid consumer configuration:
+      Caused by: Invalid requester configuration:
         - must NOT have fewer than 1 properties (/tokens/emptyPermissions/permissions)"
     `);
 });
@@ -329,12 +335,15 @@ it("throws when an invalid pattern is used in /provision/secrets/<name>/github/r
 
   expect(
     throws(() =>
-      parseConsumerConfig({ account: "account-self", repo: "repo-self" }, yaml),
+      parseRequesterConfig(
+        { account: "account-self", repo: "repo-self" },
+        yaml,
+      ),
     ),
   ).toMatchInlineSnapshot(`
-      "Parsing of consumer configuration failed
+      "Parsing of requester configuration failed
 
-      Caused by: Invalid consumer configuration:
+      Caused by: Invalid requester configuration:
         - must be a repo pattern in the form of "account/repo", or "./repo" (/provision/secrets/SECRET_A/github/repos)
         - property name must be valid (/provision/secrets/SECRET_A/github/repos)"
     `);
@@ -346,12 +355,15 @@ it("throws when an invalid secret name is defined", async () => {
 
   expect(
     throws(() =>
-      parseConsumerConfig({ account: "account-self", repo: "repo-self" }, yaml),
+      parseRequesterConfig(
+        { account: "account-self", repo: "repo-self" },
+        yaml,
+      ),
     ),
   ).toMatchInlineSnapshot(`
-      "Parsing of consumer configuration failed
+      "Parsing of requester configuration failed
 
-      Caused by: Invalid consumer configuration:
+      Caused by: Invalid requester configuration:
         - must only contain alphanumeric characters or underscores, and cannot begin with a number (/provision/secrets)
         - property name must be valid (/provision/secrets)"
     `);
@@ -363,12 +375,15 @@ it("throws when a secret token reference has an empty account", async () => {
 
   expect(
     throws(() =>
-      parseConsumerConfig({ account: "account-self", repo: "repo-self" }, yaml),
+      parseRequesterConfig(
+        { account: "account-self", repo: "repo-self" },
+        yaml,
+      ),
     ),
   ).toMatchInlineSnapshot(`
-      "Parsing of consumer configuration failed
+      "Parsing of requester configuration failed
 
-      Caused by: Invalid consumer configuration:
+      Caused by: Invalid requester configuration:
         - must be a token reference in the form of "account/repo.token-name", "./repo.token-name", or "token-name" (/provision/secrets/TO_REPO_ACTIONS/token)"
     `);
 });
@@ -379,12 +394,15 @@ it("throws when a secret token reference has an invalid account", async () => {
 
   expect(
     throws(() =>
-      parseConsumerConfig({ account: "account-self", repo: "repo-self" }, yaml),
+      parseRequesterConfig(
+        { account: "account-self", repo: "repo-self" },
+        yaml,
+      ),
     ),
   ).toMatchInlineSnapshot(`
-      "Parsing of consumer configuration failed
+      "Parsing of requester configuration failed
 
-      Caused by: Invalid consumer configuration:
+      Caused by: Invalid requester configuration:
         - must be a token reference in the form of "account/repo.token-name", "./repo.token-name", or "token-name" (/provision/secrets/TO_REPO_ACTIONS/token)"
     `);
 });
@@ -395,12 +413,15 @@ it("throws when a secret token reference has an empty repo", async () => {
 
   expect(
     throws(() =>
-      parseConsumerConfig({ account: "account-self", repo: "repo-self" }, yaml),
+      parseRequesterConfig(
+        { account: "account-self", repo: "repo-self" },
+        yaml,
+      ),
     ),
   ).toMatchInlineSnapshot(`
-      "Parsing of consumer configuration failed
+      "Parsing of requester configuration failed
 
-      Caused by: Invalid consumer configuration:
+      Caused by: Invalid requester configuration:
         - must be a token reference in the form of "account/repo.token-name", "./repo.token-name", or "token-name" (/provision/secrets/TO_REPO_ACTIONS/token)"
     `);
 });
@@ -411,12 +432,15 @@ it("throws when a secret token reference has an invalid repo", async () => {
 
   expect(
     throws(() =>
-      parseConsumerConfig({ account: "account-self", repo: "repo-self" }, yaml),
+      parseRequesterConfig(
+        { account: "account-self", repo: "repo-self" },
+        yaml,
+      ),
     ),
   ).toMatchInlineSnapshot(`
-      "Parsing of consumer configuration failed
+      "Parsing of requester configuration failed
 
-      Caused by: Invalid consumer configuration:
+      Caused by: Invalid requester configuration:
         - must be a token reference in the form of "account/repo.token-name", "./repo.token-name", or "token-name" (/provision/secrets/TO_REPO_ACTIONS/token)"
     `);
 });
@@ -427,12 +451,15 @@ it("throws when there are additional properties", async () => {
 
   expect(
     throws(() =>
-      parseConsumerConfig({ account: "account-self", repo: "repo-self" }, yaml),
+      parseRequesterConfig(
+        { account: "account-self", repo: "repo-self" },
+        yaml,
+      ),
     ),
   ).toMatchInlineSnapshot(`
-      "Parsing of consumer configuration failed
+      "Parsing of requester configuration failed
 
-      Caused by: Invalid consumer configuration:
+      Caused by: Invalid requester configuration:
         - must NOT have additional properties"
     `);
 });
@@ -440,10 +467,10 @@ it("throws when there are additional properties", async () => {
 it("throws when the YAML is invalid", async () => {
   expect(
     throws(() =>
-      parseConsumerConfig({ account: "account-self", repo: "repo-self" }, "{"),
+      parseRequesterConfig({ account: "account-self", repo: "repo-self" }, "{"),
     ),
   ).toMatchInlineSnapshot(`
-      "Parsing of consumer configuration failed
+      "Parsing of requester configuration failed
 
       Caused by: unexpected end of the stream within a flow collection (2:1)
 

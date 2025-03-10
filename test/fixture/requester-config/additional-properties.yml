@@ -1,0 +1,2 @@
+# yaml-language-server: $schema=https://ghalactic.github.io/provision-github-tokens/schema/requester.v1.schema.json
+additional: This should not be allowed

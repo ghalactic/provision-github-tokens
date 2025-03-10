@@ -1,13 +1,13 @@
-import type { DiscoveredConsumer } from "./discover-consumers.js";
+import type { DiscoveredRequester } from "./discover-requesters.js";
 import type { TokenDeclarationRegistry } from "./token-declaration-registry.js";
 
 export function registerTokenDeclarations(
   declarationRegistry: TokenDeclarationRegistry,
-  consumers: Map<string, DiscoveredConsumer>,
+  requesters: Map<string, DiscoveredRequester>,
 ): void {
-  for (const [, { consumer, config }] of consumers) {
+  for (const [, { requester, config }] of requesters) {
     for (const [name, declaration] of Object.entries(config.tokens)) {
-      declarationRegistry.registerDeclaration(consumer, name, declaration);
+      declarationRegistry.registerDeclaration(requester, name, declaration);
     }
   }
 }

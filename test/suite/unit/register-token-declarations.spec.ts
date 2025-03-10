@@ -1,10 +1,10 @@
 import { expect, it } from "vitest";
-import type { DiscoveredConsumer } from "../../../src/discover-consumers.js";
+import type { DiscoveredRequester } from "../../../src/discover-requesters.js";
 import { registerTokenDeclarations } from "../../../src/register-token-declarations.js";
 import { createTokenDeclarationRegistry } from "../../../src/token-declaration-registry.js";
 import type { TokenDeclaration } from "../../../src/type/token-declaration.js";
 
-it("registers token declarations from discovered consumers", async () => {
+it("registers token declarations from discovered requesters", async () => {
   const declarationA: TokenDeclaration = {
     shared: false,
     as: undefined,
@@ -28,14 +28,14 @@ it("registers token declarations from discovered consumers", async () => {
   };
 
   const declarationRegistry = createTokenDeclarationRegistry();
-  const consumers = new Map<string, DiscoveredConsumer>([
+  const requesters = new Map<string, DiscoveredRequester>([
     [
       "account-a/repo-a",
       {
-        consumer: { account: "account-a", repo: "repo-a" },
+        requester: { account: "account-a", repo: "repo-a" },
         config: {
           $schema:
-            "https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json",
+            "https://ghalactic.github.io/provision-github-tokens/schema/requester.v1.schema.json",
           tokens: { tokenA: declarationA, tokenB: declarationB },
           provision: { secrets: {} },
         },
@@ -44,10 +44,10 @@ it("registers token declarations from discovered consumers", async () => {
     [
       "account-b/repo-b",
       {
-        consumer: { account: "account-b", repo: "repo-b" },
+        requester: { account: "account-b", repo: "repo-b" },
         config: {
           $schema:
-            "https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json",
+            "https://ghalactic.github.io/provision-github-tokens/schema/requester.v1.schema.json",
           tokens: { tokenC: declarationC },
           provision: { secrets: {} },
         },
@@ -55,7 +55,7 @@ it("registers token declarations from discovered consumers", async () => {
     ],
   ]);
 
-  registerTokenDeclarations(declarationRegistry, consumers);
+  registerTokenDeclarations(declarationRegistry, requesters);
 
   expect(
     declarationRegistry.findDeclarationForRequester(

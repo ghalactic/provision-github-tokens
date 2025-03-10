@@ -1,5 +1,5 @@
-# yaml-language-server: $schema=https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json
-$schema: https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json
+# yaml-language-server: $schema=https://ghalactic.github.io/provision-github-tokens/schema/requester.v1.schema.json
+$schema: https://ghalactic.github.io/provision-github-tokens/schema/requester.v1.schema.json
 
 tokens:
   oneRepOnePerm:

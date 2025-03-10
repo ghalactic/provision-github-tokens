@@ -5,33 +5,33 @@ import { normalizeGitHubPattern } from "../github-pattern.js";
 import type { RepoReference } from "../github-reference.js";
 import { normalizeTokenReference } from "../token-reference.js";
 import type {
-  ConsumerConfig,
-  PartialConsumerConfig,
-} from "../type/consumer-config.js";
-import { validateConsumer } from "./validation.js";
+  PartialRequesterConfig,
+  RequesterConfig,
+} from "../type/requester-config.js";
+import { validateRequester } from "./validation.js";
 
-export function parseConsumerConfig(
+export function parseRequesterConfig(
   definingRepo: RepoReference,
   yaml: string,
-): ConsumerConfig {
-  return normalizeConsumerConfig(definingRepo, parseYAML(yaml));
+): RequesterConfig {
+  return normalizeRequesterConfig(definingRepo, parseYAML(yaml));
 }
 
-function parseYAML(yaml: string): PartialConsumerConfig {
+function parseYAML(yaml: string): PartialRequesterConfig {
   try {
     const parsed = load(yaml);
 
-    return validateConsumer(parsed == null ? {} : parsed);
+    return validateRequester(parsed == null ? {} : parsed);
   } catch (cause) {
-    debug(`Parsing of consumer configuration failed: ${errorMessage(cause)}`);
-    throw new Error("Parsing of consumer configuration failed", { cause });
+    debug(`Parsing of requester configuration failed: ${errorMessage(cause)}`);
+    throw new Error("Parsing of requester configuration failed", { cause });
   }
 }
 
-function normalizeConsumerConfig(
+function normalizeRequesterConfig(
   definingRepo: RepoReference,
-  config: PartialConsumerConfig,
-): ConsumerConfig {
+  config: PartialRequesterConfig,
+): RequesterConfig {
   for (const name in config.tokens) {
     const token = config.tokens[name];
 
@@ -52,5 +52,5 @@ function normalizeConsumerConfig(
     secret.github.repos = repos;
   }
 
-  return config as ConsumerConfig;
+  return config as RequesterConfig;
 }

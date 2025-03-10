@@ -15,9 +15,9 @@ import {
   type InstallationRegistration,
 } from "../../../src/app-registry.js";
 import {
-  discoverConsumers,
-  type DiscoveredConsumer,
-} from "../../../src/discover-consumers.js";
+  discoverRequesters,
+  type DiscoveredRequester,
+} from "../../../src/discover-requesters.js";
 import { createOctokitFactory } from "../../../src/octokit.js";
 import {
   createTestApp,
@@ -34,7 +34,7 @@ beforeEach(() => {
   __resetOctokit();
 });
 
-it("discovers consumers in a single account", async () => {
+it("discovers requesters in a single account", async () => {
   const accountA = createTestInstallationAccount("Organization", 100, "org-a");
   const repoA = createTestInstallationRepo(accountA, "repo-a");
   const repoB = createTestInstallationRepo(accountA, "repo-b");
@@ -109,7 +109,7 @@ it("discovers consumers in a single account", async () => {
   appRegistry.registerApp(appRegA);
   appRegistry.registerInstallation(appAInstallationRegA);
 
-  const discovered = await discoverConsumers(octokitFactory, appRegistry, [
+  const discovered = await discoverRequesters(octokitFactory, appRegistry, [
     {
       appId: appA.id,
       privateKey: appA.privateKey,
@@ -119,29 +119,29 @@ it("discovers consumers in a single account", async () => {
   ]);
 
   expect(__getOutput()).toMatchInlineSnapshot(`
-    "::debug::Discovered consumer org-a/repo-a
-    ::debug::Consumer org-a/repo-a has 1 token declaration ["tokenA"]
-    ::debug::Consumer org-a/repo-a has 1 secret declaration ["SECRET_A"]
-    ::debug::Repo org-a/repo-b is not a consumer
-    ::debug::Discovered consumer org-a/repo-c
-    ::debug::Consumer org-a/repo-c has 2 token declarations ["tokenB","tokenC"]
-    ::debug::Consumer org-a/repo-c has 2 secret declarations ["SECRET_B","SECRET_C"]
-    Discovered 2 consumers
+    "::debug::Discovered requester org-a/repo-a
+    ::debug::Requester org-a/repo-a has 1 token declaration ["tokenA"]
+    ::debug::Requester org-a/repo-a has 1 secret declaration ["SECRET_A"]
+    ::debug::Repo org-a/repo-b is not a requester
+    ::debug::Discovered requester org-a/repo-c
+    ::debug::Requester org-a/repo-c has 2 token declarations ["tokenB","tokenC"]
+    ::debug::Requester org-a/repo-c has 2 secret declarations ["SECRET_B","SECRET_C"]
+    Discovered 2 requesters
     "
   `);
   expect(discovered).toEqual(
-    new Map<string, DiscoveredConsumer>([
+    new Map<string, DiscoveredRequester>([
       [
         "org-a/repo-a",
         {
-          consumer: { account: "org-a", repo: "repo-a" },
+          requester: { account: "org-a", repo: "repo-a" },
           config: expect.objectContaining({}),
         },
       ],
       [
         "org-a/repo-c",
         {
-          consumer: { account: "org-a", repo: "repo-c" },
+          requester: { account: "org-a", repo: "repo-c" },
           config: expect.objectContaining({}),
         },
       ],
@@ -149,7 +149,7 @@ it("discovers consumers in a single account", async () => {
   );
 });
 
-it("discovers consumers in multiple account", async () => {
+it("discovers requesters in multiple account", async () => {
   const accountA = createTestInstallationAccount("Organization", 100, "org-a");
   const accountB = createTestInstallationAccount("User", 200, "user-b");
   const repoA = createTestInstallationRepo(accountA, "repo-a");
@@ -239,7 +239,7 @@ it("discovers consumers in multiple account", async () => {
   appRegistry.registerApp(appRegB);
   appRegistry.registerInstallation(appBInstallationRegA);
 
-  const discovered = await discoverConsumers(octokitFactory, appRegistry, [
+  const discovered = await discoverRequesters(octokitFactory, appRegistry, [
     {
       appId: appA.id,
       privateKey: appA.privateKey,
@@ -255,30 +255,30 @@ it("discovers consumers in multiple account", async () => {
   ]);
 
   expect(__getOutput()).toMatchInlineSnapshot(`
-    "::debug::Discovered consumer org-a/repo-a
-    ::debug::Consumer org-a/repo-a has 1 token declaration ["tokenA"]
-    ::debug::Consumer org-a/repo-a has 1 secret declaration ["SECRET_A"]
-    ::debug::Repo org-a/repo-b is not a consumer
-    ::debug::Discovered consumer user-b/repo-c
-    ::debug::Consumer user-b/repo-c has 1 token declaration ["tokenA"]
-    ::debug::Consumer user-b/repo-c has 1 secret declaration ["SECRET_A"]
-    ::debug::Repo user-b/repo-d is not a consumer
-    Discovered 2 consumers
+    "::debug::Discovered requester org-a/repo-a
+    ::debug::Requester org-a/repo-a has 1 token declaration ["tokenA"]
+    ::debug::Requester org-a/repo-a has 1 secret declaration ["SECRET_A"]
+    ::debug::Repo org-a/repo-b is not a requester
+    ::debug::Discovered requester user-b/repo-c
+    ::debug::Requester user-b/repo-c has 1 token declaration ["tokenA"]
+    ::debug::Requester user-b/repo-c has 1 secret declaration ["SECRET_A"]
+    ::debug::Repo user-b/repo-d is not a requester
+    Discovered 2 requesters
     "
   `);
   expect(discovered).toEqual(
-    new Map<string, DiscoveredConsumer>([
+    new Map<string, DiscoveredRequester>([
       [
         "org-a/repo-a",
         {
-          consumer: { account: "org-a", repo: "repo-a" },
+          requester: { account: "org-a", repo: "repo-a" },
           config: expect.objectContaining({}),
         },
       ],
       [
         "user-b/repo-c",
         {
-          consumer: { account: "user-b", repo: "repo-c" },
+          requester: { account: "user-b", repo: "repo-c" },
           config: expect.objectContaining({}),
         },
       ],
@@ -286,7 +286,7 @@ it("discovers consumers in multiple account", async () => {
   );
 });
 
-it("only discovers consumers once when multiple providers can access them", async () => {
+it("only discovers requesters once when multiple providers can access them", async () => {
   const accountA = createTestInstallationAccount("Organization", 100, "org-a");
   const repoA = createTestInstallationRepo(accountA, "repo-a");
   const repoB = createTestInstallationRepo(accountA, "repo-b");
@@ -370,7 +370,7 @@ it("only discovers consumers once when multiple providers can access them", asyn
   appRegistry.registerApp(appRegB);
   appRegistry.registerInstallation(appBInstallationRegA);
 
-  const discovered = await discoverConsumers(octokitFactory, appRegistry, [
+  const discovered = await discoverRequesters(octokitFactory, appRegistry, [
     {
       appId: appA.id,
       privateKey: appA.privateKey,
@@ -386,38 +386,38 @@ it("only discovers consumers once when multiple providers can access them", asyn
   ]);
 
   expect(__getOutput()).toMatchInlineSnapshot(`
-    "::debug::Discovered consumer org-a/repo-a
-    ::debug::Consumer org-a/repo-a has 1 token declaration ["tokenA"]
-    ::debug::Consumer org-a/repo-a has 0 secret declarations []
-    ::debug::Discovered consumer org-a/repo-b
-    ::debug::Consumer org-a/repo-b has 1 token declaration ["tokenB"]
-    ::debug::Consumer org-a/repo-b has 0 secret declarations []
-    ::debug::Discovered consumer org-a/repo-c
-    ::debug::Consumer org-a/repo-c has 1 token declaration ["tokenC"]
-    ::debug::Consumer org-a/repo-c has 0 secret declarations []
-    Discovered 3 consumers
+    "::debug::Discovered requester org-a/repo-a
+    ::debug::Requester org-a/repo-a has 1 token declaration ["tokenA"]
+    ::debug::Requester org-a/repo-a has 0 secret declarations []
+    ::debug::Discovered requester org-a/repo-b
+    ::debug::Requester org-a/repo-b has 1 token declaration ["tokenB"]
+    ::debug::Requester org-a/repo-b has 0 secret declarations []
+    ::debug::Discovered requester org-a/repo-c
+    ::debug::Requester org-a/repo-c has 1 token declaration ["tokenC"]
+    ::debug::Requester org-a/repo-c has 0 secret declarations []
+    Discovered 3 requesters
     "
   `);
   expect(discovered).toEqual(
-    new Map<string, DiscoveredConsumer>([
+    new Map<string, DiscoveredRequester>([
       [
         "org-a/repo-a",
         {
-          consumer: { account: "org-a", repo: "repo-a" },
+          requester: { account: "org-a", repo: "repo-a" },
           config: expect.objectContaining({}),
         },
       ],
       [
         "org-a/repo-b",
         {
-          consumer: { account: "org-a", repo: "repo-b" },
+          requester: { account: "org-a", repo: "repo-b" },
           config: expect.objectContaining({}),
         },
       ],
       [
         "org-a/repo-c",
         {
-          consumer: { account: "org-a", repo: "repo-c" },
+          requester: { account: "org-a", repo: "repo-c" },
           config: expect.objectContaining({}),
         },
       ],
@@ -425,7 +425,7 @@ it("only discovers consumers once when multiple providers can access them", asyn
   );
 });
 
-it("skips consumers with invalid configuration", async () => {
+it("skips requesters with invalid configuration", async () => {
   const orgA = createTestInstallationAccount("Organization", 100, "org-a");
   const repoA = createTestInstallationRepo(orgA, "repo-a");
   const repoB = createTestInstallationRepo(orgA, "repo-b");
@@ -498,7 +498,7 @@ it("skips consumers with invalid configuration", async () => {
   appRegistry.registerApp(appRegA);
   appRegistry.registerInstallation(appAInstallationRegA);
 
-  const discovered = await discoverConsumers(octokitFactory, appRegistry, [
+  const discovered = await discoverRequesters(octokitFactory, appRegistry, [
     {
       appId: appA.id,
       privateKey: appA.privateKey,
@@ -508,32 +508,32 @@ it("skips consumers with invalid configuration", async () => {
   ]);
 
   expect(__getOutput()).toMatchInlineSnapshot(`
-    "::debug::Discovered consumer org-a/repo-a
-    ::debug::Consumer org-a/repo-a has 1 token declaration ["tokenA"]
-    ::debug::Consumer org-a/repo-a has 1 secret declaration ["SECRET_A"]
-    ::debug::Discovered consumer org-a/repo-b
-    ::debug::Parsing of consumer configuration failed: Invalid consumer configuration:
+    "::debug::Discovered requester org-a/repo-a
+    ::debug::Requester org-a/repo-a has 1 token declaration ["tokenA"]
+    ::debug::Requester org-a/repo-a has 1 secret declaration ["SECRET_A"]
+    ::debug::Discovered requester org-a/repo-b
+    ::debug::Parsing of requester configuration failed: Invalid requester configuration:
     ::debug::  - must be boolean (/tokens/tokenA/shared)
-    ::error::Consumer org-a/repo-b has invalid config
-    ::debug::Discovered consumer org-a/repo-c
-    ::debug::Consumer org-a/repo-c has 1 token declaration ["tokenB"]
-    ::debug::Consumer org-a/repo-c has 1 secret declaration ["SECRET_B"]
-    Discovered 2 consumers
+    ::error::Requester org-a/repo-b has invalid config
+    ::debug::Discovered requester org-a/repo-c
+    ::debug::Requester org-a/repo-c has 1 token declaration ["tokenB"]
+    ::debug::Requester org-a/repo-c has 1 secret declaration ["SECRET_B"]
+    Discovered 2 requesters
     "
   `);
   expect(discovered).toEqual(
-    new Map<string, DiscoveredConsumer>([
+    new Map<string, DiscoveredRequester>([
       [
         "org-a/repo-a",
         {
-          consumer: { account: "org-a", repo: "repo-a" },
+          requester: { account: "org-a", repo: "repo-a" },
           config: expect.objectContaining({}),
         },
       ],
       [
         "org-a/repo-c",
         {
-          consumer: { account: "org-a", repo: "repo-c" },
+          requester: { account: "org-a", repo: "repo-c" },
           config: expect.objectContaining({}),
         },
       ],

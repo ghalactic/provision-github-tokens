@@ -1,23 +1,23 @@
 import { debug, info, error as logError } from "@actions/core";
 import type { AppRegistry } from "./app-registry.js";
-import { parseConsumerConfig } from "./config/consumer-config.js";
+import { parseRequesterConfig } from "./config/requester-config.js";
 import { createRepoRef, type RepoReference } from "./github-reference.js";
 import { handleRequestError, type OctokitFactory } from "./octokit.js";
 import { pluralize } from "./pluralize.js";
-import type { ConsumerConfig } from "./type/consumer-config.js";
 import type { AppInput } from "./type/input.js";
+import type { RequesterConfig } from "./type/requester-config.js";
 
-export type DiscoveredConsumer = {
-  consumer: RepoReference;
-  config: ConsumerConfig;
+export type DiscoveredRequester = {
+  requester: RepoReference;
+  config: RequesterConfig;
 };
 
-export async function discoverConsumers(
+export async function discoverRequesters(
   octokitFactory: OctokitFactory,
   appRegistry: AppRegistry,
   appsInput: AppInput[],
-): Promise<Map<string, DiscoveredConsumer>> {
-  const discovered = new Map<string, DiscoveredConsumer>();
+): Promise<Map<string, DiscoveredRequester>> {
+  const discovered = new Map<string, DiscoveredRequester>();
 
   for (const [, instReg] of appRegistry.provisioners) {
     const { installation, repos } = instReg;
@@ -30,13 +30,13 @@ export async function discoverConsumers(
     for (const { owner, name: repo, full_name } of repos) {
       if (discovered.has(full_name)) continue;
 
-      const consumer = createRepoRef(owner.login, repo);
+      const requester = createRepoRef(owner.login, repo);
       let configYAML: string;
 
       try {
         const res = await octokit.rest.repos.getContent({
-          owner: consumer.account,
-          repo: consumer.repo,
+          owner: requester.account,
+          repo: requester.repo,
           path: ".github/ghalactic/provision-github-tokens.yml",
           headers: { accept: "application/vnd.github.raw+json" },
         });
@@ -54,21 +54,21 @@ export async function discoverConsumers(
       } catch (error) {
         handleRequestError(error, {
           404: () => {
-            debug(`Repo ${full_name} is not a consumer`);
+            debug(`Repo ${full_name} is not a requester`);
           },
         });
 
         continue;
       }
 
-      debug(`Discovered consumer ${full_name}`);
+      debug(`Discovered requester ${full_name}`);
 
-      let config: ConsumerConfig;
+      let config: RequesterConfig;
 
       try {
-        config = parseConsumerConfig(consumer, configYAML);
+        config = parseRequesterConfig(requester, configYAML);
       } catch (error) {
-        logError(`Consumer ${full_name} has invalid config`);
+        logError(`Requester ${full_name} has invalid config`);
 
         continue;
       }
@@ -79,7 +79,7 @@ export async function discoverConsumers(
           ? "1 token declaration"
           : `${tokenDecNames.length} token declarations`;
       debug(
-        `Consumer ${full_name} has ${tokenDecs} ` +
+        `Requester ${full_name} has ${tokenDecs} ` +
           JSON.stringify(tokenDecNames),
       );
 
@@ -89,15 +89,15 @@ export async function discoverConsumers(
           ? "1 secret declaration"
           : `${secretDecNames.length} secret declarations`;
       debug(
-        `Consumer ${full_name} has ${secretDecs} ` +
+        `Requester ${full_name} has ${secretDecs} ` +
           JSON.stringify(secretDecNames),
       );
 
-      discovered.set(full_name, { consumer, config });
+      discovered.set(full_name, { requester: requester, config });
     }
   }
 
-  info(`Discovered ${pluralize(discovered.size, "consumer", "consumers")}`);
+  info(`Discovered ${pluralize(discovered.size, "requester", "requesters")}`);
 
   return discovered;
 }

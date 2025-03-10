@@ -9,12 +9,11 @@ const { permissions } =
   ].post.requestBody.content["application/json"].schema.properties;
 
 await writeSchema(
-  "generated.consumer-token-permissions.v1.schema.json",
+  "generated.requester-token-permissions.v1.schema.json",
   ((schema) => {
     return {
       ...schema,
-      description:
-        "The permissions that the consumer is requesting for the specified repos.",
+      description: "The permissions that the token should have.",
       title: undefined,
       minProperties: 1,
       additionalProperties: {

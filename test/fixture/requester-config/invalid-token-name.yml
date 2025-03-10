@@ -1,0 +1,7 @@
+# yaml-language-server: $schema=https://ghalactic.github.io/provision-github-tokens/schema/requester.v1.schema.json
+$schema: https://ghalactic.github.io/provision-github-tokens/schema/requester.v1.schema.json
+
+tokens:
+  invalid.token.name:
+    repos: [repo-a]
+    permissions: { contents: read }

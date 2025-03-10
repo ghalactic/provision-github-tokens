@@ -52696,666 +52696,6 @@ var apps_v1_schema_default = {
   }
 };
 
-// src/schema/consumer.v1.schema.json
-var consumer_v1_schema_default = {
-  $schema: "http://json-schema.org/draft-07/schema#",
-  $id: "https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json",
-  title: "Provision GitHub Tokens (consumer configuration)",
-  description: 'Consumer configuration for the "Provision GitHub Tokens" GitHub Action.',
-  type: "object",
-  additionalProperties: false,
-  properties: {
-    $schema: {
-      description: "The JSON Schema identifier.",
-      type: "string",
-      const: "https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json",
-      default: "https://ghalactic.github.io/provision-github-tokens/schema/consumer.v1.schema.json"
-    },
-    tokens: {
-      description: "Declarations of GitHub tokens that the consumer can request to be provisioned.",
-      type: "object",
-      default: {},
-      propertyNames: {
-        description: "The name of a token declaration.",
-        type: "string",
-        minLength: 1,
-        pattern: "^[a-zA-Z0-9-_]+$",
-        errorMessage: "must only contain alphanumeric characters, hyphens, or underscores",
-        examples: ["tokenA", "tokenB"]
-      },
-      additionalProperties: {
-        description: "A GitHub token declaration.",
-        type: "object",
-        additionalProperties: false,
-        required: ["repos", "permissions"],
-        properties: {
-          shared: {
-            description: "Whether the token should be available for other repos to request.",
-            type: "boolean",
-            default: false
-          },
-          as: {
-            description: "When specified, the token must be created by an app configured with this role.",
-            type: "string",
-            minLength: 1,
-            examples: ["pr-bot", "onboarding"]
-          },
-          account: {
-            description: "The GitHub user or org that the specified repos belong to. Defaults to the same account as the repo where the consumer configuration file is defined.",
-            type: "string",
-            minLength: 1,
-            examples: ["octocat"]
-          },
-          repos: {
-            description: "Which repos are allowed to access the token.",
-            oneOf: [
-              {
-                description: "All repos in the account, including those created after the token is provisioned.",
-                type: "string",
-                const: "all"
-              },
-              {
-                description: "A list of repo name patterns to match against.",
-                type: "array",
-                items: {
-                  description: "A pattern which matches repos without their account prefix.",
-                  type: "string",
-                  minLength: 1,
-                  pattern: "^[*a-zA-Z0-9-_.]+$",
-                  errorMessage: "must only contain alphanumeric characters, hyphens, underscores, periods, or asterisks",
-                  examples: [
-                    "repo-a",
-                    "*",
-                    "with-prefix-*",
-                    "*-with-suffix",
-                    "with-*-infix"
-                  ]
-                },
-                minItems: 1
-              }
-            ]
-          },
-          permissions: {
-            $ref: "https://ghalactic.github.io/provision-github-tokens/schema/generated.consumer-token-permissions.v1.schema.json",
-            default: {}
-          }
-        }
-      }
-    },
-    provision: {
-      description: "How to provision the requested tokens.",
-      type: "object",
-      additionalProperties: false,
-      default: {},
-      properties: {
-        secrets: {
-          description: "A set of secrets to provision.",
-          type: "object",
-          default: {},
-          propertyNames: {
-            description: "The name of a secret.",
-            type: "string",
-            minLength: 1,
-            pattern: "^[a-zA-Z_][a-zA-Z0-9_]*$",
-            errorMessage: "must only contain alphanumeric characters or underscores, and cannot begin with a number",
-            examples: ["SECRET_1", "secret_2", "_SeCrEt_3"]
-          },
-          additionalProperties: {
-            description: "A secret to provision.",
-            type: "object",
-            additionalProperties: false,
-            required: ["token"],
-            properties: {
-              token: {
-                description: "A token reference that points to the token declaration to use.",
-                type: "string",
-                minLength: 1,
-                pattern: "^(?:(?:\\.|[a-zA-Z](?:[a-zA-Z-]*[a-zA-Z])?)\\/[a-zA-Z0-9-_.]+\\.)?[a-zA-Z0-9-_]+$",
-                errorMessage: 'must be a token reference in the form of "account/repo.token-name", "./repo.token-name", or "token-name"',
-                examples: [
-                  "tokenA",
-                  "./other-repo.tokenB",
-                  "other-account/repo.tokenC"
-                ]
-              },
-              github: {
-                description: "How to provision the secret to GitHub.",
-                type: "object",
-                additionalProperties: false,
-                default: {},
-                properties: {
-                  account: {
-                    description: "How to provision the secret to the declaring repo's GitHub account.",
-                    $ref: "#/definitions/provisionGithubAccountSecretTypes",
-                    default: {}
-                  },
-                  accounts: {
-                    description: "How to provision the secret to other GitHub accounts.",
-                    type: "object",
-                    default: {},
-                    propertyNames: {
-                      description: "A pattern which matches accounts.",
-                      type: "string",
-                      minLength: 1,
-                      pattern: "^[*a-zA-Z](?:[*a-zA-Z-]*[*a-zA-Z])?$",
-                      errorMessage: "must only contain alphanumeric characters, hyphens, or asterisks, and cannot begin or end with a hyphen",
-                      examples: [
-                        "account-a",
-                        "*",
-                        "with-prefix-*",
-                        "*-with-suffix",
-                        "with-*-infix"
-                      ]
-                    },
-                    additionalProperties: {
-                      description: "How to provision the secret to the specified GitHub account.",
-                      $ref: "#/definitions/provisionGithubAccountSecretTypes"
-                    }
-                  },
-                  repo: {
-                    description: "How to provision the secret to the declaring repo.",
-                    $ref: "#/definitions/provisionGithubRepoSecretTypes",
-                    default: {}
-                  },
-                  repos: {
-                    description: "How to provision the secret to other GitHub repos.",
-                    type: "object",
-                    default: {},
-                    propertyNames: {
-                      description: "A pattern which matches repos.",
-                      type: "string",
-                      minLength: 1,
-                      pattern: "^(?:\\.|[*a-zA-Z](?:[*a-zA-Z-]*[*a-zA-Z])?)\\/[*a-zA-Z0-9-_.]+$",
-                      errorMessage: 'must be a repo pattern in the form of "account/repo", or "./repo"',
-                      examples: [
-                        "./repo-a",
-                        "account-a/repo-a",
-                        "./*",
-                        "*/*",
-                        "*/repo-a",
-                        "account-a/*",
-                        "prefix-*/*-suffix"
-                      ]
-                    },
-                    additionalProperties: {
-                      description: "How to provision the secret to the specified GitHub repo.",
-                      $ref: "#/definitions/provisionGithubRepoSecretTypes"
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  },
-  definitions: {
-    provisionGithubAccountSecretTypes: {
-      type: "object",
-      additionalProperties: false,
-      properties: {
-        actions: {
-          description: "Whether to provision to GitHub Actions secrets.",
-          type: "boolean",
-          default: false
-        },
-        codespaces: {
-          description: "Whether to provision to GitHub Codespaces secrets.",
-          type: "boolean",
-          default: false
-        },
-        dependabot: {
-          description: "Whether to provision to Dependabot secrets.",
-          type: "boolean",
-          default: false
-        }
-      }
-    },
-    provisionGithubRepoSecretTypes: {
-      type: "object",
-      additionalProperties: false,
-      properties: {
-        actions: {
-          description: "Whether to provision to GitHub Actions secrets.",
-          type: "boolean",
-          default: false
-        },
-        codespaces: {
-          description: "Whether to provision to GitHub Codespaces secrets.",
-          type: "boolean",
-          default: false
-        },
-        dependabot: {
-          description: "Whether to provision to Dependabot secrets.",
-          type: "boolean",
-          default: false
-        },
-        environments: {
-          description: "GitHub repo environments to provision to.",
-          type: "array",
-          uniqueItems: true,
-          default: [],
-          items: {
-            description: "The name of an environment to provision the secret to.",
-            type: "string",
-            minLength: 1
-          }
-        }
-      }
-    }
-  }
-};
-
-// src/schema/generated.consumer-token-permissions.v1.schema.json
-var generated_consumer_token_permissions_v1_schema_default = {
-  $id: "https://ghalactic.github.io/provision-github-tokens/schema/generated.consumer-token-permissions.v1.schema.json",
-  type: "object",
-  description: "The permissions that the consumer is requesting for the specified repos.",
-  properties: {
-    actions: {
-      type: "string",
-      description: "The level of permission to grant the access token for GitHub Actions workflows, workflow runs, and artifacts.",
-      enum: [
-        "read",
-        "write"
-      ]
-    },
-    administration: {
-      type: "string",
-      description: "The level of permission to grant the access token for repository creation, deletion, settings, teams, and collaborators creation.",
-      enum: [
-        "read",
-        "write"
-      ]
-    },
-    checks: {
-      type: "string",
-      description: "The level of permission to grant the access token for checks on code.",
-      enum: [
-        "read",
-        "write"
-      ]
-    },
-    codespaces: {
-      type: "string",
-      description: "The level of permission to grant the access token to create, edit, delete, and list Codespaces.",
-      enum: [
-        "read",
-        "write"
-      ]
-    },
-    contents: {
-      type: "string",
-      description: "The level of permission to grant the access token for repository contents, commits, branches, downloads, releases, and merges.",
-      enum: [
-        "read",
-        "write"
-      ]
-    },
-    dependabot_secrets: {
-      type: "string",
-      description: "The leve of permission to grant the access token to manage Dependabot secrets.",
-      enum: [
-        "read",
-        "write"
-      ]
-    },
-    deployments: {
-      type: "string",
-      description: "The level of permission to grant the access token for deployments and deployment statuses.",
-      enum: [
-        "read",
-        "write"
-      ]
-    },
-    environments: {
-      type: "string",
-      description: "The level of permission to grant the access token for managing repository environments.",
-      enum: [
-        "read",
-        "write"
-      ]
-    },
-    issues: {
-      type: "string",
-      description: "The level of permission to grant the access token for issues and related comments, assignees, labels, and milestones.",
-      enum: [
-        "read",
-        "write"
-      ]
-    },
-    metadata: {
-      type: "string",
-      description: "The level of permission to grant the access token to search repositories, list collaborators, and access repository metadata.",
-      enum: [
-        "read",
-        "write"
-      ]
-    },
-    packages: {
-      type: "string",
-      description: "The level of permission to grant the access token for packages published to GitHub Packages.",
-      enum: [
-        "read",
-        "write"
-      ]
-    },
-    pages: {
-      type: "string",
-      description: "The level of permission to grant the access token to retrieve Pages statuses, configuration, and builds, as well as create new builds.",
-      enum: [
-        "read",
-        "write"
-      ]
-    },
-    pull_requests: {
-      type: "string",
-      description: "The level of permission to grant the access token for pull requests and related comments, assignees, labels, milestones, and merges.",
-      enum: [
-        "read",
-        "write"
-      ]
-    },
-    repository_custom_properties: {
-      type: "string",
-      description: "The level of permission to grant the access token to view and edit custom properties for a repository, when allowed by the property.",
-      enum: [
-        "read",
-        "write"
-      ]
-    },
-    repository_hooks: {
-      type: "string",
-      description: "The level of permission to grant the access token to manage the post-receive hooks for a repository.",
-      enum: [
-        "read",
-        "write"
-      ]
-    },
-    repository_projects: {
-      type: "string",
-      description: "The level of permission to grant the access token to manage repository projects, columns, and cards.",
-      enum: [
-        "read",
-        "write",
-        "admin"
-      ]
-    },
-    secret_scanning_alerts: {
-      type: "string",
-      description: "The level of permission to grant the access token to view and manage secret scanning alerts.",
-      enum: [
-        "read",
-        "write"
-      ]
-    },
-    secrets: {
-      type: "string",
-      description: "The level of permission to grant the access token to manage repository secrets.",
-      enum: [
-        "read",
-        "write"
-      ]
-    },
-    security_events: {
-      type: "string",
-      description: "The level of permission to grant the access token to view and manage security events like code scanning alerts.",
-      enum: [
-        "read",
-        "write"
-      ]
-    },
-    single_file: {
-      type: "string",
-      description: "The level of permission to grant the access token to manage just a single file.",
-      enum: [
-        "read",
-        "write"
-      ]
-    },
-    statuses: {
-      type: "string",
-      description: "The level of permission to grant the access token for commit statuses.",
-      enum: [
-        "read",
-        "write"
-      ]
-    },
-    vulnerability_alerts: {
-      type: "string",
-      description: "The level of permission to grant the access token to manage Dependabot alerts.",
-      enum: [
-        "read",
-        "write"
-      ]
-    },
-    workflows: {
-      type: "string",
-      description: "The level of permission to grant the access token to update GitHub Actions workflow files.",
-      enum: [
-        "write"
-      ]
-    },
-    members: {
-      type: "string",
-      description: "The level of permission to grant the access token for organization teams and members.",
-      enum: [
-        "read",
-        "write"
-      ]
-    },
-    organization_administration: {
-      type: "string",
-      description: "The level of permission to grant the access token to manage access to an organization.",
-      enum: [
-        "read",
-        "write"
-      ]
-    },
-    organization_custom_roles: {
-      type: "string",
-      description: "The level of permission to grant the access token for custom repository roles management.",
-      enum: [
-        "read",
-        "write"
-      ]
-    },
-    organization_custom_org_roles: {
-      type: "string",
-      description: "The level of permission to grant the access token for custom organization roles management.",
-      enum: [
-        "read",
-        "write"
-      ]
-    },
-    organization_custom_properties: {
-      type: "string",
-      description: "The level of permission to grant the access token for custom property management.",
-      enum: [
-        "read",
-        "write",
-        "admin"
-      ]
-    },
-    organization_copilot_seat_management: {
-      type: "string",
-      description: "The level of permission to grant the access token for managing access to GitHub Copilot for members of an organization with a Copilot Business subscription. This property is in public preview and is subject to change.",
-      enum: [
-        "write"
-      ]
-    },
-    organization_announcement_banners: {
-      type: "string",
-      description: "The level of permission to grant the access token to view and manage announcement banners for an organization.",
-      enum: [
-        "read",
-        "write"
-      ]
-    },
-    organization_events: {
-      type: "string",
-      description: "The level of permission to grant the access token to view events triggered by an activity in an organization.",
-      enum: [
-        "read"
-      ]
-    },
-    organization_hooks: {
-      type: "string",
-      description: "The level of permission to grant the access token to manage the post-receive hooks for an organization.",
-      enum: [
-        "read",
-        "write"
-      ]
-    },
-    organization_personal_access_tokens: {
-      type: "string",
-      description: "The level of permission to grant the access token for viewing and managing fine-grained personal access token requests to an organization.",
-      enum: [
-        "read",
-        "write"
-      ]
-    },
-    organization_personal_access_token_requests: {
-      type: "string",
-      description: "The level of permission to grant the access token for viewing and managing fine-grained personal access tokens that have been approved by an organization.",
-      enum: [
-        "read",
-        "write"
-      ]
-    },
-    organization_plan: {
-      type: "string",
-      description: "The level of permission to grant the access token for viewing an organization's plan.",
-      enum: [
-        "read"
-      ]
-    },
-    organization_projects: {
-      type: "string",
-      description: "The level of permission to grant the access token to manage organization projects and projects public preview (where available).",
-      enum: [
-        "read",
-        "write",
-        "admin"
-      ]
-    },
-    organization_packages: {
-      type: "string",
-      description: "The level of permission to grant the access token for organization packages published to GitHub Packages.",
-      enum: [
-        "read",
-        "write"
-      ]
-    },
-    organization_secrets: {
-      type: "string",
-      description: "The level of permission to grant the access token to manage organization secrets.",
-      enum: [
-        "read",
-        "write"
-      ]
-    },
-    organization_self_hosted_runners: {
-      type: "string",
-      description: "The level of permission to grant the access token to view and manage GitHub Actions self-hosted runners available to an organization.",
-      enum: [
-        "read",
-        "write"
-      ]
-    },
-    organization_user_blocking: {
-      type: "string",
-      description: "The level of permission to grant the access token to view and manage users blocked by the organization.",
-      enum: [
-        "read",
-        "write"
-      ]
-    },
-    team_discussions: {
-      type: "string",
-      description: "The level of permission to grant the access token to manage team discussions and related comments.",
-      enum: [
-        "read",
-        "write"
-      ]
-    },
-    email_addresses: {
-      type: "string",
-      description: "The level of permission to grant the access token to manage the email addresses belonging to a user.",
-      enum: [
-        "read",
-        "write"
-      ]
-    },
-    followers: {
-      type: "string",
-      description: "The level of permission to grant the access token to manage the followers belonging to a user.",
-      enum: [
-        "read",
-        "write"
-      ]
-    },
-    git_ssh_keys: {
-      type: "string",
-      description: "The level of permission to grant the access token to manage git SSH keys.",
-      enum: [
-        "read",
-        "write"
-      ]
-    },
-    gpg_keys: {
-      type: "string",
-      description: "The level of permission to grant the access token to view and manage GPG keys belonging to a user.",
-      enum: [
-        "read",
-        "write"
-      ]
-    },
-    interaction_limits: {
-      type: "string",
-      description: "The level of permission to grant the access token to view and manage interaction limits on a repository.",
-      enum: [
-        "read",
-        "write"
-      ]
-    },
-    profile: {
-      type: "string",
-      description: "The level of permission to grant the access token to manage the profile settings belonging to a user.",
-      enum: [
-        "write"
-      ]
-    },
-    starring: {
-      type: "string",
-      description: "The level of permission to grant the access token to list and manage repositories a user is starring.",
-      enum: [
-        "read",
-        "write"
-      ]
-    }
-  },
-  minProperties: 1,
-  additionalProperties: {
-    type: "string",
-    description: "The level of permission to grant the access token.",
-    enum: [
-      "read",
-      "write",
-      "admin"
-    ]
-  },
-  examples: [
-    {
-      contents: "read",
-      issues: "read",
-      deployments: "write",
-      single_file: "read"
-    }
-  ]
-};
-
 // src/schema/generated.provider-rule-permissions.v1.schema.json
 var generated_provider_rule_permissions_v1_schema_default = {
   $id: "https://ghalactic.github.io/provision-github-tokens/schema/generated.provider-rule-permissions.v1.schema.json",
@@ -53813,6 +53153,415 @@ var generated_provider_rule_permissions_v1_schema_default = {
   ]
 };
 
+// src/schema/generated.requester-token-permissions.v1.schema.json
+var generated_requester_token_permissions_v1_schema_default = {
+  $id: "https://ghalactic.github.io/provision-github-tokens/schema/generated.requester-token-permissions.v1.schema.json",
+  type: "object",
+  description: "The permissions that the token should have.",
+  properties: {
+    actions: {
+      type: "string",
+      description: "The level of permission to grant the access token for GitHub Actions workflows, workflow runs, and artifacts.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    administration: {
+      type: "string",
+      description: "The level of permission to grant the access token for repository creation, deletion, settings, teams, and collaborators creation.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    checks: {
+      type: "string",
+      description: "The level of permission to grant the access token for checks on code.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    codespaces: {
+      type: "string",
+      description: "The level of permission to grant the access token to create, edit, delete, and list Codespaces.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    contents: {
+      type: "string",
+      description: "The level of permission to grant the access token for repository contents, commits, branches, downloads, releases, and merges.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    dependabot_secrets: {
+      type: "string",
+      description: "The leve of permission to grant the access token to manage Dependabot secrets.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    deployments: {
+      type: "string",
+      description: "The level of permission to grant the access token for deployments and deployment statuses.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    environments: {
+      type: "string",
+      description: "The level of permission to grant the access token for managing repository environments.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    issues: {
+      type: "string",
+      description: "The level of permission to grant the access token for issues and related comments, assignees, labels, and milestones.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    metadata: {
+      type: "string",
+      description: "The level of permission to grant the access token to search repositories, list collaborators, and access repository metadata.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    packages: {
+      type: "string",
+      description: "The level of permission to grant the access token for packages published to GitHub Packages.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    pages: {
+      type: "string",
+      description: "The level of permission to grant the access token to retrieve Pages statuses, configuration, and builds, as well as create new builds.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    pull_requests: {
+      type: "string",
+      description: "The level of permission to grant the access token for pull requests and related comments, assignees, labels, milestones, and merges.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    repository_custom_properties: {
+      type: "string",
+      description: "The level of permission to grant the access token to view and edit custom properties for a repository, when allowed by the property.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    repository_hooks: {
+      type: "string",
+      description: "The level of permission to grant the access token to manage the post-receive hooks for a repository.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    repository_projects: {
+      type: "string",
+      description: "The level of permission to grant the access token to manage repository projects, columns, and cards.",
+      enum: [
+        "read",
+        "write",
+        "admin"
+      ]
+    },
+    secret_scanning_alerts: {
+      type: "string",
+      description: "The level of permission to grant the access token to view and manage secret scanning alerts.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    secrets: {
+      type: "string",
+      description: "The level of permission to grant the access token to manage repository secrets.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    security_events: {
+      type: "string",
+      description: "The level of permission to grant the access token to view and manage security events like code scanning alerts.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    single_file: {
+      type: "string",
+      description: "The level of permission to grant the access token to manage just a single file.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    statuses: {
+      type: "string",
+      description: "The level of permission to grant the access token for commit statuses.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    vulnerability_alerts: {
+      type: "string",
+      description: "The level of permission to grant the access token to manage Dependabot alerts.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    workflows: {
+      type: "string",
+      description: "The level of permission to grant the access token to update GitHub Actions workflow files.",
+      enum: [
+        "write"
+      ]
+    },
+    members: {
+      type: "string",
+      description: "The level of permission to grant the access token for organization teams and members.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    organization_administration: {
+      type: "string",
+      description: "The level of permission to grant the access token to manage access to an organization.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    organization_custom_roles: {
+      type: "string",
+      description: "The level of permission to grant the access token for custom repository roles management.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    organization_custom_org_roles: {
+      type: "string",
+      description: "The level of permission to grant the access token for custom organization roles management.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    organization_custom_properties: {
+      type: "string",
+      description: "The level of permission to grant the access token for custom property management.",
+      enum: [
+        "read",
+        "write",
+        "admin"
+      ]
+    },
+    organization_copilot_seat_management: {
+      type: "string",
+      description: "The level of permission to grant the access token for managing access to GitHub Copilot for members of an organization with a Copilot Business subscription. This property is in public preview and is subject to change.",
+      enum: [
+        "write"
+      ]
+    },
+    organization_announcement_banners: {
+      type: "string",
+      description: "The level of permission to grant the access token to view and manage announcement banners for an organization.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    organization_events: {
+      type: "string",
+      description: "The level of permission to grant the access token to view events triggered by an activity in an organization.",
+      enum: [
+        "read"
+      ]
+    },
+    organization_hooks: {
+      type: "string",
+      description: "The level of permission to grant the access token to manage the post-receive hooks for an organization.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    organization_personal_access_tokens: {
+      type: "string",
+      description: "The level of permission to grant the access token for viewing and managing fine-grained personal access token requests to an organization.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    organization_personal_access_token_requests: {
+      type: "string",
+      description: "The level of permission to grant the access token for viewing and managing fine-grained personal access tokens that have been approved by an organization.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    organization_plan: {
+      type: "string",
+      description: "The level of permission to grant the access token for viewing an organization's plan.",
+      enum: [
+        "read"
+      ]
+    },
+    organization_projects: {
+      type: "string",
+      description: "The level of permission to grant the access token to manage organization projects and projects public preview (where available).",
+      enum: [
+        "read",
+        "write",
+        "admin"
+      ]
+    },
+    organization_packages: {
+      type: "string",
+      description: "The level of permission to grant the access token for organization packages published to GitHub Packages.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    organization_secrets: {
+      type: "string",
+      description: "The level of permission to grant the access token to manage organization secrets.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    organization_self_hosted_runners: {
+      type: "string",
+      description: "The level of permission to grant the access token to view and manage GitHub Actions self-hosted runners available to an organization.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    organization_user_blocking: {
+      type: "string",
+      description: "The level of permission to grant the access token to view and manage users blocked by the organization.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    team_discussions: {
+      type: "string",
+      description: "The level of permission to grant the access token to manage team discussions and related comments.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    email_addresses: {
+      type: "string",
+      description: "The level of permission to grant the access token to manage the email addresses belonging to a user.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    followers: {
+      type: "string",
+      description: "The level of permission to grant the access token to manage the followers belonging to a user.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    git_ssh_keys: {
+      type: "string",
+      description: "The level of permission to grant the access token to manage git SSH keys.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    gpg_keys: {
+      type: "string",
+      description: "The level of permission to grant the access token to view and manage GPG keys belonging to a user.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    interaction_limits: {
+      type: "string",
+      description: "The level of permission to grant the access token to view and manage interaction limits on a repository.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    profile: {
+      type: "string",
+      description: "The level of permission to grant the access token to manage the profile settings belonging to a user.",
+      enum: [
+        "write"
+      ]
+    },
+    starring: {
+      type: "string",
+      description: "The level of permission to grant the access token to list and manage repositories a user is starring.",
+      enum: [
+        "read",
+        "write"
+      ]
+    }
+  },
+  minProperties: 1,
+  additionalProperties: {
+    type: "string",
+    description: "The level of permission to grant the access token.",
+    enum: [
+      "read",
+      "write",
+      "admin"
+    ]
+  },
+  examples: [
+    {
+      contents: "read",
+      issues: "read",
+      deployments: "write",
+      single_file: "read"
+    }
+  ]
+};
+
 // src/schema/provider.v1.schema.json
 var provider_v1_schema_default = {
   $schema: "http://json-schema.org/draft-07/schema#",
@@ -54169,16 +53918,267 @@ var provider_v1_schema_default = {
   }
 };
 
+// src/schema/requester.v1.schema.json
+var requester_v1_schema_default = {
+  $schema: "http://json-schema.org/draft-07/schema#",
+  $id: "https://ghalactic.github.io/provision-github-tokens/schema/requester.v1.schema.json",
+  title: "Provision GitHub Tokens (requester configuration)",
+  description: 'Requester configuration for the "Provision GitHub Tokens" GitHub Action.',
+  type: "object",
+  additionalProperties: false,
+  properties: {
+    $schema: {
+      description: "The JSON Schema identifier.",
+      type: "string",
+      const: "https://ghalactic.github.io/provision-github-tokens/schema/requester.v1.schema.json",
+      default: "https://ghalactic.github.io/provision-github-tokens/schema/requester.v1.schema.json"
+    },
+    tokens: {
+      description: "Declarations of GitHub tokens that requesters can request to be provisioned.",
+      type: "object",
+      default: {},
+      propertyNames: {
+        description: "The name of a token declaration.",
+        type: "string",
+        minLength: 1,
+        pattern: "^[a-zA-Z0-9-_]+$",
+        errorMessage: "must only contain alphanumeric characters, hyphens, or underscores",
+        examples: ["tokenA", "tokenB"]
+      },
+      additionalProperties: {
+        description: "A GitHub token declaration.",
+        type: "object",
+        additionalProperties: false,
+        required: ["repos", "permissions"],
+        properties: {
+          shared: {
+            description: "Whether the token should be available for other repos to request.",
+            type: "boolean",
+            default: false
+          },
+          as: {
+            description: "When specified, the token must be created by an app configured with this role.",
+            type: "string",
+            minLength: 1,
+            examples: ["pr-bot", "onboarding"]
+          },
+          account: {
+            description: "The GitHub user or org that the specified repos belong to. Defaults to the same account as the repo where the requester configuration file is defined.",
+            type: "string",
+            minLength: 1,
+            examples: ["octocat"]
+          },
+          repos: {
+            description: "Which repos are allowed to access the token.",
+            oneOf: [
+              {
+                description: "All repos in the account, including those created after the token is provisioned.",
+                type: "string",
+                const: "all"
+              },
+              {
+                description: "A list of repo name patterns to match against.",
+                type: "array",
+                items: {
+                  description: "A pattern which matches repos without their account prefix.",
+                  type: "string",
+                  minLength: 1,
+                  pattern: "^[*a-zA-Z0-9-_.]+$",
+                  errorMessage: "must only contain alphanumeric characters, hyphens, underscores, periods, or asterisks",
+                  examples: [
+                    "repo-a",
+                    "*",
+                    "with-prefix-*",
+                    "*-with-suffix",
+                    "with-*-infix"
+                  ]
+                },
+                minItems: 1
+              }
+            ]
+          },
+          permissions: {
+            $ref: "https://ghalactic.github.io/provision-github-tokens/schema/generated.requester-token-permissions.v1.schema.json",
+            default: {}
+          }
+        }
+      }
+    },
+    provision: {
+      description: "How to provision the requested tokens.",
+      type: "object",
+      additionalProperties: false,
+      default: {},
+      properties: {
+        secrets: {
+          description: "A set of secrets to provision.",
+          type: "object",
+          default: {},
+          propertyNames: {
+            description: "The name of a secret.",
+            type: "string",
+            minLength: 1,
+            pattern: "^[a-zA-Z_][a-zA-Z0-9_]*$",
+            errorMessage: "must only contain alphanumeric characters or underscores, and cannot begin with a number",
+            examples: ["SECRET_1", "secret_2", "_SeCrEt_3"]
+          },
+          additionalProperties: {
+            description: "A secret to provision.",
+            type: "object",
+            additionalProperties: false,
+            required: ["token"],
+            properties: {
+              token: {
+                description: "A token reference that points to the token declaration to use.",
+                type: "string",
+                minLength: 1,
+                pattern: "^(?:(?:\\.|[a-zA-Z](?:[a-zA-Z-]*[a-zA-Z])?)\\/[a-zA-Z0-9-_.]+\\.)?[a-zA-Z0-9-_]+$",
+                errorMessage: 'must be a token reference in the form of "account/repo.token-name", "./repo.token-name", or "token-name"',
+                examples: [
+                  "tokenA",
+                  "./other-repo.tokenB",
+                  "other-account/repo.tokenC"
+                ]
+              },
+              github: {
+                description: "How to provision the secret to GitHub.",
+                type: "object",
+                additionalProperties: false,
+                default: {},
+                properties: {
+                  account: {
+                    description: "How to provision the secret to the declaring repo's GitHub account.",
+                    $ref: "#/definitions/provisionGithubAccountSecretTypes",
+                    default: {}
+                  },
+                  accounts: {
+                    description: "How to provision the secret to other GitHub accounts.",
+                    type: "object",
+                    default: {},
+                    propertyNames: {
+                      description: "A pattern which matches accounts.",
+                      type: "string",
+                      minLength: 1,
+                      pattern: "^[*a-zA-Z](?:[*a-zA-Z-]*[*a-zA-Z])?$",
+                      errorMessage: "must only contain alphanumeric characters, hyphens, or asterisks, and cannot begin or end with a hyphen",
+                      examples: [
+                        "account-a",
+                        "*",
+                        "with-prefix-*",
+                        "*-with-suffix",
+                        "with-*-infix"
+                      ]
+                    },
+                    additionalProperties: {
+                      description: "How to provision the secret to the specified GitHub account.",
+                      $ref: "#/definitions/provisionGithubAccountSecretTypes"
+                    }
+                  },
+                  repo: {
+                    description: "How to provision the secret to the declaring repo.",
+                    $ref: "#/definitions/provisionGithubRepoSecretTypes",
+                    default: {}
+                  },
+                  repos: {
+                    description: "How to provision the secret to other GitHub repos.",
+                    type: "object",
+                    default: {},
+                    propertyNames: {
+                      description: "A pattern which matches repos.",
+                      type: "string",
+                      minLength: 1,
+                      pattern: "^(?:\\.|[*a-zA-Z](?:[*a-zA-Z-]*[*a-zA-Z])?)\\/[*a-zA-Z0-9-_.]+$",
+                      errorMessage: 'must be a repo pattern in the form of "account/repo", or "./repo"',
+                      examples: [
+                        "./repo-a",
+                        "account-a/repo-a",
+                        "./*",
+                        "*/*",
+                        "*/repo-a",
+                        "account-a/*",
+                        "prefix-*/*-suffix"
+                      ]
+                    },
+                    additionalProperties: {
+                      description: "How to provision the secret to the specified GitHub repo.",
+                      $ref: "#/definitions/provisionGithubRepoSecretTypes"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  definitions: {
+    provisionGithubAccountSecretTypes: {
+      type: "object",
+      additionalProperties: false,
+      properties: {
+        actions: {
+          description: "Whether to provision to GitHub Actions secrets.",
+          type: "boolean",
+          default: false
+        },
+        codespaces: {
+          description: "Whether to provision to GitHub Codespaces secrets.",
+          type: "boolean",
+          default: false
+        },
+        dependabot: {
+          description: "Whether to provision to Dependabot secrets.",
+          type: "boolean",
+          default: false
+        }
+      }
+    },
+    provisionGithubRepoSecretTypes: {
+      type: "object",
+      additionalProperties: false,
+      properties: {
+        actions: {
+          description: "Whether to provision to GitHub Actions secrets.",
+          type: "boolean",
+          default: false
+        },
+        codespaces: {
+          description: "Whether to provision to GitHub Codespaces secrets.",
+          type: "boolean",
+          default: false
+        },
+        dependabot: {
+          description: "Whether to provision to Dependabot secrets.",
+          type: "boolean",
+          default: false
+        },
+        environments: {
+          description: "GitHub repo environments to provision to.",
+          type: "array",
+          uniqueItems: true,
+          default: [],
+          items: {
+            description: "The name of an environment to provision the secret to.",
+            type: "string",
+            minLength: 1
+          }
+        }
+      }
+    }
+  }
+};
+
 // src/config/validation.ts
 var Ajv = import_ajv.default.default;
 var ajvErrors = import_ajv_errors.default.default;
 var ajv = new Ajv({
   schemas: [
     apps_v1_schema_default,
-    consumer_v1_schema_default,
-    generated_consumer_token_permissions_v1_schema_default,
+    generated_provider_rule_permissions_v1_schema_default,
     provider_v1_schema_default,
-    generated_provider_rule_permissions_v1_schema_default
+    requester_v1_schema_default,
+    generated_requester_token_permissions_v1_schema_default
   ],
   allErrors: true,
   useDefaults: true
@@ -54188,13 +54188,13 @@ var validateApps = createValidate(
   apps_v1_schema_default.$id,
   "apps input"
 );
-var validateConsumer = createValidate(
-  consumer_v1_schema_default.$id,
-  "consumer configuration"
-);
 var validateProvider = createValidate(
   provider_v1_schema_default.$id,
   "provider configuration"
+);
+var validateRequester = createValidate(
+  requester_v1_schema_default.$id,
+  "requester configuration"
 );
 var ValidateError = class extends Error {
   errors;
@@ -59145,10 +59145,10 @@ async function discoverInstallation(octokitFactory, appRegistry, appsInput, appI
   appRegistry.registerInstallation({ installation, repos });
 }
 
-// src/discover-consumers.ts
+// src/discover-requesters.ts
 var import_core5 = __toESM(require_core(), 1);
 
-// src/config/consumer-config.ts
+// src/config/requester-config.ts
 var import_core4 = __toESM(require_core(), 1);
 
 // src/name-pattern.ts
@@ -59206,20 +59206,20 @@ function normalizeTokenReference(definingRepo, reference) {
   return accountPart === "." ? `${repoRefToString(createRepoRef(definingRepo.account, repoPart))}.${namePart}` : reference;
 }
 
-// src/config/consumer-config.ts
-function parseConsumerConfig(definingRepo, yaml) {
-  return normalizeConsumerConfig(definingRepo, parseYAML(yaml));
+// src/config/requester-config.ts
+function parseRequesterConfig(definingRepo, yaml) {
+  return normalizeRequesterConfig(definingRepo, parseYAML(yaml));
 }
 function parseYAML(yaml) {
   try {
     const parsed = load(yaml);
-    return validateConsumer(parsed == null ? {} : parsed);
+    return validateRequester(parsed == null ? {} : parsed);
   } catch (cause) {
-    (0, import_core4.debug)(`Parsing of consumer configuration failed: ${errorMessage(cause)}`);
-    throw new Error("Parsing of consumer configuration failed", { cause });
+    (0, import_core4.debug)(`Parsing of requester configuration failed: ${errorMessage(cause)}`);
+    throw new Error("Parsing of requester configuration failed", { cause });
   }
 }
-function normalizeConsumerConfig(definingRepo, config) {
+function normalizeRequesterConfig(definingRepo, config) {
   for (const name in config.tokens) {
     const token = config.tokens[name];
     token.as ??= void 0;
@@ -59237,8 +59237,8 @@ function normalizeConsumerConfig(definingRepo, config) {
   return config;
 }
 
-// src/discover-consumers.ts
-async function discoverConsumers(octokitFactory, appRegistry, appsInput) {
+// src/discover-requesters.ts
+async function discoverRequesters(octokitFactory, appRegistry, appsInput) {
   const discovered = /* @__PURE__ */ new Map();
   for (const [, instReg] of appRegistry.provisioners) {
     const { installation, repos } = instReg;
@@ -59249,12 +59249,12 @@ async function discoverConsumers(octokitFactory, appRegistry, appsInput) {
     );
     for (const { owner, name: repo, full_name } of repos) {
       if (discovered.has(full_name)) continue;
-      const consumer = createRepoRef(owner.login, repo);
+      const requester = createRepoRef(owner.login, repo);
       let configYAML;
       try {
         const res = await octokit.rest.repos.getContent({
-          owner: consumer.account,
-          repo: consumer.repo,
+          owner: requester.account,
+          repo: requester.repo,
           path: ".github/ghalactic/provision-github-tokens.yml",
           headers: { accept: "application/vnd.github.raw+json" }
         });
@@ -59267,41 +59267,41 @@ async function discoverConsumers(octokitFactory, appRegistry, appsInput) {
       } catch (error) {
         handleRequestError(error, {
           404: () => {
-            (0, import_core5.debug)(`Repo ${full_name} is not a consumer`);
+            (0, import_core5.debug)(`Repo ${full_name} is not a requester`);
           }
         });
         continue;
       }
-      (0, import_core5.debug)(`Discovered consumer ${full_name}`);
+      (0, import_core5.debug)(`Discovered requester ${full_name}`);
       let config;
       try {
-        config = parseConsumerConfig(consumer, configYAML);
+        config = parseRequesterConfig(requester, configYAML);
       } catch (error) {
-        (0, import_core5.error)(`Consumer ${full_name} has invalid config`);
+        (0, import_core5.error)(`Requester ${full_name} has invalid config`);
         continue;
       }
       const tokenDecNames = Object.keys(config.tokens);
       const tokenDecs = tokenDecNames.length === 1 ? "1 token declaration" : `${tokenDecNames.length} token declarations`;
       (0, import_core5.debug)(
-        `Consumer ${full_name} has ${tokenDecs} ` + JSON.stringify(tokenDecNames)
+        `Requester ${full_name} has ${tokenDecs} ` + JSON.stringify(tokenDecNames)
       );
       const secretDecNames = Object.keys(config.provision.secrets);
       const secretDecs = secretDecNames.length === 1 ? "1 secret declaration" : `${secretDecNames.length} secret declarations`;
       (0, import_core5.debug)(
-        `Consumer ${full_name} has ${secretDecs} ` + JSON.stringify(secretDecNames)
+        `Requester ${full_name} has ${secretDecs} ` + JSON.stringify(secretDecNames)
       );
-      discovered.set(full_name, { consumer, config });
+      discovered.set(full_name, { requester, config });
     }
   }
-  (0, import_core5.info)(`Discovered ${pluralize(discovered.size, "consumer", "consumers")}`);
+  (0, import_core5.info)(`Discovered ${pluralize(discovered.size, "requester", "requesters")}`);
   return discovered;
 }
 
 // src/register-token-declarations.ts
-function registerTokenDeclarations(declarationRegistry, consumers) {
-  for (const [, { consumer, config }] of consumers) {
+function registerTokenDeclarations(declarationRegistry, requesters) {
+  for (const [, { requester, config }] of requesters) {
     for (const [name, declaration] of Object.entries(config.tokens)) {
-      declarationRegistry.registerDeclaration(consumer, name, declaration);
+      declarationRegistry.registerDeclaration(requester, name, declaration);
     }
   }
 }
@@ -59334,10 +59334,10 @@ async function main() {
   await (0, import_core6.group)("Discovering apps", async () => {
     await discoverApps(octokitFactory, appRegistry, appsInput);
   });
-  const consumers = await (0, import_core6.group)("Discovering consumers", async () => {
-    return discoverConsumers(octokitFactory, appRegistry, appsInput);
+  const requesters = await (0, import_core6.group)("Discovering requesters", async () => {
+    return discoverRequesters(octokitFactory, appRegistry, appsInput);
   });
-  registerTokenDeclarations(declarationRegistry, consumers);
+  registerTokenDeclarations(declarationRegistry, requesters);
 }
 /*! Bundled license information:
 
