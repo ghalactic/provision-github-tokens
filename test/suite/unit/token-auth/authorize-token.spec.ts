@@ -27,10 +27,14 @@ it("supports wildcard account consumers", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        role: undefined,
-        account: "account-a",
+        declaration: {
+          shared: false,
+          as: undefined,
+          account: "account-a",
+          repos: "all",
+          permissions: { metadata: "read" },
+        },
         repos: "all",
-        permissions: { metadata: "read" },
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -44,10 +48,14 @@ it("supports wildcard account consumers", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-y" },
-        role: undefined,
-        account: "account-a",
+        declaration: {
+          shared: false,
+          as: undefined,
+          account: "account-a",
+          repos: "all",
+          permissions: { metadata: "read" },
+        },
         repos: "all",
-        permissions: { metadata: "read" },
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -81,10 +89,14 @@ it("supports wildcard repo consumers", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
-        role: undefined,
-        account: "account-a",
+        declaration: {
+          shared: false,
+          as: undefined,
+          account: "account-a",
+          repos: "all",
+          permissions: { metadata: "read" },
+        },
         repos: "all",
-        permissions: { metadata: "read" },
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -98,10 +110,14 @@ it("supports wildcard repo consumers", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-y", repo: "repo-y" },
-        role: undefined,
-        account: "account-a",
+        declaration: {
+          shared: false,
+          as: undefined,
+          account: "account-a",
+          repos: "all",
+          permissions: { metadata: "read" },
+        },
         repos: "all",
-        permissions: { metadata: "read" },
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -120,10 +136,14 @@ it("throws if the requested permissions are empty", () => {
     throws(() =>
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        role: undefined,
-        account: "account-a",
+        declaration: {
+          shared: false,
+          as: undefined,
+          account: "account-a",
+          repos: ["repo-a"],
+          permissions: {},
+        },
         repos: ["repo-a"],
-        permissions: {},
       }),
     ),
   ).toMatchInlineSnapshot(`"No permissions requested"`);
@@ -131,10 +151,14 @@ it("throws if the requested permissions are empty", () => {
     throws(() =>
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        role: undefined,
-        account: "account-a",
+        declaration: {
+          shared: false,
+          as: undefined,
+          account: "account-a",
+          repos: ["repo-a"],
+          permissions: { contents: undefined, metadata: "none" },
+        },
         repos: ["repo-a"],
-        permissions: { contents: undefined, metadata: "none" },
       }),
     ),
   ).toMatchInlineSnapshot(`"No permissions requested"`);
@@ -142,10 +166,14 @@ it("throws if the requested permissions are empty", () => {
     throws(() =>
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
-        role: undefined,
-        account: "account-a",
+        declaration: {
+          shared: false,
+          as: undefined,
+          account: "account-a",
+          repos: ["repo-a"],
+          permissions: {},
+        },
         repos: ["repo-a"],
-        permissions: {},
       }),
     ),
   ).toMatchInlineSnapshot(`"No permissions requested"`);
@@ -153,10 +181,14 @@ it("throws if the requested permissions are empty", () => {
     throws(() =>
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
-        role: undefined,
-        account: "account-a",
+        declaration: {
+          shared: false,
+          as: undefined,
+          account: "account-a",
+          repos: ["repo-a"],
+          permissions: { contents: undefined, metadata: "none" },
+        },
         repos: ["repo-a"],
-        permissions: { contents: undefined, metadata: "none" },
       }),
     ),
   ).toMatchInlineSnapshot(`"No permissions requested"`);

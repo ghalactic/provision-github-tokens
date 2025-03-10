@@ -36,7 +36,7 @@ export function createTokenAuthorizer(
 
   return {
     authorizeToken(request) {
-      if (isEmptyPermissions(request.permissions)) {
+      if (isEmptyPermissions(request.declaration.permissions)) {
         throw new Error("No permissions requested");
       }
 
@@ -60,7 +60,10 @@ export function createTokenAuthorizer(
       for (let j = 0; j < rule.resources.length; ++j) {
         isRelevant =
           rule.resources[j].allRepos === true &&
-          anyPatternMatches(resourcePatterns[i][j].accounts, request.account);
+          anyPatternMatches(
+            resourcePatterns[i][j].accounts,
+            request.declaration.account,
+          );
 
         if (isRelevant) break;
       }
@@ -70,7 +73,10 @@ export function createTokenAuthorizer(
       updatePermissions(have, rule.permissions);
 
       // Token is allowed if last rule is allowed
-      isSufficient = isSufficientPermissions(have, request.permissions);
+      isSufficient = isSufficientPermissions(
+        have,
+        request.declaration.permissions,
+      );
 
       ruleResults.push({
         index: i,
@@ -80,9 +86,9 @@ export function createTokenAuthorizer(
       });
     }
 
-    const maxWant = maxAccess(request.permissions);
+    const maxWant = maxAccess(request.declaration.permissions);
     const isWrite = isWriteAccess(maxWant);
-    const isMissingRole = isWrite && !request.role;
+    const isMissingRole = isWrite && !request.declaration.as;
     const isAllowed = isSufficient && !isMissingRole;
 
     return {
@@ -111,7 +117,10 @@ export function createTokenAuthorizer(
       for (let j = 0; j < rule.resources.length; ++j) {
         isRelevant =
           rule.resources[j].noRepos === true &&
-          anyPatternMatches(resourcePatterns[i][j].accounts, request.account);
+          anyPatternMatches(
+            resourcePatterns[i][j].accounts,
+            request.declaration.account,
+          );
 
         if (isRelevant) break;
       }
@@ -121,7 +130,10 @@ export function createTokenAuthorizer(
       updatePermissions(have, rule.permissions);
 
       // Token is allowed if last rule is allowed
-      isSufficient = isSufficientPermissions(have, request.permissions);
+      isSufficient = isSufficientPermissions(
+        have,
+        request.declaration.permissions,
+      );
 
       ruleResults.push({
         index: i,
@@ -131,9 +143,9 @@ export function createTokenAuthorizer(
       });
     }
 
-    const maxWant = maxAccess(request.permissions);
+    const maxWant = maxAccess(request.declaration.permissions);
     const isWrite = isWriteAccess(maxWant);
-    const isMissingRole = isWrite && !request.role;
+    const isMissingRole = isWrite && !request.declaration.as;
     const isAllowed = isSufficient && !isMissingRole;
 
     return {
@@ -156,7 +168,7 @@ export function createTokenAuthorizer(
 
     for (const reqRepo of request.repos) {
       const reqResource = repoRefToString(
-        createRepoRef(request.account, reqRepo),
+        createRepoRef(request.declaration.account, reqRepo),
       );
       const ruleResults: TokenAuthResourceResultRuleResult[] = [];
       const have: Permissions = {};
@@ -169,7 +181,7 @@ export function createTokenAuthorizer(
         for (let j = 0; j < rule.resources.length; ++j) {
           const { accounts, repos } = resourcePatterns[i][j];
           isRelevant =
-            anyPatternMatches(accounts, request.account) &&
+            anyPatternMatches(accounts, request.declaration.account) &&
             anyPatternMatches(repos, reqRepo);
 
           if (isRelevant) break;
@@ -182,7 +194,7 @@ export function createTokenAuthorizer(
         // Resource is allowed if last rule is allowed
         isResourceSufficient = isSufficientPermissions(
           have,
-          request.permissions,
+          request.declaration.permissions,
         );
 
         ruleResults.push({
@@ -202,9 +214,9 @@ export function createTokenAuthorizer(
       };
     }
 
-    const maxWant = maxAccess(request.permissions);
+    const maxWant = maxAccess(request.declaration.permissions);
     const isWrite = isWriteAccess(maxWant);
-    const isMissingRole = isWrite && !request.role;
+    const isMissingRole = isWrite && !request.declaration.as;
     const isAllowed = isSufficient && !isMissingRole;
 
     return {

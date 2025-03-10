@@ -49912,12 +49912,14 @@ function createAppRegistry() {
       );
     },
     findIssuersForRequest: (request2) => {
-      if (isEmptyPermissions(request2.permissions)) return [];
-      const tokenHasRole = typeof request2.role === "string";
-      const tokenPerms = Object.keys(request2.permissions);
+      if (isEmptyPermissions(request2.declaration.permissions)) return [];
+      const tokenHasRole = typeof request2.declaration.as === "string";
+      const tokenPerms = Object.keys(request2.declaration.permissions);
       if (!tokenHasRole) {
         for (const permission of tokenPerms) {
-          if (isWriteAccess(permissionAccess(request2.permissions, permission))) {
+          if (isWriteAccess(
+            permissionAccess(request2.declaration.permissions, permission)
+          )) {
             return [];
           }
         }
@@ -49936,7 +49938,7 @@ function createAppRegistry() {
         if (tokenHasRole) {
           let appHasRole = false;
           for (const role of appReg.issuer.roles) {
-            if (role === request2.role) {
+            if (role === request2.declaration.as) {
               appHasRole = true;
               break;
             }
@@ -49948,20 +49950,20 @@ function createAppRegistry() {
         for (const permission of tokenPerms) {
           if (isSufficientAccess(
             permissionAccess(installation.permissions, permission),
-            permissionAccess(request2.permissions, permission)
+            permissionAccess(request2.declaration.permissions, permission)
           )) {
             ++permMatchCount;
           }
         }
         if (permMatchCount !== tokenPerms.length) continue;
         if (installation.repository_selection === "all") {
-          if (installationAccount(installation) === request2.account) {
+          if (installationAccount(installation) === request2.declaration.account) {
             found.push(instReg);
           }
           continue;
         }
         for (const repo of repos) {
-          if (repo.owner.login === request2.account && tokenRepos[repo.name]) {
+          if (repo.owner.login === request2.declaration.account && tokenRepos[repo.name]) {
             ++repoMatchCount;
           }
         }

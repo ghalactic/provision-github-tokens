@@ -33,35 +33,34 @@ export function createTextTokenAuthExplainer(): TokenAuthResultExplainer<string>
 
   function explainAllRepos(result: TokenAuthResultAllRepos): string {
     const { request, isSufficient, rules } = result;
-    const { account } = request;
-    const subject = `all repos in ${account}`;
+    const subject = `all repos in ${request.declaration.account}`;
 
     return (
       `${explainSummary(result)}\n  ` +
       `${explainMaxAccessAndRole(result, subject)}\n  ` +
       `${renderIcon(isSufficient)} ` +
       `${isSufficient ? "Sufficient" : "Insufficient"} ` +
-      `access to ${subject} ${explainBasedOnRules(request.permissions, rules)}`
+      `access to ${subject} ` +
+      `${explainBasedOnRules(request.declaration.permissions, rules)}`
     );
   }
 
   function explainNoRepos(result: TokenAuthResultNoRepos): string {
     const { request, isSufficient, rules } = result;
-    const { account } = request;
 
     return (
       `${explainSummary(result)}\n  ` +
-      `${explainMaxAccessAndRole(result, account)}\n  ` +
+      `${explainMaxAccessAndRole(result, request.declaration.account)}\n  ` +
       `${renderIcon(isSufficient)} ` +
       `${isSufficient ? "Sufficient" : "Insufficient"} ` +
-      `access to ${account} ${explainBasedOnRules(request.permissions, rules)}`
+      `access to ${request.declaration.account} ` +
+      `${explainBasedOnRules(request.declaration.permissions, rules)}`
     );
   }
 
   function explainSelectedRepos(result: TokenAuthResultSelectedRepos): string {
     const { request, results } = result;
-    const { account } = request;
-    const subject = `repos in ${account}`;
+    const subject = `repos in ${request.declaration.account}`;
 
     const resourceEntries = Object.entries(results).sort(([a], [b]) =>
       a.localeCompare(b),
@@ -71,7 +70,11 @@ export function createTextTokenAuthExplainer(): TokenAuthResultExplainer<string>
     for (const [resourceRepo, resourceResult] of resourceEntries) {
       explainedResources +=
         "\n" +
-        explainResourceRepo(resourceRepo, request.permissions, resourceResult);
+        explainResourceRepo(
+          resourceRepo,
+          request.declaration.permissions,
+          resourceResult,
+        );
     }
 
     return (
@@ -101,12 +104,12 @@ export function createTextTokenAuthExplainer(): TokenAuthResultExplainer<string>
     { request, maxWant, isMissingRole }: TokenAuthResult,
     accessTo: string,
   ): string {
-    const { role } = request;
-
     return (
       `${renderIcon(!isMissingRole)} ${ACCESS_LEVELS[maxWant]} ` +
       `access to ${accessTo} ` +
-      (role ? `requested with role ${role}` : "requested without a role")
+      (request.declaration.as
+        ? `requested with role ${request.declaration.as}`
+        : "requested without a role")
     );
   }
 

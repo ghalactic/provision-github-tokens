@@ -26,10 +26,14 @@ it("allows tokens that should be allowed", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        role: "role-a",
-        account: "account-a",
+        declaration: {
+          shared: false,
+          as: "role-a",
+          account: "account-a",
+          repos: ["repo-*"],
+          permissions: { contents: "write" },
+        },
         repos: ["repo-a"],
-        permissions: { contents: "write" },
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -43,10 +47,14 @@ it("allows tokens that should be allowed", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        role: "role-a",
-        account: "account-a",
+        declaration: {
+          shared: false,
+          as: "role-a",
+          account: "account-a",
+          repos: ["repo-*"],
+          permissions: { contents: "write", metadata: "read" },
+        },
         repos: ["repo-b"],
-        permissions: { contents: "write", metadata: "read" },
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -61,10 +69,14 @@ it("allows tokens that should be allowed", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        role: "role-a",
-        account: "account-a",
+        declaration: {
+          shared: false,
+          as: "role-a",
+          account: "account-a",
+          repos: ["repo-*"],
+          permissions: { contents: "write", metadata: "read" },
+        },
         repos: ["repo-a", "repo-b"],
-        permissions: { contents: "write", metadata: "read" },
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -83,10 +95,14 @@ it("allows tokens that should be allowed", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
-        role: "role-a",
-        account: "account-a",
+        declaration: {
+          shared: false,
+          as: "role-a",
+          account: "account-a",
+          repos: ["repo-*"],
+          permissions: { contents: "write" },
+        },
         repos: ["repo-a"],
-        permissions: { contents: "write" },
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -100,10 +116,14 @@ it("allows tokens that should be allowed", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
-        role: "role-a",
-        account: "account-a",
+        declaration: {
+          shared: false,
+          as: "role-a",
+          account: "account-a",
+          repos: ["repo-*"],
+          permissions: { contents: "write", metadata: "read" },
+        },
         repos: ["repo-b"],
-        permissions: { contents: "write", metadata: "read" },
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -118,10 +138,14 @@ it("allows tokens that should be allowed", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
-        role: "role-a",
-        account: "account-a",
+        declaration: {
+          shared: false,
+          as: "role-a",
+          account: "account-a",
+          repos: ["repo-*"],
+          permissions: { contents: "write", metadata: "read" },
+        },
         repos: ["repo-a", "repo-b"],
-        permissions: { contents: "write", metadata: "read" },
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -160,10 +184,14 @@ it("allows tokens when allowed by a wildcard rule", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        role: "role-a",
-        account: "account-a",
+        declaration: {
+          shared: false,
+          as: "role-a",
+          account: "account-a",
+          repos: ["repo-*"],
+          permissions: { metadata: "read" },
+        },
         repos: ["repo-a"],
-        permissions: { metadata: "read" },
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -177,10 +205,14 @@ it("allows tokens when allowed by a wildcard rule", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        role: "role-a",
-        account: "account-b",
+        declaration: {
+          shared: false,
+          as: "role-a",
+          account: "account-b",
+          repos: ["repo-*"],
+          permissions: { metadata: "read" },
+        },
         repos: ["repo-b"],
-        permissions: { metadata: "read" },
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -194,10 +226,14 @@ it("allows tokens when allowed by a wildcard rule", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
-        role: "role-a",
-        account: "account-a",
+        declaration: {
+          shared: false,
+          as: "role-a",
+          account: "account-a",
+          repos: ["repo-*"],
+          permissions: { metadata: "read" },
+        },
         repos: ["repo-a"],
-        permissions: { metadata: "read" },
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -211,10 +247,14 @@ it("allows tokens when allowed by a wildcard rule", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
-        role: "role-a",
-        account: "account-b",
+        declaration: {
+          shared: false,
+          as: "role-a",
+          account: "account-b",
+          repos: ["repo-*"],
+          permissions: { metadata: "read" },
+        },
         repos: ["repo-b"],
-        permissions: { metadata: "read" },
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -248,10 +288,14 @@ it("allows tokens when the actual access level is higher than requested", () => 
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        role: "role-a",
-        account: "account-a",
+        declaration: {
+          shared: false,
+          as: "role-a",
+          account: "account-a",
+          repos: ["repo-*"],
+          permissions: { metadata: "read", repository_projects: "write" },
+        },
         repos: ["repo-a"],
-        permissions: { metadata: "read", repository_projects: "write" },
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -266,10 +310,14 @@ it("allows tokens when the actual access level is higher than requested", () => 
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
-        role: "role-a",
-        account: "account-a",
+        declaration: {
+          shared: false,
+          as: "role-a",
+          account: "account-a",
+          repos: ["repo-*"],
+          permissions: { metadata: "read", repository_projects: "write" },
+        },
         repos: ["repo-a"],
-        permissions: { metadata: "read", repository_projects: "write" },
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -316,10 +364,14 @@ it("allows tokens when a later rule allows access that a previous rule denied", 
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        role: "role-a",
-        account: "account-a",
+        declaration: {
+          shared: false,
+          as: "role-a",
+          account: "account-a",
+          repos: ["repo-*"],
+          permissions: { contents: "write", metadata: "read" },
+        },
         repos: ["repo-a"],
-        permissions: { contents: "write", metadata: "read" },
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -337,10 +389,14 @@ it("allows tokens when a later rule allows access that a previous rule denied", 
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
-        role: "role-a",
-        account: "account-a",
+        declaration: {
+          shared: false,
+          as: "role-a",
+          account: "account-a",
+          repos: ["repo-*"],
+          permissions: { contents: "write", metadata: "read" },
+        },
         repos: ["repo-a"],
-        permissions: { contents: "write", metadata: "read" },
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -402,10 +458,14 @@ it("allows tokens when a later unrelated rule denies access to the requested per
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        role: "role-a",
-        account: "account-a",
+        declaration: {
+          shared: false,
+          as: "role-a",
+          account: "account-a",
+          repos: ["repo-*"],
+          permissions: { contents: "write", metadata: "read" },
+        },
         repos: ["repo-a"],
-        permissions: { contents: "write", metadata: "read" },
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -420,10 +480,14 @@ it("allows tokens when a later unrelated rule denies access to the requested per
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
-        role: "role-a",
-        account: "account-a",
+        declaration: {
+          shared: false,
+          as: "role-a",
+          account: "account-a",
+          repos: ["repo-*"],
+          permissions: { contents: "write", metadata: "read" },
+        },
         repos: ["repo-a"],
-        permissions: { contents: "write", metadata: "read" },
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -458,10 +522,14 @@ it("allows read-only tokens without a role", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        role: undefined,
-        account: "account-a",
+        declaration: {
+          shared: false,
+          as: undefined,
+          account: "account-a",
+          repos: ["repo-*"],
+          permissions: { contents: "read", metadata: "read" },
+        },
         repos: ["repo-a"],
-        permissions: { contents: "read", metadata: "read" },
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -476,10 +544,14 @@ it("allows read-only tokens without a role", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
-        role: undefined,
-        account: "account-a",
+        declaration: {
+          shared: false,
+          as: undefined,
+          account: "account-a",
+          repos: ["repo-*"],
+          permissions: { contents: "read", metadata: "read" },
+        },
         repos: ["repo-a"],
-        permissions: { contents: "read", metadata: "read" },
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -515,10 +587,14 @@ it("supports rule descriptions", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        role: "role-a",
-        account: "account-a",
+        declaration: {
+          shared: false,
+          as: "role-a",
+          account: "account-a",
+          repos: ["repo-*"],
+          permissions: { metadata: "read" },
+        },
         repos: ["repo-a"],
-        permissions: { metadata: "read" },
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -532,10 +608,14 @@ it("supports rule descriptions", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
-        role: "role-a",
-        account: "account-a",
+        declaration: {
+          shared: false,
+          as: "role-a",
+          account: "account-a",
+          repos: ["repo-*"],
+          permissions: { metadata: "read" },
+        },
         repos: ["repo-a"],
-        permissions: { metadata: "read" },
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -569,10 +649,14 @@ it("sorts repos and permissions in the explanation", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        role: "role-a",
-        account: "account-a",
+        declaration: {
+          shared: false,
+          as: "role-a",
+          account: "account-a",
+          repos: ["repo-*"],
+          permissions: { metadata: "read", contents: "write" },
+        },
         repos: ["repo-b", "repo-a"],
-        permissions: { metadata: "read", contents: "write" },
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -591,10 +675,14 @@ it("sorts repos and permissions in the explanation", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
-        role: "role-a",
-        account: "account-a",
+        declaration: {
+          shared: false,
+          as: "role-a",
+          account: "account-a",
+          repos: ["repo-*"],
+          permissions: { metadata: "read", contents: "write" },
+        },
         repos: ["repo-b", "repo-a"],
-        permissions: { metadata: "read", contents: "write" },
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -633,10 +721,14 @@ it("doesn't allow tokens for unauthorized consumers", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-y" },
-        role: "role-a",
-        account: "account-a",
+        declaration: {
+          shared: false,
+          as: "role-a",
+          account: "account-a",
+          repos: ["repo-*"],
+          permissions: { metadata: "read" },
+        },
         repos: ["repo-a"],
-        permissions: { metadata: "read" },
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -648,10 +740,14 @@ it("doesn't allow tokens for unauthorized consumers", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-y", repo: "repo-x" },
-        role: "role-a",
-        account: "account-a",
+        declaration: {
+          shared: false,
+          as: "role-a",
+          account: "account-a",
+          repos: ["repo-*"],
+          permissions: { metadata: "read" },
+        },
         repos: ["repo-a"],
-        permissions: { metadata: "read" },
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -663,10 +759,14 @@ it("doesn't allow tokens for unauthorized consumers", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-y" },
-        role: "role-a",
-        account: "account-a",
+        declaration: {
+          shared: false,
+          as: "role-a",
+          account: "account-a",
+          repos: ["repo-*"],
+          permissions: { metadata: "read" },
+        },
         repos: ["repo-a"],
-        permissions: { metadata: "read" },
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -678,10 +778,14 @@ it("doesn't allow tokens for unauthorized consumers", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-y", repo: "repo-y" },
-        role: "role-a",
-        account: "account-a",
+        declaration: {
+          shared: false,
+          as: "role-a",
+          account: "account-a",
+          repos: ["repo-*"],
+          permissions: { metadata: "read" },
+        },
         repos: ["repo-a"],
-        permissions: { metadata: "read" },
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -713,10 +817,14 @@ it("doesn't allow tokens for unauthorized resource repos", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        role: "role-a",
-        account: "account-a",
+        declaration: {
+          shared: false,
+          as: "role-a",
+          account: "account-a",
+          repos: ["repo-*"],
+          permissions: { contents: "write" },
+        },
         repos: ["repo-y"],
-        permissions: { contents: "write" },
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -728,10 +836,14 @@ it("doesn't allow tokens for unauthorized resource repos", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        role: "role-a",
-        account: "account-y",
+        declaration: {
+          shared: false,
+          as: "role-a",
+          account: "account-y",
+          repos: ["repo-*"],
+          permissions: { contents: "write" },
+        },
         repos: ["repo-a"],
-        permissions: { contents: "write" },
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -743,10 +855,14 @@ it("doesn't allow tokens for unauthorized resource repos", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
-        role: "role-a",
-        account: "account-a",
+        declaration: {
+          shared: false,
+          as: "role-a",
+          account: "account-a",
+          repos: ["repo-*"],
+          permissions: { contents: "write" },
+        },
         repos: ["repo-y"],
-        permissions: { contents: "write" },
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -758,10 +874,14 @@ it("doesn't allow tokens for unauthorized resource repos", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
-        role: "role-a",
-        account: "account-y",
+        declaration: {
+          shared: false,
+          as: "role-a",
+          account: "account-y",
+          repos: ["repo-*"],
+          permissions: { contents: "write" },
+        },
         repos: ["repo-a"],
-        permissions: { contents: "write" },
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -793,10 +913,14 @@ it("doesn't allow tokens where only some of the resources are authorized", () =>
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        role: "role-a",
-        account: "account-a",
+        declaration: {
+          shared: false,
+          as: "role-a",
+          account: "account-a",
+          repos: ["repo-*"],
+          permissions: { contents: "write" },
+        },
         repos: ["repo-a", "repo-b", "repo-y"],
-        permissions: { contents: "write" },
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -814,10 +938,14 @@ it("doesn't allow tokens where only some of the resources are authorized", () =>
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
-        role: "role-a",
-        account: "account-a",
+        declaration: {
+          shared: false,
+          as: "role-a",
+          account: "account-a",
+          repos: ["repo-*"],
+          permissions: { contents: "write" },
+        },
         repos: ["repo-a", "repo-b", "repo-y"],
-        permissions: { contents: "write" },
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -855,10 +983,14 @@ it("doesn't allow tokens for unauthorized permissions", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        role: "role-a",
-        account: "account-a",
+        declaration: {
+          shared: false,
+          as: "role-a",
+          account: "account-a",
+          repos: ["repo-*"],
+          permissions: { contents: "read" },
+        },
         repos: ["repo-a"],
-        permissions: { contents: "read" },
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -872,10 +1004,14 @@ it("doesn't allow tokens for unauthorized permissions", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
-        role: "role-a",
-        account: "account-a",
+        declaration: {
+          shared: false,
+          as: "role-a",
+          account: "account-a",
+          repos: ["repo-*"],
+          permissions: { contents: "read" },
+        },
         repos: ["repo-a"],
-        permissions: { contents: "read" },
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -909,10 +1045,14 @@ it("doesn't allow tokens where only some of the permissions are authorized", () 
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        role: "role-a",
-        account: "account-a",
+        declaration: {
+          shared: false,
+          as: "role-a",
+          account: "account-a",
+          repos: ["repo-*"],
+          permissions: { contents: "read", metadata: "read" },
+        },
         repos: ["repo-a"],
-        permissions: { contents: "read", metadata: "read" },
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -927,10 +1067,14 @@ it("doesn't allow tokens where only some of the permissions are authorized", () 
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
-        role: "role-a",
-        account: "account-a",
+        declaration: {
+          shared: false,
+          as: "role-a",
+          account: "account-a",
+          repos: ["repo-*"],
+          permissions: { contents: "read", metadata: "read" },
+        },
         repos: ["repo-a"],
-        permissions: { contents: "read", metadata: "read" },
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -989,10 +1133,14 @@ it("doesn't allow tokens that are denied by a wildcard rule", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        role: "role-a",
-        account: "account-a",
+        declaration: {
+          shared: false,
+          as: "role-a",
+          account: "account-a",
+          repos: ["repo-*"],
+          permissions: { metadata: "read" },
+        },
         repos: ["repo-a"],
-        permissions: { metadata: "read" },
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -1008,10 +1156,14 @@ it("doesn't allow tokens that are denied by a wildcard rule", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        role: "role-a",
-        account: "account-b",
+        declaration: {
+          shared: false,
+          as: "role-a",
+          account: "account-b",
+          repos: ["repo-*"],
+          permissions: { metadata: "read" },
+        },
         repos: ["repo-b"],
-        permissions: { metadata: "read" },
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -1027,10 +1179,14 @@ it("doesn't allow tokens that are denied by a wildcard rule", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
-        role: "role-a",
-        account: "account-a",
+        declaration: {
+          shared: false,
+          as: "role-a",
+          account: "account-a",
+          repos: ["repo-*"],
+          permissions: { metadata: "read" },
+        },
         repos: ["repo-a"],
-        permissions: { metadata: "read" },
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -1046,10 +1202,14 @@ it("doesn't allow tokens that are denied by a wildcard rule", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
-        role: "role-a",
-        account: "account-b",
+        declaration: {
+          shared: false,
+          as: "role-a",
+          account: "account-b",
+          repos: ["repo-*"],
+          permissions: { metadata: "read" },
+        },
         repos: ["repo-b"],
-        permissions: { metadata: "read" },
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -1085,10 +1245,14 @@ it("doesn't allow tokens when the actual access level is lower than requested", 
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        role: "role-a",
-        account: "account-a",
+        declaration: {
+          shared: false,
+          as: "role-a",
+          account: "account-a",
+          repos: ["repo-*"],
+          permissions: { repository_projects: "admin" },
+        },
         repos: ["repo-a"],
-        permissions: { repository_projects: "admin" },
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -1102,10 +1266,14 @@ it("doesn't allow tokens when the actual access level is lower than requested", 
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
-        role: "role-a",
-        account: "account-a",
+        declaration: {
+          shared: false,
+          as: "role-a",
+          account: "account-a",
+          repos: ["repo-*"],
+          permissions: { repository_projects: "admin" },
+        },
         repos: ["repo-a"],
-        permissions: { repository_projects: "admin" },
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -1151,10 +1319,14 @@ it("doesn't allow tokens when a later rule denies access that a previous rule al
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        role: "role-a",
-        account: "account-a",
+        declaration: {
+          shared: false,
+          as: "role-a",
+          account: "account-a",
+          repos: ["repo-*"],
+          permissions: { contents: "write" },
+        },
         repos: ["repo-a"],
-        permissions: { contents: "write" },
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -1170,10 +1342,14 @@ it("doesn't allow tokens when a later rule denies access that a previous rule al
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
-        role: "role-a",
-        account: "account-a",
+        declaration: {
+          shared: false,
+          as: "role-a",
+          account: "account-a",
+          repos: ["repo-*"],
+          permissions: { contents: "write" },
+        },
         repos: ["repo-a"],
-        permissions: { contents: "write" },
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -1221,10 +1397,14 @@ it("doesn't allow tokens when a later rule removes access that a previous rule a
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        role: "role-a",
-        account: "account-a",
+        declaration: {
+          shared: false,
+          as: "role-a",
+          account: "account-a",
+          repos: ["repo-*"],
+          permissions: { contents: "read" },
+        },
         repos: ["repo-a"],
-        permissions: { contents: "read" },
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -1240,10 +1420,14 @@ it("doesn't allow tokens when a later rule removes access that a previous rule a
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
-        role: "role-a",
-        account: "account-a",
+        declaration: {
+          shared: false,
+          as: "role-a",
+          account: "account-a",
+          repos: ["repo-*"],
+          permissions: { contents: "read" },
+        },
         repos: ["repo-a"],
-        permissions: { contents: "read" },
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -1282,13 +1466,17 @@ it("doesn't allow write tokens if no role is specified", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        role: undefined,
-        account: "account-a",
-        repos: ["repo-a"],
-        permissions: {
-          repository_hooks: "read",
-          repository_projects: "write",
+        declaration: {
+          shared: false,
+          as: undefined,
+          account: "account-a",
+          repos: ["repo-*"],
+          permissions: {
+            repository_hooks: "read",
+            repository_projects: "write",
+          },
         },
+        repos: ["repo-a"],
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -1303,13 +1491,17 @@ it("doesn't allow write tokens if no role is specified", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        role: undefined,
-        account: "account-a",
-        repos: ["repo-a"],
-        permissions: {
-          repository_hooks: "write",
-          repository_projects: "admin",
+        declaration: {
+          shared: false,
+          as: undefined,
+          account: "account-a",
+          repos: ["repo-*"],
+          permissions: {
+            repository_hooks: "write",
+            repository_projects: "admin",
+          },
         },
+        repos: ["repo-a"],
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -1324,13 +1516,17 @@ it("doesn't allow write tokens if no role is specified", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
-        role: undefined,
-        account: "account-a",
-        repos: ["repo-a"],
-        permissions: {
-          repository_hooks: "read",
-          repository_projects: "write",
+        declaration: {
+          shared: false,
+          as: undefined,
+          account: "account-a",
+          repos: ["repo-*"],
+          permissions: {
+            repository_hooks: "read",
+            repository_projects: "write",
+          },
         },
+        repos: ["repo-a"],
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -1345,13 +1541,17 @@ it("doesn't allow write tokens if no role is specified", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
-        role: undefined,
-        account: "account-a",
-        repos: ["repo-a"],
-        permissions: {
-          repository_hooks: "write",
-          repository_projects: "admin",
+        declaration: {
+          shared: false,
+          as: undefined,
+          account: "account-a",
+          repos: ["repo-*"],
+          permissions: {
+            repository_hooks: "write",
+            repository_projects: "admin",
+          },
         },
+        repos: ["repo-a"],
       }),
     ),
   ).toMatchInlineSnapshot(`

@@ -30,10 +30,14 @@ it("finds issuers for all repos in an account with one permission", () => {
   expect(
     appRegistry.findIssuersForRequest({
       consumer: { account: "account-x" },
-      role: "role-a",
-      account: orgA.login,
+      declaration: {
+        shared: false,
+        as: "role-a",
+        account: orgA.login,
+        repos: "all",
+        permissions: { contents: "write" },
+      },
       repos: "all",
-      permissions: { contents: "write" },
     }),
   ).toEqual([appAInstallationA]);
 });
@@ -58,10 +62,14 @@ it("finds issuers for one selected repo with one permission", () => {
   expect(
     appRegistry.findIssuersForRequest({
       consumer: { account: "account-x" },
-      role: "role-a",
-      account: orgA.login,
+      declaration: {
+        shared: false,
+        as: "role-a",
+        account: orgA.login,
+        repos: [repoA.name],
+        permissions: { contents: "write" },
+      },
       repos: [repoA.name],
-      permissions: { contents: "write" },
     }),
   ).toEqual([appAInstallationA]);
 });
@@ -90,10 +98,14 @@ it("finds issuers for multiple selected repos with multiple permissions", () => 
   expect(
     appRegistry.findIssuersForRequest({
       consumer: { account: "account-x" },
-      role: "role-a",
-      account: orgA.login,
+      declaration: {
+        shared: false,
+        as: "role-a",
+        account: orgA.login,
+        repos: [repoA.name, repoB.name],
+        permissions: { contents: "write", metadata: "read" },
+      },
       repos: [repoA.name, repoB.name],
-      permissions: { contents: "write", metadata: "read" },
     }),
   ).toEqual([appAInstallationA]);
 });
@@ -117,10 +129,14 @@ it("finds issuers for no repos", () => {
   expect(
     appRegistry.findIssuersForRequest({
       consumer: { account: "account-x" },
-      role: "role-a",
-      account: orgA.login,
+      declaration: {
+        shared: false,
+        as: "role-a",
+        account: orgA.login,
+        repos: [],
+        permissions: { metadata: "read" },
+      },
       repos: [],
-      permissions: { metadata: "read" },
     }),
   ).toEqual([appAInstallationA]);
 });
@@ -151,10 +167,14 @@ it.each([
     expect(
       appRegistry.findIssuersForRequest({
         consumer: { account: "account-x" },
-        role: "role-a",
-        account: orgA.login,
+        declaration: {
+          shared: false,
+          as: "role-a",
+          account: orgA.login,
+          repos: [repoA.name],
+          permissions: { repository_projects: want },
+        },
         repos: [repoA.name],
-        permissions: { repository_projects: want },
       }),
     ).toEqual([appAInstallationA]);
   },
@@ -185,37 +205,53 @@ it("finds issuers for the correct account when there are multiple installations"
   expect(
     appRegistry.findIssuersForRequest({
       consumer: { account: "account-x" },
-      role: undefined,
-      account: orgA.login,
+      declaration: {
+        shared: false,
+        as: undefined,
+        account: orgA.login,
+        repos: "all",
+        permissions: { metadata: "read" },
+      },
       repos: "all",
-      permissions: { metadata: "read" },
     }),
   ).toEqual([appAInstallationA]);
   expect(
     appRegistry.findIssuersForRequest({
       consumer: { account: "account-x" },
-      role: undefined,
-      account: orgA.login,
+      declaration: {
+        shared: false,
+        as: undefined,
+        account: orgA.login,
+        repos: [],
+        permissions: { metadata: "read" },
+      },
       repos: [],
-      permissions: { metadata: "read" },
     }),
   ).toEqual([appAInstallationA]);
   expect(
     appRegistry.findIssuersForRequest({
       consumer: { account: "account-x" },
-      role: undefined,
-      account: orgB.login,
+      declaration: {
+        shared: false,
+        as: undefined,
+        account: orgB.login,
+        repos: "all",
+        permissions: { metadata: "read" },
+      },
       repos: "all",
-      permissions: { metadata: "read" },
     }),
   ).toEqual([appAInstallationB]);
   expect(
     appRegistry.findIssuersForRequest({
       consumer: { account: "account-x" },
-      role: undefined,
-      account: orgB.login,
+      declaration: {
+        shared: false,
+        as: undefined,
+        account: orgB.login,
+        repos: [],
+        permissions: { metadata: "read" },
+      },
       repos: [],
-      permissions: { metadata: "read" },
     }),
   ).toEqual([appAInstallationB]);
 });
@@ -276,46 +312,66 @@ it("finds issuers by role", () => {
   expect(
     appRegistry.findIssuersForRequest({
       consumer: { account: "account-x" },
-      role: "role-a",
-      account: orgA.login,
+      declaration: {
+        shared: false,
+        as: "role-a",
+        account: orgA.login,
+        repos: [repoA.name],
+        permissions: { contents: "write" },
+      },
       repos: [repoA.name],
-      permissions: { contents: "write" },
     }),
   ).toEqual([appBInstallationA]);
   expect(
     appRegistry.findIssuersForRequest({
       consumer: { account: "account-x" },
-      role: "role-a",
-      account: orgA.login,
+      declaration: {
+        shared: false,
+        as: "role-a",
+        account: orgA.login,
+        repos: [repoB.name],
+        permissions: { contents: "write" },
+      },
       repos: [repoB.name],
-      permissions: { contents: "write" },
     }),
   ).toEqual([appBInstallationA, appDInstallationA]);
   expect(
     appRegistry.findIssuersForRequest({
       consumer: { account: "account-x" },
-      role: "role-a",
-      account: orgA.login,
+      declaration: {
+        shared: false,
+        as: "role-a",
+        account: orgA.login,
+        repos: [repoC.name],
+        permissions: { contents: "write" },
+      },
       repos: [repoC.name],
-      permissions: { contents: "write" },
     }),
   ).toEqual([appDInstallationA]);
   expect(
     appRegistry.findIssuersForRequest({
       consumer: { account: "account-x" },
-      role: "role-b",
-      account: orgA.login,
+      declaration: {
+        shared: false,
+        as: "role-b",
+        account: orgA.login,
+        repos: [repoA.name],
+        permissions: { contents: "write" },
+      },
       repos: [repoA.name],
-      permissions: { contents: "write" },
     }),
   ).toEqual([appCInstallationA]);
   expect(
     appRegistry.findIssuersForRequest({
       consumer: { account: "account-x" },
-      role: "role-b",
-      account: orgA.login,
+      declaration: {
+        shared: false,
+        as: "role-b",
+        account: orgA.login,
+        repos: [repoD.name],
+        permissions: { contents: "write" },
+      },
       repos: [repoD.name],
-      permissions: { contents: "write" },
     }),
   ).toEqual([appDInstallationA]);
 });
@@ -353,19 +409,27 @@ it("finds issuers for read access when the role is undefined", () => {
   expect(
     appRegistry.findIssuersForRequest({
       consumer: { account: "account-x" },
-      role: undefined,
-      account: orgA.login,
+      declaration: {
+        shared: false,
+        as: undefined,
+        account: orgA.login,
+        repos: [],
+        permissions: { contents: "read" },
+      },
       repos: [],
-      permissions: { contents: "read" },
     }),
   ).toEqual([appAInstallationA, appBInstallationA]);
   expect(
     appRegistry.findIssuersForRequest({
       consumer: { account: "account-x" },
-      role: undefined,
-      account: orgA.login,
+      declaration: {
+        shared: false,
+        as: undefined,
+        account: orgA.login,
+        repos: [],
+        permissions: { repository_projects: "read" },
+      },
       repos: [],
-      permissions: { repository_projects: "read" },
     }),
   ).toEqual([appBInstallationA]);
 });
@@ -392,19 +456,27 @@ it("doesn't find issuers for write or admin access when the role is undefined", 
   expect(
     appRegistry.findIssuersForRequest({
       consumer: { account: "account-x" },
-      role: undefined,
-      account: orgA.login,
+      declaration: {
+        shared: false,
+        as: undefined,
+        account: orgA.login,
+        repos: [],
+        permissions: { contents: "write" },
+      },
       repos: [],
-      permissions: { contents: "write" },
     }),
   ).toHaveLength(0);
   expect(
     appRegistry.findIssuersForRequest({
       consumer: { account: "account-x" },
-      role: undefined,
-      account: orgA.login,
+      declaration: {
+        shared: false,
+        as: undefined,
+        account: orgA.login,
+        repos: [],
+        permissions: { repository_projects: "admin" },
+      },
       repos: [],
-      permissions: { repository_projects: "admin" },
     }),
   ).toHaveLength(0);
 });
@@ -429,10 +501,14 @@ it("doesn't find issuers when it can't access all repos in an account", () => {
   expect(
     appRegistry.findIssuersForRequest({
       consumer: { account: "account-x" },
-      role: "role-a",
-      account: orgA.login,
+      declaration: {
+        shared: false,
+        as: "role-a",
+        account: orgA.login,
+        repos: "all",
+        permissions: { contents: "write" },
+      },
       repos: "all",
-      permissions: { contents: "write" },
     }),
   ).toHaveLength(0);
 });
@@ -457,10 +533,14 @@ it("doesn't find issuers for an unknown account", () => {
   expect(
     appRegistry.findIssuersForRequest({
       consumer: { account: "account-x" },
-      role: "role-a",
-      account: "account-x",
+      declaration: {
+        shared: false,
+        as: "role-a",
+        account: "account-x",
+        repos: [repoA.name],
+        permissions: { contents: "write" },
+      },
       repos: [repoA.name],
-      permissions: { contents: "write" },
     }),
   ).toHaveLength(0);
 });
@@ -485,10 +565,14 @@ it("doesn't find issuers for an unknown repo", () => {
   expect(
     appRegistry.findIssuersForRequest({
       consumer: { account: "account-x" },
-      role: "role-a",
-      account: orgA.login,
+      declaration: {
+        shared: false,
+        as: "role-a",
+        account: orgA.login,
+        repos: ["repo-x"],
+        permissions: { contents: "write" },
+      },
       repos: ["repo-x"],
-      permissions: { contents: "write" },
     }),
   ).toHaveLength(0);
 });
@@ -513,10 +597,14 @@ it("doesn't find issuers that can't access all requested repos", () => {
   expect(
     appRegistry.findIssuersForRequest({
       consumer: { account: "account-x" },
-      role: "role-a",
-      account: orgA.login,
+      declaration: {
+        shared: false,
+        as: "role-a",
+        account: orgA.login,
+        repos: [repoA.name, "repo-x"],
+        permissions: { contents: "write" },
+      },
       repos: [repoA.name, "repo-x"],
-      permissions: { contents: "write" },
     }),
   ).toHaveLength(0);
 });
@@ -540,10 +628,14 @@ it("doesn't find issuers that don't have all permissions", () => {
   expect(
     appRegistry.findIssuersForRequest({
       consumer: { account: "account-x" },
-      role: "role-a",
-      account: orgA.login,
+      declaration: {
+        shared: false,
+        as: "role-a",
+        account: orgA.login,
+        repos: ["repo-a"],
+        permissions: { contents: "write", metadata: "read" },
+      },
       repos: ["repo-a"],
-      permissions: { contents: "write", metadata: "read" },
     }),
   ).toHaveLength(0);
 });
@@ -573,10 +665,14 @@ it.each([
     expect(
       appRegistry.findIssuersForRequest({
         consumer: { account: "account-x" },
-        role: "role-a",
-        account: orgA.login,
+        declaration: {
+          shared: false,
+          as: "role-a",
+          account: orgA.login,
+          repos: ["repo-a"],
+          permissions: { repository_projects: want },
+        },
         repos: ["repo-a"],
-        permissions: { repository_projects: want },
       }),
     ).toHaveLength(0);
   },
@@ -601,10 +697,14 @@ it("doesn't find issuers for no permissions", () => {
   expect(
     appRegistry.findIssuersForRequest({
       consumer: { account: "account-x" },
-      role: "role-a",
-      account: orgA.login,
+      declaration: {
+        shared: false,
+        as: "role-a",
+        account: orgA.login,
+        repos: [],
+        permissions: {},
+      },
       repos: [],
-      permissions: {},
     }),
   ).toHaveLength(0);
 });
@@ -628,19 +728,27 @@ it("doesn't find issuers from non-issuer apps", () => {
   expect(
     appRegistry.findIssuersForRequest({
       consumer: { account: "account-x" },
-      role: undefined,
-      account: orgA.login,
+      declaration: {
+        shared: false,
+        as: undefined,
+        account: orgA.login,
+        repos: "all",
+        permissions: { contents: "read" },
+      },
       repos: "all",
-      permissions: { contents: "read" },
     }),
   ).toHaveLength(0);
   expect(
     appRegistry.findIssuersForRequest({
       consumer: { account: "account-x" },
-      role: "role-a",
-      account: orgA.login,
+      declaration: {
+        shared: false,
+        as: "role-a",
+        account: orgA.login,
+        repos: "all",
+        permissions: { contents: "write" },
+      },
       repos: "all",
-      permissions: { contents: "write" },
     }),
   ).toHaveLength(0);
 });

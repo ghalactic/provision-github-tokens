@@ -120,16 +120,18 @@ export function createAppRegistry(): AppRegistry {
 
     findIssuersForRequest: (request) => {
       // Disallow empty permissions requests
-      if (isEmptyPermissions(request.permissions)) return [];
+      if (isEmptyPermissions(request.declaration.permissions)) return [];
 
-      const tokenHasRole = typeof request.role === "string";
-      const tokenPerms = Object.keys(request.permissions);
+      const tokenHasRole = typeof request.declaration.as === "string";
+      const tokenPerms = Object.keys(request.declaration.permissions);
 
       // Require an explicit role for write/admin access
       if (!tokenHasRole) {
         for (const permission of tokenPerms) {
           if (
-            isWriteAccess(permissionAccess(request.permissions, permission))
+            isWriteAccess(
+              permissionAccess(request.declaration.permissions, permission),
+            )
           ) {
             return [];
           }
@@ -156,7 +158,7 @@ export function createAppRegistry(): AppRegistry {
           let appHasRole = false;
 
           for (const role of appReg.issuer.roles) {
-            if (role === request.role) {
+            if (role === request.declaration.as) {
               appHasRole = true;
               break;
             }
@@ -172,7 +174,7 @@ export function createAppRegistry(): AppRegistry {
           if (
             isSufficientAccess(
               permissionAccess(installation.permissions, permission),
-              permissionAccess(request.permissions, permission),
+              permissionAccess(request.declaration.permissions, permission),
             )
           ) {
             ++permMatchCount;
@@ -182,7 +184,9 @@ export function createAppRegistry(): AppRegistry {
         if (permMatchCount !== tokenPerms.length) continue;
 
         if (installation.repository_selection === "all") {
-          if (installationAccount(installation) === request.account) {
+          if (
+            installationAccount(installation) === request.declaration.account
+          ) {
             found.push(instReg);
           }
 
@@ -190,7 +194,10 @@ export function createAppRegistry(): AppRegistry {
         }
 
         for (const repo of repos) {
-          if (repo.owner.login === request.account && tokenRepos[repo.name]) {
+          if (
+            repo.owner.login === request.declaration.account &&
+            tokenRepos[repo.name]
+          ) {
             ++repoMatchCount;
           }
         }

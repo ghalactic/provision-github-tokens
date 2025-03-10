@@ -1,10 +1,8 @@
 import type { AccountOrRepoReference } from "../github-reference.js";
-import type { Permissions } from "./permissions.js";
+import type { TokenDeclaration } from "./token-declaration.js";
 
 export type TokenRequest = {
   consumer: AccountOrRepoReference;
-  role: string | undefined;
-  account: string;
+  declaration: TokenDeclaration;
   repos: "all" | string[];
-  permissions: Permissions;
 };
