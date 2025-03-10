@@ -53665,7 +53665,7 @@ var provider_v1_schema_default = {
                 }
               },
               consumers: {
-                description: "A list of patterns to match against consumer repos when applying the rule.",
+                description: "A list of patterns to match against consumers when applying the rule.",
                 type: "array",
                 minItems: 1,
                 items: {
