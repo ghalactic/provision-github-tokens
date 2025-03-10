@@ -218,15 +218,19 @@ async function discoverInstallation(
 
   if (account == null) {
     debug(
-      `Skipping discovery of app installation ${installationId} ` +
-        ` because it is not associated with a named account`,
+      `Skipping discovery of app ${appInput.appId} ` +
+        `installation ${installationId} ` +
+        `because it is not associated with a named account`,
     );
 
     return;
   }
   /* v8 ignore stop */
 
-  debug(`Discovered app installation ${installationId} for account ${account}`);
+  debug(
+    `Discovered app ${appInput.appId} ` +
+      `installation ${installationId} for account ${account}`,
+  );
 
   if (isEmptyPermissions(permissions)) {
     debug(`Installation ${installationId} has no permissions`);

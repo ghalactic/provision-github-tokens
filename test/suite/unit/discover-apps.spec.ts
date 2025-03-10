@@ -57,7 +57,7 @@ it("discovers installations with access to all repos", async () => {
   expect(__getOutput()).toMatchInlineSnapshot(`
     "::debug::Discovered app "App A" (app-a / 110)
     ::debug::App 110 is a token issuer with no roles
-    ::debug::Discovered app installation 111 for account org-a
+    ::debug::Discovered app 110 installation 111 for account org-a
     ::debug::Installation 111 has permissions {"contents":"read"}
     ::debug::Installation 111 has access to all repos ["org-a/repo-a","org-a/repo-b"]
     ::debug::Discovered 1 installation of "App A"
@@ -104,7 +104,7 @@ it("discovers installations with access to selected repos", async () => {
   expect(__getOutput()).toMatchInlineSnapshot(`
     "::debug::Discovered app "App A" (app-a / 110)
     ::debug::App 110 is a token issuer with no roles
-    ::debug::Discovered app installation 111 for account org-a
+    ::debug::Discovered app 110 installation 111 for account org-a
     ::debug::Installation 111 has permissions {"contents":"read"}
     ::debug::Installation 111 has access to selected repos ["org-a/repo-a","org-a/repo-b"]
     ::debug::Discovered 1 installation of "App A"
@@ -149,7 +149,7 @@ it("discovers installations with access to no repos", async () => {
   expect(__getOutput()).toMatchInlineSnapshot(`
     "::debug::Discovered app "App A" (app-a / 110)
     ::debug::App 110 is a token issuer with no roles
-    ::debug::Discovered app installation 111 for account org-a
+    ::debug::Discovered app 110 installation 111 for account org-a
     ::debug::Installation 111 has permissions {"members":"read"}
     ::debug::Installation 111 has access to no repos
     ::debug::Discovered 1 installation of "App A"
@@ -196,7 +196,7 @@ it("discovers installations with no permissions", async () => {
   expect(__getOutput()).toMatchInlineSnapshot(`
     "::debug::Discovered app "App A" (app-a / 110)
     ::debug::App 110 is a token issuer with no roles
-    ::debug::Discovered app installation 111 for account org-a
+    ::debug::Discovered app 110 installation 111 for account org-a
     ::debug::Installation 111 has no permissions
     ::debug::Installation 111 has access to all repos ["org-a/repo-a","org-a/repo-b"]
     ::debug::Discovered 1 installation of "App A"
@@ -259,13 +259,13 @@ it("discovers installations with roles", async () => {
   expect(__getOutput()).toMatchInlineSnapshot(`
     "::debug::Discovered app "App A" (app-a / 110)
     ::debug::App 110 is a token issuer with roles ["role-a"]
-    ::debug::Discovered app installation 111 for account org-a
+    ::debug::Discovered app 110 installation 111 for account org-a
     ::debug::Installation 111 has permissions {"contents":"write"}
     ::debug::Installation 111 has access to all repos ["org-a/repo-a","org-a/repo-b"]
     ::debug::Discovered 1 installation of "App A"
     ::debug::Discovered app "App B" (app-b / 120)
     ::debug::App 120 is a token issuer with roles ["role-b","role-c"]
-    ::debug::Discovered app installation 121 for account org-a
+    ::debug::Discovered app 120 installation 121 for account org-a
     ::debug::Installation 121 has permissions {"contents":"write"}
     ::debug::Installation 121 has access to all repos ["org-a/repo-a","org-a/repo-b"]
     ::debug::Discovered 1 installation of "App B"
@@ -326,10 +326,10 @@ it("discovers multiple installations of an app", async () => {
   expect(__getOutput()).toMatchInlineSnapshot(`
     "::debug::Discovered app "App A" (app-a / 100)
     ::debug::App 100 is a token issuer with no roles
-    ::debug::Discovered app installation 101 for account org-a
+    ::debug::Discovered app 100 installation 101 for account org-a
     ::debug::Installation 101 has permissions {"contents":"read"}
     ::debug::Installation 101 has access to all repos ["org-a/repo-a"]
-    ::debug::Discovered app installation 102 for account org-b
+    ::debug::Discovered app 100 installation 102 for account org-b
     ::debug::Installation 102 has permissions {"contents":"read"}
     ::debug::Installation 102 has access to all repos ["org-b/repo-b"]
     ::debug::Discovered 2 installations of "App A"
@@ -397,14 +397,14 @@ it("discovers multiple apps", async () => {
     "::debug::Discovered app "App A" (app-a / 110)
     ::debug::App 110 is a token issuer with no roles
     ::debug::App 110 is a token provisioner
-    ::debug::Discovered app installation 111 for account org-a
+    ::debug::Discovered app 110 installation 111 for account org-a
     ::debug::Installation 111 has permissions {"contents":"read"}
     ::debug::Installation 111 has access to all repos ["org-a/repo-a","org-a/repo-b"]
     ::debug::Discovered 1 installation of "App A"
     ::debug::Discovered app "App B" (app-b / 120)
     ::debug::App 120 is a token issuer with no roles
     ::debug::App 120 is a token provisioner
-    ::debug::Discovered app installation 121 for account org-a
+    ::debug::Discovered app 120 installation 121 for account org-a
     ::debug::Installation 121 has permissions {"actions":"read"}
     ::debug::Installation 121 has access to all repos ["org-a/repo-a","org-a/repo-b"]
     ::debug::Discovered 1 installation of "App B"
@@ -478,7 +478,7 @@ it("skips apps with incorrect credentials", async () => {
     ::warning::App at index 0 has incorrect credentials - skipping
     ::debug::Discovered app "App B" (app-b / 120)
     ::debug::App 120 is a token issuer with no roles
-    ::debug::Discovered app installation 102 for account org-a
+    ::debug::Discovered app 120 installation 102 for account org-a
     ::debug::Installation 102 has permissions {"contents":"read"}
     ::debug::Installation 102 has access to all repos ["org-a/repo-a","org-a/repo-b"]
     ::debug::Discovered 1 installation of "App B"
@@ -540,7 +540,7 @@ it("skips non-existent apps", async () => {
     ::warning::App at index 0 not found - skipping
     ::debug::Discovered app "App A" (app-a / 110)
     ::debug::App 110 is a token issuer with no roles
-    ::debug::Discovered app installation 101 for account org-a
+    ::debug::Discovered app 110 installation 101 for account org-a
     ::debug::Installation 101 has permissions {"contents":"read"}
     ::debug::Installation 101 has access to all repos ["org-a/repo-a","org-a/repo-b"]
     ::debug::Discovered 1 installation of "App A"
@@ -624,7 +624,7 @@ it("reports unexpected HTTP statuses", async () => {
   expect(__getOutput()).toMatchInlineSnapshot(`
     "::debug::Discovered app "App A" (app-a / 110)
     ::debug::App 110 is a token issuer with no roles
-    ::debug::Discovered app installation 111 for account org-a
+    ::debug::Discovered app 110 installation 111 for account org-a
     ::debug::Installation 111 has permissions {"contents":"read"}
     ::debug::Installation 111 has access to all repos ["org-a/repo-a","org-a/repo-b"]
     ::debug::Discovered 1 installation of "App A"
@@ -632,7 +632,7 @@ it("reports unexpected HTTP statuses", async () => {
     ::error::Failed to discover app at index 2
     ::debug::Discovered app "App C" (app-c / 130)
     ::debug::App 130 is a token issuer with no roles
-    ::debug::Discovered app installation 131 for account org-a
+    ::debug::Discovered app 130 installation 131 for account org-a
     ::debug::Installation 131 has permissions {"actions":"read"}
     ::debug::Installation 131 has access to all repos ["org-a/repo-a","org-a/repo-b"]
     ::debug::Discovered 1 installation of "App C"
@@ -720,7 +720,7 @@ it("skips apps when discovery throws", async () => {
   expect(__getOutput()).toMatchInlineSnapshot(`
     "::debug::Discovered app "App A" (app-a / 110)
     ::debug::App 110 is a token issuer with no roles
-    ::debug::Discovered app installation 111 for account org-a
+    ::debug::Discovered app 110 installation 111 for account org-a
     ::debug::Installation 111 has permissions {"contents":"read"}
     ::debug::Installation 111 has access to all repos ["org-a/repo-a","org-a/repo-b"]
     ::debug::Discovered 1 installation of "App A"
@@ -728,7 +728,7 @@ it("skips apps when discovery throws", async () => {
     ::error::Failed to discover app at index 2
     ::debug::Discovered app "App C" (app-c / 130)
     ::debug::App 130 is a token issuer with no roles
-    ::debug::Discovered app installation 131 for account org-a
+    ::debug::Discovered app 130 installation 131 for account org-a
     ::debug::Installation 131 has permissions {"actions":"read"}
     ::debug::Installation 131 has access to all repos ["org-a/repo-a","org-a/repo-b"]
     ::debug::Discovered 1 installation of "App C"
@@ -798,12 +798,12 @@ it("skips installations when discovery throws", async () => {
   expect(__getOutput()).toMatchInlineSnapshot(`
     "::debug::Discovered app "App A" (app-a / 110)
     ::debug::App 110 is a token issuer with no roles
-    ::debug::Discovered app installation 111 for account org-a
+    ::debug::Discovered app 110 installation 111 for account org-a
     ::debug::Installation 111 has permissions {"contents":"read"}
     ::debug::Installation 111 has access to selected repos ["org-a/repo-a"]
     ::debug::Failed to discover installation 112 for app 110: <ERROR>
     ::error::Failed to discover installation for app at index 0
-    ::debug::Discovered app installation 113 for account org-c
+    ::debug::Discovered app 110 installation 113 for account org-c
     ::debug::Installation 113 has permissions {"contents":"read"}
     ::debug::Installation 113 has access to selected repos ["org-c/repo-c"]
     ::debug::Discovered 2 installations of "App A"
@@ -886,14 +886,14 @@ it("skips apps when they're fully disabled", async () => {
   expect(__getOutput()).toMatchInlineSnapshot(`
     "::debug::Discovered app "App A" (app-a / 110)
     ::debug::App 110 is a token issuer with no roles
-    ::debug::Discovered app installation 111 for account org-a
+    ::debug::Discovered app 110 installation 111 for account org-a
     ::debug::Installation 111 has permissions {"contents":"read"}
     ::debug::Installation 111 has access to all repos ["org-a/repo-a","org-a/repo-b"]
     ::debug::Discovered 1 installation of "App A"
     ::debug::Skipping discovery of disabled app 120
     ::debug::Discovered app "App C" (app-c / 130)
     ::debug::App 130 is a token issuer with no roles
-    ::debug::Discovered app installation 131 for account org-a
+    ::debug::Discovered app 130 installation 131 for account org-a
     ::debug::Installation 131 has permissions {"actions":"read"}
     ::debug::Installation 131 has access to all repos ["org-a/repo-a","org-a/repo-b"]
     ::debug::Discovered 1 installation of "App C"

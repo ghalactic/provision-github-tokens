@@ -59115,11 +59115,13 @@ async function discoverInstallation(octokitFactory, appRegistry, appsInput, appI
   const account = installation.account && "login" in installation.account ? installation.account.login : void 0;
   if (account == null) {
     (0, import_core3.debug)(
-      `Skipping discovery of app installation ${installationId}  because it is not associated with a named account`
+      `Skipping discovery of app ${appInput.appId} installation ${installationId} because it is not associated with a named account`
     );
     return;
   }
-  (0, import_core3.debug)(`Discovered app installation ${installationId} for account ${account}`);
+  (0, import_core3.debug)(
+    `Discovered app ${appInput.appId} installation ${installationId} for account ${account}`
+  );
   if (isEmptyPermissions(permissions)) {
     (0, import_core3.debug)(`Installation ${installationId} has no permissions`);
   } else {
