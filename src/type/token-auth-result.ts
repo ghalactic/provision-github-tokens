@@ -18,6 +18,7 @@ export type TokenAuthResultNoRepos = TokenAuthResultCommon &
 export type TokenAuthResultSelectedRepos = TokenAuthResultCommon & {
   type: "SELECTED_REPOS";
   results: Record<string, TokenAuthResourceResult>;
+  isMatched: boolean;
 };
 
 export type TokenAuthResourceResult = {

@@ -40,8 +40,12 @@ export function createTokenAuthorizer(
         throw new Error("No permissions requested");
       }
 
-      if (request.repos === "all") return authorizeAllRepos(request);
-      if (request.repos.length < 1) return authorizeNoRepos(request);
+      if (request.declaration.repos === "all") {
+        return authorizeAllRepos(request);
+      }
+      if (request.declaration.repos.length < 1) {
+        return authorizeNoRepos(request);
+      }
       return authorizeSelectedRepos(request);
     },
   };
@@ -217,7 +221,8 @@ export function createTokenAuthorizer(
     const maxWant = maxAccess(request.declaration.permissions);
     const isWrite = isWriteAccess(maxWant);
     const isMissingRole = isWrite && !request.declaration.as;
-    const isAllowed = isSufficient && !isMissingRole;
+    const isMatched = request.repos.length > 0;
+    const isAllowed = isSufficient && !isMissingRole && isMatched;
 
     return {
       request,
@@ -226,6 +231,7 @@ export function createTokenAuthorizer(
       maxWant,
       isSufficient,
       isMissingRole,
+      isMatched,
       isAllowed,
     };
   }

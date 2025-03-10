@@ -39,6 +39,7 @@ it("allows tokens that should be allowed", () => {
   ).toMatchInlineSnapshot(`
     "✅ Account account-x was allowed access to a token:
       ✅ Write access to repos in account-a requested with role role-a
+      ✅ 1 repo pattern matched 1 repo
       ✅ Sufficient access to repo account-a/repo-a based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ contents: have write, wanted write"
@@ -60,6 +61,7 @@ it("allows tokens that should be allowed", () => {
   ).toMatchInlineSnapshot(`
     "✅ Account account-x was allowed access to a token:
       ✅ Write access to repos in account-a requested with role role-a
+      ✅ 1 repo pattern matched 1 repo
       ✅ Sufficient access to repo account-a/repo-b based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ contents: have write, wanted write
@@ -82,6 +84,7 @@ it("allows tokens that should be allowed", () => {
   ).toMatchInlineSnapshot(`
     "✅ Account account-x was allowed access to a token:
       ✅ Write access to repos in account-a requested with role role-a
+      ✅ 1 repo pattern matched 2 repos
       ✅ Sufficient access to repo account-a/repo-a based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ contents: have write, wanted write
@@ -108,6 +111,7 @@ it("allows tokens that should be allowed", () => {
   ).toMatchInlineSnapshot(`
     "✅ Repo account-x/repo-x was allowed access to a token:
       ✅ Write access to repos in account-a requested with role role-a
+      ✅ 1 repo pattern matched 1 repo
       ✅ Sufficient access to repo account-a/repo-a based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ contents: have write, wanted write"
@@ -129,6 +133,7 @@ it("allows tokens that should be allowed", () => {
   ).toMatchInlineSnapshot(`
     "✅ Repo account-x/repo-x was allowed access to a token:
       ✅ Write access to repos in account-a requested with role role-a
+      ✅ 1 repo pattern matched 1 repo
       ✅ Sufficient access to repo account-a/repo-b based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ contents: have write, wanted write
@@ -151,6 +156,7 @@ it("allows tokens that should be allowed", () => {
   ).toMatchInlineSnapshot(`
     "✅ Repo account-x/repo-x was allowed access to a token:
       ✅ Write access to repos in account-a requested with role role-a
+      ✅ 1 repo pattern matched 2 repos
       ✅ Sufficient access to repo account-a/repo-a based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ contents: have write, wanted write
@@ -197,6 +203,7 @@ it("allows tokens when allowed by a wildcard rule", () => {
   ).toMatchInlineSnapshot(`
     "✅ Account account-x was allowed access to a token:
       ✅ Read access to repos in account-a requested with role role-a
+      ✅ 1 repo pattern matched 1 repo
       ✅ Sufficient access to repo account-a/repo-a based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ metadata: have read, wanted read"
@@ -218,6 +225,7 @@ it("allows tokens when allowed by a wildcard rule", () => {
   ).toMatchInlineSnapshot(`
     "✅ Account account-x was allowed access to a token:
       ✅ Read access to repos in account-b requested with role role-a
+      ✅ 1 repo pattern matched 1 repo
       ✅ Sufficient access to repo account-b/repo-b based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ metadata: have read, wanted read"
@@ -239,6 +247,7 @@ it("allows tokens when allowed by a wildcard rule", () => {
   ).toMatchInlineSnapshot(`
     "✅ Repo account-x/repo-x was allowed access to a token:
       ✅ Read access to repos in account-a requested with role role-a
+      ✅ 1 repo pattern matched 1 repo
       ✅ Sufficient access to repo account-a/repo-a based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ metadata: have read, wanted read"
@@ -260,6 +269,7 @@ it("allows tokens when allowed by a wildcard rule", () => {
   ).toMatchInlineSnapshot(`
     "✅ Repo account-x/repo-x was allowed access to a token:
       ✅ Read access to repos in account-b requested with role role-a
+      ✅ 1 repo pattern matched 1 repo
       ✅ Sufficient access to repo account-b/repo-b based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ metadata: have read, wanted read"
@@ -301,6 +311,7 @@ it("allows tokens when the actual access level is higher than requested", () => 
   ).toMatchInlineSnapshot(`
     "✅ Account account-x was allowed access to a token:
       ✅ Write access to repos in account-a requested with role role-a
+      ✅ 1 repo pattern matched 1 repo
       ✅ Sufficient access to repo account-a/repo-a based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ metadata: have write, wanted read
@@ -323,6 +334,7 @@ it("allows tokens when the actual access level is higher than requested", () => 
   ).toMatchInlineSnapshot(`
     "✅ Repo account-x/repo-x was allowed access to a token:
       ✅ Write access to repos in account-a requested with role role-a
+      ✅ 1 repo pattern matched 1 repo
       ✅ Sufficient access to repo account-a/repo-a based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ metadata: have write, wanted read
@@ -377,6 +389,7 @@ it("allows tokens when a later rule allows access that a previous rule denied", 
   ).toMatchInlineSnapshot(`
     "✅ Account account-x was allowed access to a token:
       ✅ Write access to repos in account-a requested with role role-a
+      ✅ 1 repo pattern matched 1 repo
       ✅ Sufficient access to repo account-a/repo-a based on 2 rules:
         ❌ Rule #1 gave insufficient access:
           ❌ contents: have read, wanted write
@@ -402,6 +415,7 @@ it("allows tokens when a later rule allows access that a previous rule denied", 
   ).toMatchInlineSnapshot(`
     "✅ Repo account-x/repo-x was allowed access to a token:
       ✅ Write access to repos in account-a requested with role role-a
+      ✅ 1 repo pattern matched 1 repo
       ✅ Sufficient access to repo account-a/repo-a based on 2 rules:
         ❌ Rule #1 gave insufficient access:
           ❌ contents: have read, wanted write
@@ -471,6 +485,7 @@ it("allows tokens when a later unrelated rule denies access to the requested per
   ).toMatchInlineSnapshot(`
     "✅ Account account-x was allowed access to a token:
       ✅ Write access to repos in account-a requested with role role-a
+      ✅ 1 repo pattern matched 1 repo
       ✅ Sufficient access to repo account-a/repo-a based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ contents: have write, wanted write
@@ -493,6 +508,7 @@ it("allows tokens when a later unrelated rule denies access to the requested per
   ).toMatchInlineSnapshot(`
     "✅ Repo account-x/repo-x was allowed access to a token:
       ✅ Write access to repos in account-a requested with role role-a
+      ✅ 1 repo pattern matched 1 repo
       ✅ Sufficient access to repo account-a/repo-a based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ contents: have write, wanted write
@@ -535,6 +551,7 @@ it("allows read-only tokens without a role", () => {
   ).toMatchInlineSnapshot(`
     "✅ Account account-x was allowed access to a token:
       ✅ Read access to repos in account-a requested without a role
+      ✅ 1 repo pattern matched 1 repo
       ✅ Sufficient access to repo account-a/repo-a based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ contents: have write, wanted read
@@ -557,6 +574,7 @@ it("allows read-only tokens without a role", () => {
   ).toMatchInlineSnapshot(`
     "✅ Repo account-x/repo-x was allowed access to a token:
       ✅ Read access to repos in account-a requested without a role
+      ✅ 1 repo pattern matched 1 repo
       ✅ Sufficient access to repo account-a/repo-a based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ contents: have write, wanted read
@@ -600,6 +618,7 @@ it("supports rule descriptions", () => {
   ).toMatchInlineSnapshot(`
     "✅ Account account-x was allowed access to a token:
       ✅ Read access to repos in account-a requested with role role-a
+      ✅ 1 repo pattern matched 1 repo
       ✅ Sufficient access to repo account-a/repo-a based on 1 rule:
         ✅ Rule #1: "<description>" gave sufficient access:
           ✅ metadata: have read, wanted read"
@@ -621,6 +640,7 @@ it("supports rule descriptions", () => {
   ).toMatchInlineSnapshot(`
     "✅ Repo account-x/repo-x was allowed access to a token:
       ✅ Read access to repos in account-a requested with role role-a
+      ✅ 1 repo pattern matched 1 repo
       ✅ Sufficient access to repo account-a/repo-a based on 1 rule:
         ✅ Rule #1: "<description>" gave sufficient access:
           ✅ metadata: have read, wanted read"
@@ -662,6 +682,7 @@ it("sorts repos and permissions in the explanation", () => {
   ).toMatchInlineSnapshot(`
     "✅ Account account-x was allowed access to a token:
       ✅ Write access to repos in account-a requested with role role-a
+      ✅ 1 repo pattern matched 2 repos
       ✅ Sufficient access to repo account-a/repo-a based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ contents: have write, wanted write
@@ -688,6 +709,7 @@ it("sorts repos and permissions in the explanation", () => {
   ).toMatchInlineSnapshot(`
     "✅ Repo account-x/repo-x was allowed access to a token:
       ✅ Write access to repos in account-a requested with role role-a
+      ✅ 1 repo pattern matched 2 repos
       ✅ Sufficient access to repo account-a/repo-a based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ contents: have write, wanted write
@@ -734,6 +756,7 @@ it("doesn't allow tokens for unauthorized consumers", () => {
   ).toMatchInlineSnapshot(`
     "❌ Account account-y was denied access to a token:
       ✅ Read access to repos in account-a requested with role role-a
+      ✅ 1 repo pattern matched 1 repo
       ❌ Insufficient access to repo account-a/repo-a (no matching rules)"
   `);
   expect(
@@ -753,6 +776,7 @@ it("doesn't allow tokens for unauthorized consumers", () => {
   ).toMatchInlineSnapshot(`
     "❌ Repo account-y/repo-x was denied access to a token:
       ✅ Read access to repos in account-a requested with role role-a
+      ✅ 1 repo pattern matched 1 repo
       ❌ Insufficient access to repo account-a/repo-a (no matching rules)"
   `);
   expect(
@@ -772,6 +796,7 @@ it("doesn't allow tokens for unauthorized consumers", () => {
   ).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-y was denied access to a token:
       ✅ Read access to repos in account-a requested with role role-a
+      ✅ 1 repo pattern matched 1 repo
       ❌ Insufficient access to repo account-a/repo-a (no matching rules)"
   `);
   expect(
@@ -791,6 +816,7 @@ it("doesn't allow tokens for unauthorized consumers", () => {
   ).toMatchInlineSnapshot(`
     "❌ Repo account-y/repo-y was denied access to a token:
       ✅ Read access to repos in account-a requested with role role-a
+      ✅ 1 repo pattern matched 1 repo
       ❌ Insufficient access to repo account-a/repo-a (no matching rules)"
   `);
 });
@@ -830,6 +856,7 @@ it("doesn't allow tokens for unauthorized resource repos", () => {
   ).toMatchInlineSnapshot(`
     "❌ Account account-x was denied access to a token:
       ✅ Write access to repos in account-a requested with role role-a
+      ✅ 1 repo pattern matched 1 repo
       ❌ Insufficient access to repo account-a/repo-y (no matching rules)"
   `);
   expect(
@@ -849,6 +876,7 @@ it("doesn't allow tokens for unauthorized resource repos", () => {
   ).toMatchInlineSnapshot(`
     "❌ Account account-x was denied access to a token:
       ✅ Write access to repos in account-y requested with role role-a
+      ✅ 1 repo pattern matched 1 repo
       ❌ Insufficient access to repo account-y/repo-a (no matching rules)"
   `);
   expect(
@@ -868,6 +896,7 @@ it("doesn't allow tokens for unauthorized resource repos", () => {
   ).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x was denied access to a token:
       ✅ Write access to repos in account-a requested with role role-a
+      ✅ 1 repo pattern matched 1 repo
       ❌ Insufficient access to repo account-a/repo-y (no matching rules)"
   `);
   expect(
@@ -887,6 +916,7 @@ it("doesn't allow tokens for unauthorized resource repos", () => {
   ).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x was denied access to a token:
       ✅ Write access to repos in account-y requested with role role-a
+      ✅ 1 repo pattern matched 1 repo
       ❌ Insufficient access to repo account-y/repo-a (no matching rules)"
   `);
 });
@@ -926,6 +956,7 @@ it("doesn't allow tokens where only some of the resources are authorized", () =>
   ).toMatchInlineSnapshot(`
     "❌ Account account-x was denied access to a token:
       ✅ Write access to repos in account-a requested with role role-a
+      ✅ 1 repo pattern matched 3 repos
       ✅ Sufficient access to repo account-a/repo-a based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ contents: have write, wanted write
@@ -951,6 +982,7 @@ it("doesn't allow tokens where only some of the resources are authorized", () =>
   ).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x was denied access to a token:
       ✅ Write access to repos in account-a requested with role role-a
+      ✅ 1 repo pattern matched 3 repos
       ✅ Sufficient access to repo account-a/repo-a based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ contents: have write, wanted write
@@ -996,6 +1028,7 @@ it("doesn't allow tokens for unauthorized permissions", () => {
   ).toMatchInlineSnapshot(`
     "❌ Account account-x was denied access to a token:
       ✅ Read access to repos in account-a requested with role role-a
+      ✅ 1 repo pattern matched 1 repo
       ❌ Insufficient access to repo account-a/repo-a based on 1 rule:
         ❌ Rule #1 gave insufficient access:
           ❌ contents: have none, wanted read"
@@ -1017,6 +1050,7 @@ it("doesn't allow tokens for unauthorized permissions", () => {
   ).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x was denied access to a token:
       ✅ Read access to repos in account-a requested with role role-a
+      ✅ 1 repo pattern matched 1 repo
       ❌ Insufficient access to repo account-a/repo-a based on 1 rule:
         ❌ Rule #1 gave insufficient access:
           ❌ contents: have none, wanted read"
@@ -1058,6 +1092,7 @@ it("doesn't allow tokens where only some of the permissions are authorized", () 
   ).toMatchInlineSnapshot(`
     "❌ Account account-x was denied access to a token:
       ✅ Read access to repos in account-a requested with role role-a
+      ✅ 1 repo pattern matched 1 repo
       ❌ Insufficient access to repo account-a/repo-a based on 1 rule:
         ❌ Rule #1 gave insufficient access:
           ❌ contents: have none, wanted read
@@ -1080,6 +1115,7 @@ it("doesn't allow tokens where only some of the permissions are authorized", () 
   ).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x was denied access to a token:
       ✅ Read access to repos in account-a requested with role role-a
+      ✅ 1 repo pattern matched 1 repo
       ❌ Insufficient access to repo account-a/repo-a based on 1 rule:
         ❌ Rule #1 gave insufficient access:
           ❌ contents: have none, wanted read
@@ -1146,6 +1182,7 @@ it("doesn't allow tokens that are denied by a wildcard rule", () => {
   ).toMatchInlineSnapshot(`
     "❌ Account account-x was denied access to a token:
       ✅ Read access to repos in account-a requested with role role-a
+      ✅ 1 repo pattern matched 1 repo
       ❌ Insufficient access to repo account-a/repo-a based on 2 rules:
         ✅ Rule #1 gave sufficient access:
           ✅ metadata: have read, wanted read
@@ -1169,6 +1206,7 @@ it("doesn't allow tokens that are denied by a wildcard rule", () => {
   ).toMatchInlineSnapshot(`
     "❌ Account account-x was denied access to a token:
       ✅ Read access to repos in account-b requested with role role-a
+      ✅ 1 repo pattern matched 1 repo
       ❌ Insufficient access to repo account-b/repo-b based on 2 rules:
         ✅ Rule #1 gave sufficient access:
           ✅ metadata: have read, wanted read
@@ -1192,6 +1230,7 @@ it("doesn't allow tokens that are denied by a wildcard rule", () => {
   ).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x was denied access to a token:
       ✅ Read access to repos in account-a requested with role role-a
+      ✅ 1 repo pattern matched 1 repo
       ❌ Insufficient access to repo account-a/repo-a based on 2 rules:
         ✅ Rule #1 gave sufficient access:
           ✅ metadata: have read, wanted read
@@ -1215,6 +1254,7 @@ it("doesn't allow tokens that are denied by a wildcard rule", () => {
   ).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x was denied access to a token:
       ✅ Read access to repos in account-b requested with role role-a
+      ✅ 1 repo pattern matched 1 repo
       ❌ Insufficient access to repo account-b/repo-b based on 2 rules:
         ✅ Rule #1 gave sufficient access:
           ✅ metadata: have read, wanted read
@@ -1258,6 +1298,7 @@ it("doesn't allow tokens when the actual access level is lower than requested", 
   ).toMatchInlineSnapshot(`
     "❌ Account account-x was denied access to a token:
       ✅ Admin access to repos in account-a requested with role role-a
+      ✅ 1 repo pattern matched 1 repo
       ❌ Insufficient access to repo account-a/repo-a based on 1 rule:
         ❌ Rule #1 gave insufficient access:
           ❌ repository_projects: have write, wanted admin"
@@ -1279,6 +1320,7 @@ it("doesn't allow tokens when the actual access level is lower than requested", 
   ).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x was denied access to a token:
       ✅ Admin access to repos in account-a requested with role role-a
+      ✅ 1 repo pattern matched 1 repo
       ❌ Insufficient access to repo account-a/repo-a based on 1 rule:
         ❌ Rule #1 gave insufficient access:
           ❌ repository_projects: have write, wanted admin"
@@ -1332,6 +1374,7 @@ it("doesn't allow tokens when a later rule denies access that a previous rule al
   ).toMatchInlineSnapshot(`
     "❌ Account account-x was denied access to a token:
       ✅ Write access to repos in account-a requested with role role-a
+      ✅ 1 repo pattern matched 1 repo
       ❌ Insufficient access to repo account-a/repo-a based on 2 rules:
         ✅ Rule #1 gave sufficient access:
           ✅ contents: have write, wanted write
@@ -1355,6 +1398,7 @@ it("doesn't allow tokens when a later rule denies access that a previous rule al
   ).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x was denied access to a token:
       ✅ Write access to repos in account-a requested with role role-a
+      ✅ 1 repo pattern matched 1 repo
       ❌ Insufficient access to repo account-a/repo-a based on 2 rules:
         ✅ Rule #1 gave sufficient access:
           ✅ contents: have write, wanted write
@@ -1410,6 +1454,7 @@ it("doesn't allow tokens when a later rule removes access that a previous rule a
   ).toMatchInlineSnapshot(`
     "❌ Account account-x was denied access to a token:
       ✅ Read access to repos in account-a requested with role role-a
+      ✅ 1 repo pattern matched 1 repo
       ❌ Insufficient access to repo account-a/repo-a based on 2 rules:
         ✅ Rule #1 gave sufficient access:
           ✅ contents: have read, wanted read
@@ -1433,6 +1478,7 @@ it("doesn't allow tokens when a later rule removes access that a previous rule a
   ).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x was denied access to a token:
       ✅ Read access to repos in account-a requested with role role-a
+      ✅ 1 repo pattern matched 1 repo
       ❌ Insufficient access to repo account-a/repo-a based on 2 rules:
         ✅ Rule #1 gave sufficient access:
           ✅ contents: have read, wanted read
@@ -1482,6 +1528,7 @@ it("doesn't allow write tokens if no role is specified", () => {
   ).toMatchInlineSnapshot(`
     "❌ Account account-x was denied access to a token:
       ❌ Write access to repos in account-a requested without a role
+      ✅ 1 repo pattern matched 1 repo
       ✅ Sufficient access to repo account-a/repo-a based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ repository_hooks: have write, wanted read
@@ -1507,6 +1554,7 @@ it("doesn't allow write tokens if no role is specified", () => {
   ).toMatchInlineSnapshot(`
     "❌ Account account-x was denied access to a token:
       ❌ Admin access to repos in account-a requested without a role
+      ✅ 1 repo pattern matched 1 repo
       ✅ Sufficient access to repo account-a/repo-a based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ repository_hooks: have write, wanted write
@@ -1532,6 +1580,7 @@ it("doesn't allow write tokens if no role is specified", () => {
   ).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x was denied access to a token:
       ❌ Write access to repos in account-a requested without a role
+      ✅ 1 repo pattern matched 1 repo
       ✅ Sufficient access to repo account-a/repo-a based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ repository_hooks: have write, wanted read
@@ -1557,9 +1606,49 @@ it("doesn't allow write tokens if no role is specified", () => {
   ).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x was denied access to a token:
       ❌ Admin access to repos in account-a requested without a role
+      ✅ 1 repo pattern matched 1 repo
       ✅ Sufficient access to repo account-a/repo-a based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ repository_hooks: have write, wanted write
           ✅ repository_projects: have admin, wanted admin"
+  `);
+});
+
+it("doesn't allow tokens when no repos are matched by the declaration repo patterns", () => {
+  const authorizer = createTokenAuthorizer({
+    rules: [
+      {
+        resources: [
+          {
+            accounts: ["*"],
+            noRepos: true,
+            allRepos: true,
+            selectedRepos: ["*"],
+          },
+        ],
+        consumers: ["*", "*/*"],
+        permissions: { metadata: "write" },
+      },
+    ],
+  });
+
+  expect(
+    explain(
+      authorizer.authorizeToken({
+        consumer: { account: "account-x" },
+        declaration: {
+          shared: false,
+          as: undefined,
+          account: "account-a",
+          repos: ["repo-*"],
+          permissions: { metadata: "read" },
+        },
+        repos: [],
+      }),
+    ),
+  ).toMatchInlineSnapshot(`
+    "❌ Account account-x was denied access to a token:
+      ✅ Read access to repos in account-a requested without a role
+      ❌ 1 repo pattern matched 0 repos"
   `);
 });

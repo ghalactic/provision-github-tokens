@@ -1,6 +1,7 @@
 import { isSufficientAccess } from "../access-level.js";
 import { accountOrRepoRefToString, isRepoRef } from "../github-reference.js";
 import { permissionAccess } from "../permissions.js";
+import { pluralize } from "../pluralize.js";
 import type { PermissionsRule } from "../type/permissions-rule.js";
 import type { PermissionAccess, Permissions } from "../type/permissions.js";
 import type {
@@ -79,7 +80,8 @@ export function createTextTokenAuthExplainer(): TokenAuthResultExplainer<string>
 
     return (
       `${explainSummary(result)}\n  ` +
-      `${explainMaxAccessAndRole(result, subject)}` +
+      `${explainMaxAccessAndRole(result, subject)}\n  ` +
+      `${explainSelectedReposMatch(result)}` +
       explainedResources
     );
   }
@@ -111,6 +113,20 @@ export function createTextTokenAuthExplainer(): TokenAuthResultExplainer<string>
         ? `requested with role ${request.declaration.as}`
         : "requested without a role")
     );
+  }
+
+  function explainSelectedReposMatch({
+    request,
+    isMatched,
+  }: TokenAuthResultSelectedRepos): string {
+    const repoPatterns = pluralize(
+      request.declaration.repos.length,
+      "repo pattern",
+      "repo patterns",
+    );
+    const repos = pluralize(request.repos.length, "repo", "repos");
+
+    return `${renderIcon(isMatched)} ${repoPatterns} matched ${repos}`;
   }
 
   function explainResourceRepo(
