@@ -52749,7 +52749,7 @@ var generated_provider_rule_permissions_v1_schema_default = {
     },
     dependabot_secrets: {
       type: "string",
-      description: "The leve of permission to grant the access token to manage Dependabot secrets.",
+      description: "The level of permission to grant the access token to manage Dependabot secrets.",
       enum: [
         "none",
         "read",
@@ -53201,7 +53201,7 @@ var generated_requester_token_permissions_v1_schema_default = {
     },
     dependabot_secrets: {
       type: "string",
-      description: "The leve of permission to grant the access token to manage Dependabot secrets.",
+      description: "The level of permission to grant the access token to manage Dependabot secrets.",
       enum: [
         "read",
         "write"
@@ -58902,7 +58902,7 @@ function retry(octokit, octokitOptions) {
     {
       enabled: true,
       retryAfterBaseValue: 1e3,
-      doNotRetry: [400, 401, 403, 404, 422, 451],
+      doNotRetry: [400, 401, 403, 404, 410, 422, 451],
       retries: 3
     },
     octokitOptions.retry
