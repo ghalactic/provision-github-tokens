@@ -57852,7 +57852,7 @@ async function waitForAccessToken(request2, clientId, clientType, verification) 
       return waitForAccessToken(request2, clientId, clientType, verification);
     }
     if (errorType === "slow_down") {
-      await wait(verification.interval + 5);
+      await wait(verification.interval + 7);
       return waitForAccessToken(request2, clientId, clientType, verification);
     }
     throw error;
@@ -58823,7 +58823,7 @@ async function sendRequestWithRetries(state, request2, options, createdAt, retri
     return sendRequestWithRetries(state, request2, options, createdAt, retries);
   }
 }
-var VERSION11 = "7.2.0";
+var VERSION11 = "7.2.1";
 function createAppAuth(options) {
   if (!options.appId) {
     throw new Error("[@octokit/auth-app] appId option is required");
