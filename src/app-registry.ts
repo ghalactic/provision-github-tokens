@@ -1,10 +1,14 @@
 import { isSufficientAccess, isWriteAccess } from "./access-level.js";
-import { isRepoRef, type RepoReference } from "./github-reference.js";
+import {
+  isRepoRef,
+  type AccountOrRepoReference,
+  type AccountReference,
+  type RepoReference,
+} from "./github-reference.js";
 import { anyPatternMatches, type Pattern } from "./pattern.js";
 import { isEmptyPermissions, permissionAccess } from "./permissions.js";
 import type { App, Installation, Repo } from "./type/github-api.js";
 import type { AppInputIssuer, AppInputProvisioner } from "./type/input.js";
-import type { ProvisionRequest } from "./type/provision-request.js";
 import type { TokenRequest } from "./type/token-request.js";
 
 export type AppRegistry = {
@@ -18,9 +22,12 @@ export type AppRegistry = {
   resolveProvisionerAccounts: (patterns: Pattern[]) => string[];
   resolveProvisionerRepos: (patterns: Pattern[]) => string[];
   findIssuersForRequest: (request: TokenRequest) => InstallationRegistration[];
+  findProvisionersForAccount: (
+    account: AccountReference,
+  ) => InstallationRegistration[];
   findProvisionersForRepo: (repo: RepoReference) => InstallationRegistration[];
-  findProvisionersForRequest: (
-    request: ProvisionRequest,
+  findProvisionersForAccountOrRepo: (
+    accountOrRepo: AccountOrRepoReference,
   ) => InstallationRegistration[];
 };
 
@@ -210,53 +217,51 @@ export function createAppRegistry(): AppRegistry {
       return found;
     },
 
-    findProvisionersForRepo: (repo) => {
-      const found: InstallationRegistration[] = [];
+    findProvisionersForAccount,
+    findProvisionersForRepo,
 
-      for (const [, instReg] of provisioners) {
-        const { repos } = instReg;
-
-        for (const r of repos) {
-          if (r.owner.login === repo.account && r.name === repo.repo) {
-            found.push(instReg);
-
-            break;
-          }
-        }
-      }
-
-      return found;
-    },
-
-    findProvisionersForRequest: (request) => {
-      const found: InstallationRegistration[] = [];
-
-      for (const [, instReg] of provisioners) {
-        const { installation, repos } = instReg;
-
-        if (isRepoRef(request.target)) {
-          for (const repo of repos) {
-            if (
-              repo.owner.login === request.target.account &&
-              repo.name === request.target.repo
-            ) {
-              found.push(instReg);
-
-              break;
-            }
-          }
-
-          continue;
-        }
-
-        if (installationAccount(installation) === request.target.account) {
-          found.push(instReg);
-        }
-      }
-
-      return found;
+    findProvisionersForAccountOrRepo: (target) => {
+      return isRepoRef(target)
+        ? findProvisionersForRepo(target)
+        : findProvisionersForAccount(target);
     },
   };
+
+  function findProvisionersForAccount(
+    account: AccountReference,
+  ): InstallationRegistration[] {
+    const found: InstallationRegistration[] = [];
+
+    for (const [, instReg] of provisioners) {
+      const { installation } = instReg;
+
+      if (installationAccount(installation) === account.account) {
+        found.push(instReg);
+      }
+    }
+
+    return found;
+  }
+
+  function findProvisionersForRepo(
+    repo: RepoReference,
+  ): InstallationRegistration[] {
+    const found: InstallationRegistration[] = [];
+
+    for (const [, instReg] of provisioners) {
+      const { repos } = instReg;
+
+      for (const r of repos) {
+        if (r.owner.login === repo.account && r.name === repo.repo) {
+          found.push(instReg);
+
+          break;
+        }
+      }
+    }
+
+    return found;
+  }
 
   function appRegForInstReg(
     instReg: InstallationRegistration,

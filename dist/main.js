@@ -49980,39 +49980,35 @@ function createAppRegistry() {
       }
       return found;
     },
-    findProvisionersForRepo: (repo) => {
-      const found = [];
-      for (const [, instReg] of provisioners) {
-        const { repos } = instReg;
-        for (const r of repos) {
-          if (r.owner.login === repo.account && r.name === repo.repo) {
-            found.push(instReg);
-            break;
-          }
-        }
-      }
-      return found;
-    },
-    findProvisionersForRequest: (request2) => {
-      const found = [];
-      for (const [, instReg] of provisioners) {
-        const { installation, repos } = instReg;
-        if (isRepoRef(request2.target)) {
-          for (const repo of repos) {
-            if (repo.owner.login === request2.target.account && repo.name === request2.target.repo) {
-              found.push(instReg);
-              break;
-            }
-          }
-          continue;
-        }
-        if (installationAccount(installation) === request2.target.account) {
-          found.push(instReg);
-        }
-      }
-      return found;
+    findProvisionersForAccount,
+    findProvisionersForRepo,
+    findProvisionersForAccountOrRepo: (target) => {
+      return isRepoRef(target) ? findProvisionersForRepo(target) : findProvisionersForAccount(target);
     }
   };
+  function findProvisionersForAccount(account) {
+    const found = [];
+    for (const [, instReg] of provisioners) {
+      const { installation } = instReg;
+      if (installationAccount(installation) === account.account) {
+        found.push(instReg);
+      }
+    }
+    return found;
+  }
+  function findProvisionersForRepo(repo) {
+    const found = [];
+    for (const [, instReg] of provisioners) {
+      const { repos } = instReg;
+      for (const r of repos) {
+        if (r.owner.login === repo.account && r.name === repo.repo) {
+          found.push(instReg);
+          break;
+        }
+      }
+    }
+    return found;
+  }
   function appRegForInstReg(instReg) {
     const appReg = appsByInstallation.get(instReg);
     if (!appReg) {
