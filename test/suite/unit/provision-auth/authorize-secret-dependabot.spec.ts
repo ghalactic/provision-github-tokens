@@ -36,9 +36,13 @@ it("allows GitHub Dependabot account secrets that should be allowed", () => {
       authorizer.authorizeSecret({
         requester: { account: "account-x", repo: "repo-x" },
         name: "SECRET_A",
-        platform: "github",
-        type: "dependabot",
-        target: { account: "account-a" },
+        to: [
+          {
+            platform: "github",
+            type: "dependabot",
+            target: { account: "account-a" },
+          },
+        ],
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -51,9 +55,13 @@ it("allows GitHub Dependabot account secrets that should be allowed", () => {
       authorizer.authorizeSecret({
         requester: { account: "account-y-1", repo: "repo-y-1" },
         name: "SECRET_A",
-        platform: "github",
-        type: "dependabot",
-        target: { account: "account-b-1" },
+        to: [
+          {
+            platform: "github",
+            type: "dependabot",
+            target: { account: "account-b-1" },
+          },
+        ],
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -90,9 +98,13 @@ it("allows GitHub Dependabot account secrets that should be allowed within the r
       authorizer.authorizeSecret({
         requester: { account: "account-a", repo: "repo-a" },
         name: "SECRET_A",
-        platform: "github",
-        type: "dependabot",
-        target: { account: "account-a" },
+        to: [
+          {
+            platform: "github",
+            type: "dependabot",
+            target: { account: "account-a" },
+          },
+        ],
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -105,9 +117,13 @@ it("allows GitHub Dependabot account secrets that should be allowed within the r
       authorizer.authorizeSecret({
         requester: { account: "account-b-1", repo: "repo-b-1" },
         name: "SECRET_A",
-        platform: "github",
-        type: "dependabot",
-        target: { account: "account-b-1" },
+        to: [
+          {
+            platform: "github",
+            type: "dependabot",
+            target: { account: "account-b-1" },
+          },
+        ],
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -148,9 +164,13 @@ it("allows GitHub Dependabot account secrets that should be allowed within the r
       authorizer.authorizeSecret({
         requester: { account: "account-a", repo: "repo-a" },
         name: "SECRET_A",
-        platform: "github",
-        type: "dependabot",
-        target: { account: "account-a" },
+        to: [
+          {
+            platform: "github",
+            type: "dependabot",
+            target: { account: "account-a" },
+          },
+        ],
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -194,9 +214,13 @@ it("allows GitHub Dependabot repo secrets that should be allowed", () => {
       authorizer.authorizeSecret({
         requester: { account: "account-x", repo: "repo-x" },
         name: "SECRET_A",
-        platform: "github",
-        type: "dependabot",
-        target: { account: "account-a", repo: "repo-a" },
+        to: [
+          {
+            platform: "github",
+            type: "dependabot",
+            target: { account: "account-a", repo: "repo-a" },
+          },
+        ],
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -209,9 +233,13 @@ it("allows GitHub Dependabot repo secrets that should be allowed", () => {
       authorizer.authorizeSecret({
         requester: { account: "account-y-1", repo: "repo-y-1" },
         name: "SECRET_A",
-        platform: "github",
-        type: "dependabot",
-        target: { account: "account-b-1", repo: "repo-b-1" },
+        to: [
+          {
+            platform: "github",
+            type: "dependabot",
+            target: { account: "account-b-1", repo: "repo-b-1" },
+          },
+        ],
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -249,9 +277,13 @@ it("allows GitHub Dependabot repo secrets that should be allowed within the requ
       authorizer.authorizeSecret({
         requester: { account: "account-a", repo: "repo-a" },
         name: "SECRET_A",
-        platform: "github",
-        type: "dependabot",
-        target: { account: "account-a", repo: "repo-a" },
+        to: [
+          {
+            platform: "github",
+            type: "dependabot",
+            target: { account: "account-a", repo: "repo-a" },
+          },
+        ],
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -264,9 +296,13 @@ it("allows GitHub Dependabot repo secrets that should be allowed within the requ
       authorizer.authorizeSecret({
         requester: { account: "account-b-1", repo: "repo-b-1" },
         name: "SECRET_A",
-        platform: "github",
-        type: "dependabot",
-        target: { account: "account-b-1", repo: "repo-b-1" },
+        to: [
+          {
+            platform: "github",
+            type: "dependabot",
+            target: { account: "account-b-1", repo: "repo-b-1" },
+          },
+        ],
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -309,9 +345,13 @@ it("allows GitHub Dependabot repo secrets that should be allowed within the requ
       authorizer.authorizeSecret({
         requester: { account: "account-a", repo: "repo-a" },
         name: "SECRET_A",
-        platform: "github",
-        type: "dependabot",
-        target: { account: "account-a", repo: "repo-a" },
+        to: [
+          {
+            platform: "github",
+            type: "dependabot",
+            target: { account: "account-a", repo: "repo-a" },
+          },
+        ],
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -324,9 +364,13 @@ it("allows GitHub Dependabot repo secrets that should be allowed within the requ
       authorizer.authorizeSecret({
         requester: { account: "account-b-1", repo: "repo-b-1" },
         name: "SECRET_A",
-        platform: "github",
-        type: "dependabot",
-        target: { account: "account-b-1", repo: "repo-b-1" },
+        to: [
+          {
+            platform: "github",
+            type: "dependabot",
+            target: { account: "account-b-1", repo: "repo-b-1" },
+          },
+        ],
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -365,9 +409,13 @@ it("doesn't allow GitHub Dependabot account secrets for unauthorized requesters"
       authorizer.authorizeSecret({
         requester: { account: "account-y", repo: "repo-y" },
         name: "SECRET_A",
-        platform: "github",
-        type: "dependabot",
-        target: { account: "account-a" },
+        to: [
+          {
+            platform: "github",
+            type: "dependabot",
+            target: { account: "account-a" },
+          },
+        ],
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -403,9 +451,13 @@ it("doesn't allow GitHub Dependabot account secrets within the requesting accoun
       authorizer.authorizeSecret({
         requester: { account: "account-y", repo: "repo-y" },
         name: "SECRET_A",
-        platform: "github",
-        type: "dependabot",
-        target: { account: "account-x" },
+        to: [
+          {
+            platform: "github",
+            type: "dependabot",
+            target: { account: "account-x" },
+          },
+        ],
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -417,9 +469,13 @@ it("doesn't allow GitHub Dependabot account secrets within the requesting accoun
       authorizer.authorizeSecret({
         requester: { account: "account-x", repo: "repo-y" },
         name: "SECRET_A",
-        platform: "github",
-        type: "dependabot",
-        target: { account: "account-x" },
+        to: [
+          {
+            platform: "github",
+            type: "dependabot",
+            target: { account: "account-x" },
+          },
+        ],
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -431,9 +487,13 @@ it("doesn't allow GitHub Dependabot account secrets within the requesting accoun
       authorizer.authorizeSecret({
         requester: { account: "account-x", repo: "repo-x" },
         name: "SECRET_A",
-        platform: "github",
-        type: "dependabot",
-        target: { account: "account-y" },
+        to: [
+          {
+            platform: "github",
+            type: "dependabot",
+            target: { account: "account-y" },
+          },
+        ],
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -473,9 +533,13 @@ it("doesn't allow GitHub Dependabot account secrets within the requesting accoun
       authorizer.authorizeSecret({
         requester: { account: "account-a", repo: "repo-a" },
         name: "SECRET_A",
-        platform: "github",
-        type: "dependabot",
-        target: { account: "account-a" },
+        to: [
+          {
+            platform: "github",
+            type: "dependabot",
+            target: { account: "account-a" },
+          },
+        ],
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -515,9 +579,13 @@ it("doesn't allow GitHub Dependabot repo secrets for unauthorized requesters", (
       authorizer.authorizeSecret({
         requester: { account: "account-y", repo: "repo-y" },
         name: "SECRET_A",
-        platform: "github",
-        type: "dependabot",
-        target: { account: "account-a", repo: "repo-a" },
+        to: [
+          {
+            platform: "github",
+            type: "dependabot",
+            target: { account: "account-a", repo: "repo-a" },
+          },
+        ],
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -554,9 +622,13 @@ it("doesn't allow GitHub Dependabot repo secrets within the requesting repo for 
       authorizer.authorizeSecret({
         requester: { account: "account-y", repo: "repo-y" },
         name: "SECRET_A",
-        platform: "github",
-        type: "dependabot",
-        target: { account: "account-x", repo: "repo-x" },
+        to: [
+          {
+            platform: "github",
+            type: "dependabot",
+            target: { account: "account-x", repo: "repo-x" },
+          },
+        ],
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -568,9 +640,13 @@ it("doesn't allow GitHub Dependabot repo secrets within the requesting repo for 
       authorizer.authorizeSecret({
         requester: { account: "account-x", repo: "repo-y" },
         name: "SECRET_A",
-        platform: "github",
-        type: "dependabot",
-        target: { account: "account-x", repo: "repo-x" },
+        to: [
+          {
+            platform: "github",
+            type: "dependabot",
+            target: { account: "account-x", repo: "repo-x" },
+          },
+        ],
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -582,9 +658,13 @@ it("doesn't allow GitHub Dependabot repo secrets within the requesting repo for 
       authorizer.authorizeSecret({
         requester: { account: "account-x", repo: "repo-x" },
         name: "SECRET_A",
-        platform: "github",
-        type: "dependabot",
-        target: { account: "account-x", repo: "repo-y" },
+        to: [
+          {
+            platform: "github",
+            type: "dependabot",
+            target: { account: "account-x", repo: "repo-y" },
+          },
+        ],
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -626,9 +706,13 @@ it("doesn't allow GitHub Dependabot repo secrets within the requesting repo when
       authorizer.authorizeSecret({
         requester: { account: "account-a", repo: "repo-a" },
         name: "SECRET_A",
-        platform: "github",
-        type: "dependabot",
-        target: { account: "account-a", repo: "repo-a" },
+        to: [
+          {
+            platform: "github",
+            type: "dependabot",
+            target: { account: "account-a", repo: "repo-a" },
+          },
+        ],
       }),
     ),
   ).toMatchInlineSnapshot(`

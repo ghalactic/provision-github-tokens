@@ -40,9 +40,17 @@ it("allows GitHub environment secrets that should be allowed", () => {
       authorizer.authorizeSecret({
         requester: { account: "account-x", repo: "repo-x" },
         name: "SECRET_A",
-        platform: "github",
-        type: "environment",
-        target: { account: "account-a", repo: "repo-a", environment: "env-a" },
+        to: [
+          {
+            platform: "github",
+            type: "environment",
+            target: {
+              account: "account-a",
+              repo: "repo-a",
+              environment: "env-a",
+            },
+          },
+        ],
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -55,13 +63,17 @@ it("allows GitHub environment secrets that should be allowed", () => {
       authorizer.authorizeSecret({
         requester: { account: "account-y-1", repo: "repo-y-1" },
         name: "SECRET_A",
-        platform: "github",
-        type: "environment",
-        target: {
-          account: "account-b-1",
-          repo: "repo-b-1",
-          environment: "env-b-1",
-        },
+        to: [
+          {
+            platform: "github",
+            type: "environment",
+            target: {
+              account: "account-b-1",
+              repo: "repo-b-1",
+              environment: "env-b-1",
+            },
+          },
+        ],
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -101,9 +113,17 @@ it("allows GitHub environment secrets that should be allowed within the requesti
       authorizer.authorizeSecret({
         requester: { account: "account-a", repo: "repo-a" },
         name: "SECRET_A",
-        platform: "github",
-        type: "environment",
-        target: { account: "account-a", repo: "repo-a", environment: "env-a" },
+        to: [
+          {
+            platform: "github",
+            type: "environment",
+            target: {
+              account: "account-a",
+              repo: "repo-a",
+              environment: "env-a",
+            },
+          },
+        ],
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -116,13 +136,17 @@ it("allows GitHub environment secrets that should be allowed within the requesti
       authorizer.authorizeSecret({
         requester: { account: "account-b-1", repo: "repo-b-1" },
         name: "SECRET_A",
-        platform: "github",
-        type: "environment",
-        target: {
-          account: "account-b-1",
-          repo: "repo-b-1",
-          environment: "env-b-1",
-        },
+        to: [
+          {
+            platform: "github",
+            type: "environment",
+            target: {
+              account: "account-b-1",
+              repo: "repo-b-1",
+              environment: "env-b-1",
+            },
+          },
+        ],
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -168,9 +192,17 @@ it("allows GitHub environment secrets that should be allowed within the requesti
       authorizer.authorizeSecret({
         requester: { account: "account-a", repo: "repo-a" },
         name: "SECRET_A",
-        platform: "github",
-        type: "environment",
-        target: { account: "account-a", repo: "repo-a", environment: "env-a" },
+        to: [
+          {
+            platform: "github",
+            type: "environment",
+            target: {
+              account: "account-a",
+              repo: "repo-a",
+              environment: "env-a",
+            },
+          },
+        ],
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -183,13 +215,17 @@ it("allows GitHub environment secrets that should be allowed within the requesti
       authorizer.authorizeSecret({
         requester: { account: "account-b-1", repo: "repo-b-1" },
         name: "SECRET_A",
-        platform: "github",
-        type: "environment",
-        target: {
-          account: "account-b-1",
-          repo: "repo-b-1",
-          environment: "env-b-1",
-        },
+        to: [
+          {
+            platform: "github",
+            type: "environment",
+            target: {
+              account: "account-b-1",
+              repo: "repo-b-1",
+              environment: "env-b-1",
+            },
+          },
+        ],
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -230,9 +266,17 @@ it("doesn't allow GitHub environment secrets for unauthorized requesters", () =>
       authorizer.authorizeSecret({
         requester: { account: "account-y", repo: "repo-y" },
         name: "SECRET_A",
-        platform: "github",
-        type: "environment",
-        target: { account: "account-a", repo: "repo-a", environment: "env-a" },
+        to: [
+          {
+            platform: "github",
+            type: "environment",
+            target: {
+              account: "account-a",
+              repo: "repo-a",
+              environment: "env-a",
+            },
+          },
+        ],
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -270,9 +314,17 @@ it("doesn't allow GitHub environment secrets within the requesting repo for unau
       authorizer.authorizeSecret({
         requester: { account: "account-y", repo: "repo-y" },
         name: "SECRET_A",
-        platform: "github",
-        type: "environment",
-        target: { account: "account-x", repo: "repo-x", environment: "env-x" },
+        to: [
+          {
+            platform: "github",
+            type: "environment",
+            target: {
+              account: "account-x",
+              repo: "repo-x",
+              environment: "env-x",
+            },
+          },
+        ],
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -284,9 +336,17 @@ it("doesn't allow GitHub environment secrets within the requesting repo for unau
       authorizer.authorizeSecret({
         requester: { account: "account-x", repo: "repo-y" },
         name: "SECRET_A",
-        platform: "github",
-        type: "environment",
-        target: { account: "account-x", repo: "repo-x", environment: "env-x" },
+        to: [
+          {
+            platform: "github",
+            type: "environment",
+            target: {
+              account: "account-x",
+              repo: "repo-x",
+              environment: "env-x",
+            },
+          },
+        ],
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -298,9 +358,17 @@ it("doesn't allow GitHub environment secrets within the requesting repo for unau
       authorizer.authorizeSecret({
         requester: { account: "account-x", repo: "repo-x" },
         name: "SECRET_A",
-        platform: "github",
-        type: "environment",
-        target: { account: "account-x", repo: "repo-y", environment: "env-x" },
+        to: [
+          {
+            platform: "github",
+            type: "environment",
+            target: {
+              account: "account-x",
+              repo: "repo-y",
+              environment: "env-x",
+            },
+          },
+        ],
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -312,9 +380,17 @@ it("doesn't allow GitHub environment secrets within the requesting repo for unau
       authorizer.authorizeSecret({
         requester: { account: "account-x", repo: "repo-x" },
         name: "SECRET_A",
-        platform: "github",
-        type: "environment",
-        target: { account: "account-x", repo: "repo-x", environment: "env-y" },
+        to: [
+          {
+            platform: "github",
+            type: "environment",
+            target: {
+              account: "account-x",
+              repo: "repo-x",
+              environment: "env-y",
+            },
+          },
+        ],
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -358,9 +434,17 @@ it("doesn't allow GitHub environment secrets within the requesting repo when den
       authorizer.authorizeSecret({
         requester: { account: "account-a", repo: "repo-a" },
         name: "SECRET_A",
-        platform: "github",
-        type: "environment",
-        target: { account: "account-a", repo: "repo-a", environment: "env-a" },
+        to: [
+          {
+            platform: "github",
+            type: "environment",
+            target: {
+              account: "account-a",
+              repo: "repo-a",
+              environment: "env-a",
+            },
+          },
+        ],
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -402,9 +486,17 @@ it("doesn't allow GitHub environment secrets when two environment patterns match
       authorizer.authorizeSecret({
         requester: { account: "account-x", repo: "repo-x" },
         name: "SECRET_A",
-        platform: "github",
-        type: "environment",
-        target: { account: "account-a", repo: "repo-a", environment: "env-a" },
+        to: [
+          {
+            platform: "github",
+            type: "environment",
+            target: {
+              account: "account-a",
+              repo: "repo-a",
+              environment: "env-a",
+            },
+          },
+        ],
       }),
     ),
   ).toMatchInlineSnapshot(`

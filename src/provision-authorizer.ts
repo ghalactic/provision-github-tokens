@@ -10,7 +10,8 @@ import { anyPatternMatches, type Pattern } from "./pattern.js";
 import type { ProviderProvisionConfig } from "./type/provider-config.js";
 import type {
   ProvisionAuthResult,
-  ProvisionAuthRuleResult,
+  ProvisionAuthTargetResult,
+  ProvisionAuthTargetRuleResult,
 } from "./type/provision-auth-result.js";
 import type { ProvisionRequest } from "./type/provision-request.js";
 import type {
@@ -34,111 +35,123 @@ export function createProvisionAuthorizer(
 
   return {
     authorizeSecret(request) {
-      const isSelfAccount =
-        request.requester.account === request.target.account;
-      const isSelfRepo =
-        isRepoRef(request.target) &&
-        request.requester.account === request.target.account &&
-        request.requester.repo === request.target.repo;
-      const requester = repoRefToString(request.requester);
-      const target = accountOrRepoRefToString(request.target);
+      if (request.to.length < 1) throw new Error("Targets cannot be empty");
 
-      const ruleResults: ProvisionAuthRuleResult[] = [];
-      let have: "allow" | "deny" | undefined;
+      const results: ProvisionAuthTargetResult[] = [];
 
-      for (let i = 0; i < config.rules.secrets.length; ++i) {
-        if (!anyPatternMatches(namePatterns[i], request.name)) continue;
-        if (!anyPatternMatches(requesterPatterns[i], requester)) continue;
+      for (const entry of request.to) {
+        const isSelfAccount =
+          request.requester.account === entry.target.account;
+        const isSelfRepo =
+          isRepoRef(entry.target) &&
+          request.requester.account === entry.target.account &&
+          request.requester.repo === entry.target.repo;
+        const requester = repoRefToString(request.requester);
+        const target = accountOrRepoRefToString(entry.target);
 
-        const rule = config.rules.secrets[i];
-        let ruleHave: "allow" | "deny" | undefined;
-        let isRelevant = false;
+        const ruleResults: ProvisionAuthTargetRuleResult[] = [];
+        let have: "allow" | "deny" | undefined;
 
-        if (isRepoRef(request.target)) {
-          for (let j = 0; j < targetPatterns[i].repos.length; ++j) {
-            const [repo, repoPattern, envPatterns] = targetPatterns[i].repos[j];
+        for (let i = 0; i < config.rules.secrets.length; ++i) {
+          if (!anyPatternMatches(namePatterns[i], request.name)) continue;
+          if (!anyPatternMatches(requesterPatterns[i], requester)) continue;
 
-            if (!repoPattern.test(target)) continue;
+          const rule = config.rules.secrets[i];
+          let ruleHave: "allow" | "deny" | undefined;
+          let isRelevant = false;
 
-            const repoPatternHave =
-              request.type === "environment" && isEnvRef(request.target)
-                ? applyEnvPatterns(
-                    request.target.environment,
-                    rule.to.github.repos[repo].environments,
-                    envPatterns,
-                  )
-                : selectBySecretType(rule.to.github.repos[repo], request.type);
+          if (isRepoRef(entry.target)) {
+            for (let j = 0; j < targetPatterns[i].repos.length; ++j) {
+              const [repo, repoPattern, envPatterns] =
+                targetPatterns[i].repos[j];
 
-            if (repoPatternHave) {
-              isRelevant = true;
-              ruleHave = repoPatternHave;
+              if (!repoPattern.test(target)) continue;
+
+              const repoPatternHave =
+                entry.type === "environment" && isEnvRef(entry.target)
+                  ? applyEnvPatterns(
+                      entry.target.environment,
+                      rule.to.github.repos[repo].environments,
+                      envPatterns,
+                    )
+                  : selectBySecretType(rule.to.github.repos[repo], entry.type);
+
+              if (repoPatternHave) {
+                isRelevant = true;
+                ruleHave = repoPatternHave;
+              }
+
+              if (ruleHave === "deny") break;
             }
 
-            if (ruleHave === "deny") break;
-          }
+            if (isSelfRepo) {
+              const selfHave =
+                entry.type === "environment" && isEnvRef(entry.target)
+                  ? applyEnvPatterns(
+                      entry.target.environment,
+                      rule.to.github.repo.environments,
+                      targetPatterns[i].selfRepoEnvs,
+                    )
+                  : selectBySecretType(rule.to.github.repo, entry.type);
 
-          if (isSelfRepo) {
-            const selfHave =
-              request.type === "environment" && isEnvRef(request.target)
-                ? applyEnvPatterns(
-                    request.target.environment,
-                    rule.to.github.repo.environments,
-                    targetPatterns[i].selfRepoEnvs,
-                  )
-                : selectBySecretType(rule.to.github.repo, request.type);
+              if (selfHave) {
+                isRelevant = true;
+                ruleHave = selfHave;
+              }
+            }
+          } else {
+            for (let j = 0; j < targetPatterns[i].accounts.length; ++j) {
+              const [account, accountPattern] = targetPatterns[i].accounts[j];
 
-            if (selfHave) {
-              isRelevant = true;
-              ruleHave = selfHave;
+              if (!accountPattern.test(target)) continue;
+
+              const accountPatternHave = selectBySecretType(
+                rule.to.github.accounts[account],
+                entry.type,
+              );
+
+              if (accountPatternHave) {
+                isRelevant = true;
+                ruleHave = accountPatternHave;
+              }
+
+              if (ruleHave === "deny") break;
+            }
+
+            if (isSelfAccount) {
+              const selfHave = selectBySecretType(
+                rule.to.github.account,
+                entry.type,
+              );
+
+              if (selfHave) {
+                isRelevant = true;
+                ruleHave = selfHave;
+              }
             }
           }
-        } else {
-          for (let j = 0; j < targetPatterns[i].accounts.length; ++j) {
-            const [account, accountPattern] = targetPatterns[i].accounts[j];
 
-            if (!accountPattern.test(target)) continue;
+          if (!isRelevant) continue;
 
-            const accountPatternHave = selectBySecretType(
-              rule.to.github.accounts[account],
-              request.type,
-            );
-
-            if (accountPatternHave) {
-              isRelevant = true;
-              ruleHave = accountPatternHave;
-            }
-
-            if (ruleHave === "deny") break;
-          }
-
-          if (isSelfAccount) {
-            const selfHave = selectBySecretType(
-              rule.to.github.account,
-              request.type,
-            );
-
-            if (selfHave) {
-              isRelevant = true;
-              ruleHave = selfHave;
-            }
-          }
+          if (ruleHave) have = ruleHave;
+          ruleResults.push({
+            index: i,
+            rule,
+            have: ruleHave,
+          });
         }
 
-        if (!isRelevant) continue;
-
-        if (ruleHave) have = ruleHave;
-        ruleResults.push({
-          index: i,
-          rule,
-          have: ruleHave,
+        results.push({
+          rules: ruleResults,
+          have,
+          isAllowed: have === "allow",
         });
       }
 
       return {
         request,
-        rules: ruleResults,
-        have,
-        isAllowed: have === "allow",
+        results,
+        isAllowed: results.every((result) => result.isAllowed),
       };
     },
   };

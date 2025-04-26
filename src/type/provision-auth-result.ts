@@ -7,12 +7,17 @@ export type ProvisionAuthResultExplainer<T> = (
 
 export type ProvisionAuthResult = {
   request: ProvisionRequest;
-  rules: ProvisionAuthRuleResult[];
+  results: ProvisionAuthTargetResult[];
+  isAllowed: boolean;
+};
+
+export type ProvisionAuthTargetResult = {
+  rules: ProvisionAuthTargetRuleResult[];
   have: "allow" | "deny" | undefined;
   isAllowed: boolean;
 };
 
-export type ProvisionAuthRuleResult = {
+export type ProvisionAuthTargetRuleResult = {
   index: number;
   rule: ProvisionSecretsRule;
   have: "allow" | "deny" | undefined;

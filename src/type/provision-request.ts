@@ -4,37 +4,38 @@ import type {
   RepoReference,
 } from "../github-reference.js";
 
-export type ProvisionRequest =
-  | GitHubActionsProvisionRequest
-  | GitHubCodespacesProvisionRequest
-  | GitHubDependabotProvisionRequest
-  | GitHubEnvironmentProvisionRequest;
+export type ProvisionRequest = {
+  requester: RepoReference;
+  name: string;
+  to: ProvisionRequestTarget[];
+};
 
-export type GitHubActionsProvisionRequest = GitHubProvisionRequestCommon & {
+export type ProvisionRequestTarget =
+  | GitHubActionsProvisionRequestTarget
+  | GitHubCodespacesProvisionRequestTarget
+  | GitHubDependabotProvisionRequestTarget
+  | GitHubEnvironmentProvisionRequestTarget;
+
+export type GitHubActionsProvisionRequestTarget = {
+  platform: "github";
   type: "actions";
   target: AccountOrRepoReference;
 };
 
-export type GitHubCodespacesProvisionRequest = GitHubProvisionRequestCommon & {
+export type GitHubCodespacesProvisionRequestTarget = {
+  platform: "github";
   type: "codespaces";
   target: AccountOrRepoReference;
 };
 
-export type GitHubDependabotProvisionRequest = GitHubProvisionRequestCommon & {
+export type GitHubDependabotProvisionRequestTarget = {
+  platform: "github";
   type: "dependabot";
   target: AccountOrRepoReference;
 };
 
-export type GitHubEnvironmentProvisionRequest = GitHubProvisionRequestCommon & {
+export type GitHubEnvironmentProvisionRequestTarget = {
+  platform: "github";
   type: "environment";
   target: EnvironmentReference;
-};
-
-type GitHubProvisionRequestCommon = ProvisionRequestCommon & {
-  platform: "github";
-};
-
-type ProvisionRequestCommon = {
-  requester: RepoReference;
-  name: string;
 };

@@ -33,9 +33,13 @@ it("supports multiple secrets per rule", () => {
       authorizer.authorizeSecret({
         requester: { account: "account-x", repo: "repo-x" },
         name: "SECRET_A",
-        platform: "github",
-        type: "actions",
-        target: { account: "account-a" },
+        to: [
+          {
+            platform: "github",
+            type: "actions",
+            target: { account: "account-a" },
+          },
+        ],
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -48,14 +52,71 @@ it("supports multiple secrets per rule", () => {
       authorizer.authorizeSecret({
         requester: { account: "account-x", repo: "repo-x" },
         name: "SECRET_B",
-        platform: "github",
-        type: "actions",
-        target: { account: "account-a" },
+        to: [
+          {
+            platform: "github",
+            type: "actions",
+            target: { account: "account-a" },
+          },
+        ],
       }),
     ),
   ).toMatchInlineSnapshot(`
     "✅ Repo account-x/repo-x was allowed to provision secret SECRET_B:
       ✅ Can provision to Actions in account-a based on 1 rule:
+        ✅ Allowed by rule #1"
+  `);
+});
+
+it("supports multiple targets in requests", () => {
+  const authorizer = createProvisionAuthorizer({
+    rules: {
+      secrets: [
+        {
+          secrets: ["SECRET_A"],
+          requesters: ["account-x/repo-x"],
+          to: {
+            github: {
+              account: {},
+              accounts: {
+                "account-a": {
+                  actions: "allow",
+                  codespaces: "allow",
+                },
+              },
+              repo: { environments: {} },
+              repos: {},
+            },
+          },
+        },
+      ],
+    },
+  });
+
+  expect(
+    explain(
+      authorizer.authorizeSecret({
+        requester: { account: "account-x", repo: "repo-x" },
+        name: "SECRET_A",
+        to: [
+          {
+            platform: "github",
+            type: "actions",
+            target: { account: "account-a" },
+          },
+          {
+            platform: "github",
+            type: "codespaces",
+            target: { account: "account-a" },
+          },
+        ],
+      }),
+    ),
+  ).toMatchInlineSnapshot(`
+    "✅ Repo account-x/repo-x was allowed to provision secret SECRET_A:
+      ✅ Can provision to Actions in account-a based on 1 rule:
+        ✅ Allowed by rule #1
+      ✅ Can provision to Codespaces in account-a based on 1 rule:
         ✅ Allowed by rule #1"
   `);
 });
@@ -89,9 +150,13 @@ it("supports wildcards in secret names", () => {
       authorizer.authorizeSecret({
         requester: { account: "account-x", repo: "repo-x" },
         name: "SECRET_A",
-        platform: "github",
-        type: "actions",
-        target: { account: "account-a" },
+        to: [
+          {
+            platform: "github",
+            type: "actions",
+            target: { account: "account-a" },
+          },
+        ],
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -104,9 +169,13 @@ it("supports wildcards in secret names", () => {
       authorizer.authorizeSecret({
         requester: { account: "account-x", repo: "repo-x" },
         name: "SECRET_B",
-        platform: "github",
-        type: "actions",
-        target: { account: "account-a" },
+        to: [
+          {
+            platform: "github",
+            type: "actions",
+            target: { account: "account-a" },
+          },
+        ],
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -146,9 +215,13 @@ it("supports rule descriptions", () => {
       authorizer.authorizeSecret({
         requester: { account: "account-x", repo: "repo-x" },
         name: "SECRET_A",
-        platform: "github",
-        type: "actions",
-        target: { account: "account-a" },
+        to: [
+          {
+            platform: "github",
+            type: "actions",
+            target: { account: "account-a" },
+          },
+        ],
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -213,9 +286,13 @@ it("allows secrets when a later rule allows access that a previous rule denied",
       authorizer.authorizeSecret({
         requester: { account: "account-x", repo: "repo-x" },
         name: "SECRET_A",
-        platform: "github",
-        type: "actions",
-        target: { account: "account-a" },
+        to: [
+          {
+            platform: "github",
+            type: "actions",
+            target: { account: "account-a" },
+          },
+        ],
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -230,9 +307,13 @@ it("allows secrets when a later rule allows access that a previous rule denied",
       authorizer.authorizeSecret({
         requester: { account: "account-x", repo: "repo-x" },
         name: "SECRET_A",
-        platform: "github",
-        type: "actions",
-        target: { account: "account-a", repo: "repo-a" },
+        to: [
+          {
+            platform: "github",
+            type: "actions",
+            target: { account: "account-a", repo: "repo-a" },
+          },
+        ],
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -298,9 +379,13 @@ it("doesn't allow secrets when a later rule denies access that a previous rule a
       authorizer.authorizeSecret({
         requester: { account: "account-x", repo: "repo-x" },
         name: "SECRET_A",
-        platform: "github",
-        type: "actions",
-        target: { account: "account-a" },
+        to: [
+          {
+            platform: "github",
+            type: "actions",
+            target: { account: "account-a" },
+          },
+        ],
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -315,9 +400,13 @@ it("doesn't allow secrets when a later rule denies access that a previous rule a
       authorizer.authorizeSecret({
         requester: { account: "account-x", repo: "repo-x" },
         name: "SECRET_A",
-        platform: "github",
-        type: "actions",
-        target: { account: "account-a", repo: "repo-a" },
+        to: [
+          {
+            platform: "github",
+            type: "actions",
+            target: { account: "account-a", repo: "repo-a" },
+          },
+        ],
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -362,9 +451,13 @@ it("doesn't allow secrets when no rule matches the secret name", () => {
       authorizer.authorizeSecret({
         requester: { account: "account-x", repo: "repo-x" },
         name: "SECRET_X",
-        platform: "github",
-        type: "actions",
-        target: { account: "account-a" },
+        to: [
+          {
+            platform: "github",
+            type: "actions",
+            target: { account: "account-a" },
+          },
+        ],
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -405,9 +498,13 @@ it("doesn't allow secrets when two account patterns match but one allows and one
       authorizer.authorizeSecret({
         requester: { account: "account-x", repo: "repo-x" },
         name: "SECRET_A",
-        platform: "github",
-        type: "actions",
-        target: { account: "account-a" },
+        to: [
+          {
+            platform: "github",
+            type: "actions",
+            target: { account: "account-a" },
+          },
+        ],
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -451,9 +548,13 @@ it("doesn't allow secrets when two repo patterns match but one allows and one de
       authorizer.authorizeSecret({
         requester: { account: "account-x", repo: "repo-x" },
         name: "SECRET_A",
-        platform: "github",
-        type: "actions",
-        target: { account: "account-a", repo: "repo-a" },
+        to: [
+          {
+            platform: "github",
+            type: "actions",
+            target: { account: "account-a", repo: "repo-a" },
+          },
+        ],
       }),
     ),
   ).toMatchInlineSnapshot(`
@@ -461,4 +562,77 @@ it("doesn't allow secrets when two repo patterns match but one allows and one de
       ❌ Can't provision to Actions in account-a/repo-a based on 1 rule:
         ❌ Denied by rule #1"
   `);
+});
+
+it("doesn't allow secrets when some targets aren't allowed", () => {
+  const authorizer = createProvisionAuthorizer({
+    rules: {
+      secrets: [
+        {
+          secrets: ["SECRET_A"],
+          requesters: ["account-x/repo-x"],
+          to: {
+            github: {
+              account: {},
+              accounts: {
+                "account-a": {
+                  actions: "allow",
+                  codespaces: "deny",
+                  dependabot: "allow",
+                },
+              },
+              repo: { environments: {} },
+              repos: {},
+            },
+          },
+        },
+      ],
+    },
+  });
+
+  expect(
+    explain(
+      authorizer.authorizeSecret({
+        requester: { account: "account-x", repo: "repo-x" },
+        name: "SECRET_A",
+        to: [
+          {
+            platform: "github",
+            type: "actions",
+            target: { account: "account-a" },
+          },
+          {
+            platform: "github",
+            type: "codespaces",
+            target: { account: "account-a" },
+          },
+          {
+            platform: "github",
+            type: "dependabot",
+            target: { account: "account-a" },
+          },
+        ],
+      }),
+    ),
+  ).toMatchInlineSnapshot(`
+    "❌ Repo account-x/repo-x wasn't allowed to provision secret SECRET_A:
+      ✅ Can provision to Actions in account-a based on 1 rule:
+        ✅ Allowed by rule #1
+      ❌ Can't provision to Codespaces in account-a based on 1 rule:
+        ❌ Denied by rule #1
+      ✅ Can provision to Dependabot in account-a based on 1 rule:
+        ✅ Allowed by rule #1"
+  `);
+});
+
+it("throws when the targets are empty", () => {
+  const authorizer = createProvisionAuthorizer({ rules: { secrets: [] } });
+
+  expect(() =>
+    authorizer.authorizeSecret({
+      requester: { account: "account-x", repo: "repo-x" },
+      name: "SECRET_A",
+      to: [],
+    }),
+  ).toThrow("Targets cannot be empty");
 });

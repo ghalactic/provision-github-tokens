@@ -1,3 +1,4 @@
+import { compareProvisionRequestTarget } from "../compare-provision-request-target.js";
 import {
   accountOrRepoRefToString,
   repoRefToString,
@@ -5,8 +6,10 @@ import {
 import type {
   ProvisionAuthResult,
   ProvisionAuthResultExplainer,
-  ProvisionAuthRuleResult,
+  ProvisionAuthTargetResult,
+  ProvisionAuthTargetRuleResult,
 } from "../type/provision-auth-result.js";
+import type { ProvisionRequestTarget } from "../type/provision-request.js";
 import type { ProvisionSecretsRule } from "../type/provision-rule.js";
 
 const ALLOWED_ICON = "✅";
@@ -14,15 +17,35 @@ const DENIED_ICON = "❌";
 
 export function createTextProvisionAuthExplainer(): ProvisionAuthResultExplainer<string> {
   return (result) => {
-    const { isAllowed, rules } = result;
+    const { request, results } = result;
 
+    const entries: [
+      target: ProvisionRequestTarget,
+      result: ProvisionAuthTargetResult,
+    ][] = [];
+    for (let i = 0; i < results.length; ++i) {
+      entries.push([request.to[i], results[i]]);
+    }
+    entries.sort(([a], [b]) => compareProvisionRequestTarget(a, b));
+
+    let explainedTargets = "";
+    for (const [target, result] of entries) {
+      explainedTargets += explainTarget(target, result);
+    }
+
+    return explainSummary(result) + explainedTargets;
+  };
+
+  function explainTarget(
+    target: ProvisionRequestTarget,
+    { isAllowed, rules }: ProvisionAuthTargetResult,
+  ): string {
     return (
-      explainSummary(result) +
       `\n  ${renderIcon(isAllowed)} ` +
       `${isAllowed ? "Can" : "Can't"} ` +
-      `provision to ${explainSubject(result)} ${explainBasedOnRules(rules)}`
+      `provision to ${explainSubject(target)} ${explainBasedOnRules(rules)}`
     );
-  };
+  }
 
   function explainSummary({ request, isAllowed }: ProvisionAuthResult): string {
     return (
@@ -32,7 +55,7 @@ export function createTextProvisionAuthExplainer(): ProvisionAuthResultExplainer
     );
   }
 
-  function explainSubject({ request }: ProvisionAuthResult): string {
+  function explainSubject(target: ProvisionRequestTarget): string {
     const type = ((r) => {
       const type = r.type;
 
@@ -52,12 +75,12 @@ export function createTextProvisionAuthExplainer(): ProvisionAuthResultExplainer
         `Invariant violation: Unexpected secret type ${JSON.stringify(type)}`,
       );
       /* v8 ignore stop */
-    })(request);
+    })(target);
 
-    return `${type} in ${accountOrRepoRefToString(request.target)}`;
+    return `${type} in ${accountOrRepoRefToString(target.target)}`;
   }
 
-  function explainBasedOnRules(rules: ProvisionAuthRuleResult[]): string {
+  function explainBasedOnRules(rules: ProvisionAuthTargetRuleResult[]): string {
     const ruleCount = rules.length;
     const ruleOrRules = ruleCount === 1 ? "rule" : "rules";
     const basedOn =
@@ -73,7 +96,11 @@ export function createTextProvisionAuthExplainer(): ProvisionAuthResultExplainer
     return `${basedOn}:${explainedRules}`;
   }
 
-  function explainRule({ index, rule, have }: ProvisionAuthRuleResult): string {
+  function explainRule({
+    index,
+    rule,
+    have,
+  }: ProvisionAuthTargetRuleResult): string {
     const isAllowed = have === "allow";
 
     return (
