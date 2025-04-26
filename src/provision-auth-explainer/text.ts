@@ -17,7 +17,13 @@ const DENIED_ICON = "❌";
 
 export function createTextProvisionAuthExplainer(): ProvisionAuthResultExplainer<string> {
   return (result) => {
-    const { request, results } = result;
+    const { request, results, isMissingTargets } = result;
+
+    if (isMissingTargets) {
+      return (
+        explainSummary(result) + `\n  ${renderIcon(false)} No targets specified`
+      );
+    }
 
     const entries: [
       target: ProvisionRequestTarget,

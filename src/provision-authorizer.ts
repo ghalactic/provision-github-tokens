@@ -35,8 +35,6 @@ export function createProvisionAuthorizer(
 
   return {
     authorizeSecret(request) {
-      if (request.to.length < 1) throw new Error("Targets cannot be empty");
-
       const results: ProvisionAuthTargetResult[] = [];
 
       for (const entry of request.to) {
@@ -148,10 +146,15 @@ export function createProvisionAuthorizer(
         });
       }
 
+      const isMissingTargets = results.length < 1;
+      const isAllAllowed = results.every((result) => result.isAllowed);
+      const isAllowed = !isMissingTargets && isAllAllowed;
+
       return {
         request,
         results,
-        isAllowed: results.every((result) => result.isAllowed),
+        isMissingTargets,
+        isAllowed,
       };
     },
   };

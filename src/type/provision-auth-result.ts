@@ -8,6 +8,7 @@ export type ProvisionAuthResultExplainer<T> = (
 export type ProvisionAuthResult = {
   request: ProvisionRequest;
   results: ProvisionAuthTargetResult[];
+  isMissingTargets: boolean;
   isAllowed: boolean;
 };
 

@@ -625,14 +625,36 @@ it("doesn't allow secrets when some targets aren't allowed", () => {
   `);
 });
 
-it("throws when the targets are empty", () => {
-  const authorizer = createProvisionAuthorizer({ rules: { secrets: [] } });
+it("doesn't allow secrets when no targets are specified", () => {
+  const authorizer = createProvisionAuthorizer({
+    rules: {
+      secrets: [
+        {
+          secrets: ["SECRET_A"],
+          requesters: ["account-x/repo-x"],
+          to: {
+            github: {
+              account: {},
+              accounts: {},
+              repo: { environments: {} },
+              repos: {},
+            },
+          },
+        },
+      ],
+    },
+  });
 
-  expect(() =>
-    authorizer.authorizeSecret({
-      requester: { account: "account-x", repo: "repo-x" },
-      name: "SECRET_A",
-      to: [],
-    }),
-  ).toThrow("Targets cannot be empty");
+  expect(
+    explain(
+      authorizer.authorizeSecret({
+        requester: { account: "account-x", repo: "repo-x" },
+        name: "SECRET_A",
+        to: [],
+      }),
+    ),
+  ).toMatchInlineSnapshot(`
+    "❌ Repo account-x/repo-x wasn't allowed to provision secret SECRET_A:
+      ❌ No targets specified"
+  `);
 });
