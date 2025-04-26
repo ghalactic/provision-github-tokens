@@ -37,9 +37,9 @@ export function createTextTokenAuthExplainer(): TokenAuthResultExplainer<string>
     const subject = `all repos in ${request.declaration.account}`;
 
     return (
-      `${explainSummary(result)}\n  ` +
-      `${explainMaxAccessAndRole(result, subject)}\n  ` +
-      `${renderIcon(isSufficient)} ` +
+      explainSummary(result) +
+      explainMaxAccessAndRole(result, subject) +
+      `\n  ${renderIcon(isSufficient)} ` +
       `${isSufficient ? "Sufficient" : "Insufficient"} ` +
       `access to ${subject} ` +
       `${explainBasedOnRules(request.declaration.permissions, rules)}`
@@ -50,9 +50,9 @@ export function createTextTokenAuthExplainer(): TokenAuthResultExplainer<string>
     const { request, isSufficient, rules } = result;
 
     return (
-      `${explainSummary(result)}\n  ` +
-      `${explainMaxAccessAndRole(result, request.declaration.account)}\n  ` +
-      `${renderIcon(isSufficient)} ` +
+      explainSummary(result) +
+      explainMaxAccessAndRole(result, request.declaration.account) +
+      `\n  ${renderIcon(isSufficient)} ` +
       `${isSufficient ? "Sufficient" : "Insufficient"} ` +
       `access to ${request.declaration.account} ` +
       `${explainBasedOnRules(request.declaration.permissions, rules)}`
@@ -69,19 +69,17 @@ export function createTextTokenAuthExplainer(): TokenAuthResultExplainer<string>
     let explainedResources = "";
 
     for (const [resourceRepo, resourceResult] of resourceEntries) {
-      explainedResources +=
-        "\n" +
-        explainResourceRepo(
-          resourceRepo,
-          request.declaration.permissions,
-          resourceResult,
-        );
+      explainedResources += explainResourceRepo(
+        resourceRepo,
+        request.declaration.permissions,
+        resourceResult,
+      );
     }
 
     return (
-      `${explainSummary(result)}\n  ` +
-      `${explainMaxAccessAndRole(result, subject)}\n  ` +
-      `${explainSelectedReposMatch(result)}` +
+      explainSummary(result) +
+      explainMaxAccessAndRole(result, subject) +
+      explainSelectedReposMatch(result) +
       explainedResources
     );
   }
@@ -107,7 +105,7 @@ export function createTextTokenAuthExplainer(): TokenAuthResultExplainer<string>
     accessTo: string,
   ): string {
     return (
-      `${renderIcon(!isMissingRole)} ${ACCESS_LEVELS[maxWant]} ` +
+      `\n  ${renderIcon(!isMissingRole)} ${ACCESS_LEVELS[maxWant]} ` +
       `access to ${accessTo} ` +
       (request.declaration.as
         ? `requested with role ${request.declaration.as}`
@@ -126,7 +124,7 @@ export function createTextTokenAuthExplainer(): TokenAuthResultExplainer<string>
     );
     const repos = pluralize(request.repos.length, "repo", "repos");
 
-    return `${renderIcon(isMatched)} ${repoPatterns} matched ${repos}`;
+    return `\n  ${renderIcon(isMatched)} ${repoPatterns} matched ${repos}`;
   }
 
   function explainResourceRepo(
@@ -135,7 +133,7 @@ export function createTextTokenAuthExplainer(): TokenAuthResultExplainer<string>
     { isSufficient, rules }: TokenAuthResourceResult,
   ): string {
     return (
-      `  ${renderIcon(isSufficient)} ` +
+      `\n  ${renderIcon(isSufficient)} ` +
       `${isSufficient ? "Sufficient" : "Insufficient"} ` +
       `access to repo ${resource} ${explainBasedOnRules(want, rules)}`
     );
@@ -157,7 +155,7 @@ export function createTextTokenAuthExplainer(): TokenAuthResultExplainer<string>
     let explainedRules = "";
 
     for (const ruleResult of rules) {
-      explainedRules += "\n" + explainRule(want, ruleResult);
+      explainedRules += explainRule(want, ruleResult);
     }
 
     return `${basedOn}:${explainedRules}`;
@@ -168,7 +166,7 @@ export function createTextTokenAuthExplainer(): TokenAuthResultExplainer<string>
     { index, rule, have, isSufficient }: TokenAuthResourceResultRuleResult,
   ): string {
     return (
-      `    ${renderIcon(isSufficient)} Rule ${renderRule(index, rule)} ` +
+      `\n    ${renderIcon(isSufficient)} Rule ${renderRule(index, rule)} ` +
       `gave ${isSufficient ? "sufficient" : "insufficient"} access:` +
       renderPermissionComparison("      ", have, want)
     );

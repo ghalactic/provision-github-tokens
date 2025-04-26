@@ -17,8 +17,8 @@ export function createTextProvisionAuthExplainer(): ProvisionAuthResultExplainer
     const { isAllowed, rules } = result;
 
     return (
-      `${explainSummary(result)}\n  ` +
-      `${renderIcon(isAllowed)} ` +
+      explainSummary(result) +
+      `\n  ${renderIcon(isAllowed)} ` +
       `${isAllowed ? "Can" : "Can't"} ` +
       `provision to ${explainSubject(result)} ${explainBasedOnRules(rules)}`
     );
@@ -68,10 +68,7 @@ export function createTextProvisionAuthExplainer(): ProvisionAuthResultExplainer
     if (ruleCount < 1) return basedOn;
 
     let explainedRules = "";
-
-    for (const ruleResult of rules) {
-      explainedRules += "\n" + explainRule(ruleResult);
-    }
+    for (const ruleResult of rules) explainedRules += explainRule(ruleResult);
 
     return `${basedOn}:${explainedRules}`;
   }
@@ -80,7 +77,7 @@ export function createTextProvisionAuthExplainer(): ProvisionAuthResultExplainer
     const isAllowed = have === "allow";
 
     return (
-      `    ${renderIcon(isAllowed)} ` +
+      `\n    ${renderIcon(isAllowed)} ` +
       `${isAllowed ? "Allowed" : "Denied"} by rule ${renderRule(index, rule)}`
     );
   }
