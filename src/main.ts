@@ -291,7 +291,7 @@ async function main(): Promise<void> {
       relevantResults.push(tokenAuthResult);
     }
 
-    // TODO: Make this part of the provision authorizer
+    // TODO: roll into provision authorizer
     if (!relevantResults.every(({ isAllowed }) => isAllowed)) {
       warning(
         `Secret ${provisionReq.name} can't be provisioned to all targets`,
