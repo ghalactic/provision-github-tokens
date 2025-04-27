@@ -229,12 +229,6 @@ async function main(): Promise<void> {
         }
       }
 
-      if (targets.length < 1) {
-        warning(`Secret ${name} is not provisioned anywhere`);
-
-        continue;
-      }
-
       requests.push([
         secretDec,
         tokenDec,

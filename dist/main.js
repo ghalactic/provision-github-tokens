@@ -60235,10 +60235,6 @@ async function main() {
           }
         }
       }
-      if (targets.length < 1) {
-        (0, import_core7.warning)(`Secret ${name} is not provisioned anywhere`);
-        continue;
-      }
       requests.push([
         secretDec,
         tokenDec,
