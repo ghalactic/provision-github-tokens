@@ -60064,11 +60064,11 @@ function createTokenDeclarationRegistry() {
     registerDeclaration(definingRepo, name, declaration) {
       declarations.set(`${repoRefToString(definingRepo)}.${name}`, declaration);
     },
-    findDeclarationForRequester(requestingRepo, reference) {
+    findDeclarationForRequester(requester, reference) {
       const declaration = declarations.get(reference);
       if (!declaration) return [void 0, false];
       if (declaration.shared) return [declaration, true];
-      return reference.startsWith(`${repoRefToString(requestingRepo)}.`) ? [declaration, true] : [void 0, true];
+      return reference.startsWith(`${repoRefToString(requester)}.`) ? [declaration, true] : [void 0, true];
     }
   };
 }
@@ -60227,27 +60227,29 @@ async function main() {
           }
         }
       }
-      requests.push([
-        secretDec,
-        { requester: discovered.requester, name, to: targets }
-      ]);
+      requests.push({
+        requester: discovered.requester,
+        token: secretDec.token,
+        name,
+        to: targets
+      });
     }
   }
   const tokenAuthResults = {};
-  for (const [secretDec, provisionReq] of requests) {
+  for (const provisionReq of requests) {
     const [tokenDec] = declarationRegistry.findDeclarationForRequester(
       provisionReq.requester,
-      secretDec.token
+      provisionReq.token
     );
     if (!tokenDec) {
-      (0, import_core7.warning)(`Undefined token ${secretDec.token}`);
+      (0, import_core7.warning)(`Undefined token ${provisionReq.token}`);
       continue;
     }
     const relevantResults = [];
     for (const target of provisionReq.to) {
       const tokenAuthKey = JSON.stringify([
         accountOrRepoRefToString(target.target),
-        secretDec.token
+        provisionReq.token
       ]);
       let tokenAuthResult = tokenAuthResults[tokenAuthKey];
       if (tokenAuthResult == null) {

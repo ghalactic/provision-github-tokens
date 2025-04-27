@@ -29,7 +29,6 @@ import type {
   ProvisionRequest,
   ProvisionRequestTarget,
 } from "./type/provision-request.js";
-import type { SecretDeclaration } from "./type/secret-declaration.js";
 import type { TokenAuthResult } from "./type/token-auth-result.js";
 import type { TokenRequest } from "./type/token-request.js";
 
@@ -129,7 +128,7 @@ async function main(): Promise<void> {
   // TODO: issue tokens
   // TODO: provision secrets
 
-  const requests: [SecretDeclaration, ProvisionRequest][] = [];
+  const requests: ProvisionRequest[] = [];
   const platform = "github";
 
   for (const [, discovered] of requesters) {
@@ -215,24 +214,26 @@ async function main(): Promise<void> {
         }
       }
 
-      requests.push([
-        secretDec,
-        { requester: discovered.requester, name, to: targets },
-      ]);
+      requests.push({
+        requester: discovered.requester,
+        token: secretDec.token,
+        name,
+        to: targets,
+      });
     }
   }
 
   const tokenAuthResults: Record<string, TokenAuthResult> = {};
 
-  for (const [secretDec, provisionReq] of requests) {
+  for (const provisionReq of requests) {
     const [tokenDec] = declarationRegistry.findDeclarationForRequester(
       provisionReq.requester,
-      secretDec.token,
+      provisionReq.token,
     );
 
     // TODO: roll into provision authorizer
     if (!tokenDec) {
-      warning(`Undefined token ${secretDec.token}`);
+      warning(`Undefined token ${provisionReq.token}`);
 
       continue;
     }
@@ -242,7 +243,7 @@ async function main(): Promise<void> {
     for (const target of provisionReq.to) {
       const tokenAuthKey = JSON.stringify([
         accountOrRepoRefToString(target.target),
-        secretDec.token,
+        provisionReq.token,
       ]);
 
       let tokenAuthResult = tokenAuthResults[tokenAuthKey];

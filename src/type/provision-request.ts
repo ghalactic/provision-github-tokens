@@ -6,6 +6,7 @@ import type {
 
 export type ProvisionRequest = {
   requester: RepoReference;
+  token: string;
   name: string;
   to: ProvisionRequestTarget[];
 };
