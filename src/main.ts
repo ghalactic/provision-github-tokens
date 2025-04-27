@@ -31,7 +31,6 @@ import type {
 } from "./type/provision-request.js";
 import type { SecretDeclaration } from "./type/secret-declaration.js";
 import type { TokenAuthResult } from "./type/token-auth-result.js";
-import type { TokenDeclaration } from "./type/token-declaration.js";
 import type { TokenRequest } from "./type/token-request.js";
 
 main().catch((error) => {
@@ -130,25 +129,12 @@ async function main(): Promise<void> {
   // TODO: issue tokens
   // TODO: provision secrets
 
-  const requests: [SecretDeclaration, TokenDeclaration, ProvisionRequest][] =
-    [];
+  const requests: [SecretDeclaration, ProvisionRequest][] = [];
   const platform = "github";
 
   for (const [, discovered] of requesters) {
     for (const name in discovered.config.provision.secrets) {
       const secretDec = discovered.config.provision.secrets[name];
-
-      const [tokenDec] = declarationRegistry.findDeclarationForRequester(
-        discovered.requester,
-        secretDec.token,
-      );
-
-      if (!tokenDec) {
-        warning(`Undefined token ${secretDec.token}`);
-
-        continue;
-      }
-
       const targets: ProvisionRequestTarget[] = [];
 
       for (const type of ["actions", "codespaces", "dependabot"] as const) {
@@ -231,7 +217,6 @@ async function main(): Promise<void> {
 
       requests.push([
         secretDec,
-        tokenDec,
         { requester: discovered.requester, name, to: targets },
       ]);
     }
@@ -239,7 +224,19 @@ async function main(): Promise<void> {
 
   const tokenAuthResults: Record<string, TokenAuthResult> = {};
 
-  for (const [secretDec, tokenDec, provisionReq] of requests) {
+  for (const [secretDec, provisionReq] of requests) {
+    const [tokenDec] = declarationRegistry.findDeclarationForRequester(
+      provisionReq.requester,
+      secretDec.token,
+    );
+
+    // TODO: roll into provision authorizer
+    if (!tokenDec) {
+      warning(`Undefined token ${secretDec.token}`);
+
+      continue;
+    }
+
     const relevantResults: TokenAuthResult[] = [];
 
     for (const target of provisionReq.to) {

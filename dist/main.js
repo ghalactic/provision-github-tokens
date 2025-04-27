@@ -60159,14 +60159,6 @@ async function main() {
   for (const [, discovered] of requesters) {
     for (const name in discovered.config.provision.secrets) {
       const secretDec = discovered.config.provision.secrets[name];
-      const [tokenDec] = declarationRegistry.findDeclarationForRequester(
-        discovered.requester,
-        secretDec.token
-      );
-      if (!tokenDec) {
-        (0, import_core7.warning)(`Undefined token ${secretDec.token}`);
-        continue;
-      }
       const targets = [];
       for (const type2 of ["actions", "codespaces", "dependabot"]) {
         if (secretDec.github.account[type2]) {
@@ -60237,13 +60229,20 @@ async function main() {
       }
       requests.push([
         secretDec,
-        tokenDec,
         { requester: discovered.requester, name, to: targets }
       ]);
     }
   }
   const tokenAuthResults = {};
-  for (const [secretDec, tokenDec, provisionReq] of requests) {
+  for (const [secretDec, provisionReq] of requests) {
+    const [tokenDec] = declarationRegistry.findDeclarationForRequester(
+      provisionReq.requester,
+      secretDec.token
+    );
+    if (!tokenDec) {
+      (0, import_core7.warning)(`Undefined token ${secretDec.token}`);
+      continue;
+    }
     const relevantResults = [];
     for (const target of provisionReq.to) {
       const tokenAuthKey = JSON.stringify([
