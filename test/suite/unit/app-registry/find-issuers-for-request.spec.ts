@@ -30,7 +30,7 @@ it("finds issuers for all repos in an account with one permission", () => {
   expect(
     appRegistry.findIssuersForRequest({
       consumer: { account: "account-x" },
-      declaration: {
+      tokenDec: {
         shared: false,
         as: "role-a",
         account: orgA.login,
@@ -62,7 +62,7 @@ it("finds issuers for one selected repo with one permission", () => {
   expect(
     appRegistry.findIssuersForRequest({
       consumer: { account: "account-x" },
-      declaration: {
+      tokenDec: {
         shared: false,
         as: "role-a",
         account: orgA.login,
@@ -98,7 +98,7 @@ it("finds issuers for multiple selected repos with multiple permissions", () => 
   expect(
     appRegistry.findIssuersForRequest({
       consumer: { account: "account-x" },
-      declaration: {
+      tokenDec: {
         shared: false,
         as: "role-a",
         account: orgA.login,
@@ -129,7 +129,7 @@ it("finds issuers for no repos", () => {
   expect(
     appRegistry.findIssuersForRequest({
       consumer: { account: "account-x" },
-      declaration: {
+      tokenDec: {
         shared: false,
         as: "role-a",
         account: orgA.login,
@@ -167,7 +167,7 @@ it.each([
     expect(
       appRegistry.findIssuersForRequest({
         consumer: { account: "account-x" },
-        declaration: {
+        tokenDec: {
           shared: false,
           as: "role-a",
           account: orgA.login,
@@ -205,7 +205,7 @@ it("finds issuers for the correct account when there are multiple installations"
   expect(
     appRegistry.findIssuersForRequest({
       consumer: { account: "account-x" },
-      declaration: {
+      tokenDec: {
         shared: false,
         as: undefined,
         account: orgA.login,
@@ -218,7 +218,7 @@ it("finds issuers for the correct account when there are multiple installations"
   expect(
     appRegistry.findIssuersForRequest({
       consumer: { account: "account-x" },
-      declaration: {
+      tokenDec: {
         shared: false,
         as: undefined,
         account: orgA.login,
@@ -231,7 +231,7 @@ it("finds issuers for the correct account when there are multiple installations"
   expect(
     appRegistry.findIssuersForRequest({
       consumer: { account: "account-x" },
-      declaration: {
+      tokenDec: {
         shared: false,
         as: undefined,
         account: orgB.login,
@@ -244,7 +244,7 @@ it("finds issuers for the correct account when there are multiple installations"
   expect(
     appRegistry.findIssuersForRequest({
       consumer: { account: "account-x" },
-      declaration: {
+      tokenDec: {
         shared: false,
         as: undefined,
         account: orgB.login,
@@ -312,7 +312,7 @@ it("finds issuers by role", () => {
   expect(
     appRegistry.findIssuersForRequest({
       consumer: { account: "account-x" },
-      declaration: {
+      tokenDec: {
         shared: false,
         as: "role-a",
         account: orgA.login,
@@ -325,7 +325,7 @@ it("finds issuers by role", () => {
   expect(
     appRegistry.findIssuersForRequest({
       consumer: { account: "account-x" },
-      declaration: {
+      tokenDec: {
         shared: false,
         as: "role-a",
         account: orgA.login,
@@ -338,7 +338,7 @@ it("finds issuers by role", () => {
   expect(
     appRegistry.findIssuersForRequest({
       consumer: { account: "account-x" },
-      declaration: {
+      tokenDec: {
         shared: false,
         as: "role-a",
         account: orgA.login,
@@ -351,7 +351,7 @@ it("finds issuers by role", () => {
   expect(
     appRegistry.findIssuersForRequest({
       consumer: { account: "account-x" },
-      declaration: {
+      tokenDec: {
         shared: false,
         as: "role-b",
         account: orgA.login,
@@ -364,7 +364,7 @@ it("finds issuers by role", () => {
   expect(
     appRegistry.findIssuersForRequest({
       consumer: { account: "account-x" },
-      declaration: {
+      tokenDec: {
         shared: false,
         as: "role-b",
         account: orgA.login,
@@ -409,7 +409,7 @@ it("finds issuers for read access when the role is undefined", () => {
   expect(
     appRegistry.findIssuersForRequest({
       consumer: { account: "account-x" },
-      declaration: {
+      tokenDec: {
         shared: false,
         as: undefined,
         account: orgA.login,
@@ -422,7 +422,7 @@ it("finds issuers for read access when the role is undefined", () => {
   expect(
     appRegistry.findIssuersForRequest({
       consumer: { account: "account-x" },
-      declaration: {
+      tokenDec: {
         shared: false,
         as: undefined,
         account: orgA.login,
@@ -456,7 +456,7 @@ it("doesn't find issuers for write or admin access when the role is undefined", 
   expect(
     appRegistry.findIssuersForRequest({
       consumer: { account: "account-x" },
-      declaration: {
+      tokenDec: {
         shared: false,
         as: undefined,
         account: orgA.login,
@@ -469,7 +469,7 @@ it("doesn't find issuers for write or admin access when the role is undefined", 
   expect(
     appRegistry.findIssuersForRequest({
       consumer: { account: "account-x" },
-      declaration: {
+      tokenDec: {
         shared: false,
         as: undefined,
         account: orgA.login,
@@ -501,7 +501,7 @@ it("doesn't find issuers when it can't access all repos in an account", () => {
   expect(
     appRegistry.findIssuersForRequest({
       consumer: { account: "account-x" },
-      declaration: {
+      tokenDec: {
         shared: false,
         as: "role-a",
         account: orgA.login,
@@ -533,7 +533,7 @@ it("doesn't find issuers for an unknown account", () => {
   expect(
     appRegistry.findIssuersForRequest({
       consumer: { account: "account-x" },
-      declaration: {
+      tokenDec: {
         shared: false,
         as: "role-a",
         account: "account-x",
@@ -565,7 +565,7 @@ it("doesn't find issuers for an unknown repo", () => {
   expect(
     appRegistry.findIssuersForRequest({
       consumer: { account: "account-x" },
-      declaration: {
+      tokenDec: {
         shared: false,
         as: "role-a",
         account: orgA.login,
@@ -597,7 +597,7 @@ it("doesn't find issuers that can't access all requested repos", () => {
   expect(
     appRegistry.findIssuersForRequest({
       consumer: { account: "account-x" },
-      declaration: {
+      tokenDec: {
         shared: false,
         as: "role-a",
         account: orgA.login,
@@ -628,7 +628,7 @@ it("doesn't find issuers that don't have all permissions", () => {
   expect(
     appRegistry.findIssuersForRequest({
       consumer: { account: "account-x" },
-      declaration: {
+      tokenDec: {
         shared: false,
         as: "role-a",
         account: orgA.login,
@@ -665,7 +665,7 @@ it.each([
     expect(
       appRegistry.findIssuersForRequest({
         consumer: { account: "account-x" },
-        declaration: {
+        tokenDec: {
           shared: false,
           as: "role-a",
           account: orgA.login,
@@ -697,7 +697,7 @@ it("doesn't find issuers for no permissions", () => {
   expect(
     appRegistry.findIssuersForRequest({
       consumer: { account: "account-x" },
-      declaration: {
+      tokenDec: {
         shared: false,
         as: "role-a",
         account: orgA.login,
@@ -728,7 +728,7 @@ it("doesn't find issuers from non-issuer apps", () => {
   expect(
     appRegistry.findIssuersForRequest({
       consumer: { account: "account-x" },
-      declaration: {
+      tokenDec: {
         shared: false,
         as: undefined,
         account: orgA.login,
@@ -741,7 +741,7 @@ it("doesn't find issuers from non-issuer apps", () => {
   expect(
     appRegistry.findIssuersForRequest({
       consumer: { account: "account-x" },
-      declaration: {
+      tokenDec: {
         shared: false,
         as: "role-a",
         account: orgA.login,

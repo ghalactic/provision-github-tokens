@@ -26,7 +26,7 @@ it("allows tokens that should be allowed", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        declaration: {
+        tokenDec: {
           shared: false,
           as: "role-a",
           account: "account-a",
@@ -48,7 +48,7 @@ it("allows tokens that should be allowed", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        declaration: {
+        tokenDec: {
           shared: false,
           as: "role-a",
           account: "account-a",
@@ -71,7 +71,7 @@ it("allows tokens that should be allowed", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        declaration: {
+        tokenDec: {
           shared: false,
           as: "role-a",
           account: "account-a",
@@ -98,7 +98,7 @@ it("allows tokens that should be allowed", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
-        declaration: {
+        tokenDec: {
           shared: false,
           as: "role-a",
           account: "account-a",
@@ -120,7 +120,7 @@ it("allows tokens that should be allowed", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
-        declaration: {
+        tokenDec: {
           shared: false,
           as: "role-a",
           account: "account-a",
@@ -143,7 +143,7 @@ it("allows tokens that should be allowed", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
-        declaration: {
+        tokenDec: {
           shared: false,
           as: "role-a",
           account: "account-a",
@@ -190,7 +190,7 @@ it("allows tokens when allowed by a wildcard rule", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        declaration: {
+        tokenDec: {
           shared: false,
           as: "role-a",
           account: "account-a",
@@ -212,7 +212,7 @@ it("allows tokens when allowed by a wildcard rule", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        declaration: {
+        tokenDec: {
           shared: false,
           as: "role-a",
           account: "account-b",
@@ -234,7 +234,7 @@ it("allows tokens when allowed by a wildcard rule", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
-        declaration: {
+        tokenDec: {
           shared: false,
           as: "role-a",
           account: "account-a",
@@ -256,7 +256,7 @@ it("allows tokens when allowed by a wildcard rule", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
-        declaration: {
+        tokenDec: {
           shared: false,
           as: "role-a",
           account: "account-b",
@@ -298,7 +298,7 @@ it("allows tokens when the actual access level is higher than requested", () => 
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        declaration: {
+        tokenDec: {
           shared: false,
           as: "role-a",
           account: "account-a",
@@ -321,7 +321,7 @@ it("allows tokens when the actual access level is higher than requested", () => 
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
-        declaration: {
+        tokenDec: {
           shared: false,
           as: "role-a",
           account: "account-a",
@@ -376,7 +376,7 @@ it("allows tokens when a later rule allows access that a previous rule denied", 
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        declaration: {
+        tokenDec: {
           shared: false,
           as: "role-a",
           account: "account-a",
@@ -402,7 +402,7 @@ it("allows tokens when a later rule allows access that a previous rule denied", 
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
-        declaration: {
+        tokenDec: {
           shared: false,
           as: "role-a",
           account: "account-a",
@@ -472,7 +472,7 @@ it("allows tokens when a later unrelated rule denies access to the requested per
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        declaration: {
+        tokenDec: {
           shared: false,
           as: "role-a",
           account: "account-a",
@@ -495,7 +495,7 @@ it("allows tokens when a later unrelated rule denies access to the requested per
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
-        declaration: {
+        tokenDec: {
           shared: false,
           as: "role-a",
           account: "account-a",
@@ -538,7 +538,7 @@ it("allows read-only tokens without a role", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        declaration: {
+        tokenDec: {
           shared: false,
           as: undefined,
           account: "account-a",
@@ -561,7 +561,7 @@ it("allows read-only tokens without a role", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
-        declaration: {
+        tokenDec: {
           shared: false,
           as: undefined,
           account: "account-a",
@@ -605,7 +605,7 @@ it("supports rule descriptions", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        declaration: {
+        tokenDec: {
           shared: false,
           as: "role-a",
           account: "account-a",
@@ -627,7 +627,7 @@ it("supports rule descriptions", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
-        declaration: {
+        tokenDec: {
           shared: false,
           as: "role-a",
           account: "account-a",
@@ -669,7 +669,7 @@ it("sorts repos and permissions in the explanation", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        declaration: {
+        tokenDec: {
           shared: false,
           as: "role-a",
           account: "account-a",
@@ -696,7 +696,7 @@ it("sorts repos and permissions in the explanation", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
-        declaration: {
+        tokenDec: {
           shared: false,
           as: "role-a",
           account: "account-a",
@@ -743,7 +743,7 @@ it("doesn't allow tokens for unauthorized consumers", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-y" },
-        declaration: {
+        tokenDec: {
           shared: false,
           as: "role-a",
           account: "account-a",
@@ -763,7 +763,7 @@ it("doesn't allow tokens for unauthorized consumers", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-y", repo: "repo-x" },
-        declaration: {
+        tokenDec: {
           shared: false,
           as: "role-a",
           account: "account-a",
@@ -783,7 +783,7 @@ it("doesn't allow tokens for unauthorized consumers", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-y" },
-        declaration: {
+        tokenDec: {
           shared: false,
           as: "role-a",
           account: "account-a",
@@ -803,7 +803,7 @@ it("doesn't allow tokens for unauthorized consumers", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-y", repo: "repo-y" },
-        declaration: {
+        tokenDec: {
           shared: false,
           as: "role-a",
           account: "account-a",
@@ -843,7 +843,7 @@ it("doesn't allow tokens for unauthorized resource repos", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        declaration: {
+        tokenDec: {
           shared: false,
           as: "role-a",
           account: "account-a",
@@ -863,7 +863,7 @@ it("doesn't allow tokens for unauthorized resource repos", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        declaration: {
+        tokenDec: {
           shared: false,
           as: "role-a",
           account: "account-y",
@@ -883,7 +883,7 @@ it("doesn't allow tokens for unauthorized resource repos", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
-        declaration: {
+        tokenDec: {
           shared: false,
           as: "role-a",
           account: "account-a",
@@ -903,7 +903,7 @@ it("doesn't allow tokens for unauthorized resource repos", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
-        declaration: {
+        tokenDec: {
           shared: false,
           as: "role-a",
           account: "account-y",
@@ -943,7 +943,7 @@ it("doesn't allow tokens where only some of the resources are authorized", () =>
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        declaration: {
+        tokenDec: {
           shared: false,
           as: "role-a",
           account: "account-a",
@@ -969,7 +969,7 @@ it("doesn't allow tokens where only some of the resources are authorized", () =>
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
-        declaration: {
+        tokenDec: {
           shared: false,
           as: "role-a",
           account: "account-a",
@@ -1015,7 +1015,7 @@ it("doesn't allow tokens for unauthorized permissions", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        declaration: {
+        tokenDec: {
           shared: false,
           as: "role-a",
           account: "account-a",
@@ -1037,7 +1037,7 @@ it("doesn't allow tokens for unauthorized permissions", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
-        declaration: {
+        tokenDec: {
           shared: false,
           as: "role-a",
           account: "account-a",
@@ -1079,7 +1079,7 @@ it("doesn't allow tokens where only some of the permissions are authorized", () 
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        declaration: {
+        tokenDec: {
           shared: false,
           as: "role-a",
           account: "account-a",
@@ -1102,7 +1102,7 @@ it("doesn't allow tokens where only some of the permissions are authorized", () 
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
-        declaration: {
+        tokenDec: {
           shared: false,
           as: "role-a",
           account: "account-a",
@@ -1169,7 +1169,7 @@ it("doesn't allow tokens that are denied by a wildcard rule", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        declaration: {
+        tokenDec: {
           shared: false,
           as: "role-a",
           account: "account-a",
@@ -1193,7 +1193,7 @@ it("doesn't allow tokens that are denied by a wildcard rule", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        declaration: {
+        tokenDec: {
           shared: false,
           as: "role-a",
           account: "account-b",
@@ -1217,7 +1217,7 @@ it("doesn't allow tokens that are denied by a wildcard rule", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
-        declaration: {
+        tokenDec: {
           shared: false,
           as: "role-a",
           account: "account-a",
@@ -1241,7 +1241,7 @@ it("doesn't allow tokens that are denied by a wildcard rule", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
-        declaration: {
+        tokenDec: {
           shared: false,
           as: "role-a",
           account: "account-b",
@@ -1285,7 +1285,7 @@ it("doesn't allow tokens when the actual access level is lower than requested", 
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        declaration: {
+        tokenDec: {
           shared: false,
           as: "role-a",
           account: "account-a",
@@ -1307,7 +1307,7 @@ it("doesn't allow tokens when the actual access level is lower than requested", 
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
-        declaration: {
+        tokenDec: {
           shared: false,
           as: "role-a",
           account: "account-a",
@@ -1361,7 +1361,7 @@ it("doesn't allow tokens when a later rule denies access that a previous rule al
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        declaration: {
+        tokenDec: {
           shared: false,
           as: "role-a",
           account: "account-a",
@@ -1385,7 +1385,7 @@ it("doesn't allow tokens when a later rule denies access that a previous rule al
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
-        declaration: {
+        tokenDec: {
           shared: false,
           as: "role-a",
           account: "account-a",
@@ -1441,7 +1441,7 @@ it("doesn't allow tokens when a later rule removes access that a previous rule a
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        declaration: {
+        tokenDec: {
           shared: false,
           as: "role-a",
           account: "account-a",
@@ -1465,7 +1465,7 @@ it("doesn't allow tokens when a later rule removes access that a previous rule a
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
-        declaration: {
+        tokenDec: {
           shared: false,
           as: "role-a",
           account: "account-a",
@@ -1512,7 +1512,7 @@ it("doesn't allow write tokens if no role is specified", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        declaration: {
+        tokenDec: {
           shared: false,
           as: undefined,
           account: "account-a",
@@ -1538,7 +1538,7 @@ it("doesn't allow write tokens if no role is specified", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        declaration: {
+        tokenDec: {
           shared: false,
           as: undefined,
           account: "account-a",
@@ -1564,7 +1564,7 @@ it("doesn't allow write tokens if no role is specified", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
-        declaration: {
+        tokenDec: {
           shared: false,
           as: undefined,
           account: "account-a",
@@ -1590,7 +1590,7 @@ it("doesn't allow write tokens if no role is specified", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
-        declaration: {
+        tokenDec: {
           shared: false,
           as: undefined,
           account: "account-a",
@@ -1636,7 +1636,7 @@ it("doesn't allow tokens when no repos are matched by the declaration repo patte
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        declaration: {
+        tokenDec: {
           shared: false,
           as: undefined,
           account: "account-a",

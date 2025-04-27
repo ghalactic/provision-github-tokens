@@ -1,6 +1,10 @@
 import { expect, it } from "vitest";
 import { createTextProvisionAuthExplainer } from "../../../../src/provision-auth-explainer/text.js";
 import { createProvisionAuthorizer } from "../../../../src/provision-authorizer.js";
+import {
+  createTestSecretDec,
+  createTestTokenDec,
+} from "../../../declaration.js";
 
 const explain = createTextProvisionAuthExplainer();
 
@@ -32,6 +36,8 @@ it("supports multiple secrets per rule", () => {
     explain(
       authorizer.authorizeSecret({
         requester: { account: "account-x", repo: "repo-x" },
+        tokenDec: createTestTokenDec(),
+        secretDec: createTestSecretDec(),
         name: "SECRET_A",
         to: [
           {
@@ -51,6 +57,8 @@ it("supports multiple secrets per rule", () => {
     explain(
       authorizer.authorizeSecret({
         requester: { account: "account-x", repo: "repo-x" },
+        tokenDec: createTestTokenDec(),
+        secretDec: createTestSecretDec(),
         name: "SECRET_B",
         to: [
           {
@@ -97,6 +105,8 @@ it("supports multiple targets in requests", () => {
     explain(
       authorizer.authorizeSecret({
         requester: { account: "account-x", repo: "repo-x" },
+        tokenDec: createTestTokenDec(),
+        secretDec: createTestSecretDec(),
         name: "SECRET_A",
         to: [
           {
@@ -149,6 +159,8 @@ it("supports wildcards in secret names", () => {
     explain(
       authorizer.authorizeSecret({
         requester: { account: "account-x", repo: "repo-x" },
+        tokenDec: createTestTokenDec(),
+        secretDec: createTestSecretDec(),
         name: "SECRET_A",
         to: [
           {
@@ -168,6 +180,8 @@ it("supports wildcards in secret names", () => {
     explain(
       authorizer.authorizeSecret({
         requester: { account: "account-x", repo: "repo-x" },
+        tokenDec: createTestTokenDec(),
+        secretDec: createTestSecretDec(),
         name: "SECRET_B",
         to: [
           {
@@ -214,6 +228,8 @@ it("supports rule descriptions", () => {
     explain(
       authorizer.authorizeSecret({
         requester: { account: "account-x", repo: "repo-x" },
+        tokenDec: createTestTokenDec(),
+        secretDec: createTestSecretDec(),
         name: "SECRET_A",
         to: [
           {
@@ -285,6 +301,8 @@ it("allows secrets when a later rule allows access that a previous rule denied",
     explain(
       authorizer.authorizeSecret({
         requester: { account: "account-x", repo: "repo-x" },
+        tokenDec: createTestTokenDec(),
+        secretDec: createTestSecretDec(),
         name: "SECRET_A",
         to: [
           {
@@ -306,6 +324,8 @@ it("allows secrets when a later rule allows access that a previous rule denied",
     explain(
       authorizer.authorizeSecret({
         requester: { account: "account-x", repo: "repo-x" },
+        tokenDec: createTestTokenDec(),
+        secretDec: createTestSecretDec(),
         name: "SECRET_A",
         to: [
           {
@@ -378,6 +398,8 @@ it("doesn't allow secrets when a later rule denies access that a previous rule a
     explain(
       authorizer.authorizeSecret({
         requester: { account: "account-x", repo: "repo-x" },
+        tokenDec: createTestTokenDec(),
+        secretDec: createTestSecretDec(),
         name: "SECRET_A",
         to: [
           {
@@ -399,6 +421,8 @@ it("doesn't allow secrets when a later rule denies access that a previous rule a
     explain(
       authorizer.authorizeSecret({
         requester: { account: "account-x", repo: "repo-x" },
+        tokenDec: createTestTokenDec(),
+        secretDec: createTestSecretDec(),
         name: "SECRET_A",
         to: [
           {
@@ -450,6 +474,8 @@ it("doesn't allow secrets when no rule matches the secret name", () => {
     explain(
       authorizer.authorizeSecret({
         requester: { account: "account-x", repo: "repo-x" },
+        tokenDec: createTestTokenDec(),
+        secretDec: createTestSecretDec(),
         name: "SECRET_X",
         to: [
           {
@@ -497,6 +523,8 @@ it("doesn't allow secrets when two account patterns match but one allows and one
     explain(
       authorizer.authorizeSecret({
         requester: { account: "account-x", repo: "repo-x" },
+        tokenDec: createTestTokenDec(),
+        secretDec: createTestSecretDec(),
         name: "SECRET_A",
         to: [
           {
@@ -547,6 +575,8 @@ it("doesn't allow secrets when two repo patterns match but one allows and one de
     explain(
       authorizer.authorizeSecret({
         requester: { account: "account-x", repo: "repo-x" },
+        tokenDec: createTestTokenDec(),
+        secretDec: createTestSecretDec(),
         name: "SECRET_A",
         to: [
           {
@@ -594,6 +624,8 @@ it("doesn't allow secrets when some targets aren't allowed", () => {
     explain(
       authorizer.authorizeSecret({
         requester: { account: "account-x", repo: "repo-x" },
+        tokenDec: createTestTokenDec(),
+        secretDec: createTestSecretDec(),
         name: "SECRET_A",
         to: [
           {
@@ -649,6 +681,8 @@ it("doesn't allow secrets when no targets are specified", () => {
     explain(
       authorizer.authorizeSecret({
         requester: { account: "account-x", repo: "repo-x" },
+        tokenDec: createTestTokenDec(),
+        secretDec: createTestSecretDec(),
         name: "SECRET_A",
         to: [],
       }),

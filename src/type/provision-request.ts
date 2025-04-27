@@ -3,10 +3,13 @@ import type {
   EnvironmentReference,
   RepoReference,
 } from "../github-reference.js";
+import type { SecretDeclaration } from "./secret-declaration.js";
+import type { TokenDeclaration } from "./token-declaration.js";
 
 export type ProvisionRequest = {
   requester: RepoReference;
-  token: string;
+  tokenDec: TokenDeclaration;
+  secretDec: SecretDeclaration;
   name: string;
   to: ProvisionRequestTarget[];
 };

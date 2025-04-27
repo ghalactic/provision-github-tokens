@@ -3,6 +3,6 @@ import type { TokenDeclaration } from "./token-declaration.js";
 
 export type TokenRequest = {
   consumer: AccountOrRepoReference;
-  declaration: TokenDeclaration;
+  tokenDec: TokenDeclaration;
   repos: "all" | string[];
 };

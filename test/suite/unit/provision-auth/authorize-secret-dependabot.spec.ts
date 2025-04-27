@@ -1,6 +1,10 @@
 import { expect, it } from "vitest";
 import { createTextProvisionAuthExplainer } from "../../../../src/provision-auth-explainer/text.js";
 import { createProvisionAuthorizer } from "../../../../src/provision-authorizer.js";
+import {
+  createTestSecretDec,
+  createTestTokenDec,
+} from "../../../declaration.js";
 
 const explain = createTextProvisionAuthExplainer();
 
@@ -35,6 +39,8 @@ it("allows GitHub Dependabot account secrets that should be allowed", () => {
     explain(
       authorizer.authorizeSecret({
         requester: { account: "account-x", repo: "repo-x" },
+        tokenDec: createTestTokenDec(),
+        secretDec: createTestSecretDec(),
         name: "SECRET_A",
         to: [
           {
@@ -54,6 +60,8 @@ it("allows GitHub Dependabot account secrets that should be allowed", () => {
     explain(
       authorizer.authorizeSecret({
         requester: { account: "account-y-1", repo: "repo-y-1" },
+        tokenDec: createTestTokenDec(),
+        secretDec: createTestSecretDec(),
         name: "SECRET_A",
         to: [
           {
@@ -97,6 +105,8 @@ it("allows GitHub Dependabot account secrets that should be allowed within the r
     explain(
       authorizer.authorizeSecret({
         requester: { account: "account-a", repo: "repo-a" },
+        tokenDec: createTestTokenDec(),
+        secretDec: createTestSecretDec(),
         name: "SECRET_A",
         to: [
           {
@@ -116,6 +126,8 @@ it("allows GitHub Dependabot account secrets that should be allowed within the r
     explain(
       authorizer.authorizeSecret({
         requester: { account: "account-b-1", repo: "repo-b-1" },
+        tokenDec: createTestTokenDec(),
+        secretDec: createTestSecretDec(),
         name: "SECRET_A",
         to: [
           {
@@ -163,6 +175,8 @@ it("allows GitHub Dependabot account secrets that should be allowed within the r
     explain(
       authorizer.authorizeSecret({
         requester: { account: "account-a", repo: "repo-a" },
+        tokenDec: createTestTokenDec(),
+        secretDec: createTestSecretDec(),
         name: "SECRET_A",
         to: [
           {
@@ -213,6 +227,8 @@ it("allows GitHub Dependabot repo secrets that should be allowed", () => {
     explain(
       authorizer.authorizeSecret({
         requester: { account: "account-x", repo: "repo-x" },
+        tokenDec: createTestTokenDec(),
+        secretDec: createTestSecretDec(),
         name: "SECRET_A",
         to: [
           {
@@ -232,6 +248,8 @@ it("allows GitHub Dependabot repo secrets that should be allowed", () => {
     explain(
       authorizer.authorizeSecret({
         requester: { account: "account-y-1", repo: "repo-y-1" },
+        tokenDec: createTestTokenDec(),
+        secretDec: createTestSecretDec(),
         name: "SECRET_A",
         to: [
           {
@@ -276,6 +294,8 @@ it("allows GitHub Dependabot repo secrets that should be allowed within the requ
     explain(
       authorizer.authorizeSecret({
         requester: { account: "account-a", repo: "repo-a" },
+        tokenDec: createTestTokenDec(),
+        secretDec: createTestSecretDec(),
         name: "SECRET_A",
         to: [
           {
@@ -295,6 +315,8 @@ it("allows GitHub Dependabot repo secrets that should be allowed within the requ
     explain(
       authorizer.authorizeSecret({
         requester: { account: "account-b-1", repo: "repo-b-1" },
+        tokenDec: createTestTokenDec(),
+        secretDec: createTestSecretDec(),
         name: "SECRET_A",
         to: [
           {
@@ -344,6 +366,8 @@ it("allows GitHub Dependabot repo secrets that should be allowed within the requ
     explain(
       authorizer.authorizeSecret({
         requester: { account: "account-a", repo: "repo-a" },
+        tokenDec: createTestTokenDec(),
+        secretDec: createTestSecretDec(),
         name: "SECRET_A",
         to: [
           {
@@ -363,6 +387,8 @@ it("allows GitHub Dependabot repo secrets that should be allowed within the requ
     explain(
       authorizer.authorizeSecret({
         requester: { account: "account-b-1", repo: "repo-b-1" },
+        tokenDec: createTestTokenDec(),
+        secretDec: createTestSecretDec(),
         name: "SECRET_A",
         to: [
           {
@@ -408,6 +434,8 @@ it("doesn't allow GitHub Dependabot account secrets for unauthorized requesters"
     explain(
       authorizer.authorizeSecret({
         requester: { account: "account-y", repo: "repo-y" },
+        tokenDec: createTestTokenDec(),
+        secretDec: createTestSecretDec(),
         name: "SECRET_A",
         to: [
           {
@@ -450,6 +478,8 @@ it("doesn't allow GitHub Dependabot account secrets within the requesting accoun
     explain(
       authorizer.authorizeSecret({
         requester: { account: "account-y", repo: "repo-y" },
+        tokenDec: createTestTokenDec(),
+        secretDec: createTestSecretDec(),
         name: "SECRET_A",
         to: [
           {
@@ -468,6 +498,8 @@ it("doesn't allow GitHub Dependabot account secrets within the requesting accoun
     explain(
       authorizer.authorizeSecret({
         requester: { account: "account-x", repo: "repo-y" },
+        tokenDec: createTestTokenDec(),
+        secretDec: createTestSecretDec(),
         name: "SECRET_A",
         to: [
           {
@@ -486,6 +518,8 @@ it("doesn't allow GitHub Dependabot account secrets within the requesting accoun
     explain(
       authorizer.authorizeSecret({
         requester: { account: "account-x", repo: "repo-x" },
+        tokenDec: createTestTokenDec(),
+        secretDec: createTestSecretDec(),
         name: "SECRET_A",
         to: [
           {
@@ -532,6 +566,8 @@ it("doesn't allow GitHub Dependabot account secrets within the requesting accoun
     explain(
       authorizer.authorizeSecret({
         requester: { account: "account-a", repo: "repo-a" },
+        tokenDec: createTestTokenDec(),
+        secretDec: createTestSecretDec(),
         name: "SECRET_A",
         to: [
           {
@@ -578,6 +614,8 @@ it("doesn't allow GitHub Dependabot repo secrets for unauthorized requesters", (
     explain(
       authorizer.authorizeSecret({
         requester: { account: "account-y", repo: "repo-y" },
+        tokenDec: createTestTokenDec(),
+        secretDec: createTestSecretDec(),
         name: "SECRET_A",
         to: [
           {
@@ -621,6 +659,8 @@ it("doesn't allow GitHub Dependabot repo secrets within the requesting repo for 
     explain(
       authorizer.authorizeSecret({
         requester: { account: "account-y", repo: "repo-y" },
+        tokenDec: createTestTokenDec(),
+        secretDec: createTestSecretDec(),
         name: "SECRET_A",
         to: [
           {
@@ -639,6 +679,8 @@ it("doesn't allow GitHub Dependabot repo secrets within the requesting repo for 
     explain(
       authorizer.authorizeSecret({
         requester: { account: "account-x", repo: "repo-y" },
+        tokenDec: createTestTokenDec(),
+        secretDec: createTestSecretDec(),
         name: "SECRET_A",
         to: [
           {
@@ -657,6 +699,8 @@ it("doesn't allow GitHub Dependabot repo secrets within the requesting repo for 
     explain(
       authorizer.authorizeSecret({
         requester: { account: "account-x", repo: "repo-x" },
+        tokenDec: createTestTokenDec(),
+        secretDec: createTestSecretDec(),
         name: "SECRET_A",
         to: [
           {
@@ -705,6 +749,8 @@ it("doesn't allow GitHub Dependabot repo secrets within the requesting repo when
     explain(
       authorizer.authorizeSecret({
         requester: { account: "account-a", repo: "repo-a" },
+        tokenDec: createTestTokenDec(),
+        secretDec: createTestSecretDec(),
         name: "SECRET_A",
         to: [
           {

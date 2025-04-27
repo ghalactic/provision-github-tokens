@@ -8,13 +8,13 @@ export type SecretDeclaration = {
   };
 };
 
-type SecretDeclarationGitHubAccountSecretTypes = {
+export type SecretDeclarationGitHubAccountSecretTypes = {
   actions: boolean;
   codespaces: boolean;
   dependabot: boolean;
 };
 
-type SecretDeclarationGitHubRepoSecretTypes = {
+export type SecretDeclarationGitHubRepoSecretTypes = {
   actions: boolean;
   codespaces: boolean;
   dependabot: boolean;

@@ -49970,13 +49970,13 @@ function createAppRegistry() {
       );
     },
     findIssuersForRequest: (request2) => {
-      if (isEmptyPermissions(request2.declaration.permissions)) return [];
-      const tokenHasRole = typeof request2.declaration.as === "string";
-      const tokenPerms = Object.keys(request2.declaration.permissions);
+      if (isEmptyPermissions(request2.tokenDec.permissions)) return [];
+      const tokenHasRole = typeof request2.tokenDec.as === "string";
+      const tokenPerms = Object.keys(request2.tokenDec.permissions);
       if (!tokenHasRole) {
         for (const permission of tokenPerms) {
           if (isWriteAccess(
-            permissionAccess(request2.declaration.permissions, permission)
+            permissionAccess(request2.tokenDec.permissions, permission)
           )) {
             return [];
           }
@@ -49996,7 +49996,7 @@ function createAppRegistry() {
         if (tokenHasRole) {
           let appHasRole = false;
           for (const role of appReg.issuer.roles) {
-            if (role === request2.declaration.as) {
+            if (role === request2.tokenDec.as) {
               appHasRole = true;
               break;
             }
@@ -50008,20 +50008,20 @@ function createAppRegistry() {
         for (const permission of tokenPerms) {
           if (isSufficientAccess(
             permissionAccess(installation.permissions, permission),
-            permissionAccess(request2.declaration.permissions, permission)
+            permissionAccess(request2.tokenDec.permissions, permission)
           )) {
             ++permMatchCount;
           }
         }
         if (permMatchCount !== tokenPerms.length) continue;
         if (installation.repository_selection === "all") {
-          if (installationAccount(installation) === request2.declaration.account) {
+          if (installationAccount(installation) === request2.tokenDec.account) {
             found.push(instReg);
           }
           continue;
         }
         for (const repo of repos) {
-          if (repo.owner.login === request2.declaration.account && tokenRepos[repo.name]) {
+          if (repo.owner.login === request2.tokenDec.account && tokenRepos[repo.name]) {
             ++repoMatchCount;
           }
         }
@@ -59757,18 +59757,18 @@ function createTextTokenAuthExplainer() {
   };
   function explainAllRepos(result) {
     const { request: request2, isSufficient, rules } = result;
-    const subject = `all repos in ${request2.declaration.account}`;
+    const subject = `all repos in ${request2.tokenDec.account}`;
     return explainSummary(result) + explainMaxAccessAndRole(result, subject) + `
-  ${renderIcon(isSufficient)} ${isSufficient ? "Sufficient" : "Insufficient"} access to ${subject} ${explainBasedOnRules(request2.declaration.permissions, rules)}`;
+  ${renderIcon(isSufficient)} ${isSufficient ? "Sufficient" : "Insufficient"} access to ${subject} ${explainBasedOnRules(request2.tokenDec.permissions, rules)}`;
   }
   function explainNoRepos(result) {
     const { request: request2, isSufficient, rules } = result;
-    return explainSummary(result) + explainMaxAccessAndRole(result, request2.declaration.account) + `
-  ${renderIcon(isSufficient)} ${isSufficient ? "Sufficient" : "Insufficient"} access to ${request2.declaration.account} ${explainBasedOnRules(request2.declaration.permissions, rules)}`;
+    return explainSummary(result) + explainMaxAccessAndRole(result, request2.tokenDec.account) + `
+  ${renderIcon(isSufficient)} ${isSufficient ? "Sufficient" : "Insufficient"} access to ${request2.tokenDec.account} ${explainBasedOnRules(request2.tokenDec.permissions, rules)}`;
   }
   function explainSelectedRepos(result) {
     const { request: request2, results } = result;
-    const subject = `repos in ${request2.declaration.account}`;
+    const subject = `repos in ${request2.tokenDec.account}`;
     const resourceEntries = Object.entries(results).sort(
       ([a], [b]) => a.localeCompare(b)
     );
@@ -59776,7 +59776,7 @@ function createTextTokenAuthExplainer() {
     for (const [resourceRepo, resourceResult] of resourceEntries) {
       explainedResources += explainResourceRepo(
         resourceRepo,
-        request2.declaration.permissions,
+        request2.tokenDec.permissions,
         resourceResult
       );
     }
@@ -59791,14 +59791,14 @@ function createTextTokenAuthExplainer() {
   }
   function explainMaxAccessAndRole({ request: request2, maxWant, isMissingRole }, accessTo) {
     return `
-  ${renderIcon(!isMissingRole)} ${ACCESS_LEVELS[maxWant]} access to ${accessTo} ` + (request2.declaration.as ? `requested with role ${request2.declaration.as}` : "requested without a role");
+  ${renderIcon(!isMissingRole)} ${ACCESS_LEVELS[maxWant]} access to ${accessTo} ` + (request2.tokenDec.as ? `requested with role ${request2.tokenDec.as}` : "requested without a role");
   }
   function explainSelectedReposMatch({
     request: request2,
     isMatched
   }) {
     const repoPatterns = pluralize(
-      request2.declaration.repos.length,
+      request2.tokenDec.repos.length,
       "repo pattern",
       "repo patterns"
     );
@@ -59856,13 +59856,13 @@ function createTokenAuthorizer(config) {
   const [resourcePatterns, consumerPatterns] = patternsForRules(config.rules);
   return {
     authorizeToken(request2) {
-      if (isEmptyPermissions(request2.declaration.permissions)) {
+      if (isEmptyPermissions(request2.tokenDec.permissions)) {
         throw new Error("No permissions requested");
       }
-      if (request2.declaration.repos === "all") {
+      if (request2.tokenDec.repos === "all") {
         return authorizeAllRepos(request2);
       }
-      if (request2.declaration.repos.length < 1) {
+      if (request2.tokenDec.repos.length < 1) {
         return authorizeNoRepos(request2);
       }
       return authorizeSelectedRepos(request2);
@@ -59879,7 +59879,7 @@ function createTokenAuthorizer(config) {
       for (let j = 0; j < rule.resources.length; ++j) {
         isRelevant = rule.resources[j].allRepos === true && anyPatternMatches(
           resourcePatterns[i][j].accounts,
-          request2.declaration.account
+          request2.tokenDec.account
         );
         if (isRelevant) break;
       }
@@ -59887,7 +59887,7 @@ function createTokenAuthorizer(config) {
       updatePermissions(have, rule.permissions);
       isSufficient = isSufficientPermissions(
         have,
-        request2.declaration.permissions
+        request2.tokenDec.permissions
       );
       ruleResults.push({
         index: i,
@@ -59896,9 +59896,9 @@ function createTokenAuthorizer(config) {
         isSufficient
       });
     }
-    const maxWant = maxAccess(request2.declaration.permissions);
+    const maxWant = maxAccess(request2.tokenDec.permissions);
     const isWrite = isWriteAccess(maxWant);
-    const isMissingRole = isWrite && !request2.declaration.as;
+    const isMissingRole = isWrite && !request2.tokenDec.as;
     const isAllowed = isSufficient && !isMissingRole;
     return {
       request: request2,
@@ -59922,7 +59922,7 @@ function createTokenAuthorizer(config) {
       for (let j = 0; j < rule.resources.length; ++j) {
         isRelevant = rule.resources[j].noRepos === true && anyPatternMatches(
           resourcePatterns[i][j].accounts,
-          request2.declaration.account
+          request2.tokenDec.account
         );
         if (isRelevant) break;
       }
@@ -59930,7 +59930,7 @@ function createTokenAuthorizer(config) {
       updatePermissions(have, rule.permissions);
       isSufficient = isSufficientPermissions(
         have,
-        request2.declaration.permissions
+        request2.tokenDec.permissions
       );
       ruleResults.push({
         index: i,
@@ -59939,9 +59939,9 @@ function createTokenAuthorizer(config) {
         isSufficient
       });
     }
-    const maxWant = maxAccess(request2.declaration.permissions);
+    const maxWant = maxAccess(request2.tokenDec.permissions);
     const isWrite = isWriteAccess(maxWant);
-    const isMissingRole = isWrite && !request2.declaration.as;
+    const isMissingRole = isWrite && !request2.tokenDec.as;
     const isAllowed = isSufficient && !isMissingRole;
     return {
       request: request2,
@@ -59960,7 +59960,7 @@ function createTokenAuthorizer(config) {
     const resourceResults = {};
     for (const reqRepo of request2.repos) {
       const reqResource = repoRefToString(
-        createRepoRef(request2.declaration.account, reqRepo)
+        createRepoRef(request2.tokenDec.account, reqRepo)
       );
       const ruleResults = [];
       const have = {};
@@ -59970,14 +59970,14 @@ function createTokenAuthorizer(config) {
         let isRelevant = false;
         for (let j = 0; j < rule.resources.length; ++j) {
           const { accounts, repos } = resourcePatterns[i][j];
-          isRelevant = anyPatternMatches(accounts, request2.declaration.account) && anyPatternMatches(repos, reqRepo);
+          isRelevant = anyPatternMatches(accounts, request2.tokenDec.account) && anyPatternMatches(repos, reqRepo);
           if (isRelevant) break;
         }
         if (!isRelevant) continue;
         updatePermissions(have, rule.permissions);
         isResourceSufficient = isSufficientPermissions(
           have,
-          request2.declaration.permissions
+          request2.tokenDec.permissions
         );
         ruleResults.push({
           index: i,
@@ -59993,9 +59993,9 @@ function createTokenAuthorizer(config) {
         isSufficient: isResourceSufficient
       };
     }
-    const maxWant = maxAccess(request2.declaration.permissions);
+    const maxWant = maxAccess(request2.tokenDec.permissions);
     const isWrite = isWriteAccess(maxWant);
-    const isMissingRole = isWrite && !request2.declaration.as;
+    const isMissingRole = isWrite && !request2.tokenDec.as;
     const isMatched = request2.repos.length > 0;
     const isAllowed = isSufficient && !isMissingRole && isMatched;
     return {
@@ -60159,6 +60159,14 @@ async function main() {
   for (const [, discovered] of requesters) {
     for (const name in discovered.config.provision.secrets) {
       const secretDec = discovered.config.provision.secrets[name];
+      const [tokenDec] = declarationRegistry.findDeclarationForRequester(
+        discovered.requester,
+        secretDec.token
+      );
+      if (!tokenDec) {
+        (0, import_core7.warning)(`Undefined token ${secretDec.token}`);
+        continue;
+      }
       const targets = [];
       for (const type2 of ["actions", "codespaces", "dependabot"]) {
         if (secretDec.github.account[type2]) {
@@ -60229,7 +60237,8 @@ async function main() {
       }
       requests.push({
         requester: discovered.requester,
-        token: secretDec.token,
+        secretDec,
+        tokenDec,
         name,
         to: targets
       });
@@ -60237,36 +60246,30 @@ async function main() {
   }
   const tokenAuthResults = {};
   for (const provisionReq of requests) {
-    const [tokenDec] = declarationRegistry.findDeclarationForRequester(
-      provisionReq.requester,
-      provisionReq.token
-    );
-    if (!tokenDec) {
-      (0, import_core7.warning)(`Undefined token ${provisionReq.token}`);
-      continue;
-    }
     const relevantResults = [];
     for (const target of provisionReq.to) {
       const tokenAuthKey = JSON.stringify([
         accountOrRepoRefToString(target.target),
-        provisionReq.token
+        provisionReq.secretDec.token
       ]);
       let tokenAuthResult = tokenAuthResults[tokenAuthKey];
       if (tokenAuthResult == null) {
         let repos;
-        if (tokenDec.repos === "all") {
+        if (provisionReq.tokenDec.repos === "all") {
           repos = "all";
         } else {
-          const repoPatterns = tokenDec.repos.map((repo) => {
+          const repoPatterns = provisionReq.tokenDec.repos.map((repo) => {
             return createGitHubPattern(
-              repoRefToString(createRepoRef(tokenDec.account, repo))
+              repoRefToString(
+                createRepoRef(provisionReq.tokenDec.account, repo)
+              )
             );
           });
           repos = appRegistry.resolveIssuerRepos(repoPatterns).map((repo) => repoRefFromName(repo).repo);
         }
         const tokenReq = {
           consumer: target.target,
-          declaration: tokenDec,
+          tokenDec: provisionReq.tokenDec,
           repos
         };
         tokenAuthResult = tokenAuthorizer.authorizeToken(tokenReq);

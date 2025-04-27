@@ -127,17 +127,17 @@ export function createAppRegistry(): AppRegistry {
 
     findIssuersForRequest: (request) => {
       // Disallow empty permissions requests
-      if (isEmptyPermissions(request.declaration.permissions)) return [];
+      if (isEmptyPermissions(request.tokenDec.permissions)) return [];
 
-      const tokenHasRole = typeof request.declaration.as === "string";
-      const tokenPerms = Object.keys(request.declaration.permissions);
+      const tokenHasRole = typeof request.tokenDec.as === "string";
+      const tokenPerms = Object.keys(request.tokenDec.permissions);
 
       // Require an explicit role for write/admin access
       if (!tokenHasRole) {
         for (const permission of tokenPerms) {
           if (
             isWriteAccess(
-              permissionAccess(request.declaration.permissions, permission),
+              permissionAccess(request.tokenDec.permissions, permission),
             )
           ) {
             return [];
@@ -165,7 +165,7 @@ export function createAppRegistry(): AppRegistry {
           let appHasRole = false;
 
           for (const role of appReg.issuer.roles) {
-            if (role === request.declaration.as) {
+            if (role === request.tokenDec.as) {
               appHasRole = true;
               break;
             }
@@ -181,7 +181,7 @@ export function createAppRegistry(): AppRegistry {
           if (
             isSufficientAccess(
               permissionAccess(installation.permissions, permission),
-              permissionAccess(request.declaration.permissions, permission),
+              permissionAccess(request.tokenDec.permissions, permission),
             )
           ) {
             ++permMatchCount;
@@ -191,9 +191,7 @@ export function createAppRegistry(): AppRegistry {
         if (permMatchCount !== tokenPerms.length) continue;
 
         if (installation.repository_selection === "all") {
-          if (
-            installationAccount(installation) === request.declaration.account
-          ) {
+          if (installationAccount(installation) === request.tokenDec.account) {
             found.push(instReg);
           }
 
@@ -202,7 +200,7 @@ export function createAppRegistry(): AppRegistry {
 
         for (const repo of repos) {
           if (
-            repo.owner.login === request.declaration.account &&
+            repo.owner.login === request.tokenDec.account &&
             tokenRepos[repo.name]
           ) {
             ++repoMatchCount;

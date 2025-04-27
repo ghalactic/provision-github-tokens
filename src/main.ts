@@ -134,6 +134,19 @@ async function main(): Promise<void> {
   for (const [, discovered] of requesters) {
     for (const name in discovered.config.provision.secrets) {
       const secretDec = discovered.config.provision.secrets[name];
+
+      const [tokenDec] = declarationRegistry.findDeclarationForRequester(
+        discovered.requester,
+        secretDec.token,
+      );
+
+      // TODO: roll into provision authorizer
+      if (!tokenDec) {
+        warning(`Undefined token ${secretDec.token}`);
+
+        continue;
+      }
+
       const targets: ProvisionRequestTarget[] = [];
 
       for (const type of ["actions", "codespaces", "dependabot"] as const) {
@@ -216,7 +229,8 @@ async function main(): Promise<void> {
 
       requests.push({
         requester: discovered.requester,
-        token: secretDec.token,
+        secretDec,
+        tokenDec,
         name,
         to: targets,
       });
@@ -226,24 +240,12 @@ async function main(): Promise<void> {
   const tokenAuthResults: Record<string, TokenAuthResult> = {};
 
   for (const provisionReq of requests) {
-    const [tokenDec] = declarationRegistry.findDeclarationForRequester(
-      provisionReq.requester,
-      provisionReq.token,
-    );
-
-    // TODO: roll into provision authorizer
-    if (!tokenDec) {
-      warning(`Undefined token ${provisionReq.token}`);
-
-      continue;
-    }
-
     const relevantResults: TokenAuthResult[] = [];
 
     for (const target of provisionReq.to) {
       const tokenAuthKey = JSON.stringify([
         accountOrRepoRefToString(target.target),
-        provisionReq.token,
+        provisionReq.secretDec.token,
       ]);
 
       let tokenAuthResult = tokenAuthResults[tokenAuthKey];
@@ -251,12 +253,14 @@ async function main(): Promise<void> {
       if (tokenAuthResult == null) {
         let repos: "all" | string[];
 
-        if (tokenDec.repos === "all") {
+        if (provisionReq.tokenDec.repos === "all") {
           repos = "all";
         } else {
-          const repoPatterns = tokenDec.repos.map((repo) => {
+          const repoPatterns = provisionReq.tokenDec.repos.map((repo) => {
             return createGitHubPattern(
-              repoRefToString(createRepoRef(tokenDec.account, repo)),
+              repoRefToString(
+                createRepoRef(provisionReq.tokenDec.account, repo),
+              ),
             );
           });
 
@@ -267,7 +271,7 @@ async function main(): Promise<void> {
 
         const tokenReq: TokenRequest = {
           consumer: target.target,
-          declaration: tokenDec,
+          tokenDec: provisionReq.tokenDec,
           repos,
         };
 
