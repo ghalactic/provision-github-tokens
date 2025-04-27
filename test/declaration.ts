@@ -5,7 +5,6 @@ import type {
 } from "../src/type/secret-declaration.js";
 import type { TokenDeclaration } from "../src/type/token-declaration.js";
 
-// TODO: use in token auth tests
 export function createTestTokenDec(
   tokenDec: Partial<TokenDeclaration> = {},
 ): TokenDeclaration {

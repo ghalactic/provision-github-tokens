@@ -135,14 +135,22 @@ async function main(): Promise<void> {
     for (const name in discovered.config.provision.secrets) {
       const secretDec = discovered.config.provision.secrets[name];
 
-      const [tokenDec] = declarationRegistry.findDeclarationForRequester(
-        discovered.requester,
-        secretDec.token,
-      );
+      const [tokenDec, isRegistered] =
+        declarationRegistry.findDeclarationForRequester(
+          discovered.requester,
+          secretDec.token,
+        );
 
       // TODO: roll into provision authorizer
       if (!tokenDec) {
-        warning(`Undefined token ${secretDec.token}`);
+        if (isRegistered) {
+          warning(
+            `Token ${secretDec.token} ` +
+              `cannot be used from ${repoRefToString(discovered.requester)}`,
+          );
+        } else {
+          warning(`Undefined token ${secretDec.token}`);
+        }
 
         continue;
       }

@@ -60159,12 +60159,18 @@ async function main() {
   for (const [, discovered] of requesters) {
     for (const name in discovered.config.provision.secrets) {
       const secretDec = discovered.config.provision.secrets[name];
-      const [tokenDec] = declarationRegistry.findDeclarationForRequester(
+      const [tokenDec, isRegistered] = declarationRegistry.findDeclarationForRequester(
         discovered.requester,
         secretDec.token
       );
       if (!tokenDec) {
-        (0, import_core7.warning)(`Undefined token ${secretDec.token}`);
+        if (isRegistered) {
+          (0, import_core7.warning)(
+            `Token ${secretDec.token} cannot be used from ${repoRefToString(discovered.requester)}`
+          );
+        } else {
+          (0, import_core7.warning)(`Undefined token ${secretDec.token}`);
+        }
         continue;
       }
       const targets = [];
