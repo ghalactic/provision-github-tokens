@@ -176,6 +176,52 @@ it("returns the same result for identical requests", () => {
   );
 });
 
+it("returns a different result for subtly different requests", () => {
+  const authorizer = createTokenAuthorizer({
+    rules: [
+      {
+        resources: [
+          {
+            accounts: ["account-a"],
+            noRepos: false,
+            allRepos: true,
+            selectedRepos: [],
+          },
+        ],
+        consumers: ["account-x", "account-x/repo-x"],
+        permissions: { contents: "write", metadata: "read" },
+      },
+    ],
+  });
+
+  const requestA: TokenRequest = {
+    consumer: { account: "account-x" },
+    tokenDec: {
+      shared: false,
+      as: "role-a",
+      account: "account-a",
+      repos: "all",
+      permissions: { contents: "write", metadata: "read" },
+    },
+    repos: "all",
+  };
+  const requestB: TokenRequest = {
+    consumer: { account: "account-x" },
+    tokenDec: {
+      shared: false,
+      as: "role-a",
+      account: "account-a",
+      repos: "all",
+      permissions: { metadata: "read", contents: "read" },
+    },
+    repos: "all",
+  };
+
+  expect(authorizer.authorizeToken(requestA)).not.toBe(
+    authorizer.authorizeToken(requestB),
+  );
+});
+
 it("throws if the requested permissions are empty", () => {
   const authorizer = createTokenAuthorizer({ rules: [] });
 
