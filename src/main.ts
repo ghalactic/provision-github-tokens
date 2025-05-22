@@ -24,7 +24,7 @@ import { registerTokenDeclarations } from "./register-token-declarations.js";
 import { createTextTokenAuthExplainer } from "./token-auth-explainer/text.js";
 import { createTokenAuthorizer } from "./token-authorizer.js";
 import { createTokenDeclarationRegistry } from "./token-declaration-registry.js";
-import type { TokenRequest } from "./token-request.js";
+import { createTokenRequestFactory } from "./token-request.js";
 import type { ProviderConfig } from "./type/provider-config.js";
 import type {
   ProvisionRequest,
@@ -245,6 +245,7 @@ async function main(): Promise<void> {
     }
   }
 
+  const createTokenRequest = createTokenRequestFactory();
   const tokenAuthResults: Record<string, TokenAuthResult> = {};
 
   for (const provisionReq of requests) {
@@ -277,11 +278,11 @@ async function main(): Promise<void> {
             .map((repo) => repoRefFromName(repo).repo);
         }
 
-        const tokenReq: TokenRequest = {
+        const tokenReq = createTokenRequest({
           consumer: target.target,
           tokenDec: provisionReq.tokenDec,
           repos,
-        };
+        });
 
         tokenAuthResult = tokenAuthorizer.authorizeToken(tokenReq);
         tokenAuthResults[tokenAuthKey] = tokenAuthResult;

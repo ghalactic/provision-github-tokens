@@ -1,3 +1,4 @@
+import stringify from "fast-json-stable-stringify";
 import type { AccountOrRepoReference } from "./github-reference.js";
 import {
   normalizeTokenDeclaration,
@@ -17,5 +18,18 @@ export function normalizeTokenRequest(request: TokenRequest): TokenRequest {
     ...request,
     repos: repos === "all" ? "all" : repos.toSorted(),
     tokenDec: normalizeTokenDeclaration(request.tokenDec),
+  };
+}
+
+export type TokenRequestFactory = (params: TokenRequest) => TokenRequest;
+
+export function createTokenRequestFactory(): TokenRequestFactory {
+  const cache: Record<string, TokenRequest> = {};
+
+  return (params: TokenRequest) => {
+    const normalized = normalizeTokenRequest(params);
+    const key = stringify(normalized);
+
+    return (cache[key] ??= normalized);
   };
 }

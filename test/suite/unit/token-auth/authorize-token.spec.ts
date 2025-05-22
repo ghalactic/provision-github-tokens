@@ -130,7 +130,7 @@ it("supports wildcard repo consumers", () => {
   `);
 });
 
-it("returns the same result for identical requests", () => {
+it("returns the same result for equivalent requests", () => {
   const authorizer = createTokenAuthorizer({
     rules: [
       {
@@ -176,7 +176,7 @@ it("returns the same result for identical requests", () => {
   );
 });
 
-it("returns a different result for subtly different requests", () => {
+it("returns a different result for non-equivalent requests", () => {
   const authorizer = createTokenAuthorizer({
     rules: [
       {
