@@ -59928,12 +59928,28 @@ function normalizeTokenRequest(request2) {
     tokenDec: normalizeTokenDeclaration(request2.tokenDec)
   };
 }
-function createTokenRequestFactory() {
+function createTokenRequestFactory(appRegistry) {
   const cache = {};
-  return (params) => {
-    const normalized = normalizeTokenRequest(params);
-    const key = (0, import_fast_json_stable_stringify.default)(normalized);
-    return cache[key] ??= normalized;
+  return (provisionReq) => {
+    const { tokenDec } = provisionReq;
+    let repos;
+    if (tokenDec.repos === "all") {
+      repos = "all";
+    } else {
+      const repoPatterns = tokenDec.repos.map((repo) => {
+        return createGitHubPattern(
+          repoRefToString(createRepoRef(tokenDec.account, repo))
+        );
+      });
+      repos = appRegistry.resolveIssuerRepos(repoPatterns).map((repo) => repoRefFromName(repo).repo);
+    }
+    const tokenReqs = [];
+    for (const { target: consumer } of provisionReq.to) {
+      const tokenReq = normalizeTokenRequest({ consumer, tokenDec, repos });
+      const cacheKey = (0, import_fast_json_stable_stringify.default)(tokenReq);
+      tokenReqs.push(cache[cacheKey] ??= tokenReq);
+    }
+    return tokenReqs;
   };
 }
 
@@ -60340,40 +60356,15 @@ async function main() {
       });
     }
   }
-  const createTokenRequest = createTokenRequestFactory();
-  const tokenAuthResults = {};
+  const createTokenRequests = createTokenRequestFactory(appRegistry);
+  const tokenAuthResults = /* @__PURE__ */ new Map();
   for (const provisionReq of requests) {
+    const tokenReqs = createTokenRequests(provisionReq);
     const relevantResults = [];
-    for (const target of provisionReq.to) {
-      const tokenAuthKey = JSON.stringify([
-        accountOrRepoRefToString(target.target),
-        provisionReq.secretDec.token
-      ]);
-      let tokenAuthResult = tokenAuthResults[tokenAuthKey];
-      if (tokenAuthResult == null) {
-        let repos;
-        if (provisionReq.tokenDec.repos === "all") {
-          repos = "all";
-        } else {
-          const repoPatterns = provisionReq.tokenDec.repos.map((repo) => {
-            return createGitHubPattern(
-              repoRefToString(
-                createRepoRef(provisionReq.tokenDec.account, repo)
-              )
-            );
-          });
-          repos = appRegistry.resolveIssuerRepos(repoPatterns).map((repo) => repoRefFromName(repo).repo);
-        }
-        const tokenReq = createTokenRequest({
-          consumer: target.target,
-          tokenDec: provisionReq.tokenDec,
-          repos
-        });
-        tokenAuthResult = tokenAuthorizer.authorizeToken(tokenReq);
-        tokenAuthResults[tokenAuthKey] = tokenAuthResult;
-        (0, import_core7.info)(tokenAuthExplainer(tokenAuthResult));
-      }
-      relevantResults.push(tokenAuthResult);
+    for (const tokenReq of tokenReqs) {
+      const result = tokenAuthResults.get(tokenReq) ?? tokenAuthorizer.authorizeToken(tokenReq);
+      tokenAuthResults.set(tokenReq, result);
+      relevantResults.push(result);
     }
     if (!relevantResults.every(({ isAllowed }) => isAllowed)) {
       (0, import_core7.warning)(

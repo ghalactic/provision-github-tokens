@@ -8,11 +8,8 @@ import { discoverApps } from "./discover-apps.js";
 import { discoverRequesters } from "./discover-requesters.js";
 import { createEnvironmentResolver } from "./environment-resolver.js";
 import { errorStack } from "./error.js";
-import { createGitHubPattern } from "./github-pattern.js";
 import {
-  accountOrRepoRefToString,
   createEnvRef,
-  createRepoRef,
   repoRefFromName,
   repoRefToString,
 } from "./github-reference.js";
@@ -24,7 +21,10 @@ import { registerTokenDeclarations } from "./register-token-declarations.js";
 import { createTextTokenAuthExplainer } from "./token-auth-explainer/text.js";
 import { createTokenAuthorizer } from "./token-authorizer.js";
 import { createTokenDeclarationRegistry } from "./token-declaration-registry.js";
-import { createTokenRequestFactory } from "./token-request.js";
+import {
+  createTokenRequestFactory,
+  type TokenRequest,
+} from "./token-request.js";
 import type { ProviderConfig } from "./type/provider-config.js";
 import type {
   ProvisionRequest,
@@ -245,51 +245,19 @@ async function main(): Promise<void> {
     }
   }
 
-  const createTokenRequest = createTokenRequestFactory();
-  const tokenAuthResults: Record<string, TokenAuthResult> = {};
+  const createTokenRequests = createTokenRequestFactory(appRegistry);
+  const tokenAuthResults = new Map<TokenRequest, TokenAuthResult>();
 
   for (const provisionReq of requests) {
+    const tokenReqs = createTokenRequests(provisionReq);
     const relevantResults: TokenAuthResult[] = [];
 
-    for (const target of provisionReq.to) {
-      const tokenAuthKey = JSON.stringify([
-        accountOrRepoRefToString(target.target),
-        provisionReq.secretDec.token,
-      ]);
-
-      let tokenAuthResult = tokenAuthResults[tokenAuthKey];
-
-      if (tokenAuthResult == null) {
-        let repos: "all" | string[];
-
-        if (provisionReq.tokenDec.repos === "all") {
-          repos = "all";
-        } else {
-          const repoPatterns = provisionReq.tokenDec.repos.map((repo) => {
-            return createGitHubPattern(
-              repoRefToString(
-                createRepoRef(provisionReq.tokenDec.account, repo),
-              ),
-            );
-          });
-
-          repos = appRegistry
-            .resolveIssuerRepos(repoPatterns)
-            .map((repo) => repoRefFromName(repo).repo);
-        }
-
-        const tokenReq = createTokenRequest({
-          consumer: target.target,
-          tokenDec: provisionReq.tokenDec,
-          repos,
-        });
-
-        tokenAuthResult = tokenAuthorizer.authorizeToken(tokenReq);
-        tokenAuthResults[tokenAuthKey] = tokenAuthResult;
-        info(tokenAuthExplainer(tokenAuthResult));
-      }
-
-      relevantResults.push(tokenAuthResult);
+    for (const tokenReq of tokenReqs) {
+      const result =
+        tokenAuthResults.get(tokenReq) ??
+        tokenAuthorizer.authorizeToken(tokenReq);
+      tokenAuthResults.set(tokenReq, result);
+      relevantResults.push(result);
     }
 
     // TODO: roll into provision authorizer
