@@ -1,6 +1,6 @@
 import { expect, it } from "vitest";
 import { createTokenDeclarationRegistry } from "../../../src/token-declaration-registry.js";
-import type { TokenDeclaration } from "../../../src/type/token-declaration.js";
+import type { TokenDeclaration } from "../../../src/token-declaration.js";
 
 it("finds local token declarations", () => {
   const declarationA: TokenDeclaration = {

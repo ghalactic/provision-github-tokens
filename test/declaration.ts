@@ -1,9 +1,9 @@
+import type { TokenDeclaration } from "../src/token-declaration.js";
 import type {
   SecretDeclaration,
   SecretDeclarationGitHubAccountSecretTypes,
   SecretDeclarationGitHubRepoSecretTypes,
 } from "../src/type/secret-declaration.js";
-import type { TokenDeclaration } from "../src/type/token-declaration.js";
 
 export function createTestTokenDec(
   tokenDec: Partial<TokenDeclaration> = {},

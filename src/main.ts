@@ -24,13 +24,13 @@ import { registerTokenDeclarations } from "./register-token-declarations.js";
 import { createTextTokenAuthExplainer } from "./token-auth-explainer/text.js";
 import { createTokenAuthorizer } from "./token-authorizer.js";
 import { createTokenDeclarationRegistry } from "./token-declaration-registry.js";
+import type { TokenRequest } from "./token-request.js";
 import type { ProviderConfig } from "./type/provider-config.js";
 import type {
   ProvisionRequest,
   ProvisionRequestTarget,
 } from "./type/provision-request.js";
 import type { TokenAuthResult } from "./type/token-auth-result.js";
-import type { TokenRequest } from "./type/token-request.js";
 
 main().catch((error) => {
   setFailed(errorStack(error));

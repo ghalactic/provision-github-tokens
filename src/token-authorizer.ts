@@ -1,3 +1,4 @@
+import stringify from "fast-json-stable-stringify";
 import { isWriteAccess, maxAccess } from "./access-level.js";
 import { createGitHubPattern } from "./github-pattern.js";
 import {
@@ -9,6 +10,7 @@ import {
 import { createNamePattern } from "./name-pattern.js";
 import { anyPatternMatches, type Pattern } from "./pattern.js";
 import { isEmptyPermissions, isSufficientPermissions } from "./permissions.js";
+import { normalizeTokenRequest, type TokenRequest } from "./token-request.js";
 import type {
   PermissionsRule,
   PermissionsRuleResourceCriteria,
@@ -20,7 +22,6 @@ import {
   type TokenAuthResourceResultRuleResult,
   type TokenAuthResult,
 } from "./type/token-auth-result.js";
-import type { TokenRequest } from "./type/token-request.js";
 
 export type TokenAuthorizer = {
   /**
@@ -33,20 +34,27 @@ export function createTokenAuthorizer(
   config: ProviderPermissionsConfig,
 ): TokenAuthorizer {
   const [resourcePatterns, consumerPatterns] = patternsForRules(config.rules);
+  const results: Record<string, TokenAuthResult> = {};
 
   return {
     authorizeToken(request) {
+      const key = stringify(normalizeTokenRequest(request));
+
+      if (results[key]) return results[key];
+
       if (isEmptyPermissions(request.tokenDec.permissions)) {
         throw new Error("No permissions requested");
       }
 
       if (request.tokenDec.repos === "all") {
-        return authorizeAllRepos(request);
+        results[key] = authorizeAllRepos(request);
+      } else if (request.tokenDec.repos.length < 1) {
+        results[key] = authorizeNoRepos(request);
+      } else {
+        results[key] = authorizeSelectedRepos(request);
       }
-      if (request.tokenDec.repos.length < 1) {
-        return authorizeNoRepos(request);
-      }
-      return authorizeSelectedRepos(request);
+
+      return results[key];
     },
   };
 

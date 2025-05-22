@@ -3092,7 +3092,7 @@ var require_util2 = __commonJS({
     var { InvalidArgumentError } = require_errors();
     var { Blob: Blob2 } = __require("buffer");
     var nodeUtil = __require("util");
-    var { stringify } = __require("querystring");
+    var { stringify: stringify2 } = __require("querystring");
     var [nodeMajor, nodeMinor] = process.versions.node.split(".").map((v) => Number(v));
     function nop() {
     }
@@ -3106,7 +3106,7 @@ var require_util2 = __commonJS({
       if (url.includes("?") || url.includes("#")) {
         throw new Error('Query params cannot be passed when url already contains "?" or "#".');
       }
-      const stringified = stringify(queryParams);
+      const stringified = stringify2(queryParams);
       if (stringified) {
         url += "?" + stringified;
       }
@@ -17659,7 +17659,7 @@ var require_util7 = __commonJS({
         throw new Error("Invalid cookie max-age");
       }
     }
-    function stringify(cookie) {
+    function stringify2(cookie) {
       if (cookie.name.length === 0) {
         return null;
       }
@@ -17724,7 +17724,7 @@ var require_util7 = __commonJS({
     }
     module.exports = {
       isCTLExcludingHtab,
-      stringify,
+      stringify: stringify2,
       getHeadersList
     };
   }
@@ -17875,7 +17875,7 @@ var require_cookies = __commonJS({
   "node_modules/undici/lib/cookies/index.js"(exports, module) {
     "use strict";
     var { parseSetCookie } = require_parse();
-    var { stringify, getHeadersList } = require_util7();
+    var { stringify: stringify2, getHeadersList } = require_util7();
     var { webidl } = require_webidl();
     var { Headers } = require_headers();
     function getCookies(headers) {
@@ -17917,9 +17917,9 @@ var require_cookies = __commonJS({
       webidl.argumentLengthCheck(arguments, 2, { header: "setCookie" });
       webidl.brandCheck(headers, Headers, { strict: false });
       cookie = webidl.converters.Cookie(cookie);
-      const str2 = stringify(cookie);
+      const str2 = stringify2(cookie);
       if (str2) {
-        headers.append("Set-Cookie", stringify(cookie));
+        headers.append("Set-Cookie", stringify2(cookie));
       }
     }
     webidl.converters.DeleteCookieAttributes = webidl.dictionaryConverter([
@@ -22029,10 +22029,10 @@ var require_code = __commonJS({
     function interpolate(x) {
       return typeof x == "number" || typeof x == "boolean" || x === null ? x : safeStringify(Array.isArray(x) ? x.join(",") : x);
     }
-    function stringify(x) {
+    function stringify2(x) {
       return new _Code(safeStringify(x));
     }
-    exports.stringify = stringify;
+    exports.stringify = stringify2;
     function safeStringify(x) {
       return JSON.stringify(x).replace(/\u2028/g, "\\u2028").replace(/\u2029/g, "\\u2029");
     }
@@ -29236,7 +29236,7 @@ var require_util10 = __commonJS({
     var net = __require("node:net");
     var { Blob: Blob2 } = __require("node:buffer");
     var nodeUtil = __require("node:util");
-    var { stringify } = __require("node:querystring");
+    var { stringify: stringify2 } = __require("node:querystring");
     var { EventEmitter: EE } = __require("node:events");
     var { InvalidArgumentError } = require_errors3();
     var { headerNameLowerCasedRecord } = require_constants5();
@@ -29296,7 +29296,7 @@ var require_util10 = __commonJS({
       if (url.includes("?") || url.includes("#")) {
         throw new Error('Query params cannot be passed when url already contains "?" or "#".');
       }
-      const stringified = stringify(queryParams);
+      const stringified = stringify2(queryParams);
       if (stringified) {
         url += "?" + stringified;
       }
@@ -44108,7 +44108,7 @@ var require_util15 = __commonJS({
         throw new Error("Invalid cookie max-age");
       }
     }
-    function stringify(cookie) {
+    function stringify2(cookie) {
       if (cookie.name.length === 0) {
         return null;
       }
@@ -44162,7 +44162,7 @@ var require_util15 = __commonJS({
       validateCookiePath,
       validateCookieValue,
       toIMFDate,
-      stringify
+      stringify: stringify2
     };
   }
 });
@@ -44312,7 +44312,7 @@ var require_cookies2 = __commonJS({
   "node_modules/@octokit/action/node_modules/undici/lib/web/cookies/index.js"(exports, module) {
     "use strict";
     var { parseSetCookie } = require_parse2();
-    var { stringify } = require_util15();
+    var { stringify: stringify2 } = require_util15();
     var { webidl } = require_webidl2();
     var { Headers } = require_headers2();
     function getCookies(headers) {
@@ -44355,7 +44355,7 @@ var require_cookies2 = __commonJS({
       webidl.argumentLengthCheck(arguments, 2, "setCookie");
       webidl.brandCheck(headers, Headers, { strict: false });
       cookie = webidl.converters.Cookie(cookie);
-      const str2 = stringify(cookie);
+      const str2 = stringify2(cookie);
       if (str2) {
         headers.append("Set-Cookie", str2);
       }
@@ -49786,6 +49786,62 @@ var require_regexp = __commonJS({
       shim
     });
     module.exports = bound;
+  }
+});
+
+// node_modules/fast-json-stable-stringify/index.js
+var require_fast_json_stable_stringify = __commonJS({
+  "node_modules/fast-json-stable-stringify/index.js"(exports, module) {
+    "use strict";
+    module.exports = function(data, opts) {
+      if (!opts) opts = {};
+      if (typeof opts === "function") opts = { cmp: opts };
+      var cycles = typeof opts.cycles === "boolean" ? opts.cycles : false;
+      var cmp = opts.cmp && /* @__PURE__ */ function(f) {
+        return function(node) {
+          return function(a, b) {
+            var aobj = { key: a, value: node[a] };
+            var bobj = { key: b, value: node[b] };
+            return f(aobj, bobj);
+          };
+        };
+      }(opts.cmp);
+      var seen = [];
+      return function stringify2(node) {
+        if (node && node.toJSON && typeof node.toJSON === "function") {
+          node = node.toJSON();
+        }
+        if (node === void 0) return;
+        if (typeof node == "number") return isFinite(node) ? "" + node : "null";
+        if (typeof node !== "object") return JSON.stringify(node);
+        var i, out;
+        if (Array.isArray(node)) {
+          out = "[";
+          for (i = 0; i < node.length; i++) {
+            if (i) out += ",";
+            out += stringify2(node[i]) || "null";
+          }
+          return out + "]";
+        }
+        if (node === null) return "null";
+        if (seen.indexOf(node) !== -1) {
+          if (cycles) return JSON.stringify("__cycle__");
+          throw new TypeError("Converting circular structure to JSON");
+        }
+        var seenIndex = seen.push(node) - 1;
+        var keys = Object.keys(node).sort(cmp && cmp(node));
+        out = "";
+        for (i = 0; i < keys.length; i++) {
+          var key = keys[i];
+          var value = stringify2(node[key]);
+          if (!value) continue;
+          if (out) out += ",";
+          out += JSON.stringify(key) + ":" + value;
+        }
+        seen.splice(seenIndex, 1);
+        return "{" + out + "}";
+      }(data);
+    };
   }
 });
 
@@ -59852,20 +59908,43 @@ ${indent}${renderIcon(isAllowed)} ${entry}`;
 }
 
 // src/token-authorizer.ts
+var import_fast_json_stable_stringify = __toESM(require_fast_json_stable_stringify(), 1);
+
+// src/token-declaration.ts
+function normalizeTokenDeclaration(declaration) {
+  const { repos } = declaration;
+  return { ...declaration, repos: repos === "all" ? "all" : repos.toSorted() };
+}
+
+// src/token-request.ts
+function normalizeTokenRequest(request2) {
+  const { repos } = request2;
+  return {
+    ...request2,
+    repos: repos === "all" ? "all" : repos.toSorted(),
+    tokenDec: normalizeTokenDeclaration(request2.tokenDec)
+  };
+}
+
+// src/token-authorizer.ts
 function createTokenAuthorizer(config) {
   const [resourcePatterns, consumerPatterns] = patternsForRules(config.rules);
+  const results = {};
   return {
     authorizeToken(request2) {
+      const key = (0, import_fast_json_stable_stringify.default)(normalizeTokenRequest(request2));
+      if (results[key]) return results[key];
       if (isEmptyPermissions(request2.tokenDec.permissions)) {
         throw new Error("No permissions requested");
       }
       if (request2.tokenDec.repos === "all") {
-        return authorizeAllRepos(request2);
+        results[key] = authorizeAllRepos(request2);
+      } else if (request2.tokenDec.repos.length < 1) {
+        results[key] = authorizeNoRepos(request2);
+      } else {
+        results[key] = authorizeSelectedRepos(request2);
       }
-      if (request2.tokenDec.repos.length < 1) {
-        return authorizeNoRepos(request2);
-      }
-      return authorizeSelectedRepos(request2);
+      return results[key];
     }
   };
   function authorizeAllRepos(request2) {
