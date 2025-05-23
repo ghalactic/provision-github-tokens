@@ -54233,18 +54233,15 @@ var requester_v1_schema_default = {
       properties: {
         actions: {
           description: "Whether to provision to GitHub Actions secrets.",
-          type: "boolean",
-          default: false
+          type: "boolean"
         },
         codespaces: {
           description: "Whether to provision to GitHub Codespaces secrets.",
-          type: "boolean",
-          default: false
+          type: "boolean"
         },
         dependabot: {
           description: "Whether to provision to Dependabot secrets.",
-          type: "boolean",
-          default: false
+          type: "boolean"
         }
       }
     },
@@ -54254,18 +54251,15 @@ var requester_v1_schema_default = {
       properties: {
         actions: {
           description: "Whether to provision to GitHub Actions secrets.",
-          type: "boolean",
-          default: false
+          type: "boolean"
         },
         codespaces: {
           description: "Whether to provision to GitHub Codespaces secrets.",
-          type: "boolean",
-          default: false
+          type: "boolean"
         },
         dependabot: {
           description: "Whether to provision to Dependabot secrets.",
-          type: "boolean",
-          default: false
+          type: "boolean"
         },
         environments: {
           description: "GitHub repo environments to provision to.",

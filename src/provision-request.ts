@@ -3,6 +3,7 @@ import type { AppRegistry } from "./app-registry.js";
 import type { EnvironmentResolver } from "./environment-resolver.js";
 import { createGitHubPattern } from "./github-pattern.js";
 import {
+  createEnvRef,
   repoRefFromName,
   repoRefToString,
   type AccountOrRepoReference,
@@ -17,6 +18,8 @@ import type {
   SecretDeclarationGitHubAccountSecretTypes,
   SecretDeclarationGitHubRepoSecretTypes,
 } from "./type/secret-declaration.js";
+
+const SECRET_TYPES = ["actions", "codespaces", "dependabot"] as const;
 
 export type ProvisionRequest = {
   requester: RepoReference;
@@ -89,70 +92,124 @@ export function createProvisionRequestFactory(
       return undefined;
     }
 
-    const platform = "github";
-    const targets: ProvisionRequestTarget[] = [];
-
-    const addAccountTargets = (
-      types: SecretDeclarationGitHubAccountSecretTypes,
-      accounts: string[],
-    ) => {
-      for (const type of ["actions", "codespaces", "dependabot"] as const) {
-        if (!types[type]) continue;
-
-        for (const account of accounts) {
-          targets.push({ platform, type, target: { account } });
-        }
-      }
-    };
-
-    const addRepoTargets = async (
-      types: SecretDeclarationGitHubRepoSecretTypes,
-      repos: RepoReference[],
-    ) => {
-      for (const type of ["actions", "codespaces", "dependabot"] as const) {
-        if (!types[type]) continue;
-
-        for (const repo of repos) {
-          targets.push({ platform, type, target: repo });
-        }
-      }
-
-      if (types.environments.length > 0) {
-        const envs = await environmentResolver.resolveEnvironments(
-          requester,
-          types.environments.map(createNamePattern),
-        );
-
-        for (const environment of envs) {
-          targets.push({
-            platform,
-            type: "environment",
-            target: { ...requester, environment },
-          });
-        }
-      }
-    };
-
-    addAccountTargets(secretDec.github.account, [requester.account]);
+    const typesByAccount: Record<
+      string,
+      SecretDeclarationGitHubAccountSecretTypes
+    > = {};
 
     for (const accountPattern in secretDec.github.accounts) {
-      addAccountTargets(
-        secretDec.github.accounts[accountPattern],
-        appRegistry.resolveProvisionerAccounts([
-          createNamePattern(accountPattern),
-        ]),
+      const accounts = appRegistry.resolveProvisionerAccounts([
+        createNamePattern(accountPattern),
+      ]);
+      const patternTypes = secretDec.github.accounts[accountPattern];
+
+      for (const account of accounts) {
+        const types = (typesByAccount[account] ??= {});
+
+        for (const type of SECRET_TYPES) {
+          // A disabled type takes precedence over all others except
+          // same-account types
+          if (types[type] !== false) types[type] = patternTypes[type];
+        }
+      }
+    }
+
+    // Same-account types take precedence over all others
+    const sameAccountTypes = (typesByAccount[requester.account] ??= {});
+
+    for (const type of SECRET_TYPES) {
+      sameAccountTypes[type] =
+        secretDec.github.account[type] ?? sameAccountTypes[type];
+    }
+
+    const typesByRepo: Record<string, SecretDeclarationGitHubRepoSecretTypes> =
+      {};
+
+    for (const repoPattern in secretDec.github.repos) {
+      const repos = appRegistry
+        .resolveProvisionerRepos([createGitHubPattern(repoPattern)])
+        .map(repoRefFromName);
+      const patternTypes = secretDec.github.repos[repoPattern];
+
+      for (const repo of repos) {
+        const repoName = repoRefToString(repo);
+
+        let types = typesByRepo[repoName];
+        const isFirstRepo = !types;
+        typesByRepo[repoName] = types ??= { environments: [] };
+
+        for (const type of SECRET_TYPES) {
+          // A disabled type takes precedence over all others except
+          // same-repo types
+          if (types[type] !== false) types[type] = patternTypes[type];
+        }
+
+        const envs =
+          patternTypes.environments.length > 0
+            ? await environmentResolver.resolveEnvironments(
+                repo,
+                patternTypes.environments.map(createNamePattern),
+              )
+            : [];
+
+        if (isFirstRepo) {
+          types.environments = envs;
+        } else {
+          // The environments are the intersection of all matching patterns. In
+          // other words, if one pattern has an environment and another doesn't,
+          // the environment is not included.
+          types.environments = types.environments.filter((env) =>
+            envs.includes(env),
+          );
+        }
+      }
+    }
+
+    const sameRepoTypes = (typesByRepo[repoRefToString(requester)] ??= {
+      environments: [],
+    });
+
+    // Same-repo types take precedence over all others
+    for (const type of SECRET_TYPES) {
+      sameRepoTypes[type] = secretDec.github.repo[type] ?? sameRepoTypes[type];
+    }
+
+    // Same-repo environments add to any specified via patterns
+    if (secretDec.github.repo.environments.length > 0) {
+      sameRepoTypes.environments.push(
+        ...(await environmentResolver.resolveEnvironments(
+          requester,
+          secretDec.github.repo.environments.map(createNamePattern),
+        )),
       );
     }
 
-    await addRepoTargets(secretDec.github.repo, [requester]);
+    const platform = "github";
+    const targets: ProvisionRequestTarget[] = [];
 
-    for (const repoPattern in secretDec.github.repos) {
-      await addRepoTargets(
-        secretDec.github.repos[repoPattern],
-        appRegistry
-          .resolveProvisionerRepos([createGitHubPattern(repoPattern)])
-          .map(repoRefFromName),
-      );
+    for (const account in typesByAccount) {
+      const types = typesByAccount[account];
+
+      for (const type of SECRET_TYPES) {
+        if (types[type]) targets.push({ platform, type, target: { account } });
+      }
+    }
+
+    for (const repoName in typesByRepo) {
+      const types = typesByRepo[repoName];
+      const repo = repoRefFromName(repoName);
+
+      for (const type of SECRET_TYPES) {
+        if (types[type]) targets.push({ platform, type, target: repo });
+      }
+
+      for (const env of types.environments) {
+        targets.push({
+          platform,
+          type: "environment",
+          target: createEnvRef(repo.account, repo.repo, env),
+        });
+      }
     }
 
     return {

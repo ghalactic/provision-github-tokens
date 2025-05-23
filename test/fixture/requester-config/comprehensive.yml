@@ -147,3 +147,27 @@ provision:
 
     TO_NOWHERE:
       token: tokenD
+
+    TO_NOWHERE_EXPLICIT:
+      token: tokenE
+      github:
+        account:
+          actions: false
+          codespaces: false
+          dependabot: false
+        accounts:
+          "*":
+            actions: false
+            codespaces: false
+            dependabot: false
+        repo:
+          actions: false
+          codespaces: false
+          dependabot: false
+          environments: []
+        repos:
+          "*/*":
+            actions: false
+            codespaces: false
+            dependabot: false
+            environments: []

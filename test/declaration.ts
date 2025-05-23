@@ -21,11 +21,8 @@ export function createTestTokenDec(
 export type PartialSecretDeclaration = {
   token?: string;
   github?: {
-    account?: Partial<SecretDeclarationGitHubAccountSecretTypes>;
-    accounts?: Record<
-      string,
-      Partial<SecretDeclarationGitHubAccountSecretTypes>
-    >;
+    account?: SecretDeclarationGitHubAccountSecretTypes;
+    accounts?: Record<string, SecretDeclarationGitHubAccountSecretTypes>;
     repo?: Partial<SecretDeclarationGitHubRepoSecretTypes>;
     repos?: Record<string, Partial<SecretDeclarationGitHubRepoSecretTypes>>;
   };
@@ -34,34 +31,15 @@ export type PartialSecretDeclaration = {
 export function createTestSecretDec(
   secretDec: PartialSecretDeclaration = {},
 ): SecretDeclaration {
-  const createAccountTypes = (
-    types: Partial<SecretDeclarationGitHubAccountSecretTypes>,
-  ) => ({
-    actions: false,
-    codespaces: false,
-    dependabot: false,
-    ...types,
-  });
-
   const createRepoTypes = (
     types: Partial<SecretDeclarationGitHubRepoSecretTypes>,
-  ) => ({
-    actions: false,
-    codespaces: false,
-    dependabot: false,
-    environments: [],
-    ...types,
-  });
+  ) => ({ environments: [], ...types });
 
   return {
     token: secretDec.token ?? "account-a/repo-a.token-a",
     github: {
-      account: createAccountTypes(secretDec.github?.account ?? {}),
-      accounts: Object.fromEntries(
-        Object.entries(secretDec.github?.accounts ?? {}).map(
-          ([account, types]) => [account, createAccountTypes(types)],
-        ),
-      ),
+      account: secretDec.github?.account ?? {},
+      accounts: secretDec.github?.accounts ?? {},
       repo: createRepoTypes(secretDec.github?.repo ?? {}),
       repos: Object.fromEntries(
         Object.entries(secretDec.github?.repos ?? {}).map(([repo, types]) => [

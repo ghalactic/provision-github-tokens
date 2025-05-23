@@ -9,14 +9,14 @@ export type SecretDeclaration = {
 };
 
 export type SecretDeclarationGitHubAccountSecretTypes = {
-  actions: boolean;
-  codespaces: boolean;
-  dependabot: boolean;
+  actions?: boolean;
+  codespaces?: boolean;
+  dependabot?: boolean;
 };
 
 export type SecretDeclarationGitHubRepoSecretTypes = {
-  actions: boolean;
-  codespaces: boolean;
-  dependabot: boolean;
+  actions?: boolean;
+  codespaces?: boolean;
+  dependabot?: boolean;
   environments: string[];
 };

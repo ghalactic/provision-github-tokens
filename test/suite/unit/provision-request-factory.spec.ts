@@ -264,9 +264,89 @@ it("supports account pattern targets", async () => {
       target: { account: "account-a-2" },
     },
   ]);
-
-  // TODO: Test pattern overlap
 });
+
+it("doesn't match the same account twice", async () => {
+  const repoA: RepoReference = { account: "account-a", repo: "repo-a" };
+
+  const declarationRegistry = createTokenDeclarationRegistry();
+  const appRegistry = createAppRegistry();
+  const environmentResolver = createTestEnvironmentResolver();
+  const createProvisionRequest = createProvisionRequestFactory(
+    declarationRegistry,
+    appRegistry,
+    environmentResolver,
+  );
+
+  const tokenDecA = createTestTokenDec({ shared: true });
+  declarationRegistry.registerDeclaration(repoA, "token-a", tokenDecA);
+
+  const accountA = createTestInstallationAccount(
+    "Organization",
+    100,
+    "account-a",
+  );
+  const accountB = createTestInstallationAccount(
+    "Organization",
+    300,
+    "account-b",
+  );
+
+  const appA = createTestApp(110, "app-a", "App A");
+  const appRegA: AppRegistration = {
+    app: appA,
+    issuer: { enabled: false, roles: [] },
+    provisioner: { enabled: true },
+  };
+  appRegistry.registerApp(appRegA);
+
+  const appAInstallationA = createTestInstallation(
+    111,
+    appA,
+    accountA,
+    "selected",
+  );
+  const appAInstallationRegA: InstallationRegistration = {
+    installation: appAInstallationA,
+    repos: [],
+  };
+  appRegistry.registerInstallation(appAInstallationRegA);
+
+  const appAInstallationB = createTestInstallation(
+    112,
+    appA,
+    accountB,
+    "selected",
+  );
+  const appAInstallationRegB: InstallationRegistration = {
+    installation: appAInstallationB,
+    repos: [],
+  };
+  appRegistry.registerInstallation(appAInstallationRegB);
+
+  expect(
+    (
+      await createProvisionRequest(
+        repoA,
+        "SECRET_A",
+        createTestSecretDec({
+          token: normalizeTokenReference(repoA, "token-a"),
+          github: {
+            accounts: {
+              "*": { actions: true },
+              "account-*": { actions: true },
+            },
+          },
+        }),
+      )
+    )?.to,
+  ).toStrictEqual([
+    { platform: "github", type: "actions", target: { account: "account-a" } },
+    { platform: "github", type: "actions", target: { account: "account-b" } },
+  ]);
+});
+
+//TODO: Test least-privilege of patterns
 
 it("supports same-repo targets", async () => {
   const accountA: AccountReference = { account: "account-a" };
@@ -581,6 +661,8 @@ it("supports repo pattern environment targets", async () => {
 
   // TODO: Test pattern overlap
 });
+
+// TODO: Test all targets together
 
 it("returns undefined for unshared token declarations", async () => {
   const repoA: RepoReference = { account: "account-a", repo: "repo-a" };
