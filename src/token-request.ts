@@ -1,3 +1,4 @@
+import { debug } from "@actions/core";
 import stringify from "fast-json-stable-stringify";
 import type { AppRegistry } from "./app-registry.js";
 import { createGitHubPattern } from "./github-pattern.js";
@@ -61,8 +62,16 @@ export function createTokenRequestFactory(
     for (const { target: consumer } of provisionReq.to) {
       const tokenReq = normalizeTokenRequest({ consumer, tokenDec, repos });
       const cacheKey = stringify(tokenReq);
+      let cachedTokenReq = cache[cacheKey];
 
-      tokenReqs.push((cache[cacheKey] ??= tokenReq));
+      if (cachedTokenReq) {
+        debug(`Token request cache hit for ${cacheKey}`);
+      } else {
+        debug(`Token request cache miss for ${cacheKey}`);
+        cachedTokenReq = cache[cacheKey] = tokenReq;
+      }
+
+      tokenReqs.push(cachedTokenReq);
     }
 
     return tokenReqs;
