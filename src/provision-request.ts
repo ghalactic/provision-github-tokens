@@ -1,7 +1,9 @@
 import { warning } from "@actions/core";
 import type { AppRegistry } from "./app-registry.js";
 import type { EnvironmentResolver } from "./environment-resolver.js";
+import { createGitHubPattern } from "./github-pattern.js";
 import {
+  repoRefFromName,
   repoRefToString,
   type AccountOrRepoReference,
   type EnvironmentReference,
@@ -143,6 +145,15 @@ export function createProvisionRequestFactory(
     }
 
     await addRepoTargets(secretDec.github.repo, [requester]);
+
+    for (const repoPattern in secretDec.github.repos) {
+      await addRepoTargets(
+        secretDec.github.repos[repoPattern],
+        appRegistry
+          .resolveProvisionerRepos([createGitHubPattern(repoPattern)])
+          .map(repoRefFromName),
+      );
+    }
 
     return {
       requester,

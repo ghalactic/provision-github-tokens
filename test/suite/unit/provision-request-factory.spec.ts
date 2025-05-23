@@ -21,6 +21,7 @@ import {
   createTestApp,
   createTestInstallation,
   createTestInstallationAccount,
+  createTestInstallationRepo,
 } from "../../github-api.js";
 
 vi.mock("@actions/core");
@@ -150,6 +151,11 @@ it("supports account pattern targets", async () => {
     200,
     "account-a-2",
   );
+  const accountB = createTestInstallationAccount(
+    "Organization",
+    300,
+    "account-b",
+  );
 
   const appA = createTestApp(110, "app-a", "App A");
   const appRegA: AppRegistration = {
@@ -182,6 +188,18 @@ it("supports account pattern targets", async () => {
     repos: [],
   };
   appRegistry.registerInstallation(appAInstallationRegA2);
+
+  const appAInstallationB = createTestInstallation(
+    113,
+    appA,
+    accountB,
+    "selected",
+  );
+  const appAInstallationRegB: InstallationRegistration = {
+    installation: appAInstallationB,
+    repos: [],
+  };
+  appRegistry.registerInstallation(appAInstallationRegB);
 
   expect(
     (
@@ -358,6 +376,127 @@ it("supports same-repo environment targets", async () => {
 
   // TODO: Test pattern overlap
 });
+
+it("supports repo pattern targets", async () => {
+  const repoARef: RepoReference = { account: "account-a", repo: "repo-a" };
+
+  const declarationRegistry = createTokenDeclarationRegistry();
+  const appRegistry = createAppRegistry();
+  const environmentResolver = createTestEnvironmentResolver();
+  const createProvisionRequest = createProvisionRequestFactory(
+    declarationRegistry,
+    appRegistry,
+    environmentResolver,
+  );
+
+  const tokenDecA = createTestTokenDec({ shared: true });
+  declarationRegistry.registerDeclaration(repoARef, "token-a", tokenDecA);
+
+  const accountA = createTestInstallationAccount(
+    "Organization",
+    100,
+    "account-a",
+  );
+  const repoA1 = createTestInstallationRepo(accountA, "repo-a-1");
+  const repoA2 = createTestInstallationRepo(accountA, "repo-a-2");
+  const repoB = createTestInstallationRepo(accountA, "repo-b");
+
+  const appA = createTestApp(110, "app-a", "App A");
+  const appRegA: AppRegistration = {
+    app: appA,
+    issuer: { enabled: false, roles: [] },
+    provisioner: { enabled: true },
+  };
+  appRegistry.registerApp(appRegA);
+
+  const appAInstallationA = createTestInstallation(
+    111,
+    appA,
+    accountA,
+    "selected",
+  );
+  const appAInstallationRegA: InstallationRegistration = {
+    installation: appAInstallationA,
+    repos: [repoA1, repoA2, repoB],
+  };
+  appRegistry.registerInstallation(appAInstallationRegA);
+
+  expect(
+    (
+      await createProvisionRequest(
+        repoARef,
+        "SECRET_A",
+        createTestSecretDec({
+          token: normalizeTokenReference(repoARef, "token-a"),
+          github: { repos: { "account-a/repo-a-*": { actions: true } } },
+        }),
+      )
+    )?.to,
+  ).toStrictEqual([
+    {
+      platform: "github",
+      type: "actions",
+      target: { account: "account-a", repo: "repo-a-1" },
+    },
+    {
+      platform: "github",
+      type: "actions",
+      target: { account: "account-a", repo: "repo-a-2" },
+    },
+  ]);
+
+  expect(
+    (
+      await createProvisionRequest(
+        repoARef,
+        "SECRET_A",
+        createTestSecretDec({
+          token: normalizeTokenReference(repoARef, "token-a"),
+          github: { repos: { "account-a/repo-a-*": { codespaces: true } } },
+        }),
+      )
+    )?.to,
+  ).toStrictEqual([
+    {
+      platform: "github",
+      type: "codespaces",
+      target: { account: "account-a", repo: "repo-a-1" },
+    },
+    {
+      platform: "github",
+      type: "codespaces",
+      target: { account: "account-a", repo: "repo-a-2" },
+    },
+  ]);
+
+  expect(
+    (
+      await createProvisionRequest(
+        repoARef,
+        "SECRET_A",
+        createTestSecretDec({
+          token: normalizeTokenReference(repoARef, "token-a"),
+          github: { repos: { "account-a/repo-a-*": { dependabot: true } } },
+        }),
+      )
+    )?.to,
+  ).toStrictEqual([
+    {
+      platform: "github",
+      type: "dependabot",
+      target: { account: "account-a", repo: "repo-a-1" },
+    },
+    {
+      platform: "github",
+      type: "dependabot",
+      target: { account: "account-a", repo: "repo-a-2" },
+    },
+  ]);
+
+  // TODO: Test pattern overlap
+});
+
+// TODO: Test repo pattern environment targets
 
 it("returns undefined for unshared token declarations", async () => {
   const repoA: RepoReference = { account: "account-a", repo: "repo-a" };
