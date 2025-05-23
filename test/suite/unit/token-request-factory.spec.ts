@@ -204,7 +204,7 @@ it("de-duplicates equivalent token requests", () => {
       },
     ],
   });
-  const [requestC, requestD, requestE] = createTokenRequests({
+  const [requestC, requestD, requestE, requestF] = createTokenRequests({
     requester: { account: "account-x", repo: "repo-x" },
     tokenDec,
     secretDec: createTestSecretDec(),
@@ -214,6 +214,11 @@ it("de-duplicates equivalent token requests", () => {
         platform: "github",
         type: "actions",
         target: { account: "account-z", repo: "repo-z" },
+      },
+      {
+        platform: "github",
+        type: "environment",
+        target: { account: "account-z", repo: "repo-z", environment: "env-z" },
       },
       {
         platform: "github",
@@ -229,7 +234,8 @@ it("de-duplicates equivalent token requests", () => {
   });
 
   expect(requestC).toBe(requestB);
-  expect(requestE).toBe(requestA);
-  expect(requestD).not.toBe(requestA);
-  expect(requestD).not.toBe(requestB);
+  expect(requestD).toBe(requestB);
+  expect(requestE).not.toBe(requestA);
+  expect(requestE).not.toBe(requestB);
+  expect(requestF).toBe(requestA);
 });
