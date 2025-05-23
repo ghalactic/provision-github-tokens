@@ -1,5 +1,5 @@
 import { isEnvRef, isRepoRef } from "./github-reference.js";
-import type { ProvisionRequestTarget } from "./type/provision-request.js";
+import type { ProvisionRequestTarget } from "./provision-request.js";
 
 export function compareProvisionRequestTarget(
   a: ProvisionRequestTarget,

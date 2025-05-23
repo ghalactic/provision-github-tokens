@@ -9,11 +9,11 @@ import {
   repoRefToString,
   type AccountOrRepoReference,
 } from "./github-reference.js";
+import type { ProvisionRequest } from "./provision-request.js";
 import {
   normalizeTokenDeclaration,
   type TokenDeclaration,
 } from "./token-declaration.js";
-import type { ProvisionRequest } from "./type/provision-request.js";
 
 export type TokenRequest = {
   consumer: AccountOrRepoReference;

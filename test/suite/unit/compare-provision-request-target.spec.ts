@@ -1,6 +1,6 @@
 import { expect, it } from "vitest";
 import { compareProvisionRequestTarget } from "../../../src/compare-provision-request-target.js";
-import type { ProvisionRequestTarget } from "../../../src/type/provision-request.js";
+import type { ProvisionRequestTarget } from "../../../src/provision-request.js";
 
 it("sorts targets by account", () => {
   const targets: ProvisionRequestTarget[] = [

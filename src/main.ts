@@ -17,6 +17,10 @@ import { createNamePattern } from "./name-pattern.js";
 import { createOctokitFactory } from "./octokit.js";
 import { createTextProvisionAuthExplainer } from "./provision-auth-explainer/text.js";
 import { createProvisionAuthorizer } from "./provision-authorizer.js";
+import type {
+  ProvisionRequest,
+  ProvisionRequestTarget,
+} from "./provision-request.js";
 import { registerTokenDeclarations } from "./register-token-declarations.js";
 import { createTextTokenAuthExplainer } from "./token-auth-explainer/text.js";
 import { createTokenAuthorizer } from "./token-authorizer.js";
@@ -26,10 +30,6 @@ import {
   type TokenRequest,
 } from "./token-request.js";
 import type { ProviderConfig } from "./type/provider-config.js";
-import type {
-  ProvisionRequest,
-  ProvisionRequestTarget,
-} from "./type/provision-request.js";
 import type { TokenAuthResult } from "./type/token-auth-result.js";
 
 main().catch((error) => {
@@ -121,10 +121,9 @@ async function main(): Promise<void> {
 
   registerTokenDeclarations(declarationRegistry, requesters);
 
-  // TODO: generate token requests
   // TODO: generate provision requests
-  // TODO: authorize tokens
   // TODO: authorize provisioning
+  // TODO: output auth results
   // TODO: issue tokens
   // TODO: provision secrets
 

@@ -2,9 +2,9 @@ import type {
   AccountOrRepoReference,
   EnvironmentReference,
   RepoReference,
-} from "../github-reference.js";
-import type { TokenDeclaration } from "../token-declaration.js";
-import type { SecretDeclaration } from "./secret-declaration.js";
+} from "./github-reference.js";
+import type { TokenDeclaration } from "./token-declaration.js";
+import type { SecretDeclaration } from "./type/secret-declaration.js";
 
 export type ProvisionRequest = {
   requester: RepoReference;

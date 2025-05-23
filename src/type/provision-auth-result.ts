@@ -1,4 +1,4 @@
-import type { ProvisionRequest } from "./provision-request.js";
+import type { ProvisionRequest } from "../provision-request.js";
 import type { ProvisionSecretsRule } from "./provision-rule.js";
 
 export type ProvisionAuthResultExplainer<T> = (
