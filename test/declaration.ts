@@ -18,8 +18,21 @@ export function createTestTokenDec(
   };
 }
 
+export type PartialSecretDeclaration = {
+  token?: string;
+  github?: {
+    account?: Partial<SecretDeclarationGitHubAccountSecretTypes>;
+    accounts?: Record<
+      string,
+      Partial<SecretDeclarationGitHubAccountSecretTypes>
+    >;
+    repo?: Partial<SecretDeclarationGitHubRepoSecretTypes>;
+    repos?: Record<string, Partial<SecretDeclarationGitHubRepoSecretTypes>>;
+  };
+};
+
 export function createTestSecretDec(
-  secretDec: Partial<SecretDeclaration> = {},
+  secretDec: PartialSecretDeclaration = {},
 ): SecretDeclaration {
   const createAccountTypes = (
     types: Partial<SecretDeclarationGitHubAccountSecretTypes>,
@@ -41,7 +54,7 @@ export function createTestSecretDec(
   });
 
   return {
-    token: "token-a",
+    token: secretDec.token ?? "account-a/repo-a.token-a",
     github: {
       account: createAccountTypes(secretDec.github?.account ?? {}),
       accounts: Object.fromEntries(
