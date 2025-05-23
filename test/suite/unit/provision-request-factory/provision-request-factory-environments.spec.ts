@@ -75,8 +75,6 @@ it("supports self-repo environment targets", async () => {
       target: createEnvRef("account-a", "repo-a", "env-b"),
     },
   ]);
-
-  // TODO: Test pattern overlap
 });
 
 // TODO: Test least-privilege of env patterns
@@ -163,8 +161,6 @@ it("supports pattern-matched repo environment targets", async () => {
       target: { account: "account-a", repo: "repo-a", environment: "env-b" },
     },
   ]);
-
-  // TODO: Test pattern overlap
 });
 
 // TODO: Test least-privilege of env patterns

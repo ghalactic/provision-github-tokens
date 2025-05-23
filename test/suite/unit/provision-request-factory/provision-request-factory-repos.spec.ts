@@ -196,14 +196,224 @@ it("supports pattern-matched repo targets", async () => {
       target: { account: "account-a", repo: "repo-a-2" },
     },
   ]);
-
-  // TODO: Test pattern overlap
 });
 
-it.todo("doesn't match the same repo twice");
+it("doesn't match the same repo twice", async () => {
+  const repoARef: RepoReference = { account: "account-a", repo: "repo-a" };
 
-it.todo(
-  "doesn't enable a target for a repo if any matching patterns disable the target",
-);
+  const declarationRegistry = createTokenDeclarationRegistry();
+  const appRegistry = createAppRegistry();
+  const environmentResolver = createTestEnvironmentResolver();
+  const createProvisionRequest = createProvisionRequestFactory(
+    declarationRegistry,
+    appRegistry,
+    environmentResolver,
+  );
 
-it.todo("allows self-repo targets to override pattern-matched repo targets");
+  const tokenDecA = createTestTokenDec({ shared: true });
+  declarationRegistry.registerDeclaration(repoARef, "token-a", tokenDecA);
+
+  const accountA = createTestInstallationAccount(
+    "Organization",
+    100,
+    "account-a",
+  );
+  const repoA = createTestInstallationRepo(accountA, "repo-a");
+  const repoB = createTestInstallationRepo(accountA, "repo-b");
+
+  const appA = createTestApp(110, "app-a", "App A");
+  const appRegA: AppRegistration = {
+    app: appA,
+    issuer: { enabled: false, roles: [] },
+    provisioner: { enabled: true },
+  };
+  appRegistry.registerApp(appRegA);
+
+  const appAInstallationA = createTestInstallation(
+    111,
+    appA,
+    accountA,
+    "selected",
+  );
+  const appAInstallationRegA: InstallationRegistration = {
+    installation: appAInstallationA,
+    repos: [repoA, repoB],
+  };
+  appRegistry.registerInstallation(appAInstallationRegA);
+
+  expect(
+    (
+      await createProvisionRequest(
+        repoARef,
+        "SECRET_A",
+        createTestSecretDec({
+          token: normalizeTokenReference(repoARef, "token-a"),
+          github: {
+            repos: {
+              "*/*": { actions: true },
+              "account-*/repo-*": { actions: true },
+            },
+          },
+        }),
+      )
+    )?.to,
+  ).toStrictEqual([
+    {
+      platform: "github",
+      type: "actions",
+      target: { account: "account-a", repo: "repo-a" },
+    },
+    {
+      platform: "github",
+      type: "actions",
+      target: { account: "account-a", repo: "repo-b" },
+    },
+  ]);
+});
+
+it("doesn't enable a target for a repo if any matching patterns disable the target", async () => {
+  const repoARef: RepoReference = { account: "account-a", repo: "repo-a" };
+
+  const declarationRegistry = createTokenDeclarationRegistry();
+  const appRegistry = createAppRegistry();
+  const environmentResolver = createTestEnvironmentResolver();
+  const createProvisionRequest = createProvisionRequestFactory(
+    declarationRegistry,
+    appRegistry,
+    environmentResolver,
+  );
+
+  const tokenDecA = createTestTokenDec({ shared: true });
+  declarationRegistry.registerDeclaration(repoARef, "token-a", tokenDecA);
+
+  const accountA = createTestInstallationAccount(
+    "Organization",
+    100,
+    "account-a",
+  );
+  const repoA = createTestInstallationRepo(accountA, "repo-a");
+  const repoB = createTestInstallationRepo(accountA, "repo-b");
+
+  const appA = createTestApp(110, "app-a", "App A");
+  const appRegA: AppRegistration = {
+    app: appA,
+    issuer: { enabled: false, roles: [] },
+    provisioner: { enabled: true },
+  };
+  appRegistry.registerApp(appRegA);
+
+  const appAInstallationA = createTestInstallation(
+    111,
+    appA,
+    accountA,
+    "selected",
+  );
+  const appAInstallationRegA: InstallationRegistration = {
+    installation: appAInstallationA,
+    repos: [repoA, repoB],
+  };
+  appRegistry.registerInstallation(appAInstallationRegA);
+
+  expect(
+    (
+      await createProvisionRequest(
+        repoARef,
+        "SECRET_A",
+        createTestSecretDec({
+          token: normalizeTokenReference(repoARef, "token-a"),
+          github: {
+            repos: {
+              "*/repo-b": { actions: false },
+              "*/*": { actions: true, codespaces: false },
+              "*/repo-a": { codespaces: true },
+            },
+          },
+        }),
+      )
+    )?.to,
+  ).toStrictEqual([
+    {
+      platform: "github",
+      type: "actions",
+      target: { account: "account-a", repo: "repo-a" },
+    },
+  ]);
+});
+
+it("allows self-repo targets to override pattern-matched repo targets", async () => {
+  const repoARef: RepoReference = { account: "account-a", repo: "repo-a" };
+
+  const declarationRegistry = createTokenDeclarationRegistry();
+  const appRegistry = createAppRegistry();
+  const environmentResolver = createTestEnvironmentResolver();
+  const createProvisionRequest = createProvisionRequestFactory(
+    declarationRegistry,
+    appRegistry,
+    environmentResolver,
+  );
+
+  const tokenDecA = createTestTokenDec({ shared: true });
+  declarationRegistry.registerDeclaration(repoARef, "token-a", tokenDecA);
+
+  const accountA = createTestInstallationAccount(
+    "Organization",
+    100,
+    "account-a",
+  );
+  const repoA = createTestInstallationRepo(accountA, "repo-a");
+  const repoB = createTestInstallationRepo(accountA, "repo-b");
+
+  const appA = createTestApp(110, "app-a", "App A");
+  const appRegA: AppRegistration = {
+    app: appA,
+    issuer: { enabled: false, roles: [] },
+    provisioner: { enabled: true },
+  };
+  appRegistry.registerApp(appRegA);
+
+  const appAInstallationA = createTestInstallation(
+    111,
+    appA,
+    accountA,
+    "selected",
+  );
+  const appAInstallationRegA: InstallationRegistration = {
+    installation: appAInstallationA,
+    repos: [repoA, repoB],
+  };
+  appRegistry.registerInstallation(appAInstallationRegA);
+
+  expect(
+    (
+      await createProvisionRequest(
+        repoARef,
+        "SECRET_A",
+        createTestSecretDec({
+          token: normalizeTokenReference(repoARef, "token-a"),
+          github: {
+            repo: { codespaces: true },
+            repos: {
+              "*/*": { actions: true, codespaces: false },
+            },
+          },
+        }),
+      )
+    )?.to,
+  ).toStrictEqual([
+    {
+      platform: "github",
+      type: "actions",
+      target: { account: "account-a", repo: "repo-a" },
+    },
+    {
+      platform: "github",
+      type: "codespaces",
+      target: { account: "account-a", repo: "repo-a" },
+    },
+    {
+      platform: "github",
+      type: "actions",
+      target: { account: "account-a", repo: "repo-b" },
+    },
+  ]);
+});
