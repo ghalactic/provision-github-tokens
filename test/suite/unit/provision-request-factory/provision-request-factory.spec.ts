@@ -55,7 +55,6 @@ it("creates provision requests from secret declarations", async () => {
   } satisfies ProvisionRequest);
 });
 
-// TODO: Test all targets together
 it.todo("supports provisioning to multiple targets");
 
 it("returns undefined for unshared token declarations", async () => {

@@ -77,7 +77,6 @@ it("supports self-repo environment targets", async () => {
   ]);
 });
 
-// TODO: Test least-privilege of env patterns
 it.todo("doesn't match the same environment twice for self-repos");
 
 it("supports pattern-matched repo environment targets", async () => {
@@ -163,5 +162,12 @@ it("supports pattern-matched repo environment targets", async () => {
   ]);
 });
 
-// TODO: Test least-privilege of env patterns
 it.todo("doesn't match the same environment twice for pattern-matched repos");
+
+it.todo(
+  "doesn't enable an environment target for a repo unless all matching repo patterns include the environment",
+);
+
+it.todo(
+  "combines self-repo environment targets with pattern-matched repo environment targets",
+);
