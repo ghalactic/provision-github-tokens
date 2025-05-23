@@ -343,6 +343,7 @@ it("supports same-repo environment targets", async () => {
     "env-a-1",
     "env-a-2",
     "env-b",
+    "env-c",
   ]);
 
   expect(
@@ -496,7 +497,90 @@ it("supports repo pattern targets", async () => {
   // TODO: Test pattern overlap
 });
 
-// TODO: Test repo pattern environment targets
+it("supports repo pattern environment targets", async () => {
+  const repoARef: RepoReference = { account: "account-a", repo: "repo-a" };
+
+  const declarationRegistry = createTokenDeclarationRegistry();
+  const appRegistry = createAppRegistry();
+  const environmentResolver = createTestEnvironmentResolver();
+  const createProvisionRequest = createProvisionRequestFactory(
+    declarationRegistry,
+    appRegistry,
+    environmentResolver,
+  );
+
+  const tokenDecA = createTestTokenDec({ shared: true });
+  declarationRegistry.registerDeclaration(repoARef, "token-a", tokenDecA);
+
+  const accountA = createTestInstallationAccount(
+    "Organization",
+    100,
+    "account-a",
+  );
+  const repoA = createTestInstallationRepo(accountA, "repo-a");
+
+  const appA = createTestApp(110, "app-a", "App A");
+  const appRegA: AppRegistration = {
+    app: appA,
+    issuer: { enabled: false, roles: [] },
+    provisioner: { enabled: true },
+  };
+  appRegistry.registerApp(appRegA);
+
+  const appAInstallationA = createTestInstallation(
+    111,
+    appA,
+    accountA,
+    "selected",
+  );
+  const appAInstallationRegA: InstallationRegistration = {
+    installation: appAInstallationA,
+    repos: [repoA],
+  };
+  appRegistry.registerInstallation(appAInstallationRegA);
+
+  environmentResolver.registerEnvironments(repoARef, [
+    "env-a-1",
+    "env-a-2",
+    "env-b",
+    "env-c",
+  ]);
+
+  expect(
+    (
+      await createProvisionRequest(
+        repoARef,
+        "SECRET_A",
+        createTestSecretDec({
+          token: normalizeTokenReference(repoARef, "token-a"),
+          github: {
+            repos: {
+              "account-a/repo-a": { environments: ["env-a-*", "env-b"] },
+            },
+          },
+        }),
+      )
+    )?.to,
+  ).toStrictEqual([
+    {
+      platform: "github",
+      type: "environment",
+      target: { account: "account-a", repo: "repo-a", environment: "env-a-1" },
+    },
+    {
+      platform: "github",
+      type: "environment",
+      target: { account: "account-a", repo: "repo-a", environment: "env-a-2" },
+    },
+    {
+      platform: "github",
+      type: "environment",
+      target: { account: "account-a", repo: "repo-a", environment: "env-b" },
+    },
+  ]);
+
+  // TODO: Test pattern overlap
+});
 
 it("returns undefined for unshared token declarations", async () => {
   const repoA: RepoReference = { account: "account-a", repo: "repo-a" };
