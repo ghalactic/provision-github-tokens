@@ -21828,10 +21828,10 @@ Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
       (0, command_1.issueCommand)("error", (0, utils_1.toCommandProperties)(properties), message instanceof Error ? message.toString() : message);
     }
     exports.error = error;
-    function warning3(message, properties = {}) {
+    function warning4(message, properties = {}) {
       (0, command_1.issueCommand)("warning", (0, utils_1.toCommandProperties)(properties), message instanceof Error ? message.toString() : message);
     }
-    exports.warning = warning3;
+    exports.warning = warning4;
     function notice(message, properties = {}) {
       (0, command_1.issueCommand)("notice", (0, utils_1.toCommandProperties)(properties), message instanceof Error ? message.toString() : message);
     }
@@ -49849,7 +49849,7 @@ var require_fast_json_stable_stringify = __commonJS({
 require_source_map_support().install();
 
 // src/main.ts
-var import_core7 = __toESM(require_core(), 1);
+var import_core8 = __toESM(require_core(), 1);
 
 // src/access-level.ts
 var ACCESS_RANK = {
@@ -59785,6 +59785,119 @@ function createProvisionAuthorizer(config) {
   }
 }
 
+// src/provision-request.ts
+var import_core7 = __toESM(require_core(), 1);
+var SECRET_TYPES = ["actions", "codespaces", "dependabot"];
+function createProvisionRequestFactory(declarationRegistry, appRegistry, environmentResolver) {
+  return async (requester, name, secretDec) => {
+    const [tokenDec, isRegistered] = declarationRegistry.findDeclarationForRequester(
+      requester,
+      secretDec.token
+    );
+    if (!tokenDec) {
+      if (isRegistered) {
+        (0, import_core7.warning)(
+          `Token ${secretDec.token} cannot be used from ${repoRefToString(requester)}`
+        );
+      } else {
+        (0, import_core7.warning)(`Undefined token ${secretDec.token}`);
+      }
+      return void 0;
+    }
+    const typesByAccount = {};
+    for (const accountPattern in secretDec.github.accounts) {
+      const accounts = appRegistry.resolveProvisionerAccounts([
+        createNamePattern(accountPattern)
+      ]);
+      const patternTypes = secretDec.github.accounts[accountPattern];
+      for (const account of accounts) {
+        combineTypes(typesByAccount[account] ??= {}, patternTypes);
+      }
+    }
+    overrideTypes(
+      typesByAccount[requester.account] ??= {},
+      secretDec.github.account
+    );
+    const typesByRepo = {};
+    for (const repoPattern in secretDec.github.repos) {
+      const repos = appRegistry.resolveProvisionerRepos([createGitHubPattern(repoPattern)]).map(repoRefFromName);
+      const patternTypes = secretDec.github.repos[repoPattern];
+      for (const repo of repos) {
+        const repoName = repoRefToString(repo);
+        let types = typesByRepo[repoName];
+        const isFirstRepo = !types;
+        typesByRepo[repoName] = types ??= { environments: [] };
+        combineTypes(types, patternTypes);
+        const envs = patternTypes.environments.length > 0 ? await environmentResolver.resolveEnvironments(
+          repo,
+          patternTypes.environments.map(createNamePattern)
+        ) : [];
+        if (isFirstRepo) {
+          types.environments = envs;
+        } else {
+          types.environments = types.environments.filter(
+            (env) => envs.includes(env)
+          );
+        }
+      }
+    }
+    const selfRepoTypes = typesByRepo[repoRefToString(requester)] ??= {
+      environments: []
+    };
+    overrideTypes(selfRepoTypes, secretDec.github.repo);
+    if (secretDec.github.repo.environments.length > 0) {
+      const envs = await environmentResolver.resolveEnvironments(
+        requester,
+        secretDec.github.repo.environments.map(createNamePattern)
+      );
+      selfRepoTypes.environments.push(
+        ...envs.filter((env) => !selfRepoTypes.environments.includes(env))
+      );
+    }
+    const platform = "github";
+    const targets = [];
+    for (const account in typesByAccount) {
+      const types = typesByAccount[account];
+      for (const type2 of SECRET_TYPES) {
+        if (types[type2]) targets.push({ platform, type: type2, target: { account } });
+      }
+    }
+    for (const repoName in typesByRepo) {
+      const types = typesByRepo[repoName];
+      const repo = repoRefFromName(repoName);
+      for (const type2 of SECRET_TYPES) {
+        if (types[type2]) targets.push({ platform, type: type2, target: repo });
+      }
+      for (const env of types.environments) {
+        targets.push({
+          platform,
+          type: "environment",
+          target: createEnvRef(repo.account, repo.repo, env)
+        });
+      }
+    }
+    return {
+      requester,
+      name,
+      secretDec,
+      tokenDec,
+      to: targets
+    };
+  };
+  function combineTypes(base, additions) {
+    for (const type2 of SECRET_TYPES) {
+      if (base[type2] !== false && additions[type2] != null) {
+        base[type2] = additions[type2];
+      }
+    }
+  }
+  function overrideTypes(base, additions) {
+    for (const type2 of SECRET_TYPES) {
+      if (additions[type2] != null) base[type2] = additions[type2];
+    }
+  }
+}
+
 // src/register-token-declarations.ts
 function registerTokenDeclarations(declarationRegistry, requesters) {
   for (const [, { requester, config }] of requesters) {
@@ -60179,11 +60292,11 @@ function createTokenDeclarationRegistry() {
 
 // src/main.ts
 main().catch((error) => {
-  (0, import_core7.setFailed)(errorStack(error));
+  (0, import_core8.setFailed)(errorStack(error));
 });
 async function main() {
   const appsInput = readAppsInput();
-  const config = await (0, import_core7.group)("Reading provider configuration", async () => {
+  const config = await (0, import_core8.group)("Reading provider configuration", async () => {
     const config2 = {
       permissions: {
         rules: [
@@ -60247,114 +60360,34 @@ async function main() {
     appRegistry,
     appsInput
   );
+  const createTokenRequests = createTokenRequestFactory(appRegistry);
+  const createProvisionRequest = createProvisionRequestFactory(
+    declarationRegistry,
+    appRegistry,
+    environmentResolver
+  );
   const tokenAuthorizer = createTokenAuthorizer(config.permissions);
   const tokenAuthExplainer = createTextTokenAuthExplainer();
   const provisionAuthorizer = createProvisionAuthorizer(config.provision);
   const provisionAuthExplainer = createTextProvisionAuthExplainer();
-  await (0, import_core7.group)("Discovering apps", async () => {
+  await (0, import_core8.group)("Discovering apps", async () => {
     await discoverApps(octokitFactory, appRegistry, appsInput);
   });
-  const requesters = await (0, import_core7.group)("Discovering requesters", async () => {
+  const requesters = await (0, import_core8.group)("Discovering requesters", async () => {
     return discoverRequesters(octokitFactory, appRegistry, appsInput);
   });
   registerTokenDeclarations(declarationRegistry, requesters);
   const requests = [];
-  const platform = "github";
   for (const [, discovered] of requesters) {
     for (const name in discovered.config.provision.secrets) {
-      const secretDec = discovered.config.provision.secrets[name];
-      const [tokenDec, isRegistered] = declarationRegistry.findDeclarationForRequester(
+      const provisionReq = await createProvisionRequest(
         discovered.requester,
-        secretDec.token
-      );
-      if (!tokenDec) {
-        if (isRegistered) {
-          (0, import_core7.warning)(
-            `Token ${secretDec.token} cannot be used from ${repoRefToString(discovered.requester)}`
-          );
-        } else {
-          (0, import_core7.warning)(`Undefined token ${secretDec.token}`);
-        }
-        continue;
-      }
-      const targets = [];
-      for (const type2 of ["actions", "codespaces", "dependabot"]) {
-        if (secretDec.github.account[type2]) {
-          targets.push({
-            platform,
-            type: type2,
-            target: { account: discovered.requester.account }
-          });
-        }
-      }
-      for (const accountPattern in secretDec.github.accounts) {
-        const accounts = appRegistry.resolveProvisionerAccounts([
-          createNamePattern(accountPattern)
-        ]);
-        for (const type2 of ["actions", "codespaces", "dependabot"]) {
-          if (secretDec.github.accounts[accountPattern][type2]) {
-            for (const account of accounts) {
-              targets.push({ platform, type: type2, target: { account } });
-            }
-          }
-        }
-      }
-      for (const type2 of ["actions", "codespaces", "dependabot"]) {
-        if (secretDec.github.repo[type2]) {
-          targets.push({ platform, type: type2, target: discovered.requester });
-        }
-      }
-      if (secretDec.github.repo.environments.length > 0) {
-        const envs = await environmentResolver.resolveEnvironments(
-          discovered.requester,
-          secretDec.github.repo.environments.map(createNamePattern)
-        );
-        for (const environment of envs) {
-          targets.push({
-            platform,
-            type: "environment",
-            target: { ...discovered.requester, environment }
-          });
-        }
-      }
-      for (const repoPattern in secretDec.github.repos) {
-        const repos = appRegistry.resolveProvisionerRepos([
-          createNamePattern(repoPattern)
-        ]);
-        for (const repoName of repos) {
-          const repo = repoRefFromName(repoName);
-          for (const type2 of ["actions", "codespaces", "dependabot"]) {
-            if (secretDec.github.repos[repoPattern][type2]) {
-              targets.push({ platform, type: type2, target: repo });
-            }
-          }
-          if (secretDec.github.repos[repoPattern].environments.length > 0) {
-            const envs = await environmentResolver.resolveEnvironments(
-              repo,
-              secretDec.github.repos[repoPattern].environments.map(
-                createNamePattern
-              )
-            );
-            for (const environment of envs) {
-              targets.push({
-                platform,
-                type: "environment",
-                target: createEnvRef(repo.account, repo.repo, environment)
-              });
-            }
-          }
-        }
-      }
-      requests.push({
-        requester: discovered.requester,
-        secretDec,
-        tokenDec,
         name,
-        to: targets
-      });
+        discovered.config.provision.secrets[name]
+      );
+      if (provisionReq) requests.push(provisionReq);
     }
   }
-  const createTokenRequests = createTokenRequestFactory(appRegistry);
   const tokenAuthResults = /* @__PURE__ */ new Map();
   for (const provisionReq of requests) {
     const tokenReqs = createTokenRequests(provisionReq);
@@ -60364,18 +60397,18 @@ async function main() {
       if (!tokenAuthResult) {
         tokenAuthResult = tokenAuthorizer.authorizeToken(tokenReq);
         tokenAuthResults.set(tokenReq, tokenAuthResult);
-        (0, import_core7.info)(tokenAuthExplainer(tokenAuthResult));
+        (0, import_core8.info)(tokenAuthExplainer(tokenAuthResult));
       }
       relevantResults.push(tokenAuthResult);
     }
     if (!relevantResults.every(({ isAllowed }) => isAllowed)) {
-      (0, import_core7.warning)(
+      (0, import_core8.warning)(
         `Secret ${provisionReq.name} can't be provisioned to all targets`
       );
       continue;
     }
     const provisionResult = provisionAuthorizer.authorizeSecret(provisionReq);
-    (0, import_core7.info)(provisionAuthExplainer(provisionResult));
+    (0, import_core8.info)(provisionAuthExplainer(provisionResult));
   }
 }
 /*! Bundled license information:

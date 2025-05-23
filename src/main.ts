@@ -8,18 +8,12 @@ import { discoverApps } from "./discover-apps.js";
 import { discoverRequesters } from "./discover-requesters.js";
 import { createEnvironmentResolver } from "./environment-resolver.js";
 import { errorStack } from "./error.js";
-import {
-  createEnvRef,
-  repoRefFromName,
-  repoRefToString,
-} from "./github-reference.js";
-import { createNamePattern } from "./name-pattern.js";
 import { createOctokitFactory } from "./octokit.js";
 import { createTextProvisionAuthExplainer } from "./provision-auth-explainer/text.js";
 import { createProvisionAuthorizer } from "./provision-authorizer.js";
-import type {
-  ProvisionRequest,
-  ProvisionRequestTarget,
+import {
+  createProvisionRequestFactory,
+  type ProvisionRequest,
 } from "./provision-request.js";
 import { registerTokenDeclarations } from "./register-token-declarations.js";
 import { createTextTokenAuthExplainer } from "./token-auth-explainer/text.js";
@@ -106,6 +100,12 @@ async function main(): Promise<void> {
     appRegistry,
     appsInput,
   );
+  const createTokenRequests = createTokenRequestFactory(appRegistry);
+  const createProvisionRequest = createProvisionRequestFactory(
+    declarationRegistry,
+    appRegistry,
+    environmentResolver,
+  );
   const tokenAuthorizer = createTokenAuthorizer(config.permissions);
   const tokenAuthExplainer = createTextTokenAuthExplainer();
   const provisionAuthorizer = createProvisionAuthorizer(config.provision);
@@ -128,123 +128,19 @@ async function main(): Promise<void> {
   // TODO: provision secrets
 
   const requests: ProvisionRequest[] = [];
-  const platform = "github";
 
   for (const [, discovered] of requesters) {
     for (const name in discovered.config.provision.secrets) {
-      const secretDec = discovered.config.provision.secrets[name];
-
-      const [tokenDec, isRegistered] =
-        declarationRegistry.findDeclarationForRequester(
-          discovered.requester,
-          secretDec.token,
-        );
-
-      // TODO: roll into provision authorizer
-      if (!tokenDec) {
-        if (isRegistered) {
-          warning(
-            `Token ${secretDec.token} ` +
-              `cannot be used from ${repoRefToString(discovered.requester)}`,
-          );
-        } else {
-          warning(`Undefined token ${secretDec.token}`);
-        }
-
-        continue;
-      }
-
-      const targets: ProvisionRequestTarget[] = [];
-
-      for (const type of ["actions", "codespaces", "dependabot"] as const) {
-        if (secretDec.github.account[type]) {
-          targets.push({
-            platform,
-            type,
-            target: { account: discovered.requester.account },
-          });
-        }
-      }
-
-      for (const accountPattern in secretDec.github.accounts) {
-        const accounts = appRegistry.resolveProvisionerAccounts([
-          createNamePattern(accountPattern),
-        ]);
-
-        for (const type of ["actions", "codespaces", "dependabot"] as const) {
-          if (secretDec.github.accounts[accountPattern][type]) {
-            for (const account of accounts) {
-              targets.push({ platform, type, target: { account } });
-            }
-          }
-        }
-      }
-
-      for (const type of ["actions", "codespaces", "dependabot"] as const) {
-        if (secretDec.github.repo[type]) {
-          targets.push({ platform, type, target: discovered.requester });
-        }
-      }
-
-      if (secretDec.github.repo.environments.length > 0) {
-        const envs = await environmentResolver.resolveEnvironments(
-          discovered.requester,
-          secretDec.github.repo.environments.map(createNamePattern),
-        );
-
-        for (const environment of envs) {
-          targets.push({
-            platform,
-            type: "environment",
-            target: { ...discovered.requester, environment },
-          });
-        }
-      }
-
-      for (const repoPattern in secretDec.github.repos) {
-        const repos = appRegistry.resolveProvisionerRepos([
-          createNamePattern(repoPattern),
-        ]);
-
-        for (const repoName of repos) {
-          const repo = repoRefFromName(repoName);
-
-          for (const type of ["actions", "codespaces", "dependabot"] as const) {
-            if (secretDec.github.repos[repoPattern][type]) {
-              targets.push({ platform, type, target: repo });
-            }
-          }
-
-          if (secretDec.github.repos[repoPattern].environments.length > 0) {
-            const envs = await environmentResolver.resolveEnvironments(
-              repo,
-              secretDec.github.repos[repoPattern].environments.map(
-                createNamePattern,
-              ),
-            );
-
-            for (const environment of envs) {
-              targets.push({
-                platform,
-                type: "environment",
-                target: createEnvRef(repo.account, repo.repo, environment),
-              });
-            }
-          }
-        }
-      }
-
-      requests.push({
-        requester: discovered.requester,
-        secretDec,
-        tokenDec,
+      const provisionReq = await createProvisionRequest(
+        discovered.requester,
         name,
-        to: targets,
-      });
+        discovered.config.provision.secrets[name],
+      );
+
+      if (provisionReq) requests.push(provisionReq);
     }
   }
 
-  const createTokenRequests = createTokenRequestFactory(appRegistry);
   const tokenAuthResults = new Map<TokenRequest, TokenAuthResult>();
 
   for (const provisionReq of requests) {
