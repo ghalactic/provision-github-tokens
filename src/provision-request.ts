@@ -162,11 +162,13 @@ export function createProvisionRequestFactory(
 
     // Self-repo environments add to any pattern-matched environments
     if (secretDec.github.repo.environments.length > 0) {
+      const envs = await environmentResolver.resolveEnvironments(
+        requester,
+        secretDec.github.repo.environments.map(createNamePattern),
+      );
+
       selfRepoTypes.environments.push(
-        ...(await environmentResolver.resolveEnvironments(
-          requester,
-          secretDec.github.repo.environments.map(createNamePattern),
-        )),
+        ...envs.filter((env) => !selfRepoTypes.environments.includes(env)),
       );
     }
 
