@@ -8,7 +8,10 @@ import {
   createEnvRef,
   type RepoReference,
 } from "../../../../src/github-reference.js";
-import { createProvisionRequestFactory } from "../../../../src/provision-request.js";
+import {
+  createProvisionRequestFactory,
+  type ProvisionRequestTarget,
+} from "../../../../src/provision-request.js";
 import { createTokenDeclarationRegistry } from "../../../../src/token-declaration-registry.js";
 import { normalizeTokenReference } from "../../../../src/token-reference.js";
 import {
@@ -74,7 +77,7 @@ it("supports self-repo environment targets", async () => {
       type: "environment",
       target: createEnvRef("account-a", "repo-a", "env-b"),
     },
-  ]);
+  ] satisfies ProvisionRequestTarget[]);
 });
 
 it("doesn't match the same environment twice for self-repos", async () => {
@@ -116,7 +119,7 @@ it("doesn't match the same environment twice for self-repos", async () => {
       type: "environment",
       target: createEnvRef("account-a", "repo-a", "env-b"),
     },
-  ]);
+  ] satisfies ProvisionRequestTarget[]);
 });
 
 it("supports pattern-matched repo environment targets", async () => {
@@ -199,7 +202,7 @@ it("supports pattern-matched repo environment targets", async () => {
       type: "environment",
       target: { account: "account-a", repo: "repo-a", environment: "env-b" },
     },
-  ]);
+  ] satisfies ProvisionRequestTarget[]);
 });
 
 it("doesn't match the same environment twice for pattern-matched repos", async () => {
@@ -273,7 +276,7 @@ it("doesn't match the same environment twice for pattern-matched repos", async (
       type: "environment",
       target: { account: "account-a", repo: "repo-a", environment: "env-b" },
     },
-  ]);
+  ] satisfies ProvisionRequestTarget[]);
 });
 
 it("doesn't enable an environment target for a repo unless all matching repo patterns include the environment", async () => {
@@ -352,7 +355,7 @@ it("doesn't enable an environment target for a repo unless all matching repo pat
       type: "environment",
       target: { account: "account-a", repo: "repo-a", environment: "env-c" },
     },
-  ]);
+  ] satisfies ProvisionRequestTarget[]);
 });
 
 it("combines self-repo environment targets with pattern-matched repo environment targets", async () => {
@@ -452,5 +455,5 @@ it("combines self-repo environment targets with pattern-matched repo environment
       type: "environment",
       target: { account: "account-a", repo: "repo-b", environment: "env-c" },
     },
-  ]);
+  ] satisfies ProvisionRequestTarget[]);
 });

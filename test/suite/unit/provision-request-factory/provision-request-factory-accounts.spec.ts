@@ -8,7 +8,10 @@ import {
   type AccountReference,
   type RepoReference,
 } from "../../../../src/github-reference.js";
-import { createProvisionRequestFactory } from "../../../../src/provision-request.js";
+import {
+  createProvisionRequestFactory,
+  type ProvisionRequestTarget,
+} from "../../../../src/provision-request.js";
 import { createTokenDeclarationRegistry } from "../../../../src/token-declaration-registry.js";
 import { normalizeTokenReference } from "../../../../src/token-reference.js";
 import {
@@ -51,7 +54,9 @@ it("supports self-account targets", async () => {
         }),
       )
     )?.to,
-  ).toStrictEqual([{ platform: "github", type: "actions", target: accountA }]);
+  ).toStrictEqual([
+    { platform: "github", type: "actions", target: accountA },
+  ] satisfies ProvisionRequestTarget[]);
 
   expect(
     (
@@ -66,7 +71,7 @@ it("supports self-account targets", async () => {
     )?.to,
   ).toStrictEqual([
     { platform: "github", type: "codespaces", target: accountA },
-  ]);
+  ] satisfies ProvisionRequestTarget[]);
 
   expect(
     (
@@ -81,7 +86,7 @@ it("supports self-account targets", async () => {
     )?.to,
   ).toStrictEqual([
     { platform: "github", type: "dependabot", target: accountA },
-  ]);
+  ] satisfies ProvisionRequestTarget[]);
 });
 
 it("supports pattern-matched account targets", async () => {
@@ -173,7 +178,7 @@ it("supports pattern-matched account targets", async () => {
   ).toStrictEqual([
     { platform: "github", type: "actions", target: { account: "account-a-1" } },
     { platform: "github", type: "actions", target: { account: "account-a-2" } },
-  ]);
+  ] satisfies ProvisionRequestTarget[]);
 
   expect(
     (
@@ -197,7 +202,7 @@ it("supports pattern-matched account targets", async () => {
       type: "codespaces",
       target: { account: "account-a-2" },
     },
-  ]);
+  ] satisfies ProvisionRequestTarget[]);
 
   expect(
     (
@@ -221,7 +226,7 @@ it("supports pattern-matched account targets", async () => {
       type: "dependabot",
       target: { account: "account-a-2" },
     },
-  ]);
+  ] satisfies ProvisionRequestTarget[]);
 });
 
 it("doesn't match the same account twice", async () => {
@@ -301,7 +306,7 @@ it("doesn't match the same account twice", async () => {
   ).toStrictEqual([
     { platform: "github", type: "actions", target: { account: "account-a" } },
     { platform: "github", type: "actions", target: { account: "account-b" } },
-  ]);
+  ] satisfies ProvisionRequestTarget[]);
 });
 
 it("doesn't enable a target for an account if any matching patterns disable the target", async () => {
@@ -381,7 +386,7 @@ it("doesn't enable a target for an account if any matching patterns disable the 
     )?.to,
   ).toStrictEqual([
     { platform: "github", type: "actions", target: { account: "account-a" } },
-  ]);
+  ] satisfies ProvisionRequestTarget[]);
 });
 
 it("allows self-account targets to override pattern-matched account targets", async () => {
@@ -466,5 +471,5 @@ it("allows self-account targets to override pattern-matched account targets", as
       target: { account: "account-a" },
     },
     { platform: "github", type: "actions", target: { account: "account-b" } },
-  ]);
+  ] satisfies ProvisionRequestTarget[]);
 });

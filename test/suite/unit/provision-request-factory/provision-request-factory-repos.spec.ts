@@ -8,7 +8,10 @@ import {
   type AccountReference,
   type RepoReference,
 } from "../../../../src/github-reference.js";
-import { createProvisionRequestFactory } from "../../../../src/provision-request.js";
+import {
+  createProvisionRequestFactory,
+  type ProvisionRequestTarget,
+} from "../../../../src/provision-request.js";
 import { createTokenDeclarationRegistry } from "../../../../src/token-declaration-registry.js";
 import { normalizeTokenReference } from "../../../../src/token-reference.js";
 import {
@@ -52,7 +55,9 @@ it("supports self-repo targets", async () => {
         }),
       )
     )?.to,
-  ).toStrictEqual([{ platform: "github", type: "actions", target: repoA }]);
+  ).toStrictEqual([
+    { platform: "github", type: "actions", target: repoA },
+  ] satisfies ProvisionRequestTarget[]);
 
   expect(
     (
@@ -65,7 +70,9 @@ it("supports self-repo targets", async () => {
         }),
       )
     )?.to,
-  ).toStrictEqual([{ platform: "github", type: "codespaces", target: repoA }]);
+  ).toStrictEqual([
+    { platform: "github", type: "codespaces", target: repoA },
+  ] satisfies ProvisionRequestTarget[]);
 
   expect(
     (
@@ -78,7 +85,9 @@ it("supports self-repo targets", async () => {
         }),
       )
     )?.to,
-  ).toStrictEqual([{ platform: "github", type: "dependabot", target: repoA }]);
+  ).toStrictEqual([
+    { platform: "github", type: "dependabot", target: repoA },
+  ] satisfies ProvisionRequestTarget[]);
 });
 
 it("supports pattern-matched repo targets", async () => {
@@ -147,7 +156,7 @@ it("supports pattern-matched repo targets", async () => {
       type: "actions",
       target: { account: "account-a", repo: "repo-a-2" },
     },
-  ]);
+  ] satisfies ProvisionRequestTarget[]);
 
   expect(
     (
@@ -171,7 +180,7 @@ it("supports pattern-matched repo targets", async () => {
       type: "codespaces",
       target: { account: "account-a", repo: "repo-a-2" },
     },
-  ]);
+  ] satisfies ProvisionRequestTarget[]);
 
   expect(
     (
@@ -195,7 +204,7 @@ it("supports pattern-matched repo targets", async () => {
       type: "dependabot",
       target: { account: "account-a", repo: "repo-a-2" },
     },
-  ]);
+  ] satisfies ProvisionRequestTarget[]);
 });
 
 it("doesn't match the same repo twice", async () => {
@@ -268,7 +277,7 @@ it("doesn't match the same repo twice", async () => {
       type: "actions",
       target: { account: "account-a", repo: "repo-b" },
     },
-  ]);
+  ] satisfies ProvisionRequestTarget[]);
 });
 
 it("doesn't enable a target for a repo if any matching patterns disable the target", async () => {
@@ -337,7 +346,7 @@ it("doesn't enable a target for a repo if any matching patterns disable the targ
       type: "actions",
       target: { account: "account-a", repo: "repo-a" },
     },
-  ]);
+  ] satisfies ProvisionRequestTarget[]);
 });
 
 it("allows self-repo targets to override pattern-matched repo targets", async () => {
@@ -415,5 +424,5 @@ it("allows self-repo targets to override pattern-matched repo targets", async ()
       type: "actions",
       target: { account: "account-a", repo: "repo-b" },
     },
-  ]);
+  ] satisfies ProvisionRequestTarget[]);
 });
