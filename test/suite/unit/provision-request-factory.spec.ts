@@ -66,7 +66,7 @@ it("creates provision requests from secret declarations", async () => {
   } satisfies ProvisionRequest);
 });
 
-it("supports same-account targets", async () => {
+it("supports self-account targets", async () => {
   const accountA: AccountReference = { account: "account-a" };
   const repoA: RepoReference = { account: "account-a", repo: "repo-a" };
 
@@ -126,7 +126,7 @@ it("supports same-account targets", async () => {
   ]);
 });
 
-it("supports account pattern targets", async () => {
+it("supports pattern-matched account targets", async () => {
   const repoA: RepoReference = { account: "account-a-1", repo: "repo-a" };
 
   const declarationRegistry = createTokenDeclarationRegistry();
@@ -346,9 +346,172 @@ it("doesn't match the same account twice", async () => {
   ]);
 });
 
-//TODO: Test least-privilege of patterns
+it("doesn't enable a target for an account if any matching patterns disable the target", async () => {
+  const repoA: RepoReference = { account: "account-a", repo: "repo-a" };
 
-it("supports same-repo targets", async () => {
+  const declarationRegistry = createTokenDeclarationRegistry();
+  const appRegistry = createAppRegistry();
+  const environmentResolver = createTestEnvironmentResolver();
+  const createProvisionRequest = createProvisionRequestFactory(
+    declarationRegistry,
+    appRegistry,
+    environmentResolver,
+  );
+
+  const tokenDecA = createTestTokenDec({ shared: true });
+  declarationRegistry.registerDeclaration(repoA, "token-a", tokenDecA);
+
+  const accountA = createTestInstallationAccount(
+    "Organization",
+    100,
+    "account-a",
+  );
+  const accountB = createTestInstallationAccount(
+    "Organization",
+    300,
+    "account-b",
+  );
+
+  const appA = createTestApp(110, "app-a", "App A");
+  const appRegA: AppRegistration = {
+    app: appA,
+    issuer: { enabled: false, roles: [] },
+    provisioner: { enabled: true },
+  };
+  appRegistry.registerApp(appRegA);
+
+  const appAInstallationA = createTestInstallation(
+    111,
+    appA,
+    accountA,
+    "selected",
+  );
+  const appAInstallationRegA: InstallationRegistration = {
+    installation: appAInstallationA,
+    repos: [],
+  };
+  appRegistry.registerInstallation(appAInstallationRegA);
+
+  const appAInstallationB = createTestInstallation(
+    112,
+    appA,
+    accountB,
+    "selected",
+  );
+  const appAInstallationRegB: InstallationRegistration = {
+    installation: appAInstallationB,
+    repos: [],
+  };
+  appRegistry.registerInstallation(appAInstallationRegB);
+
+  expect(
+    (
+      await createProvisionRequest(
+        repoA,
+        "SECRET_A",
+        createTestSecretDec({
+          token: normalizeTokenReference(repoA, "token-a"),
+          github: {
+            accounts: {
+              "account-b": { actions: false },
+              "*": { actions: true, codespaces: false },
+              "account-a": { codespaces: true },
+            },
+          },
+        }),
+      )
+    )?.to,
+  ).toStrictEqual([
+    { platform: "github", type: "actions", target: { account: "account-a" } },
+  ]);
+});
+
+it("allows self-account targets to override pattern-matched account targets", async () => {
+  const repoA: RepoReference = { account: "account-a", repo: "repo-a" };
+
+  const declarationRegistry = createTokenDeclarationRegistry();
+  const appRegistry = createAppRegistry();
+  const environmentResolver = createTestEnvironmentResolver();
+  const createProvisionRequest = createProvisionRequestFactory(
+    declarationRegistry,
+    appRegistry,
+    environmentResolver,
+  );
+
+  const tokenDecA = createTestTokenDec({ shared: true });
+  declarationRegistry.registerDeclaration(repoA, "token-a", tokenDecA);
+
+  const accountA = createTestInstallationAccount(
+    "Organization",
+    100,
+    "account-a",
+  );
+  const accountB = createTestInstallationAccount(
+    "Organization",
+    300,
+    "account-b",
+  );
+
+  const appA = createTestApp(110, "app-a", "App A");
+  const appRegA: AppRegistration = {
+    app: appA,
+    issuer: { enabled: false, roles: [] },
+    provisioner: { enabled: true },
+  };
+  appRegistry.registerApp(appRegA);
+
+  const appAInstallationA = createTestInstallation(
+    111,
+    appA,
+    accountA,
+    "selected",
+  );
+  const appAInstallationRegA: InstallationRegistration = {
+    installation: appAInstallationA,
+    repos: [],
+  };
+  appRegistry.registerInstallation(appAInstallationRegA);
+
+  const appAInstallationB = createTestInstallation(
+    112,
+    appA,
+    accountB,
+    "selected",
+  );
+  const appAInstallationRegB: InstallationRegistration = {
+    installation: appAInstallationB,
+    repos: [],
+  };
+  appRegistry.registerInstallation(appAInstallationRegB);
+
+  expect(
+    (
+      await createProvisionRequest(
+        repoA,
+        "SECRET_A",
+        createTestSecretDec({
+          token: normalizeTokenReference(repoA, "token-a"),
+          github: {
+            account: { codespaces: true },
+            accounts: {
+              "*": { actions: true, codespaces: false },
+            },
+          },
+        }),
+      )
+    )?.to,
+  ).toStrictEqual([
+    { platform: "github", type: "actions", target: { account: "account-a" } },
+    {
+      platform: "github",
+      type: "codespaces",
+      target: { account: "account-a" },
+    },
+    { platform: "github", type: "actions", target: { account: "account-b" } },
+  ]);
+});
+
+it("supports self-repo targets", async () => {
   const accountA: AccountReference = { account: "account-a" };
   const repoA: RepoReference = { account: "account-a", repo: "repo-a" };
 
@@ -404,7 +567,7 @@ it("supports same-repo targets", async () => {
   ).toStrictEqual([{ platform: "github", type: "dependabot", target: repoA }]);
 });
 
-it("supports same-repo environment targets", async () => {
+it("supports self-repo environment targets", async () => {
   const repoA: RepoReference = { account: "account-a", repo: "repo-a" };
 
   const declarationRegistry = createTokenDeclarationRegistry();
@@ -458,7 +621,10 @@ it("supports same-repo environment targets", async () => {
   // TODO: Test pattern overlap
 });
 
-it("supports repo pattern targets", async () => {
+// TODO: Test least-privilege of env patterns
+it.todo("doesn't match the same environment twice for self-repos");
+
+it("supports pattern-matched repo targets", async () => {
   const repoARef: RepoReference = { account: "account-a", repo: "repo-a" };
 
   const declarationRegistry = createTokenDeclarationRegistry();
@@ -577,7 +743,14 @@ it("supports repo pattern targets", async () => {
   // TODO: Test pattern overlap
 });
 
-it("supports repo pattern environment targets", async () => {
+// TODO: Test least-privilege of repo patterns
+it.todo("doesn't match the same repo twice");
+it.todo(
+  "doesn't enable a target for a repo if any matching patterns disable the target",
+);
+it.todo("allows self-repo targets to override pattern-matched repo targets");
+
+it("supports pattern-matched repo environment targets", async () => {
   const repoARef: RepoReference = { account: "account-a", repo: "repo-a" };
 
   const declarationRegistry = createTokenDeclarationRegistry();
@@ -662,7 +835,11 @@ it("supports repo pattern environment targets", async () => {
   // TODO: Test pattern overlap
 });
 
+// TODO: Test least-privilege of env patterns
+it.todo("doesn't match the same environment twice for pattern-matched repos");
+
 // TODO: Test all targets together
+it.todo("supports provisioning to multiple targets");
 
 it("returns undefined for unshared token declarations", async () => {
   const repoA: RepoReference = { account: "account-a", repo: "repo-a" };

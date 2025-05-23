@@ -104,23 +104,15 @@ export function createProvisionRequestFactory(
       const patternTypes = secretDec.github.accounts[accountPattern];
 
       for (const account of accounts) {
-        const types = (typesByAccount[account] ??= {});
-
-        for (const type of SECRET_TYPES) {
-          // A disabled type takes precedence over all others except
-          // same-account types
-          if (types[type] !== false) types[type] = patternTypes[type];
-        }
+        combineTypes((typesByAccount[account] ??= {}), patternTypes);
       }
     }
 
-    // Same-account types take precedence over all others
-    const sameAccountTypes = (typesByAccount[requester.account] ??= {});
-
-    for (const type of SECRET_TYPES) {
-      sameAccountTypes[type] =
-        secretDec.github.account[type] ?? sameAccountTypes[type];
-    }
+    // Self-account types take precedence over pattern-matched types
+    overrideTypes(
+      (typesByAccount[requester.account] ??= {}),
+      secretDec.github.account,
+    );
 
     const typesByRepo: Record<string, SecretDeclarationGitHubRepoSecretTypes> =
       {};
@@ -138,11 +130,7 @@ export function createProvisionRequestFactory(
         const isFirstRepo = !types;
         typesByRepo[repoName] = types ??= { environments: [] };
 
-        for (const type of SECRET_TYPES) {
-          // A disabled type takes precedence over all others except
-          // same-repo types
-          if (types[type] !== false) types[type] = patternTypes[type];
-        }
+        combineTypes(types, patternTypes);
 
         const envs =
           patternTypes.environments.length > 0
@@ -165,18 +153,16 @@ export function createProvisionRequestFactory(
       }
     }
 
-    const sameRepoTypes = (typesByRepo[repoRefToString(requester)] ??= {
+    const selfRepoTypes = (typesByRepo[repoRefToString(requester)] ??= {
       environments: [],
     });
 
-    // Same-repo types take precedence over all others
-    for (const type of SECRET_TYPES) {
-      sameRepoTypes[type] = secretDec.github.repo[type] ?? sameRepoTypes[type];
-    }
+    // Self-repo types take precedence over pattern-matched types
+    overrideTypes(selfRepoTypes, secretDec.github.repo);
 
-    // Same-repo environments add to any specified via patterns
+    // Self-repo environments add to any pattern-matched environments
     if (secretDec.github.repo.environments.length > 0) {
-      sameRepoTypes.environments.push(
+      selfRepoTypes.environments.push(
         ...(await environmentResolver.resolveEnvironments(
           requester,
           secretDec.github.repo.environments.map(createNamePattern),
@@ -220,4 +206,24 @@ export function createProvisionRequestFactory(
       to: targets,
     };
   };
+
+  function combineTypes(
+    base: SecretDeclarationGitHubAccountSecretTypes,
+    additions: SecretDeclarationGitHubAccountSecretTypes,
+  ): void {
+    for (const type of SECRET_TYPES) {
+      if (base[type] !== false && additions[type] != null) {
+        base[type] = additions[type];
+      }
+    }
+  }
+
+  function overrideTypes(
+    base: SecretDeclarationGitHubAccountSecretTypes,
+    additions: SecretDeclarationGitHubAccountSecretTypes,
+  ): void {
+    for (const type of SECRET_TYPES) {
+      if (additions[type] != null) base[type] = additions[type];
+    }
+  }
 }
