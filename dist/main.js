@@ -60362,9 +60362,13 @@ async function main() {
     const tokenReqs = createTokenRequests(provisionReq);
     const relevantResults = [];
     for (const tokenReq of tokenReqs) {
-      const result = tokenAuthResults.get(tokenReq) ?? tokenAuthorizer.authorizeToken(tokenReq);
-      tokenAuthResults.set(tokenReq, result);
-      relevantResults.push(result);
+      let tokenAuthResult = tokenAuthResults.get(tokenReq);
+      if (!tokenAuthResult) {
+        tokenAuthResult = tokenAuthorizer.authorizeToken(tokenReq);
+        tokenAuthResults.set(tokenReq, tokenAuthResult);
+        (0, import_core7.info)(tokenAuthExplainer(tokenAuthResult));
+      }
+      relevantResults.push(tokenAuthResult);
     }
     if (!relevantResults.every(({ isAllowed }) => isAllowed)) {
       (0, import_core7.warning)(

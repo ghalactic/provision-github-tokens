@@ -253,11 +253,15 @@ async function main(): Promise<void> {
     const relevantResults: TokenAuthResult[] = [];
 
     for (const tokenReq of tokenReqs) {
-      const result =
-        tokenAuthResults.get(tokenReq) ??
-        tokenAuthorizer.authorizeToken(tokenReq);
-      tokenAuthResults.set(tokenReq, result);
-      relevantResults.push(result);
+      let tokenAuthResult = tokenAuthResults.get(tokenReq);
+
+      if (!tokenAuthResult) {
+        tokenAuthResult = tokenAuthorizer.authorizeToken(tokenReq);
+        tokenAuthResults.set(tokenReq, tokenAuthResult);
+        info(tokenAuthExplainer(tokenAuthResult));
+      }
+
+      relevantResults.push(tokenAuthResult);
     }
 
     // TODO: roll into provision authorizer
