@@ -44,6 +44,9 @@ export function createTokenRequestFactory(
 
   return (provisionReq) => {
     const { tokenDec } = provisionReq;
+
+    if (!tokenDec) return [];
+
     let repos: "all" | string[];
 
     if (tokenDec.repos === "all") {

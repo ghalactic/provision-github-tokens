@@ -40,6 +40,7 @@ it("allows GitHub Actions account secrets that should be allowed", () => {
       authorizer.authorizeSecret({
         requester: { account: "account-x", repo: "repo-x" },
         tokenDec: createTestTokenDec(),
+        tokenDecIsRegistered: true,
         secretDec: createTestSecretDec(),
         name: "SECRET_A",
         to: [
@@ -61,6 +62,7 @@ it("allows GitHub Actions account secrets that should be allowed", () => {
       authorizer.authorizeSecret({
         requester: { account: "account-y-1", repo: "repo-y-1" },
         tokenDec: createTestTokenDec(),
+        tokenDecIsRegistered: true,
         secretDec: createTestSecretDec(),
         name: "SECRET_A",
         to: [
@@ -106,6 +108,7 @@ it("allows GitHub Actions account secrets that should be allowed within the requ
       authorizer.authorizeSecret({
         requester: { account: "account-a", repo: "repo-a" },
         tokenDec: createTestTokenDec(),
+        tokenDecIsRegistered: true,
         secretDec: createTestSecretDec(),
         name: "SECRET_A",
         to: [
@@ -127,6 +130,7 @@ it("allows GitHub Actions account secrets that should be allowed within the requ
       authorizer.authorizeSecret({
         requester: { account: "account-b-1", repo: "repo-b-1" },
         tokenDec: createTestTokenDec(),
+        tokenDecIsRegistered: true,
         secretDec: createTestSecretDec(),
         name: "SECRET_A",
         to: [
@@ -176,6 +180,7 @@ it("allows GitHub Actions account secrets that should be allowed within the requ
       authorizer.authorizeSecret({
         requester: { account: "account-a", repo: "repo-a" },
         tokenDec: createTestTokenDec(),
+        tokenDecIsRegistered: true,
         secretDec: createTestSecretDec(),
         name: "SECRET_A",
         to: [
@@ -228,6 +233,7 @@ it("allows GitHub Actions repo secrets that should be allowed", () => {
       authorizer.authorizeSecret({
         requester: { account: "account-x", repo: "repo-x" },
         tokenDec: createTestTokenDec(),
+        tokenDecIsRegistered: true,
         secretDec: createTestSecretDec(),
         name: "SECRET_A",
         to: [
@@ -249,6 +255,7 @@ it("allows GitHub Actions repo secrets that should be allowed", () => {
       authorizer.authorizeSecret({
         requester: { account: "account-y-1", repo: "repo-y-1" },
         tokenDec: createTestTokenDec(),
+        tokenDecIsRegistered: true,
         secretDec: createTestSecretDec(),
         name: "SECRET_A",
         to: [
@@ -295,6 +302,7 @@ it("allows GitHub Actions repo secrets that should be allowed within the request
       authorizer.authorizeSecret({
         requester: { account: "account-a", repo: "repo-a" },
         tokenDec: createTestTokenDec(),
+        tokenDecIsRegistered: true,
         secretDec: createTestSecretDec(),
         name: "SECRET_A",
         to: [
@@ -316,6 +324,7 @@ it("allows GitHub Actions repo secrets that should be allowed within the request
       authorizer.authorizeSecret({
         requester: { account: "account-b-1", repo: "repo-b-1" },
         tokenDec: createTestTokenDec(),
+        tokenDecIsRegistered: true,
         secretDec: createTestSecretDec(),
         name: "SECRET_A",
         to: [
@@ -367,6 +376,7 @@ it("allows GitHub Actions repo secrets that should be allowed within the request
       authorizer.authorizeSecret({
         requester: { account: "account-a", repo: "repo-a" },
         tokenDec: createTestTokenDec(),
+        tokenDecIsRegistered: true,
         secretDec: createTestSecretDec(),
         name: "SECRET_A",
         to: [
@@ -388,6 +398,7 @@ it("allows GitHub Actions repo secrets that should be allowed within the request
       authorizer.authorizeSecret({
         requester: { account: "account-b-1", repo: "repo-b-1" },
         tokenDec: createTestTokenDec(),
+        tokenDecIsRegistered: true,
         secretDec: createTestSecretDec(),
         name: "SECRET_A",
         to: [
@@ -435,6 +446,7 @@ it("doesn't allow GitHub Actions account secrets for unauthorized requesters", (
       authorizer.authorizeSecret({
         requester: { account: "account-y", repo: "repo-y" },
         tokenDec: createTestTokenDec(),
+        tokenDecIsRegistered: true,
         secretDec: createTestSecretDec(),
         name: "SECRET_A",
         to: [
@@ -479,6 +491,7 @@ it("doesn't allow GitHub Actions account secrets within the requesting account f
       authorizer.authorizeSecret({
         requester: { account: "account-y", repo: "repo-y" },
         tokenDec: createTestTokenDec(),
+        tokenDecIsRegistered: true,
         secretDec: createTestSecretDec(),
         name: "SECRET_A",
         to: [
@@ -499,6 +512,7 @@ it("doesn't allow GitHub Actions account secrets within the requesting account f
       authorizer.authorizeSecret({
         requester: { account: "account-x", repo: "repo-y" },
         tokenDec: createTestTokenDec(),
+        tokenDecIsRegistered: true,
         secretDec: createTestSecretDec(),
         name: "SECRET_A",
         to: [
@@ -519,6 +533,7 @@ it("doesn't allow GitHub Actions account secrets within the requesting account f
       authorizer.authorizeSecret({
         requester: { account: "account-x", repo: "repo-x" },
         tokenDec: createTestTokenDec(),
+        tokenDecIsRegistered: true,
         secretDec: createTestSecretDec(),
         name: "SECRET_A",
         to: [
@@ -567,6 +582,7 @@ it("doesn't allow GitHub Actions account secrets within the requesting account w
       authorizer.authorizeSecret({
         requester: { account: "account-a", repo: "repo-a" },
         tokenDec: createTestTokenDec(),
+        tokenDecIsRegistered: true,
         secretDec: createTestSecretDec(),
         name: "SECRET_A",
         to: [
@@ -615,6 +631,7 @@ it("doesn't allow GitHub Actions repo secrets for unauthorized requesters", () =
       authorizer.authorizeSecret({
         requester: { account: "account-y", repo: "repo-y" },
         tokenDec: createTestTokenDec(),
+        tokenDecIsRegistered: true,
         secretDec: createTestSecretDec(),
         name: "SECRET_A",
         to: [
@@ -660,6 +677,7 @@ it("doesn't allow GitHub Actions repo secrets within the requesting repo for una
       authorizer.authorizeSecret({
         requester: { account: "account-y", repo: "repo-y" },
         tokenDec: createTestTokenDec(),
+        tokenDecIsRegistered: true,
         secretDec: createTestSecretDec(),
         name: "SECRET_A",
         to: [
@@ -680,6 +698,7 @@ it("doesn't allow GitHub Actions repo secrets within the requesting repo for una
       authorizer.authorizeSecret({
         requester: { account: "account-x", repo: "repo-y" },
         tokenDec: createTestTokenDec(),
+        tokenDecIsRegistered: true,
         secretDec: createTestSecretDec(),
         name: "SECRET_A",
         to: [
@@ -700,6 +719,7 @@ it("doesn't allow GitHub Actions repo secrets within the requesting repo for una
       authorizer.authorizeSecret({
         requester: { account: "account-x", repo: "repo-x" },
         tokenDec: createTestTokenDec(),
+        tokenDecIsRegistered: true,
         secretDec: createTestSecretDec(),
         name: "SECRET_A",
         to: [
@@ -750,6 +770,7 @@ it("doesn't allow GitHub Actions repo secrets within the requesting repo when de
       authorizer.authorizeSecret({
         requester: { account: "account-a", repo: "repo-a" },
         tokenDec: createTestTokenDec(),
+        tokenDecIsRegistered: true,
         secretDec: createTestSecretDec(),
         name: "SECRET_A",
         to: [

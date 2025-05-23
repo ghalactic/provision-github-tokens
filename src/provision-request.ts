@@ -1,4 +1,3 @@
-import { warning } from "@actions/core";
 import type { AppRegistry } from "./app-registry.js";
 import type { EnvironmentResolver } from "./environment-resolver.js";
 import { createGitHubPattern } from "./github-pattern.js";
@@ -23,7 +22,8 @@ const SECRET_TYPES = ["actions", "codespaces", "dependabot"] as const;
 
 export type ProvisionRequest = {
   requester: RepoReference;
-  tokenDec: TokenDeclaration;
+  tokenDec: TokenDeclaration | undefined;
+  tokenDecIsRegistered: boolean;
   secretDec: SecretDeclaration;
   name: string;
   to: ProvisionRequestTarget[];
@@ -59,12 +59,11 @@ export type GitHubEnvironmentProvisionRequestTarget = {
   target: EnvironmentReference;
 };
 
-// TODO: stop returning undefined
 export type ProvisionRequestFactory = (
   requester: RepoReference,
   name: string,
   secretDec: SecretDeclaration,
-) => Promise<ProvisionRequest | undefined>;
+) => Promise<ProvisionRequest>;
 
 export function createProvisionRequestFactory(
   declarationRegistry: TokenDeclarationRegistry,
@@ -72,25 +71,11 @@ export function createProvisionRequestFactory(
   environmentResolver: EnvironmentResolver,
 ): ProvisionRequestFactory {
   return async (requester, name, secretDec) => {
-    const [tokenDec, isRegistered] =
+    const [tokenDec, tokenDecIsRegistered] =
       declarationRegistry.findDeclarationForRequester(
         requester,
         secretDec.token,
       );
-
-    // TODO: roll into provision authorizer, stop returning undefined
-    if (!tokenDec) {
-      if (isRegistered) {
-        warning(
-          `Token ${secretDec.token} ` +
-            `cannot be used from ${repoRefToString(requester)}`,
-        );
-      } else {
-        warning(`Undefined token ${secretDec.token}`);
-      }
-
-      return undefined;
-    }
 
     const typesByAccount: Record<
       string,
@@ -205,6 +190,7 @@ export function createProvisionRequestFactory(
       name,
       secretDec,
       tokenDec,
+      tokenDecIsRegistered,
       to: targets,
     };
   };

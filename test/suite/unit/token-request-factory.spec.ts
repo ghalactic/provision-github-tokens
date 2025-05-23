@@ -25,6 +25,7 @@ it("creates token requests from provision requests with token declarations for a
     createTokenRequests({
       requester: { account: "account-x", repo: "repo-x" },
       tokenDec,
+      tokenDecIsRegistered: true,
       secretDec: createTestSecretDec(),
       name: "SECRET_A",
       to: [
@@ -87,6 +88,7 @@ it("creates token requests from provision requests with token declarations for s
     createTokenRequests({
       requester: { account: "account-x", repo: "repo-x" },
       tokenDec,
+      tokenDecIsRegistered: true,
       secretDec: createTestSecretDec(),
       name: "SECRET_A",
       to: [
@@ -114,6 +116,34 @@ it("creates token requests from provision requests with token declarations for s
       repos: ["repo-a-1", "repo-a-2", "repo-b"],
     },
   ] satisfies TokenRequest[]);
+});
+
+it("creates token requests from provision requests with no token declaration", () => {
+  const appRegistry = createAppRegistry();
+  const createTokenRequests = createTokenRequestFactory(appRegistry);
+  const tokenDec = createTestTokenDec({ repos: "all" });
+
+  expect(
+    createTokenRequests({
+      requester: { account: "account-x", repo: "repo-x" },
+      tokenDec: undefined,
+      tokenDecIsRegistered: false,
+      secretDec: createTestSecretDec(),
+      name: "SECRET_A",
+      to: [
+        {
+          platform: "github",
+          type: "actions",
+          target: { account: "account-y" },
+        },
+        {
+          platform: "github",
+          type: "codespaces",
+          target: { account: "account-z", repo: "repo-z" },
+        },
+      ],
+    }),
+  ).toStrictEqual([]);
 });
 
 it("creates normalized token requests", () => {
@@ -152,6 +182,7 @@ it("creates normalized token requests", () => {
     createTokenRequests({
       requester: { account: "account-x", repo: "repo-x" },
       tokenDec,
+      tokenDecIsRegistered: true,
       secretDec: createTestSecretDec(),
       name: "SECRET_A",
       to: [
@@ -189,6 +220,7 @@ it("de-duplicates equivalent token requests", () => {
   const [requestA, requestB] = createTokenRequests({
     requester: { account: "account-x", repo: "repo-x" },
     tokenDec,
+    tokenDecIsRegistered: true,
     secretDec: createTestSecretDec(),
     name: "SECRET_A",
     to: [
@@ -207,6 +239,7 @@ it("de-duplicates equivalent token requests", () => {
   const [requestC, requestD, requestE, requestF] = createTokenRequests({
     requester: { account: "account-x", repo: "repo-x" },
     tokenDec,
+    tokenDecIsRegistered: true,
     secretDec: createTestSecretDec(),
     name: "SECRET_A",
     to: [

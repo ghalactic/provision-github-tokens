@@ -53,6 +53,7 @@ it("creates provision requests from secret declarations", async () => {
     name: "SECRET_A",
     secretDec: secretDecA,
     tokenDec: tokenDecA,
+    tokenDecIsRegistered: true,
     to: [],
   } satisfies ProvisionRequest);
   expect(
@@ -62,6 +63,7 @@ it("creates provision requests from secret declarations", async () => {
     name: "SECRET_X",
     secretDec: secretDecA,
     tokenDec: tokenDecA,
+    tokenDecIsRegistered: true,
     to: [],
   } satisfies ProvisionRequest);
 });
@@ -257,7 +259,7 @@ it("supports provisioning to multiple targets", async () => {
   ] satisfies ProvisionRequestTarget[]);
 });
 
-it("returns undefined for unshared token declarations", async () => {
+it("supports unshared token declarations", async () => {
   const repoA: RepoReference = { account: "account-a", repo: "repo-a" };
   const repoX: RepoReference = { account: "account-x", repo: "repo-x" };
 
@@ -270,7 +272,7 @@ it("returns undefined for unshared token declarations", async () => {
     environmentResolver,
   );
 
-  const tokenDecA = createTestTokenDec({ shared: false });
+  const tokenDecA = createTestTokenDec();
   declarationRegistry.registerDeclaration(repoA, "token-a", tokenDecA);
 
   const secretDecA = createTestSecretDec({
@@ -278,12 +280,20 @@ it("returns undefined for unshared token declarations", async () => {
   });
 
   expect(
-    await createProvisionRequest(repoX, "SECRET_A", secretDecA),
-  ).toBeUndefined();
+    await createProvisionRequest(repoX, "SECRET_X", secretDecA),
+  ).toStrictEqual({
+    requester: repoX,
+    name: "SECRET_X",
+    secretDec: secretDecA,
+    tokenDec: undefined,
+    tokenDecIsRegistered: true,
+    to: [],
+  } satisfies ProvisionRequest);
 });
 
-it("returns undefined for unknown token declarations", async () => {
+it("supports undefined token declarations", async () => {
   const repoA: RepoReference = { account: "account-a", repo: "repo-a" };
+  const repoX: RepoReference = { account: "account-x", repo: "repo-x" };
 
   const declarationRegistry = createTokenDeclarationRegistry();
   const appRegistry = createAppRegistry();
@@ -299,6 +309,13 @@ it("returns undefined for unknown token declarations", async () => {
   });
 
   expect(
-    await createProvisionRequest(repoA, "SECRET_A", secretDecA),
-  ).toBeUndefined();
+    await createProvisionRequest(repoX, "SECRET_X", secretDecA),
+  ).toStrictEqual({
+    requester: repoX,
+    name: "SECRET_X",
+    secretDec: secretDecA,
+    tokenDec: undefined,
+    tokenDecIsRegistered: false,
+    to: [],
+  } satisfies ProvisionRequest);
 });

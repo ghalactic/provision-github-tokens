@@ -21828,10 +21828,10 @@ Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
       (0, command_1.issueCommand)("error", (0, utils_1.toCommandProperties)(properties), message instanceof Error ? message.toString() : message);
     }
     exports.error = error;
-    function warning4(message, properties = {}) {
+    function warning3(message, properties = {}) {
       (0, command_1.issueCommand)("warning", (0, utils_1.toCommandProperties)(properties), message instanceof Error ? message.toString() : message);
     }
-    exports.warning = warning4;
+    exports.warning = warning3;
     function notice(message, properties = {}) {
       (0, command_1.issueCommand)("notice", (0, utils_1.toCommandProperties)(properties), message instanceof Error ? message.toString() : message);
     }
@@ -49849,7 +49849,7 @@ var require_fast_json_stable_stringify = __commonJS({
 require_source_map_support().install();
 
 // src/main.ts
-var import_core8 = __toESM(require_core(), 1);
+var import_core7 = __toESM(require_core(), 1);
 
 // src/access-level.ts
 var ACCESS_RANK = {
@@ -59786,24 +59786,13 @@ function createProvisionAuthorizer(config) {
 }
 
 // src/provision-request.ts
-var import_core7 = __toESM(require_core(), 1);
 var SECRET_TYPES = ["actions", "codespaces", "dependabot"];
 function createProvisionRequestFactory(declarationRegistry, appRegistry, environmentResolver) {
   return async (requester, name, secretDec) => {
-    const [tokenDec, isRegistered] = declarationRegistry.findDeclarationForRequester(
+    const [tokenDec, tokenDecIsRegistered] = declarationRegistry.findDeclarationForRequester(
       requester,
       secretDec.token
     );
-    if (!tokenDec) {
-      if (isRegistered) {
-        (0, import_core7.warning)(
-          `Token ${secretDec.token} cannot be used from ${repoRefToString(requester)}`
-        );
-      } else {
-        (0, import_core7.warning)(`Undefined token ${secretDec.token}`);
-      }
-      return void 0;
-    }
     const typesByAccount = {};
     for (const accountPattern in secretDec.github.accounts) {
       const accounts = appRegistry.resolveProvisionerAccounts([
@@ -59881,6 +59870,7 @@ function createProvisionRequestFactory(declarationRegistry, appRegistry, environ
       name,
       secretDec,
       tokenDec,
+      tokenDecIsRegistered,
       to: targets
     };
   };
@@ -60043,6 +60033,7 @@ function createTokenRequestFactory(appRegistry) {
   const cache = {};
   return (provisionReq) => {
     const { tokenDec } = provisionReq;
+    if (!tokenDec) return [];
     let repos;
     if (tokenDec.repos === "all") {
       repos = "all";
@@ -60292,11 +60283,11 @@ function createTokenDeclarationRegistry() {
 
 // src/main.ts
 main().catch((error) => {
-  (0, import_core8.setFailed)(errorStack(error));
+  (0, import_core7.setFailed)(errorStack(error));
 });
 async function main() {
   const appsInput = readAppsInput();
-  const config = await (0, import_core8.group)("Reading provider configuration", async () => {
+  const config = await (0, import_core7.group)("Reading provider configuration", async () => {
     const config2 = {
       permissions: {
         rules: [
@@ -60370,10 +60361,10 @@ async function main() {
   const tokenAuthExplainer = createTextTokenAuthExplainer();
   const provisionAuthorizer = createProvisionAuthorizer(config.provision);
   const provisionAuthExplainer = createTextProvisionAuthExplainer();
-  await (0, import_core8.group)("Discovering apps", async () => {
+  await (0, import_core7.group)("Discovering apps", async () => {
     await discoverApps(octokitFactory, appRegistry, appsInput);
   });
-  const requesters = await (0, import_core8.group)("Discovering requesters", async () => {
+  const requesters = await (0, import_core7.group)("Discovering requesters", async () => {
     return discoverRequesters(octokitFactory, appRegistry, appsInput);
   });
   registerTokenDeclarations(declarationRegistry, requesters);
@@ -60390,6 +60381,15 @@ async function main() {
   }
   const tokenAuthResults = /* @__PURE__ */ new Map();
   for (const provisionReq of requests) {
+    if (!provisionReq.tokenDec) {
+      if (provisionReq.tokenDecIsRegistered) {
+        (0, import_core7.warning)(
+          `Token ${provisionReq.secretDec.token} cannot be used from ${repoRefToString(provisionReq.requester)}`
+        );
+      } else {
+        (0, import_core7.warning)(`Undefined token ${provisionReq.secretDec.token}`);
+      }
+    }
     const tokenReqs = createTokenRequests(provisionReq);
     const relevantResults = [];
     for (const tokenReq of tokenReqs) {
@@ -60397,18 +60397,18 @@ async function main() {
       if (!tokenAuthResult) {
         tokenAuthResult = tokenAuthorizer.authorizeToken(tokenReq);
         tokenAuthResults.set(tokenReq, tokenAuthResult);
-        (0, import_core8.info)(tokenAuthExplainer(tokenAuthResult));
+        (0, import_core7.info)(tokenAuthExplainer(tokenAuthResult));
       }
       relevantResults.push(tokenAuthResult);
     }
     if (!relevantResults.every(({ isAllowed }) => isAllowed)) {
-      (0, import_core8.warning)(
+      (0, import_core7.warning)(
         `Secret ${provisionReq.name} can't be provisioned to all targets`
       );
       continue;
     }
     const provisionResult = provisionAuthorizer.authorizeSecret(provisionReq);
-    (0, import_core8.info)(provisionAuthExplainer(provisionResult));
+    (0, import_core7.info)(provisionAuthExplainer(provisionResult));
   }
 }
 /*! Bundled license information:

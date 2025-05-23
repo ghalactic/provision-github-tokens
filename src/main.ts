@@ -8,6 +8,7 @@ import { discoverApps } from "./discover-apps.js";
 import { discoverRequesters } from "./discover-requesters.js";
 import { createEnvironmentResolver } from "./environment-resolver.js";
 import { errorStack } from "./error.js";
+import { repoRefToString } from "./github-reference.js";
 import { createOctokitFactory } from "./octokit.js";
 import { createTextProvisionAuthExplainer } from "./provision-auth-explainer/text.js";
 import { createProvisionAuthorizer } from "./provision-authorizer.js";
@@ -144,6 +145,18 @@ async function main(): Promise<void> {
   const tokenAuthResults = new Map<TokenRequest, TokenAuthResult>();
 
   for (const provisionReq of requests) {
+    // TODO: roll into provision authorizer
+    if (!provisionReq.tokenDec) {
+      if (provisionReq.tokenDecIsRegistered) {
+        warning(
+          `Token ${provisionReq.secretDec.token} ` +
+            `cannot be used from ${repoRefToString(provisionReq.requester)}`,
+        );
+      } else {
+        warning(`Undefined token ${provisionReq.secretDec.token}`);
+      }
+    }
+
     const tokenReqs = createTokenRequests(provisionReq);
     const relevantResults: TokenAuthResult[] = [];
 
