@@ -1,9 +1,10 @@
-import { debug } from "@actions/core";
 import stringify from "fast-json-stable-stringify";
 import type { AppRegistry } from "./app-registry.js";
 import { createGitHubPattern } from "./github-pattern.js";
 import {
+  createAccountRef,
   createRepoRef,
+  isRepoRef,
   repoRefFromName,
   repoRefToString,
   type AccountOrRepoReference,
@@ -21,12 +22,14 @@ export type TokenRequest = {
 };
 
 export function normalizeTokenRequest(request: TokenRequest): TokenRequest {
-  const { repos } = request;
+  const { consumer, tokenDec, repos } = request;
 
   return {
-    ...request,
+    consumer: isRepoRef(consumer)
+      ? createRepoRef(consumer.account, consumer.repo)
+      : createAccountRef(consumer.account),
     repos: repos === "all" ? "all" : repos.toSorted(),
-    tokenDec: normalizeTokenDeclaration(request.tokenDec),
+    tokenDec: normalizeTokenDeclaration(tokenDec),
   };
 }
 
@@ -62,16 +65,7 @@ export function createTokenRequestFactory(
     for (const { target: consumer } of provisionReq.to) {
       const tokenReq = normalizeTokenRequest({ consumer, tokenDec, repos });
       const cacheKey = stringify(tokenReq);
-      let cachedTokenReq = cache[cacheKey];
-
-      if (cachedTokenReq) {
-        debug(`Token request cache hit for ${cacheKey}`);
-      } else {
-        debug(`Token request cache miss for ${cacheKey}`);
-        cachedTokenReq = cache[cacheKey] = tokenReq;
-      }
-
-      tokenReqs.push(cachedTokenReq);
+      tokenReqs.push((cache[cacheKey] ??= tokenReq));
     }
 
     return tokenReqs;
