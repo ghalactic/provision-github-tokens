@@ -4,6 +4,7 @@ import {
   type AppRegistration,
   type InstallationRegistration,
 } from "../../../src/app-registry.js";
+import type { ProvisionRequestTarget } from "../../../src/provision-request.js";
 import {
   createTokenRequestFactory,
   type TokenRequest,
@@ -21,6 +22,17 @@ it("creates token requests from provision requests with token declarations for a
   const createTokenRequests = createTokenRequestFactory(appRegistry);
   const tokenDec = createTestTokenDec({ repos: "all" });
 
+  const targetA: ProvisionRequestTarget = {
+    platform: "github",
+    type: "actions",
+    target: { account: "account-y" },
+  };
+  const targetB: ProvisionRequestTarget = {
+    platform: "github",
+    type: "codespaces",
+    target: { account: "account-z", repo: "repo-z" },
+  };
+
   expect(
     createTokenRequests({
       requester: { account: "account-x", repo: "repo-x" },
@@ -28,31 +40,21 @@ it("creates token requests from provision requests with token declarations for a
       tokenDecIsRegistered: true,
       secretDec: createTestSecretDec(),
       name: "SECRET_A",
-      to: [
+      to: [targetA, targetB],
+    }),
+  ).toStrictEqual(
+    new Map<ProvisionRequestTarget, TokenRequest>([
+      [targetA, { consumer: { account: "account-y" }, tokenDec, repos: "all" }],
+      [
+        targetB,
         {
-          platform: "github",
-          type: "actions",
-          target: { account: "account-y" },
-        },
-        {
-          platform: "github",
-          type: "codespaces",
-          target: { account: "account-z", repo: "repo-z" },
+          consumer: { account: "account-z", repo: "repo-z" },
+          tokenDec,
+          repos: "all",
         },
       ],
-    }),
-  ).toStrictEqual([
-    {
-      consumer: { account: "account-y" },
-      tokenDec,
-      repos: "all",
-    },
-    {
-      consumer: { account: "account-z", repo: "repo-z" },
-      tokenDec,
-      repos: "all",
-    },
-  ] satisfies TokenRequest[]);
+    ]),
+  );
 });
 
 it("creates token requests from provision requests with token declarations for selected repos", () => {
@@ -84,6 +86,17 @@ it("creates token requests from provision requests with token declarations for s
   const createTokenRequests = createTokenRequestFactory(appRegistry);
   const tokenDec = createTestTokenDec({ repos: ["repo-a-*", "repo-b"] });
 
+  const targetA: ProvisionRequestTarget = {
+    platform: "github",
+    type: "actions",
+    target: { account: "account-y" },
+  };
+  const targetB: ProvisionRequestTarget = {
+    platform: "github",
+    type: "codespaces",
+    target: { account: "account-z", repo: "repo-z" },
+  };
+
   expect(
     createTokenRequests({
       requester: { account: "account-x", repo: "repo-x" },
@@ -91,34 +104,31 @@ it("creates token requests from provision requests with token declarations for s
       tokenDecIsRegistered: true,
       secretDec: createTestSecretDec(),
       name: "SECRET_A",
-      to: [
+      to: [targetA, targetB],
+    }),
+  ).toStrictEqual(
+    new Map<ProvisionRequestTarget, TokenRequest>([
+      [
+        targetA,
         {
-          platform: "github",
-          type: "actions",
-          target: { account: "account-y" },
-        },
-        {
-          platform: "github",
-          type: "codespaces",
-          target: { account: "account-z", repo: "repo-z" },
+          consumer: { account: "account-y" },
+          tokenDec,
+          repos: ["repo-a-1", "repo-a-2", "repo-b"],
         },
       ],
-    }),
-  ).toStrictEqual([
-    {
-      consumer: { account: "account-y" },
-      tokenDec,
-      repos: ["repo-a-1", "repo-a-2", "repo-b"],
-    },
-    {
-      consumer: { account: "account-z", repo: "repo-z" },
-      tokenDec,
-      repos: ["repo-a-1", "repo-a-2", "repo-b"],
-    },
-  ] satisfies TokenRequest[]);
+      [
+        targetB,
+        {
+          consumer: { account: "account-z", repo: "repo-z" },
+          tokenDec,
+          repos: ["repo-a-1", "repo-a-2", "repo-b"],
+        },
+      ],
+    ]),
+  );
 });
 
-it("creates token requests from provision requests with no token declaration", () => {
+it("creates empty token requests from provision requests with no token declaration", () => {
   const appRegistry = createAppRegistry();
   const createTokenRequests = createTokenRequestFactory(appRegistry);
   const tokenDec = createTestTokenDec({ repos: "all" });
@@ -143,7 +153,7 @@ it("creates token requests from provision requests with no token declaration", (
         },
       ],
     }),
-  ).toStrictEqual([]);
+  ).toStrictEqual(new Map());
 });
 
 it("creates normalized token requests", () => {
@@ -178,6 +188,17 @@ it("creates normalized token requests", () => {
     repos: ["repo-a-*", "repo-b"],
   });
 
+  const targetA: ProvisionRequestTarget = {
+    platform: "github",
+    type: "actions",
+    target: { account: "account-y" },
+  };
+  const targetB: ProvisionRequestTarget = {
+    platform: "github",
+    type: "codespaces",
+    target: { account: "account-z", repo: "repo-z" },
+  };
+
   expect(
     createTokenRequests({
       requester: { account: "account-x", repo: "repo-x" },
@@ -185,31 +206,28 @@ it("creates normalized token requests", () => {
       tokenDecIsRegistered: true,
       secretDec: createTestSecretDec(),
       name: "SECRET_A",
-      to: [
+      to: [targetA, targetB],
+    }),
+  ).toStrictEqual(
+    new Map<ProvisionRequestTarget, TokenRequest>([
+      [
+        targetA,
         {
-          platform: "github",
-          type: "actions",
-          target: { account: "account-y" },
-        },
-        {
-          platform: "github",
-          type: "codespaces",
-          target: { account: "account-z", repo: "repo-z" },
+          consumer: { account: "account-y" },
+          tokenDec: expectedTokenDec,
+          repos: ["repo-a-1", "repo-a-2", "repo-b"],
         },
       ],
-    }),
-  ).toStrictEqual([
-    {
-      consumer: { account: "account-y" },
-      tokenDec: expectedTokenDec,
-      repos: ["repo-a-1", "repo-a-2", "repo-b"],
-    },
-    {
-      consumer: { account: "account-z", repo: "repo-z" },
-      tokenDec: expectedTokenDec,
-      repos: ["repo-a-1", "repo-a-2", "repo-b"],
-    },
-  ] satisfies TokenRequest[]);
+      [
+        targetB,
+        {
+          consumer: { account: "account-z", repo: "repo-z" },
+          tokenDec: expectedTokenDec,
+          repos: ["repo-a-1", "repo-a-2", "repo-b"],
+        },
+      ],
+    ]),
+  );
 });
 
 it("de-duplicates equivalent token requests", () => {
@@ -217,58 +235,58 @@ it("de-duplicates equivalent token requests", () => {
   const createTokenRequests = createTokenRequestFactory(appRegistry);
   const tokenDec = createTestTokenDec({ repos: "all" });
 
-  const [requestA, requestB] = createTokenRequests({
+  const targetA: ProvisionRequestTarget = {
+    platform: "github",
+    type: "actions",
+    target: { account: "account-y" },
+  };
+  const targetB: ProvisionRequestTarget = {
+    platform: "github",
+    type: "codespaces",
+    target: { account: "account-z", repo: "repo-z" },
+  };
+
+  const targetC: ProvisionRequestTarget = {
+    platform: "github",
+    type: "actions",
+    target: { account: "account-z", repo: "repo-z" },
+  };
+  const targetD: ProvisionRequestTarget = {
+    platform: "github",
+    type: "environment",
+    target: { account: "account-z", repo: "repo-z", environment: "env-z" },
+  };
+  const targetE: ProvisionRequestTarget = {
+    platform: "github",
+    type: "codespaces",
+    target: { account: "account-y", repo: "repo-y" },
+  };
+  const targetF: ProvisionRequestTarget = {
+    platform: "github",
+    type: "dependabot",
+    target: { account: "account-y" },
+  };
+
+  const actualA = createTokenRequests({
     requester: { account: "account-x", repo: "repo-x" },
     tokenDec,
     tokenDecIsRegistered: true,
     secretDec: createTestSecretDec(),
     name: "SECRET_A",
-    to: [
-      {
-        platform: "github",
-        type: "actions",
-        target: { account: "account-y" },
-      },
-      {
-        platform: "github",
-        type: "codespaces",
-        target: { account: "account-z", repo: "repo-z" },
-      },
-    ],
+    to: [targetA, targetB],
   });
-  const [requestC, requestD, requestE, requestF] = createTokenRequests({
+  const actualB = createTokenRequests({
     requester: { account: "account-x", repo: "repo-x" },
     tokenDec,
     tokenDecIsRegistered: true,
     secretDec: createTestSecretDec(),
     name: "SECRET_A",
-    to: [
-      {
-        platform: "github",
-        type: "actions",
-        target: { account: "account-z", repo: "repo-z" },
-      },
-      {
-        platform: "github",
-        type: "environment",
-        target: { account: "account-z", repo: "repo-z", environment: "env-z" },
-      },
-      {
-        platform: "github",
-        type: "codespaces",
-        target: { account: "account-y", repo: "repo-y" },
-      },
-      {
-        platform: "github",
-        type: "dependabot",
-        target: { account: "account-y" },
-      },
-    ],
+    to: [targetC, targetD, targetE, targetF],
   });
 
-  expect(requestC).toBe(requestB);
-  expect(requestD).toBe(requestB);
-  expect(requestE).not.toBe(requestA);
-  expect(requestE).not.toBe(requestB);
-  expect(requestF).toBe(requestA);
+  expect(actualB.get(targetC)).toBe(actualA.get(targetB));
+  expect(actualB.get(targetD)).toBe(actualA.get(targetB));
+  expect(actualB.get(targetE)).not.toBe(actualA.get(targetA));
+  expect(actualB.get(targetE)).not.toBe(actualA.get(targetB));
+  expect(actualB.get(targetF)).toBe(actualA.get(targetA));
 });

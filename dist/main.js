@@ -60267,7 +60267,7 @@ function createTokenRequestFactory(appRegistry) {
   const cache = {};
   return (provisionReq) => {
     const { tokenDec } = provisionReq;
-    if (!tokenDec) return [];
+    if (!tokenDec) return /* @__PURE__ */ new Map();
     let repos;
     if (tokenDec.repos === "all") {
       repos = "all";
@@ -60279,11 +60279,15 @@ function createTokenRequestFactory(appRegistry) {
       });
       repos = appRegistry.resolveIssuerRepos(repoPatterns).map((repo) => repoRefFromName(repo).repo);
     }
-    const tokenReqs = [];
-    for (const { target: consumer } of provisionReq.to) {
-      const tokenReq = normalizeTokenRequest({ consumer, tokenDec, repos });
+    const tokenReqs = /* @__PURE__ */ new Map();
+    for (const target of provisionReq.to) {
+      const tokenReq = normalizeTokenRequest({
+        consumer: target.target,
+        tokenDec,
+        repos
+      });
       const cacheKey = (0, import_fast_json_stable_stringify.default)(tokenReq);
-      tokenReqs.push(cache[cacheKey] ??= tokenReq);
+      tokenReqs.set(target, cache[cacheKey] ??= tokenReq);
     }
     return tokenReqs;
   };
@@ -60394,7 +60398,7 @@ async function main() {
       }
       const tokenReqs = createTokenRequests(provisionReq);
       let isAllowed = true;
-      for (const tokenReq of tokenReqs) {
+      for (const [, tokenReq] of tokenReqs) {
         isAllowed &&= tokenAuthorizer.authorizeToken(tokenReq).isAllowed;
       }
       if (!isAllowed) {

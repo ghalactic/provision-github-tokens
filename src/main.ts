@@ -145,7 +145,7 @@ async function main(): Promise<void> {
       const tokenReqs = createTokenRequests(provisionReq);
       let isAllowed = true;
 
-      for (const tokenReq of tokenReqs) {
+      for (const [, tokenReq] of tokenReqs) {
         isAllowed &&= tokenAuthorizer.authorizeToken(tokenReq).isAllowed;
       }
 
