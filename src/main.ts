@@ -8,7 +8,6 @@ import { discoverApps } from "./discover-apps.js";
 import { discoverRequesters } from "./discover-requesters.js";
 import { createEnvironmentResolver } from "./environment-resolver.js";
 import { errorStack } from "./error.js";
-import { repoRefToString } from "./github-reference.js";
 import { createOctokitFactory } from "./octokit.js";
 import { createTextProvisionAuthExplainer } from "./provision-auth-explainer/text.js";
 import { createProvisionAuthorizer } from "./provision-authorizer.js";
@@ -115,7 +114,6 @@ async function main(): Promise<void> {
 
   registerTokenDeclarations(declarationRegistry, requesters);
 
-  // TODO: generate provision requests
   // TODO: authorize provisioning
   // TODO: output auth results
   // TODO: issue tokens
@@ -128,18 +126,6 @@ async function main(): Promise<void> {
         name,
         discovered.config.provision.secrets[name],
       );
-
-      // TODO: roll into provision authorizer
-      if (!provisionReq.tokenDec) {
-        if (provisionReq.tokenDecIsRegistered) {
-          warning(
-            `Token ${provisionReq.secretDec.token} ` +
-              `cannot be used from ${repoRefToString(provisionReq.requester)}`,
-          );
-        } else {
-          warning(`Undefined token ${provisionReq.secretDec.token}`);
-        }
-      }
 
       // TODO: roll into provision authorizer
       const tokenReqs = createTokenRequests(provisionReq);

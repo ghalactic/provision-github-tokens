@@ -60402,15 +60402,6 @@ async function main() {
         name,
         discovered.config.provision.secrets[name]
       );
-      if (!provisionReq.tokenDec) {
-        if (provisionReq.tokenDecIsRegistered) {
-          (0, import_core7.warning)(
-            `Token ${provisionReq.secretDec.token} cannot be used from ${repoRefToString(provisionReq.requester)}`
-          );
-        } else {
-          (0, import_core7.warning)(`Undefined token ${provisionReq.secretDec.token}`);
-        }
-      }
       const tokenReqs = createTokenRequests(provisionReq);
       let isAllowed = true;
       for (const [, tokenReq] of tokenReqs) {
