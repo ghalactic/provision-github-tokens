@@ -17,12 +17,38 @@ const DENIED_ICON = "❌";
 
 export function createTextProvisionAuthExplainer(): ProvisionAuthResultExplainer<string> {
   return (result) => {
-    const { request, results, isMissingTargets } = result;
+    return (
+      explainSummary(result) + explainTokenDec(result) + explainTargets(result)
+    );
+  };
 
+  function explainSummary({ request, isAllowed }: ProvisionAuthResult): string {
+    return (
+      `${renderIcon(isAllowed)} Repo ${repoRefToString(request.requester)} ` +
+      (isAllowed ? "was allowed" : "wasn't allowed") +
+      ` to provision secret ${request.name}:`
+    );
+  }
+
+  function explainTokenDec(result: ProvisionAuthResult): string {
+    const { request } = result;
+    const { secretDec, tokenDec, tokenDecIsRegistered } = request;
+
+    if (tokenDec) return `\n  ✅ Can use token declaration ${secretDec.token}`;
+
+    return (
+      `\n  ❌ Can't use token declaration ${secretDec.token} because ` +
+      (tokenDecIsRegistered ? "it isn't shared" : "it doesn't exist")
+    );
+  }
+
+  function explainTargets({
+    request,
+    results,
+    isMissingTargets,
+  }: ProvisionAuthResult): string {
     if (isMissingTargets) {
-      return (
-        explainSummary(result) + `\n  ${renderIcon(false)} No targets specified`
-      );
+      return `\n  ${renderIcon(false)} No targets specified`;
     }
 
     const entries: [
@@ -34,13 +60,13 @@ export function createTextProvisionAuthExplainer(): ProvisionAuthResultExplainer
     }
     entries.sort(([a], [b]) => compareProvisionRequestTarget(a, b));
 
-    let explainedTargets = "";
+    let explained = "";
     for (const [target, result] of entries) {
-      explainedTargets += explainTarget(target, result);
+      explained += explainTarget(target, result);
     }
 
-    return explainSummary(result) + explainedTargets;
-  };
+    return explained;
+  }
 
   function explainTarget(
     target: ProvisionRequestTarget,
@@ -50,14 +76,6 @@ export function createTextProvisionAuthExplainer(): ProvisionAuthResultExplainer
       `\n  ${renderIcon(isAllowed)} ` +
       `${isAllowed ? "Can" : "Can't"} ` +
       `provision to ${explainSubject(target)} ${explainBasedOnRules(rules)}`
-    );
-  }
-
-  function explainSummary({ request, isAllowed }: ProvisionAuthResult): string {
-    return (
-      `${renderIcon(isAllowed)} Repo ${repoRefToString(request.requester)} ` +
-      (isAllowed ? "was allowed" : "wasn't allowed") +
-      ` to provision secret ${request.name}:`
     );
   }
 

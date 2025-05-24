@@ -59558,9 +59558,26 @@ var ALLOWED_ICON = "\u2705";
 var DENIED_ICON = "\u274C";
 function createTextProvisionAuthExplainer() {
   return (result) => {
-    const { request: request2, results, isMissingTargets } = result;
+    return explainSummary(result) + explainTokenDec(result) + explainTargets(result);
+  };
+  function explainSummary({ request: request2, isAllowed }) {
+    return `${renderIcon(isAllowed)} Repo ${repoRefToString(request2.requester)} ` + (isAllowed ? "was allowed" : "wasn't allowed") + ` to provision secret ${request2.name}:`;
+  }
+  function explainTokenDec(result) {
+    const { request: request2 } = result;
+    const { secretDec, tokenDec, tokenDecIsRegistered } = request2;
+    if (tokenDec) return `
+  \u2705 Can use token declaration ${secretDec.token}`;
+    return `
+  \u274C Can't use token declaration ${secretDec.token} because ` + (tokenDecIsRegistered ? "it isn't shared" : "it doesn't exist");
+  }
+  function explainTargets({
+    request: request2,
+    results,
+    isMissingTargets
+  }) {
     if (isMissingTargets) {
-      return explainSummary(result) + `
+      return `
   ${renderIcon(false)} No targets specified`;
     }
     const entries = [];
@@ -59568,18 +59585,15 @@ function createTextProvisionAuthExplainer() {
       entries.push([request2.to[i], results[i]]);
     }
     entries.sort(([a], [b]) => compareProvisionRequestTarget(a, b));
-    let explainedTargets = "";
-    for (const [target, result2] of entries) {
-      explainedTargets += explainTarget(target, result2);
+    let explained = "";
+    for (const [target, result] of entries) {
+      explained += explainTarget(target, result);
     }
-    return explainSummary(result) + explainedTargets;
-  };
+    return explained;
+  }
   function explainTarget(target, { isAllowed, rules }) {
     return `
   ${renderIcon(isAllowed)} ${isAllowed ? "Can" : "Can't"} provision to ${explainSubject(target)} ${explainBasedOnRules(rules)}`;
-  }
-  function explainSummary({ request: request2, isAllowed }) {
-    return `${renderIcon(isAllowed)} Repo ${repoRefToString(request2.requester)} ` + (isAllowed ? "was allowed" : "wasn't allowed") + ` to provision secret ${request2.name}:`;
   }
   function explainSubject(target) {
     const type2 = ((r) => {
@@ -59714,9 +59728,10 @@ function createProvisionAuthorizer(config) {
           isAllowed: have === "allow"
         });
       }
+      const hasTokenDec = request2.tokenDec != null;
       const isMissingTargets = targetResults.length < 1;
       const isAllAllowed = targetResults.every((result2) => result2.isAllowed);
-      const isAllowed = !isMissingTargets && isAllAllowed;
+      const isAllowed = hasTokenDec && !isMissingTargets && isAllAllowed;
       const result = {
         request: request2,
         results: targetResults,

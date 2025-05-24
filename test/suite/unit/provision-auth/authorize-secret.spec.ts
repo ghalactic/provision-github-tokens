@@ -38,7 +38,7 @@ it("supports multiple secrets per rule", () => {
         requester: { account: "account-x", repo: "repo-x" },
         tokenDec: createTestTokenDec(),
         tokenDecIsRegistered: true,
-        secretDec: createTestSecretDec(),
+        secretDec: createTestSecretDec({ token: "account-y/repo-y.token-y" }),
         name: "SECRET_A",
         to: [
           {
@@ -51,6 +51,7 @@ it("supports multiple secrets per rule", () => {
     ),
   ).toMatchInlineSnapshot(`
     "✅ Repo account-x/repo-x was allowed to provision secret SECRET_A:
+      ✅ Can use token declaration account-y/repo-y.token-y
       ✅ Can provision to Actions in account-a based on 1 rule:
         ✅ Allowed by rule #1"
   `);
@@ -60,7 +61,7 @@ it("supports multiple secrets per rule", () => {
         requester: { account: "account-x", repo: "repo-x" },
         tokenDec: createTestTokenDec(),
         tokenDecIsRegistered: true,
-        secretDec: createTestSecretDec(),
+        secretDec: createTestSecretDec({ token: "account-y/repo-y.token-y" }),
         name: "SECRET_B",
         to: [
           {
@@ -73,6 +74,7 @@ it("supports multiple secrets per rule", () => {
     ),
   ).toMatchInlineSnapshot(`
     "✅ Repo account-x/repo-x was allowed to provision secret SECRET_B:
+      ✅ Can use token declaration account-y/repo-y.token-y
       ✅ Can provision to Actions in account-a based on 1 rule:
         ✅ Allowed by rule #1"
   `);
@@ -109,7 +111,7 @@ it("supports multiple targets in requests", () => {
         requester: { account: "account-x", repo: "repo-x" },
         tokenDec: createTestTokenDec(),
         tokenDecIsRegistered: true,
-        secretDec: createTestSecretDec(),
+        secretDec: createTestSecretDec({ token: "account-y/repo-y.token-y" }),
         name: "SECRET_A",
         to: [
           {
@@ -127,6 +129,7 @@ it("supports multiple targets in requests", () => {
     ),
   ).toMatchInlineSnapshot(`
     "✅ Repo account-x/repo-x was allowed to provision secret SECRET_A:
+      ✅ Can use token declaration account-y/repo-y.token-y
       ✅ Can provision to Actions in account-a based on 1 rule:
         ✅ Allowed by rule #1
       ✅ Can provision to Codespaces in account-a based on 1 rule:
@@ -164,7 +167,7 @@ it("supports wildcards in secret names", () => {
         requester: { account: "account-x", repo: "repo-x" },
         tokenDec: createTestTokenDec(),
         tokenDecIsRegistered: true,
-        secretDec: createTestSecretDec(),
+        secretDec: createTestSecretDec({ token: "account-y/repo-y.token-y" }),
         name: "SECRET_A",
         to: [
           {
@@ -177,6 +180,7 @@ it("supports wildcards in secret names", () => {
     ),
   ).toMatchInlineSnapshot(`
     "✅ Repo account-x/repo-x was allowed to provision secret SECRET_A:
+      ✅ Can use token declaration account-y/repo-y.token-y
       ✅ Can provision to Actions in account-a based on 1 rule:
         ✅ Allowed by rule #1"
   `);
@@ -186,7 +190,7 @@ it("supports wildcards in secret names", () => {
         requester: { account: "account-x", repo: "repo-x" },
         tokenDec: createTestTokenDec(),
         tokenDecIsRegistered: true,
-        secretDec: createTestSecretDec(),
+        secretDec: createTestSecretDec({ token: "account-y/repo-y.token-y" }),
         name: "SECRET_B",
         to: [
           {
@@ -199,6 +203,7 @@ it("supports wildcards in secret names", () => {
     ),
   ).toMatchInlineSnapshot(`
     "✅ Repo account-x/repo-x was allowed to provision secret SECRET_B:
+      ✅ Can use token declaration account-y/repo-y.token-y
       ✅ Can provision to Actions in account-a based on 1 rule:
         ✅ Allowed by rule #1"
   `);
@@ -235,7 +240,7 @@ it("supports rule descriptions", () => {
         requester: { account: "account-x", repo: "repo-x" },
         tokenDec: createTestTokenDec(),
         tokenDecIsRegistered: true,
-        secretDec: createTestSecretDec(),
+        secretDec: createTestSecretDec({ token: "account-y/repo-y.token-y" }),
         name: "SECRET_A",
         to: [
           {
@@ -248,6 +253,7 @@ it("supports rule descriptions", () => {
     ),
   ).toMatchInlineSnapshot(`
     "✅ Repo account-x/repo-x was allowed to provision secret SECRET_A:
+      ✅ Can use token declaration account-y/repo-y.token-y
       ✅ Can provision to Actions in account-a based on 1 rule:
         ✅ Allowed by rule #1: "<description>""
   `);
@@ -309,7 +315,7 @@ it("allows secrets when a later rule allows access that a previous rule denied",
         requester: { account: "account-x", repo: "repo-x" },
         tokenDec: createTestTokenDec(),
         tokenDecIsRegistered: true,
-        secretDec: createTestSecretDec(),
+        secretDec: createTestSecretDec({ token: "account-y/repo-y.token-y" }),
         name: "SECRET_A",
         to: [
           {
@@ -322,6 +328,7 @@ it("allows secrets when a later rule allows access that a previous rule denied",
     ),
   ).toMatchInlineSnapshot(`
     "✅ Repo account-x/repo-x was allowed to provision secret SECRET_A:
+      ✅ Can use token declaration account-y/repo-y.token-y
       ✅ Can provision to Actions in account-a based on 2 rules:
         ❌ Denied by rule #1
         ✅ Allowed by rule #2"
@@ -333,7 +340,7 @@ it("allows secrets when a later rule allows access that a previous rule denied",
         requester: { account: "account-x", repo: "repo-x" },
         tokenDec: createTestTokenDec(),
         tokenDecIsRegistered: true,
-        secretDec: createTestSecretDec(),
+        secretDec: createTestSecretDec({ token: "account-y/repo-y.token-y" }),
         name: "SECRET_A",
         to: [
           {
@@ -346,6 +353,7 @@ it("allows secrets when a later rule allows access that a previous rule denied",
     ),
   ).toMatchInlineSnapshot(`
     "✅ Repo account-x/repo-x was allowed to provision secret SECRET_A:
+      ✅ Can use token declaration account-y/repo-y.token-y
       ✅ Can provision to Actions in account-a/repo-a based on 2 rules:
         ❌ Denied by rule #1
         ✅ Allowed by rule #2"
@@ -408,7 +416,7 @@ it("doesn't allow secrets when a later rule denies access that a previous rule a
         requester: { account: "account-x", repo: "repo-x" },
         tokenDec: createTestTokenDec(),
         tokenDecIsRegistered: true,
-        secretDec: createTestSecretDec(),
+        secretDec: createTestSecretDec({ token: "account-y/repo-y.token-y" }),
         name: "SECRET_A",
         to: [
           {
@@ -421,6 +429,7 @@ it("doesn't allow secrets when a later rule denies access that a previous rule a
     ),
   ).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x wasn't allowed to provision secret SECRET_A:
+      ✅ Can use token declaration account-y/repo-y.token-y
       ❌ Can't provision to Actions in account-a based on 2 rules:
         ✅ Allowed by rule #1
         ❌ Denied by rule #2"
@@ -432,7 +441,7 @@ it("doesn't allow secrets when a later rule denies access that a previous rule a
         requester: { account: "account-x", repo: "repo-x" },
         tokenDec: createTestTokenDec(),
         tokenDecIsRegistered: true,
-        secretDec: createTestSecretDec(),
+        secretDec: createTestSecretDec({ token: "account-y/repo-y.token-y" }),
         name: "SECRET_A",
         to: [
           {
@@ -445,6 +454,7 @@ it("doesn't allow secrets when a later rule denies access that a previous rule a
     ),
   ).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x wasn't allowed to provision secret SECRET_A:
+      ✅ Can use token declaration account-y/repo-y.token-y
       ❌ Can't provision to Actions in account-a/repo-a based on 2 rules:
         ✅ Allowed by rule #1
         ❌ Denied by rule #2"
@@ -486,7 +496,7 @@ it("doesn't allow secrets when no rule matches the secret name", () => {
         requester: { account: "account-x", repo: "repo-x" },
         tokenDec: createTestTokenDec(),
         tokenDecIsRegistered: true,
-        secretDec: createTestSecretDec(),
+        secretDec: createTestSecretDec({ token: "account-y/repo-y.token-y" }),
         name: "SECRET_X",
         to: [
           {
@@ -499,6 +509,7 @@ it("doesn't allow secrets when no rule matches the secret name", () => {
     ),
   ).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x wasn't allowed to provision secret SECRET_X:
+      ✅ Can use token declaration account-y/repo-y.token-y
       ❌ Can't provision to Actions in account-a (no matching rules)"
   `);
 });
@@ -536,7 +547,7 @@ it("doesn't allow secrets when two account patterns match but one allows and one
         requester: { account: "account-x", repo: "repo-x" },
         tokenDec: createTestTokenDec(),
         tokenDecIsRegistered: true,
-        secretDec: createTestSecretDec(),
+        secretDec: createTestSecretDec({ token: "account-y/repo-y.token-y" }),
         name: "SECRET_A",
         to: [
           {
@@ -549,6 +560,7 @@ it("doesn't allow secrets when two account patterns match but one allows and one
     ),
   ).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x wasn't allowed to provision secret SECRET_A:
+      ✅ Can use token declaration account-y/repo-y.token-y
       ❌ Can't provision to Actions in account-a based on 1 rule:
         ❌ Denied by rule #1"
   `);
@@ -589,7 +601,7 @@ it("doesn't allow secrets when two repo patterns match but one allows and one de
         requester: { account: "account-x", repo: "repo-x" },
         tokenDec: createTestTokenDec(),
         tokenDecIsRegistered: true,
-        secretDec: createTestSecretDec(),
+        secretDec: createTestSecretDec({ token: "account-y/repo-y.token-y" }),
         name: "SECRET_A",
         to: [
           {
@@ -602,6 +614,7 @@ it("doesn't allow secrets when two repo patterns match but one allows and one de
     ),
   ).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x wasn't allowed to provision secret SECRET_A:
+      ✅ Can use token declaration account-y/repo-y.token-y
       ❌ Can't provision to Actions in account-a/repo-a based on 1 rule:
         ❌ Denied by rule #1"
   `);
@@ -639,7 +652,7 @@ it("doesn't allow secrets when some targets aren't allowed", () => {
         requester: { account: "account-x", repo: "repo-x" },
         tokenDec: createTestTokenDec(),
         tokenDecIsRegistered: true,
-        secretDec: createTestSecretDec(),
+        secretDec: createTestSecretDec({ token: "account-y/repo-y.token-y" }),
         name: "SECRET_A",
         to: [
           {
@@ -662,6 +675,7 @@ it("doesn't allow secrets when some targets aren't allowed", () => {
     ),
   ).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x wasn't allowed to provision secret SECRET_A:
+      ✅ Can use token declaration account-y/repo-y.token-y
       ✅ Can provision to Actions in account-a based on 1 rule:
         ✅ Allowed by rule #1
       ❌ Can't provision to Codespaces in account-a based on 1 rule:
@@ -697,13 +711,112 @@ it("doesn't allow secrets when no targets are specified", () => {
         requester: { account: "account-x", repo: "repo-x" },
         tokenDec: createTestTokenDec(),
         tokenDecIsRegistered: true,
-        secretDec: createTestSecretDec(),
+        secretDec: createTestSecretDec({ token: "account-y/repo-y.token-y" }),
         name: "SECRET_A",
         to: [],
       }),
     ),
   ).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x wasn't allowed to provision secret SECRET_A:
+      ✅ Can use token declaration account-y/repo-y.token-y
       ❌ No targets specified"
+  `);
+});
+
+it("doesn't allow secrets for unshared token declarations", () => {
+  const authorizer = createProvisionAuthorizer({
+    rules: {
+      secrets: [
+        {
+          secrets: ["SECRET_A"],
+          requesters: ["account-x/repo-x"],
+          to: {
+            github: {
+              account: {},
+              accounts: {
+                "account-a": {
+                  actions: "allow",
+                },
+              },
+              repo: { environments: {} },
+              repos: {},
+            },
+          },
+        },
+      ],
+    },
+  });
+
+  expect(
+    explain(
+      authorizer.authorizeSecret({
+        requester: { account: "account-x", repo: "repo-x" },
+        tokenDec: undefined,
+        tokenDecIsRegistered: true,
+        secretDec: createTestSecretDec({ token: "account-y/repo-y.token-y" }),
+        name: "SECRET_A",
+        to: [
+          {
+            platform: "github",
+            type: "actions",
+            target: { account: "account-a" },
+          },
+        ],
+      }),
+    ),
+  ).toMatchInlineSnapshot(`
+    "❌ Repo account-x/repo-x wasn't allowed to provision secret SECRET_A:
+      ❌ Can't use token declaration account-y/repo-y.token-y because it isn't shared
+      ✅ Can provision to Actions in account-a based on 1 rule:
+        ✅ Allowed by rule #1"
+  `);
+});
+
+it("doesn't allow secrets for undefined token declarations", () => {
+  const authorizer = createProvisionAuthorizer({
+    rules: {
+      secrets: [
+        {
+          secrets: ["SECRET_A"],
+          requesters: ["account-x/repo-x"],
+          to: {
+            github: {
+              account: {},
+              accounts: {
+                "account-a": {
+                  actions: "allow",
+                },
+              },
+              repo: { environments: {} },
+              repos: {},
+            },
+          },
+        },
+      ],
+    },
+  });
+
+  expect(
+    explain(
+      authorizer.authorizeSecret({
+        requester: { account: "account-x", repo: "repo-x" },
+        tokenDec: undefined,
+        tokenDecIsRegistered: false,
+        secretDec: createTestSecretDec({ token: "account-y/repo-y.token-y" }),
+        name: "SECRET_A",
+        to: [
+          {
+            platform: "github",
+            type: "actions",
+            target: { account: "account-a" },
+          },
+        ],
+      }),
+    ),
+  ).toMatchInlineSnapshot(`
+    "❌ Repo account-x/repo-x wasn't allowed to provision secret SECRET_A:
+      ❌ Can't use token declaration account-y/repo-y.token-y because it doesn't exist
+      ✅ Can provision to Actions in account-a based on 1 rule:
+        ✅ Allowed by rule #1"
   `);
 });

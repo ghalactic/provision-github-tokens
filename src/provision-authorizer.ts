@@ -145,9 +145,10 @@ export function createProvisionAuthorizer(
         });
       }
 
+      const hasTokenDec = request.tokenDec != null;
       const isMissingTargets = targetResults.length < 1;
       const isAllAllowed = targetResults.every((result) => result.isAllowed);
-      const isAllowed = !isMissingTargets && isAllAllowed;
+      const isAllowed = hasTokenDec && !isMissingTargets && isAllAllowed;
 
       const result: ProvisionAuthResult = {
         request,
