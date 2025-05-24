@@ -3092,7 +3092,7 @@ var require_util2 = __commonJS({
     var { InvalidArgumentError } = require_errors();
     var { Blob: Blob2 } = __require("buffer");
     var nodeUtil = __require("util");
-    var { stringify: stringify3 } = __require("querystring");
+    var { stringify: stringify2 } = __require("querystring");
     var [nodeMajor, nodeMinor] = process.versions.node.split(".").map((v) => Number(v));
     function nop() {
     }
@@ -3106,7 +3106,7 @@ var require_util2 = __commonJS({
       if (url.includes("?") || url.includes("#")) {
         throw new Error('Query params cannot be passed when url already contains "?" or "#".');
       }
-      const stringified = stringify3(queryParams);
+      const stringified = stringify2(queryParams);
       if (stringified) {
         url += "?" + stringified;
       }
@@ -17659,7 +17659,7 @@ var require_util7 = __commonJS({
         throw new Error("Invalid cookie max-age");
       }
     }
-    function stringify3(cookie) {
+    function stringify2(cookie) {
       if (cookie.name.length === 0) {
         return null;
       }
@@ -17724,7 +17724,7 @@ var require_util7 = __commonJS({
     }
     module.exports = {
       isCTLExcludingHtab,
-      stringify: stringify3,
+      stringify: stringify2,
       getHeadersList
     };
   }
@@ -17875,7 +17875,7 @@ var require_cookies = __commonJS({
   "node_modules/undici/lib/cookies/index.js"(exports, module) {
     "use strict";
     var { parseSetCookie } = require_parse();
-    var { stringify: stringify3, getHeadersList } = require_util7();
+    var { stringify: stringify2, getHeadersList } = require_util7();
     var { webidl } = require_webidl();
     var { Headers } = require_headers();
     function getCookies(headers) {
@@ -17917,9 +17917,9 @@ var require_cookies = __commonJS({
       webidl.argumentLengthCheck(arguments, 2, { header: "setCookie" });
       webidl.brandCheck(headers, Headers, { strict: false });
       cookie = webidl.converters.Cookie(cookie);
-      const str2 = stringify3(cookie);
+      const str2 = stringify2(cookie);
       if (str2) {
-        headers.append("Set-Cookie", stringify3(cookie));
+        headers.append("Set-Cookie", stringify2(cookie));
       }
     }
     webidl.converters.DeleteCookieAttributes = webidl.dictionaryConverter([
@@ -22029,10 +22029,10 @@ var require_code = __commonJS({
     function interpolate(x) {
       return typeof x == "number" || typeof x == "boolean" || x === null ? x : safeStringify(Array.isArray(x) ? x.join(",") : x);
     }
-    function stringify3(x) {
+    function stringify2(x) {
       return new _Code(safeStringify(x));
     }
-    exports.stringify = stringify3;
+    exports.stringify = stringify2;
     function safeStringify(x) {
       return JSON.stringify(x).replace(/\u2028/g, "\\u2028").replace(/\u2029/g, "\\u2029");
     }
@@ -29236,7 +29236,7 @@ var require_util10 = __commonJS({
     var net = __require("node:net");
     var { Blob: Blob2 } = __require("node:buffer");
     var nodeUtil = __require("node:util");
-    var { stringify: stringify3 } = __require("node:querystring");
+    var { stringify: stringify2 } = __require("node:querystring");
     var { EventEmitter: EE } = __require("node:events");
     var { InvalidArgumentError } = require_errors3();
     var { headerNameLowerCasedRecord } = require_constants5();
@@ -29296,7 +29296,7 @@ var require_util10 = __commonJS({
       if (url.includes("?") || url.includes("#")) {
         throw new Error('Query params cannot be passed when url already contains "?" or "#".');
       }
-      const stringified = stringify3(queryParams);
+      const stringified = stringify2(queryParams);
       if (stringified) {
         url += "?" + stringified;
       }
@@ -44108,7 +44108,7 @@ var require_util15 = __commonJS({
         throw new Error("Invalid cookie max-age");
       }
     }
-    function stringify3(cookie) {
+    function stringify2(cookie) {
       if (cookie.name.length === 0) {
         return null;
       }
@@ -44162,7 +44162,7 @@ var require_util15 = __commonJS({
       validateCookiePath,
       validateCookieValue,
       toIMFDate,
-      stringify: stringify3
+      stringify: stringify2
     };
   }
 });
@@ -44312,7 +44312,7 @@ var require_cookies2 = __commonJS({
   "node_modules/@octokit/action/node_modules/undici/lib/web/cookies/index.js"(exports, module) {
     "use strict";
     var { parseSetCookie } = require_parse2();
-    var { stringify: stringify3 } = require_util15();
+    var { stringify: stringify2 } = require_util15();
     var { webidl } = require_webidl2();
     var { Headers } = require_headers2();
     function getCookies(headers) {
@@ -44355,7 +44355,7 @@ var require_cookies2 = __commonJS({
       webidl.argumentLengthCheck(arguments, 2, "setCookie");
       webidl.brandCheck(headers, Headers, { strict: false });
       cookie = webidl.converters.Cookie(cookie);
-      const str2 = stringify3(cookie);
+      const str2 = stringify2(cookie);
       if (str2) {
         headers.append("Set-Cookie", str2);
       }
@@ -49807,7 +49807,7 @@ var require_fast_json_stable_stringify = __commonJS({
         };
       }(opts.cmp);
       var seen = [];
-      return function stringify3(node) {
+      return function stringify2(node) {
         if (node && node.toJSON && typeof node.toJSON === "function") {
           node = node.toJSON();
         }
@@ -49819,7 +49819,7 @@ var require_fast_json_stable_stringify = __commonJS({
           out = "[";
           for (i = 0; i < node.length; i++) {
             if (i) out += ",";
-            out += stringify3(node[i]) || "null";
+            out += stringify2(node[i]) || "null";
           }
           return out + "]";
         }
@@ -49833,7 +49833,7 @@ var require_fast_json_stable_stringify = __commonJS({
         out = "";
         for (i = 0; i < keys.length; i++) {
           var key = keys[i];
-          var value = stringify3(node[key]);
+          var value = stringify2(node[key]);
           if (!value) continue;
           if (out) out += ",";
           out += JSON.stringify(key) + ":" + value;
@@ -59632,9 +59632,10 @@ function createProvisionAuthorizer(config) {
   const [namePatterns, targetPatterns, requesterPatterns] = patternsForRules(
     config.rules.secrets
   );
+  const results = /* @__PURE__ */ new Map();
   return {
     authorizeSecret(request2) {
-      const results = [];
+      const targetResults = [];
       for (const entry of request2.to) {
         const isSelfAccount = request2.requester.account === entry.target.account;
         const isSelfRepo = isRepoRef(entry.target) && request2.requester.account === entry.target.account && request2.requester.repo === entry.target.repo;
@@ -59707,21 +59708,26 @@ function createProvisionAuthorizer(config) {
             have: ruleHave
           });
         }
-        results.push({
+        targetResults.push({
           rules: ruleResults,
           have,
           isAllowed: have === "allow"
         });
       }
-      const isMissingTargets = results.length < 1;
-      const isAllAllowed = results.every((result) => result.isAllowed);
+      const isMissingTargets = targetResults.length < 1;
+      const isAllAllowed = targetResults.every((result2) => result2.isAllowed);
       const isAllowed = !isMissingTargets && isAllAllowed;
-      return {
+      const result = {
         request: request2,
-        results,
+        results: targetResults,
         isMissingTargets,
         isAllowed
       };
+      results.set(request2, result);
+      return result;
+    },
+    listResults() {
+      return Array.from(results.values());
     }
   };
   function patternsForRules(rules) {
@@ -60009,71 +60015,29 @@ ${indent}${renderIcon(isAllowed)} ${entry}`;
 }
 
 // src/token-authorizer.ts
-var import_fast_json_stable_stringify2 = __toESM(require_fast_json_stable_stringify(), 1);
-
-// src/token-request.ts
-var import_fast_json_stable_stringify = __toESM(require_fast_json_stable_stringify(), 1);
-
-// src/token-declaration.ts
-function normalizeTokenDeclaration(declaration) {
-  const { repos } = declaration;
-  return { ...declaration, repos: repos === "all" ? "all" : repos.toSorted() };
-}
-
-// src/token-request.ts
-function normalizeTokenRequest(request2) {
-  const { consumer, tokenDec, repos } = request2;
-  return {
-    consumer: isRepoRef(consumer) ? createRepoRef(consumer.account, consumer.repo) : createAccountRef(consumer.account),
-    repos: repos === "all" ? "all" : repos.toSorted(),
-    tokenDec: normalizeTokenDeclaration(tokenDec)
-  };
-}
-function createTokenRequestFactory(appRegistry) {
-  const cache = {};
-  return (provisionReq) => {
-    const { tokenDec } = provisionReq;
-    if (!tokenDec) return [];
-    let repos;
-    if (tokenDec.repos === "all") {
-      repos = "all";
-    } else {
-      const repoPatterns = tokenDec.repos.map((repo) => {
-        return createGitHubPattern(
-          repoRefToString(createRepoRef(tokenDec.account, repo))
-        );
-      });
-      repos = appRegistry.resolveIssuerRepos(repoPatterns).map((repo) => repoRefFromName(repo).repo);
-    }
-    const tokenReqs = [];
-    for (const { target: consumer } of provisionReq.to) {
-      const tokenReq = normalizeTokenRequest({ consumer, tokenDec, repos });
-      const cacheKey = (0, import_fast_json_stable_stringify.default)(tokenReq);
-      tokenReqs.push(cache[cacheKey] ??= tokenReq);
-    }
-    return tokenReqs;
-  };
-}
-
-// src/token-authorizer.ts
 function createTokenAuthorizer(config) {
   const [resourcePatterns, consumerPatterns] = patternsForRules(config.rules);
-  const results = {};
+  const results = /* @__PURE__ */ new Map();
   return {
     authorizeToken(request2) {
-      const key = (0, import_fast_json_stable_stringify2.default)(normalizeTokenRequest(request2));
-      if (results[key]) return results[key];
+      const existing = results.get(request2);
+      if (existing) return existing;
       if (isEmptyPermissions(request2.tokenDec.permissions)) {
         throw new Error("No permissions requested");
       }
+      let result;
       if (request2.tokenDec.repos === "all") {
-        results[key] = authorizeAllRepos(request2);
+        result = authorizeAllRepos(request2);
       } else if (request2.tokenDec.repos.length < 1) {
-        results[key] = authorizeNoRepos(request2);
+        result = authorizeNoRepos(request2);
       } else {
-        results[key] = authorizeSelectedRepos(request2);
+        result = authorizeSelectedRepos(request2);
       }
-      return results[key];
+      results.set(request2, result);
+      return result;
+    },
+    listResults() {
+      return Array.from(results.values());
     }
   };
   function authorizeAllRepos(request2) {
@@ -60281,6 +60245,50 @@ function createTokenDeclarationRegistry() {
   };
 }
 
+// src/token-request.ts
+var import_fast_json_stable_stringify = __toESM(require_fast_json_stable_stringify(), 1);
+
+// src/token-declaration.ts
+function normalizeTokenDeclaration(declaration) {
+  const { repos } = declaration;
+  return { ...declaration, repos: repos === "all" ? "all" : repos.toSorted() };
+}
+
+// src/token-request.ts
+function normalizeTokenRequest(request2) {
+  const { consumer, tokenDec, repos } = request2;
+  return {
+    consumer: isRepoRef(consumer) ? createRepoRef(consumer.account, consumer.repo) : createAccountRef(consumer.account),
+    repos: repos === "all" ? "all" : repos.toSorted(),
+    tokenDec: normalizeTokenDeclaration(tokenDec)
+  };
+}
+function createTokenRequestFactory(appRegistry) {
+  const cache = {};
+  return (provisionReq) => {
+    const { tokenDec } = provisionReq;
+    if (!tokenDec) return [];
+    let repos;
+    if (tokenDec.repos === "all") {
+      repos = "all";
+    } else {
+      const repoPatterns = tokenDec.repos.map((repo) => {
+        return createGitHubPattern(
+          repoRefToString(createRepoRef(tokenDec.account, repo))
+        );
+      });
+      repos = appRegistry.resolveIssuerRepos(repoPatterns).map((repo) => repoRefFromName(repo).repo);
+    }
+    const tokenReqs = [];
+    for (const { target: consumer } of provisionReq.to) {
+      const tokenReq = normalizeTokenRequest({ consumer, tokenDec, repos });
+      const cacheKey = (0, import_fast_json_stable_stringify.default)(tokenReq);
+      tokenReqs.push(cache[cacheKey] ??= tokenReq);
+    }
+    return tokenReqs;
+  };
+}
+
 // src/main.ts
 main().catch((error) => {
   (0, import_core7.setFailed)(errorStack(error));
@@ -60368,7 +60376,6 @@ async function main() {
     return discoverRequesters(octokitFactory, appRegistry, appsInput);
   });
   registerTokenDeclarations(declarationRegistry, requesters);
-  const requests = [];
   for (const [, discovered] of requesters) {
     for (const name in discovered.config.provision.secrets) {
       const provisionReq = await createProvisionRequest(
@@ -60376,39 +60383,35 @@ async function main() {
         name,
         discovered.config.provision.secrets[name]
       );
-      if (provisionReq) requests.push(provisionReq);
+      if (!provisionReq) continue;
+      if (!provisionReq.tokenDec) {
+        if (provisionReq.tokenDecIsRegistered) {
+          (0, import_core7.warning)(
+            `Token ${provisionReq.secretDec.token} cannot be used from ${repoRefToString(provisionReq.requester)}`
+          );
+        } else {
+          (0, import_core7.warning)(`Undefined token ${provisionReq.secretDec.token}`);
+        }
+      }
+      const tokenReqs = createTokenRequests(provisionReq);
+      let isAllowed = true;
+      for (const tokenReq of tokenReqs) {
+        isAllowed &&= tokenAuthorizer.authorizeToken(tokenReq).isAllowed;
+      }
+      if (!isAllowed) {
+        (0, import_core7.warning)(
+          `Secret ${provisionReq.name} can't be provisioned to all targets`
+        );
+        continue;
+      }
+      provisionAuthorizer.authorizeSecret(provisionReq);
     }
   }
-  const tokenAuthResults = /* @__PURE__ */ new Map();
-  for (const provisionReq of requests) {
-    if (!provisionReq.tokenDec) {
-      if (provisionReq.tokenDecIsRegistered) {
-        (0, import_core7.warning)(
-          `Token ${provisionReq.secretDec.token} cannot be used from ${repoRefToString(provisionReq.requester)}`
-        );
-      } else {
-        (0, import_core7.warning)(`Undefined token ${provisionReq.secretDec.token}`);
-      }
-    }
-    const tokenReqs = createTokenRequests(provisionReq);
-    const relevantResults = [];
-    for (const tokenReq of tokenReqs) {
-      let tokenAuthResult = tokenAuthResults.get(tokenReq);
-      if (!tokenAuthResult) {
-        tokenAuthResult = tokenAuthorizer.authorizeToken(tokenReq);
-        tokenAuthResults.set(tokenReq, tokenAuthResult);
-        (0, import_core7.info)(tokenAuthExplainer(tokenAuthResult));
-      }
-      relevantResults.push(tokenAuthResult);
-    }
-    if (!relevantResults.every(({ isAllowed }) => isAllowed)) {
-      (0, import_core7.warning)(
-        `Secret ${provisionReq.name} can't be provisioned to all targets`
-      );
-      continue;
-    }
-    const provisionResult = provisionAuthorizer.authorizeSecret(provisionReq);
-    (0, import_core7.info)(provisionAuthExplainer(provisionResult));
+  for (const result of tokenAuthorizer.listResults()) {
+    (0, import_core7.info)(tokenAuthExplainer(result));
+  }
+  for (const result of provisionAuthorizer.listResults()) {
+    (0, import_core7.info)(provisionAuthExplainer(result));
   }
 }
 /*! Bundled license information:

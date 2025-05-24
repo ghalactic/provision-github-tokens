@@ -20,10 +20,8 @@ import type {
 } from "./type/provision-rule.js";
 
 export type ProvisionAuthorizer = {
-  /**
-   * Authorize provisioning of a secret.
-   */
   authorizeSecret: (request: ProvisionRequest) => ProvisionAuthResult;
+  listResults: () => ProvisionAuthResult[];
 };
 
 export function createProvisionAuthorizer(
@@ -32,10 +30,11 @@ export function createProvisionAuthorizer(
   const [namePatterns, targetPatterns, requesterPatterns] = patternsForRules(
     config.rules.secrets,
   );
+  const results = new Map<ProvisionRequest, ProvisionAuthResult>();
 
   return {
     authorizeSecret(request) {
-      const results: ProvisionAuthTargetResult[] = [];
+      const targetResults: ProvisionAuthTargetResult[] = [];
 
       for (const entry of request.to) {
         const isSelfAccount =
@@ -139,23 +138,31 @@ export function createProvisionAuthorizer(
           });
         }
 
-        results.push({
+        targetResults.push({
           rules: ruleResults,
           have,
           isAllowed: have === "allow",
         });
       }
 
-      const isMissingTargets = results.length < 1;
-      const isAllAllowed = results.every((result) => result.isAllowed);
+      const isMissingTargets = targetResults.length < 1;
+      const isAllAllowed = targetResults.every((result) => result.isAllowed);
       const isAllowed = !isMissingTargets && isAllAllowed;
 
-      return {
+      const result: ProvisionAuthResult = {
         request,
-        results,
+        results: targetResults,
         isMissingTargets,
         isAllowed,
       };
+
+      results.set(request, result);
+
+      return result;
+    },
+
+    listResults() {
+      return Array.from(results.values());
     },
   };
 

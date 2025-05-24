@@ -12,20 +12,13 @@ import { repoRefToString } from "./github-reference.js";
 import { createOctokitFactory } from "./octokit.js";
 import { createTextProvisionAuthExplainer } from "./provision-auth-explainer/text.js";
 import { createProvisionAuthorizer } from "./provision-authorizer.js";
-import {
-  createProvisionRequestFactory,
-  type ProvisionRequest,
-} from "./provision-request.js";
+import { createProvisionRequestFactory } from "./provision-request.js";
 import { registerTokenDeclarations } from "./register-token-declarations.js";
 import { createTextTokenAuthExplainer } from "./token-auth-explainer/text.js";
 import { createTokenAuthorizer } from "./token-authorizer.js";
 import { createTokenDeclarationRegistry } from "./token-declaration-registry.js";
-import {
-  createTokenRequestFactory,
-  type TokenRequest,
-} from "./token-request.js";
+import { createTokenRequestFactory } from "./token-request.js";
 import type { ProviderConfig } from "./type/provider-config.js";
-import type { TokenAuthResult } from "./type/token-auth-result.js";
 
 main().catch((error) => {
   setFailed(errorStack(error));
@@ -128,8 +121,6 @@ async function main(): Promise<void> {
   // TODO: issue tokens
   // TODO: provision secrets
 
-  const requests: ProvisionRequest[] = [];
-
   for (const [, discovered] of requesters) {
     for (const name in discovered.config.provision.secrets) {
       const provisionReq = await createProvisionRequest(
@@ -138,51 +129,45 @@ async function main(): Promise<void> {
         discovered.config.provision.secrets[name],
       );
 
-      if (provisionReq) requests.push(provisionReq);
+      if (!provisionReq) continue;
+
+      // TODO: roll into provision authorizer
+      if (!provisionReq.tokenDec) {
+        if (provisionReq.tokenDecIsRegistered) {
+          warning(
+            `Token ${provisionReq.secretDec.token} ` +
+              `cannot be used from ${repoRefToString(provisionReq.requester)}`,
+          );
+        } else {
+          warning(`Undefined token ${provisionReq.secretDec.token}`);
+        }
+      }
+
+      // TODO: roll into provision authorizer
+      const tokenReqs = createTokenRequests(provisionReq);
+      let isAllowed = true;
+
+      for (const tokenReq of tokenReqs) {
+        isAllowed &&= tokenAuthorizer.authorizeToken(tokenReq).isAllowed;
+      }
+
+      if (!isAllowed) {
+        warning(
+          `Secret ${provisionReq.name} can't be provisioned to all targets`,
+        );
+
+        continue;
+      }
+
+      provisionAuthorizer.authorizeSecret(provisionReq);
     }
   }
 
-  const tokenAuthResults = new Map<TokenRequest, TokenAuthResult>();
-
-  for (const provisionReq of requests) {
-    // TODO: roll into provision authorizer
-    if (!provisionReq.tokenDec) {
-      if (provisionReq.tokenDecIsRegistered) {
-        warning(
-          `Token ${provisionReq.secretDec.token} ` +
-            `cannot be used from ${repoRefToString(provisionReq.requester)}`,
-        );
-      } else {
-        warning(`Undefined token ${provisionReq.secretDec.token}`);
-      }
-    }
-
-    const tokenReqs = createTokenRequests(provisionReq);
-    const relevantResults: TokenAuthResult[] = [];
-
-    for (const tokenReq of tokenReqs) {
-      let tokenAuthResult = tokenAuthResults.get(tokenReq);
-
-      if (!tokenAuthResult) {
-        tokenAuthResult = tokenAuthorizer.authorizeToken(tokenReq);
-        tokenAuthResults.set(tokenReq, tokenAuthResult);
-        info(tokenAuthExplainer(tokenAuthResult));
-      }
-
-      relevantResults.push(tokenAuthResult);
-    }
-
-    // TODO: roll into provision authorizer
-    if (!relevantResults.every(({ isAllowed }) => isAllowed)) {
-      warning(
-        `Secret ${provisionReq.name} can't be provisioned to all targets`,
-      );
-
-      continue;
-    }
-
-    const provisionResult = provisionAuthorizer.authorizeSecret(provisionReq);
-    info(provisionAuthExplainer(provisionResult));
+  for (const result of tokenAuthorizer.listResults()) {
+    info(tokenAuthExplainer(result));
+  }
+  for (const result of provisionAuthorizer.listResults()) {
+    info(provisionAuthExplainer(result));
   }
 }
 /* v8 ignore stop */

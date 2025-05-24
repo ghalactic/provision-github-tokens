@@ -1,4 +1,3 @@
-import stringify from "fast-json-stable-stringify";
 import { isWriteAccess, maxAccess } from "./access-level.js";
 import { createGitHubPattern } from "./github-pattern.js";
 import {
@@ -10,7 +9,7 @@ import {
 import { createNamePattern } from "./name-pattern.js";
 import { anyPatternMatches, type Pattern } from "./pattern.js";
 import { isEmptyPermissions, isSufficientPermissions } from "./permissions.js";
-import { normalizeTokenRequest, type TokenRequest } from "./token-request.js";
+import { type TokenRequest } from "./token-request.js";
 import type {
   PermissionsRule,
   PermissionsRuleResourceCriteria,
@@ -24,37 +23,43 @@ import {
 } from "./type/token-auth-result.js";
 
 export type TokenAuthorizer = {
-  /**
-   * Authorize a token.
-   */
   authorizeToken: (request: TokenRequest) => TokenAuthResult;
+  listResults: () => TokenAuthResult[];
 };
 
 export function createTokenAuthorizer(
   config: ProviderPermissionsConfig,
 ): TokenAuthorizer {
   const [resourcePatterns, consumerPatterns] = patternsForRules(config.rules);
-  const results: Record<string, TokenAuthResult> = {};
+  const results = new Map<TokenRequest, TokenAuthResult>();
 
   return {
     authorizeToken(request) {
-      const key = stringify(normalizeTokenRequest(request));
+      const existing = results.get(request);
 
-      if (results[key]) return results[key];
+      if (existing) return existing;
 
       if (isEmptyPermissions(request.tokenDec.permissions)) {
         throw new Error("No permissions requested");
       }
 
+      let result: TokenAuthResult;
+
       if (request.tokenDec.repos === "all") {
-        results[key] = authorizeAllRepos(request);
+        result = authorizeAllRepos(request);
       } else if (request.tokenDec.repos.length < 1) {
-        results[key] = authorizeNoRepos(request);
+        result = authorizeNoRepos(request);
       } else {
-        results[key] = authorizeSelectedRepos(request);
+        result = authorizeSelectedRepos(request);
       }
 
-      return results[key];
+      results.set(request, result);
+
+      return result;
+    },
+
+    listResults() {
+      return Array.from(results.values());
     },
   };
 

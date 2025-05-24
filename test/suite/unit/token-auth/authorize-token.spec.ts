@@ -130,7 +130,7 @@ it("supports wildcard repo consumers", () => {
   `);
 });
 
-it("returns the same result for equivalent requests", () => {
+it("returns the same result for the same request", () => {
   const authorizer = createTokenAuthorizer({
     rules: [
       {
@@ -148,7 +148,7 @@ it("returns the same result for equivalent requests", () => {
     ],
   });
 
-  const requestA: TokenRequest = {
+  const request: TokenRequest = {
     consumer: { account: "account-x" },
     tokenDec: {
       shared: false,
@@ -159,24 +159,13 @@ it("returns the same result for equivalent requests", () => {
     },
     repos: ["repo-a", "repo-b"],
   };
-  const requestB: TokenRequest = {
-    consumer: { account: "account-x" },
-    tokenDec: {
-      shared: false,
-      as: "role-a",
-      account: "account-a",
-      repos: ["repo-b", "repo-a"],
-      permissions: { metadata: "read", contents: "write" },
-    },
-    repos: ["repo-b", "repo-a"],
-  };
 
-  expect(authorizer.authorizeToken(requestA)).toBe(
-    authorizer.authorizeToken(requestB),
+  expect(authorizer.authorizeToken(request)).toBe(
+    authorizer.authorizeToken(request),
   );
 });
 
-it("returns a different result for non-equivalent requests", () => {
+it("returns a different results for different requests", () => {
   const authorizer = createTokenAuthorizer({
     rules: [
       {
@@ -212,7 +201,7 @@ it("returns a different result for non-equivalent requests", () => {
       as: "role-a",
       account: "account-a",
       repos: "all",
-      permissions: { metadata: "read", contents: "read" },
+      permissions: { contents: "write", metadata: "read" },
     },
     repos: "all",
   };
