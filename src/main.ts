@@ -129,8 +129,6 @@ async function main(): Promise<void> {
         discovered.config.provision.secrets[name],
       );
 
-      if (!provisionReq) continue;
-
       // TODO: roll into provision authorizer
       if (!provisionReq.tokenDec) {
         if (provisionReq.tokenDecIsRegistered) {

@@ -60383,7 +60383,6 @@ async function main() {
         name,
         discovered.config.provision.secrets[name]
       );
-      if (!provisionReq) continue;
       if (!provisionReq.tokenDec) {
         if (provisionReq.tokenDecIsRegistered) {
           (0, import_core7.warning)(
