@@ -9,10 +9,6 @@ import {
   repoRefToString,
   type AccountOrRepoReference,
 } from "./github-reference.js";
-import type {
-  ProvisionRequest,
-  ProvisionRequestTarget,
-} from "./provision-request.js";
 import {
   normalizeTokenDeclaration,
   type TokenDeclaration,
@@ -37,19 +33,16 @@ export function normalizeTokenRequest(request: TokenRequest): TokenRequest {
 }
 
 export type TokenRequestFactory = (
-  provisionReq: ProvisionRequest,
-) => Map<ProvisionRequestTarget, TokenRequest>;
+  tokenDec: TokenDeclaration,
+  consumer: AccountOrRepoReference,
+) => TokenRequest;
 
 export function createTokenRequestFactory(
   appRegistry: AppRegistry,
 ): TokenRequestFactory {
   const cache: Record<string, TokenRequest> = {};
 
-  return (provisionReq) => {
-    const { tokenDec } = provisionReq;
-
-    if (!tokenDec) return new Map();
-
+  return (tokenDec, consumer) => {
     let repos: "all" | string[];
 
     if (tokenDec.repos === "all") {
@@ -66,18 +59,8 @@ export function createTokenRequestFactory(
         .map((repo) => repoRefFromName(repo).repo);
     }
 
-    const tokenReqs = new Map<ProvisionRequestTarget, TokenRequest>();
+    const tokenReq = normalizeTokenRequest({ consumer, tokenDec, repos });
 
-    for (const target of provisionReq.to) {
-      const tokenReq = normalizeTokenRequest({
-        consumer: target.target,
-        tokenDec,
-        repos,
-      });
-      const cacheKey = stringify(tokenReq);
-      tokenReqs.set(target, (cache[cacheKey] ??= tokenReq));
-    }
-
-    return tokenReqs;
+    return (cache[stringify(tokenReq)] ??= tokenReq);
   };
 }

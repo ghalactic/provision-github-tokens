@@ -18,6 +18,7 @@ import { createTokenAuthorizer } from "./token-authorizer.js";
 import { createTokenDeclarationRegistry } from "./token-declaration-registry.js";
 import { createTokenRequestFactory } from "./token-request.js";
 import type { ProviderConfig } from "./type/provider-config.js";
+import type { TokenAuthResult } from "./type/token-auth-result.js";
 
 main().catch((error) => {
   setFailed(errorStack(error));
@@ -93,12 +94,12 @@ async function main(): Promise<void> {
     appRegistry,
     appsInput,
   );
-  const createTokenRequests = createTokenRequestFactory(appRegistry);
   const createProvisionRequest = createProvisionRequestFactory(
     declarationRegistry,
     appRegistry,
     environmentResolver,
   );
+  const createTokenRequest = createTokenRequestFactory(appRegistry);
   const tokenAuthorizer = createTokenAuthorizer(config.permissions);
   const tokenAuthExplainer = createTextTokenAuthExplainer();
   const provisionAuthorizer = createProvisionAuthorizer(config.provision);
@@ -128,19 +129,22 @@ async function main(): Promise<void> {
       );
 
       // TODO: roll into provision authorizer
-      const tokenReqs = createTokenRequests(provisionReq);
-      let isAllowed = true;
+      if (provisionReq.tokenDec) {
+        const tokenResults: TokenAuthResult[] = [];
 
-      for (const [, tokenReq] of tokenReqs) {
-        isAllowed &&= tokenAuthorizer.authorizeToken(tokenReq).isAllowed;
-      }
+        for (const target of provisionReq.to) {
+          tokenResults.push(
+            tokenAuthorizer.authorizeToken(
+              createTokenRequest(provisionReq.tokenDec, target.target),
+            ),
+          );
+        }
 
-      if (!isAllowed) {
-        warning(
-          `Secret ${provisionReq.name} can't be provisioned to all targets`,
-        );
-
-        continue;
+        if (!tokenResults.every(({ isAllowed }) => isAllowed)) {
+          warning(
+            `Secret ${provisionReq.name} can't be provisioned to all targets`,
+          );
+        }
       }
 
       provisionAuthorizer.authorizeSecret(provisionReq);

@@ -60280,9 +60280,7 @@ function normalizeTokenRequest(request2) {
 }
 function createTokenRequestFactory(appRegistry) {
   const cache = {};
-  return (provisionReq) => {
-    const { tokenDec } = provisionReq;
-    if (!tokenDec) return /* @__PURE__ */ new Map();
+  return (tokenDec, consumer) => {
     let repos;
     if (tokenDec.repos === "all") {
       repos = "all";
@@ -60294,17 +60292,8 @@ function createTokenRequestFactory(appRegistry) {
       });
       repos = appRegistry.resolveIssuerRepos(repoPatterns).map((repo) => repoRefFromName(repo).repo);
     }
-    const tokenReqs = /* @__PURE__ */ new Map();
-    for (const target of provisionReq.to) {
-      const tokenReq = normalizeTokenRequest({
-        consumer: target.target,
-        tokenDec,
-        repos
-      });
-      const cacheKey = (0, import_fast_json_stable_stringify.default)(tokenReq);
-      tokenReqs.set(target, cache[cacheKey] ??= tokenReq);
-    }
-    return tokenReqs;
+    const tokenReq = normalizeTokenRequest({ consumer, tokenDec, repos });
+    return cache[(0, import_fast_json_stable_stringify.default)(tokenReq)] ??= tokenReq;
   };
 }
 
@@ -60378,12 +60367,12 @@ async function main() {
     appRegistry,
     appsInput
   );
-  const createTokenRequests = createTokenRequestFactory(appRegistry);
   const createProvisionRequest = createProvisionRequestFactory(
     declarationRegistry,
     appRegistry,
     environmentResolver
   );
+  const createTokenRequest = createTokenRequestFactory(appRegistry);
   const tokenAuthorizer = createTokenAuthorizer(config.permissions);
   const tokenAuthExplainer = createTextTokenAuthExplainer();
   const provisionAuthorizer = createProvisionAuthorizer(config.provision);
@@ -60402,16 +60391,20 @@ async function main() {
         name,
         discovered.config.provision.secrets[name]
       );
-      const tokenReqs = createTokenRequests(provisionReq);
-      let isAllowed = true;
-      for (const [, tokenReq] of tokenReqs) {
-        isAllowed &&= tokenAuthorizer.authorizeToken(tokenReq).isAllowed;
-      }
-      if (!isAllowed) {
-        (0, import_core7.warning)(
-          `Secret ${provisionReq.name} can't be provisioned to all targets`
-        );
-        continue;
+      if (provisionReq.tokenDec) {
+        const tokenResults = [];
+        for (const target of provisionReq.to) {
+          tokenResults.push(
+            tokenAuthorizer.authorizeToken(
+              createTokenRequest(provisionReq.tokenDec, target.target)
+            )
+          );
+        }
+        if (!tokenResults.every(({ isAllowed }) => isAllowed)) {
+          (0, import_core7.warning)(
+            `Secret ${provisionReq.name} can't be provisioned to all targets`
+          );
+        }
       }
       provisionAuthorizer.authorizeSecret(provisionReq);
     }
