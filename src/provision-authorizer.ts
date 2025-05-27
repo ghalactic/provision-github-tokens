@@ -24,6 +24,7 @@ import type { TokenAuthResult } from "./type/token-auth-result.js";
 
 export type ProvisionAuthorizer = {
   authorizeSecret: (request: ProvisionRequest) => ProvisionAuthResult;
+  listResults: () => ProvisionAuthResult[];
 };
 
 export function createProvisionAuthorizer(
@@ -34,6 +35,7 @@ export function createProvisionAuthorizer(
   const [namePatterns, targetPatterns, requesterPatterns] = patternsForRules(
     config.rules.secrets,
   );
+  const results = new Map<ProvisionRequest, ProvisionAuthResult>();
 
   return {
     authorizeSecret(request) {
@@ -171,12 +173,20 @@ export function createProvisionAuthorizer(
       const isAllAllowed = targetResults.every((result) => result.isAllowed);
       const isAllowed = hasTokenDec && !isMissingTargets && isAllAllowed;
 
-      return {
+      const result: ProvisionAuthResult = {
         request,
         results: targetResults,
         isMissingTargets,
         isAllowed,
       };
+
+      results.set(request, result);
+
+      return result;
+    },
+
+    listResults() {
+      return Array.from(results.values());
     },
   };
 
