@@ -1,11 +1,16 @@
-import type {
-  AccountOrRepoReference,
-  EnvironmentReference,
-  RepoReference,
+import {
+  type AccountOrRepoReference,
+  type EnvironmentReference,
+  type RepoReference,
 } from "../github-reference.js";
+import type { TokenDeclaration } from "../token-declaration.js";
+import type { SecretDeclaration } from "./secret-declaration.js";
 
 export type ProvisionRequest = {
   requester: RepoReference;
+  tokenDec: TokenDeclaration | undefined;
+  tokenDecIsRegistered: boolean;
+  secretDec: SecretDeclaration;
   name: string;
   to: ProvisionRequestTarget[];
 };

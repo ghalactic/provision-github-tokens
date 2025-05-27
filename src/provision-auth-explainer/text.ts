@@ -1,6 +1,7 @@
 import { compareProvisionRequestTarget } from "../compare-provision-request-target.js";
 import {
   accountOrRepoRefToString,
+  isRepoRef,
   repoRefToString,
 } from "../github-reference.js";
 import type {
@@ -11,18 +12,47 @@ import type {
 } from "../type/provision-auth-result.js";
 import type { ProvisionRequestTarget } from "../type/provision-request.js";
 import type { ProvisionSecretsRule } from "../type/provision-rule.js";
+import type { TokenAuthResult } from "../type/token-auth-result.js";
 
 const ALLOWED_ICON = "✅";
 const DENIED_ICON = "❌";
 
-export function createTextProvisionAuthExplainer(): ProvisionAuthResultExplainer<string> {
+export function createTextProvisionAuthExplainer(
+  tokenResults: TokenAuthResult[],
+): ProvisionAuthResultExplainer<string> {
   return (result) => {
-    const { request, results, isMissingTargets } = result;
+    return (
+      explainSummary(result) + explainTokenDec(result) + explainTargets(result)
+    );
+  };
 
+  function explainSummary({ request, isAllowed }: ProvisionAuthResult): string {
+    return (
+      `${renderIcon(isAllowed)} Repo ${repoRefToString(request.requester)} ` +
+      (isAllowed ? "was allowed" : "wasn't allowed") +
+      ` to provision secret ${request.name}:`
+    );
+  }
+
+  function explainTokenDec(result: ProvisionAuthResult): string {
+    const { request } = result;
+    const { secretDec, tokenDec, tokenDecIsRegistered } = request;
+
+    if (tokenDec) return `\n  ✅ Can use token declaration ${secretDec.token}`;
+
+    return (
+      `\n  ❌ Can't use token declaration ${secretDec.token} because ` +
+      (tokenDecIsRegistered ? "it isn't shared" : "it doesn't exist")
+    );
+  }
+
+  function explainTargets({
+    request,
+    results,
+    isMissingTargets,
+  }: ProvisionAuthResult): string {
     if (isMissingTargets) {
-      return (
-        explainSummary(result) + `\n  ${renderIcon(false)} No targets specified`
-      );
+      return `\n  ${renderIcon(false)} No targets specified`;
     }
 
     const entries: [
@@ -34,30 +64,61 @@ export function createTextProvisionAuthExplainer(): ProvisionAuthResultExplainer
     }
     entries.sort(([a], [b]) => compareProvisionRequestTarget(a, b));
 
-    let explainedTargets = "";
+    let explained = "";
     for (const [target, result] of entries) {
-      explainedTargets += explainTarget(target, result);
+      explained += explainTarget(target, result);
     }
 
-    return explainSummary(result) + explainedTargets;
-  };
+    return explained;
+  }
 
   function explainTarget(
     target: ProvisionRequestTarget,
-    { isAllowed, rules }: ProvisionAuthTargetResult,
+    result: ProvisionAuthTargetResult,
   ): string {
+    const { isAllowed } = result;
+
     return (
       `\n  ${renderIcon(isAllowed)} ` +
       `${isAllowed ? "Can" : "Can't"} ` +
-      `provision token to ${explainSubject(target)} ${explainBasedOnRules(rules)}`
+      `provision token to ${explainSubject(target)}:` +
+      explainTargetToken(result) +
+      explainTargetProvisioning(result)
     );
   }
 
-  function explainSummary({ request, isAllowed }: ProvisionAuthResult): string {
+  function explainTargetToken({
+    isTokenAllowed,
+    tokenAuthResult,
+  }: ProvisionAuthTargetResult): string {
+    if (!tokenAuthResult) {
+      return `\n    ❌ Token can't be authorized without a declaration`;
+    }
+
+    const name = accountOrRepoRefToString(tokenAuthResult.request.consumer);
+    const ref = `#${tokenResults.indexOf(tokenAuthResult) + 1}`;
+
+    if (isRepoRef(tokenAuthResult.request.consumer)) {
+      return (
+        `\n    ${renderIcon(isTokenAllowed)} Repo ${name} ` +
+        `was ${isTokenAllowed ? "allowed" : "denied"} access to token ${ref}`
+      );
+    }
+
     return (
-      `${renderIcon(isAllowed)} Repo ${repoRefToString(request.requester)} ` +
-      (isAllowed ? "was allowed" : "wasn't allowed") +
-      ` to provision secret ${request.name}:`
+      `\n    ${renderIcon(isTokenAllowed)} Account ${name} ` +
+      `was ${isTokenAllowed ? "allowed" : "denied"} access to token ${ref}`
+    );
+  }
+
+  function explainTargetProvisioning({
+    isProvisionAllowed,
+    rules,
+  }: ProvisionAuthTargetResult): string {
+    return (
+      `\n    ${renderIcon(isProvisionAllowed)} ` +
+      `${isProvisionAllowed ? "Can" : "Can't"} ` +
+      `provision secret ${explainBasedOnRules(rules)}`
     );
   }
 
@@ -110,7 +171,7 @@ export function createTextProvisionAuthExplainer(): ProvisionAuthResultExplainer
     const isAllowed = have === "allow";
 
     return (
-      `\n    ${renderIcon(isAllowed)} ` +
+      `\n      ${renderIcon(isAllowed)} ` +
       `${isAllowed ? "Allowed" : "Denied"} by rule ${renderRule(index, rule)}`
     );
   }

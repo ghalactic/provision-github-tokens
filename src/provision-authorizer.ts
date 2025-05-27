@@ -7,6 +7,8 @@ import {
 } from "./github-reference.js";
 import { createNamePattern } from "./name-pattern.js";
 import { anyPatternMatches, type Pattern } from "./pattern.js";
+import type { TokenAuthorizer } from "./token-authorizer.js";
+import type { TokenRequestFactory } from "./token-request.js";
 import type { ProviderProvisionConfig } from "./type/provider-config.js";
 import type {
   ProvisionAuthResult,
@@ -18,15 +20,15 @@ import type {
   ProviderConfigGitHubSecretTypes,
   ProvisionSecretsRule,
 } from "./type/provision-rule.js";
+import type { TokenAuthResult } from "./type/token-auth-result.js";
 
 export type ProvisionAuthorizer = {
-  /**
-   * Authorize provisioning of a secret.
-   */
   authorizeSecret: (request: ProvisionRequest) => ProvisionAuthResult;
 };
 
 export function createProvisionAuthorizer(
+  createTokenRequest: TokenRequestFactory,
+  tokenAuthorizer: TokenAuthorizer,
   config: ProviderProvisionConfig,
 ): ProvisionAuthorizer {
   const [namePatterns, targetPatterns, requesterPatterns] = patternsForRules(
@@ -139,16 +141,35 @@ export function createProvisionAuthorizer(
           });
         }
 
+        let tokenAuthResult: TokenAuthResult | undefined;
+        let isTokenAllowed: boolean;
+
+        if (request.tokenDec == null) {
+          tokenAuthResult = undefined;
+          isTokenAllowed = false;
+        } else {
+          tokenAuthResult = tokenAuthorizer.authorizeToken(
+            createTokenRequest(request.tokenDec, entry.target),
+          );
+          isTokenAllowed = tokenAuthResult.isAllowed;
+        }
+
+        const isProvisionAllowed = have === "allow";
+
         targetResults.push({
           rules: ruleResults,
           have,
-          isAllowed: have === "allow",
+          tokenAuthResult,
+          isTokenAllowed,
+          isProvisionAllowed,
+          isAllowed: isTokenAllowed && isProvisionAllowed,
         });
       }
 
+      const hasTokenDec = request.tokenDec != null;
       const isMissingTargets = targetResults.length < 1;
       const isAllAllowed = targetResults.every((result) => result.isAllowed);
-      const isAllowed = !isMissingTargets && isAllAllowed;
+      const isAllowed = hasTokenDec && !isMissingTargets && isAllAllowed;
 
       return {
         request,
