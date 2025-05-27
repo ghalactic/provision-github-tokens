@@ -8,15 +8,15 @@ export type SecretDeclaration = {
   };
 };
 
-type SecretDeclarationGitHubAccountSecretTypes = {
-  actions: boolean;
-  codespaces: boolean;
-  dependabot: boolean;
+export type SecretDeclarationGitHubAccountSecretTypes = {
+  actions?: boolean;
+  codespaces?: boolean;
+  dependabot?: boolean;
 };
 
-type SecretDeclarationGitHubRepoSecretTypes = {
-  actions: boolean;
-  codespaces: boolean;
-  dependabot: boolean;
+export type SecretDeclarationGitHubRepoSecretTypes = {
+  actions?: boolean;
+  codespaces?: boolean;
+  dependabot?: boolean;
   environments: string[];
 };

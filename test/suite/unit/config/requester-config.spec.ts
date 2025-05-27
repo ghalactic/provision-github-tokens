@@ -169,16 +169,10 @@ it("parses comprehensive requester config", async () => {
           github: {
             repo: {
               actions: true,
-              codespaces: false,
-              dependabot: false,
               environments: [],
             },
             repos: {},
-            account: {
-              actions: false,
-              codespaces: false,
-              dependabot: false,
-            },
+            account: {},
             accounts: {},
           },
         },
@@ -187,15 +181,10 @@ it("parses comprehensive requester config", async () => {
           token: "account-self/other-repo.tokenB",
           github: {
             repo: {
-              actions: false,
-              codespaces: false,
-              dependabot: false,
               environments: [],
             },
             repos: {},
             account: {
-              actions: false,
-              codespaces: false,
               dependabot: true,
             },
             accounts: {},
@@ -209,8 +198,6 @@ it("parses comprehensive requester config", async () => {
             accounts: {
               "account-a": {
                 actions: true,
-                codespaces: false,
-                dependabot: false,
               },
               "account-b": {
                 actions: true,
@@ -227,8 +214,6 @@ it("parses comprehensive requester config", async () => {
             repos: {
               "account-self/repo-a": {
                 actions: true,
-                codespaces: false,
-                dependabot: false,
                 environments: [],
               },
               "account-a/repo-a": {
@@ -245,18 +230,43 @@ it("parses comprehensive requester config", async () => {
           token: "account-self/repo-self.tokenD",
           github: {
             repo: {
-              actions: false,
-              codespaces: false,
-              dependabot: false,
               environments: [],
             },
             repos: {},
-            account: {
-              actions: false,
-              codespaces: false,
-              dependabot: false,
-            },
+            account: {},
             accounts: {},
+          },
+        },
+
+        TO_NOWHERE_EXPLICIT: {
+          token: "account-self/repo-self.tokenE",
+          github: {
+            repo: {
+              dependabot: false,
+              codespaces: false,
+              actions: false,
+              environments: [],
+            },
+            account: {
+              dependabot: false,
+              codespaces: false,
+              actions: false,
+            },
+            accounts: {
+              "*": {
+                dependabot: false,
+                codespaces: false,
+                actions: false,
+              },
+            },
+            repos: {
+              "*/*": {
+                dependabot: false,
+                codespaces: false,
+                actions: false,
+                environments: [],
+              },
+            },
           },
         },
       },
