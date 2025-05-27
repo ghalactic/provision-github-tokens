@@ -2670,7 +2670,7 @@ var require_tunnel = __commonJS({
         connectOptions.headers = connectOptions.headers || {};
         connectOptions.headers["Proxy-Authorization"] = "Basic " + new Buffer(connectOptions.proxyAuth).toString("base64");
       }
-      debug5("making CONNECT request");
+      debug6("making CONNECT request");
       var connectReq = self2.request(connectOptions);
       connectReq.useChunkedEncodingByDefault = false;
       connectReq.once("response", onResponse);
@@ -2690,7 +2690,7 @@ var require_tunnel = __commonJS({
         connectReq.removeAllListeners();
         socket.removeAllListeners();
         if (res.statusCode !== 200) {
-          debug5(
+          debug6(
             "tunneling socket could not be established, statusCode=%d",
             res.statusCode
           );
@@ -2702,7 +2702,7 @@ var require_tunnel = __commonJS({
           return;
         }
         if (head.length > 0) {
-          debug5("got illegal response body from proxy");
+          debug6("got illegal response body from proxy");
           socket.destroy();
           var error = new Error("got illegal response body from proxy");
           error.code = "ECONNRESET";
@@ -2710,13 +2710,13 @@ var require_tunnel = __commonJS({
           self2.removeSocket(placeholder);
           return;
         }
-        debug5("tunneling connection has established");
+        debug6("tunneling connection has established");
         self2.sockets[self2.sockets.indexOf(placeholder)] = socket;
         return cb(socket);
       }
       function onError(cause) {
         connectReq.removeAllListeners();
-        debug5(
+        debug6(
           "tunneling socket could not be established, cause=%s\n",
           cause.message,
           cause.stack
@@ -2778,9 +2778,9 @@ var require_tunnel = __commonJS({
       }
       return target;
     }
-    var debug5;
+    var debug6;
     if (process.env.NODE_DEBUG && /\btunnel\b/.test(process.env.NODE_DEBUG)) {
-      debug5 = function() {
+      debug6 = function() {
         var args = Array.prototype.slice.call(arguments);
         if (typeof args[0] === "string") {
           args[0] = "TUNNEL: " + args[0];
@@ -2790,10 +2790,10 @@ var require_tunnel = __commonJS({
         console.error.apply(console, args);
       };
     } else {
-      debug5 = function() {
+      debug6 = function() {
       };
     }
-    exports.debug = debug5;
+    exports.debug = debug6;
   }
 });
 
@@ -3215,7 +3215,7 @@ var require_util2 = __commonJS({
     var { InvalidArgumentError } = require_errors();
     var { Blob: Blob2 } = __require("buffer");
     var nodeUtil = __require("util");
-    var { stringify } = __require("querystring");
+    var { stringify: stringify2 } = __require("querystring");
     var { headerNameLowerCasedRecord } = require_constants();
     var [nodeMajor, nodeMinor] = process.versions.node.split(".").map((v) => Number(v));
     function nop() {
@@ -3230,7 +3230,7 @@ var require_util2 = __commonJS({
       if (url.includes("?") || url.includes("#")) {
         throw new Error('Query params cannot be passed when url already contains "?" or "#".');
       }
-      const stringified = stringify(queryParams);
+      const stringified = stringify2(queryParams);
       if (stringified) {
         url += "?" + stringified;
       }
@@ -5817,9 +5817,9 @@ var require_constants2 = __commonJS({
       }
     })();
     var channel;
-    var structuredClone = globalThis.structuredClone ?? // https://github.com/nodejs/node/blob/b27ae24dcc4251bad726d9d84baf678d1f707fed/lib/internal/structured_clone.js
+    var structuredClone2 = globalThis.structuredClone ?? // https://github.com/nodejs/node/blob/b27ae24dcc4251bad726d9d84baf678d1f707fed/lib/internal/structured_clone.js
     // structuredClone was added in v17.0.0, but fetch supports v16.8
-    function structuredClone2(value, options = void 0) {
+    function structuredClone3(value, options = void 0) {
       if (arguments.length === 0) {
         throw new TypeError("missing argument");
       }
@@ -5833,7 +5833,7 @@ var require_constants2 = __commonJS({
     };
     module.exports = {
       DOMException: DOMException2,
-      structuredClone,
+      structuredClone: structuredClone2,
       subresource,
       forbiddenMethods,
       requestBodyHeader,
@@ -7538,7 +7538,7 @@ var require_body = __commonJS({
     var { FormData } = require_formdata();
     var { kState } = require_symbols2();
     var { webidl } = require_webidl();
-    var { DOMException: DOMException2, structuredClone } = require_constants2();
+    var { DOMException: DOMException2, structuredClone: structuredClone2 } = require_constants2();
     var { Blob: Blob2, File: NativeFile } = __require("buffer");
     var { kBodyUsed } = require_symbols();
     var assert = __require("assert");
@@ -7702,7 +7702,7 @@ Content-Type: ${value.type || "application/octet-stream"}\r
     }
     function cloneBody(body) {
       const [out1, out2] = body.stream.tee();
-      const out2Clone = structuredClone(out2, { transfer: [out2] });
+      const out2Clone = structuredClone2(out2, { transfer: [out2] });
       const [, finalClone] = out2Clone.tee();
       body.stream = out1;
       return {
@@ -17855,7 +17855,7 @@ var require_util7 = __commonJS({
         throw new Error("Invalid cookie max-age");
       }
     }
-    function stringify(cookie) {
+    function stringify2(cookie) {
       if (cookie.name.length === 0) {
         return null;
       }
@@ -17909,7 +17909,7 @@ var require_util7 = __commonJS({
       validateCookiePath,
       validateCookieValue,
       toIMFDate,
-      stringify
+      stringify: stringify2
     };
   }
 });
@@ -18059,7 +18059,7 @@ var require_cookies = __commonJS({
   "node_modules/undici/lib/cookies/index.js"(exports, module) {
     "use strict";
     var { parseSetCookie } = require_parse();
-    var { stringify } = require_util7();
+    var { stringify: stringify2 } = require_util7();
     var { webidl } = require_webidl();
     var { Headers } = require_headers();
     function getCookies(headers) {
@@ -18101,9 +18101,9 @@ var require_cookies = __commonJS({
       webidl.argumentLengthCheck(arguments, 2, { header: "setCookie" });
       webidl.brandCheck(headers, Headers, { strict: false });
       cookie = webidl.converters.Cookie(cookie);
-      const str2 = stringify(cookie);
+      const str2 = stringify2(cookie);
       if (str2) {
-        headers.append("Set-Cookie", stringify(cookie));
+        headers.append("Set-Cookie", stringify2(cookie));
       }
     }
     webidl.converters.DeleteCookieAttributes = webidl.dictionaryConverter([
@@ -19858,12 +19858,12 @@ var require_lib = __commonJS({
             throw new Error("Client has already been disposed.");
           }
           const parsedUrl = new URL(requestUrl);
-          let info3 = this._prepareRequest(verb, parsedUrl, headers);
+          let info4 = this._prepareRequest(verb, parsedUrl, headers);
           const maxTries = this._allowRetries && RetryableHttpVerbs.includes(verb) ? this._maxRetries + 1 : 1;
           let numTries = 0;
           let response;
           do {
-            response = yield this.requestRaw(info3, data);
+            response = yield this.requestRaw(info4, data);
             if (response && response.message && response.message.statusCode === HttpCodes.Unauthorized) {
               let authenticationHandler;
               for (const handler2 of this.handlers) {
@@ -19873,7 +19873,7 @@ var require_lib = __commonJS({
                 }
               }
               if (authenticationHandler) {
-                return authenticationHandler.handleAuthentication(this, info3, data);
+                return authenticationHandler.handleAuthentication(this, info4, data);
               } else {
                 return response;
               }
@@ -19896,8 +19896,8 @@ var require_lib = __commonJS({
                   }
                 }
               }
-              info3 = this._prepareRequest(verb, parsedRedirectUrl, headers);
-              response = yield this.requestRaw(info3, data);
+              info4 = this._prepareRequest(verb, parsedRedirectUrl, headers);
+              response = yield this.requestRaw(info4, data);
               redirectsRemaining--;
             }
             if (!response.message.statusCode || !HttpResponseRetryCodes.includes(response.message.statusCode)) {
@@ -19926,7 +19926,7 @@ var require_lib = __commonJS({
        * @param info
        * @param data
        */
-      requestRaw(info3, data) {
+      requestRaw(info4, data) {
         return __awaiter(this, void 0, void 0, function* () {
           return new Promise((resolve, reject) => {
             function callbackForResult(err, res) {
@@ -19938,7 +19938,7 @@ var require_lib = __commonJS({
                 resolve(res);
               }
             }
-            this.requestRawWithCallback(info3, data, callbackForResult);
+            this.requestRawWithCallback(info4, data, callbackForResult);
           });
         });
       }
@@ -19948,12 +19948,12 @@ var require_lib = __commonJS({
        * @param data
        * @param onResult
        */
-      requestRawWithCallback(info3, data, onResult) {
+      requestRawWithCallback(info4, data, onResult) {
         if (typeof data === "string") {
-          if (!info3.options.headers) {
-            info3.options.headers = {};
+          if (!info4.options.headers) {
+            info4.options.headers = {};
           }
-          info3.options.headers["Content-Length"] = Buffer.byteLength(data, "utf8");
+          info4.options.headers["Content-Length"] = Buffer.byteLength(data, "utf8");
         }
         let callbackCalled = false;
         function handleResult(err, res) {
@@ -19962,7 +19962,7 @@ var require_lib = __commonJS({
             onResult(err, res);
           }
         }
-        const req = info3.httpModule.request(info3.options, (msg) => {
+        const req = info4.httpModule.request(info4.options, (msg) => {
           const res = new HttpClientResponse(msg);
           handleResult(void 0, res);
         });
@@ -19974,7 +19974,7 @@ var require_lib = __commonJS({
           if (socket) {
             socket.end();
           }
-          handleResult(new Error(`Request timeout: ${info3.options.path}`));
+          handleResult(new Error(`Request timeout: ${info4.options.path}`));
         });
         req.on("error", function(err) {
           handleResult(err);
@@ -20010,27 +20010,27 @@ var require_lib = __commonJS({
         return this._getProxyAgentDispatcher(parsedUrl, proxyUrl);
       }
       _prepareRequest(method, requestUrl, headers) {
-        const info3 = {};
-        info3.parsedUrl = requestUrl;
-        const usingSsl = info3.parsedUrl.protocol === "https:";
-        info3.httpModule = usingSsl ? https : http;
+        const info4 = {};
+        info4.parsedUrl = requestUrl;
+        const usingSsl = info4.parsedUrl.protocol === "https:";
+        info4.httpModule = usingSsl ? https : http;
         const defaultPort = usingSsl ? 443 : 80;
-        info3.options = {};
-        info3.options.host = info3.parsedUrl.hostname;
-        info3.options.port = info3.parsedUrl.port ? parseInt(info3.parsedUrl.port) : defaultPort;
-        info3.options.path = (info3.parsedUrl.pathname || "") + (info3.parsedUrl.search || "");
-        info3.options.method = method;
-        info3.options.headers = this._mergeHeaders(headers);
+        info4.options = {};
+        info4.options.host = info4.parsedUrl.hostname;
+        info4.options.port = info4.parsedUrl.port ? parseInt(info4.parsedUrl.port) : defaultPort;
+        info4.options.path = (info4.parsedUrl.pathname || "") + (info4.parsedUrl.search || "");
+        info4.options.method = method;
+        info4.options.headers = this._mergeHeaders(headers);
         if (this.userAgent != null) {
-          info3.options.headers["user-agent"] = this.userAgent;
+          info4.options.headers["user-agent"] = this.userAgent;
         }
-        info3.options.agent = this._getAgent(info3.parsedUrl);
+        info4.options.agent = this._getAgent(info4.parsedUrl);
         if (this.handlers) {
           for (const handler2 of this.handlers) {
-            handler2.prepareRequest(info3.options);
+            handler2.prepareRequest(info4.options);
           }
         }
-        return info3;
+        return info4;
       }
       _mergeHeaders(headers) {
         if (this.requestOptions && this.requestOptions.headers) {
@@ -22004,10 +22004,10 @@ Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
       return process.env["RUNNER_DEBUG"] === "1";
     }
     exports.isDebug = isDebug;
-    function debug5(message) {
+    function debug6(message) {
       (0, command_1.issueCommand)("debug", {}, message);
     }
-    exports.debug = debug5;
+    exports.debug = debug6;
     function error(message, properties = {}) {
       (0, command_1.issueCommand)("error", (0, utils_1.toCommandProperties)(properties), message instanceof Error ? message.toString() : message);
     }
@@ -22020,10 +22020,10 @@ Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
       (0, command_1.issueCommand)("notice", (0, utils_1.toCommandProperties)(properties), message instanceof Error ? message.toString() : message);
     }
     exports.notice = notice;
-    function info3(message) {
+    function info4(message) {
       process.stdout.write(message + os.EOL);
     }
-    exports.info = info3;
+    exports.info = info4;
     function startGroup(name) {
       (0, command_1.issue)("group", name);
     }
@@ -22213,10 +22213,10 @@ var require_code = __commonJS({
     function interpolate(x) {
       return typeof x == "number" || typeof x == "boolean" || x === null ? x : safeStringify(Array.isArray(x) ? x.join(",") : x);
     }
-    function stringify(x) {
+    function stringify2(x) {
       return new _Code(safeStringify(x));
     }
-    exports.stringify = stringify;
+    exports.stringify = stringify2;
     function safeStringify(x) {
       return JSON.stringify(x).replace(/\u2028/g, "\\u2028").replace(/\u2029/g, "\\u2029");
     }
@@ -29415,7 +29415,7 @@ var require_util10 = __commonJS({
     var net = __require("node:net");
     var { Blob: Blob2 } = __require("node:buffer");
     var nodeUtil = __require("node:util");
-    var { stringify } = __require("node:querystring");
+    var { stringify: stringify2 } = __require("node:querystring");
     var { EventEmitter: EE } = __require("node:events");
     var { InvalidArgumentError } = require_errors3();
     var { headerNameLowerCasedRecord } = require_constants6();
@@ -29475,7 +29475,7 @@ var require_util10 = __commonJS({
       if (url.includes("?") || url.includes("#")) {
         throw new Error('Query params cannot be passed when url already contains "?" or "#".');
       }
-      const stringified = stringify(queryParams);
+      const stringified = stringify2(queryParams);
       if (stringified) {
         url += "?" + stringified;
       }
@@ -44288,7 +44288,7 @@ var require_util15 = __commonJS({
         throw new Error("Invalid cookie max-age");
       }
     }
-    function stringify(cookie) {
+    function stringify2(cookie) {
       if (cookie.name.length === 0) {
         return null;
       }
@@ -44342,7 +44342,7 @@ var require_util15 = __commonJS({
       validateCookiePath,
       validateCookieValue,
       toIMFDate,
-      stringify
+      stringify: stringify2
     };
   }
 });
@@ -44492,7 +44492,7 @@ var require_cookies2 = __commonJS({
   "node_modules/@octokit/action/node_modules/undici/lib/web/cookies/index.js"(exports, module) {
     "use strict";
     var { parseSetCookie } = require_parse2();
-    var { stringify } = require_util15();
+    var { stringify: stringify2 } = require_util15();
     var { webidl } = require_webidl2();
     var { Headers } = require_headers2();
     function getCookies(headers) {
@@ -44535,7 +44535,7 @@ var require_cookies2 = __commonJS({
       webidl.argumentLengthCheck(arguments, 2, "setCookie");
       webidl.brandCheck(headers, Headers, { strict: false });
       cookie = webidl.converters.Cookie(cookie);
-      const str2 = stringify(cookie);
+      const str2 = stringify2(cookie);
       if (str2) {
         headers.append("Set-Cookie", str2);
       }
@@ -50221,11 +50221,67 @@ var require_regexp = __commonJS({
   }
 });
 
+// node_modules/fast-json-stable-stringify/index.js
+var require_fast_json_stable_stringify = __commonJS({
+  "node_modules/fast-json-stable-stringify/index.js"(exports, module) {
+    "use strict";
+    module.exports = function(data, opts) {
+      if (!opts) opts = {};
+      if (typeof opts === "function") opts = { cmp: opts };
+      var cycles = typeof opts.cycles === "boolean" ? opts.cycles : false;
+      var cmp = opts.cmp && /* @__PURE__ */ function(f) {
+        return function(node) {
+          return function(a, b) {
+            var aobj = { key: a, value: node[a] };
+            var bobj = { key: b, value: node[b] };
+            return f(aobj, bobj);
+          };
+        };
+      }(opts.cmp);
+      var seen = [];
+      return function stringify2(node) {
+        if (node && node.toJSON && typeof node.toJSON === "function") {
+          node = node.toJSON();
+        }
+        if (node === void 0) return;
+        if (typeof node == "number") return isFinite(node) ? "" + node : "null";
+        if (typeof node !== "object") return JSON.stringify(node);
+        var i, out;
+        if (Array.isArray(node)) {
+          out = "[";
+          for (i = 0; i < node.length; i++) {
+            if (i) out += ",";
+            out += stringify2(node[i]) || "null";
+          }
+          return out + "]";
+        }
+        if (node === null) return "null";
+        if (seen.indexOf(node) !== -1) {
+          if (cycles) return JSON.stringify("__cycle__");
+          throw new TypeError("Converting circular structure to JSON");
+        }
+        var seenIndex = seen.push(node) - 1;
+        var keys = Object.keys(node).sort(cmp && cmp(node));
+        out = "";
+        for (i = 0; i < keys.length; i++) {
+          var key = keys[i];
+          var value = stringify2(node[key]);
+          if (!value) continue;
+          if (out) out += ",";
+          out += JSON.stringify(key) + ":" + value;
+        }
+        seen.splice(seenIndex, 1);
+        return "{" + out + "}";
+      }(data);
+    };
+  }
+});
+
 // node_modules/source-map-support/register.js
 require_source_map_support().install();
 
 // src/main.ts
-var import_core6 = __toESM(require_core(), 1);
+var import_core8 = __toESM(require_core(), 1);
 
 // src/access-level.ts
 var ACCESS_RANK = {
@@ -50240,18 +50296,54 @@ function isSufficientAccess(have, want) {
 function isWriteAccess(access) {
   return ACCESS_RANK[access] > ACCESS_RANK.read;
 }
+function maxAccess(permissions) {
+  let max = "none";
+  let maxRank = 0;
+  for (const access of Object.values(permissions)) {
+    const definedAccess = access ?? "none";
+    const rank = ACCESS_RANK[definedAccess];
+    if (rank > maxRank) {
+      max = definedAccess;
+      maxRank = rank;
+    }
+  }
+  return max;
+}
 
 // src/github-reference.ts
+function createAccountRef(account) {
+  assertAccount(account);
+  return { account };
+}
 function createRepoRef(account, repo) {
   assertAccount(account);
   assertRepo(repo);
   return { account, repo };
 }
+function createEnvRef(account, repo, environment) {
+  assertAccount(account);
+  assertRepo(repo);
+  assertEnvironment(environment);
+  return { account, repo, environment };
+}
 function isRepoRef(ref) {
   return "repo" in ref && typeof ref.repo === "string";
 }
+function isEnvRef(ref) {
+  return isRepoRef(ref) && "environment" in ref && typeof ref.environment === "string";
+}
+function repoRefFromName(name) {
+  const parts = name.split("/");
+  if (parts.length !== 2) {
+    throw new Error(`Invalid repo name ${JSON.stringify(name)}`);
+  }
+  return createRepoRef(parts[0], parts[1]);
+}
 function repoRefToString(ref) {
   return `${ref.account}/${ref.repo}`;
+}
+function accountOrRepoRefToString(ref) {
+  return isRepoRef(ref) ? repoRefToString(ref) : ref.account;
 }
 function assertAccount(account) {
   if (typeof account !== "string" || !account || account.includes("/")) {
@@ -50261,6 +50353,11 @@ function assertAccount(account) {
 function assertRepo(repo) {
   if (typeof repo !== "string" || !repo || repo.includes("/")) {
     throw new Error(`Invalid repo name ${JSON.stringify(repo)}`);
+  }
+}
+function assertEnvironment(environment) {
+  if (typeof environment !== "string" || !environment) {
+    throw new Error(`Invalid environment name ${JSON.stringify(environment)}`);
   }
 }
 
@@ -50281,6 +50378,19 @@ function isEmptyPermissions(permissions) {
       case "write":
       case "admin":
         return false;
+    }
+  }
+  return true;
+}
+function isSufficientPermissions(have, want) {
+  const permissions = Object.keys(want);
+  if (isEmptyPermissions(want)) throw new Error("Empty permissions");
+  for (const permission of permissions) {
+    if (!isSufficientAccess(
+      permissionAccess(have, permission),
+      permissionAccess(want, permission)
+    )) {
+      return false;
     }
   }
   return true;
@@ -50460,8 +50570,364 @@ function createAppRegistry() {
   }
 }
 
-// src/config/apps-input.ts
+// src/authorizer.ts
 var import_core = __toESM(require_core(), 1);
+
+// src/compare-ref.ts
+function compareRef(a, b) {
+  const accountCompare = a.account.localeCompare(b.account);
+  if (accountCompare !== 0) return accountCompare;
+  if (isRepoRef(a)) {
+    if (!isRepoRef(b)) return 1;
+    const repoCompare = a.repo.localeCompare(b.repo);
+    if (repoCompare !== 0) return repoCompare;
+    if (isEnvRef(a)) {
+      if (!isEnvRef(b)) return 1;
+      const envCompare = a.environment.localeCompare(b.environment);
+      if (envCompare !== 0) return envCompare;
+    } else if (isEnvRef(b)) {
+      return -1;
+    }
+  } else if (isRepoRef(b)) {
+    return -1;
+  }
+  return 0;
+}
+
+// src/compare-provision-request-target.ts
+function compareProvisionRequestTarget(a, b) {
+  const targetCompare = compareRef(a.target, b.target);
+  if (targetCompare !== 0) return targetCompare;
+  return a.type.localeCompare(b.type);
+}
+
+// src/compare-provision-request.ts
+function compareProvisionRequest(a, b) {
+  const requesterCompare = compareRef(a.requester, b.requester);
+  if (requesterCompare !== 0) return requesterCompare;
+  const nameCompare = a.name.localeCompare(b.name);
+  if (nameCompare !== 0) return nameCompare;
+  const aTo = JSON.stringify(a.to.toSorted(compareProvisionRequestTarget));
+  const bTo = JSON.stringify(b.to.toSorted(compareProvisionRequestTarget));
+  if (aTo !== bTo) return aTo.localeCompare(bTo);
+  return 0;
+}
+
+// src/compare-token-request.ts
+var ACCESS_ORDER = {
+  admin: 0,
+  write: 1,
+  read: 2,
+  none: 3
+};
+function compareTokenRequest(a, b) {
+  const targetCompare = compareRef(a.consumer, b.consumer);
+  if (targetCompare !== 0) return targetCompare;
+  const tokenAccountCompare = a.tokenDec.account.localeCompare(
+    b.tokenDec.account
+  );
+  if (tokenAccountCompare !== 0) return tokenAccountCompare;
+  const aTypeOrder = a.repos === "all" ? 1 : a.repos.length === 0 ? 0 : 2;
+  const bTypeOrder = b.repos === "all" ? 1 : b.repos.length === 0 ? 0 : 2;
+  const typeCompare = aTypeOrder - bTypeOrder;
+  if (typeCompare !== 0) return typeCompare;
+  if (Array.isArray(a.repos) && Array.isArray(b.repos)) {
+    const aRepos = JSON.stringify(a.repos.toSorted());
+    const bRepos = JSON.stringify(b.repos.toSorted());
+    const reposCompare = aRepos.localeCompare(bRepos);
+    if (reposCompare !== 0) return reposCompare;
+  }
+  const permissionNames = Array.from(
+    /* @__PURE__ */ new Set([
+      ...Object.keys(a.tokenDec.permissions),
+      ...Object.keys(b.tokenDec.permissions)
+    ])
+  ).sort();
+  for (const permission of permissionNames) {
+    const aPerm = a.tokenDec.permissions[permission] ?? "none";
+    const bPerm = b.tokenDec.permissions[permission] ?? "none";
+    const accessCompare = ACCESS_ORDER[aPerm] - ACCESS_ORDER[bPerm];
+    if (accessCompare !== 0) return accessCompare;
+  }
+  return 0;
+}
+
+// src/provision-auth-explainer/text.ts
+var ALLOWED_ICON = "\u2705";
+var DENIED_ICON = "\u274C";
+function createTextProvisionAuthExplainer(tokenResults) {
+  return (result) => {
+    return explainSummary(result) + explainTokenDec(result) + explainTargets(result);
+  };
+  function explainSummary({ request: request2, isAllowed }) {
+    return `${renderIcon(isAllowed)} Repo ${repoRefToString(request2.requester)} ` + (isAllowed ? "was allowed" : "wasn't allowed") + ` to provision secret ${request2.name}:`;
+  }
+  function explainTokenDec(result) {
+    const { request: request2 } = result;
+    const { secretDec, tokenDec, tokenDecIsRegistered } = request2;
+    if (tokenDec) return `
+  \u2705 Can use token declaration ${secretDec.token}`;
+    return `
+  \u274C Can't use token declaration ${secretDec.token} because ` + (tokenDecIsRegistered ? "it isn't shared" : "it doesn't exist");
+  }
+  function explainTargets({
+    request: request2,
+    results,
+    isMissingTargets
+  }) {
+    if (isMissingTargets) {
+      return `
+  ${renderIcon(false)} No targets specified`;
+    }
+    const entries = [];
+    for (let i = 0; i < results.length; ++i) {
+      entries.push([request2.to[i], results[i]]);
+    }
+    entries.sort(([a], [b]) => compareProvisionRequestTarget(a, b));
+    let explained = "";
+    for (const [target, result] of entries) {
+      explained += explainTarget(target, result);
+    }
+    return explained;
+  }
+  function explainTarget(target, result) {
+    const { isAllowed } = result;
+    return `
+  ${renderIcon(isAllowed)} ${isAllowed ? "Can" : "Can't"} provision token to ${explainSubject(target)}:` + explainTargetToken(result) + explainTargetProvisioning(result);
+  }
+  function explainTargetToken({
+    isTokenAllowed,
+    tokenAuthResult
+  }) {
+    if (!tokenAuthResult) {
+      return `
+    \u274C Token can't be authorized without a declaration`;
+    }
+    const name = accountOrRepoRefToString(tokenAuthResult.request.consumer);
+    const ref = `#${tokenResults.indexOf(tokenAuthResult) + 1}`;
+    if (isRepoRef(tokenAuthResult.request.consumer)) {
+      return `
+    ${renderIcon(isTokenAllowed)} Repo ${name} was ${isTokenAllowed ? "allowed" : "denied"} access to token ${ref}`;
+    }
+    return `
+    ${renderIcon(isTokenAllowed)} Account ${name} was ${isTokenAllowed ? "allowed" : "denied"} access to token ${ref}`;
+  }
+  function explainTargetProvisioning({
+    isProvisionAllowed,
+    rules
+  }) {
+    return `
+    ${renderIcon(isProvisionAllowed)} ${isProvisionAllowed ? "Can" : "Can't"} provision secret ${explainBasedOnRules(rules)}`;
+  }
+  function explainSubject(target) {
+    const type2 = ((r) => {
+      const type3 = r.type;
+      switch (type3) {
+        case "actions":
+          return "GitHub Actions";
+        case "codespaces":
+          return "GitHub Codespaces";
+        case "dependabot":
+          return "Dependabot";
+        case "environment":
+          return `GitHub environment ${r.target.environment}`;
+      }
+      throw new Error(
+        `Invariant violation: Unexpected secret type ${JSON.stringify(type3)}`
+      );
+    })(target);
+    return `${type2} secret in ${accountOrRepoRefToString(target.target)}`;
+  }
+  function explainBasedOnRules(rules) {
+    const ruleCount = rules.length;
+    const ruleOrRules = ruleCount === 1 ? "rule" : "rules";
+    const basedOn = ruleCount < 1 ? "(no matching rules)" : `based on ${ruleCount} ${ruleOrRules}`;
+    if (ruleCount < 1) return basedOn;
+    let explainedRules = "";
+    for (const ruleResult of rules) explainedRules += explainRule(ruleResult);
+    return `${basedOn}:${explainedRules}`;
+  }
+  function explainRule({
+    index,
+    rule,
+    have
+  }) {
+    const isAllowed = have === "allow";
+    return `
+      ${renderIcon(isAllowed)} ${isAllowed ? "Allowed" : "Denied"} by rule ${renderRule(index, rule)}`;
+  }
+  function renderRule(index, { description }) {
+    const n = `#${index + 1}`;
+    return description ? `${n}: ${JSON.stringify(description)}` : n;
+  }
+  function renderIcon(isAllowed) {
+    return isAllowed ? ALLOWED_ICON : DENIED_ICON;
+  }
+}
+
+// src/pluralize.ts
+function pluralize(amount, singular, plural) {
+  return `${amount} ${amount === 1 ? singular : plural}`;
+}
+
+// src/token-auth-explainer/text.ts
+var ALLOWED_ICON2 = "\u2705";
+var DENIED_ICON2 = "\u274C";
+var ACCESS_LEVELS = {
+  none: "No",
+  admin: "Admin",
+  read: "Read",
+  write: "Write"
+};
+function createTextTokenAuthExplainer() {
+  return (result) => {
+    if (result.type === "ALL_REPOS") return explainAllRepos(result);
+    if (result.type === "NO_REPOS") return explainNoRepos(result);
+    return explainSelectedRepos(result);
+  };
+  function explainAllRepos(result) {
+    const { request: request2, isSufficient, rules } = result;
+    const subject = `all repos in ${request2.tokenDec.account}`;
+    return explainSummary(result) + explainMaxAccessAndRole(result, subject) + `
+  ${renderIcon(isSufficient)} ${isSufficient ? "Sufficient" : "Insufficient"} access to ${subject} ${explainBasedOnRules(request2.tokenDec.permissions, rules)}`;
+  }
+  function explainNoRepos(result) {
+    const { request: request2, isSufficient, rules } = result;
+    return explainSummary(result) + explainMaxAccessAndRole(result, request2.tokenDec.account) + `
+  ${renderIcon(isSufficient)} ${isSufficient ? "Sufficient" : "Insufficient"} access to ${request2.tokenDec.account} ${explainBasedOnRules(request2.tokenDec.permissions, rules)}`;
+  }
+  function explainSelectedRepos(result) {
+    const { request: request2, results } = result;
+    const subject = `repos in ${request2.tokenDec.account}`;
+    const resourceEntries = Object.entries(results).sort(
+      ([a], [b]) => a.localeCompare(b)
+    );
+    let explainedResources = "";
+    for (const [resourceRepo, resourceResult] of resourceEntries) {
+      explainedResources += explainResourceRepo(
+        resourceRepo,
+        request2.tokenDec.permissions,
+        resourceResult
+      );
+    }
+    return explainSummary(result) + explainMaxAccessAndRole(result, subject) + explainSelectedReposMatch(result) + explainedResources;
+  }
+  function explainSummary({ request: request2, isAllowed }) {
+    const name = accountOrRepoRefToString(request2.consumer);
+    if (isRepoRef(request2.consumer)) {
+      return `${renderIcon(isAllowed)} Repo ${name} was ${isAllowed ? "allowed" : "denied"} access to a token:`;
+    }
+    return `${renderIcon(isAllowed)} Account ${name} was ${isAllowed ? "allowed" : "denied"} access to a token:`;
+  }
+  function explainMaxAccessAndRole({ request: request2, maxWant, isMissingRole }, accessTo) {
+    return `
+  ${renderIcon(!isMissingRole)} ${ACCESS_LEVELS[maxWant]} access to ${accessTo} ` + (request2.tokenDec.as ? `requested with role ${request2.tokenDec.as}` : "requested without a role");
+  }
+  function explainSelectedReposMatch({
+    request: request2,
+    isMatched
+  }) {
+    const repoPatterns = pluralize(
+      request2.tokenDec.repos.length,
+      "repo pattern",
+      "repo patterns"
+    );
+    const repos = pluralize(request2.repos.length, "repo", "repos");
+    return `
+  ${renderIcon(isMatched)} ${repoPatterns} matched ${repos}`;
+  }
+  function explainResourceRepo(resource, want, { isSufficient, rules }) {
+    return `
+  ${renderIcon(isSufficient)} ${isSufficient ? "Sufficient" : "Insufficient"} access to repo ${resource} ${explainBasedOnRules(want, rules)}`;
+  }
+  function explainBasedOnRules(want, rules) {
+    const ruleCount = rules.length;
+    const ruleOrRules = ruleCount === 1 ? "rule" : "rules";
+    const basedOn = ruleCount < 1 ? "(no matching rules)" : `based on ${ruleCount} ${ruleOrRules}`;
+    if (ruleCount < 1) return basedOn;
+    let explainedRules = "";
+    for (const ruleResult of rules) {
+      explainedRules += explainRule(want, ruleResult);
+    }
+    return `${basedOn}:${explainedRules}`;
+  }
+  function explainRule(want, { index, rule, have, isSufficient }) {
+    return `
+    ${renderIcon(isSufficient)} Rule ${renderRule(index, rule)} gave ${isSufficient ? "sufficient" : "insufficient"} access:` + renderPermissionComparison("      ", have, want);
+  }
+  function renderRule(index, { description }) {
+    const n = `#${index + 1}`;
+    return description ? `${n}: ${JSON.stringify(description)}` : n;
+  }
+  function renderPermissionComparison(indent, have, want) {
+    const entries = [];
+    for (const p of Object.keys(want).sort((a, b) => a.localeCompare(b))) {
+      const h = permissionAccess(have, p);
+      const w = permissionAccess(want, p);
+      entries.push([isSufficientAccess(h, w), `${p}: have ${h}, wanted ${w}`]);
+    }
+    return renderAllowDenyList(indent, entries);
+  }
+  function renderAllowDenyList(indent, items) {
+    let list = "";
+    for (const [isAllowed, entry] of items) {
+      list += `
+${indent}${renderIcon(isAllowed)} ${entry}`;
+    }
+    return list;
+  }
+  function renderIcon(isAllowed) {
+    return isAllowed ? ALLOWED_ICON2 : DENIED_ICON2;
+  }
+}
+
+// src/authorizer.ts
+function createAuthorizer(createProvisionRequest, provisionAuthorizer, tokenAuthorizer) {
+  return {
+    async authorize(requesters) {
+      for (const discovered of requesters.values()) {
+        for (const name in discovered.config.provision.secrets) {
+          provisionAuthorizer.authorizeSecret(
+            await createProvisionRequest(
+              discovered.requester,
+              name,
+              discovered.config.provision.secrets[name]
+            )
+          );
+        }
+      }
+      const provisionResults = provisionAuthorizer.listResults().sort((a, b) => compareProvisionRequest(a.request, b.request));
+      const tokenResults = tokenAuthorizer.listResults().sort((a, b) => compareTokenRequest(a.request, b.request));
+      const provisionAuthExplainer = createTextProvisionAuthExplainer(tokenResults);
+      const tokenAuthExplainer = createTextTokenAuthExplainer();
+      if (provisionResults.length > 0) {
+        for (let i = 1; i <= provisionResults.length; ++i) {
+          (0, import_core.info)(`
+Secret #${i}:
+`);
+          (0, import_core.info)(provisionAuthExplainer(provisionResults[i - 1]));
+        }
+      } else {
+        (0, import_core.info)("\n\u274C No secrets were authorized");
+      }
+      if (tokenResults.length > 0) {
+        for (let i = 1; i <= tokenResults.length; ++i) {
+          (0, import_core.info)(`
+Token #${i}:
+`);
+          (0, import_core.info)(tokenAuthExplainer(tokenResults[i - 1]));
+        }
+      } else {
+        (0, import_core.info)("\n\u274C No tokens were authorized");
+      }
+      (0, import_core.info)("");
+      return { provisionResults, tokenResults };
+    }
+  };
+}
+
+// src/config/apps-input.ts
+var import_core2 = __toESM(require_core(), 1);
 
 // node_modules/js-yaml/dist/js-yaml.mjs
 function isNothing(subject) {
@@ -54661,12 +55127,12 @@ function renderError(error) {
 
 // src/config/apps-input.ts
 function readAppsInput() {
-  const yaml = (0, import_core.getInput)("apps");
+  const yaml = (0, import_core2.getInput)("apps");
   try {
     const parsed = load(yaml);
     return normalizeAppsInput(validateApps(parsed));
   } catch (cause) {
-    (0, import_core.debug)(`Parsing of apps action input failed: ${errorMessage(cause)}`);
+    (0, import_core2.debug)(`Parsing of apps action input failed: ${errorMessage(cause)}`);
     throw new Error("Parsing of apps action input failed", { cause });
   }
 }
@@ -54682,7 +55148,7 @@ function normalizeAppsInput(apps) {
 }
 
 // src/discover-apps.ts
-var import_core3 = __toESM(require_core(), 1);
+var import_core4 = __toESM(require_core(), 1);
 
 // node_modules/universal-user-agent/index.js
 function getUserAgent() {
@@ -59344,11 +59810,11 @@ async function errorRequest(state, octokit, error, options) {
 }
 async function wrapRequest(state, octokit, request2, options) {
   const limiter = new import_light.default();
-  limiter.on("failed", function(error, info3) {
+  limiter.on("failed", function(error, info4) {
     const maxRetries = ~~error.request.request.retries;
     const after = ~~error.request.request.retryAfter;
-    options.request.retryCount = info3.retryCount + 1;
-    if (maxRetries > info3.retryCount) {
+    options.request.retryCount = info4.retryCount + 1;
+    if (maxRetries > info4.retryCount) {
       return after * state.retryAfterBaseValue;
     }
   });
@@ -59444,11 +59910,6 @@ function handleRequestError(error, handlers = {}) {
   handler2();
 }
 
-// src/pluralize.ts
-function pluralize(amount, singular, plural) {
-  return `${amount} ${amount === 1 ? singular : plural}`;
-}
-
 // src/discover-apps.ts
 async function discoverApps(octokitFactory, appRegistry, appsInput) {
   let appIndex = 0;
@@ -59465,17 +59926,17 @@ async function discoverApps(octokitFactory, appRegistry, appsInput) {
       );
       ++appCount;
     } catch (cause) {
-      (0, import_core3.debug)(`Failed to discover app ${appInput.appId}: ${errorMessage(cause)}`);
-      (0, import_core3.error)(`Failed to discover app at index ${appIndex}`);
+      (0, import_core4.debug)(`Failed to discover app ${appInput.appId}: ${errorMessage(cause)}`);
+      (0, import_core4.error)(`Failed to discover app at index ${appIndex}`);
     }
   }
-  (0, import_core3.info)(
+  (0, import_core4.info)(
     `Discovered ${pluralize(instCount, "installation", "installations")} of ${pluralize(appCount, "app", "apps")}`
   );
 }
 async function discoverApp(octokitFactory, appRegistry, appsInput, appInput, appIndex) {
   if (!appInput.issuer.enabled && !appInput.provisioner.enabled) {
-    (0, import_core3.debug)(`Skipping discovery of disabled app ${appInput.appId}`);
+    (0, import_core4.debug)(`Skipping discovery of disabled app ${appInput.appId}`);
     return 0;
   }
   const appOctokit = octokitFactory.appOctokit(appsInput, appInput.appId);
@@ -59485,31 +59946,31 @@ async function discoverApp(octokitFactory, appRegistry, appsInput, appInput, app
   } catch (error) {
     handleRequestError(error, {
       401: () => {
-        (0, import_core3.debug)(`App ${appInput.appId} has incorrect credentials - skipping`);
-        (0, import_core3.warning)(
+        (0, import_core4.debug)(`App ${appInput.appId} has incorrect credentials - skipping`);
+        (0, import_core4.warning)(
           `App at index ${appIndex} has incorrect credentials - skipping`
         );
       },
       404: () => {
-        (0, import_core3.debug)(`App ${appInput.appId} not found - skipping`);
-        (0, import_core3.warning)(`App at index ${appIndex} not found - skipping`);
+        (0, import_core4.debug)(`App ${appInput.appId} not found - skipping`);
+        (0, import_core4.warning)(`App at index ${appIndex} not found - skipping`);
       }
     });
     return 0;
   }
   if (!app) {
-    (0, import_core3.debug)(`App ${appInput.appId} can't access itself`);
+    (0, import_core4.debug)(`App ${appInput.appId} can't access itself`);
     throw new Error(
       `Invariant violation: App at index ${appIndex} can't access itself`
     );
   }
-  (0, import_core3.debug)(`Discovered app ${JSON.stringify(app.name)} (${app.slug} / ${app.id})`);
+  (0, import_core4.debug)(`Discovered app ${JSON.stringify(app.name)} (${app.slug} / ${app.id})`);
   if (appInput.issuer.enabled) {
     const roles = appInput.issuer.roles.length < 1 ? "no roles" : `roles ${JSON.stringify(appInput.issuer.roles)}`;
-    (0, import_core3.debug)(`App ${app.id} is a token issuer with ${roles}`);
+    (0, import_core4.debug)(`App ${app.id} is a token issuer with ${roles}`);
   }
   if (appInput.provisioner.enabled) {
-    (0, import_core3.debug)(`App ${app.id} is a token provisioner`);
+    (0, import_core4.debug)(`App ${app.id} is a token provisioner`);
   }
   appRegistry.registerApp({
     app,
@@ -59525,11 +59986,11 @@ async function discoverApp(octokitFactory, appRegistry, appsInput, appInput, app
     app,
     appIndex
   );
-  (0, import_core3.debug)(
+  (0, import_core4.debug)(
     `Discovered ${pluralize(instSuccessCount, "installation", "installations")} of ${JSON.stringify(app.name)}`
   );
   if (instFailureCount > 0) {
-    (0, import_core3.debug)(
+    (0, import_core4.debug)(
       `Failed to discover ${pluralize(instFailureCount, "installation", "installations")} of ${JSON.stringify(app.name)}`
     );
   }
@@ -59554,10 +60015,10 @@ async function discoverInstallations(octokitFactory, appRegistry, appsInput, app
         ++successCount;
       } catch (cause) {
         ++failureCount;
-        (0, import_core3.debug)(
+        (0, import_core4.debug)(
           `Failed to discover installation ${installation.id} for app ${appInput.appId}: ${errorMessage(cause)}`
         );
-        (0, import_core3.error)(
+        (0, import_core4.error)(
           `Failed to discover installation for app at index ${appIndex}`
         );
       }
@@ -59589,29 +60050,29 @@ async function discoverInstallation(octokitFactory, appRegistry, appsInput, appI
   }
   const account = installation.account && "login" in installation.account ? installation.account.login : void 0;
   if (account == null) {
-    (0, import_core3.debug)(
+    (0, import_core4.debug)(
       `Skipping discovery of app ${appInput.appId} installation ${installationId} because it is not associated with a named account`
     );
     return;
   }
-  (0, import_core3.debug)(
+  (0, import_core4.debug)(
     `Discovered app ${appInput.appId} installation ${installationId} for account ${account}`
   );
   if (isEmptyPermissions(permissions)) {
-    (0, import_core3.debug)(`Installation ${installationId} has no permissions`);
+    (0, import_core4.debug)(`Installation ${installationId} has no permissions`);
   } else {
-    (0, import_core3.debug)(
+    (0, import_core4.debug)(
       `Installation ${installationId} has permissions ${JSON.stringify(permissions)}`
     );
   }
   if (repository_selection === "all") {
-    (0, import_core3.debug)(
+    (0, import_core4.debug)(
       `Installation ${installationId} has access to all repos ${JSON.stringify(repoNames)}`
     );
   } else if (repos.length < 1) {
-    (0, import_core3.debug)(`Installation ${installationId} has access to no repos`);
+    (0, import_core4.debug)(`Installation ${installationId} has access to no repos`);
   } else {
-    (0, import_core3.debug)(
+    (0, import_core4.debug)(
       `Installation ${installationId} has access to selected repos ${JSON.stringify(repoNames)}`
     );
   }
@@ -59619,15 +60080,50 @@ async function discoverInstallation(octokitFactory, appRegistry, appsInput, appI
 }
 
 // src/discover-requesters.ts
-var import_core5 = __toESM(require_core(), 1);
+var import_core6 = __toESM(require_core(), 1);
 
 // src/config/requester-config.ts
-var import_core4 = __toESM(require_core(), 1);
+var import_core5 = __toESM(require_core(), 1);
 
 // src/name-pattern.ts
 var import_regexp = __toESM(require_regexp(), 1);
+function createNamePattern(pattern) {
+  if (!pattern) throw new Error("Pattern cannot be empty");
+  if (pattern.includes("/")) {
+    throw new Error(`Pattern ${JSON.stringify(pattern)} cannot contain /`);
+  }
+  const literals = pattern.split("*");
+  const expression = patternRegExp(literals);
+  return {
+    test: (string) => expression.test(string),
+    toString: () => pattern
+  };
+}
+function patternRegExp(literals) {
+  let exp = "^";
+  for (let i = 0; i < literals.length; ++i) {
+    if (i) exp += "[^/]*";
+    exp += (0, import_regexp.default)(literals[i]);
+  }
+  exp += "$";
+  return new RegExp(exp);
+}
 
 // src/github-pattern.ts
+function createGitHubPattern(pattern) {
+  const [accountPart, repoPart] = splitGitHubPattern(pattern);
+  const account = createNamePattern(accountPart);
+  const repo = repoPart ? createNamePattern(repoPart) : void 0;
+  return {
+    test: (string) => {
+      const parts = string.split("/");
+      if (parts.length === 1) return repo ? false : account.test(parts[0]);
+      if (parts.length !== 2 || !repo) return false;
+      return account.test(parts[0]) && repo.test(parts[1]);
+    },
+    toString: () => pattern
+  };
+}
 function normalizeGitHubPattern(definingAccount, pattern) {
   const [accountPart, repoPart] = splitGitHubPattern(pattern);
   return accountPart === "." ? repoPart == null ? definingAccount.account : repoRefToString(createRepoRef(definingAccount.account, repoPart)) : pattern;
@@ -59688,7 +60184,7 @@ function parseYAML(yaml) {
     const parsed = load(yaml);
     return validateRequester(parsed == null ? {} : parsed);
   } catch (cause) {
-    (0, import_core4.debug)(`Parsing of requester configuration failed: ${errorMessage(cause)}`);
+    (0, import_core5.debug)(`Parsing of requester configuration failed: ${errorMessage(cause)}`);
     throw new Error("Parsing of requester configuration failed", { cause });
   }
 }
@@ -59740,34 +60236,360 @@ async function discoverRequesters(octokitFactory, appRegistry, appsInput) {
       } catch (error) {
         handleRequestError(error, {
           404: () => {
-            (0, import_core5.debug)(`Repo ${full_name} is not a requester`);
+            (0, import_core6.debug)(`Repo ${full_name} is not a requester`);
           }
         });
         continue;
       }
-      (0, import_core5.debug)(`Discovered requester ${full_name}`);
+      (0, import_core6.debug)(`Discovered requester ${full_name}`);
       let config;
       try {
         config = parseRequesterConfig(requester, configYAML);
       } catch (error) {
-        (0, import_core5.error)(`Requester ${full_name} has invalid config`);
+        (0, import_core6.error)(`Requester ${full_name} has invalid config`);
         continue;
       }
       const tokenDecNames = Object.keys(config.tokens);
       const tokenDecs = tokenDecNames.length === 1 ? "1 token declaration" : `${tokenDecNames.length} token declarations`;
-      (0, import_core5.debug)(
+      (0, import_core6.debug)(
         `Requester ${full_name} has ${tokenDecs} ` + JSON.stringify(tokenDecNames)
       );
       const secretDecNames = Object.keys(config.provision.secrets);
       const secretDecs = secretDecNames.length === 1 ? "1 secret declaration" : `${secretDecNames.length} secret declarations`;
-      (0, import_core5.debug)(
+      (0, import_core6.debug)(
         `Requester ${full_name} has ${secretDecs} ` + JSON.stringify(secretDecNames)
       );
       discovered.set(full_name, { requester, config });
     }
   }
-  (0, import_core5.info)(`Discovered ${pluralize(discovered.size, "requester", "requesters")}`);
+  (0, import_core6.info)(`Discovered ${pluralize(discovered.size, "requester", "requesters")}`);
   return discovered;
+}
+
+// src/environment-resolver.ts
+var import_core7 = __toESM(require_core(), 1);
+function createEnvironmentResolver(octokitFactory, appRegistry, appsInput) {
+  const envsByRepo = {};
+  return {
+    async resolveEnvironments(repo, patterns) {
+      const repoName = repoRefToString(repo);
+      const resolved = (await repoEnvs(repo)).filter(
+        (env) => anyPatternMatches(patterns, env)
+      );
+      const patternStrings = patterns.map((p) => p.toString());
+      (0, import_core7.debug)(
+        `Environment patterns ${JSON.stringify(patternStrings)} for ${repoName} resolved to ${JSON.stringify(resolved)}`
+      );
+      return resolved;
+    }
+  };
+  async function repoEnvs(repo) {
+    const repoName = repoRefToString(repo);
+    if (envsByRepo[repoName]) return envsByRepo[repoName];
+    const [provisionerReg] = appRegistry.findProvisionersForRepo(repo);
+    if (!provisionerReg) {
+      throw new Error(`No provisioners found for repo ${repoName}`);
+    }
+    const { installation } = provisionerReg;
+    const octokit = octokitFactory.installationOctokit(
+      appsInput,
+      installation.app_id,
+      installation.id
+    );
+    const envPages = octokit.paginate.iterator(
+      octokit.rest.repos.getAllEnvironments,
+      { owner: repo.account, repo: repo.repo }
+    );
+    const names = [];
+    for await (const { data: envs } of envPages) {
+      for (const env of envs) names.push(env.name);
+    }
+    (0, import_core7.debug)(`Repo ${repoName} has environments ${JSON.stringify(names)}`);
+    return envsByRepo[repoName] = names;
+  }
+}
+
+// src/provision-authorizer.ts
+function createProvisionAuthorizer(createTokenRequest, tokenAuthorizer, config) {
+  const [namePatterns, targetPatterns, requesterPatterns] = patternsForRules(
+    config.rules.secrets
+  );
+  const results = /* @__PURE__ */ new Map();
+  return {
+    authorizeSecret(request2) {
+      const targetResults = [];
+      for (const entry of request2.to) {
+        const isSelfAccount = request2.requester.account === entry.target.account;
+        const isSelfRepo = isRepoRef(entry.target) && request2.requester.account === entry.target.account && request2.requester.repo === entry.target.repo;
+        const requester = repoRefToString(request2.requester);
+        const target = accountOrRepoRefToString(entry.target);
+        const ruleResults = [];
+        let have;
+        for (let i = 0; i < config.rules.secrets.length; ++i) {
+          if (!anyPatternMatches(namePatterns[i], request2.name)) continue;
+          if (!anyPatternMatches(requesterPatterns[i], requester)) continue;
+          const rule = config.rules.secrets[i];
+          let ruleHave;
+          let isRelevant = false;
+          if (isRepoRef(entry.target)) {
+            for (let j = 0; j < targetPatterns[i].repos.length; ++j) {
+              const [repo, repoPattern, envPatterns] = targetPatterns[i].repos[j];
+              if (!repoPattern.test(target)) continue;
+              const repoPatternHave = entry.type === "environment" && isEnvRef(entry.target) ? applyEnvPatterns(
+                entry.target.environment,
+                rule.to.github.repos[repo].environments,
+                envPatterns
+              ) : selectBySecretType(rule.to.github.repos[repo], entry.type);
+              if (repoPatternHave) {
+                isRelevant = true;
+                ruleHave = repoPatternHave;
+              }
+              if (ruleHave === "deny") break;
+            }
+            if (isSelfRepo) {
+              const selfHave = entry.type === "environment" && isEnvRef(entry.target) ? applyEnvPatterns(
+                entry.target.environment,
+                rule.to.github.repo.environments,
+                targetPatterns[i].selfRepoEnvs
+              ) : selectBySecretType(rule.to.github.repo, entry.type);
+              if (selfHave) {
+                isRelevant = true;
+                ruleHave = selfHave;
+              }
+            }
+          } else {
+            for (let j = 0; j < targetPatterns[i].accounts.length; ++j) {
+              const [account, accountPattern] = targetPatterns[i].accounts[j];
+              if (!accountPattern.test(target)) continue;
+              const accountPatternHave = selectBySecretType(
+                rule.to.github.accounts[account],
+                entry.type
+              );
+              if (accountPatternHave) {
+                isRelevant = true;
+                ruleHave = accountPatternHave;
+              }
+              if (ruleHave === "deny") break;
+            }
+            if (isSelfAccount) {
+              const selfHave = selectBySecretType(
+                rule.to.github.account,
+                entry.type
+              );
+              if (selfHave) {
+                isRelevant = true;
+                ruleHave = selfHave;
+              }
+            }
+          }
+          if (!isRelevant) continue;
+          if (ruleHave) have = ruleHave;
+          ruleResults.push({
+            index: i,
+            rule,
+            have: ruleHave
+          });
+        }
+        let tokenAuthResult;
+        let isTokenAllowed;
+        if (request2.tokenDec == null) {
+          tokenAuthResult = void 0;
+          isTokenAllowed = false;
+        } else {
+          tokenAuthResult = tokenAuthorizer.authorizeToken(
+            createTokenRequest(request2.tokenDec, entry.target)
+          );
+          isTokenAllowed = tokenAuthResult.isAllowed;
+        }
+        const isProvisionAllowed = have === "allow";
+        targetResults.push({
+          rules: ruleResults,
+          have,
+          tokenAuthResult,
+          isTokenAllowed,
+          isProvisionAllowed,
+          isAllowed: isTokenAllowed && isProvisionAllowed
+        });
+      }
+      const hasTokenDec = request2.tokenDec != null;
+      const isMissingTargets = targetResults.length < 1;
+      const isAllAllowed = targetResults.every((result2) => result2.isAllowed);
+      const isAllowed = hasTokenDec && !isMissingTargets && isAllAllowed;
+      const result = {
+        request: request2,
+        results: targetResults,
+        isMissingTargets,
+        isAllowed
+      };
+      results.set(request2, result);
+      return result;
+    },
+    listResults() {
+      return Array.from(results.values());
+    }
+  };
+  function patternsForRules(rules) {
+    const namePatterns2 = {};
+    const targetPatterns2 = {};
+    const requesterPatterns2 = {};
+    for (let i = 0; i < rules.length; ++i) {
+      [namePatterns2[i], targetPatterns2[i], requesterPatterns2[i]] = patternsForRule(rules[i]);
+    }
+    return [namePatterns2, targetPatterns2, requesterPatterns2];
+  }
+  function patternsForRule(rule) {
+    const namePatterns2 = [];
+    const targetPatterns2 = {
+      accounts: [],
+      repos: [],
+      selfRepoEnvs: []
+    };
+    const requesterPatterns2 = [];
+    for (const name of rule.secrets) namePatterns2.push(createNamePattern(name));
+    for (const account of Object.keys(rule.to.github.accounts)) {
+      targetPatterns2.accounts.push([account, createGitHubPattern(account)]);
+    }
+    for (const repo of Object.keys(rule.to.github.repos)) {
+      const envPatterns = [];
+      for (const env of Object.keys(rule.to.github.repos[repo].environments)) {
+        envPatterns.push([env, createNamePattern(env)]);
+      }
+      targetPatterns2.repos.push([repo, createGitHubPattern(repo), envPatterns]);
+    }
+    for (const env of Object.keys(rule.to.github.repo.environments)) {
+      targetPatterns2.selfRepoEnvs.push([env, createNamePattern(env)]);
+    }
+    for (const requester of rule.requesters) {
+      requesterPatterns2.push(createGitHubPattern(requester));
+    }
+    return [namePatterns2, targetPatterns2, requesterPatterns2];
+  }
+  function selectBySecretType(types, type2) {
+    switch (type2) {
+      case "actions":
+        return types.actions;
+      case "codespaces":
+        return types.codespaces;
+      case "dependabot":
+        return types.dependabot;
+    }
+    throw new Error(
+      `Invariant violation: Unexpected secret type ${JSON.stringify(type2)}`
+    );
+  }
+  function applyEnvPatterns(reqEnv, environments, envPatterns) {
+    let have;
+    for (let i = 0; i < envPatterns.length; ++i) {
+      const [env, envPattern] = envPatterns[i];
+      if (!envPattern.test(reqEnv)) continue;
+      if (environments[env] === "deny") return "deny";
+      have = environments[env];
+    }
+    return have;
+  }
+}
+
+// src/provision-request.ts
+var SECRET_TYPES = ["actions", "codespaces", "dependabot"];
+function createProvisionRequestFactory(declarationRegistry, appRegistry, environmentResolver) {
+  return async (requester, name, secretDec) => {
+    const [tokenDec, tokenDecIsRegistered] = declarationRegistry.findDeclarationForRequester(
+      requester,
+      secretDec.token
+    );
+    const typesByAccount = {};
+    for (const accountPattern in secretDec.github.accounts) {
+      const accounts = appRegistry.resolveProvisionerAccounts([
+        createNamePattern(accountPattern)
+      ]);
+      const patternTypes = secretDec.github.accounts[accountPattern];
+      for (const account of accounts) {
+        combineTypes(typesByAccount[account] ??= {}, patternTypes);
+      }
+    }
+    overrideTypes(
+      typesByAccount[requester.account] ??= {},
+      secretDec.github.account
+    );
+    const typesByRepo = {};
+    for (const repoPattern in secretDec.github.repos) {
+      const repos = appRegistry.resolveProvisionerRepos([createGitHubPattern(repoPattern)]).map(repoRefFromName);
+      const patternTypes = secretDec.github.repos[repoPattern];
+      for (const repo of repos) {
+        const repoName = repoRefToString(repo);
+        let types = typesByRepo[repoName];
+        const isFirstRepo = !types;
+        typesByRepo[repoName] = types ??= { environments: [] };
+        combineTypes(types, patternTypes);
+        const envs = patternTypes.environments.length > 0 ? await environmentResolver.resolveEnvironments(
+          repo,
+          patternTypes.environments.map(createNamePattern)
+        ) : [];
+        if (isFirstRepo) {
+          types.environments = envs;
+        } else {
+          types.environments = types.environments.filter(
+            (env) => envs.includes(env)
+          );
+        }
+      }
+    }
+    const selfRepoTypes = typesByRepo[repoRefToString(requester)] ??= {
+      environments: []
+    };
+    overrideTypes(selfRepoTypes, secretDec.github.repo);
+    if (secretDec.github.repo.environments.length > 0) {
+      const envs = await environmentResolver.resolveEnvironments(
+        requester,
+        secretDec.github.repo.environments.map(createNamePattern)
+      );
+      selfRepoTypes.environments.push(
+        ...envs.filter((env) => !selfRepoTypes.environments.includes(env))
+      );
+    }
+    const platform = "github";
+    const targets = [];
+    for (const account in typesByAccount) {
+      const types = typesByAccount[account];
+      for (const type2 of SECRET_TYPES) {
+        if (types[type2]) targets.push({ platform, type: type2, target: { account } });
+      }
+    }
+    for (const repoName in typesByRepo) {
+      const types = typesByRepo[repoName];
+      const repo = repoRefFromName(repoName);
+      for (const type2 of SECRET_TYPES) {
+        if (types[type2]) targets.push({ platform, type: type2, target: repo });
+      }
+      for (const env of types.environments) {
+        targets.push({
+          platform,
+          type: "environment",
+          target: createEnvRef(repo.account, repo.repo, env)
+        });
+      }
+    }
+    return {
+      requester,
+      name,
+      secretDec,
+      tokenDec,
+      tokenDecIsRegistered,
+      to: targets
+    };
+  };
+  function combineTypes(base, additions) {
+    for (const type2 of SECRET_TYPES) {
+      if (base[type2] !== false && additions[type2] != null) {
+        base[type2] = additions[type2];
+      }
+    }
+  }
+  function overrideTypes(base, additions) {
+    for (const type2 of SECRET_TYPES) {
+      if (additions[type2] != null) base[type2] = additions[type2];
+    }
+  }
 }
 
 // src/register-token-declarations.ts
@@ -59775,6 +60597,221 @@ function registerTokenDeclarations(declarationRegistry, requesters) {
   for (const [, { requester, config }] of requesters) {
     for (const [name, declaration] of Object.entries(config.tokens)) {
       declarationRegistry.registerDeclaration(requester, name, declaration);
+    }
+  }
+}
+
+// src/token-authorizer.ts
+function createTokenAuthorizer(config) {
+  const [resourcePatterns, consumerPatterns] = patternsForRules(config.rules);
+  const results = /* @__PURE__ */ new Map();
+  return {
+    authorizeToken(request2) {
+      const existing = results.get(request2);
+      if (existing) return existing;
+      if (isEmptyPermissions(request2.tokenDec.permissions)) {
+        throw new Error("No permissions requested");
+      }
+      let result;
+      if (request2.tokenDec.repos === "all") {
+        result = authorizeAllRepos(request2);
+      } else if (request2.tokenDec.repos.length < 1) {
+        result = authorizeNoRepos(request2);
+      } else {
+        result = authorizeSelectedRepos(request2);
+      }
+      results.set(request2, result);
+      return result;
+    },
+    listResults() {
+      return Array.from(results.values());
+    }
+  };
+  function authorizeAllRepos(request2) {
+    const rules = rulesForConsumer(request2.consumer);
+    let isSufficient = false;
+    const ruleResults = [];
+    const have = {};
+    for (const i of rules) {
+      const rule = config.rules[i];
+      let isRelevant = false;
+      for (let j = 0; j < rule.resources.length; ++j) {
+        isRelevant = rule.resources[j].allRepos === true && anyPatternMatches(
+          resourcePatterns[i][j].accounts,
+          request2.tokenDec.account
+        );
+        if (isRelevant) break;
+      }
+      if (!isRelevant) continue;
+      updatePermissions(have, rule.permissions);
+      isSufficient = isSufficientPermissions(
+        have,
+        request2.tokenDec.permissions
+      );
+      ruleResults.push({
+        index: i,
+        rule,
+        have: structuredClone(have),
+        isSufficient
+      });
+    }
+    const maxWant = maxAccess(request2.tokenDec.permissions);
+    const isWrite = isWriteAccess(maxWant);
+    const isMissingRole = isWrite && !request2.tokenDec.as;
+    const isAllowed = isSufficient && !isMissingRole;
+    return {
+      request: request2,
+      type: "ALL_REPOS",
+      rules: ruleResults,
+      have,
+      maxWant,
+      isSufficient,
+      isMissingRole,
+      isAllowed
+    };
+  }
+  function authorizeNoRepos(request2) {
+    const rules = rulesForConsumer(request2.consumer);
+    let isSufficient = false;
+    const ruleResults = [];
+    const have = {};
+    for (const i of rules) {
+      const rule = config.rules[i];
+      let isRelevant = false;
+      for (let j = 0; j < rule.resources.length; ++j) {
+        isRelevant = rule.resources[j].noRepos === true && anyPatternMatches(
+          resourcePatterns[i][j].accounts,
+          request2.tokenDec.account
+        );
+        if (isRelevant) break;
+      }
+      if (!isRelevant) continue;
+      updatePermissions(have, rule.permissions);
+      isSufficient = isSufficientPermissions(
+        have,
+        request2.tokenDec.permissions
+      );
+      ruleResults.push({
+        index: i,
+        rule,
+        have: structuredClone(have),
+        isSufficient
+      });
+    }
+    const maxWant = maxAccess(request2.tokenDec.permissions);
+    const isWrite = isWriteAccess(maxWant);
+    const isMissingRole = isWrite && !request2.tokenDec.as;
+    const isAllowed = isSufficient && !isMissingRole;
+    return {
+      request: request2,
+      type: "NO_REPOS",
+      rules: ruleResults,
+      have,
+      maxWant,
+      isSufficient,
+      isMissingRole,
+      isAllowed
+    };
+  }
+  function authorizeSelectedRepos(request2) {
+    const rules = rulesForConsumer(request2.consumer);
+    let isSufficient = true;
+    const resourceResults = {};
+    for (const reqRepo of request2.repos) {
+      const reqResource = repoRefToString(
+        createRepoRef(request2.tokenDec.account, reqRepo)
+      );
+      const ruleResults = [];
+      const have = {};
+      let isResourceSufficient = false;
+      for (const i of rules) {
+        const rule = config.rules[i];
+        let isRelevant = false;
+        for (let j = 0; j < rule.resources.length; ++j) {
+          const { accounts, repos } = resourcePatterns[i][j];
+          isRelevant = anyPatternMatches(accounts, request2.tokenDec.account) && anyPatternMatches(repos, reqRepo);
+          if (isRelevant) break;
+        }
+        if (!isRelevant) continue;
+        updatePermissions(have, rule.permissions);
+        isResourceSufficient = isSufficientPermissions(
+          have,
+          request2.tokenDec.permissions
+        );
+        ruleResults.push({
+          index: i,
+          rule,
+          have: structuredClone(have),
+          isSufficient: isResourceSufficient
+        });
+      }
+      isSufficient &&= isResourceSufficient;
+      resourceResults[reqResource] = {
+        rules: ruleResults,
+        have,
+        isSufficient: isResourceSufficient
+      };
+    }
+    const maxWant = maxAccess(request2.tokenDec.permissions);
+    const isWrite = isWriteAccess(maxWant);
+    const isMissingRole = isWrite && !request2.tokenDec.as;
+    const isMatched = request2.repos.length > 0;
+    const isAllowed = isSufficient && !isMissingRole && isMatched;
+    return {
+      request: request2,
+      type: "SELECTED_REPOS",
+      results: resourceResults,
+      maxWant,
+      isSufficient,
+      isMissingRole,
+      isMatched,
+      isAllowed
+    };
+  }
+  function patternsForRules(rules) {
+    const resourcePatterns2 = {};
+    const consumerPatterns2 = {};
+    for (let i = 0; i < rules.length; ++i) {
+      [resourcePatterns2[i], consumerPatterns2[i]] = patternsForRule(rules[i]);
+    }
+    return [resourcePatterns2, consumerPatterns2];
+  }
+  function patternsForRule(rule) {
+    const resourcePatterns2 = [];
+    const consumerPatterns2 = [];
+    for (const criteria of rule.resources) {
+      resourcePatterns2.push(patternsForResourceCriteria(criteria));
+    }
+    for (const consumer of rule.consumers) {
+      consumerPatterns2.push(createGitHubPattern(consumer));
+    }
+    return [resourcePatterns2, consumerPatterns2];
+  }
+  function patternsForResourceCriteria(criteria) {
+    const accounts = [];
+    const repos = [];
+    for (const pattern of criteria.accounts) {
+      accounts.push(createNamePattern(pattern));
+    }
+    for (const pattern of criteria.selectedRepos) {
+      repos.push(createNamePattern(pattern));
+    }
+    return { accounts, repos };
+  }
+  function rulesForConsumer(consumer) {
+    const consumerName = accountOrRepoRefToString(consumer);
+    const indices = [];
+    for (let i = 0; i < config.rules.length; ++i) {
+      if (anyPatternMatches(consumerPatterns[i], consumerName)) {
+        indices.push(i);
+      }
+    }
+    return indices;
+  }
+  function updatePermissions(have, permissions) {
+    Object.assign(have, permissions);
+    for (const [permission, access = "none"] of Object.entries(have)) {
+      if (access === "none") delete have[permission];
     }
   }
 }
@@ -59795,22 +60832,140 @@ function createTokenDeclarationRegistry() {
   };
 }
 
+// src/token-request.ts
+var import_fast_json_stable_stringify = __toESM(require_fast_json_stable_stringify(), 1);
+
+// src/token-declaration.ts
+function normalizeTokenDeclaration(declaration) {
+  const { repos } = declaration;
+  return { ...declaration, repos: repos === "all" ? "all" : repos.toSorted() };
+}
+
+// src/token-request.ts
+function normalizeTokenRequest(request2) {
+  const { consumer, tokenDec, repos } = request2;
+  return {
+    consumer: isRepoRef(consumer) ? createRepoRef(consumer.account, consumer.repo) : createAccountRef(consumer.account),
+    repos: repos === "all" ? "all" : repos.toSorted(),
+    tokenDec: normalizeTokenDeclaration(tokenDec)
+  };
+}
+function createTokenRequestFactory(appRegistry) {
+  const cache = {};
+  return (tokenDec, consumer) => {
+    let repos;
+    if (tokenDec.repos === "all") {
+      repos = "all";
+    } else {
+      const repoPatterns = tokenDec.repos.map((repo) => {
+        return createGitHubPattern(
+          repoRefToString(createRepoRef(tokenDec.account, repo))
+        );
+      });
+      repos = appRegistry.resolveIssuerRepos(repoPatterns).map((repo) => repoRefFromName(repo).repo);
+    }
+    const tokenReq = normalizeTokenRequest({ consumer, tokenDec, repos });
+    return cache[(0, import_fast_json_stable_stringify.default)(tokenReq)] ??= tokenReq;
+  };
+}
+
 // src/main.ts
 main().catch((error) => {
-  (0, import_core6.setFailed)(errorStack(error));
+  (0, import_core8.setFailed)(errorStack(error));
 });
 async function main() {
   const appsInput = readAppsInput();
+  const config = await (0, import_core8.group)("Reading provider configuration", async () => {
+    const config2 = {
+      permissions: {
+        rules: [
+          {
+            description: "Allow all tokens",
+            resources: [
+              {
+                accounts: ["*"],
+                noRepos: true,
+                allRepos: true,
+                selectedRepos: ["*"]
+              }
+            ],
+            consumers: ["*", "*/*"],
+            permissions: {
+              metadata: "read"
+            }
+          }
+        ]
+      },
+      provision: {
+        rules: {
+          secrets: [
+            {
+              description: "Allow all secrets",
+              secrets: ["*"],
+              requesters: ["*/*"],
+              to: {
+                github: {
+                  account: {},
+                  accounts: {
+                    "*": {
+                      actions: "allow",
+                      codespaces: "allow",
+                      dependabot: "allow"
+                    }
+                  },
+                  repo: { environments: {} },
+                  repos: {
+                    "*/*": {
+                      actions: "allow",
+                      codespaces: "allow",
+                      dependabot: "allow",
+                      environments: { "*": "allow" }
+                    }
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    };
+    return config2;
+  });
   const octokitFactory = createOctokitFactory();
   const appRegistry = createAppRegistry();
   const declarationRegistry = createTokenDeclarationRegistry();
-  await (0, import_core6.group)("Discovering apps", async () => {
+  const environmentResolver = createEnvironmentResolver(
+    octokitFactory,
+    appRegistry,
+    appsInput
+  );
+  const createProvisionRequest = createProvisionRequestFactory(
+    declarationRegistry,
+    appRegistry,
+    environmentResolver
+  );
+  const createTokenRequest = createTokenRequestFactory(appRegistry);
+  const tokenAuthorizer = createTokenAuthorizer(config.permissions);
+  const provisionAuthorizer = createProvisionAuthorizer(
+    createTokenRequest,
+    tokenAuthorizer,
+    config.provision
+  );
+  const authorizer = createAuthorizer(
+    createProvisionRequest,
+    provisionAuthorizer,
+    tokenAuthorizer
+  );
+  await (0, import_core8.group)("Discovering apps", async () => {
     await discoverApps(octokitFactory, appRegistry, appsInput);
   });
-  const requesters = await (0, import_core6.group)("Discovering requesters", async () => {
+  const requesters = await (0, import_core8.group)("Discovering requesters", async () => {
     return discoverRequesters(octokitFactory, appRegistry, appsInput);
   });
   registerTokenDeclarations(declarationRegistry, requesters);
+  await (0, import_core8.group)("Authorizing requests", async () => {
+    await authorizer.authorize(Array.from(requesters.values()));
+  });
 }
 /*! Bundled license information:
 
