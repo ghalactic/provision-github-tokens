@@ -27,7 +27,7 @@ it("supports wildcard account consumers", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        declaration: {
+        tokenDec: {
           shared: false,
           as: undefined,
           account: "account-a",
@@ -48,7 +48,7 @@ it("supports wildcard account consumers", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-y" },
-        declaration: {
+        tokenDec: {
           shared: false,
           as: undefined,
           account: "account-a",
@@ -89,7 +89,7 @@ it("supports wildcard repo consumers", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
-        declaration: {
+        tokenDec: {
           shared: false,
           as: undefined,
           account: "account-a",
@@ -110,7 +110,7 @@ it("supports wildcard repo consumers", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-y", repo: "repo-y" },
-        declaration: {
+        tokenDec: {
           shared: false,
           as: undefined,
           account: "account-a",
@@ -136,7 +136,7 @@ it("throws if the requested permissions are empty", () => {
     throws(() =>
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        declaration: {
+        tokenDec: {
           shared: false,
           as: undefined,
           account: "account-a",
@@ -151,7 +151,7 @@ it("throws if the requested permissions are empty", () => {
     throws(() =>
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        declaration: {
+        tokenDec: {
           shared: false,
           as: undefined,
           account: "account-a",
@@ -166,7 +166,7 @@ it("throws if the requested permissions are empty", () => {
     throws(() =>
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
-        declaration: {
+        tokenDec: {
           shared: false,
           as: undefined,
           account: "account-a",
@@ -181,7 +181,7 @@ it("throws if the requested permissions are empty", () => {
     throws(() =>
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
-        declaration: {
+        tokenDec: {
           shared: false,
           as: undefined,
           account: "account-a",
