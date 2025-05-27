@@ -9,6 +9,7 @@ import {
 import { createNamePattern } from "./name-pattern.js";
 import { anyPatternMatches, type Pattern } from "./pattern.js";
 import { isEmptyPermissions, isSufficientPermissions } from "./permissions.js";
+import type { TokenRequest } from "./token-request.js";
 import type {
   PermissionsRule,
   PermissionsRuleResourceCriteria,
@@ -20,7 +21,6 @@ import {
   type TokenAuthResourceResultRuleResult,
   type TokenAuthResult,
 } from "./type/token-auth-result.js";
-import type { TokenRequest } from "./type/token-request.js";
 
 export type TokenAuthorizer = {
   /**

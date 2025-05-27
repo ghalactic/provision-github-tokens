@@ -7,9 +7,9 @@ import {
 } from "./github-reference.js";
 import { anyPatternMatches, type Pattern } from "./pattern.js";
 import { isEmptyPermissions, permissionAccess } from "./permissions.js";
+import type { TokenRequest } from "./token-request.js";
 import type { App, Installation, Repo } from "./type/github-api.js";
 import type { AppInputIssuer, AppInputProvisioner } from "./type/input.js";
-import type { TokenRequest } from "./type/token-request.js";
 
 export type AppRegistry = {
   readonly apps: Map<number, AppRegistration>;

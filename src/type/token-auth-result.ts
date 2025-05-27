@@ -1,6 +1,6 @@
+import type { TokenRequest } from "../token-request.js";
 import type { PermissionsRule } from "./permissions-rule.js";
 import type { PermissionAccess, Permissions } from "./permissions.js";
-import type { TokenRequest } from "./token-request.js";
 
 export type TokenAuthResultExplainer<T> = (result: TokenAuthResult) => T;
 
