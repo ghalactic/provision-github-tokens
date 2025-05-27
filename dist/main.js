@@ -59358,11 +59358,11 @@ function createTokenDeclarationRegistry() {
     registerDeclaration(definingRepo, name, declaration) {
       declarations.set(`${repoRefToString(definingRepo)}.${name}`, declaration);
     },
-    findDeclarationForRequester(requestingRepo, reference) {
+    findDeclarationForRequester(requester, reference) {
       const declaration = declarations.get(reference);
       if (!declaration) return [void 0, false];
       if (declaration.shared) return [declaration, true];
-      return reference.startsWith(`${repoRefToString(requestingRepo)}.`) ? [declaration, true] : [void 0, true];
+      return reference.startsWith(`${repoRefToString(requester)}.`) ? [declaration, true] : [void 0, true];
     }
   };
 }

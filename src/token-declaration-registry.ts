@@ -9,7 +9,7 @@ export type TokenDeclarationRegistry = {
   ) => void;
 
   findDeclarationForRequester: (
-    requestingRepo: RepoReference,
+    requester: RepoReference,
     reference: string,
   ) => [declaration: TokenDeclaration | undefined, isRegistered: boolean];
 };
@@ -22,13 +22,13 @@ export function createTokenDeclarationRegistry(): TokenDeclarationRegistry {
       declarations.set(`${repoRefToString(definingRepo)}.${name}`, declaration);
     },
 
-    findDeclarationForRequester(requestingRepo, reference) {
+    findDeclarationForRequester(requester, reference) {
       const declaration = declarations.get(reference);
 
       if (!declaration) return [undefined, false];
       if (declaration.shared) return [declaration, true];
 
-      return reference.startsWith(`${repoRefToString(requestingRepo)}.`)
+      return reference.startsWith(`${repoRefToString(requester)}.`)
         ? [declaration, true]
         : [undefined, true];
     },
