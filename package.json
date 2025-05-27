@@ -13,6 +13,7 @@
     "@octokit/request-error": "^6.1.8",
     "ajv": "^8.17.1",
     "ajv-errors": "^3.0.0",
+    "fast-json-stable-stringify": "^2.1.0",
     "js-yaml": "^4.1.0",
     "regexp.escape": "^2.0.1",
     "source-map-support": "^0.5.21"
