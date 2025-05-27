@@ -1,5 +1,5 @@
 import { compareRef } from "./compare-ref.js";
-import type { ProvisionRequestTarget } from "./type/provision-request.js";
+import type { ProvisionRequestTarget } from "./provision-request.js";
 
 export function compareProvisionRequestTarget(
   a: ProvisionRequestTarget,

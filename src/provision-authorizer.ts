@@ -7,6 +7,7 @@ import {
 } from "./github-reference.js";
 import { createNamePattern } from "./name-pattern.js";
 import { anyPatternMatches, type Pattern } from "./pattern.js";
+import type { ProvisionRequest } from "./provision-request.js";
 import type { TokenAuthorizer } from "./token-authorizer.js";
 import type { TokenRequestFactory } from "./token-request.js";
 import type { ProviderProvisionConfig } from "./type/provider-config.js";
@@ -15,7 +16,6 @@ import type {
   ProvisionAuthTargetResult,
   ProvisionAuthTargetRuleResult,
 } from "./type/provision-auth-result.js";
-import type { ProvisionRequest } from "./type/provision-request.js";
 import type {
   ProviderConfigGitHubSecretTypes,
   ProvisionSecretsRule,

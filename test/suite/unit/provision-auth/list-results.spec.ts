@@ -1,6 +1,6 @@
 import { expect, it } from "vitest";
 import { createProvisionAuthorizer } from "../../../../src/provision-authorizer.js";
-import type { ProvisionRequest } from "../../../../src/type/provision-request.js";
+import type { ProvisionRequest } from "../../../../src/provision-request.js";
 import {
   createTestSecretDec,
   createTestTokenDec,

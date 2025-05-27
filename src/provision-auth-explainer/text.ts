@@ -4,13 +4,13 @@ import {
   isRepoRef,
   repoRefToString,
 } from "../github-reference.js";
+import type { ProvisionRequestTarget } from "../provision-request.js";
 import type {
   ProvisionAuthResult,
   ProvisionAuthResultExplainer,
   ProvisionAuthTargetResult,
   ProvisionAuthTargetRuleResult,
 } from "../type/provision-auth-result.js";
-import type { ProvisionRequestTarget } from "../type/provision-request.js";
 import type { ProvisionSecretsRule } from "../type/provision-rule.js";
 import type { TokenAuthResult } from "../type/token-auth-result.js";
 
