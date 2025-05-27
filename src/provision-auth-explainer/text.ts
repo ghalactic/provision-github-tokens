@@ -49,7 +49,7 @@ export function createTextProvisionAuthExplainer(): ProvisionAuthResultExplainer
     return (
       `\n  ${renderIcon(isAllowed)} ` +
       `${isAllowed ? "Can" : "Can't"} ` +
-      `provision to ${explainSubject(target)} ${explainBasedOnRules(rules)}`
+      `provision token to ${explainSubject(target)} ${explainBasedOnRules(rules)}`
     );
   }
 
@@ -67,13 +67,13 @@ export function createTextProvisionAuthExplainer(): ProvisionAuthResultExplainer
 
       switch (type) {
         case "actions":
-          return "Actions";
+          return "GitHub Actions";
         case "codespaces":
-          return "Codespaces";
+          return "GitHub Codespaces";
         case "dependabot":
           return "Dependabot";
         case "environment":
-          return `environment ${r.target.environment}`;
+          return `GitHub environment ${r.target.environment}`;
         /* v8 ignore start */
       }
 
@@ -83,7 +83,7 @@ export function createTextProvisionAuthExplainer(): ProvisionAuthResultExplainer
       /* v8 ignore stop */
     })(target);
 
-    return `${type} in ${accountOrRepoRefToString(target.target)}`;
+    return `${type} secret in ${accountOrRepoRefToString(target.target)}`;
   }
 
   function explainBasedOnRules(rules: ProvisionAuthTargetRuleResult[]): string {

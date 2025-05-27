@@ -47,7 +47,7 @@ it("allows GitHub Actions account secrets that should be allowed", () => {
     ),
   ).toMatchInlineSnapshot(`
     "✅ Repo account-x/repo-x was allowed to provision secret SECRET_A:
-      ✅ Can provision to Actions in account-a based on 1 rule:
+      ✅ Can provision token to GitHub Actions secret in account-a based on 1 rule:
         ✅ Allowed by rule #1"
   `);
   expect(
@@ -66,7 +66,7 @@ it("allows GitHub Actions account secrets that should be allowed", () => {
     ),
   ).toMatchInlineSnapshot(`
     "✅ Repo account-y-1/repo-y-1 was allowed to provision secret SECRET_A:
-      ✅ Can provision to Actions in account-b-1 based on 1 rule:
+      ✅ Can provision token to GitHub Actions secret in account-b-1 based on 1 rule:
         ✅ Allowed by rule #1"
   `);
 });
@@ -109,7 +109,7 @@ it("allows GitHub Actions account secrets that should be allowed within the requ
     ),
   ).toMatchInlineSnapshot(`
     "✅ Repo account-a/repo-a was allowed to provision secret SECRET_A:
-      ✅ Can provision to Actions in account-a based on 1 rule:
+      ✅ Can provision token to GitHub Actions secret in account-a based on 1 rule:
         ✅ Allowed by rule #1"
   `);
   expect(
@@ -128,7 +128,7 @@ it("allows GitHub Actions account secrets that should be allowed within the requ
     ),
   ).toMatchInlineSnapshot(`
     "✅ Repo account-b-1/repo-b-1 was allowed to provision secret SECRET_A:
-      ✅ Can provision to Actions in account-b-1 based on 1 rule:
+      ✅ Can provision token to GitHub Actions secret in account-b-1 based on 1 rule:
         ✅ Allowed by rule #1"
   `);
 });
@@ -175,7 +175,7 @@ it("allows GitHub Actions account secrets that should be allowed within the requ
     ),
   ).toMatchInlineSnapshot(`
     "✅ Repo account-a/repo-a was allowed to provision secret SECRET_A:
-      ✅ Can provision to Actions in account-a based on 1 rule:
+      ✅ Can provision token to GitHub Actions secret in account-a based on 1 rule:
         ✅ Allowed by rule #1"
   `);
 });
@@ -225,7 +225,7 @@ it("allows GitHub Actions repo secrets that should be allowed", () => {
     ),
   ).toMatchInlineSnapshot(`
     "✅ Repo account-x/repo-x was allowed to provision secret SECRET_A:
-      ✅ Can provision to Actions in account-a/repo-a based on 1 rule:
+      ✅ Can provision token to GitHub Actions secret in account-a/repo-a based on 1 rule:
         ✅ Allowed by rule #1"
   `);
   expect(
@@ -244,7 +244,7 @@ it("allows GitHub Actions repo secrets that should be allowed", () => {
     ),
   ).toMatchInlineSnapshot(`
     "✅ Repo account-y-1/repo-y-1 was allowed to provision secret SECRET_A:
-      ✅ Can provision to Actions in account-b-1/repo-b-1 based on 1 rule:
+      ✅ Can provision token to GitHub Actions secret in account-b-1/repo-b-1 based on 1 rule:
         ✅ Allowed by rule #1"
   `);
 });
@@ -288,7 +288,7 @@ it("allows GitHub Actions repo secrets that should be allowed within the request
     ),
   ).toMatchInlineSnapshot(`
     "✅ Repo account-a/repo-a was allowed to provision secret SECRET_A:
-      ✅ Can provision to Actions in account-a/repo-a based on 1 rule:
+      ✅ Can provision token to GitHub Actions secret in account-a/repo-a based on 1 rule:
         ✅ Allowed by rule #1"
   `);
   expect(
@@ -307,7 +307,7 @@ it("allows GitHub Actions repo secrets that should be allowed within the request
     ),
   ).toMatchInlineSnapshot(`
     "✅ Repo account-b-1/repo-b-1 was allowed to provision secret SECRET_A:
-      ✅ Can provision to Actions in account-b-1/repo-b-1 based on 1 rule:
+      ✅ Can provision token to GitHub Actions secret in account-b-1/repo-b-1 based on 1 rule:
         ✅ Allowed by rule #1"
   `);
 });
@@ -356,7 +356,7 @@ it("allows GitHub Actions repo secrets that should be allowed within the request
     ),
   ).toMatchInlineSnapshot(`
     "✅ Repo account-a/repo-a was allowed to provision secret SECRET_A:
-      ✅ Can provision to Actions in account-a/repo-a based on 1 rule:
+      ✅ Can provision token to GitHub Actions secret in account-a/repo-a based on 1 rule:
         ✅ Allowed by rule #1"
   `);
   expect(
@@ -375,7 +375,7 @@ it("allows GitHub Actions repo secrets that should be allowed within the request
     ),
   ).toMatchInlineSnapshot(`
     "✅ Repo account-b-1/repo-b-1 was allowed to provision secret SECRET_A:
-      ✅ Can provision to Actions in account-b-1/repo-b-1 based on 1 rule:
+      ✅ Can provision token to GitHub Actions secret in account-b-1/repo-b-1 based on 1 rule:
         ✅ Allowed by rule #1"
   `);
 });
@@ -420,7 +420,7 @@ it("doesn't allow GitHub Actions account secrets for unauthorized requesters", (
     ),
   ).toMatchInlineSnapshot(`
     "❌ Repo account-y/repo-y wasn't allowed to provision secret SECRET_A:
-      ❌ Can't provision to Actions in account-a (no matching rules)"
+      ❌ Can't provision token to GitHub Actions secret in account-a (no matching rules)"
   `);
 });
 
@@ -462,7 +462,7 @@ it("doesn't allow GitHub Actions account secrets within the requesting account f
     ),
   ).toMatchInlineSnapshot(`
     "❌ Repo account-y/repo-y wasn't allowed to provision secret SECRET_A:
-      ❌ Can't provision to Actions in account-x (no matching rules)"
+      ❌ Can't provision token to GitHub Actions secret in account-x (no matching rules)"
   `);
   expect(
     explain(
@@ -480,7 +480,7 @@ it("doesn't allow GitHub Actions account secrets within the requesting account f
     ),
   ).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-y wasn't allowed to provision secret SECRET_A:
-      ❌ Can't provision to Actions in account-x (no matching rules)"
+      ❌ Can't provision token to GitHub Actions secret in account-x (no matching rules)"
   `);
   expect(
     explain(
@@ -498,7 +498,7 @@ it("doesn't allow GitHub Actions account secrets within the requesting account f
     ),
   ).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x wasn't allowed to provision secret SECRET_A:
-      ❌ Can't provision to Actions in account-y (no matching rules)"
+      ❌ Can't provision token to GitHub Actions secret in account-y (no matching rules)"
   `);
 });
 
@@ -544,7 +544,7 @@ it("doesn't allow GitHub Actions account secrets within the requesting account w
     ),
   ).toMatchInlineSnapshot(`
     "❌ Repo account-a/repo-a wasn't allowed to provision secret SECRET_A:
-      ❌ Can't provision to Actions in account-a based on 1 rule:
+      ❌ Can't provision token to GitHub Actions secret in account-a based on 1 rule:
         ❌ Denied by rule #1"
   `);
 });
@@ -590,7 +590,7 @@ it("doesn't allow GitHub Actions repo secrets for unauthorized requesters", () =
     ),
   ).toMatchInlineSnapshot(`
     "❌ Repo account-y/repo-y wasn't allowed to provision secret SECRET_A:
-      ❌ Can't provision to Actions in account-a/repo-a (no matching rules)"
+      ❌ Can't provision token to GitHub Actions secret in account-a/repo-a (no matching rules)"
   `);
 });
 
@@ -633,7 +633,7 @@ it("doesn't allow GitHub Actions repo secrets within the requesting repo for una
     ),
   ).toMatchInlineSnapshot(`
     "❌ Repo account-y/repo-y wasn't allowed to provision secret SECRET_A:
-      ❌ Can't provision to Actions in account-x/repo-x (no matching rules)"
+      ❌ Can't provision token to GitHub Actions secret in account-x/repo-x (no matching rules)"
   `);
   expect(
     explain(
@@ -651,7 +651,7 @@ it("doesn't allow GitHub Actions repo secrets within the requesting repo for una
     ),
   ).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-y wasn't allowed to provision secret SECRET_A:
-      ❌ Can't provision to Actions in account-x/repo-x (no matching rules)"
+      ❌ Can't provision token to GitHub Actions secret in account-x/repo-x (no matching rules)"
   `);
   expect(
     explain(
@@ -669,7 +669,7 @@ it("doesn't allow GitHub Actions repo secrets within the requesting repo for una
     ),
   ).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x wasn't allowed to provision secret SECRET_A:
-      ❌ Can't provision to Actions in account-x/repo-y (no matching rules)"
+      ❌ Can't provision token to GitHub Actions secret in account-x/repo-y (no matching rules)"
   `);
 });
 
@@ -717,7 +717,7 @@ it("doesn't allow GitHub Actions repo secrets within the requesting repo when de
     ),
   ).toMatchInlineSnapshot(`
     "❌ Repo account-a/repo-a wasn't allowed to provision secret SECRET_A:
-      ❌ Can't provision to Actions in account-a/repo-a based on 1 rule:
+      ❌ Can't provision token to GitHub Actions secret in account-a/repo-a based on 1 rule:
         ❌ Denied by rule #1"
   `);
 });

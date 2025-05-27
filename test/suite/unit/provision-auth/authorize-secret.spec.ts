@@ -44,7 +44,7 @@ it("supports multiple secrets per rule", () => {
     ),
   ).toMatchInlineSnapshot(`
     "✅ Repo account-x/repo-x was allowed to provision secret SECRET_A:
-      ✅ Can provision to Actions in account-a based on 1 rule:
+      ✅ Can provision token to GitHub Actions secret in account-a based on 1 rule:
         ✅ Allowed by rule #1"
   `);
   expect(
@@ -63,7 +63,7 @@ it("supports multiple secrets per rule", () => {
     ),
   ).toMatchInlineSnapshot(`
     "✅ Repo account-x/repo-x was allowed to provision secret SECRET_B:
-      ✅ Can provision to Actions in account-a based on 1 rule:
+      ✅ Can provision token to GitHub Actions secret in account-a based on 1 rule:
         ✅ Allowed by rule #1"
   `);
 });
@@ -114,9 +114,9 @@ it("supports multiple targets in requests", () => {
     ),
   ).toMatchInlineSnapshot(`
     "✅ Repo account-x/repo-x was allowed to provision secret SECRET_A:
-      ✅ Can provision to Actions in account-a based on 1 rule:
+      ✅ Can provision token to GitHub Actions secret in account-a based on 1 rule:
         ✅ Allowed by rule #1
-      ✅ Can provision to Codespaces in account-a based on 1 rule:
+      ✅ Can provision token to GitHub Codespaces secret in account-a based on 1 rule:
         ✅ Allowed by rule #1"
   `);
 });
@@ -161,7 +161,7 @@ it("supports wildcards in secret names", () => {
     ),
   ).toMatchInlineSnapshot(`
     "✅ Repo account-x/repo-x was allowed to provision secret SECRET_A:
-      ✅ Can provision to Actions in account-a based on 1 rule:
+      ✅ Can provision token to GitHub Actions secret in account-a based on 1 rule:
         ✅ Allowed by rule #1"
   `);
   expect(
@@ -180,7 +180,7 @@ it("supports wildcards in secret names", () => {
     ),
   ).toMatchInlineSnapshot(`
     "✅ Repo account-x/repo-x was allowed to provision secret SECRET_B:
-      ✅ Can provision to Actions in account-a based on 1 rule:
+      ✅ Can provision token to GitHub Actions secret in account-a based on 1 rule:
         ✅ Allowed by rule #1"
   `);
 });
@@ -226,7 +226,7 @@ it("supports rule descriptions", () => {
     ),
   ).toMatchInlineSnapshot(`
     "✅ Repo account-x/repo-x was allowed to provision secret SECRET_A:
-      ✅ Can provision to Actions in account-a based on 1 rule:
+      ✅ Can provision token to GitHub Actions secret in account-a based on 1 rule:
         ✅ Allowed by rule #1: "<description>""
   `);
 });
@@ -297,7 +297,7 @@ it("allows secrets when a later rule allows access that a previous rule denied",
     ),
   ).toMatchInlineSnapshot(`
     "✅ Repo account-x/repo-x was allowed to provision secret SECRET_A:
-      ✅ Can provision to Actions in account-a based on 2 rules:
+      ✅ Can provision token to GitHub Actions secret in account-a based on 2 rules:
         ❌ Denied by rule #1
         ✅ Allowed by rule #2"
   `);
@@ -318,7 +318,7 @@ it("allows secrets when a later rule allows access that a previous rule denied",
     ),
   ).toMatchInlineSnapshot(`
     "✅ Repo account-x/repo-x was allowed to provision secret SECRET_A:
-      ✅ Can provision to Actions in account-a/repo-a based on 2 rules:
+      ✅ Can provision token to GitHub Actions secret in account-a/repo-a based on 2 rules:
         ❌ Denied by rule #1
         ✅ Allowed by rule #2"
   `);
@@ -390,7 +390,7 @@ it("doesn't allow secrets when a later rule denies access that a previous rule a
     ),
   ).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x wasn't allowed to provision secret SECRET_A:
-      ❌ Can't provision to Actions in account-a based on 2 rules:
+      ❌ Can't provision token to GitHub Actions secret in account-a based on 2 rules:
         ✅ Allowed by rule #1
         ❌ Denied by rule #2"
   `);
@@ -411,7 +411,7 @@ it("doesn't allow secrets when a later rule denies access that a previous rule a
     ),
   ).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x wasn't allowed to provision secret SECRET_A:
-      ❌ Can't provision to Actions in account-a/repo-a based on 2 rules:
+      ❌ Can't provision token to GitHub Actions secret in account-a/repo-a based on 2 rules:
         ✅ Allowed by rule #1
         ❌ Denied by rule #2"
   `);
@@ -462,7 +462,7 @@ it("doesn't allow secrets when no rule matches the secret name", () => {
     ),
   ).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x wasn't allowed to provision secret SECRET_X:
-      ❌ Can't provision to Actions in account-a (no matching rules)"
+      ❌ Can't provision token to GitHub Actions secret in account-a (no matching rules)"
   `);
 });
 
@@ -509,7 +509,7 @@ it("doesn't allow secrets when two account patterns match but one allows and one
     ),
   ).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x wasn't allowed to provision secret SECRET_A:
-      ❌ Can't provision to Actions in account-a based on 1 rule:
+      ❌ Can't provision token to GitHub Actions secret in account-a based on 1 rule:
         ❌ Denied by rule #1"
   `);
 });
@@ -559,7 +559,7 @@ it("doesn't allow secrets when two repo patterns match but one allows and one de
     ),
   ).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x wasn't allowed to provision secret SECRET_A:
-      ❌ Can't provision to Actions in account-a/repo-a based on 1 rule:
+      ❌ Can't provision token to GitHub Actions secret in account-a/repo-a based on 1 rule:
         ❌ Denied by rule #1"
   `);
 });
@@ -616,11 +616,11 @@ it("doesn't allow secrets when some targets aren't allowed", () => {
     ),
   ).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x wasn't allowed to provision secret SECRET_A:
-      ✅ Can provision to Actions in account-a based on 1 rule:
+      ✅ Can provision token to GitHub Actions secret in account-a based on 1 rule:
         ✅ Allowed by rule #1
-      ❌ Can't provision to Codespaces in account-a based on 1 rule:
+      ❌ Can't provision token to GitHub Codespaces secret in account-a based on 1 rule:
         ❌ Denied by rule #1
-      ✅ Can provision to Dependabot in account-a based on 1 rule:
+      ✅ Can provision token to Dependabot secret in account-a based on 1 rule:
         ✅ Allowed by rule #1"
   `);
 });
