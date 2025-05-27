@@ -9,7 +9,7 @@ import {
 import { createNamePattern } from "./name-pattern.js";
 import { anyPatternMatches, type Pattern } from "./pattern.js";
 import { isEmptyPermissions, isSufficientPermissions } from "./permissions.js";
-import type { TokenRequest } from "./token-request.js";
+import { type TokenRequest } from "./token-request.js";
 import type {
   PermissionsRule,
   PermissionsRuleResourceCriteria,
@@ -23,30 +23,43 @@ import {
 } from "./type/token-auth-result.js";
 
 export type TokenAuthorizer = {
-  /**
-   * Authorize a token.
-   */
   authorizeToken: (request: TokenRequest) => TokenAuthResult;
+  listResults: () => TokenAuthResult[];
 };
 
 export function createTokenAuthorizer(
   config: ProviderPermissionsConfig,
 ): TokenAuthorizer {
   const [resourcePatterns, consumerPatterns] = patternsForRules(config.rules);
+  const results = new Map<TokenRequest, TokenAuthResult>();
 
   return {
     authorizeToken(request) {
+      const existing = results.get(request);
+
+      if (existing) return existing;
+
       if (isEmptyPermissions(request.tokenDec.permissions)) {
         throw new Error("No permissions requested");
       }
 
+      let result: TokenAuthResult;
+
       if (request.tokenDec.repos === "all") {
-        return authorizeAllRepos(request);
+        result = authorizeAllRepos(request);
+      } else if (request.tokenDec.repos.length < 1) {
+        result = authorizeNoRepos(request);
+      } else {
+        result = authorizeSelectedRepos(request);
       }
-      if (request.tokenDec.repos.length < 1) {
-        return authorizeNoRepos(request);
-      }
-      return authorizeSelectedRepos(request);
+
+      results.set(request, result);
+
+      return result;
+    },
+
+    listResults() {
+      return Array.from(results.values());
     },
   };
 
