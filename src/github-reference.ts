@@ -14,6 +14,10 @@ export type EnvironmentReference = {
 };
 
 export type AccountOrRepoReference = AccountReference | RepoReference;
+export type AccountOrRepoOrEnvReference =
+  | AccountReference
+  | RepoReference
+  | EnvironmentReference;
 
 export function createAccountRef(account: string): AccountReference {
   assertAccount(account);
