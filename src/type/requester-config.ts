@@ -1,5 +1,5 @@
+import type { TokenDeclaration } from "../token-declaration.js";
 import type { SecretDeclaration } from "./secret-declaration.js";
-import type { TokenDeclaration } from "./token-declaration.js";
 
 export type PartialRequesterConfig = {
   $schema: string;

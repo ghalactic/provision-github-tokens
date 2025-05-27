@@ -1,5 +1,5 @@
 import { repoRefToString, type RepoReference } from "./github-reference.js";
-import type { TokenDeclaration } from "./type/token-declaration.js";
+import type { TokenDeclaration } from "./token-declaration.js";
 
 export type TokenDeclarationRegistry = {
   registerDeclaration: (

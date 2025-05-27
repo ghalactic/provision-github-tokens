@@ -2,7 +2,7 @@ import { expect, it } from "vitest";
 import type { DiscoveredRequester } from "../../../src/discover-requesters.js";
 import { registerTokenDeclarations } from "../../../src/register-token-declarations.js";
 import { createTokenDeclarationRegistry } from "../../../src/token-declaration-registry.js";
-import type { TokenDeclaration } from "../../../src/type/token-declaration.js";
+import type { TokenDeclaration } from "../../../src/token-declaration.js";
 
 it("registers token declarations from discovered requesters", async () => {
   const declarationA: TokenDeclaration = {
