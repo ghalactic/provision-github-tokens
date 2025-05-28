@@ -60915,6 +60915,41 @@ function createTokenDeclarationRegistry() {
   };
 }
 
+// src/token-factory.ts
+function createTokenFactory(appRegistry, appsInput, octokitFactory) {
+  return async (authResults) => {
+    const creationResults = /* @__PURE__ */ new Map();
+    for (const auth6 of authResults) {
+      const [issuerReg] = appRegistry.findIssuersForRequest(auth6.request);
+      if (!issuerReg) {
+        creationResults.set(auth6, { type: "NO_ISSUER" });
+        continue;
+      }
+      const { installation } = issuerReg;
+      const octokit = octokitFactory.installationOctokit(
+        appsInput,
+        installation.app_id,
+        installation.id
+      );
+      try {
+        const { data: token } = await octokit.rest.apps.createInstallationAccessToken({
+          installation_id: installation.id,
+          repositories: auth6.request.repos === "all" ? void 0 : auth6.request.repos,
+          permissions: auth6.request.tokenDec.permissions
+        });
+        creationResults.set(auth6, { type: "SUCCESS", token });
+      } catch (error) {
+        if (error instanceof RequestError) {
+          creationResults.set(auth6, { type: "REQUEST_ERROR", error });
+        } else {
+          creationResults.set(auth6, { type: "ERROR", error });
+        }
+      }
+    }
+    return creationResults;
+  };
+}
+
 // src/token-request.ts
 var import_fast_json_stable_stringify = __toESM(require_fast_json_stable_stringify(), 1);
 
@@ -60990,6 +61025,11 @@ async function main() {
     provisionAuthorizer,
     tokenAuthorizer
   );
+  const createTokens = createTokenFactory(
+    appRegistry,
+    appsInput,
+    octokitFactory
+  );
   await (0, import_core9.group)("Discovering apps", async () => {
     await discoverApps(octokitFactory, appRegistry, appsInput);
   });
@@ -61005,6 +61045,10 @@ async function main() {
   await (0, import_core9.group)("Authorizing requests", async () => {
     await authorizer.authorize(Array.from(requesters.values()));
   });
+  const tokens = await (0, import_core9.group)("Creating tokens", async () => {
+    return await createTokens(tokenAuthorizer.listResults());
+  });
+  console.log(JSON.stringify(tokens.entries(), null, 2));
 }
 /*! Bundled license information:
 

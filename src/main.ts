@@ -16,6 +16,7 @@ import { createProvisionRequestFactory } from "./provision-request.js";
 import { registerTokenDeclarations } from "./register-token-declarations.js";
 import { createTokenAuthorizer } from "./token-authorizer.js";
 import { createTokenDeclarationRegistry } from "./token-declaration-registry.js";
+import { createTokenFactory } from "./token-factory.js";
 import { createTokenRequestFactory } from "./token-request.js";
 
 main().catch((error) => {
@@ -58,6 +59,11 @@ async function main(): Promise<void> {
     provisionAuthorizer,
     tokenAuthorizer,
   );
+  const createTokens = createTokenFactory(
+    appRegistry,
+    appsInput,
+    octokitFactory,
+  );
 
   await group("Discovering apps", async () => {
     await discoverApps(octokitFactory, appRegistry, appsInput);
@@ -78,7 +84,12 @@ async function main(): Promise<void> {
     await authorizer.authorize(Array.from(requesters.values()));
   });
 
-  // TODO: issue tokens
+  const tokens = await group("Creating tokens", async () => {
+    return await createTokens(tokenAuthorizer.listResults());
+  });
+
+  console.log(JSON.stringify(tokens.entries(), null, 2));
+
   // TODO: provision secrets
 }
 /* v8 ignore stop */
