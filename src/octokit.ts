@@ -9,6 +9,7 @@ const CustomOctokit = OctokitAction.plugin(retry);
 export type Octokit = InstanceType<typeof CustomOctokit>;
 
 export type OctokitFactory = {
+  actionOctokit: () => Octokit;
   appOctokit: (appsInput: AppInput[], appId: number) => Octokit;
   installationOctokit: (
     appsInput: AppInput[],
@@ -18,10 +19,15 @@ export type OctokitFactory = {
 };
 
 export function createOctokitFactory(): OctokitFactory {
+  let actionOctokit: Octokit | undefined;
   const appOctokits: Record<string, Octokit> = {};
   const installationOctokits: Record<string, Octokit> = {};
 
   return {
+    actionOctokit: () => {
+      return (actionOctokit ??= new CustomOctokit());
+    },
+
     appOctokit: (appsInput, appId) => {
       const key = JSON.stringify({ appId });
       appOctokits[key] ??= new CustomOctokit({

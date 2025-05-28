@@ -5,6 +5,7 @@ import { group, setFailed } from "@actions/core";
 import { createAppRegistry } from "./app-registry.js";
 import { createAuthorizer } from "./authorizer.js";
 import { readAppsInput } from "./config/apps-input.js";
+import { readProviderConfig } from "./config/provider-config.js";
 import { discoverApps } from "./discover-apps.js";
 import { discoverRequesters } from "./discover-requesters.js";
 import { createEnvironmentResolver } from "./environment-resolver.js";
@@ -16,7 +17,6 @@ import { registerTokenDeclarations } from "./register-token-declarations.js";
 import { createTokenAuthorizer } from "./token-authorizer.js";
 import { createTokenDeclarationRegistry } from "./token-declaration-registry.js";
 import { createTokenRequestFactory } from "./token-request.js";
-import type { ProviderConfig } from "./type/provider-config.js";
 
 main().catch((error) => {
   setFailed(errorStack(error));
@@ -24,67 +24,16 @@ main().catch((error) => {
 
 async function main(): Promise<void> {
   const appsInput = readAppsInput();
+  const octokitFactory = createOctokitFactory();
 
-  const config = await group("Reading provider configuration", async () => {
-    // TODO: read from GitHub API
-    const config: ProviderConfig = {
-      permissions: {
-        rules: [
-          {
-            description: "Allow all tokens",
-            resources: [
-              {
-                accounts: ["*"],
-                noRepos: true,
-                allRepos: true,
-                selectedRepos: ["*"],
-              },
-            ],
-            consumers: ["*", "*/*"],
-            permissions: {
-              metadata: "read",
-            },
-          },
-        ],
-      },
-      provision: {
-        rules: {
-          secrets: [
-            {
-              description: "Allow all secrets",
-              secrets: ["*"],
-              requesters: ["*/*"],
-              to: {
-                github: {
-                  account: {},
-                  accounts: {
-                    "*": {
-                      actions: "allow",
-                      codespaces: "allow",
-                      dependabot: "allow",
-                    },
-                  },
-                  repo: { environments: {} },
-                  repos: {
-                    "*/*": {
-                      actions: "allow",
-                      codespaces: "allow",
-                      dependabot: "allow",
-                      environments: { "*": "allow" },
-                    },
-                  },
-                },
-              },
-            },
-          ],
-        },
-      },
-    };
-
-    return config;
+  const config = await group("Reading config", async () => {
+    return await readProviderConfig(
+      octokitFactory,
+      process.env.GITHUB_REPOSITORY ?? "",
+      process.env.GITHUB_REF ?? "",
+    );
   });
 
-  const octokitFactory = createOctokitFactory();
   const appRegistry = createAppRegistry();
   const declarationRegistry = createTokenDeclarationRegistry();
   const environmentResolver = createEnvironmentResolver(

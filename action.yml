@@ -9,6 +9,15 @@ inputs:
       https://ghalactic.github.io/provision-github-tokens/schema/apps.v1.schema.json
       can be used to validate the input.
     required: true
+  token:
+    description: >-
+      The GitHub token to use when reading the provider config file.
+    default: ${{ github.token }}
+  configPath:
+    description: >-
+      Path to the provider config file, relative to the root of the repository.
+    required: false
+    default: .github/ghalactic/provision-github-tokens.provider.yml
 branding:
   icon: key
   color: blue

@@ -2670,7 +2670,7 @@ var require_tunnel = __commonJS({
         connectOptions.headers = connectOptions.headers || {};
         connectOptions.headers["Proxy-Authorization"] = "Basic " + new Buffer(connectOptions.proxyAuth).toString("base64");
       }
-      debug6("making CONNECT request");
+      debug7("making CONNECT request");
       var connectReq = self2.request(connectOptions);
       connectReq.useChunkedEncodingByDefault = false;
       connectReq.once("response", onResponse);
@@ -2690,7 +2690,7 @@ var require_tunnel = __commonJS({
         connectReq.removeAllListeners();
         socket.removeAllListeners();
         if (res.statusCode !== 200) {
-          debug6(
+          debug7(
             "tunneling socket could not be established, statusCode=%d",
             res.statusCode
           );
@@ -2702,7 +2702,7 @@ var require_tunnel = __commonJS({
           return;
         }
         if (head.length > 0) {
-          debug6("got illegal response body from proxy");
+          debug7("got illegal response body from proxy");
           socket.destroy();
           var error = new Error("got illegal response body from proxy");
           error.code = "ECONNRESET";
@@ -2710,13 +2710,13 @@ var require_tunnel = __commonJS({
           self2.removeSocket(placeholder);
           return;
         }
-        debug6("tunneling connection has established");
+        debug7("tunneling connection has established");
         self2.sockets[self2.sockets.indexOf(placeholder)] = socket;
         return cb(socket);
       }
       function onError(cause) {
         connectReq.removeAllListeners();
-        debug6(
+        debug7(
           "tunneling socket could not be established, cause=%s\n",
           cause.message,
           cause.stack
@@ -2778,9 +2778,9 @@ var require_tunnel = __commonJS({
       }
       return target;
     }
-    var debug6;
+    var debug7;
     if (process.env.NODE_DEBUG && /\btunnel\b/.test(process.env.NODE_DEBUG)) {
-      debug6 = function() {
+      debug7 = function() {
         var args = Array.prototype.slice.call(arguments);
         if (typeof args[0] === "string") {
           args[0] = "TUNNEL: " + args[0];
@@ -2790,10 +2790,10 @@ var require_tunnel = __commonJS({
         console.error.apply(console, args);
       };
     } else {
-      debug6 = function() {
+      debug7 = function() {
       };
     }
-    exports.debug = debug6;
+    exports.debug = debug7;
   }
 });
 
@@ -19858,12 +19858,12 @@ var require_lib = __commonJS({
             throw new Error("Client has already been disposed.");
           }
           const parsedUrl = new URL(requestUrl);
-          let info4 = this._prepareRequest(verb, parsedUrl, headers);
+          let info5 = this._prepareRequest(verb, parsedUrl, headers);
           const maxTries = this._allowRetries && RetryableHttpVerbs.includes(verb) ? this._maxRetries + 1 : 1;
           let numTries = 0;
           let response;
           do {
-            response = yield this.requestRaw(info4, data);
+            response = yield this.requestRaw(info5, data);
             if (response && response.message && response.message.statusCode === HttpCodes.Unauthorized) {
               let authenticationHandler;
               for (const handler2 of this.handlers) {
@@ -19873,7 +19873,7 @@ var require_lib = __commonJS({
                 }
               }
               if (authenticationHandler) {
-                return authenticationHandler.handleAuthentication(this, info4, data);
+                return authenticationHandler.handleAuthentication(this, info5, data);
               } else {
                 return response;
               }
@@ -19896,8 +19896,8 @@ var require_lib = __commonJS({
                   }
                 }
               }
-              info4 = this._prepareRequest(verb, parsedRedirectUrl, headers);
-              response = yield this.requestRaw(info4, data);
+              info5 = this._prepareRequest(verb, parsedRedirectUrl, headers);
+              response = yield this.requestRaw(info5, data);
               redirectsRemaining--;
             }
             if (!response.message.statusCode || !HttpResponseRetryCodes.includes(response.message.statusCode)) {
@@ -19926,7 +19926,7 @@ var require_lib = __commonJS({
        * @param info
        * @param data
        */
-      requestRaw(info4, data) {
+      requestRaw(info5, data) {
         return __awaiter(this, void 0, void 0, function* () {
           return new Promise((resolve, reject) => {
             function callbackForResult(err, res) {
@@ -19938,7 +19938,7 @@ var require_lib = __commonJS({
                 resolve(res);
               }
             }
-            this.requestRawWithCallback(info4, data, callbackForResult);
+            this.requestRawWithCallback(info5, data, callbackForResult);
           });
         });
       }
@@ -19948,12 +19948,12 @@ var require_lib = __commonJS({
        * @param data
        * @param onResult
        */
-      requestRawWithCallback(info4, data, onResult) {
+      requestRawWithCallback(info5, data, onResult) {
         if (typeof data === "string") {
-          if (!info4.options.headers) {
-            info4.options.headers = {};
+          if (!info5.options.headers) {
+            info5.options.headers = {};
           }
-          info4.options.headers["Content-Length"] = Buffer.byteLength(data, "utf8");
+          info5.options.headers["Content-Length"] = Buffer.byteLength(data, "utf8");
         }
         let callbackCalled = false;
         function handleResult(err, res) {
@@ -19962,7 +19962,7 @@ var require_lib = __commonJS({
             onResult(err, res);
           }
         }
-        const req = info4.httpModule.request(info4.options, (msg) => {
+        const req = info5.httpModule.request(info5.options, (msg) => {
           const res = new HttpClientResponse(msg);
           handleResult(void 0, res);
         });
@@ -19974,7 +19974,7 @@ var require_lib = __commonJS({
           if (socket) {
             socket.end();
           }
-          handleResult(new Error(`Request timeout: ${info4.options.path}`));
+          handleResult(new Error(`Request timeout: ${info5.options.path}`));
         });
         req.on("error", function(err) {
           handleResult(err);
@@ -20010,27 +20010,27 @@ var require_lib = __commonJS({
         return this._getProxyAgentDispatcher(parsedUrl, proxyUrl);
       }
       _prepareRequest(method, requestUrl, headers) {
-        const info4 = {};
-        info4.parsedUrl = requestUrl;
-        const usingSsl = info4.parsedUrl.protocol === "https:";
-        info4.httpModule = usingSsl ? https : http;
+        const info5 = {};
+        info5.parsedUrl = requestUrl;
+        const usingSsl = info5.parsedUrl.protocol === "https:";
+        info5.httpModule = usingSsl ? https : http;
         const defaultPort = usingSsl ? 443 : 80;
-        info4.options = {};
-        info4.options.host = info4.parsedUrl.hostname;
-        info4.options.port = info4.parsedUrl.port ? parseInt(info4.parsedUrl.port) : defaultPort;
-        info4.options.path = (info4.parsedUrl.pathname || "") + (info4.parsedUrl.search || "");
-        info4.options.method = method;
-        info4.options.headers = this._mergeHeaders(headers);
+        info5.options = {};
+        info5.options.host = info5.parsedUrl.hostname;
+        info5.options.port = info5.parsedUrl.port ? parseInt(info5.parsedUrl.port) : defaultPort;
+        info5.options.path = (info5.parsedUrl.pathname || "") + (info5.parsedUrl.search || "");
+        info5.options.method = method;
+        info5.options.headers = this._mergeHeaders(headers);
         if (this.userAgent != null) {
-          info4.options.headers["user-agent"] = this.userAgent;
+          info5.options.headers["user-agent"] = this.userAgent;
         }
-        info4.options.agent = this._getAgent(info4.parsedUrl);
+        info5.options.agent = this._getAgent(info5.parsedUrl);
         if (this.handlers) {
           for (const handler2 of this.handlers) {
-            handler2.prepareRequest(info4.options);
+            handler2.prepareRequest(info5.options);
           }
         }
-        return info4;
+        return info5;
       }
       _mergeHeaders(headers) {
         if (this.requestOptions && this.requestOptions.headers) {
@@ -21951,7 +21951,7 @@ var require_core = __commonJS({
       process.env["PATH"] = `${inputPath}${path.delimiter}${process.env["PATH"]}`;
     }
     exports.addPath = addPath;
-    function getInput2(name, options) {
+    function getInput3(name, options) {
       const val = process.env[`INPUT_${name.replace(/ /g, "_").toUpperCase()}`] || "";
       if (options && options.required && !val) {
         throw new Error(`Input required and not supplied: ${name}`);
@@ -21961,9 +21961,9 @@ var require_core = __commonJS({
       }
       return val.trim();
     }
-    exports.getInput = getInput2;
+    exports.getInput = getInput3;
     function getMultilineInput(name, options) {
-      const inputs = getInput2(name, options).split("\n").filter((x) => x !== "");
+      const inputs = getInput3(name, options).split("\n").filter((x) => x !== "");
       if (options && options.trimWhitespace === false) {
         return inputs;
       }
@@ -21973,7 +21973,7 @@ var require_core = __commonJS({
     function getBooleanInput(name, options) {
       const trueValue = ["true", "True", "TRUE"];
       const falseValue = ["false", "False", "FALSE"];
-      const val = getInput2(name, options);
+      const val = getInput3(name, options);
       if (trueValue.includes(val))
         return true;
       if (falseValue.includes(val))
@@ -22004,10 +22004,10 @@ Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
       return process.env["RUNNER_DEBUG"] === "1";
     }
     exports.isDebug = isDebug;
-    function debug6(message) {
+    function debug7(message) {
       (0, command_1.issueCommand)("debug", {}, message);
     }
-    exports.debug = debug6;
+    exports.debug = debug7;
     function error(message, properties = {}) {
       (0, command_1.issueCommand)("error", (0, utils_1.toCommandProperties)(properties), message instanceof Error ? message.toString() : message);
     }
@@ -22020,10 +22020,10 @@ Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
       (0, command_1.issueCommand)("notice", (0, utils_1.toCommandProperties)(properties), message instanceof Error ? message.toString() : message);
     }
     exports.notice = notice;
-    function info4(message) {
+    function info5(message) {
       process.stdout.write(message + os.EOL);
     }
-    exports.info = info4;
+    exports.info = info5;
     function startGroup(name) {
       (0, command_1.issue)("group", name);
     }
@@ -28751,6 +28751,1999 @@ var require_dist = __commonJS({
     exports.default = ajvErrors2;
     module.exports = ajvErrors2;
     module.exports.default = ajvErrors2;
+  }
+});
+
+// node_modules/object-keys/isArguments.js
+var require_isArguments = __commonJS({
+  "node_modules/object-keys/isArguments.js"(exports, module) {
+    "use strict";
+    var toStr = Object.prototype.toString;
+    module.exports = function isArguments(value) {
+      var str2 = toStr.call(value);
+      var isArgs = str2 === "[object Arguments]";
+      if (!isArgs) {
+        isArgs = str2 !== "[object Array]" && value !== null && typeof value === "object" && typeof value.length === "number" && value.length >= 0 && toStr.call(value.callee) === "[object Function]";
+      }
+      return isArgs;
+    };
+  }
+});
+
+// node_modules/object-keys/implementation.js
+var require_implementation = __commonJS({
+  "node_modules/object-keys/implementation.js"(exports, module) {
+    "use strict";
+    var keysShim;
+    if (!Object.keys) {
+      has = Object.prototype.hasOwnProperty;
+      toStr = Object.prototype.toString;
+      isArgs = require_isArguments();
+      isEnumerable = Object.prototype.propertyIsEnumerable;
+      hasDontEnumBug = !isEnumerable.call({ toString: null }, "toString");
+      hasProtoEnumBug = isEnumerable.call(function() {
+      }, "prototype");
+      dontEnums = [
+        "toString",
+        "toLocaleString",
+        "valueOf",
+        "hasOwnProperty",
+        "isPrototypeOf",
+        "propertyIsEnumerable",
+        "constructor"
+      ];
+      equalsConstructorPrototype = function(o) {
+        var ctor = o.constructor;
+        return ctor && ctor.prototype === o;
+      };
+      excludedKeys = {
+        $applicationCache: true,
+        $console: true,
+        $external: true,
+        $frame: true,
+        $frameElement: true,
+        $frames: true,
+        $innerHeight: true,
+        $innerWidth: true,
+        $onmozfullscreenchange: true,
+        $onmozfullscreenerror: true,
+        $outerHeight: true,
+        $outerWidth: true,
+        $pageXOffset: true,
+        $pageYOffset: true,
+        $parent: true,
+        $scrollLeft: true,
+        $scrollTop: true,
+        $scrollX: true,
+        $scrollY: true,
+        $self: true,
+        $webkitIndexedDB: true,
+        $webkitStorageInfo: true,
+        $window: true
+      };
+      hasAutomationEqualityBug = function() {
+        if (typeof window === "undefined") {
+          return false;
+        }
+        for (var k in window) {
+          try {
+            if (!excludedKeys["$" + k] && has.call(window, k) && window[k] !== null && typeof window[k] === "object") {
+              try {
+                equalsConstructorPrototype(window[k]);
+              } catch (e) {
+                return true;
+              }
+            }
+          } catch (e) {
+            return true;
+          }
+        }
+        return false;
+      }();
+      equalsConstructorPrototypeIfNotBuggy = function(o) {
+        if (typeof window === "undefined" || !hasAutomationEqualityBug) {
+          return equalsConstructorPrototype(o);
+        }
+        try {
+          return equalsConstructorPrototype(o);
+        } catch (e) {
+          return false;
+        }
+      };
+      keysShim = function keys(object) {
+        var isObject2 = object !== null && typeof object === "object";
+        var isFunction = toStr.call(object) === "[object Function]";
+        var isArguments = isArgs(object);
+        var isString = isObject2 && toStr.call(object) === "[object String]";
+        var theKeys = [];
+        if (!isObject2 && !isFunction && !isArguments) {
+          throw new TypeError("Object.keys called on a non-object");
+        }
+        var skipProto = hasProtoEnumBug && isFunction;
+        if (isString && object.length > 0 && !has.call(object, 0)) {
+          for (var i = 0; i < object.length; ++i) {
+            theKeys.push(String(i));
+          }
+        }
+        if (isArguments && object.length > 0) {
+          for (var j = 0; j < object.length; ++j) {
+            theKeys.push(String(j));
+          }
+        } else {
+          for (var name in object) {
+            if (!(skipProto && name === "prototype") && has.call(object, name)) {
+              theKeys.push(String(name));
+            }
+          }
+        }
+        if (hasDontEnumBug) {
+          var skipConstructor = equalsConstructorPrototypeIfNotBuggy(object);
+          for (var k = 0; k < dontEnums.length; ++k) {
+            if (!(skipConstructor && dontEnums[k] === "constructor") && has.call(object, dontEnums[k])) {
+              theKeys.push(dontEnums[k]);
+            }
+          }
+        }
+        return theKeys;
+      };
+    }
+    var has;
+    var toStr;
+    var isArgs;
+    var isEnumerable;
+    var hasDontEnumBug;
+    var hasProtoEnumBug;
+    var dontEnums;
+    var equalsConstructorPrototype;
+    var excludedKeys;
+    var hasAutomationEqualityBug;
+    var equalsConstructorPrototypeIfNotBuggy;
+    module.exports = keysShim;
+  }
+});
+
+// node_modules/object-keys/index.js
+var require_object_keys = __commonJS({
+  "node_modules/object-keys/index.js"(exports, module) {
+    "use strict";
+    var slice = Array.prototype.slice;
+    var isArgs = require_isArguments();
+    var origKeys = Object.keys;
+    var keysShim = origKeys ? function keys(o) {
+      return origKeys(o);
+    } : require_implementation();
+    var originalKeys = Object.keys;
+    keysShim.shim = function shimObjectKeys() {
+      if (Object.keys) {
+        var keysWorksWithArguments = function() {
+          var args = Object.keys(arguments);
+          return args && args.length === arguments.length;
+        }(1, 2);
+        if (!keysWorksWithArguments) {
+          Object.keys = function keys(object) {
+            if (isArgs(object)) {
+              return originalKeys(slice.call(object));
+            }
+            return originalKeys(object);
+          };
+        }
+      } else {
+        Object.keys = keysShim;
+      }
+      return Object.keys || keysShim;
+    };
+    module.exports = keysShim;
+  }
+});
+
+// node_modules/es-define-property/index.js
+var require_es_define_property = __commonJS({
+  "node_modules/es-define-property/index.js"(exports, module) {
+    "use strict";
+    var $defineProperty = Object.defineProperty || false;
+    if ($defineProperty) {
+      try {
+        $defineProperty({}, "a", { value: 1 });
+      } catch (e) {
+        $defineProperty = false;
+      }
+    }
+    module.exports = $defineProperty;
+  }
+});
+
+// node_modules/es-errors/syntax.js
+var require_syntax = __commonJS({
+  "node_modules/es-errors/syntax.js"(exports, module) {
+    "use strict";
+    module.exports = SyntaxError;
+  }
+});
+
+// node_modules/es-errors/type.js
+var require_type = __commonJS({
+  "node_modules/es-errors/type.js"(exports, module) {
+    "use strict";
+    module.exports = TypeError;
+  }
+});
+
+// node_modules/gopd/gOPD.js
+var require_gOPD = __commonJS({
+  "node_modules/gopd/gOPD.js"(exports, module) {
+    "use strict";
+    module.exports = Object.getOwnPropertyDescriptor;
+  }
+});
+
+// node_modules/gopd/index.js
+var require_gopd = __commonJS({
+  "node_modules/gopd/index.js"(exports, module) {
+    "use strict";
+    var $gOPD = require_gOPD();
+    if ($gOPD) {
+      try {
+        $gOPD([], "length");
+      } catch (e) {
+        $gOPD = null;
+      }
+    }
+    module.exports = $gOPD;
+  }
+});
+
+// node_modules/define-data-property/index.js
+var require_define_data_property = __commonJS({
+  "node_modules/define-data-property/index.js"(exports, module) {
+    "use strict";
+    var $defineProperty = require_es_define_property();
+    var $SyntaxError = require_syntax();
+    var $TypeError = require_type();
+    var gopd = require_gopd();
+    module.exports = function defineDataProperty(obj, property, value) {
+      if (!obj || typeof obj !== "object" && typeof obj !== "function") {
+        throw new $TypeError("`obj` must be an object or a function`");
+      }
+      if (typeof property !== "string" && typeof property !== "symbol") {
+        throw new $TypeError("`property` must be a string or a symbol`");
+      }
+      if (arguments.length > 3 && typeof arguments[3] !== "boolean" && arguments[3] !== null) {
+        throw new $TypeError("`nonEnumerable`, if provided, must be a boolean or null");
+      }
+      if (arguments.length > 4 && typeof arguments[4] !== "boolean" && arguments[4] !== null) {
+        throw new $TypeError("`nonWritable`, if provided, must be a boolean or null");
+      }
+      if (arguments.length > 5 && typeof arguments[5] !== "boolean" && arguments[5] !== null) {
+        throw new $TypeError("`nonConfigurable`, if provided, must be a boolean or null");
+      }
+      if (arguments.length > 6 && typeof arguments[6] !== "boolean") {
+        throw new $TypeError("`loose`, if provided, must be a boolean");
+      }
+      var nonEnumerable = arguments.length > 3 ? arguments[3] : null;
+      var nonWritable = arguments.length > 4 ? arguments[4] : null;
+      var nonConfigurable = arguments.length > 5 ? arguments[5] : null;
+      var loose = arguments.length > 6 ? arguments[6] : false;
+      var desc = !!gopd && gopd(obj, property);
+      if ($defineProperty) {
+        $defineProperty(obj, property, {
+          configurable: nonConfigurable === null && desc ? desc.configurable : !nonConfigurable,
+          enumerable: nonEnumerable === null && desc ? desc.enumerable : !nonEnumerable,
+          value,
+          writable: nonWritable === null && desc ? desc.writable : !nonWritable
+        });
+      } else if (loose || !nonEnumerable && !nonWritable && !nonConfigurable) {
+        obj[property] = value;
+      } else {
+        throw new $SyntaxError("This environment does not support defining a property as non-configurable, non-writable, or non-enumerable.");
+      }
+    };
+  }
+});
+
+// node_modules/has-property-descriptors/index.js
+var require_has_property_descriptors = __commonJS({
+  "node_modules/has-property-descriptors/index.js"(exports, module) {
+    "use strict";
+    var $defineProperty = require_es_define_property();
+    var hasPropertyDescriptors = function hasPropertyDescriptors2() {
+      return !!$defineProperty;
+    };
+    hasPropertyDescriptors.hasArrayLengthDefineBug = function hasArrayLengthDefineBug() {
+      if (!$defineProperty) {
+        return null;
+      }
+      try {
+        return $defineProperty([], "length", { value: 1 }).length !== 1;
+      } catch (e) {
+        return true;
+      }
+    };
+    module.exports = hasPropertyDescriptors;
+  }
+});
+
+// node_modules/define-properties/index.js
+var require_define_properties = __commonJS({
+  "node_modules/define-properties/index.js"(exports, module) {
+    "use strict";
+    var keys = require_object_keys();
+    var hasSymbols = typeof Symbol === "function" && typeof Symbol("foo") === "symbol";
+    var toStr = Object.prototype.toString;
+    var concat = Array.prototype.concat;
+    var defineDataProperty = require_define_data_property();
+    var isFunction = function(fn) {
+      return typeof fn === "function" && toStr.call(fn) === "[object Function]";
+    };
+    var supportsDescriptors = require_has_property_descriptors()();
+    var defineProperty = function(object, name, value, predicate) {
+      if (name in object) {
+        if (predicate === true) {
+          if (object[name] === value) {
+            return;
+          }
+        } else if (!isFunction(predicate) || !predicate()) {
+          return;
+        }
+      }
+      if (supportsDescriptors) {
+        defineDataProperty(object, name, value, true);
+      } else {
+        defineDataProperty(object, name, value);
+      }
+    };
+    var defineProperties = function(object, map2) {
+      var predicates = arguments.length > 2 ? arguments[2] : {};
+      var props = keys(map2);
+      if (hasSymbols) {
+        props = concat.call(props, Object.getOwnPropertySymbols(map2));
+      }
+      for (var i = 0; i < props.length; i += 1) {
+        defineProperty(object, props[i], map2[props[i]], predicates[props[i]]);
+      }
+    };
+    defineProperties.supportsDescriptors = !!supportsDescriptors;
+    module.exports = defineProperties;
+  }
+});
+
+// node_modules/es-object-atoms/index.js
+var require_es_object_atoms = __commonJS({
+  "node_modules/es-object-atoms/index.js"(exports, module) {
+    "use strict";
+    module.exports = Object;
+  }
+});
+
+// node_modules/es-errors/index.js
+var require_es_errors = __commonJS({
+  "node_modules/es-errors/index.js"(exports, module) {
+    "use strict";
+    module.exports = Error;
+  }
+});
+
+// node_modules/es-errors/eval.js
+var require_eval = __commonJS({
+  "node_modules/es-errors/eval.js"(exports, module) {
+    "use strict";
+    module.exports = EvalError;
+  }
+});
+
+// node_modules/es-errors/range.js
+var require_range = __commonJS({
+  "node_modules/es-errors/range.js"(exports, module) {
+    "use strict";
+    module.exports = RangeError;
+  }
+});
+
+// node_modules/es-errors/ref.js
+var require_ref2 = __commonJS({
+  "node_modules/es-errors/ref.js"(exports, module) {
+    "use strict";
+    module.exports = ReferenceError;
+  }
+});
+
+// node_modules/es-errors/uri.js
+var require_uri2 = __commonJS({
+  "node_modules/es-errors/uri.js"(exports, module) {
+    "use strict";
+    module.exports = URIError;
+  }
+});
+
+// node_modules/math-intrinsics/abs.js
+var require_abs = __commonJS({
+  "node_modules/math-intrinsics/abs.js"(exports, module) {
+    "use strict";
+    module.exports = Math.abs;
+  }
+});
+
+// node_modules/math-intrinsics/floor.js
+var require_floor = __commonJS({
+  "node_modules/math-intrinsics/floor.js"(exports, module) {
+    "use strict";
+    module.exports = Math.floor;
+  }
+});
+
+// node_modules/math-intrinsics/max.js
+var require_max = __commonJS({
+  "node_modules/math-intrinsics/max.js"(exports, module) {
+    "use strict";
+    module.exports = Math.max;
+  }
+});
+
+// node_modules/math-intrinsics/min.js
+var require_min = __commonJS({
+  "node_modules/math-intrinsics/min.js"(exports, module) {
+    "use strict";
+    module.exports = Math.min;
+  }
+});
+
+// node_modules/math-intrinsics/pow.js
+var require_pow = __commonJS({
+  "node_modules/math-intrinsics/pow.js"(exports, module) {
+    "use strict";
+    module.exports = Math.pow;
+  }
+});
+
+// node_modules/math-intrinsics/round.js
+var require_round = __commonJS({
+  "node_modules/math-intrinsics/round.js"(exports, module) {
+    "use strict";
+    module.exports = Math.round;
+  }
+});
+
+// node_modules/math-intrinsics/isNaN.js
+var require_isNaN = __commonJS({
+  "node_modules/math-intrinsics/isNaN.js"(exports, module) {
+    "use strict";
+    module.exports = Number.isNaN || function isNaN2(a) {
+      return a !== a;
+    };
+  }
+});
+
+// node_modules/math-intrinsics/sign.js
+var require_sign = __commonJS({
+  "node_modules/math-intrinsics/sign.js"(exports, module) {
+    "use strict";
+    var $isNaN = require_isNaN();
+    module.exports = function sign(number) {
+      if ($isNaN(number) || number === 0) {
+        return number;
+      }
+      return number < 0 ? -1 : 1;
+    };
+  }
+});
+
+// node_modules/has-symbols/shams.js
+var require_shams = __commonJS({
+  "node_modules/has-symbols/shams.js"(exports, module) {
+    "use strict";
+    module.exports = function hasSymbols() {
+      if (typeof Symbol !== "function" || typeof Object.getOwnPropertySymbols !== "function") {
+        return false;
+      }
+      if (typeof Symbol.iterator === "symbol") {
+        return true;
+      }
+      var obj = {};
+      var sym = Symbol("test");
+      var symObj = Object(sym);
+      if (typeof sym === "string") {
+        return false;
+      }
+      if (Object.prototype.toString.call(sym) !== "[object Symbol]") {
+        return false;
+      }
+      if (Object.prototype.toString.call(symObj) !== "[object Symbol]") {
+        return false;
+      }
+      var symVal = 42;
+      obj[sym] = symVal;
+      for (var _ in obj) {
+        return false;
+      }
+      if (typeof Object.keys === "function" && Object.keys(obj).length !== 0) {
+        return false;
+      }
+      if (typeof Object.getOwnPropertyNames === "function" && Object.getOwnPropertyNames(obj).length !== 0) {
+        return false;
+      }
+      var syms = Object.getOwnPropertySymbols(obj);
+      if (syms.length !== 1 || syms[0] !== sym) {
+        return false;
+      }
+      if (!Object.prototype.propertyIsEnumerable.call(obj, sym)) {
+        return false;
+      }
+      if (typeof Object.getOwnPropertyDescriptor === "function") {
+        var descriptor = (
+          /** @type {PropertyDescriptor} */
+          Object.getOwnPropertyDescriptor(obj, sym)
+        );
+        if (descriptor.value !== symVal || descriptor.enumerable !== true) {
+          return false;
+        }
+      }
+      return true;
+    };
+  }
+});
+
+// node_modules/has-symbols/index.js
+var require_has_symbols = __commonJS({
+  "node_modules/has-symbols/index.js"(exports, module) {
+    "use strict";
+    var origSymbol = typeof Symbol !== "undefined" && Symbol;
+    var hasSymbolSham = require_shams();
+    module.exports = function hasNativeSymbols() {
+      if (typeof origSymbol !== "function") {
+        return false;
+      }
+      if (typeof Symbol !== "function") {
+        return false;
+      }
+      if (typeof origSymbol("foo") !== "symbol") {
+        return false;
+      }
+      if (typeof Symbol("bar") !== "symbol") {
+        return false;
+      }
+      return hasSymbolSham();
+    };
+  }
+});
+
+// node_modules/get-proto/Reflect.getPrototypeOf.js
+var require_Reflect_getPrototypeOf = __commonJS({
+  "node_modules/get-proto/Reflect.getPrototypeOf.js"(exports, module) {
+    "use strict";
+    module.exports = typeof Reflect !== "undefined" && Reflect.getPrototypeOf || null;
+  }
+});
+
+// node_modules/get-proto/Object.getPrototypeOf.js
+var require_Object_getPrototypeOf = __commonJS({
+  "node_modules/get-proto/Object.getPrototypeOf.js"(exports, module) {
+    "use strict";
+    var $Object = require_es_object_atoms();
+    module.exports = $Object.getPrototypeOf || null;
+  }
+});
+
+// node_modules/function-bind/implementation.js
+var require_implementation2 = __commonJS({
+  "node_modules/function-bind/implementation.js"(exports, module) {
+    "use strict";
+    var ERROR_MESSAGE = "Function.prototype.bind called on incompatible ";
+    var toStr = Object.prototype.toString;
+    var max = Math.max;
+    var funcType = "[object Function]";
+    var concatty = function concatty2(a, b) {
+      var arr = [];
+      for (var i = 0; i < a.length; i += 1) {
+        arr[i] = a[i];
+      }
+      for (var j = 0; j < b.length; j += 1) {
+        arr[j + a.length] = b[j];
+      }
+      return arr;
+    };
+    var slicy = function slicy2(arrLike, offset) {
+      var arr = [];
+      for (var i = offset || 0, j = 0; i < arrLike.length; i += 1, j += 1) {
+        arr[j] = arrLike[i];
+      }
+      return arr;
+    };
+    var joiny = function(arr, joiner) {
+      var str2 = "";
+      for (var i = 0; i < arr.length; i += 1) {
+        str2 += arr[i];
+        if (i + 1 < arr.length) {
+          str2 += joiner;
+        }
+      }
+      return str2;
+    };
+    module.exports = function bind2(that) {
+      var target = this;
+      if (typeof target !== "function" || toStr.apply(target) !== funcType) {
+        throw new TypeError(ERROR_MESSAGE + target);
+      }
+      var args = slicy(arguments, 1);
+      var bound;
+      var binder = function() {
+        if (this instanceof bound) {
+          var result = target.apply(
+            this,
+            concatty(args, arguments)
+          );
+          if (Object(result) === result) {
+            return result;
+          }
+          return this;
+        }
+        return target.apply(
+          that,
+          concatty(args, arguments)
+        );
+      };
+      var boundLength = max(0, target.length - args.length);
+      var boundArgs = [];
+      for (var i = 0; i < boundLength; i++) {
+        boundArgs[i] = "$" + i;
+      }
+      bound = Function("binder", "return function (" + joiny(boundArgs, ",") + "){ return binder.apply(this,arguments); }")(binder);
+      if (target.prototype) {
+        var Empty = function Empty2() {
+        };
+        Empty.prototype = target.prototype;
+        bound.prototype = new Empty();
+        Empty.prototype = null;
+      }
+      return bound;
+    };
+  }
+});
+
+// node_modules/function-bind/index.js
+var require_function_bind = __commonJS({
+  "node_modules/function-bind/index.js"(exports, module) {
+    "use strict";
+    var implementation = require_implementation2();
+    module.exports = Function.prototype.bind || implementation;
+  }
+});
+
+// node_modules/call-bind-apply-helpers/functionCall.js
+var require_functionCall = __commonJS({
+  "node_modules/call-bind-apply-helpers/functionCall.js"(exports, module) {
+    "use strict";
+    module.exports = Function.prototype.call;
+  }
+});
+
+// node_modules/call-bind-apply-helpers/functionApply.js
+var require_functionApply = __commonJS({
+  "node_modules/call-bind-apply-helpers/functionApply.js"(exports, module) {
+    "use strict";
+    module.exports = Function.prototype.apply;
+  }
+});
+
+// node_modules/call-bind-apply-helpers/reflectApply.js
+var require_reflectApply = __commonJS({
+  "node_modules/call-bind-apply-helpers/reflectApply.js"(exports, module) {
+    "use strict";
+    module.exports = typeof Reflect !== "undefined" && Reflect && Reflect.apply;
+  }
+});
+
+// node_modules/call-bind-apply-helpers/actualApply.js
+var require_actualApply = __commonJS({
+  "node_modules/call-bind-apply-helpers/actualApply.js"(exports, module) {
+    "use strict";
+    var bind2 = require_function_bind();
+    var $apply = require_functionApply();
+    var $call = require_functionCall();
+    var $reflectApply = require_reflectApply();
+    module.exports = $reflectApply || bind2.call($call, $apply);
+  }
+});
+
+// node_modules/call-bind-apply-helpers/index.js
+var require_call_bind_apply_helpers = __commonJS({
+  "node_modules/call-bind-apply-helpers/index.js"(exports, module) {
+    "use strict";
+    var bind2 = require_function_bind();
+    var $TypeError = require_type();
+    var $call = require_functionCall();
+    var $actualApply = require_actualApply();
+    module.exports = function callBindBasic(args) {
+      if (args.length < 1 || typeof args[0] !== "function") {
+        throw new $TypeError("a function is required");
+      }
+      return $actualApply(bind2, $call, args);
+    };
+  }
+});
+
+// node_modules/dunder-proto/get.js
+var require_get = __commonJS({
+  "node_modules/dunder-proto/get.js"(exports, module) {
+    "use strict";
+    var callBind = require_call_bind_apply_helpers();
+    var gOPD = require_gopd();
+    var hasProtoAccessor;
+    try {
+      hasProtoAccessor = /** @type {{ __proto__?: typeof Array.prototype }} */
+      [].__proto__ === Array.prototype;
+    } catch (e) {
+      if (!e || typeof e !== "object" || !("code" in e) || e.code !== "ERR_PROTO_ACCESS") {
+        throw e;
+      }
+    }
+    var desc = !!hasProtoAccessor && gOPD && gOPD(
+      Object.prototype,
+      /** @type {keyof typeof Object.prototype} */
+      "__proto__"
+    );
+    var $Object = Object;
+    var $getPrototypeOf = $Object.getPrototypeOf;
+    module.exports = desc && typeof desc.get === "function" ? callBind([desc.get]) : typeof $getPrototypeOf === "function" ? (
+      /** @type {import('./get')} */
+      function getDunder(value) {
+        return $getPrototypeOf(value == null ? value : $Object(value));
+      }
+    ) : false;
+  }
+});
+
+// node_modules/get-proto/index.js
+var require_get_proto = __commonJS({
+  "node_modules/get-proto/index.js"(exports, module) {
+    "use strict";
+    var reflectGetProto = require_Reflect_getPrototypeOf();
+    var originalGetProto = require_Object_getPrototypeOf();
+    var getDunderProto = require_get();
+    module.exports = reflectGetProto ? function getProto(O) {
+      return reflectGetProto(O);
+    } : originalGetProto ? function getProto(O) {
+      if (!O || typeof O !== "object" && typeof O !== "function") {
+        throw new TypeError("getProto: not an object");
+      }
+      return originalGetProto(O);
+    } : getDunderProto ? function getProto(O) {
+      return getDunderProto(O);
+    } : null;
+  }
+});
+
+// node_modules/hasown/index.js
+var require_hasown = __commonJS({
+  "node_modules/hasown/index.js"(exports, module) {
+    "use strict";
+    var call = Function.prototype.call;
+    var $hasOwn = Object.prototype.hasOwnProperty;
+    var bind2 = require_function_bind();
+    module.exports = bind2.call(call, $hasOwn);
+  }
+});
+
+// node_modules/get-intrinsic/index.js
+var require_get_intrinsic = __commonJS({
+  "node_modules/get-intrinsic/index.js"(exports, module) {
+    "use strict";
+    var undefined2;
+    var $Object = require_es_object_atoms();
+    var $Error = require_es_errors();
+    var $EvalError = require_eval();
+    var $RangeError = require_range();
+    var $ReferenceError = require_ref2();
+    var $SyntaxError = require_syntax();
+    var $TypeError = require_type();
+    var $URIError = require_uri2();
+    var abs = require_abs();
+    var floor = require_floor();
+    var max = require_max();
+    var min = require_min();
+    var pow = require_pow();
+    var round = require_round();
+    var sign = require_sign();
+    var $Function = Function;
+    var getEvalledConstructor = function(expressionSyntax) {
+      try {
+        return $Function('"use strict"; return (' + expressionSyntax + ").constructor;")();
+      } catch (e) {
+      }
+    };
+    var $gOPD = require_gopd();
+    var $defineProperty = require_es_define_property();
+    var throwTypeError = function() {
+      throw new $TypeError();
+    };
+    var ThrowTypeError = $gOPD ? function() {
+      try {
+        arguments.callee;
+        return throwTypeError;
+      } catch (calleeThrows) {
+        try {
+          return $gOPD(arguments, "callee").get;
+        } catch (gOPDthrows) {
+          return throwTypeError;
+        }
+      }
+    }() : throwTypeError;
+    var hasSymbols = require_has_symbols()();
+    var getProto = require_get_proto();
+    var $ObjectGPO = require_Object_getPrototypeOf();
+    var $ReflectGPO = require_Reflect_getPrototypeOf();
+    var $apply = require_functionApply();
+    var $call = require_functionCall();
+    var needsEval = {};
+    var TypedArray = typeof Uint8Array === "undefined" || !getProto ? undefined2 : getProto(Uint8Array);
+    var INTRINSICS = {
+      __proto__: null,
+      "%AggregateError%": typeof AggregateError === "undefined" ? undefined2 : AggregateError,
+      "%Array%": Array,
+      "%ArrayBuffer%": typeof ArrayBuffer === "undefined" ? undefined2 : ArrayBuffer,
+      "%ArrayIteratorPrototype%": hasSymbols && getProto ? getProto([][Symbol.iterator]()) : undefined2,
+      "%AsyncFromSyncIteratorPrototype%": undefined2,
+      "%AsyncFunction%": needsEval,
+      "%AsyncGenerator%": needsEval,
+      "%AsyncGeneratorFunction%": needsEval,
+      "%AsyncIteratorPrototype%": needsEval,
+      "%Atomics%": typeof Atomics === "undefined" ? undefined2 : Atomics,
+      "%BigInt%": typeof BigInt === "undefined" ? undefined2 : BigInt,
+      "%BigInt64Array%": typeof BigInt64Array === "undefined" ? undefined2 : BigInt64Array,
+      "%BigUint64Array%": typeof BigUint64Array === "undefined" ? undefined2 : BigUint64Array,
+      "%Boolean%": Boolean,
+      "%DataView%": typeof DataView === "undefined" ? undefined2 : DataView,
+      "%Date%": Date,
+      "%decodeURI%": decodeURI,
+      "%decodeURIComponent%": decodeURIComponent,
+      "%encodeURI%": encodeURI,
+      "%encodeURIComponent%": encodeURIComponent,
+      "%Error%": $Error,
+      "%eval%": eval,
+      // eslint-disable-line no-eval
+      "%EvalError%": $EvalError,
+      "%Float16Array%": typeof Float16Array === "undefined" ? undefined2 : Float16Array,
+      "%Float32Array%": typeof Float32Array === "undefined" ? undefined2 : Float32Array,
+      "%Float64Array%": typeof Float64Array === "undefined" ? undefined2 : Float64Array,
+      "%FinalizationRegistry%": typeof FinalizationRegistry === "undefined" ? undefined2 : FinalizationRegistry,
+      "%Function%": $Function,
+      "%GeneratorFunction%": needsEval,
+      "%Int8Array%": typeof Int8Array === "undefined" ? undefined2 : Int8Array,
+      "%Int16Array%": typeof Int16Array === "undefined" ? undefined2 : Int16Array,
+      "%Int32Array%": typeof Int32Array === "undefined" ? undefined2 : Int32Array,
+      "%isFinite%": isFinite,
+      "%isNaN%": isNaN,
+      "%IteratorPrototype%": hasSymbols && getProto ? getProto(getProto([][Symbol.iterator]())) : undefined2,
+      "%JSON%": typeof JSON === "object" ? JSON : undefined2,
+      "%Map%": typeof Map === "undefined" ? undefined2 : Map,
+      "%MapIteratorPrototype%": typeof Map === "undefined" || !hasSymbols || !getProto ? undefined2 : getProto((/* @__PURE__ */ new Map())[Symbol.iterator]()),
+      "%Math%": Math,
+      "%Number%": Number,
+      "%Object%": $Object,
+      "%Object.getOwnPropertyDescriptor%": $gOPD,
+      "%parseFloat%": parseFloat,
+      "%parseInt%": parseInt,
+      "%Promise%": typeof Promise === "undefined" ? undefined2 : Promise,
+      "%Proxy%": typeof Proxy === "undefined" ? undefined2 : Proxy,
+      "%RangeError%": $RangeError,
+      "%ReferenceError%": $ReferenceError,
+      "%Reflect%": typeof Reflect === "undefined" ? undefined2 : Reflect,
+      "%RegExp%": RegExp,
+      "%Set%": typeof Set === "undefined" ? undefined2 : Set,
+      "%SetIteratorPrototype%": typeof Set === "undefined" || !hasSymbols || !getProto ? undefined2 : getProto((/* @__PURE__ */ new Set())[Symbol.iterator]()),
+      "%SharedArrayBuffer%": typeof SharedArrayBuffer === "undefined" ? undefined2 : SharedArrayBuffer,
+      "%String%": String,
+      "%StringIteratorPrototype%": hasSymbols && getProto ? getProto(""[Symbol.iterator]()) : undefined2,
+      "%Symbol%": hasSymbols ? Symbol : undefined2,
+      "%SyntaxError%": $SyntaxError,
+      "%ThrowTypeError%": ThrowTypeError,
+      "%TypedArray%": TypedArray,
+      "%TypeError%": $TypeError,
+      "%Uint8Array%": typeof Uint8Array === "undefined" ? undefined2 : Uint8Array,
+      "%Uint8ClampedArray%": typeof Uint8ClampedArray === "undefined" ? undefined2 : Uint8ClampedArray,
+      "%Uint16Array%": typeof Uint16Array === "undefined" ? undefined2 : Uint16Array,
+      "%Uint32Array%": typeof Uint32Array === "undefined" ? undefined2 : Uint32Array,
+      "%URIError%": $URIError,
+      "%WeakMap%": typeof WeakMap === "undefined" ? undefined2 : WeakMap,
+      "%WeakRef%": typeof WeakRef === "undefined" ? undefined2 : WeakRef,
+      "%WeakSet%": typeof WeakSet === "undefined" ? undefined2 : WeakSet,
+      "%Function.prototype.call%": $call,
+      "%Function.prototype.apply%": $apply,
+      "%Object.defineProperty%": $defineProperty,
+      "%Object.getPrototypeOf%": $ObjectGPO,
+      "%Math.abs%": abs,
+      "%Math.floor%": floor,
+      "%Math.max%": max,
+      "%Math.min%": min,
+      "%Math.pow%": pow,
+      "%Math.round%": round,
+      "%Math.sign%": sign,
+      "%Reflect.getPrototypeOf%": $ReflectGPO
+    };
+    if (getProto) {
+      try {
+        null.error;
+      } catch (e) {
+        errorProto = getProto(getProto(e));
+        INTRINSICS["%Error.prototype%"] = errorProto;
+      }
+    }
+    var errorProto;
+    var doEval = function doEval2(name) {
+      var value;
+      if (name === "%AsyncFunction%") {
+        value = getEvalledConstructor("async function () {}");
+      } else if (name === "%GeneratorFunction%") {
+        value = getEvalledConstructor("function* () {}");
+      } else if (name === "%AsyncGeneratorFunction%") {
+        value = getEvalledConstructor("async function* () {}");
+      } else if (name === "%AsyncGenerator%") {
+        var fn = doEval2("%AsyncGeneratorFunction%");
+        if (fn) {
+          value = fn.prototype;
+        }
+      } else if (name === "%AsyncIteratorPrototype%") {
+        var gen = doEval2("%AsyncGenerator%");
+        if (gen && getProto) {
+          value = getProto(gen.prototype);
+        }
+      }
+      INTRINSICS[name] = value;
+      return value;
+    };
+    var LEGACY_ALIASES = {
+      __proto__: null,
+      "%ArrayBufferPrototype%": ["ArrayBuffer", "prototype"],
+      "%ArrayPrototype%": ["Array", "prototype"],
+      "%ArrayProto_entries%": ["Array", "prototype", "entries"],
+      "%ArrayProto_forEach%": ["Array", "prototype", "forEach"],
+      "%ArrayProto_keys%": ["Array", "prototype", "keys"],
+      "%ArrayProto_values%": ["Array", "prototype", "values"],
+      "%AsyncFunctionPrototype%": ["AsyncFunction", "prototype"],
+      "%AsyncGenerator%": ["AsyncGeneratorFunction", "prototype"],
+      "%AsyncGeneratorPrototype%": ["AsyncGeneratorFunction", "prototype", "prototype"],
+      "%BooleanPrototype%": ["Boolean", "prototype"],
+      "%DataViewPrototype%": ["DataView", "prototype"],
+      "%DatePrototype%": ["Date", "prototype"],
+      "%ErrorPrototype%": ["Error", "prototype"],
+      "%EvalErrorPrototype%": ["EvalError", "prototype"],
+      "%Float32ArrayPrototype%": ["Float32Array", "prototype"],
+      "%Float64ArrayPrototype%": ["Float64Array", "prototype"],
+      "%FunctionPrototype%": ["Function", "prototype"],
+      "%Generator%": ["GeneratorFunction", "prototype"],
+      "%GeneratorPrototype%": ["GeneratorFunction", "prototype", "prototype"],
+      "%Int8ArrayPrototype%": ["Int8Array", "prototype"],
+      "%Int16ArrayPrototype%": ["Int16Array", "prototype"],
+      "%Int32ArrayPrototype%": ["Int32Array", "prototype"],
+      "%JSONParse%": ["JSON", "parse"],
+      "%JSONStringify%": ["JSON", "stringify"],
+      "%MapPrototype%": ["Map", "prototype"],
+      "%NumberPrototype%": ["Number", "prototype"],
+      "%ObjectPrototype%": ["Object", "prototype"],
+      "%ObjProto_toString%": ["Object", "prototype", "toString"],
+      "%ObjProto_valueOf%": ["Object", "prototype", "valueOf"],
+      "%PromisePrototype%": ["Promise", "prototype"],
+      "%PromiseProto_then%": ["Promise", "prototype", "then"],
+      "%Promise_all%": ["Promise", "all"],
+      "%Promise_reject%": ["Promise", "reject"],
+      "%Promise_resolve%": ["Promise", "resolve"],
+      "%RangeErrorPrototype%": ["RangeError", "prototype"],
+      "%ReferenceErrorPrototype%": ["ReferenceError", "prototype"],
+      "%RegExpPrototype%": ["RegExp", "prototype"],
+      "%SetPrototype%": ["Set", "prototype"],
+      "%SharedArrayBufferPrototype%": ["SharedArrayBuffer", "prototype"],
+      "%StringPrototype%": ["String", "prototype"],
+      "%SymbolPrototype%": ["Symbol", "prototype"],
+      "%SyntaxErrorPrototype%": ["SyntaxError", "prototype"],
+      "%TypedArrayPrototype%": ["TypedArray", "prototype"],
+      "%TypeErrorPrototype%": ["TypeError", "prototype"],
+      "%Uint8ArrayPrototype%": ["Uint8Array", "prototype"],
+      "%Uint8ClampedArrayPrototype%": ["Uint8ClampedArray", "prototype"],
+      "%Uint16ArrayPrototype%": ["Uint16Array", "prototype"],
+      "%Uint32ArrayPrototype%": ["Uint32Array", "prototype"],
+      "%URIErrorPrototype%": ["URIError", "prototype"],
+      "%WeakMapPrototype%": ["WeakMap", "prototype"],
+      "%WeakSetPrototype%": ["WeakSet", "prototype"]
+    };
+    var bind2 = require_function_bind();
+    var hasOwn = require_hasown();
+    var $concat = bind2.call($call, Array.prototype.concat);
+    var $spliceApply = bind2.call($apply, Array.prototype.splice);
+    var $replace = bind2.call($call, String.prototype.replace);
+    var $strSlice = bind2.call($call, String.prototype.slice);
+    var $exec = bind2.call($call, RegExp.prototype.exec);
+    var rePropName = /[^%.[\]]+|\[(?:(-?\d+(?:\.\d+)?)|(["'])((?:(?!\2)[^\\]|\\.)*?)\2)\]|(?=(?:\.|\[\])(?:\.|\[\]|%$))/g;
+    var reEscapeChar = /\\(\\)?/g;
+    var stringToPath = function stringToPath2(string) {
+      var first = $strSlice(string, 0, 1);
+      var last = $strSlice(string, -1);
+      if (first === "%" && last !== "%") {
+        throw new $SyntaxError("invalid intrinsic syntax, expected closing `%`");
+      } else if (last === "%" && first !== "%") {
+        throw new $SyntaxError("invalid intrinsic syntax, expected opening `%`");
+      }
+      var result = [];
+      $replace(string, rePropName, function(match, number, quote, subString) {
+        result[result.length] = quote ? $replace(subString, reEscapeChar, "$1") : number || match;
+      });
+      return result;
+    };
+    var getBaseIntrinsic = function getBaseIntrinsic2(name, allowMissing) {
+      var intrinsicName = name;
+      var alias;
+      if (hasOwn(LEGACY_ALIASES, intrinsicName)) {
+        alias = LEGACY_ALIASES[intrinsicName];
+        intrinsicName = "%" + alias[0] + "%";
+      }
+      if (hasOwn(INTRINSICS, intrinsicName)) {
+        var value = INTRINSICS[intrinsicName];
+        if (value === needsEval) {
+          value = doEval(intrinsicName);
+        }
+        if (typeof value === "undefined" && !allowMissing) {
+          throw new $TypeError("intrinsic " + name + " exists, but is not available. Please file an issue!");
+        }
+        return {
+          alias,
+          name: intrinsicName,
+          value
+        };
+      }
+      throw new $SyntaxError("intrinsic " + name + " does not exist!");
+    };
+    module.exports = function GetIntrinsic(name, allowMissing) {
+      if (typeof name !== "string" || name.length === 0) {
+        throw new $TypeError("intrinsic name must be a non-empty string");
+      }
+      if (arguments.length > 1 && typeof allowMissing !== "boolean") {
+        throw new $TypeError('"allowMissing" argument must be a boolean');
+      }
+      if ($exec(/^%?[^%]*%?$/, name) === null) {
+        throw new $SyntaxError("`%` may not be present anywhere but at the beginning and end of the intrinsic name");
+      }
+      var parts = stringToPath(name);
+      var intrinsicBaseName = parts.length > 0 ? parts[0] : "";
+      var intrinsic = getBaseIntrinsic("%" + intrinsicBaseName + "%", allowMissing);
+      var intrinsicRealName = intrinsic.name;
+      var value = intrinsic.value;
+      var skipFurtherCaching = false;
+      var alias = intrinsic.alias;
+      if (alias) {
+        intrinsicBaseName = alias[0];
+        $spliceApply(parts, $concat([0, 1], alias));
+      }
+      for (var i = 1, isOwn = true; i < parts.length; i += 1) {
+        var part = parts[i];
+        var first = $strSlice(part, 0, 1);
+        var last = $strSlice(part, -1);
+        if ((first === '"' || first === "'" || first === "`" || (last === '"' || last === "'" || last === "`")) && first !== last) {
+          throw new $SyntaxError("property names with quotes must have matching quotes");
+        }
+        if (part === "constructor" || !isOwn) {
+          skipFurtherCaching = true;
+        }
+        intrinsicBaseName += "." + part;
+        intrinsicRealName = "%" + intrinsicBaseName + "%";
+        if (hasOwn(INTRINSICS, intrinsicRealName)) {
+          value = INTRINSICS[intrinsicRealName];
+        } else if (value != null) {
+          if (!(part in value)) {
+            if (!allowMissing) {
+              throw new $TypeError("base intrinsic for " + name + " exists, but the property is not available.");
+            }
+            return void undefined2;
+          }
+          if ($gOPD && i + 1 >= parts.length) {
+            var desc = $gOPD(value, part);
+            isOwn = !!desc;
+            if (isOwn && "get" in desc && !("originalValue" in desc.get)) {
+              value = desc.get;
+            } else {
+              value = value[part];
+            }
+          } else {
+            isOwn = hasOwn(value, part);
+            value = value[part];
+          }
+          if (isOwn && !skipFurtherCaching) {
+            INTRINSICS[intrinsicRealName] = value;
+          }
+        }
+      }
+      return value;
+    };
+  }
+});
+
+// node_modules/set-function-length/index.js
+var require_set_function_length = __commonJS({
+  "node_modules/set-function-length/index.js"(exports, module) {
+    "use strict";
+    var GetIntrinsic = require_get_intrinsic();
+    var define2 = require_define_data_property();
+    var hasDescriptors = require_has_property_descriptors()();
+    var gOPD = require_gopd();
+    var $TypeError = require_type();
+    var $floor = GetIntrinsic("%Math.floor%");
+    module.exports = function setFunctionLength(fn, length) {
+      if (typeof fn !== "function") {
+        throw new $TypeError("`fn` is not a function");
+      }
+      if (typeof length !== "number" || length < 0 || length > 4294967295 || $floor(length) !== length) {
+        throw new $TypeError("`length` must be a positive 32-bit integer");
+      }
+      var loose = arguments.length > 2 && !!arguments[2];
+      var functionLengthIsConfigurable = true;
+      var functionLengthIsWritable = true;
+      if ("length" in fn && gOPD) {
+        var desc = gOPD(fn, "length");
+        if (desc && !desc.configurable) {
+          functionLengthIsConfigurable = false;
+        }
+        if (desc && !desc.writable) {
+          functionLengthIsWritable = false;
+        }
+      }
+      if (functionLengthIsConfigurable || functionLengthIsWritable || !loose) {
+        if (hasDescriptors) {
+          define2(
+            /** @type {Parameters<define>[0]} */
+            fn,
+            "length",
+            length,
+            true,
+            true
+          );
+        } else {
+          define2(
+            /** @type {Parameters<define>[0]} */
+            fn,
+            "length",
+            length
+          );
+        }
+      }
+      return fn;
+    };
+  }
+});
+
+// node_modules/call-bind-apply-helpers/applyBind.js
+var require_applyBind = __commonJS({
+  "node_modules/call-bind-apply-helpers/applyBind.js"(exports, module) {
+    "use strict";
+    var bind2 = require_function_bind();
+    var $apply = require_functionApply();
+    var actualApply = require_actualApply();
+    module.exports = function applyBind() {
+      return actualApply(bind2, $apply, arguments);
+    };
+  }
+});
+
+// node_modules/call-bind/index.js
+var require_call_bind = __commonJS({
+  "node_modules/call-bind/index.js"(exports, module) {
+    "use strict";
+    var setFunctionLength = require_set_function_length();
+    var $defineProperty = require_es_define_property();
+    var callBindBasic = require_call_bind_apply_helpers();
+    var applyBind = require_applyBind();
+    module.exports = function callBind(originalFunction) {
+      var func = callBindBasic(arguments);
+      var adjustedLength = originalFunction.length - (arguments.length - 1);
+      return setFunctionLength(
+        func,
+        1 + (adjustedLength > 0 ? adjustedLength : 0),
+        true
+      );
+    };
+    if ($defineProperty) {
+      $defineProperty(module.exports, "apply", { value: applyBind });
+    } else {
+      module.exports.apply = applyBind;
+    }
+  }
+});
+
+// node_modules/call-bound/index.js
+var require_call_bound = __commonJS({
+  "node_modules/call-bound/index.js"(exports, module) {
+    "use strict";
+    var GetIntrinsic = require_get_intrinsic();
+    var callBindBasic = require_call_bind_apply_helpers();
+    var $indexOf = callBindBasic([GetIntrinsic("%String.prototype.indexOf%")]);
+    module.exports = function callBoundIntrinsic(name, allowMissing) {
+      var intrinsic = (
+        /** @type {(this: unknown, ...args: unknown[]) => unknown} */
+        GetIntrinsic(name, !!allowMissing)
+      );
+      if (typeof intrinsic === "function" && $indexOf(name, ".prototype.") > -1) {
+        return callBindBasic(
+          /** @type {const} */
+          [intrinsic]
+        );
+      }
+      return intrinsic;
+    };
+  }
+});
+
+// node_modules/math-intrinsics/isFinite.js
+var require_isFinite = __commonJS({
+  "node_modules/math-intrinsics/isFinite.js"(exports, module) {
+    "use strict";
+    var $isNaN = require_isNaN();
+    module.exports = function isFinite2(x) {
+      return (typeof x === "number" || typeof x === "bigint") && !$isNaN(x) && x !== Infinity && x !== -Infinity;
+    };
+  }
+});
+
+// node_modules/math-intrinsics/isInteger.js
+var require_isInteger = __commonJS({
+  "node_modules/math-intrinsics/isInteger.js"(exports, module) {
+    "use strict";
+    var $abs = require_abs();
+    var $floor = require_floor();
+    var $isNaN = require_isNaN();
+    var $isFinite = require_isFinite();
+    module.exports = function isInteger2(argument) {
+      if (typeof argument !== "number" || $isNaN(argument) || !$isFinite(argument)) {
+        return false;
+      }
+      var absValue = $abs(argument);
+      return $floor(absValue) === absValue;
+    };
+  }
+});
+
+// node_modules/es-abstract/2024/Number/toString.js
+var require_toString = __commonJS({
+  "node_modules/es-abstract/2024/Number/toString.js"(exports, module) {
+    "use strict";
+    var $TypeError = require_type();
+    var callBound = require_call_bound();
+    var isInteger2 = require_isInteger();
+    var $numberToString = callBound("Number.prototype.toString");
+    module.exports = function NumberToString(x, radix) {
+      if (typeof x !== "number") {
+        throw new $TypeError("Assertion failed: `x` must be a Number");
+      }
+      if (!isInteger2(radix) || radix < 2 || radix > 36) {
+        throw new $TypeError("Assertion failed: `radix` must be an integer >= 2 and <= 36");
+      }
+      return $numberToString(x, radix);
+    };
+  }
+});
+
+// node_modules/es-abstract/2024/StringIndexOf.js
+var require_StringIndexOf = __commonJS({
+  "node_modules/es-abstract/2024/StringIndexOf.js"(exports, module) {
+    "use strict";
+    var callBound = require_call_bound();
+    var $TypeError = require_type();
+    var isInteger2 = require_isInteger();
+    var $slice = callBound("String.prototype.slice");
+    module.exports = function StringIndexOf(string, searchValue, fromIndex) {
+      if (typeof string !== "string") {
+        throw new $TypeError("Assertion failed: `string` must be a String");
+      }
+      if (typeof searchValue !== "string") {
+        throw new $TypeError("Assertion failed: `searchValue` must be a String");
+      }
+      if (!isInteger2(fromIndex) || fromIndex < 0) {
+        throw new $TypeError("Assertion failed: `fromIndex` must be a non-negative integer");
+      }
+      var len = string.length;
+      if (searchValue === "" && fromIndex <= len) {
+        return fromIndex;
+      }
+      var searchLen = searchValue.length;
+      for (var i = fromIndex; i <= len - searchLen; i += 1) {
+        var candidate = $slice(string, i, i + searchLen);
+        if (candidate === searchValue) {
+          return i;
+        }
+      }
+      return -1;
+    };
+  }
+});
+
+// node_modules/es-abstract/2024/StringPad.js
+var require_StringPad = __commonJS({
+  "node_modules/es-abstract/2024/StringPad.js"(exports, module) {
+    "use strict";
+    var $TypeError = require_type();
+    var callBound = require_call_bound();
+    var isInteger2 = require_isInteger();
+    var $strSlice = callBound("String.prototype.slice");
+    module.exports = function StringPad(S, maxLength, fillString, placement) {
+      if (typeof S !== "string") {
+        throw new $TypeError("Assertion failed: `S` must be a String");
+      }
+      if (!isInteger2(maxLength) || maxLength < 0) {
+        throw new $TypeError("Assertion failed: `maxLength` must be a non-negative integer");
+      }
+      if (typeof fillString !== "string") {
+        throw new $TypeError("Assertion failed: `fillString` must be a String");
+      }
+      if (placement !== "start" && placement !== "end" && placement !== "START" && placement !== "END") {
+        throw new $TypeError("Assertion failed: `placement` must be ~START~ or ~END~");
+      }
+      var stringLength = S.length;
+      if (maxLength <= stringLength) {
+        return S;
+      }
+      if (fillString === "") {
+        return S;
+      }
+      var fillLen = maxLength - stringLength;
+      var truncatedStringFiller = "";
+      while (truncatedStringFiller.length < fillLen) {
+        truncatedStringFiller += fillString;
+      }
+      truncatedStringFiller = $strSlice(truncatedStringFiller, 0, fillLen);
+      if (placement === "start" || placement === "START") {
+        return truncatedStringFiller + S;
+      }
+      return S + truncatedStringFiller;
+    };
+  }
+});
+
+// node_modules/es-abstract/2024/UnicodeEscape.js
+var require_UnicodeEscape = __commonJS({
+  "node_modules/es-abstract/2024/UnicodeEscape.js"(exports, module) {
+    "use strict";
+    var $TypeError = require_type();
+    var callBound = require_call_bound();
+    var $charCodeAt = callBound("String.prototype.charCodeAt");
+    var $numberToString = callBound("Number.prototype.toString");
+    var $toLowerCase = callBound("String.prototype.toLowerCase");
+    var StringPad = require_StringPad();
+    module.exports = function UnicodeEscape(C) {
+      if (typeof C !== "string" || C.length !== 1) {
+        throw new $TypeError("Assertion failed: `C` must be a single code unit");
+      }
+      var n = $charCodeAt(C, 0);
+      if (n > 65535) {
+        throw new $TypeError("`Assertion failed: numeric value of `C` must be <= 0xFFFF");
+      }
+      return "\\u" + StringPad($toLowerCase($numberToString(n, 16)), 4, "0", "start");
+    };
+  }
+});
+
+// node_modules/es-abstract/2024/floor.js
+var require_floor2 = __commonJS({
+  "node_modules/es-abstract/2024/floor.js"(exports, module) {
+    "use strict";
+    var $floor = require_floor();
+    module.exports = function floor(x) {
+      if (typeof x === "bigint") {
+        return x;
+      }
+      return $floor(x);
+    };
+  }
+});
+
+// node_modules/math-intrinsics/mod.js
+var require_mod = __commonJS({
+  "node_modules/math-intrinsics/mod.js"(exports, module) {
+    "use strict";
+    var $floor = require_floor();
+    module.exports = function mod(number, modulo) {
+      var remain = number % modulo;
+      return $floor(remain >= 0 ? remain : remain + modulo);
+    };
+  }
+});
+
+// node_modules/es-abstract/helpers/mod.js
+var require_mod2 = __commonJS({
+  "node_modules/es-abstract/helpers/mod.js"(exports, module) {
+    "use strict";
+    module.exports = require_mod();
+  }
+});
+
+// node_modules/es-abstract/2024/modulo.js
+var require_modulo = __commonJS({
+  "node_modules/es-abstract/2024/modulo.js"(exports, module) {
+    "use strict";
+    var mod = require_mod2();
+    module.exports = function modulo(x, y) {
+      return mod(x, y);
+    };
+  }
+});
+
+// node_modules/es-abstract/helpers/isCodePoint.js
+var require_isCodePoint = __commonJS({
+  "node_modules/es-abstract/helpers/isCodePoint.js"(exports, module) {
+    "use strict";
+    module.exports = function isCodePoint(cp) {
+      return typeof cp === "number" && cp >= 0 && cp <= 1114111 && (cp | 0) === cp;
+    };
+  }
+});
+
+// node_modules/es-abstract/2024/UTF16EncodeCodePoint.js
+var require_UTF16EncodeCodePoint = __commonJS({
+  "node_modules/es-abstract/2024/UTF16EncodeCodePoint.js"(exports, module) {
+    "use strict";
+    var GetIntrinsic = require_get_intrinsic();
+    var $TypeError = require_type();
+    var $fromCharCode = GetIntrinsic("%String.fromCharCode%");
+    var floor = require_floor2();
+    var modulo = require_modulo();
+    var isCodePoint = require_isCodePoint();
+    module.exports = function UTF16EncodeCodePoint(cp) {
+      if (!isCodePoint(cp)) {
+        throw new $TypeError("Assertion failed: `cp` must be >= 0 and <= 0x10FFFF");
+      }
+      if (cp <= 65535) {
+        return $fromCharCode(cp);
+      }
+      var cu1 = $fromCharCode(floor((cp - 65536) / 1024) + 55296);
+      var cu2 = $fromCharCode(modulo(cp - 65536, 1024) + 56320);
+      return cu1 + cu2;
+    };
+  }
+});
+
+// node_modules/es-abstract/helpers/isLeadingSurrogate.js
+var require_isLeadingSurrogate = __commonJS({
+  "node_modules/es-abstract/helpers/isLeadingSurrogate.js"(exports, module) {
+    "use strict";
+    module.exports = function isLeadingSurrogate(charCode) {
+      return typeof charCode === "number" && charCode >= 55296 && charCode <= 56319;
+    };
+  }
+});
+
+// node_modules/es-abstract/helpers/isTrailingSurrogate.js
+var require_isTrailingSurrogate = __commonJS({
+  "node_modules/es-abstract/helpers/isTrailingSurrogate.js"(exports, module) {
+    "use strict";
+    module.exports = function isTrailingSurrogate(charCode) {
+      return typeof charCode === "number" && charCode >= 56320 && charCode <= 57343;
+    };
+  }
+});
+
+// node_modules/is-callable/index.js
+var require_is_callable = __commonJS({
+  "node_modules/is-callable/index.js"(exports, module) {
+    "use strict";
+    var fnToStr = Function.prototype.toString;
+    var reflectApply = typeof Reflect === "object" && Reflect !== null && Reflect.apply;
+    var badArrayLike;
+    var isCallableMarker;
+    if (typeof reflectApply === "function" && typeof Object.defineProperty === "function") {
+      try {
+        badArrayLike = Object.defineProperty({}, "length", {
+          get: function() {
+            throw isCallableMarker;
+          }
+        });
+        isCallableMarker = {};
+        reflectApply(function() {
+          throw 42;
+        }, null, badArrayLike);
+      } catch (_) {
+        if (_ !== isCallableMarker) {
+          reflectApply = null;
+        }
+      }
+    } else {
+      reflectApply = null;
+    }
+    var constructorRegex = /^\s*class\b/;
+    var isES6ClassFn = function isES6ClassFunction(value) {
+      try {
+        var fnStr = fnToStr.call(value);
+        return constructorRegex.test(fnStr);
+      } catch (e) {
+        return false;
+      }
+    };
+    var tryFunctionObject = function tryFunctionToStr(value) {
+      try {
+        if (isES6ClassFn(value)) {
+          return false;
+        }
+        fnToStr.call(value);
+        return true;
+      } catch (e) {
+        return false;
+      }
+    };
+    var toStr = Object.prototype.toString;
+    var objectClass = "[object Object]";
+    var fnClass = "[object Function]";
+    var genClass = "[object GeneratorFunction]";
+    var ddaClass = "[object HTMLAllCollection]";
+    var ddaClass2 = "[object HTML document.all class]";
+    var ddaClass3 = "[object HTMLCollection]";
+    var hasToStringTag = typeof Symbol === "function" && !!Symbol.toStringTag;
+    var isIE68 = !(0 in [,]);
+    var isDDA = function isDocumentDotAll() {
+      return false;
+    };
+    if (typeof document === "object") {
+      all = document.all;
+      if (toStr.call(all) === toStr.call(document.all)) {
+        isDDA = function isDocumentDotAll(value) {
+          if ((isIE68 || !value) && (typeof value === "undefined" || typeof value === "object")) {
+            try {
+              var str2 = toStr.call(value);
+              return (str2 === ddaClass || str2 === ddaClass2 || str2 === ddaClass3 || str2 === objectClass) && value("") == null;
+            } catch (e) {
+            }
+          }
+          return false;
+        };
+      }
+    }
+    var all;
+    module.exports = reflectApply ? function isCallable(value) {
+      if (isDDA(value)) {
+        return true;
+      }
+      if (!value) {
+        return false;
+      }
+      if (typeof value !== "function" && typeof value !== "object") {
+        return false;
+      }
+      try {
+        reflectApply(value, null, badArrayLike);
+      } catch (e) {
+        if (e !== isCallableMarker) {
+          return false;
+        }
+      }
+      return !isES6ClassFn(value) && tryFunctionObject(value);
+    } : function isCallable(value) {
+      if (isDDA(value)) {
+        return true;
+      }
+      if (!value) {
+        return false;
+      }
+      if (typeof value !== "function" && typeof value !== "object") {
+        return false;
+      }
+      if (hasToStringTag) {
+        return tryFunctionObject(value);
+      }
+      if (isES6ClassFn(value)) {
+        return false;
+      }
+      var strClass = toStr.call(value);
+      if (strClass !== fnClass && strClass !== genClass && !/^\[object HTML/.test(strClass)) {
+        return false;
+      }
+      return tryFunctionObject(value);
+    };
+  }
+});
+
+// node_modules/for-each/index.js
+var require_for_each = __commonJS({
+  "node_modules/for-each/index.js"(exports, module) {
+    "use strict";
+    var isCallable = require_is_callable();
+    var toStr = Object.prototype.toString;
+    var hasOwnProperty = Object.prototype.hasOwnProperty;
+    var forEachArray = function forEachArray2(array, iterator2, receiver) {
+      for (var i = 0, len = array.length; i < len; i++) {
+        if (hasOwnProperty.call(array, i)) {
+          if (receiver == null) {
+            iterator2(array[i], i, array);
+          } else {
+            iterator2.call(receiver, array[i], i, array);
+          }
+        }
+      }
+    };
+    var forEachString = function forEachString2(string, iterator2, receiver) {
+      for (var i = 0, len = string.length; i < len; i++) {
+        if (receiver == null) {
+          iterator2(string.charAt(i), i, string);
+        } else {
+          iterator2.call(receiver, string.charAt(i), i, string);
+        }
+      }
+    };
+    var forEachObject = function forEachObject2(object, iterator2, receiver) {
+      for (var k in object) {
+        if (hasOwnProperty.call(object, k)) {
+          if (receiver == null) {
+            iterator2(object[k], k, object);
+          } else {
+            iterator2.call(receiver, object[k], k, object);
+          }
+        }
+      }
+    };
+    function isArray(x) {
+      return toStr.call(x) === "[object Array]";
+    }
+    module.exports = function forEach(list, iterator2, thisArg) {
+      if (!isCallable(iterator2)) {
+        throw new TypeError("iterator must be a function");
+      }
+      var receiver;
+      if (arguments.length >= 3) {
+        receiver = thisArg;
+      }
+      if (isArray(list)) {
+        forEachArray(list, iterator2, receiver);
+      } else if (typeof list === "string") {
+        forEachString(list, iterator2, receiver);
+      } else {
+        forEachObject(list, iterator2, receiver);
+      }
+    };
+  }
+});
+
+// node_modules/has-tostringtag/shams.js
+var require_shams2 = __commonJS({
+  "node_modules/has-tostringtag/shams.js"(exports, module) {
+    "use strict";
+    var hasSymbols = require_shams();
+    module.exports = function hasToStringTagShams() {
+      return hasSymbols() && !!Symbol.toStringTag;
+    };
+  }
+});
+
+// node_modules/is-regex/index.js
+var require_is_regex = __commonJS({
+  "node_modules/is-regex/index.js"(exports, module) {
+    "use strict";
+    var callBound = require_call_bound();
+    var hasToStringTag = require_shams2()();
+    var hasOwn = require_hasown();
+    var gOPD = require_gopd();
+    var fn;
+    if (hasToStringTag) {
+      $exec = callBound("RegExp.prototype.exec");
+      isRegexMarker = {};
+      throwRegexMarker = function() {
+        throw isRegexMarker;
+      };
+      badStringifier = {
+        toString: throwRegexMarker,
+        valueOf: throwRegexMarker
+      };
+      if (typeof Symbol.toPrimitive === "symbol") {
+        badStringifier[Symbol.toPrimitive] = throwRegexMarker;
+      }
+      fn = function isRegex(value) {
+        if (!value || typeof value !== "object") {
+          return false;
+        }
+        var descriptor = (
+          /** @type {NonNullable<typeof gOPD>} */
+          gOPD(
+            /** @type {{ lastIndex?: unknown }} */
+            value,
+            "lastIndex"
+          )
+        );
+        var hasLastIndexDataProperty = descriptor && hasOwn(descriptor, "value");
+        if (!hasLastIndexDataProperty) {
+          return false;
+        }
+        try {
+          $exec(
+            value,
+            /** @type {string} */
+            /** @type {unknown} */
+            badStringifier
+          );
+        } catch (e) {
+          return e === isRegexMarker;
+        }
+      };
+    } else {
+      $toString = callBound("Object.prototype.toString");
+      regexClass = "[object RegExp]";
+      fn = function isRegex(value) {
+        if (!value || typeof value !== "object" && typeof value !== "function") {
+          return false;
+        }
+        return $toString(value) === regexClass;
+      };
+    }
+    var $exec;
+    var isRegexMarker;
+    var throwRegexMarker;
+    var badStringifier;
+    var $toString;
+    var regexClass;
+    module.exports = fn;
+  }
+});
+
+// node_modules/safe-regex-test/index.js
+var require_safe_regex_test = __commonJS({
+  "node_modules/safe-regex-test/index.js"(exports, module) {
+    "use strict";
+    var callBound = require_call_bound();
+    var isRegex = require_is_regex();
+    var $exec = callBound("RegExp.prototype.exec");
+    var $TypeError = require_type();
+    module.exports = function regexTester(regex) {
+      if (!isRegex(regex)) {
+        throw new $TypeError("`regex` must be a RegExp");
+      }
+      return function test(s) {
+        return $exec(regex, s) !== null;
+      };
+    };
+  }
+});
+
+// node_modules/regexp.escape/aos/EncodeForRegExpEscape.js
+var require_EncodeForRegExpEscape = __commonJS({
+  "node_modules/regexp.escape/aos/EncodeForRegExpEscape.js"(exports, module) {
+    "use strict";
+    var NumberToString = require_toString();
+    var StringIndexOf = require_StringIndexOf();
+    var StringPad = require_StringPad();
+    var UnicodeEscape = require_UnicodeEscape();
+    var UTF16EncodeCodePoint = require_UTF16EncodeCodePoint();
+    var isLeadingSurrogate = require_isLeadingSurrogate();
+    var isTrailingSurrogate = require_isTrailingSurrogate();
+    var $TypeError = require_type();
+    var isCodePoint = require_isCodePoint();
+    var forEach = require_for_each();
+    var regexTester = require_safe_regex_test();
+    var isWhiteSpace = regexTester(/^\s$/);
+    var isLineTerminator = regexTester(/^[\n\r\u2028\u2029]$/);
+    var syntaxCharacter = "^$\\.*+?()[]{}|";
+    var otherPunctuators = ",-=<>#&!%:;@~'`\"";
+    var table64 = {
+      "	": "t",
+      "\n": "n",
+      "\v": "v",
+      "\f": "f",
+      "\r": "r",
+      __proto__: null
+    };
+    module.exports = function EncodeForRegExpEscape(c) {
+      if (!isCodePoint(c)) {
+        throw new $TypeError("Assertion failed: `c` must be a valid Unicode code point");
+      }
+      var encoded = UTF16EncodeCodePoint(c);
+      if (StringIndexOf(syntaxCharacter, encoded, 0) > -1 || encoded === "/") {
+        return "\\" + encoded;
+      } else if (encoded in table64) {
+        return "\\" + table64[encoded];
+      }
+      if (StringIndexOf(otherPunctuators, encoded, 0) > -1 || isWhiteSpace(encoded) || isLineTerminator(encoded) || isLeadingSurrogate(c) || isTrailingSurrogate(c)) {
+        if (c < 255) {
+          var hex = NumberToString(c, 16);
+          return "\\x" + StringPad(hex, 2, "0", "START");
+        }
+        var escaped = "";
+        var codeUnits = encoded;
+        forEach(codeUnits, function(cu) {
+          escaped += UnicodeEscape(cu);
+        });
+        return escaped;
+      }
+      return encoded;
+    };
+  }
+});
+
+// node_modules/es-abstract/2024/UTF16SurrogatePairToCodePoint.js
+var require_UTF16SurrogatePairToCodePoint = __commonJS({
+  "node_modules/es-abstract/2024/UTF16SurrogatePairToCodePoint.js"(exports, module) {
+    "use strict";
+    var GetIntrinsic = require_get_intrinsic();
+    var $TypeError = require_type();
+    var $fromCharCode = GetIntrinsic("%String.fromCharCode%");
+    var isLeadingSurrogate = require_isLeadingSurrogate();
+    var isTrailingSurrogate = require_isTrailingSurrogate();
+    module.exports = function UTF16SurrogatePairToCodePoint(lead, trail) {
+      if (!isLeadingSurrogate(lead) || !isTrailingSurrogate(trail)) {
+        throw new $TypeError("Assertion failed: `lead` must be a leading surrogate char code, and `trail` must be a trailing surrogate char code");
+      }
+      return $fromCharCode(lead) + $fromCharCode(trail);
+    };
+  }
+});
+
+// node_modules/es-abstract/2024/CodePointAt.js
+var require_CodePointAt = __commonJS({
+  "node_modules/es-abstract/2024/CodePointAt.js"(exports, module) {
+    "use strict";
+    var $TypeError = require_type();
+    var callBound = require_call_bound();
+    var isLeadingSurrogate = require_isLeadingSurrogate();
+    var isTrailingSurrogate = require_isTrailingSurrogate();
+    var UTF16SurrogatePairToCodePoint = require_UTF16SurrogatePairToCodePoint();
+    var $charAt = callBound("String.prototype.charAt");
+    var $charCodeAt = callBound("String.prototype.charCodeAt");
+    module.exports = function CodePointAt(string, position) {
+      if (typeof string !== "string") {
+        throw new $TypeError("Assertion failed: `string` must be a String");
+      }
+      var size = string.length;
+      if (position < 0 || position >= size) {
+        throw new $TypeError("Assertion failed: `position` must be >= 0, and < the length of `string`");
+      }
+      var first = $charCodeAt(string, position);
+      var cp = $charAt(string, position);
+      var firstIsLeading = isLeadingSurrogate(first);
+      var firstIsTrailing = isTrailingSurrogate(first);
+      if (!firstIsLeading && !firstIsTrailing) {
+        return {
+          "[[CodePoint]]": cp,
+          "[[CodeUnitCount]]": 1,
+          "[[IsUnpairedSurrogate]]": false
+        };
+      }
+      if (firstIsTrailing || position + 1 === size) {
+        return {
+          "[[CodePoint]]": cp,
+          "[[CodeUnitCount]]": 1,
+          "[[IsUnpairedSurrogate]]": true
+        };
+      }
+      var second = $charCodeAt(string, position + 1);
+      if (!isTrailingSurrogate(second)) {
+        return {
+          "[[CodePoint]]": cp,
+          "[[CodeUnitCount]]": 1,
+          "[[IsUnpairedSurrogate]]": true
+        };
+      }
+      return {
+        "[[CodePoint]]": UTF16SurrogatePairToCodePoint(first, second),
+        "[[CodeUnitCount]]": 2,
+        "[[IsUnpairedSurrogate]]": false
+      };
+    };
+  }
+});
+
+// node_modules/es-abstract/2024/StringToCodePoints.js
+var require_StringToCodePoints = __commonJS({
+  "node_modules/es-abstract/2024/StringToCodePoints.js"(exports, module) {
+    "use strict";
+    var $TypeError = require_type();
+    var CodePointAt = require_CodePointAt();
+    module.exports = function StringToCodePoints(string) {
+      if (typeof string !== "string") {
+        throw new $TypeError("Assertion failed: `string` must be a String");
+      }
+      var codePoints = [];
+      var size = string.length;
+      var position = 0;
+      while (position < size) {
+        var cp = CodePointAt(string, position);
+        codePoints[codePoints.length] = cp["[[CodePoint]]"];
+        position += cp["[[CodeUnitCount]]"];
+      }
+      return codePoints;
+    };
+  }
+});
+
+// node_modules/call-bind/callBound.js
+var require_callBound = __commonJS({
+  "node_modules/call-bind/callBound.js"(exports, module) {
+    "use strict";
+    var GetIntrinsic = require_get_intrinsic();
+    var callBind = require_call_bind();
+    var $indexOf = callBind(GetIntrinsic("String.prototype.indexOf"));
+    module.exports = function callBoundIntrinsic(name, allowMissing) {
+      var intrinsic = GetIntrinsic(name, !!allowMissing);
+      if (typeof intrinsic === "function" && $indexOf(name, ".prototype.") > -1) {
+        return callBind(intrinsic);
+      }
+      return intrinsic;
+    };
+  }
+});
+
+// node_modules/regexp.escape/implementation.js
+var require_implementation3 = __commonJS({
+  "node_modules/regexp.escape/implementation.js"(exports, module) {
+    "use strict";
+    var EncodeForRegExpEscape = require_EncodeForRegExpEscape();
+    var NumberToString = require_toString();
+    var StringToCodePoints = require_StringToCodePoints();
+    var regexTester = require_safe_regex_test();
+    var forEach = require_for_each();
+    var $TypeError = require_type();
+    var isDecimalDigitOrASCIILetter = regexTester(/^[\da-zA-Z]$/);
+    var callBound = require_callBound();
+    var $charCodeAt = callBound("String.prototype.charCodeAt");
+    var codePointStringToNum = function codePointStringToNumber(c) {
+      var first = $charCodeAt(c, 0);
+      if (first < 55296 || first > 56319 || c.length === 1) {
+        return first;
+      }
+      var second = $charCodeAt(c, 1);
+      if (second < 56320 || second > 57343) {
+        return first;
+      }
+      return (first - 55296) * 1024 + (second - 56320) + 65536;
+    };
+    module.exports = function escape3(S) {
+      if (typeof S !== "string") {
+        throw new $TypeError("`S` must be a String");
+      }
+      var escaped = "";
+      var cpList = StringToCodePoints(S);
+      forEach(cpList, function(c) {
+        if (escaped === "" && isDecimalDigitOrASCIILetter(c)) {
+          var hex = NumberToString(codePointStringToNum(c), 16);
+          escaped += "\\x" + hex;
+        } else {
+          escaped += EncodeForRegExpEscape(codePointStringToNum(c));
+        }
+      });
+      return escaped;
+    };
+  }
+});
+
+// node_modules/regexp.escape/polyfill.js
+var require_polyfill = __commonJS({
+  "node_modules/regexp.escape/polyfill.js"(exports, module) {
+    "use strict";
+    var implementation = require_implementation3();
+    module.exports = function getPolyfill() {
+      return RegExp.escape || implementation;
+    };
+  }
+});
+
+// node_modules/regexp.escape/shim.js
+var require_shim = __commonJS({
+  "node_modules/regexp.escape/shim.js"(exports, module) {
+    "use strict";
+    var define2 = require_define_properties();
+    var escapePolyfill = require_polyfill()();
+    module.exports = function shimRegExpEscape() {
+      define2(RegExp, {
+        escape: escapePolyfill
+      });
+      return RegExp.escape;
+    };
+  }
+});
+
+// node_modules/regexp.escape/index.js
+var require_regexp = __commonJS({
+  "node_modules/regexp.escape/index.js"(exports, module) {
+    "use strict";
+    var define2 = require_define_properties();
+    var callBind = require_call_bind();
+    var implementation = require_implementation3();
+    var getPolyfill = require_polyfill();
+    var shim = require_shim();
+    var bound = callBind(implementation, null);
+    define2(bound, {
+      getPolyfill,
+      implementation,
+      method: implementation,
+      // TODO: remove at semver-major
+      shim
+    });
+    module.exports = bound;
   }
 });
 
@@ -48228,1999 +50221,6 @@ var require_light = __commonJS({
   }
 });
 
-// node_modules/object-keys/isArguments.js
-var require_isArguments = __commonJS({
-  "node_modules/object-keys/isArguments.js"(exports, module) {
-    "use strict";
-    var toStr = Object.prototype.toString;
-    module.exports = function isArguments(value) {
-      var str2 = toStr.call(value);
-      var isArgs = str2 === "[object Arguments]";
-      if (!isArgs) {
-        isArgs = str2 !== "[object Array]" && value !== null && typeof value === "object" && typeof value.length === "number" && value.length >= 0 && toStr.call(value.callee) === "[object Function]";
-      }
-      return isArgs;
-    };
-  }
-});
-
-// node_modules/object-keys/implementation.js
-var require_implementation = __commonJS({
-  "node_modules/object-keys/implementation.js"(exports, module) {
-    "use strict";
-    var keysShim;
-    if (!Object.keys) {
-      has = Object.prototype.hasOwnProperty;
-      toStr = Object.prototype.toString;
-      isArgs = require_isArguments();
-      isEnumerable = Object.prototype.propertyIsEnumerable;
-      hasDontEnumBug = !isEnumerable.call({ toString: null }, "toString");
-      hasProtoEnumBug = isEnumerable.call(function() {
-      }, "prototype");
-      dontEnums = [
-        "toString",
-        "toLocaleString",
-        "valueOf",
-        "hasOwnProperty",
-        "isPrototypeOf",
-        "propertyIsEnumerable",
-        "constructor"
-      ];
-      equalsConstructorPrototype = function(o) {
-        var ctor = o.constructor;
-        return ctor && ctor.prototype === o;
-      };
-      excludedKeys = {
-        $applicationCache: true,
-        $console: true,
-        $external: true,
-        $frame: true,
-        $frameElement: true,
-        $frames: true,
-        $innerHeight: true,
-        $innerWidth: true,
-        $onmozfullscreenchange: true,
-        $onmozfullscreenerror: true,
-        $outerHeight: true,
-        $outerWidth: true,
-        $pageXOffset: true,
-        $pageYOffset: true,
-        $parent: true,
-        $scrollLeft: true,
-        $scrollTop: true,
-        $scrollX: true,
-        $scrollY: true,
-        $self: true,
-        $webkitIndexedDB: true,
-        $webkitStorageInfo: true,
-        $window: true
-      };
-      hasAutomationEqualityBug = function() {
-        if (typeof window === "undefined") {
-          return false;
-        }
-        for (var k in window) {
-          try {
-            if (!excludedKeys["$" + k] && has.call(window, k) && window[k] !== null && typeof window[k] === "object") {
-              try {
-                equalsConstructorPrototype(window[k]);
-              } catch (e) {
-                return true;
-              }
-            }
-          } catch (e) {
-            return true;
-          }
-        }
-        return false;
-      }();
-      equalsConstructorPrototypeIfNotBuggy = function(o) {
-        if (typeof window === "undefined" || !hasAutomationEqualityBug) {
-          return equalsConstructorPrototype(o);
-        }
-        try {
-          return equalsConstructorPrototype(o);
-        } catch (e) {
-          return false;
-        }
-      };
-      keysShim = function keys(object) {
-        var isObject2 = object !== null && typeof object === "object";
-        var isFunction = toStr.call(object) === "[object Function]";
-        var isArguments = isArgs(object);
-        var isString = isObject2 && toStr.call(object) === "[object String]";
-        var theKeys = [];
-        if (!isObject2 && !isFunction && !isArguments) {
-          throw new TypeError("Object.keys called on a non-object");
-        }
-        var skipProto = hasProtoEnumBug && isFunction;
-        if (isString && object.length > 0 && !has.call(object, 0)) {
-          for (var i = 0; i < object.length; ++i) {
-            theKeys.push(String(i));
-          }
-        }
-        if (isArguments && object.length > 0) {
-          for (var j = 0; j < object.length; ++j) {
-            theKeys.push(String(j));
-          }
-        } else {
-          for (var name in object) {
-            if (!(skipProto && name === "prototype") && has.call(object, name)) {
-              theKeys.push(String(name));
-            }
-          }
-        }
-        if (hasDontEnumBug) {
-          var skipConstructor = equalsConstructorPrototypeIfNotBuggy(object);
-          for (var k = 0; k < dontEnums.length; ++k) {
-            if (!(skipConstructor && dontEnums[k] === "constructor") && has.call(object, dontEnums[k])) {
-              theKeys.push(dontEnums[k]);
-            }
-          }
-        }
-        return theKeys;
-      };
-    }
-    var has;
-    var toStr;
-    var isArgs;
-    var isEnumerable;
-    var hasDontEnumBug;
-    var hasProtoEnumBug;
-    var dontEnums;
-    var equalsConstructorPrototype;
-    var excludedKeys;
-    var hasAutomationEqualityBug;
-    var equalsConstructorPrototypeIfNotBuggy;
-    module.exports = keysShim;
-  }
-});
-
-// node_modules/object-keys/index.js
-var require_object_keys = __commonJS({
-  "node_modules/object-keys/index.js"(exports, module) {
-    "use strict";
-    var slice = Array.prototype.slice;
-    var isArgs = require_isArguments();
-    var origKeys = Object.keys;
-    var keysShim = origKeys ? function keys(o) {
-      return origKeys(o);
-    } : require_implementation();
-    var originalKeys = Object.keys;
-    keysShim.shim = function shimObjectKeys() {
-      if (Object.keys) {
-        var keysWorksWithArguments = function() {
-          var args = Object.keys(arguments);
-          return args && args.length === arguments.length;
-        }(1, 2);
-        if (!keysWorksWithArguments) {
-          Object.keys = function keys(object) {
-            if (isArgs(object)) {
-              return originalKeys(slice.call(object));
-            }
-            return originalKeys(object);
-          };
-        }
-      } else {
-        Object.keys = keysShim;
-      }
-      return Object.keys || keysShim;
-    };
-    module.exports = keysShim;
-  }
-});
-
-// node_modules/es-define-property/index.js
-var require_es_define_property = __commonJS({
-  "node_modules/es-define-property/index.js"(exports, module) {
-    "use strict";
-    var $defineProperty = Object.defineProperty || false;
-    if ($defineProperty) {
-      try {
-        $defineProperty({}, "a", { value: 1 });
-      } catch (e) {
-        $defineProperty = false;
-      }
-    }
-    module.exports = $defineProperty;
-  }
-});
-
-// node_modules/es-errors/syntax.js
-var require_syntax = __commonJS({
-  "node_modules/es-errors/syntax.js"(exports, module) {
-    "use strict";
-    module.exports = SyntaxError;
-  }
-});
-
-// node_modules/es-errors/type.js
-var require_type = __commonJS({
-  "node_modules/es-errors/type.js"(exports, module) {
-    "use strict";
-    module.exports = TypeError;
-  }
-});
-
-// node_modules/gopd/gOPD.js
-var require_gOPD = __commonJS({
-  "node_modules/gopd/gOPD.js"(exports, module) {
-    "use strict";
-    module.exports = Object.getOwnPropertyDescriptor;
-  }
-});
-
-// node_modules/gopd/index.js
-var require_gopd = __commonJS({
-  "node_modules/gopd/index.js"(exports, module) {
-    "use strict";
-    var $gOPD = require_gOPD();
-    if ($gOPD) {
-      try {
-        $gOPD([], "length");
-      } catch (e) {
-        $gOPD = null;
-      }
-    }
-    module.exports = $gOPD;
-  }
-});
-
-// node_modules/define-data-property/index.js
-var require_define_data_property = __commonJS({
-  "node_modules/define-data-property/index.js"(exports, module) {
-    "use strict";
-    var $defineProperty = require_es_define_property();
-    var $SyntaxError = require_syntax();
-    var $TypeError = require_type();
-    var gopd = require_gopd();
-    module.exports = function defineDataProperty(obj, property, value) {
-      if (!obj || typeof obj !== "object" && typeof obj !== "function") {
-        throw new $TypeError("`obj` must be an object or a function`");
-      }
-      if (typeof property !== "string" && typeof property !== "symbol") {
-        throw new $TypeError("`property` must be a string or a symbol`");
-      }
-      if (arguments.length > 3 && typeof arguments[3] !== "boolean" && arguments[3] !== null) {
-        throw new $TypeError("`nonEnumerable`, if provided, must be a boolean or null");
-      }
-      if (arguments.length > 4 && typeof arguments[4] !== "boolean" && arguments[4] !== null) {
-        throw new $TypeError("`nonWritable`, if provided, must be a boolean or null");
-      }
-      if (arguments.length > 5 && typeof arguments[5] !== "boolean" && arguments[5] !== null) {
-        throw new $TypeError("`nonConfigurable`, if provided, must be a boolean or null");
-      }
-      if (arguments.length > 6 && typeof arguments[6] !== "boolean") {
-        throw new $TypeError("`loose`, if provided, must be a boolean");
-      }
-      var nonEnumerable = arguments.length > 3 ? arguments[3] : null;
-      var nonWritable = arguments.length > 4 ? arguments[4] : null;
-      var nonConfigurable = arguments.length > 5 ? arguments[5] : null;
-      var loose = arguments.length > 6 ? arguments[6] : false;
-      var desc = !!gopd && gopd(obj, property);
-      if ($defineProperty) {
-        $defineProperty(obj, property, {
-          configurable: nonConfigurable === null && desc ? desc.configurable : !nonConfigurable,
-          enumerable: nonEnumerable === null && desc ? desc.enumerable : !nonEnumerable,
-          value,
-          writable: nonWritable === null && desc ? desc.writable : !nonWritable
-        });
-      } else if (loose || !nonEnumerable && !nonWritable && !nonConfigurable) {
-        obj[property] = value;
-      } else {
-        throw new $SyntaxError("This environment does not support defining a property as non-configurable, non-writable, or non-enumerable.");
-      }
-    };
-  }
-});
-
-// node_modules/has-property-descriptors/index.js
-var require_has_property_descriptors = __commonJS({
-  "node_modules/has-property-descriptors/index.js"(exports, module) {
-    "use strict";
-    var $defineProperty = require_es_define_property();
-    var hasPropertyDescriptors = function hasPropertyDescriptors2() {
-      return !!$defineProperty;
-    };
-    hasPropertyDescriptors.hasArrayLengthDefineBug = function hasArrayLengthDefineBug() {
-      if (!$defineProperty) {
-        return null;
-      }
-      try {
-        return $defineProperty([], "length", { value: 1 }).length !== 1;
-      } catch (e) {
-        return true;
-      }
-    };
-    module.exports = hasPropertyDescriptors;
-  }
-});
-
-// node_modules/define-properties/index.js
-var require_define_properties = __commonJS({
-  "node_modules/define-properties/index.js"(exports, module) {
-    "use strict";
-    var keys = require_object_keys();
-    var hasSymbols = typeof Symbol === "function" && typeof Symbol("foo") === "symbol";
-    var toStr = Object.prototype.toString;
-    var concat = Array.prototype.concat;
-    var defineDataProperty = require_define_data_property();
-    var isFunction = function(fn) {
-      return typeof fn === "function" && toStr.call(fn) === "[object Function]";
-    };
-    var supportsDescriptors = require_has_property_descriptors()();
-    var defineProperty = function(object, name, value, predicate) {
-      if (name in object) {
-        if (predicate === true) {
-          if (object[name] === value) {
-            return;
-          }
-        } else if (!isFunction(predicate) || !predicate()) {
-          return;
-        }
-      }
-      if (supportsDescriptors) {
-        defineDataProperty(object, name, value, true);
-      } else {
-        defineDataProperty(object, name, value);
-      }
-    };
-    var defineProperties = function(object, map2) {
-      var predicates = arguments.length > 2 ? arguments[2] : {};
-      var props = keys(map2);
-      if (hasSymbols) {
-        props = concat.call(props, Object.getOwnPropertySymbols(map2));
-      }
-      for (var i = 0; i < props.length; i += 1) {
-        defineProperty(object, props[i], map2[props[i]], predicates[props[i]]);
-      }
-    };
-    defineProperties.supportsDescriptors = !!supportsDescriptors;
-    module.exports = defineProperties;
-  }
-});
-
-// node_modules/es-object-atoms/index.js
-var require_es_object_atoms = __commonJS({
-  "node_modules/es-object-atoms/index.js"(exports, module) {
-    "use strict";
-    module.exports = Object;
-  }
-});
-
-// node_modules/es-errors/index.js
-var require_es_errors = __commonJS({
-  "node_modules/es-errors/index.js"(exports, module) {
-    "use strict";
-    module.exports = Error;
-  }
-});
-
-// node_modules/es-errors/eval.js
-var require_eval = __commonJS({
-  "node_modules/es-errors/eval.js"(exports, module) {
-    "use strict";
-    module.exports = EvalError;
-  }
-});
-
-// node_modules/es-errors/range.js
-var require_range = __commonJS({
-  "node_modules/es-errors/range.js"(exports, module) {
-    "use strict";
-    module.exports = RangeError;
-  }
-});
-
-// node_modules/es-errors/ref.js
-var require_ref2 = __commonJS({
-  "node_modules/es-errors/ref.js"(exports, module) {
-    "use strict";
-    module.exports = ReferenceError;
-  }
-});
-
-// node_modules/es-errors/uri.js
-var require_uri2 = __commonJS({
-  "node_modules/es-errors/uri.js"(exports, module) {
-    "use strict";
-    module.exports = URIError;
-  }
-});
-
-// node_modules/math-intrinsics/abs.js
-var require_abs = __commonJS({
-  "node_modules/math-intrinsics/abs.js"(exports, module) {
-    "use strict";
-    module.exports = Math.abs;
-  }
-});
-
-// node_modules/math-intrinsics/floor.js
-var require_floor = __commonJS({
-  "node_modules/math-intrinsics/floor.js"(exports, module) {
-    "use strict";
-    module.exports = Math.floor;
-  }
-});
-
-// node_modules/math-intrinsics/max.js
-var require_max = __commonJS({
-  "node_modules/math-intrinsics/max.js"(exports, module) {
-    "use strict";
-    module.exports = Math.max;
-  }
-});
-
-// node_modules/math-intrinsics/min.js
-var require_min = __commonJS({
-  "node_modules/math-intrinsics/min.js"(exports, module) {
-    "use strict";
-    module.exports = Math.min;
-  }
-});
-
-// node_modules/math-intrinsics/pow.js
-var require_pow = __commonJS({
-  "node_modules/math-intrinsics/pow.js"(exports, module) {
-    "use strict";
-    module.exports = Math.pow;
-  }
-});
-
-// node_modules/math-intrinsics/round.js
-var require_round = __commonJS({
-  "node_modules/math-intrinsics/round.js"(exports, module) {
-    "use strict";
-    module.exports = Math.round;
-  }
-});
-
-// node_modules/math-intrinsics/isNaN.js
-var require_isNaN = __commonJS({
-  "node_modules/math-intrinsics/isNaN.js"(exports, module) {
-    "use strict";
-    module.exports = Number.isNaN || function isNaN2(a) {
-      return a !== a;
-    };
-  }
-});
-
-// node_modules/math-intrinsics/sign.js
-var require_sign = __commonJS({
-  "node_modules/math-intrinsics/sign.js"(exports, module) {
-    "use strict";
-    var $isNaN = require_isNaN();
-    module.exports = function sign(number) {
-      if ($isNaN(number) || number === 0) {
-        return number;
-      }
-      return number < 0 ? -1 : 1;
-    };
-  }
-});
-
-// node_modules/has-symbols/shams.js
-var require_shams = __commonJS({
-  "node_modules/has-symbols/shams.js"(exports, module) {
-    "use strict";
-    module.exports = function hasSymbols() {
-      if (typeof Symbol !== "function" || typeof Object.getOwnPropertySymbols !== "function") {
-        return false;
-      }
-      if (typeof Symbol.iterator === "symbol") {
-        return true;
-      }
-      var obj = {};
-      var sym = Symbol("test");
-      var symObj = Object(sym);
-      if (typeof sym === "string") {
-        return false;
-      }
-      if (Object.prototype.toString.call(sym) !== "[object Symbol]") {
-        return false;
-      }
-      if (Object.prototype.toString.call(symObj) !== "[object Symbol]") {
-        return false;
-      }
-      var symVal = 42;
-      obj[sym] = symVal;
-      for (var _ in obj) {
-        return false;
-      }
-      if (typeof Object.keys === "function" && Object.keys(obj).length !== 0) {
-        return false;
-      }
-      if (typeof Object.getOwnPropertyNames === "function" && Object.getOwnPropertyNames(obj).length !== 0) {
-        return false;
-      }
-      var syms = Object.getOwnPropertySymbols(obj);
-      if (syms.length !== 1 || syms[0] !== sym) {
-        return false;
-      }
-      if (!Object.prototype.propertyIsEnumerable.call(obj, sym)) {
-        return false;
-      }
-      if (typeof Object.getOwnPropertyDescriptor === "function") {
-        var descriptor = (
-          /** @type {PropertyDescriptor} */
-          Object.getOwnPropertyDescriptor(obj, sym)
-        );
-        if (descriptor.value !== symVal || descriptor.enumerable !== true) {
-          return false;
-        }
-      }
-      return true;
-    };
-  }
-});
-
-// node_modules/has-symbols/index.js
-var require_has_symbols = __commonJS({
-  "node_modules/has-symbols/index.js"(exports, module) {
-    "use strict";
-    var origSymbol = typeof Symbol !== "undefined" && Symbol;
-    var hasSymbolSham = require_shams();
-    module.exports = function hasNativeSymbols() {
-      if (typeof origSymbol !== "function") {
-        return false;
-      }
-      if (typeof Symbol !== "function") {
-        return false;
-      }
-      if (typeof origSymbol("foo") !== "symbol") {
-        return false;
-      }
-      if (typeof Symbol("bar") !== "symbol") {
-        return false;
-      }
-      return hasSymbolSham();
-    };
-  }
-});
-
-// node_modules/get-proto/Reflect.getPrototypeOf.js
-var require_Reflect_getPrototypeOf = __commonJS({
-  "node_modules/get-proto/Reflect.getPrototypeOf.js"(exports, module) {
-    "use strict";
-    module.exports = typeof Reflect !== "undefined" && Reflect.getPrototypeOf || null;
-  }
-});
-
-// node_modules/get-proto/Object.getPrototypeOf.js
-var require_Object_getPrototypeOf = __commonJS({
-  "node_modules/get-proto/Object.getPrototypeOf.js"(exports, module) {
-    "use strict";
-    var $Object = require_es_object_atoms();
-    module.exports = $Object.getPrototypeOf || null;
-  }
-});
-
-// node_modules/function-bind/implementation.js
-var require_implementation2 = __commonJS({
-  "node_modules/function-bind/implementation.js"(exports, module) {
-    "use strict";
-    var ERROR_MESSAGE = "Function.prototype.bind called on incompatible ";
-    var toStr = Object.prototype.toString;
-    var max = Math.max;
-    var funcType = "[object Function]";
-    var concatty = function concatty2(a, b) {
-      var arr = [];
-      for (var i = 0; i < a.length; i += 1) {
-        arr[i] = a[i];
-      }
-      for (var j = 0; j < b.length; j += 1) {
-        arr[j + a.length] = b[j];
-      }
-      return arr;
-    };
-    var slicy = function slicy2(arrLike, offset) {
-      var arr = [];
-      for (var i = offset || 0, j = 0; i < arrLike.length; i += 1, j += 1) {
-        arr[j] = arrLike[i];
-      }
-      return arr;
-    };
-    var joiny = function(arr, joiner) {
-      var str2 = "";
-      for (var i = 0; i < arr.length; i += 1) {
-        str2 += arr[i];
-        if (i + 1 < arr.length) {
-          str2 += joiner;
-        }
-      }
-      return str2;
-    };
-    module.exports = function bind2(that) {
-      var target = this;
-      if (typeof target !== "function" || toStr.apply(target) !== funcType) {
-        throw new TypeError(ERROR_MESSAGE + target);
-      }
-      var args = slicy(arguments, 1);
-      var bound;
-      var binder = function() {
-        if (this instanceof bound) {
-          var result = target.apply(
-            this,
-            concatty(args, arguments)
-          );
-          if (Object(result) === result) {
-            return result;
-          }
-          return this;
-        }
-        return target.apply(
-          that,
-          concatty(args, arguments)
-        );
-      };
-      var boundLength = max(0, target.length - args.length);
-      var boundArgs = [];
-      for (var i = 0; i < boundLength; i++) {
-        boundArgs[i] = "$" + i;
-      }
-      bound = Function("binder", "return function (" + joiny(boundArgs, ",") + "){ return binder.apply(this,arguments); }")(binder);
-      if (target.prototype) {
-        var Empty = function Empty2() {
-        };
-        Empty.prototype = target.prototype;
-        bound.prototype = new Empty();
-        Empty.prototype = null;
-      }
-      return bound;
-    };
-  }
-});
-
-// node_modules/function-bind/index.js
-var require_function_bind = __commonJS({
-  "node_modules/function-bind/index.js"(exports, module) {
-    "use strict";
-    var implementation = require_implementation2();
-    module.exports = Function.prototype.bind || implementation;
-  }
-});
-
-// node_modules/call-bind-apply-helpers/functionCall.js
-var require_functionCall = __commonJS({
-  "node_modules/call-bind-apply-helpers/functionCall.js"(exports, module) {
-    "use strict";
-    module.exports = Function.prototype.call;
-  }
-});
-
-// node_modules/call-bind-apply-helpers/functionApply.js
-var require_functionApply = __commonJS({
-  "node_modules/call-bind-apply-helpers/functionApply.js"(exports, module) {
-    "use strict";
-    module.exports = Function.prototype.apply;
-  }
-});
-
-// node_modules/call-bind-apply-helpers/reflectApply.js
-var require_reflectApply = __commonJS({
-  "node_modules/call-bind-apply-helpers/reflectApply.js"(exports, module) {
-    "use strict";
-    module.exports = typeof Reflect !== "undefined" && Reflect && Reflect.apply;
-  }
-});
-
-// node_modules/call-bind-apply-helpers/actualApply.js
-var require_actualApply = __commonJS({
-  "node_modules/call-bind-apply-helpers/actualApply.js"(exports, module) {
-    "use strict";
-    var bind2 = require_function_bind();
-    var $apply = require_functionApply();
-    var $call = require_functionCall();
-    var $reflectApply = require_reflectApply();
-    module.exports = $reflectApply || bind2.call($call, $apply);
-  }
-});
-
-// node_modules/call-bind-apply-helpers/index.js
-var require_call_bind_apply_helpers = __commonJS({
-  "node_modules/call-bind-apply-helpers/index.js"(exports, module) {
-    "use strict";
-    var bind2 = require_function_bind();
-    var $TypeError = require_type();
-    var $call = require_functionCall();
-    var $actualApply = require_actualApply();
-    module.exports = function callBindBasic(args) {
-      if (args.length < 1 || typeof args[0] !== "function") {
-        throw new $TypeError("a function is required");
-      }
-      return $actualApply(bind2, $call, args);
-    };
-  }
-});
-
-// node_modules/dunder-proto/get.js
-var require_get = __commonJS({
-  "node_modules/dunder-proto/get.js"(exports, module) {
-    "use strict";
-    var callBind = require_call_bind_apply_helpers();
-    var gOPD = require_gopd();
-    var hasProtoAccessor;
-    try {
-      hasProtoAccessor = /** @type {{ __proto__?: typeof Array.prototype }} */
-      [].__proto__ === Array.prototype;
-    } catch (e) {
-      if (!e || typeof e !== "object" || !("code" in e) || e.code !== "ERR_PROTO_ACCESS") {
-        throw e;
-      }
-    }
-    var desc = !!hasProtoAccessor && gOPD && gOPD(
-      Object.prototype,
-      /** @type {keyof typeof Object.prototype} */
-      "__proto__"
-    );
-    var $Object = Object;
-    var $getPrototypeOf = $Object.getPrototypeOf;
-    module.exports = desc && typeof desc.get === "function" ? callBind([desc.get]) : typeof $getPrototypeOf === "function" ? (
-      /** @type {import('./get')} */
-      function getDunder(value) {
-        return $getPrototypeOf(value == null ? value : $Object(value));
-      }
-    ) : false;
-  }
-});
-
-// node_modules/get-proto/index.js
-var require_get_proto = __commonJS({
-  "node_modules/get-proto/index.js"(exports, module) {
-    "use strict";
-    var reflectGetProto = require_Reflect_getPrototypeOf();
-    var originalGetProto = require_Object_getPrototypeOf();
-    var getDunderProto = require_get();
-    module.exports = reflectGetProto ? function getProto(O) {
-      return reflectGetProto(O);
-    } : originalGetProto ? function getProto(O) {
-      if (!O || typeof O !== "object" && typeof O !== "function") {
-        throw new TypeError("getProto: not an object");
-      }
-      return originalGetProto(O);
-    } : getDunderProto ? function getProto(O) {
-      return getDunderProto(O);
-    } : null;
-  }
-});
-
-// node_modules/hasown/index.js
-var require_hasown = __commonJS({
-  "node_modules/hasown/index.js"(exports, module) {
-    "use strict";
-    var call = Function.prototype.call;
-    var $hasOwn = Object.prototype.hasOwnProperty;
-    var bind2 = require_function_bind();
-    module.exports = bind2.call(call, $hasOwn);
-  }
-});
-
-// node_modules/get-intrinsic/index.js
-var require_get_intrinsic = __commonJS({
-  "node_modules/get-intrinsic/index.js"(exports, module) {
-    "use strict";
-    var undefined2;
-    var $Object = require_es_object_atoms();
-    var $Error = require_es_errors();
-    var $EvalError = require_eval();
-    var $RangeError = require_range();
-    var $ReferenceError = require_ref2();
-    var $SyntaxError = require_syntax();
-    var $TypeError = require_type();
-    var $URIError = require_uri2();
-    var abs = require_abs();
-    var floor = require_floor();
-    var max = require_max();
-    var min = require_min();
-    var pow = require_pow();
-    var round = require_round();
-    var sign = require_sign();
-    var $Function = Function;
-    var getEvalledConstructor = function(expressionSyntax) {
-      try {
-        return $Function('"use strict"; return (' + expressionSyntax + ").constructor;")();
-      } catch (e) {
-      }
-    };
-    var $gOPD = require_gopd();
-    var $defineProperty = require_es_define_property();
-    var throwTypeError = function() {
-      throw new $TypeError();
-    };
-    var ThrowTypeError = $gOPD ? function() {
-      try {
-        arguments.callee;
-        return throwTypeError;
-      } catch (calleeThrows) {
-        try {
-          return $gOPD(arguments, "callee").get;
-        } catch (gOPDthrows) {
-          return throwTypeError;
-        }
-      }
-    }() : throwTypeError;
-    var hasSymbols = require_has_symbols()();
-    var getProto = require_get_proto();
-    var $ObjectGPO = require_Object_getPrototypeOf();
-    var $ReflectGPO = require_Reflect_getPrototypeOf();
-    var $apply = require_functionApply();
-    var $call = require_functionCall();
-    var needsEval = {};
-    var TypedArray = typeof Uint8Array === "undefined" || !getProto ? undefined2 : getProto(Uint8Array);
-    var INTRINSICS = {
-      __proto__: null,
-      "%AggregateError%": typeof AggregateError === "undefined" ? undefined2 : AggregateError,
-      "%Array%": Array,
-      "%ArrayBuffer%": typeof ArrayBuffer === "undefined" ? undefined2 : ArrayBuffer,
-      "%ArrayIteratorPrototype%": hasSymbols && getProto ? getProto([][Symbol.iterator]()) : undefined2,
-      "%AsyncFromSyncIteratorPrototype%": undefined2,
-      "%AsyncFunction%": needsEval,
-      "%AsyncGenerator%": needsEval,
-      "%AsyncGeneratorFunction%": needsEval,
-      "%AsyncIteratorPrototype%": needsEval,
-      "%Atomics%": typeof Atomics === "undefined" ? undefined2 : Atomics,
-      "%BigInt%": typeof BigInt === "undefined" ? undefined2 : BigInt,
-      "%BigInt64Array%": typeof BigInt64Array === "undefined" ? undefined2 : BigInt64Array,
-      "%BigUint64Array%": typeof BigUint64Array === "undefined" ? undefined2 : BigUint64Array,
-      "%Boolean%": Boolean,
-      "%DataView%": typeof DataView === "undefined" ? undefined2 : DataView,
-      "%Date%": Date,
-      "%decodeURI%": decodeURI,
-      "%decodeURIComponent%": decodeURIComponent,
-      "%encodeURI%": encodeURI,
-      "%encodeURIComponent%": encodeURIComponent,
-      "%Error%": $Error,
-      "%eval%": eval,
-      // eslint-disable-line no-eval
-      "%EvalError%": $EvalError,
-      "%Float16Array%": typeof Float16Array === "undefined" ? undefined2 : Float16Array,
-      "%Float32Array%": typeof Float32Array === "undefined" ? undefined2 : Float32Array,
-      "%Float64Array%": typeof Float64Array === "undefined" ? undefined2 : Float64Array,
-      "%FinalizationRegistry%": typeof FinalizationRegistry === "undefined" ? undefined2 : FinalizationRegistry,
-      "%Function%": $Function,
-      "%GeneratorFunction%": needsEval,
-      "%Int8Array%": typeof Int8Array === "undefined" ? undefined2 : Int8Array,
-      "%Int16Array%": typeof Int16Array === "undefined" ? undefined2 : Int16Array,
-      "%Int32Array%": typeof Int32Array === "undefined" ? undefined2 : Int32Array,
-      "%isFinite%": isFinite,
-      "%isNaN%": isNaN,
-      "%IteratorPrototype%": hasSymbols && getProto ? getProto(getProto([][Symbol.iterator]())) : undefined2,
-      "%JSON%": typeof JSON === "object" ? JSON : undefined2,
-      "%Map%": typeof Map === "undefined" ? undefined2 : Map,
-      "%MapIteratorPrototype%": typeof Map === "undefined" || !hasSymbols || !getProto ? undefined2 : getProto((/* @__PURE__ */ new Map())[Symbol.iterator]()),
-      "%Math%": Math,
-      "%Number%": Number,
-      "%Object%": $Object,
-      "%Object.getOwnPropertyDescriptor%": $gOPD,
-      "%parseFloat%": parseFloat,
-      "%parseInt%": parseInt,
-      "%Promise%": typeof Promise === "undefined" ? undefined2 : Promise,
-      "%Proxy%": typeof Proxy === "undefined" ? undefined2 : Proxy,
-      "%RangeError%": $RangeError,
-      "%ReferenceError%": $ReferenceError,
-      "%Reflect%": typeof Reflect === "undefined" ? undefined2 : Reflect,
-      "%RegExp%": RegExp,
-      "%Set%": typeof Set === "undefined" ? undefined2 : Set,
-      "%SetIteratorPrototype%": typeof Set === "undefined" || !hasSymbols || !getProto ? undefined2 : getProto((/* @__PURE__ */ new Set())[Symbol.iterator]()),
-      "%SharedArrayBuffer%": typeof SharedArrayBuffer === "undefined" ? undefined2 : SharedArrayBuffer,
-      "%String%": String,
-      "%StringIteratorPrototype%": hasSymbols && getProto ? getProto(""[Symbol.iterator]()) : undefined2,
-      "%Symbol%": hasSymbols ? Symbol : undefined2,
-      "%SyntaxError%": $SyntaxError,
-      "%ThrowTypeError%": ThrowTypeError,
-      "%TypedArray%": TypedArray,
-      "%TypeError%": $TypeError,
-      "%Uint8Array%": typeof Uint8Array === "undefined" ? undefined2 : Uint8Array,
-      "%Uint8ClampedArray%": typeof Uint8ClampedArray === "undefined" ? undefined2 : Uint8ClampedArray,
-      "%Uint16Array%": typeof Uint16Array === "undefined" ? undefined2 : Uint16Array,
-      "%Uint32Array%": typeof Uint32Array === "undefined" ? undefined2 : Uint32Array,
-      "%URIError%": $URIError,
-      "%WeakMap%": typeof WeakMap === "undefined" ? undefined2 : WeakMap,
-      "%WeakRef%": typeof WeakRef === "undefined" ? undefined2 : WeakRef,
-      "%WeakSet%": typeof WeakSet === "undefined" ? undefined2 : WeakSet,
-      "%Function.prototype.call%": $call,
-      "%Function.prototype.apply%": $apply,
-      "%Object.defineProperty%": $defineProperty,
-      "%Object.getPrototypeOf%": $ObjectGPO,
-      "%Math.abs%": abs,
-      "%Math.floor%": floor,
-      "%Math.max%": max,
-      "%Math.min%": min,
-      "%Math.pow%": pow,
-      "%Math.round%": round,
-      "%Math.sign%": sign,
-      "%Reflect.getPrototypeOf%": $ReflectGPO
-    };
-    if (getProto) {
-      try {
-        null.error;
-      } catch (e) {
-        errorProto = getProto(getProto(e));
-        INTRINSICS["%Error.prototype%"] = errorProto;
-      }
-    }
-    var errorProto;
-    var doEval = function doEval2(name) {
-      var value;
-      if (name === "%AsyncFunction%") {
-        value = getEvalledConstructor("async function () {}");
-      } else if (name === "%GeneratorFunction%") {
-        value = getEvalledConstructor("function* () {}");
-      } else if (name === "%AsyncGeneratorFunction%") {
-        value = getEvalledConstructor("async function* () {}");
-      } else if (name === "%AsyncGenerator%") {
-        var fn = doEval2("%AsyncGeneratorFunction%");
-        if (fn) {
-          value = fn.prototype;
-        }
-      } else if (name === "%AsyncIteratorPrototype%") {
-        var gen = doEval2("%AsyncGenerator%");
-        if (gen && getProto) {
-          value = getProto(gen.prototype);
-        }
-      }
-      INTRINSICS[name] = value;
-      return value;
-    };
-    var LEGACY_ALIASES = {
-      __proto__: null,
-      "%ArrayBufferPrototype%": ["ArrayBuffer", "prototype"],
-      "%ArrayPrototype%": ["Array", "prototype"],
-      "%ArrayProto_entries%": ["Array", "prototype", "entries"],
-      "%ArrayProto_forEach%": ["Array", "prototype", "forEach"],
-      "%ArrayProto_keys%": ["Array", "prototype", "keys"],
-      "%ArrayProto_values%": ["Array", "prototype", "values"],
-      "%AsyncFunctionPrototype%": ["AsyncFunction", "prototype"],
-      "%AsyncGenerator%": ["AsyncGeneratorFunction", "prototype"],
-      "%AsyncGeneratorPrototype%": ["AsyncGeneratorFunction", "prototype", "prototype"],
-      "%BooleanPrototype%": ["Boolean", "prototype"],
-      "%DataViewPrototype%": ["DataView", "prototype"],
-      "%DatePrototype%": ["Date", "prototype"],
-      "%ErrorPrototype%": ["Error", "prototype"],
-      "%EvalErrorPrototype%": ["EvalError", "prototype"],
-      "%Float32ArrayPrototype%": ["Float32Array", "prototype"],
-      "%Float64ArrayPrototype%": ["Float64Array", "prototype"],
-      "%FunctionPrototype%": ["Function", "prototype"],
-      "%Generator%": ["GeneratorFunction", "prototype"],
-      "%GeneratorPrototype%": ["GeneratorFunction", "prototype", "prototype"],
-      "%Int8ArrayPrototype%": ["Int8Array", "prototype"],
-      "%Int16ArrayPrototype%": ["Int16Array", "prototype"],
-      "%Int32ArrayPrototype%": ["Int32Array", "prototype"],
-      "%JSONParse%": ["JSON", "parse"],
-      "%JSONStringify%": ["JSON", "stringify"],
-      "%MapPrototype%": ["Map", "prototype"],
-      "%NumberPrototype%": ["Number", "prototype"],
-      "%ObjectPrototype%": ["Object", "prototype"],
-      "%ObjProto_toString%": ["Object", "prototype", "toString"],
-      "%ObjProto_valueOf%": ["Object", "prototype", "valueOf"],
-      "%PromisePrototype%": ["Promise", "prototype"],
-      "%PromiseProto_then%": ["Promise", "prototype", "then"],
-      "%Promise_all%": ["Promise", "all"],
-      "%Promise_reject%": ["Promise", "reject"],
-      "%Promise_resolve%": ["Promise", "resolve"],
-      "%RangeErrorPrototype%": ["RangeError", "prototype"],
-      "%ReferenceErrorPrototype%": ["ReferenceError", "prototype"],
-      "%RegExpPrototype%": ["RegExp", "prototype"],
-      "%SetPrototype%": ["Set", "prototype"],
-      "%SharedArrayBufferPrototype%": ["SharedArrayBuffer", "prototype"],
-      "%StringPrototype%": ["String", "prototype"],
-      "%SymbolPrototype%": ["Symbol", "prototype"],
-      "%SyntaxErrorPrototype%": ["SyntaxError", "prototype"],
-      "%TypedArrayPrototype%": ["TypedArray", "prototype"],
-      "%TypeErrorPrototype%": ["TypeError", "prototype"],
-      "%Uint8ArrayPrototype%": ["Uint8Array", "prototype"],
-      "%Uint8ClampedArrayPrototype%": ["Uint8ClampedArray", "prototype"],
-      "%Uint16ArrayPrototype%": ["Uint16Array", "prototype"],
-      "%Uint32ArrayPrototype%": ["Uint32Array", "prototype"],
-      "%URIErrorPrototype%": ["URIError", "prototype"],
-      "%WeakMapPrototype%": ["WeakMap", "prototype"],
-      "%WeakSetPrototype%": ["WeakSet", "prototype"]
-    };
-    var bind2 = require_function_bind();
-    var hasOwn = require_hasown();
-    var $concat = bind2.call($call, Array.prototype.concat);
-    var $spliceApply = bind2.call($apply, Array.prototype.splice);
-    var $replace = bind2.call($call, String.prototype.replace);
-    var $strSlice = bind2.call($call, String.prototype.slice);
-    var $exec = bind2.call($call, RegExp.prototype.exec);
-    var rePropName = /[^%.[\]]+|\[(?:(-?\d+(?:\.\d+)?)|(["'])((?:(?!\2)[^\\]|\\.)*?)\2)\]|(?=(?:\.|\[\])(?:\.|\[\]|%$))/g;
-    var reEscapeChar = /\\(\\)?/g;
-    var stringToPath = function stringToPath2(string) {
-      var first = $strSlice(string, 0, 1);
-      var last = $strSlice(string, -1);
-      if (first === "%" && last !== "%") {
-        throw new $SyntaxError("invalid intrinsic syntax, expected closing `%`");
-      } else if (last === "%" && first !== "%") {
-        throw new $SyntaxError("invalid intrinsic syntax, expected opening `%`");
-      }
-      var result = [];
-      $replace(string, rePropName, function(match, number, quote, subString) {
-        result[result.length] = quote ? $replace(subString, reEscapeChar, "$1") : number || match;
-      });
-      return result;
-    };
-    var getBaseIntrinsic = function getBaseIntrinsic2(name, allowMissing) {
-      var intrinsicName = name;
-      var alias;
-      if (hasOwn(LEGACY_ALIASES, intrinsicName)) {
-        alias = LEGACY_ALIASES[intrinsicName];
-        intrinsicName = "%" + alias[0] + "%";
-      }
-      if (hasOwn(INTRINSICS, intrinsicName)) {
-        var value = INTRINSICS[intrinsicName];
-        if (value === needsEval) {
-          value = doEval(intrinsicName);
-        }
-        if (typeof value === "undefined" && !allowMissing) {
-          throw new $TypeError("intrinsic " + name + " exists, but is not available. Please file an issue!");
-        }
-        return {
-          alias,
-          name: intrinsicName,
-          value
-        };
-      }
-      throw new $SyntaxError("intrinsic " + name + " does not exist!");
-    };
-    module.exports = function GetIntrinsic(name, allowMissing) {
-      if (typeof name !== "string" || name.length === 0) {
-        throw new $TypeError("intrinsic name must be a non-empty string");
-      }
-      if (arguments.length > 1 && typeof allowMissing !== "boolean") {
-        throw new $TypeError('"allowMissing" argument must be a boolean');
-      }
-      if ($exec(/^%?[^%]*%?$/, name) === null) {
-        throw new $SyntaxError("`%` may not be present anywhere but at the beginning and end of the intrinsic name");
-      }
-      var parts = stringToPath(name);
-      var intrinsicBaseName = parts.length > 0 ? parts[0] : "";
-      var intrinsic = getBaseIntrinsic("%" + intrinsicBaseName + "%", allowMissing);
-      var intrinsicRealName = intrinsic.name;
-      var value = intrinsic.value;
-      var skipFurtherCaching = false;
-      var alias = intrinsic.alias;
-      if (alias) {
-        intrinsicBaseName = alias[0];
-        $spliceApply(parts, $concat([0, 1], alias));
-      }
-      for (var i = 1, isOwn = true; i < parts.length; i += 1) {
-        var part = parts[i];
-        var first = $strSlice(part, 0, 1);
-        var last = $strSlice(part, -1);
-        if ((first === '"' || first === "'" || first === "`" || (last === '"' || last === "'" || last === "`")) && first !== last) {
-          throw new $SyntaxError("property names with quotes must have matching quotes");
-        }
-        if (part === "constructor" || !isOwn) {
-          skipFurtherCaching = true;
-        }
-        intrinsicBaseName += "." + part;
-        intrinsicRealName = "%" + intrinsicBaseName + "%";
-        if (hasOwn(INTRINSICS, intrinsicRealName)) {
-          value = INTRINSICS[intrinsicRealName];
-        } else if (value != null) {
-          if (!(part in value)) {
-            if (!allowMissing) {
-              throw new $TypeError("base intrinsic for " + name + " exists, but the property is not available.");
-            }
-            return void undefined2;
-          }
-          if ($gOPD && i + 1 >= parts.length) {
-            var desc = $gOPD(value, part);
-            isOwn = !!desc;
-            if (isOwn && "get" in desc && !("originalValue" in desc.get)) {
-              value = desc.get;
-            } else {
-              value = value[part];
-            }
-          } else {
-            isOwn = hasOwn(value, part);
-            value = value[part];
-          }
-          if (isOwn && !skipFurtherCaching) {
-            INTRINSICS[intrinsicRealName] = value;
-          }
-        }
-      }
-      return value;
-    };
-  }
-});
-
-// node_modules/set-function-length/index.js
-var require_set_function_length = __commonJS({
-  "node_modules/set-function-length/index.js"(exports, module) {
-    "use strict";
-    var GetIntrinsic = require_get_intrinsic();
-    var define2 = require_define_data_property();
-    var hasDescriptors = require_has_property_descriptors()();
-    var gOPD = require_gopd();
-    var $TypeError = require_type();
-    var $floor = GetIntrinsic("%Math.floor%");
-    module.exports = function setFunctionLength(fn, length) {
-      if (typeof fn !== "function") {
-        throw new $TypeError("`fn` is not a function");
-      }
-      if (typeof length !== "number" || length < 0 || length > 4294967295 || $floor(length) !== length) {
-        throw new $TypeError("`length` must be a positive 32-bit integer");
-      }
-      var loose = arguments.length > 2 && !!arguments[2];
-      var functionLengthIsConfigurable = true;
-      var functionLengthIsWritable = true;
-      if ("length" in fn && gOPD) {
-        var desc = gOPD(fn, "length");
-        if (desc && !desc.configurable) {
-          functionLengthIsConfigurable = false;
-        }
-        if (desc && !desc.writable) {
-          functionLengthIsWritable = false;
-        }
-      }
-      if (functionLengthIsConfigurable || functionLengthIsWritable || !loose) {
-        if (hasDescriptors) {
-          define2(
-            /** @type {Parameters<define>[0]} */
-            fn,
-            "length",
-            length,
-            true,
-            true
-          );
-        } else {
-          define2(
-            /** @type {Parameters<define>[0]} */
-            fn,
-            "length",
-            length
-          );
-        }
-      }
-      return fn;
-    };
-  }
-});
-
-// node_modules/call-bind-apply-helpers/applyBind.js
-var require_applyBind = __commonJS({
-  "node_modules/call-bind-apply-helpers/applyBind.js"(exports, module) {
-    "use strict";
-    var bind2 = require_function_bind();
-    var $apply = require_functionApply();
-    var actualApply = require_actualApply();
-    module.exports = function applyBind() {
-      return actualApply(bind2, $apply, arguments);
-    };
-  }
-});
-
-// node_modules/call-bind/index.js
-var require_call_bind = __commonJS({
-  "node_modules/call-bind/index.js"(exports, module) {
-    "use strict";
-    var setFunctionLength = require_set_function_length();
-    var $defineProperty = require_es_define_property();
-    var callBindBasic = require_call_bind_apply_helpers();
-    var applyBind = require_applyBind();
-    module.exports = function callBind(originalFunction) {
-      var func = callBindBasic(arguments);
-      var adjustedLength = originalFunction.length - (arguments.length - 1);
-      return setFunctionLength(
-        func,
-        1 + (adjustedLength > 0 ? adjustedLength : 0),
-        true
-      );
-    };
-    if ($defineProperty) {
-      $defineProperty(module.exports, "apply", { value: applyBind });
-    } else {
-      module.exports.apply = applyBind;
-    }
-  }
-});
-
-// node_modules/call-bound/index.js
-var require_call_bound = __commonJS({
-  "node_modules/call-bound/index.js"(exports, module) {
-    "use strict";
-    var GetIntrinsic = require_get_intrinsic();
-    var callBindBasic = require_call_bind_apply_helpers();
-    var $indexOf = callBindBasic([GetIntrinsic("%String.prototype.indexOf%")]);
-    module.exports = function callBoundIntrinsic(name, allowMissing) {
-      var intrinsic = (
-        /** @type {(this: unknown, ...args: unknown[]) => unknown} */
-        GetIntrinsic(name, !!allowMissing)
-      );
-      if (typeof intrinsic === "function" && $indexOf(name, ".prototype.") > -1) {
-        return callBindBasic(
-          /** @type {const} */
-          [intrinsic]
-        );
-      }
-      return intrinsic;
-    };
-  }
-});
-
-// node_modules/math-intrinsics/isFinite.js
-var require_isFinite = __commonJS({
-  "node_modules/math-intrinsics/isFinite.js"(exports, module) {
-    "use strict";
-    var $isNaN = require_isNaN();
-    module.exports = function isFinite2(x) {
-      return (typeof x === "number" || typeof x === "bigint") && !$isNaN(x) && x !== Infinity && x !== -Infinity;
-    };
-  }
-});
-
-// node_modules/math-intrinsics/isInteger.js
-var require_isInteger = __commonJS({
-  "node_modules/math-intrinsics/isInteger.js"(exports, module) {
-    "use strict";
-    var $abs = require_abs();
-    var $floor = require_floor();
-    var $isNaN = require_isNaN();
-    var $isFinite = require_isFinite();
-    module.exports = function isInteger2(argument) {
-      if (typeof argument !== "number" || $isNaN(argument) || !$isFinite(argument)) {
-        return false;
-      }
-      var absValue = $abs(argument);
-      return $floor(absValue) === absValue;
-    };
-  }
-});
-
-// node_modules/es-abstract/2024/Number/toString.js
-var require_toString = __commonJS({
-  "node_modules/es-abstract/2024/Number/toString.js"(exports, module) {
-    "use strict";
-    var $TypeError = require_type();
-    var callBound = require_call_bound();
-    var isInteger2 = require_isInteger();
-    var $numberToString = callBound("Number.prototype.toString");
-    module.exports = function NumberToString(x, radix) {
-      if (typeof x !== "number") {
-        throw new $TypeError("Assertion failed: `x` must be a Number");
-      }
-      if (!isInteger2(radix) || radix < 2 || radix > 36) {
-        throw new $TypeError("Assertion failed: `radix` must be an integer >= 2 and <= 36");
-      }
-      return $numberToString(x, radix);
-    };
-  }
-});
-
-// node_modules/es-abstract/2024/StringIndexOf.js
-var require_StringIndexOf = __commonJS({
-  "node_modules/es-abstract/2024/StringIndexOf.js"(exports, module) {
-    "use strict";
-    var callBound = require_call_bound();
-    var $TypeError = require_type();
-    var isInteger2 = require_isInteger();
-    var $slice = callBound("String.prototype.slice");
-    module.exports = function StringIndexOf(string, searchValue, fromIndex) {
-      if (typeof string !== "string") {
-        throw new $TypeError("Assertion failed: `string` must be a String");
-      }
-      if (typeof searchValue !== "string") {
-        throw new $TypeError("Assertion failed: `searchValue` must be a String");
-      }
-      if (!isInteger2(fromIndex) || fromIndex < 0) {
-        throw new $TypeError("Assertion failed: `fromIndex` must be a non-negative integer");
-      }
-      var len = string.length;
-      if (searchValue === "" && fromIndex <= len) {
-        return fromIndex;
-      }
-      var searchLen = searchValue.length;
-      for (var i = fromIndex; i <= len - searchLen; i += 1) {
-        var candidate = $slice(string, i, i + searchLen);
-        if (candidate === searchValue) {
-          return i;
-        }
-      }
-      return -1;
-    };
-  }
-});
-
-// node_modules/es-abstract/2024/StringPad.js
-var require_StringPad = __commonJS({
-  "node_modules/es-abstract/2024/StringPad.js"(exports, module) {
-    "use strict";
-    var $TypeError = require_type();
-    var callBound = require_call_bound();
-    var isInteger2 = require_isInteger();
-    var $strSlice = callBound("String.prototype.slice");
-    module.exports = function StringPad(S, maxLength, fillString, placement) {
-      if (typeof S !== "string") {
-        throw new $TypeError("Assertion failed: `S` must be a String");
-      }
-      if (!isInteger2(maxLength) || maxLength < 0) {
-        throw new $TypeError("Assertion failed: `maxLength` must be a non-negative integer");
-      }
-      if (typeof fillString !== "string") {
-        throw new $TypeError("Assertion failed: `fillString` must be a String");
-      }
-      if (placement !== "start" && placement !== "end" && placement !== "START" && placement !== "END") {
-        throw new $TypeError("Assertion failed: `placement` must be ~START~ or ~END~");
-      }
-      var stringLength = S.length;
-      if (maxLength <= stringLength) {
-        return S;
-      }
-      if (fillString === "") {
-        return S;
-      }
-      var fillLen = maxLength - stringLength;
-      var truncatedStringFiller = "";
-      while (truncatedStringFiller.length < fillLen) {
-        truncatedStringFiller += fillString;
-      }
-      truncatedStringFiller = $strSlice(truncatedStringFiller, 0, fillLen);
-      if (placement === "start" || placement === "START") {
-        return truncatedStringFiller + S;
-      }
-      return S + truncatedStringFiller;
-    };
-  }
-});
-
-// node_modules/es-abstract/2024/UnicodeEscape.js
-var require_UnicodeEscape = __commonJS({
-  "node_modules/es-abstract/2024/UnicodeEscape.js"(exports, module) {
-    "use strict";
-    var $TypeError = require_type();
-    var callBound = require_call_bound();
-    var $charCodeAt = callBound("String.prototype.charCodeAt");
-    var $numberToString = callBound("Number.prototype.toString");
-    var $toLowerCase = callBound("String.prototype.toLowerCase");
-    var StringPad = require_StringPad();
-    module.exports = function UnicodeEscape(C) {
-      if (typeof C !== "string" || C.length !== 1) {
-        throw new $TypeError("Assertion failed: `C` must be a single code unit");
-      }
-      var n = $charCodeAt(C, 0);
-      if (n > 65535) {
-        throw new $TypeError("`Assertion failed: numeric value of `C` must be <= 0xFFFF");
-      }
-      return "\\u" + StringPad($toLowerCase($numberToString(n, 16)), 4, "0", "start");
-    };
-  }
-});
-
-// node_modules/es-abstract/2024/floor.js
-var require_floor2 = __commonJS({
-  "node_modules/es-abstract/2024/floor.js"(exports, module) {
-    "use strict";
-    var $floor = require_floor();
-    module.exports = function floor(x) {
-      if (typeof x === "bigint") {
-        return x;
-      }
-      return $floor(x);
-    };
-  }
-});
-
-// node_modules/math-intrinsics/mod.js
-var require_mod = __commonJS({
-  "node_modules/math-intrinsics/mod.js"(exports, module) {
-    "use strict";
-    var $floor = require_floor();
-    module.exports = function mod(number, modulo) {
-      var remain = number % modulo;
-      return $floor(remain >= 0 ? remain : remain + modulo);
-    };
-  }
-});
-
-// node_modules/es-abstract/helpers/mod.js
-var require_mod2 = __commonJS({
-  "node_modules/es-abstract/helpers/mod.js"(exports, module) {
-    "use strict";
-    module.exports = require_mod();
-  }
-});
-
-// node_modules/es-abstract/2024/modulo.js
-var require_modulo = __commonJS({
-  "node_modules/es-abstract/2024/modulo.js"(exports, module) {
-    "use strict";
-    var mod = require_mod2();
-    module.exports = function modulo(x, y) {
-      return mod(x, y);
-    };
-  }
-});
-
-// node_modules/es-abstract/helpers/isCodePoint.js
-var require_isCodePoint = __commonJS({
-  "node_modules/es-abstract/helpers/isCodePoint.js"(exports, module) {
-    "use strict";
-    module.exports = function isCodePoint(cp) {
-      return typeof cp === "number" && cp >= 0 && cp <= 1114111 && (cp | 0) === cp;
-    };
-  }
-});
-
-// node_modules/es-abstract/2024/UTF16EncodeCodePoint.js
-var require_UTF16EncodeCodePoint = __commonJS({
-  "node_modules/es-abstract/2024/UTF16EncodeCodePoint.js"(exports, module) {
-    "use strict";
-    var GetIntrinsic = require_get_intrinsic();
-    var $TypeError = require_type();
-    var $fromCharCode = GetIntrinsic("%String.fromCharCode%");
-    var floor = require_floor2();
-    var modulo = require_modulo();
-    var isCodePoint = require_isCodePoint();
-    module.exports = function UTF16EncodeCodePoint(cp) {
-      if (!isCodePoint(cp)) {
-        throw new $TypeError("Assertion failed: `cp` must be >= 0 and <= 0x10FFFF");
-      }
-      if (cp <= 65535) {
-        return $fromCharCode(cp);
-      }
-      var cu1 = $fromCharCode(floor((cp - 65536) / 1024) + 55296);
-      var cu2 = $fromCharCode(modulo(cp - 65536, 1024) + 56320);
-      return cu1 + cu2;
-    };
-  }
-});
-
-// node_modules/es-abstract/helpers/isLeadingSurrogate.js
-var require_isLeadingSurrogate = __commonJS({
-  "node_modules/es-abstract/helpers/isLeadingSurrogate.js"(exports, module) {
-    "use strict";
-    module.exports = function isLeadingSurrogate(charCode) {
-      return typeof charCode === "number" && charCode >= 55296 && charCode <= 56319;
-    };
-  }
-});
-
-// node_modules/es-abstract/helpers/isTrailingSurrogate.js
-var require_isTrailingSurrogate = __commonJS({
-  "node_modules/es-abstract/helpers/isTrailingSurrogate.js"(exports, module) {
-    "use strict";
-    module.exports = function isTrailingSurrogate(charCode) {
-      return typeof charCode === "number" && charCode >= 56320 && charCode <= 57343;
-    };
-  }
-});
-
-// node_modules/is-callable/index.js
-var require_is_callable = __commonJS({
-  "node_modules/is-callable/index.js"(exports, module) {
-    "use strict";
-    var fnToStr = Function.prototype.toString;
-    var reflectApply = typeof Reflect === "object" && Reflect !== null && Reflect.apply;
-    var badArrayLike;
-    var isCallableMarker;
-    if (typeof reflectApply === "function" && typeof Object.defineProperty === "function") {
-      try {
-        badArrayLike = Object.defineProperty({}, "length", {
-          get: function() {
-            throw isCallableMarker;
-          }
-        });
-        isCallableMarker = {};
-        reflectApply(function() {
-          throw 42;
-        }, null, badArrayLike);
-      } catch (_) {
-        if (_ !== isCallableMarker) {
-          reflectApply = null;
-        }
-      }
-    } else {
-      reflectApply = null;
-    }
-    var constructorRegex = /^\s*class\b/;
-    var isES6ClassFn = function isES6ClassFunction(value) {
-      try {
-        var fnStr = fnToStr.call(value);
-        return constructorRegex.test(fnStr);
-      } catch (e) {
-        return false;
-      }
-    };
-    var tryFunctionObject = function tryFunctionToStr(value) {
-      try {
-        if (isES6ClassFn(value)) {
-          return false;
-        }
-        fnToStr.call(value);
-        return true;
-      } catch (e) {
-        return false;
-      }
-    };
-    var toStr = Object.prototype.toString;
-    var objectClass = "[object Object]";
-    var fnClass = "[object Function]";
-    var genClass = "[object GeneratorFunction]";
-    var ddaClass = "[object HTMLAllCollection]";
-    var ddaClass2 = "[object HTML document.all class]";
-    var ddaClass3 = "[object HTMLCollection]";
-    var hasToStringTag = typeof Symbol === "function" && !!Symbol.toStringTag;
-    var isIE68 = !(0 in [,]);
-    var isDDA = function isDocumentDotAll() {
-      return false;
-    };
-    if (typeof document === "object") {
-      all = document.all;
-      if (toStr.call(all) === toStr.call(document.all)) {
-        isDDA = function isDocumentDotAll(value) {
-          if ((isIE68 || !value) && (typeof value === "undefined" || typeof value === "object")) {
-            try {
-              var str2 = toStr.call(value);
-              return (str2 === ddaClass || str2 === ddaClass2 || str2 === ddaClass3 || str2 === objectClass) && value("") == null;
-            } catch (e) {
-            }
-          }
-          return false;
-        };
-      }
-    }
-    var all;
-    module.exports = reflectApply ? function isCallable(value) {
-      if (isDDA(value)) {
-        return true;
-      }
-      if (!value) {
-        return false;
-      }
-      if (typeof value !== "function" && typeof value !== "object") {
-        return false;
-      }
-      try {
-        reflectApply(value, null, badArrayLike);
-      } catch (e) {
-        if (e !== isCallableMarker) {
-          return false;
-        }
-      }
-      return !isES6ClassFn(value) && tryFunctionObject(value);
-    } : function isCallable(value) {
-      if (isDDA(value)) {
-        return true;
-      }
-      if (!value) {
-        return false;
-      }
-      if (typeof value !== "function" && typeof value !== "object") {
-        return false;
-      }
-      if (hasToStringTag) {
-        return tryFunctionObject(value);
-      }
-      if (isES6ClassFn(value)) {
-        return false;
-      }
-      var strClass = toStr.call(value);
-      if (strClass !== fnClass && strClass !== genClass && !/^\[object HTML/.test(strClass)) {
-        return false;
-      }
-      return tryFunctionObject(value);
-    };
-  }
-});
-
-// node_modules/for-each/index.js
-var require_for_each = __commonJS({
-  "node_modules/for-each/index.js"(exports, module) {
-    "use strict";
-    var isCallable = require_is_callable();
-    var toStr = Object.prototype.toString;
-    var hasOwnProperty = Object.prototype.hasOwnProperty;
-    var forEachArray = function forEachArray2(array, iterator2, receiver) {
-      for (var i = 0, len = array.length; i < len; i++) {
-        if (hasOwnProperty.call(array, i)) {
-          if (receiver == null) {
-            iterator2(array[i], i, array);
-          } else {
-            iterator2.call(receiver, array[i], i, array);
-          }
-        }
-      }
-    };
-    var forEachString = function forEachString2(string, iterator2, receiver) {
-      for (var i = 0, len = string.length; i < len; i++) {
-        if (receiver == null) {
-          iterator2(string.charAt(i), i, string);
-        } else {
-          iterator2.call(receiver, string.charAt(i), i, string);
-        }
-      }
-    };
-    var forEachObject = function forEachObject2(object, iterator2, receiver) {
-      for (var k in object) {
-        if (hasOwnProperty.call(object, k)) {
-          if (receiver == null) {
-            iterator2(object[k], k, object);
-          } else {
-            iterator2.call(receiver, object[k], k, object);
-          }
-        }
-      }
-    };
-    function isArray(x) {
-      return toStr.call(x) === "[object Array]";
-    }
-    module.exports = function forEach(list, iterator2, thisArg) {
-      if (!isCallable(iterator2)) {
-        throw new TypeError("iterator must be a function");
-      }
-      var receiver;
-      if (arguments.length >= 3) {
-        receiver = thisArg;
-      }
-      if (isArray(list)) {
-        forEachArray(list, iterator2, receiver);
-      } else if (typeof list === "string") {
-        forEachString(list, iterator2, receiver);
-      } else {
-        forEachObject(list, iterator2, receiver);
-      }
-    };
-  }
-});
-
-// node_modules/has-tostringtag/shams.js
-var require_shams2 = __commonJS({
-  "node_modules/has-tostringtag/shams.js"(exports, module) {
-    "use strict";
-    var hasSymbols = require_shams();
-    module.exports = function hasToStringTagShams() {
-      return hasSymbols() && !!Symbol.toStringTag;
-    };
-  }
-});
-
-// node_modules/is-regex/index.js
-var require_is_regex = __commonJS({
-  "node_modules/is-regex/index.js"(exports, module) {
-    "use strict";
-    var callBound = require_call_bound();
-    var hasToStringTag = require_shams2()();
-    var hasOwn = require_hasown();
-    var gOPD = require_gopd();
-    var fn;
-    if (hasToStringTag) {
-      $exec = callBound("RegExp.prototype.exec");
-      isRegexMarker = {};
-      throwRegexMarker = function() {
-        throw isRegexMarker;
-      };
-      badStringifier = {
-        toString: throwRegexMarker,
-        valueOf: throwRegexMarker
-      };
-      if (typeof Symbol.toPrimitive === "symbol") {
-        badStringifier[Symbol.toPrimitive] = throwRegexMarker;
-      }
-      fn = function isRegex(value) {
-        if (!value || typeof value !== "object") {
-          return false;
-        }
-        var descriptor = (
-          /** @type {NonNullable<typeof gOPD>} */
-          gOPD(
-            /** @type {{ lastIndex?: unknown }} */
-            value,
-            "lastIndex"
-          )
-        );
-        var hasLastIndexDataProperty = descriptor && hasOwn(descriptor, "value");
-        if (!hasLastIndexDataProperty) {
-          return false;
-        }
-        try {
-          $exec(
-            value,
-            /** @type {string} */
-            /** @type {unknown} */
-            badStringifier
-          );
-        } catch (e) {
-          return e === isRegexMarker;
-        }
-      };
-    } else {
-      $toString = callBound("Object.prototype.toString");
-      regexClass = "[object RegExp]";
-      fn = function isRegex(value) {
-        if (!value || typeof value !== "object" && typeof value !== "function") {
-          return false;
-        }
-        return $toString(value) === regexClass;
-      };
-    }
-    var $exec;
-    var isRegexMarker;
-    var throwRegexMarker;
-    var badStringifier;
-    var $toString;
-    var regexClass;
-    module.exports = fn;
-  }
-});
-
-// node_modules/safe-regex-test/index.js
-var require_safe_regex_test = __commonJS({
-  "node_modules/safe-regex-test/index.js"(exports, module) {
-    "use strict";
-    var callBound = require_call_bound();
-    var isRegex = require_is_regex();
-    var $exec = callBound("RegExp.prototype.exec");
-    var $TypeError = require_type();
-    module.exports = function regexTester(regex) {
-      if (!isRegex(regex)) {
-        throw new $TypeError("`regex` must be a RegExp");
-      }
-      return function test(s) {
-        return $exec(regex, s) !== null;
-      };
-    };
-  }
-});
-
-// node_modules/regexp.escape/aos/EncodeForRegExpEscape.js
-var require_EncodeForRegExpEscape = __commonJS({
-  "node_modules/regexp.escape/aos/EncodeForRegExpEscape.js"(exports, module) {
-    "use strict";
-    var NumberToString = require_toString();
-    var StringIndexOf = require_StringIndexOf();
-    var StringPad = require_StringPad();
-    var UnicodeEscape = require_UnicodeEscape();
-    var UTF16EncodeCodePoint = require_UTF16EncodeCodePoint();
-    var isLeadingSurrogate = require_isLeadingSurrogate();
-    var isTrailingSurrogate = require_isTrailingSurrogate();
-    var $TypeError = require_type();
-    var isCodePoint = require_isCodePoint();
-    var forEach = require_for_each();
-    var regexTester = require_safe_regex_test();
-    var isWhiteSpace = regexTester(/^\s$/);
-    var isLineTerminator = regexTester(/^[\n\r\u2028\u2029]$/);
-    var syntaxCharacter = "^$\\.*+?()[]{}|";
-    var otherPunctuators = ",-=<>#&!%:;@~'`\"";
-    var table64 = {
-      "	": "t",
-      "\n": "n",
-      "\v": "v",
-      "\f": "f",
-      "\r": "r",
-      __proto__: null
-    };
-    module.exports = function EncodeForRegExpEscape(c) {
-      if (!isCodePoint(c)) {
-        throw new $TypeError("Assertion failed: `c` must be a valid Unicode code point");
-      }
-      var encoded = UTF16EncodeCodePoint(c);
-      if (StringIndexOf(syntaxCharacter, encoded, 0) > -1 || encoded === "/") {
-        return "\\" + encoded;
-      } else if (encoded in table64) {
-        return "\\" + table64[encoded];
-      }
-      if (StringIndexOf(otherPunctuators, encoded, 0) > -1 || isWhiteSpace(encoded) || isLineTerminator(encoded) || isLeadingSurrogate(c) || isTrailingSurrogate(c)) {
-        if (c < 255) {
-          var hex = NumberToString(c, 16);
-          return "\\x" + StringPad(hex, 2, "0", "START");
-        }
-        var escaped = "";
-        var codeUnits = encoded;
-        forEach(codeUnits, function(cu) {
-          escaped += UnicodeEscape(cu);
-        });
-        return escaped;
-      }
-      return encoded;
-    };
-  }
-});
-
-// node_modules/es-abstract/2024/UTF16SurrogatePairToCodePoint.js
-var require_UTF16SurrogatePairToCodePoint = __commonJS({
-  "node_modules/es-abstract/2024/UTF16SurrogatePairToCodePoint.js"(exports, module) {
-    "use strict";
-    var GetIntrinsic = require_get_intrinsic();
-    var $TypeError = require_type();
-    var $fromCharCode = GetIntrinsic("%String.fromCharCode%");
-    var isLeadingSurrogate = require_isLeadingSurrogate();
-    var isTrailingSurrogate = require_isTrailingSurrogate();
-    module.exports = function UTF16SurrogatePairToCodePoint(lead, trail) {
-      if (!isLeadingSurrogate(lead) || !isTrailingSurrogate(trail)) {
-        throw new $TypeError("Assertion failed: `lead` must be a leading surrogate char code, and `trail` must be a trailing surrogate char code");
-      }
-      return $fromCharCode(lead) + $fromCharCode(trail);
-    };
-  }
-});
-
-// node_modules/es-abstract/2024/CodePointAt.js
-var require_CodePointAt = __commonJS({
-  "node_modules/es-abstract/2024/CodePointAt.js"(exports, module) {
-    "use strict";
-    var $TypeError = require_type();
-    var callBound = require_call_bound();
-    var isLeadingSurrogate = require_isLeadingSurrogate();
-    var isTrailingSurrogate = require_isTrailingSurrogate();
-    var UTF16SurrogatePairToCodePoint = require_UTF16SurrogatePairToCodePoint();
-    var $charAt = callBound("String.prototype.charAt");
-    var $charCodeAt = callBound("String.prototype.charCodeAt");
-    module.exports = function CodePointAt(string, position) {
-      if (typeof string !== "string") {
-        throw new $TypeError("Assertion failed: `string` must be a String");
-      }
-      var size = string.length;
-      if (position < 0 || position >= size) {
-        throw new $TypeError("Assertion failed: `position` must be >= 0, and < the length of `string`");
-      }
-      var first = $charCodeAt(string, position);
-      var cp = $charAt(string, position);
-      var firstIsLeading = isLeadingSurrogate(first);
-      var firstIsTrailing = isTrailingSurrogate(first);
-      if (!firstIsLeading && !firstIsTrailing) {
-        return {
-          "[[CodePoint]]": cp,
-          "[[CodeUnitCount]]": 1,
-          "[[IsUnpairedSurrogate]]": false
-        };
-      }
-      if (firstIsTrailing || position + 1 === size) {
-        return {
-          "[[CodePoint]]": cp,
-          "[[CodeUnitCount]]": 1,
-          "[[IsUnpairedSurrogate]]": true
-        };
-      }
-      var second = $charCodeAt(string, position + 1);
-      if (!isTrailingSurrogate(second)) {
-        return {
-          "[[CodePoint]]": cp,
-          "[[CodeUnitCount]]": 1,
-          "[[IsUnpairedSurrogate]]": true
-        };
-      }
-      return {
-        "[[CodePoint]]": UTF16SurrogatePairToCodePoint(first, second),
-        "[[CodeUnitCount]]": 2,
-        "[[IsUnpairedSurrogate]]": false
-      };
-    };
-  }
-});
-
-// node_modules/es-abstract/2024/StringToCodePoints.js
-var require_StringToCodePoints = __commonJS({
-  "node_modules/es-abstract/2024/StringToCodePoints.js"(exports, module) {
-    "use strict";
-    var $TypeError = require_type();
-    var CodePointAt = require_CodePointAt();
-    module.exports = function StringToCodePoints(string) {
-      if (typeof string !== "string") {
-        throw new $TypeError("Assertion failed: `string` must be a String");
-      }
-      var codePoints = [];
-      var size = string.length;
-      var position = 0;
-      while (position < size) {
-        var cp = CodePointAt(string, position);
-        codePoints[codePoints.length] = cp["[[CodePoint]]"];
-        position += cp["[[CodeUnitCount]]"];
-      }
-      return codePoints;
-    };
-  }
-});
-
-// node_modules/call-bind/callBound.js
-var require_callBound = __commonJS({
-  "node_modules/call-bind/callBound.js"(exports, module) {
-    "use strict";
-    var GetIntrinsic = require_get_intrinsic();
-    var callBind = require_call_bind();
-    var $indexOf = callBind(GetIntrinsic("String.prototype.indexOf"));
-    module.exports = function callBoundIntrinsic(name, allowMissing) {
-      var intrinsic = GetIntrinsic(name, !!allowMissing);
-      if (typeof intrinsic === "function" && $indexOf(name, ".prototype.") > -1) {
-        return callBind(intrinsic);
-      }
-      return intrinsic;
-    };
-  }
-});
-
-// node_modules/regexp.escape/implementation.js
-var require_implementation3 = __commonJS({
-  "node_modules/regexp.escape/implementation.js"(exports, module) {
-    "use strict";
-    var EncodeForRegExpEscape = require_EncodeForRegExpEscape();
-    var NumberToString = require_toString();
-    var StringToCodePoints = require_StringToCodePoints();
-    var regexTester = require_safe_regex_test();
-    var forEach = require_for_each();
-    var $TypeError = require_type();
-    var isDecimalDigitOrASCIILetter = regexTester(/^[\da-zA-Z]$/);
-    var callBound = require_callBound();
-    var $charCodeAt = callBound("String.prototype.charCodeAt");
-    var codePointStringToNum = function codePointStringToNumber(c) {
-      var first = $charCodeAt(c, 0);
-      if (first < 55296 || first > 56319 || c.length === 1) {
-        return first;
-      }
-      var second = $charCodeAt(c, 1);
-      if (second < 56320 || second > 57343) {
-        return first;
-      }
-      return (first - 55296) * 1024 + (second - 56320) + 65536;
-    };
-    module.exports = function escape3(S) {
-      if (typeof S !== "string") {
-        throw new $TypeError("`S` must be a String");
-      }
-      var escaped = "";
-      var cpList = StringToCodePoints(S);
-      forEach(cpList, function(c) {
-        if (escaped === "" && isDecimalDigitOrASCIILetter(c)) {
-          var hex = NumberToString(codePointStringToNum(c), 16);
-          escaped += "\\x" + hex;
-        } else {
-          escaped += EncodeForRegExpEscape(codePointStringToNum(c));
-        }
-      });
-      return escaped;
-    };
-  }
-});
-
-// node_modules/regexp.escape/polyfill.js
-var require_polyfill = __commonJS({
-  "node_modules/regexp.escape/polyfill.js"(exports, module) {
-    "use strict";
-    var implementation = require_implementation3();
-    module.exports = function getPolyfill() {
-      return RegExp.escape || implementation;
-    };
-  }
-});
-
-// node_modules/regexp.escape/shim.js
-var require_shim = __commonJS({
-  "node_modules/regexp.escape/shim.js"(exports, module) {
-    "use strict";
-    var define2 = require_define_properties();
-    var escapePolyfill = require_polyfill()();
-    module.exports = function shimRegExpEscape() {
-      define2(RegExp, {
-        escape: escapePolyfill
-      });
-      return RegExp.escape;
-    };
-  }
-});
-
-// node_modules/regexp.escape/index.js
-var require_regexp = __commonJS({
-  "node_modules/regexp.escape/index.js"(exports, module) {
-    "use strict";
-    var define2 = require_define_properties();
-    var callBind = require_call_bind();
-    var implementation = require_implementation3();
-    var getPolyfill = require_polyfill();
-    var shim = require_shim();
-    var bound = callBind(implementation, null);
-    define2(bound, {
-      getPolyfill,
-      implementation,
-      method: implementation,
-      // TODO: remove at semver-major
-      shim
-    });
-    module.exports = bound;
-  }
-});
-
 // node_modules/fast-json-stable-stringify/index.js
 var require_fast_json_stable_stringify = __commonJS({
   "node_modules/fast-json-stable-stringify/index.js"(exports, module) {
@@ -50281,7 +50281,7 @@ var require_fast_json_stable_stringify = __commonJS({
 require_source_map_support().install();
 
 // src/main.ts
-var import_core8 = __toESM(require_core(), 1);
+var import_core9 = __toESM(require_core(), 1);
 
 // src/access-level.ts
 var ACCESS_RANK = {
@@ -55147,8 +55147,145 @@ function normalizeAppsInput(apps) {
   return normalized;
 }
 
+// src/config/provider-config.ts
+var import_core3 = __toESM(require_core(), 1);
+
+// src/account.ts
+function normalizeAccountPattern(definingAccount, pattern) {
+  return pattern === "." ? definingAccount.account : pattern;
+}
+
+// src/name-pattern.ts
+var import_regexp = __toESM(require_regexp(), 1);
+function createNamePattern(pattern) {
+  if (!pattern) throw new Error("Pattern cannot be empty");
+  if (pattern.includes("/")) {
+    throw new Error(`Pattern ${JSON.stringify(pattern)} cannot contain /`);
+  }
+  const literals = pattern.split("*");
+  const expression = patternRegExp(literals);
+  return {
+    test: (string) => expression.test(string),
+    toString: () => pattern
+  };
+}
+function patternRegExp(literals) {
+  let exp = "^";
+  for (let i = 0; i < literals.length; ++i) {
+    if (i) exp += "[^/]*";
+    exp += (0, import_regexp.default)(literals[i]);
+  }
+  exp += "$";
+  return new RegExp(exp);
+}
+
+// src/github-pattern.ts
+function createGitHubPattern(pattern) {
+  const [accountPart, repoPart] = splitGitHubPattern(pattern);
+  const account = createNamePattern(accountPart);
+  const repo = repoPart ? createNamePattern(repoPart) : void 0;
+  return {
+    test: (string) => {
+      const parts = string.split("/");
+      if (parts.length === 1) return repo ? false : account.test(parts[0]);
+      if (parts.length !== 2 || !repo) return false;
+      return account.test(parts[0]) && repo.test(parts[1]);
+    },
+    toString: () => pattern
+  };
+}
+function normalizeGitHubPattern(definingAccount, pattern) {
+  const [accountPart, repoPart] = splitGitHubPattern(pattern);
+  return accountPart === "." ? repoPart == null ? definingAccount.account : repoRefToString(createRepoRef(definingAccount.account, repoPart)) : pattern;
+}
+function splitGitHubPattern(pattern) {
+  const parts = pattern.split("/");
+  if (parts.length > 2) {
+    throw new Error(
+      `GitHub pattern ${JSON.stringify(pattern)} cannot have more than one slash`
+    );
+  }
+  const [accountPart, repoPart] = parts;
+  if (!accountPart) {
+    throw new Error(
+      `GitHub pattern ${JSON.stringify(pattern)} account part cannot be empty`
+    );
+  }
+  if (repoPart === "") {
+    throw new Error(
+      `GitHub pattern ${JSON.stringify(pattern)} repo part cannot be empty`
+    );
+  }
+  return [accountPart, repoPart];
+}
+
+// src/config/provider-config.ts
+async function readProviderConfig(octokitFactory, repoName, ref) {
+  const provider = repoRefFromName(repoName);
+  const configPath = (0, import_core3.getInput)("configPath");
+  (0, import_core3.info)(`Reading from ${repoName}/${configPath}`);
+  const octokit = octokitFactory.actionOctokit();
+  const res = await octokit.rest.repos.getContent({
+    owner: provider.account,
+    repo: provider.repo,
+    ref,
+    path: configPath,
+    mediaType: { format: "raw" }
+  });
+  const yaml = res.data;
+  const config = parseProviderConfig(provider, yaml);
+  (0, import_core3.debug)(`Provider config: ${JSON.stringify(config, null, 2)}`);
+  return config;
+}
+function parseProviderConfig(definingRepo, yaml) {
+  return normalizeProviderConfig(definingRepo, parseYAML(yaml));
+}
+function parseYAML(yaml) {
+  try {
+    const parsed = load(yaml);
+    return validateProvider(parsed == null ? {} : parsed);
+  } catch (cause) {
+    (0, import_core3.debug)(`Parsing of provider configuration failed: ${errorMessage(cause)}`);
+    throw new Error("Parsing of provider configuration failed", { cause });
+  }
+}
+function normalizeProviderConfig(definingRepo, config) {
+  for (let i = 0; i < config.permissions.rules.length; ++i) {
+    const rule = config.permissions.rules[i];
+    for (let j = 0; j < rule.resources.length; ++j) {
+      for (let k = 0; k < rule.resources[j].accounts.length; ++k) {
+        rule.resources[j].accounts[k] = normalizeAccountPattern(
+          definingRepo,
+          rule.resources[j].accounts[k]
+        );
+      }
+    }
+    for (let j = 0; j < rule.consumers.length; ++j) {
+      rule.consumers[j] = normalizeGitHubPattern(
+        definingRepo,
+        rule.consumers[j]
+      );
+    }
+  }
+  for (let i = 0; i < config.provision.rules.secrets.length; ++i) {
+    const rule = config.provision.rules.secrets[i];
+    for (let j = 0; j < rule.requesters.length; ++j) {
+      rule.requesters[j] = normalizeGitHubPattern(
+        definingRepo,
+        rule.requesters[j]
+      );
+    }
+    const repos = {};
+    for (const pattern in rule.to.github.repos) {
+      repos[normalizeGitHubPattern(definingRepo, pattern)] = rule.to.github.repos[pattern];
+    }
+    rule.to.github.repos = repos;
+  }
+  return config;
+}
+
 // src/discover-apps.ts
-var import_core4 = __toESM(require_core(), 1);
+var import_core5 = __toESM(require_core(), 1);
 
 // node_modules/universal-user-agent/index.js
 function getUserAgent() {
@@ -59814,11 +59951,11 @@ async function errorRequest(state, octokit, error, options) {
 }
 async function wrapRequest(state, octokit, request2, options) {
   const limiter = new import_light.default();
-  limiter.on("failed", function(error, info4) {
+  limiter.on("failed", function(error, info5) {
     const maxRetries = ~~error.request.request.retries;
     const after = ~~error.request.request.retryAfter;
-    options.request.retryCount = info4.retryCount + 1;
-    if (maxRetries > info4.retryCount) {
+    options.request.retryCount = info5.retryCount + 1;
+    if (maxRetries > info5.retryCount) {
       return after * state.retryAfterBaseValue;
     }
   });
@@ -59871,9 +60008,13 @@ retry.VERSION = VERSION12;
 // src/octokit.ts
 var CustomOctokit = Octokit2.plugin(retry);
 function createOctokitFactory() {
+  let actionOctokit;
   const appOctokits = {};
   const installationOctokits = {};
   return {
+    actionOctokit: () => {
+      return actionOctokit ??= new CustomOctokit();
+    },
     appOctokit: (appsInput, appId) => {
       const key = JSON.stringify({ appId });
       appOctokits[key] ??= new CustomOctokit({
@@ -59930,17 +60071,17 @@ async function discoverApps(octokitFactory, appRegistry, appsInput) {
       );
       ++appCount;
     } catch (cause) {
-      (0, import_core4.debug)(`Failed to discover app ${appInput.appId}: ${errorMessage(cause)}`);
-      (0, import_core4.error)(`Failed to discover app at index ${appIndex}`);
+      (0, import_core5.debug)(`Failed to discover app ${appInput.appId}: ${errorMessage(cause)}`);
+      (0, import_core5.error)(`Failed to discover app at index ${appIndex}`);
     }
   }
-  (0, import_core4.info)(
+  (0, import_core5.info)(
     `Discovered ${pluralize(instCount, "installation", "installations")} of ${pluralize(appCount, "app", "apps")}`
   );
 }
 async function discoverApp(octokitFactory, appRegistry, appsInput, appInput, appIndex) {
   if (!appInput.issuer.enabled && !appInput.provisioner.enabled) {
-    (0, import_core4.debug)(`Skipping discovery of disabled app ${appInput.appId}`);
+    (0, import_core5.debug)(`Skipping discovery of disabled app ${appInput.appId}`);
     return 0;
   }
   const appOctokit = octokitFactory.appOctokit(appsInput, appInput.appId);
@@ -59950,31 +60091,31 @@ async function discoverApp(octokitFactory, appRegistry, appsInput, appInput, app
   } catch (error) {
     handleRequestError(error, {
       401: () => {
-        (0, import_core4.debug)(`App ${appInput.appId} has incorrect credentials - skipping`);
-        (0, import_core4.warning)(
+        (0, import_core5.debug)(`App ${appInput.appId} has incorrect credentials - skipping`);
+        (0, import_core5.warning)(
           `App at index ${appIndex} has incorrect credentials - skipping`
         );
       },
       404: () => {
-        (0, import_core4.debug)(`App ${appInput.appId} not found - skipping`);
-        (0, import_core4.warning)(`App at index ${appIndex} not found - skipping`);
+        (0, import_core5.debug)(`App ${appInput.appId} not found - skipping`);
+        (0, import_core5.warning)(`App at index ${appIndex} not found - skipping`);
       }
     });
     return 0;
   }
   if (!app) {
-    (0, import_core4.debug)(`App ${appInput.appId} can't access itself`);
+    (0, import_core5.debug)(`App ${appInput.appId} can't access itself`);
     throw new Error(
       `Invariant violation: App at index ${appIndex} can't access itself`
     );
   }
-  (0, import_core4.debug)(`Discovered app ${JSON.stringify(app.name)} (${app.slug} / ${app.id})`);
+  (0, import_core5.debug)(`Discovered app ${JSON.stringify(app.name)} (${app.slug} / ${app.id})`);
   if (appInput.issuer.enabled) {
     const roles = appInput.issuer.roles.length < 1 ? "no roles" : `roles ${JSON.stringify(appInput.issuer.roles)}`;
-    (0, import_core4.debug)(`App ${app.id} is a token issuer with ${roles}`);
+    (0, import_core5.debug)(`App ${app.id} is a token issuer with ${roles}`);
   }
   if (appInput.provisioner.enabled) {
-    (0, import_core4.debug)(`App ${app.id} is a token provisioner`);
+    (0, import_core5.debug)(`App ${app.id} is a token provisioner`);
   }
   appRegistry.registerApp({
     app,
@@ -59990,11 +60131,11 @@ async function discoverApp(octokitFactory, appRegistry, appsInput, appInput, app
     app,
     appIndex
   );
-  (0, import_core4.debug)(
+  (0, import_core5.debug)(
     `Discovered ${pluralize(instSuccessCount, "installation", "installations")} of ${JSON.stringify(app.name)}`
   );
   if (instFailureCount > 0) {
-    (0, import_core4.debug)(
+    (0, import_core5.debug)(
       `Failed to discover ${pluralize(instFailureCount, "installation", "installations")} of ${JSON.stringify(app.name)}`
     );
   }
@@ -60019,10 +60160,10 @@ async function discoverInstallations(octokitFactory, appRegistry, appsInput, app
         ++successCount;
       } catch (cause) {
         ++failureCount;
-        (0, import_core4.debug)(
+        (0, import_core5.debug)(
           `Failed to discover installation ${installation.id} for app ${appInput.appId}: ${errorMessage(cause)}`
         );
-        (0, import_core4.error)(
+        (0, import_core5.error)(
           `Failed to discover installation for app at index ${appIndex}`
         );
       }
@@ -60054,29 +60195,29 @@ async function discoverInstallation(octokitFactory, appRegistry, appsInput, appI
   }
   const account = installation.account && "login" in installation.account ? installation.account.login : void 0;
   if (account == null) {
-    (0, import_core4.debug)(
+    (0, import_core5.debug)(
       `Skipping discovery of app ${appInput.appId} installation ${installationId} because it is not associated with a named account`
     );
     return;
   }
-  (0, import_core4.debug)(
+  (0, import_core5.debug)(
     `Discovered app ${appInput.appId} installation ${installationId} for account ${account}`
   );
   if (isEmptyPermissions(permissions)) {
-    (0, import_core4.debug)(`Installation ${installationId} has no permissions`);
+    (0, import_core5.debug)(`Installation ${installationId} has no permissions`);
   } else {
-    (0, import_core4.debug)(
+    (0, import_core5.debug)(
       `Installation ${installationId} has permissions ${JSON.stringify(permissions)}`
     );
   }
   if (repository_selection === "all") {
-    (0, import_core4.debug)(
+    (0, import_core5.debug)(
       `Installation ${installationId} has access to all repos ${JSON.stringify(repoNames)}`
     );
   } else if (repos.length < 1) {
-    (0, import_core4.debug)(`Installation ${installationId} has access to no repos`);
+    (0, import_core5.debug)(`Installation ${installationId} has access to no repos`);
   } else {
-    (0, import_core4.debug)(
+    (0, import_core5.debug)(
       `Installation ${installationId} has access to selected repos ${JSON.stringify(repoNames)}`
     );
   }
@@ -60084,74 +60225,10 @@ async function discoverInstallation(octokitFactory, appRegistry, appsInput, appI
 }
 
 // src/discover-requesters.ts
-var import_core6 = __toESM(require_core(), 1);
+var import_core7 = __toESM(require_core(), 1);
 
 // src/config/requester-config.ts
-var import_core5 = __toESM(require_core(), 1);
-
-// src/name-pattern.ts
-var import_regexp = __toESM(require_regexp(), 1);
-function createNamePattern(pattern) {
-  if (!pattern) throw new Error("Pattern cannot be empty");
-  if (pattern.includes("/")) {
-    throw new Error(`Pattern ${JSON.stringify(pattern)} cannot contain /`);
-  }
-  const literals = pattern.split("*");
-  const expression = patternRegExp(literals);
-  return {
-    test: (string) => expression.test(string),
-    toString: () => pattern
-  };
-}
-function patternRegExp(literals) {
-  let exp = "^";
-  for (let i = 0; i < literals.length; ++i) {
-    if (i) exp += "[^/]*";
-    exp += (0, import_regexp.default)(literals[i]);
-  }
-  exp += "$";
-  return new RegExp(exp);
-}
-
-// src/github-pattern.ts
-function createGitHubPattern(pattern) {
-  const [accountPart, repoPart] = splitGitHubPattern(pattern);
-  const account = createNamePattern(accountPart);
-  const repo = repoPart ? createNamePattern(repoPart) : void 0;
-  return {
-    test: (string) => {
-      const parts = string.split("/");
-      if (parts.length === 1) return repo ? false : account.test(parts[0]);
-      if (parts.length !== 2 || !repo) return false;
-      return account.test(parts[0]) && repo.test(parts[1]);
-    },
-    toString: () => pattern
-  };
-}
-function normalizeGitHubPattern(definingAccount, pattern) {
-  const [accountPart, repoPart] = splitGitHubPattern(pattern);
-  return accountPart === "." ? repoPart == null ? definingAccount.account : repoRefToString(createRepoRef(definingAccount.account, repoPart)) : pattern;
-}
-function splitGitHubPattern(pattern) {
-  const parts = pattern.split("/");
-  if (parts.length > 2) {
-    throw new Error(
-      `GitHub pattern ${JSON.stringify(pattern)} cannot have more than one slash`
-    );
-  }
-  const [accountPart, repoPart] = parts;
-  if (!accountPart) {
-    throw new Error(
-      `GitHub pattern ${JSON.stringify(pattern)} account part cannot be empty`
-    );
-  }
-  if (repoPart === "") {
-    throw new Error(
-      `GitHub pattern ${JSON.stringify(pattern)} repo part cannot be empty`
-    );
-  }
-  return [accountPart, repoPart];
-}
+var import_core6 = __toESM(require_core(), 1);
 
 // src/token-reference.ts
 function normalizeTokenReference(definingRepo, reference) {
@@ -60181,14 +60258,14 @@ function normalizeTokenReference(definingRepo, reference) {
 
 // src/config/requester-config.ts
 function parseRequesterConfig(definingRepo, yaml) {
-  return normalizeRequesterConfig(definingRepo, parseYAML(yaml));
+  return normalizeRequesterConfig(definingRepo, parseYAML2(yaml));
 }
-function parseYAML(yaml) {
+function parseYAML2(yaml) {
   try {
     const parsed = load(yaml);
     return validateRequester(parsed == null ? {} : parsed);
   } catch (cause) {
-    (0, import_core5.debug)(`Parsing of requester configuration failed: ${errorMessage(cause)}`);
+    (0, import_core6.debug)(`Parsing of requester configuration failed: ${errorMessage(cause)}`);
     throw new Error("Parsing of requester configuration failed", { cause });
   }
 }
@@ -60240,38 +60317,38 @@ async function discoverRequesters(octokitFactory, appRegistry, appsInput) {
       } catch (error) {
         handleRequestError(error, {
           404: () => {
-            (0, import_core6.debug)(`Repo ${full_name} is not a requester`);
+            (0, import_core7.debug)(`Repo ${full_name} is not a requester`);
           }
         });
         continue;
       }
-      (0, import_core6.debug)(`Discovered requester ${full_name}`);
+      (0, import_core7.debug)(`Discovered requester ${full_name}`);
       let config;
       try {
         config = parseRequesterConfig(requester, configYAML);
       } catch (error) {
-        (0, import_core6.error)(`Requester ${full_name} has invalid config`);
+        (0, import_core7.error)(`Requester ${full_name} has invalid config`);
         continue;
       }
       const tokenDecNames = Object.keys(config.tokens);
       const tokenDecs = tokenDecNames.length === 1 ? "1 token declaration" : `${tokenDecNames.length} token declarations`;
-      (0, import_core6.debug)(
+      (0, import_core7.debug)(
         `Requester ${full_name} has ${tokenDecs} ` + JSON.stringify(tokenDecNames)
       );
       const secretDecNames = Object.keys(config.provision.secrets);
       const secretDecs = secretDecNames.length === 1 ? "1 secret declaration" : `${secretDecNames.length} secret declarations`;
-      (0, import_core6.debug)(
+      (0, import_core7.debug)(
         `Requester ${full_name} has ${secretDecs} ` + JSON.stringify(secretDecNames)
       );
       discovered.set(full_name, { requester, config });
     }
   }
-  (0, import_core6.info)(`Discovered ${pluralize(discovered.size, "requester", "requesters")}`);
+  (0, import_core7.info)(`Discovered ${pluralize(discovered.size, "requester", "requesters")}`);
   return discovered;
 }
 
 // src/environment-resolver.ts
-var import_core7 = __toESM(require_core(), 1);
+var import_core8 = __toESM(require_core(), 1);
 function createEnvironmentResolver(octokitFactory, appRegistry, appsInput) {
   const envsByRepo = {};
   return {
@@ -60281,7 +60358,7 @@ function createEnvironmentResolver(octokitFactory, appRegistry, appsInput) {
         (env) => anyPatternMatches(patterns, env)
       );
       const patternStrings = patterns.map((p) => p.toString());
-      (0, import_core7.debug)(
+      (0, import_core8.debug)(
         `Environment patterns ${JSON.stringify(patternStrings)} for ${repoName} resolved to ${JSON.stringify(resolved)}`
       );
       return resolved;
@@ -60308,7 +60385,7 @@ function createEnvironmentResolver(octokitFactory, appRegistry, appsInput) {
     for await (const { data: envs } of envPages) {
       for (const env of envs) names.push(env.name);
     }
-    (0, import_core7.debug)(`Repo ${repoName} has environments ${JSON.stringify(names)}`);
+    (0, import_core8.debug)(`Repo ${repoName} has environments ${JSON.stringify(names)}`);
     return envsByRepo[repoName] = names;
   }
 }
@@ -60875,67 +60952,18 @@ function createTokenRequestFactory(appRegistry) {
 
 // src/main.ts
 main().catch((error) => {
-  (0, import_core8.setFailed)(errorStack(error));
+  (0, import_core9.setFailed)(errorStack(error));
 });
 async function main() {
   const appsInput = readAppsInput();
-  const config = await (0, import_core8.group)("Reading provider configuration", async () => {
-    const config2 = {
-      permissions: {
-        rules: [
-          {
-            description: "Allow all tokens",
-            resources: [
-              {
-                accounts: ["*"],
-                noRepos: true,
-                allRepos: true,
-                selectedRepos: ["*"]
-              }
-            ],
-            consumers: ["*", "*/*"],
-            permissions: {
-              metadata: "read"
-            }
-          }
-        ]
-      },
-      provision: {
-        rules: {
-          secrets: [
-            {
-              description: "Allow all secrets",
-              secrets: ["*"],
-              requesters: ["*/*"],
-              to: {
-                github: {
-                  account: {},
-                  accounts: {
-                    "*": {
-                      actions: "allow",
-                      codespaces: "allow",
-                      dependabot: "allow"
-                    }
-                  },
-                  repo: { environments: {} },
-                  repos: {
-                    "*/*": {
-                      actions: "allow",
-                      codespaces: "allow",
-                      dependabot: "allow",
-                      environments: { "*": "allow" }
-                    }
-                  }
-                }
-              }
-            }
-          ]
-        }
-      }
-    };
-    return config2;
-  });
   const octokitFactory = createOctokitFactory();
+  const config = await (0, import_core9.group)("Reading config", async () => {
+    return await readProviderConfig(
+      octokitFactory,
+      process.env.GITHUB_REPOSITORY ?? "",
+      process.env.GITHUB_REF ?? ""
+    );
+  });
   const appRegistry = createAppRegistry();
   const declarationRegistry = createTokenDeclarationRegistry();
   const environmentResolver = createEnvironmentResolver(
@@ -60960,14 +60988,14 @@ async function main() {
     provisionAuthorizer,
     tokenAuthorizer
   );
-  await (0, import_core8.group)("Discovering apps", async () => {
+  await (0, import_core9.group)("Discovering apps", async () => {
     await discoverApps(octokitFactory, appRegistry, appsInput);
   });
-  const requesters = await (0, import_core8.group)("Discovering requesters", async () => {
+  const requesters = await (0, import_core9.group)("Discovering requesters", async () => {
     return discoverRequesters(octokitFactory, appRegistry, appsInput);
   });
   registerTokenDeclarations(declarationRegistry, requesters);
-  await (0, import_core8.group)("Authorizing requests", async () => {
+  await (0, import_core9.group)("Authorizing requests", async () => {
     await authorizer.authorize(Array.from(requesters.values()));
   });
 }

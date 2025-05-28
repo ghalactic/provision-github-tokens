@@ -52,13 +52,17 @@ export function __setErrors(endpoint: string, errors: (Error | undefined)[]) {
 }
 
 export function Octokit({
-  auth: { appId, privateKey, installationId },
+  auth: { appId, privateKey, installationId } = {},
 }: {
-  auth: { appId: number; privateKey: string; installationId?: number };
-}) {
+  auth?: { appId?: number; privateKey?: string; installationId?: number };
+} = {}) {
   return {
     paginate: {
       iterator: (endpoint: string) => {
+        if (appId == null) {
+          throw new Error(`Endpoint ${endpoint} requires appId`);
+        }
+
         if (endpoint === "apps.listInstallations") {
           return listInstallations(appId);
         }
@@ -116,8 +120,12 @@ export function Octokit({
           if (mediaType?.format !== "raw") throw new TestRequestError(406);
 
           for (const [installation, repos] of installations) {
-            if (installation.app_id !== appId) continue;
-            if (installation.id !== installationId) continue;
+            if (appId != null && installation.app_id !== appId) {
+              continue;
+            }
+            if (installationId != null && installation.id !== installationId) {
+              continue;
+            }
 
             for (const r of repos) {
               if (r.full_name !== `${owner}/${repo}`) continue;

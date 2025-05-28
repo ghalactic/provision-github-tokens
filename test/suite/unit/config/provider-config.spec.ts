@@ -1,24 +1,75 @@
 import { readFile } from "fs/promises";
 import { join } from "path";
 import { fileURLToPath } from "url";
-import { expect, it, vi } from "vitest";
-import { parseProviderConfig } from "../../../../src/config/provider-config.js";
+import { beforeEach, expect, it, vi } from "vitest";
+import {
+  __reset as __resetCore,
+  __setInputs,
+} from "../../../../__mocks__/@actions/core.js";
+import {
+  __reset as __resetOctokit,
+  __setApps,
+  __setFiles,
+  __setInstallations,
+} from "../../../../__mocks__/@octokit/action.js";
+import {
+  parseProviderConfig,
+  readProviderConfig,
+} from "../../../../src/config/provider-config.js";
+import { createOctokitFactory } from "../../../../src/octokit.js";
 import providerSchema from "../../../../src/schema/provider.v1.schema.json" with { type: "json" };
 import type { ProviderConfig } from "../../../../src/type/provider-config.js";
 import { throws } from "../../../error.js";
+import {
+  createTestApp,
+  createTestInstallation,
+  createTestInstallationAccount,
+  createTestInstallationRepo,
+} from "../../../github-api.js";
 
 vi.mock("@actions/core");
+vi.mock("@octokit/action");
 
 const fixturesPath = fileURLToPath(
   new URL("../../../fixture/provider-config", import.meta.url),
 );
 
-it("parses comprehensive provider config", async () => {
+beforeEach(() => {
+  __resetCore();
+  __resetOctokit();
+});
+
+it("reads comprehensive provider config", async () => {
+  __setInputs({ configPath: "path/to/provider-config.yml" });
+
   const fixturePath = join(fixturesPath, "comprehensive.yml");
   const yaml = await readFile(fixturePath, "utf-8");
+  const octokitFactory = createOctokitFactory();
+
+  const accountA = createTestInstallationAccount(
+    "Organization",
+    100,
+    "account-self",
+  );
+  const repoA = createTestInstallationRepo(accountA, "repo-self");
+  const appA = createTestApp(110, "app-a", "App A");
+  const appAInstallationA = createTestInstallation(
+    111,
+    appA,
+    accountA,
+    "selected",
+  );
+
+  __setApps([appA]);
+  __setInstallations([[appAInstallationA, [repoA]]]);
+  __setFiles([[repoA, { "path/to/provider-config.yml": yaml }]]);
 
   expect(
-    parseProviderConfig({ account: "account-self", repo: "repo-self" }, yaml),
+    await readProviderConfig(
+      octokitFactory,
+      "account-self/repo-self",
+      "refs/heads/main",
+    ),
   ).toEqual({
     $schema: providerSchema.$id,
 
