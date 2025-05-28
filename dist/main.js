@@ -61045,10 +61045,10 @@ async function main() {
   await (0, import_core9.group)("Authorizing requests", async () => {
     await authorizer.authorize(Array.from(requesters.values()));
   });
-  const tokens = await (0, import_core9.group)("Creating tokens", async () => {
-    return await createTokens(tokenAuthorizer.listResults());
+  await (0, import_core9.group)("Creating tokens", async () => {
+    const tokens = await createTokens(tokenAuthorizer.listResults());
+    console.log(JSON.stringify(Array.from(tokens.entries()), null, 2));
   });
-  console.log(JSON.stringify(tokens.entries(), null, 2));
 }
 /*! Bundled license information:
 

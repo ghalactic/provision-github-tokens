@@ -84,11 +84,11 @@ async function main(): Promise<void> {
     await authorizer.authorize(Array.from(requesters.values()));
   });
 
-  const tokens = await group("Creating tokens", async () => {
-    return await createTokens(tokenAuthorizer.listResults());
-  });
+  await group("Creating tokens", async () => {
+    const tokens = await createTokens(tokenAuthorizer.listResults());
 
-  console.log(JSON.stringify(tokens.entries(), null, 2));
+    console.log(JSON.stringify(Array.from(tokens.entries()), null, 2));
+  });
 
   // TODO: provision secrets
 }
