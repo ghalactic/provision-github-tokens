@@ -1,5 +1,5 @@
-import { getInput } from "@actions/core";
 import { beforeEach, expect, it, vi } from "vitest";
+import { __setInputs } from "../../../__mocks__/@actions/core.js";
 import { readAppsInput } from "../../../src/config/apps-input.js";
 import type { AppInput } from "../../../src/type/input.js";
 import { throws } from "../../error.js";
@@ -11,24 +11,26 @@ beforeEach(() => {
 });
 
 it("can parse valid input", () => {
-  vi.mocked(getInput).mockReturnValue(`
-    - appId: 100
-      privateKey: <private key A>
-      issuer:
-        enabled: true
-        roles: []
-      provisioner:
-        enabled: false
-    - appId: "200"
-      privateKey: <private key B>
-      issuer:
-        enabled: true
-        roles: ["role-a", "role-b"]
-    - appId: 300
-      privateKey: <private key C>
-      provisioner:
-        enabled: true
-  `);
+  __setInputs({
+    apps: `
+      - appId: 100
+        privateKey: <private key A>
+        issuer:
+          enabled: true
+          roles: []
+        provisioner:
+          enabled: false
+      - appId: "200"
+        privateKey: <private key B>
+        issuer:
+          enabled: true
+          roles: ["role-a", "role-b"]
+      - appId: 300
+        privateKey: <private key C>
+        provisioner:
+          enabled: true
+  `,
+  });
 
   expect(readAppsInput()).toEqual([
     {
@@ -68,13 +70,15 @@ it("can parse valid input", () => {
 });
 
 it("throws if the input doesn't match the schema", () => {
-  vi.mocked(getInput).mockReturnValue(`
-    - appId: 0.100
-      privateKey: <private key A>
-      issuer:
-        enabled: true
-        roles: []
-  `);
+  __setInputs({
+    apps: `
+      - appId: 0.100
+        privateKey: <private key A>
+        issuer:
+          enabled: true
+          roles: []
+  `,
+  });
 
   expect(
     throws(() => {
@@ -89,7 +93,7 @@ it("throws if the input doesn't match the schema", () => {
 });
 
 it("throws if the input isn't valid YAML", () => {
-  vi.mocked(getInput).mockReturnValue("{");
+  __setInputs({ apps: "{" });
 
   expect(
     throws(() => {

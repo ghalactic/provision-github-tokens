@@ -1,17 +1,26 @@
 import { vi } from "vitest";
 import { errorMessage } from "../../src/error.js";
 
+let inputs: Record<string, string> = {};
 let output = "";
 
 export function __reset() {
+  inputs = {};
   output = "";
+}
+
+export function __setInputs(nextInputs: Record<string, string>) {
+  inputs = nextInputs;
 }
 
 export function __getOutput() {
   return output;
 }
 
-export const getInput = vi.fn(() => "");
+export function getInput(name: string) {
+  return inputs[name] ?? "";
+}
+
 export const debug = vi.fn((message) => {
   addLines("::debug::", message);
 });
