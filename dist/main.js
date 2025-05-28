@@ -22012,10 +22012,10 @@ Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
       (0, command_1.issueCommand)("error", (0, utils_1.toCommandProperties)(properties), message instanceof Error ? message.toString() : message);
     }
     exports.error = error;
-    function warning2(message, properties = {}) {
+    function warning3(message, properties = {}) {
       (0, command_1.issueCommand)("warning", (0, utils_1.toCommandProperties)(properties), message instanceof Error ? message.toString() : message);
     }
-    exports.warning = warning2;
+    exports.warning = warning3;
     function notice(message, properties = {}) {
       (0, command_1.issueCommand)("notice", (0, utils_1.toCommandProperties)(properties), message instanceof Error ? message.toString() : message);
     }
@@ -50908,7 +50908,8 @@ Secret #${i}:
           (0, import_core.info)(provisionAuthExplainer(provisionResults[i - 1]));
         }
       } else {
-        (0, import_core.info)("\n\u274C No secrets were authorized");
+        (0, import_core.info)("");
+        (0, import_core.warning)("\u274C No secrets were authorized");
       }
       if (tokenResults.length > 0) {
         for (let i = 1; i <= tokenResults.length; ++i) {
@@ -50918,7 +50919,8 @@ Token #${i}:
           (0, import_core.info)(tokenAuthExplainer(tokenResults[i - 1]));
         }
       } else {
-        (0, import_core.info)("\n\u274C No tokens were authorized");
+        (0, import_core.info)("");
+        (0, import_core.warning)("\u274C No tokens were authorized");
       }
       (0, import_core.info)("");
       return { provisionResults, tokenResults };

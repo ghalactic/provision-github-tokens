@@ -1,4 +1,4 @@
-import { info } from "@actions/core";
+import { info, warning } from "@actions/core";
 import { compareProvisionRequest } from "./compare-provision-request.js";
 import { compareTokenRequest } from "./compare-token-request.js";
 import type { DiscoveredRequester } from "./discover-requesters.js";
@@ -55,7 +55,8 @@ export function createAuthorizer(
           info(provisionAuthExplainer(provisionResults[i - 1]));
         }
       } else {
-        info("\n❌ No secrets were authorized");
+        info("");
+        warning("❌ No secrets were authorized");
       }
 
       if (tokenResults.length > 0) {
@@ -64,7 +65,8 @@ export function createAuthorizer(
           info(tokenAuthExplainer(tokenResults[i - 1]));
         }
       } else {
-        info("\n❌ No tokens were authorized");
+        info("");
+        warning("❌ No tokens were authorized");
       }
 
       info("");
