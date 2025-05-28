@@ -60229,7 +60229,7 @@ async function discoverRequesters(octokitFactory, appRegistry, appsInput) {
           owner: requester.account,
           repo: requester.repo,
           path: ".github/ghalactic/provision-github-tokens.yml",
-          headers: { accept: "application/vnd.github.raw+json" }
+          mediaType: { format: "raw" }
         });
         if (typeof res.data !== "string") {
           throw new Error(

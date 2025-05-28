@@ -109,13 +109,11 @@ export function Octokit({
           owner,
           repo,
           path,
-          headers,
+          mediaType,
         }: RestEndpointMethodTypes["repos"]["getContent"]["parameters"]) => {
           throwIfEndpointError("repos.getContent");
 
-          if (headers?.accept !== "application/vnd.github.raw+json") {
-            throw new TestRequestError(406);
-          }
+          if (mediaType?.format !== "raw") throw new TestRequestError(406);
 
           for (const [installation, repos] of installations) {
             if (installation.app_id !== appId) continue;

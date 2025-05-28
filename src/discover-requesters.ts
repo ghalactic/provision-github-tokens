@@ -38,7 +38,7 @@ export async function discoverRequesters(
           owner: requester.account,
           repo: requester.repo,
           path: ".github/ghalactic/provision-github-tokens.yml",
-          headers: { accept: "application/vnd.github.raw+json" },
+          mediaType: { format: "raw" },
         });
 
         /* v8 ignore start - Header guarantees string data */
