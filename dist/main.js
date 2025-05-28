@@ -60994,9 +60994,14 @@ async function main() {
     await discoverApps(octokitFactory, appRegistry, appsInput);
   });
   const requesters = await (0, import_core9.group)("Discovering requesters", async () => {
-    return discoverRequesters(octokitFactory, appRegistry, appsInput);
+    const requesters2 = await discoverRequesters(
+      octokitFactory,
+      appRegistry,
+      appsInput
+    );
+    registerTokenDeclarations(declarationRegistry, requesters2);
+    return requesters2;
   });
-  registerTokenDeclarations(declarationRegistry, requesters);
   await (0, import_core9.group)("Authorizing requests", async () => {
     await authorizer.authorize(Array.from(requesters.values()));
   });

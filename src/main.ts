@@ -64,10 +64,15 @@ async function main(): Promise<void> {
   });
 
   const requesters = await group("Discovering requesters", async () => {
-    return discoverRequesters(octokitFactory, appRegistry, appsInput);
-  });
+    const requesters = await discoverRequesters(
+      octokitFactory,
+      appRegistry,
+      appsInput,
+    );
+    registerTokenDeclarations(declarationRegistry, requesters);
 
-  registerTokenDeclarations(declarationRegistry, requesters);
+    return requesters;
+  });
 
   await group("Authorizing requests", async () => {
     await authorizer.authorize(Array.from(requesters.values()));
