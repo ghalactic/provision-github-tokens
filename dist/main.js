@@ -50224,6 +50224,12 @@ var require_light = __commonJS({
 // node_modules/libsodium/dist/modules/libsodium.js
 var require_libsodium = __commonJS({
   "node_modules/libsodium/dist/modules/libsodium.js"(exports, module) {
+    var __fileloc = {
+      filename: "/Users/erin/grit/github.com/ghalactic/provision-github-tokens/node_modules/libsodium/dist/modules/libsodium.js",
+      dirname: "/Users/erin/grit/github.com/ghalactic/provision-github-tokens/node_modules/libsodium/dist/modules",
+      relativefilename: "node_modules/libsodium/dist/modules/libsodium.js",
+      relativedirname: "node_modules/libsodium/dist/modules"
+    };
     !function(A) {
       function I(A2) {
         "use strict";
@@ -50253,7 +50259,7 @@ var require_libsodium = __commonJS({
               var g3, B2 = void 0 !== B2 ? B2 : {}, Q2 = "object" == typeof window, E2 = "function" == typeof importScripts, i2 = "object" == typeof process && "object" == typeof process.versions && "string" == typeof process.versions.node, o2 = Object.assign({}, B2), c2 = "";
               if (i2) {
                 var D2 = __require("fs"), a2 = __require("path");
-                c2 = __dirname + "/", g3 = (A5) => (A5 = U2(A5) ? new URL(A5) : a2.normalize(A5), D2.readFileSync(A5)), !B2.thisProgram && process.argv.length > 1 && process.argv[1].replace(/\\/g, "/"), process.argv.slice(2), "undefined" != typeof module && (module.exports = B2);
+                c2 = __fileloc.dirname + "/", g3 = (A5) => (A5 = U2(A5) ? new URL(A5) : a2.normalize(A5), D2.readFileSync(A5)), !B2.thisProgram && process.argv.length > 1 && process.argv[1].replace(/\\/g, "/"), process.argv.slice(2), "undefined" != typeof module && (module.exports = B2);
               } else (Q2 || E2) && (E2 ? c2 = self.location.href : "undefined" != typeof document && document.currentScript && (c2 = document.currentScript.src), c2 = c2.startsWith("blob:") ? "" : c2.substr(0, c2.replace(/[?#].*/, "").lastIndexOf("/") + 1), E2 && (g3 = (A5) => {
                 var I5 = new XMLHttpRequest();
                 return I5.open("GET", A5, false), I5.responseType = "arraybuffer", I5.send(null), new Uint8Array(I5.response);
@@ -52621,7 +52627,7 @@ var require_libsodium = __commonJS({
           var g2, B = void 0 !== B ? B : {}, Q = "object" == typeof window, E = "function" == typeof importScripts, i = "object" == typeof process && "object" == typeof process.versions && "string" == typeof process.versions.node, o = Object.assign({}, B), c = "";
           if (i) {
             var D = __require("fs"), a = __require("path");
-            c = __dirname + "/", g2 = (A4) => (A4 = U(A4) ? new URL(A4) : a.normalize(A4), D.readFileSync(A4)), !B.thisProgram && process.argv.length > 1 && process.argv[1].replace(/\\/g, "/"), process.argv.slice(2), "undefined" != typeof module && (module.exports = B);
+            c = __fileloc.dirname + "/", g2 = (A4) => (A4 = U(A4) ? new URL(A4) : a.normalize(A4), D.readFileSync(A4)), !B.thisProgram && process.argv.length > 1 && process.argv[1].replace(/\\/g, "/"), process.argv.slice(2), "undefined" != typeof module && (module.exports = B);
           } else (Q || E) && (E ? c = self.location.href : "undefined" != typeof document && document.currentScript && (c = document.currentScript.src), c = c.startsWith("blob:") ? "" : c.substr(0, c.replace(/[?#].*/, "").lastIndexOf("/") + 1), E && (g2 = (A4) => {
             var I4 = new XMLHttpRequest();
             return I4.open("GET", A4, false), I4.responseType = "arraybuffer", I4.send(null), new Uint8Array(I4.response);

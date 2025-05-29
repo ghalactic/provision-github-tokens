@@ -1,6 +1,5 @@
 import { build } from "esbuild";
-import { readFileSync } from "node:fs";
-import { dirname, extname } from "node:path";
+import filelocPluginModule from "esbuild-plugin-fileloc";
 
 const [, , outfile] = process.argv;
 
@@ -30,24 +29,5 @@ await build({
   banner: {
     js: addRequire,
   },
-  plugins: [
-    {
-      name: "dirname",
-      setup: async (build) => {
-        build.onLoad({ filter: /.*/ }, ({ path: fn }) => {
-          if (fn.match(NODE_MODULES_PATTERN)) return undefined;
-
-          let contents = readFileSync(fn, "utf8");
-          const loader = extname(fn).substring(1);
-          const dn = dirname(fn);
-
-          contents = contents
-            .replaceAll("__dirname", JSON.stringify(dn))
-            .replaceAll("__filename", JSON.stringify(fn));
-
-          return { contents, loader };
-        });
-      },
-    },
-  ],
+  plugins: [filelocPluginModule.filelocPlugin()],
 });
