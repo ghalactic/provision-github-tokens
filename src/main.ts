@@ -21,6 +21,10 @@ import { createTokenDeclarationRegistry } from "./token-declaration-registry.js"
 import { createTokenFactory } from "./token-factory.js";
 import { createTokenRequestFactory } from "./token-request.js";
 
+// TODO: Consider that user Codespaces secrets can't be managed by an app.
+// TODO: Consider that org secrets can be restricted by visibility / selected
+//       repos.
+
 main().catch((error) => {
   setFailed(errorStack(error));
 });
