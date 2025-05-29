@@ -1,5 +1,6 @@
 import { build } from "esbuild";
-import filelocPluginModule from "esbuild-plugin-fileloc";
+import { readFile } from "node:fs/promises";
+import { dirname, extname } from "node:path";
 
 const [, , outfile] = process.argv;
 
@@ -7,8 +8,6 @@ if (!outfile) {
   console.error("usage: node build.js <outfile>");
   process.exit(1);
 }
-
-const NODE_MODULES_PATTERN = /^(?:.*[\\\/])?node_modules(?:[\\\/].*)?$/;
 
 const addRequire = `// add require()
 const require = await (async () => {
@@ -29,5 +28,22 @@ await build({
   banner: {
     js: addRequire,
   },
-  plugins: [filelocPluginModule.filelocPlugin()],
+  plugins: [
+    {
+      name: "dirname",
+      setup: (build) => {
+        build.onLoad({ filter: /.*/ }, async ({ path: fn }) => {
+          if (extname(fn) !== ".js") return undefined;
+
+          const dn = dirname(fn);
+          const original = await readFile(fn, "utf8");
+          const contents = original
+            .replaceAll("__dirname", JSON.stringify(dn))
+            .replaceAll("__filename", JSON.stringify(fn));
+
+          return { contents };
+        });
+      },
+    },
+  ],
 });

@@ -13,7 +13,6 @@
     "@octokit/request-error": "^7.0.0",
     "ajv": "^8.17.1",
     "ajv-errors": "^3.0.0",
-    "esbuild-plugin-fileloc": "^0.0.6",
     "fast-json-stable-stringify": "^2.1.0",
     "js-yaml": "^4.1.0",
     "libsodium-wrappers": "^0.7.15",
