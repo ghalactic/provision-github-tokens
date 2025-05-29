@@ -1,7 +1,7 @@
 /* v8 ignore start - TODO: remove coverage ignore */
 import "source-map-support/register";
 
-import { group, setFailed } from "@actions/core";
+import { group, setFailed, warning } from "@actions/core";
 import { createAppRegistry } from "./app-registry.js";
 import { createAuthorizer } from "./authorizer.js";
 import { readAppsInput } from "./config/apps-input.js";
@@ -106,7 +106,28 @@ async function main(): Promise<void> {
   });
 
   await group("Provisioning secrets", async () => {
-    await provisionSecrets(tokens, provisionAuthorizer.listResults());
+    const results = await provisionSecrets(
+      tokens,
+      provisionAuthorizer.listResults(),
+    );
+
+    for (const [auth, targetResults] of results) {
+      for (const [targetAuth, result] of targetResults) {
+        if (result.type === "REQUEST_ERROR") {
+          warning(
+            `${JSON.stringify(targetAuth.target)} ${result.error.message}`,
+          );
+        } else if (result.type === "ERROR") {
+          if (result.error instanceof Error) {
+            warning(
+              `${JSON.stringify(targetAuth.target)} ${result.error.message}`,
+            );
+          } else {
+            warning(`${JSON.stringify(targetAuth.target)} ${result.error}`);
+          }
+        }
+      }
+    }
   });
 }
 /* v8 ignore stop */

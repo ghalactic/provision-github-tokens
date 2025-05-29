@@ -22012,10 +22012,10 @@ Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
       (0, command_1.issueCommand)("error", (0, utils_1.toCommandProperties)(properties), message instanceof Error ? message.toString() : message);
     }
     exports.error = error;
-    function warning3(message, properties = {}) {
+    function warning4(message, properties = {}) {
       (0, command_1.issueCommand)("warning", (0, utils_1.toCommandProperties)(properties), message instanceof Error ? message.toString() : message);
     }
-    exports.warning = warning3;
+    exports.warning = warning4;
     function notice(message, properties = {}) {
       (0, command_1.issueCommand)("notice", (0, utils_1.toCommandProperties)(properties), message instanceof Error ? message.toString() : message);
     }
@@ -65956,7 +65956,6 @@ function createProvisioner(appRegistry, appsInput, octokitFactory, encryptSecret
         if (targetResult.type === "PROVISIONED") {
           ++provisionedCount;
         } else {
-          (0, import_core9.info)(JSON.stringify(targetResult));
           ++notProvisionedCount;
         }
       }
@@ -66543,7 +66542,27 @@ async function main() {
     return await createTokens(tokenAuthorizer.listResults());
   });
   await (0, import_core11.group)("Provisioning secrets", async () => {
-    await provisionSecrets(tokens, provisionAuthorizer.listResults());
+    const results = await provisionSecrets(
+      tokens,
+      provisionAuthorizer.listResults()
+    );
+    for (const [auth6, targetResults] of results) {
+      for (const [targetAuth, result] of targetResults) {
+        if (result.type === "REQUEST_ERROR") {
+          (0, import_core11.warning)(
+            `${JSON.stringify(targetAuth.target)} ${result.error.message}`
+          );
+        } else if (result.type === "ERROR") {
+          if (result.error instanceof Error) {
+            (0, import_core11.warning)(
+              `${JSON.stringify(targetAuth.target)} ${result.error.message}`
+            );
+          } else {
+            (0, import_core11.warning)(`${JSON.stringify(targetAuth.target)} ${result.error}`);
+          }
+        }
+      }
+    }
   });
 }
 /*! Bundled license information:
