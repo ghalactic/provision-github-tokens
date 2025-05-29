@@ -246,11 +246,11 @@ export function createProvisioner(
         key_id: keyId,
       });
       /* v8 ignore start */
+    } else {
+      throw new Error(
+        `Invariant violation: Unexpected target type ${JSON.stringify(type)}`,
+      );
     }
-
-    throw new Error(
-      `Invariant violation: Unexpected target type ${JSON.stringify(type)}`,
-    );
     /* v8 ignore stop */
   }
 }

@@ -66037,10 +66037,11 @@ function createProvisioner(appRegistry, appsInput, octokitFactory, encryptSecret
         encrypted_value: encrypted,
         key_id: keyId
       });
+    } else {
+      throw new Error(
+        `Invariant violation: Unexpected target type ${JSON.stringify(type2)}`
+      );
     }
-    throw new Error(
-      `Invariant violation: Unexpected target type ${JSON.stringify(type2)}`
-    );
   }
 }
 
