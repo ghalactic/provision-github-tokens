@@ -66076,14 +66076,19 @@ function createSecretEncrypter(appRegistry, appsInput, octokitFactory) {
     const keyCacheId = JSON.stringify([
       target.type,
       target.target.account,
-      isRepoRef(target.target) ? target.target.repo : void 0
+      isRepoRef(target.target) ? target.target.repo : void 0,
+      isEnvRef(target.target) ? target.target.environment : void 0
     ]);
     const key = keys[keyCacheId] ?? await getPublicKey(octokit, target);
     keys[keyCacheId] = key;
     await import_libsodium_wrappers.default.ready;
     const binKey = import_libsodium_wrappers.default.from_base64(key.key, import_libsodium_wrappers.default.base64_variants.ORIGINAL);
     const binPlaintext = import_libsodium_wrappers.default.from_string(plaintext);
-    const encryptedBytes = import_libsodium_wrappers.default.crypto_box_seal(binPlaintext, binKey);
+    const encryptedBytes = import_libsodium_wrappers.default.crypto_box_seal(
+      binPlaintext,
+      binKey,
+      "uint8array"
+    );
     const encrypted = import_libsodium_wrappers.default.to_base64(
       encryptedBytes,
       import_libsodium_wrappers.default.base64_variants.ORIGINAL
