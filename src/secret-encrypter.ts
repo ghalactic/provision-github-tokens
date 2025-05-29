@@ -1,13 +1,11 @@
 import type { Octokit } from "@octokit/action";
-import { createRequire } from "node:module";
+import sodium from "libsodium-wrappers";
 import type { AppRegistry } from "./app-registry.js";
 import { accountOrRepoRefToString, isRepoRef } from "./github-reference.js";
 import type { OctokitFactory } from "./octokit.js";
 import type { ProvisionRequestTarget } from "./provision-request.js";
 import type { PublicKey } from "./type/github-api.js";
 import type { AppInput } from "./type/input.js";
-
-const require = createRequire(import.meta.url);
 
 export type SecretEncrypter = (
   target: ProvisionRequestTarget,
@@ -19,7 +17,6 @@ export function createSecretEncrypter(
   appsInput: AppInput[],
   octokitFactory: OctokitFactory,
 ): SecretEncrypter {
-  const sodium = require("libsodium-wrappers");
   const keys: Record<string, PublicKey> = {};
 
   return async (target, plaintext) => {
