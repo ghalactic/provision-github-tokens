@@ -65910,10 +65910,21 @@ function createProvisioner(appRegistry, appsInput, octokitFactory, encryptSecret
           targetResults.set(targetAuth, { type: "NO_PROVISIONER" });
           continue;
         }
-        const [encrypted, keyId] = await encryptSecret(
-          targetAuth.target,
-          tokenResult.token.token
-        );
+        let encrypted;
+        let keyId;
+        try {
+          [encrypted, keyId] = await encryptSecret(
+            targetAuth.target,
+            tokenResult.token.token
+          );
+        } catch (error) {
+          if (error instanceof RequestError) {
+            targetResults.set(targetAuth, { type: "REQUEST_ERROR", error });
+          } else {
+            targetResults.set(targetAuth, { type: "ERROR", error });
+          }
+          continue;
+        }
         const { installation } = provisionerReg;
         const octokit = octokitFactory.installationOctokit(
           appsInput,

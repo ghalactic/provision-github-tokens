@@ -102,10 +102,23 @@ export function createProvisioner(
           continue;
         }
 
-        const [encrypted, keyId] = await encryptSecret(
-          targetAuth.target,
-          tokenResult.token.token,
-        );
+        let encrypted: string;
+        let keyId: string;
+
+        try {
+          [encrypted, keyId] = await encryptSecret(
+            targetAuth.target,
+            tokenResult.token.token,
+          );
+        } catch (error) {
+          if (error instanceof RequestError) {
+            targetResults.set(targetAuth, { type: "REQUEST_ERROR", error });
+          } else {
+            targetResults.set(targetAuth, { type: "ERROR", error });
+          }
+
+          continue;
+        }
 
         const { installation } = provisionerReg;
         const octokit = octokitFactory.installationOctokit(
