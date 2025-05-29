@@ -50,7 +50,11 @@ export function createSecretEncrypter(
 
     const binKey = sodium.from_base64(key.key, sodium.base64_variants.ORIGINAL);
     const binPlaintext = sodium.from_string(plaintext);
-    const encrypted = sodium.crypto_box_seal(binPlaintext, binKey, "base64");
+    const encryptedBytes = sodium.crypto_box_seal(binPlaintext, binKey);
+    const encrypted = sodium.to_base64(
+      encryptedBytes,
+      sodium.base64_variants.ORIGINAL,
+    );
 
     return [encrypted, key.key_id];
   };
