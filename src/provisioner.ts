@@ -155,6 +155,7 @@ export function createProvisioner(
         if (targetResult.type === "PROVISIONED") {
           ++provisionedCount;
         } else {
+          info(JSON.stringify(targetResult));
           ++notProvisionedCount;
         }
       }

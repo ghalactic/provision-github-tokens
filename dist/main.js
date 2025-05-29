@@ -65956,6 +65956,7 @@ function createProvisioner(appRegistry, appsInput, octokitFactory, encryptSecret
         if (targetResult.type === "PROVISIONED") {
           ++provisionedCount;
         } else {
+          (0, import_core9.info)(JSON.stringify(targetResult));
           ++notProvisionedCount;
         }
       }
