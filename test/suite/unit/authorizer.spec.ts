@@ -247,6 +247,11 @@ it("authorizes all requests and outputs the results", async () => {
         },
         results: [
           {
+            target: {
+              platform: "github",
+              type: "actions",
+              target: { account: "account-a" },
+            },
             have: "allow",
             isAllowed: true,
             isProvisionAllowed: true,
@@ -275,6 +280,11 @@ it("authorizes all requests and outputs the results", async () => {
         },
         results: [
           {
+            target: {
+              platform: "github",
+              type: "actions",
+              target: { account: "account-a", repo: "repo-a" },
+            },
             have: "allow",
             isAllowed: true,
             isProvisionAllowed: true,
@@ -438,6 +448,11 @@ it("handles empty token requests", async () => {
         },
         results: [
           {
+            target: {
+              platform: "github",
+              type: "actions",
+              target: { account: "account-a" },
+            },
             have: "allow",
             isAllowed: false,
             isProvisionAllowed: true,

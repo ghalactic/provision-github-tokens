@@ -1,26 +1,33 @@
+import { info } from "@actions/core";
 import { RequestError } from "@octokit/request-error";
 import type { AppRegistry } from "./app-registry.js";
 import type { OctokitFactory } from "./octokit.js";
+import { pluralize } from "./pluralize.js";
 import type { InstallationToken } from "./type/github-api.js";
 import type { AppInput } from "./type/input.js";
 import type { TokenAuthResult } from "./type/token-auth-result.js";
 
 export type TokenFactory = (
-  results: TokenAuthResult[],
+  authResults: TokenAuthResult[],
 ) => Promise<Map<TokenAuthResult, TokenCreationResult>>;
 
 export type TokenCreationResult =
+  | TokenCreationNotAllowedResult
   | TokenCreationNoIssuerResult
-  | TokenCreationSuccessResult
+  | TokenCreationCreatedResult
   | TokenCreationRequestErrorResult
   | TokenCreationErrorResult;
+
+export type TokenCreationNotAllowedResult = {
+  type: "NOT_ALLOWED";
+};
 
 export type TokenCreationNoIssuerResult = {
   type: "NO_ISSUER";
 };
 
-export type TokenCreationSuccessResult = {
-  type: "SUCCESS";
+export type TokenCreationCreatedResult = {
+  type: "CREATED";
   token: InstallationToken;
 };
 
@@ -43,6 +50,12 @@ export function createTokenFactory(
     const creationResults = new Map<TokenAuthResult, TokenCreationResult>();
 
     for (const auth of authResults) {
+      if (!auth.isAllowed) {
+        creationResults.set(auth, { type: "NOT_ALLOWED" });
+
+        continue;
+      }
+
       const [issuerReg] = appRegistry.findIssuersForRequest(auth.request);
 
       if (!issuerReg) {
@@ -67,7 +80,7 @@ export function createTokenFactory(
             permissions: auth.request.tokenDec.permissions,
           });
 
-        creationResults.set(auth, { type: "SUCCESS", token });
+        creationResults.set(auth, { type: "CREATED", token });
       } catch (error) {
         if (error instanceof RequestError) {
           creationResults.set(auth, { type: "REQUEST_ERROR", error });
@@ -75,6 +88,29 @@ export function createTokenFactory(
           creationResults.set(auth, { type: "ERROR", error });
         }
       }
+    }
+
+    let createdCount = 0;
+    let notCreatedCount = 0;
+
+    for (const result of creationResults.values()) {
+      if (result.type === "CREATED") {
+        ++createdCount;
+      } else {
+        ++notCreatedCount;
+      }
+    }
+
+    if (createdCount > 0) {
+      info(`Created ${pluralize(createdCount, "token", "tokens")}`);
+    }
+    if (notCreatedCount > 0) {
+      const pluralized = pluralize(
+        notCreatedCount,
+        "requested token wasn't",
+        "requested tokens weren't",
+      );
+      info(`${pluralized} created`);
     }
 
     return creationResults;

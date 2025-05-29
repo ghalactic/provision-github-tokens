@@ -13,7 +13,9 @@ import { errorStack } from "./error.js";
 import { createOctokitFactory } from "./octokit.js";
 import { createProvisionAuthorizer } from "./provision-authorizer.js";
 import { createProvisionRequestFactory } from "./provision-request.js";
+import { createProvisioner } from "./provisioner.js";
 import { registerTokenDeclarations } from "./register-token-declarations.js";
+import { createSecretEncrypter } from "./secret-encrypter.js";
 import { createTokenAuthorizer } from "./token-authorizer.js";
 import { createTokenDeclarationRegistry } from "./token-declaration-registry.js";
 import { createTokenFactory } from "./token-factory.js";
@@ -64,6 +66,17 @@ async function main(): Promise<void> {
     appsInput,
     octokitFactory,
   );
+  const encryptSecret = createSecretEncrypter(
+    appRegistry,
+    appsInput,
+    octokitFactory,
+  );
+  const provisionSecrets = createProvisioner(
+    appRegistry,
+    appsInput,
+    octokitFactory,
+    encryptSecret,
+  );
 
   await group("Discovering apps", async () => {
     await discoverApps(octokitFactory, appRegistry, appsInput);
@@ -84,12 +97,12 @@ async function main(): Promise<void> {
     await authorizer.authorize(Array.from(requesters.values()));
   });
 
-  await group("Creating tokens", async () => {
-    const tokens = await createTokens(tokenAuthorizer.listResults());
-
-    console.log(JSON.stringify(Array.from(tokens.entries()), null, 2));
+  const tokens = await group("Creating tokens", async () => {
+    return await createTokens(tokenAuthorizer.listResults());
   });
 
-  // TODO: provision secrets
+  await group("Provisioning secrets", async () => {
+    await provisionSecrets(tokens, provisionAuthorizer.listResults());
+  });
 }
 /* v8 ignore stop */

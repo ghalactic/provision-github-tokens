@@ -1,4 +1,7 @@
-import type { ProvisionRequest } from "../provision-request.js";
+import type {
+  ProvisionRequest,
+  ProvisionRequestTarget,
+} from "../provision-request.js";
 import type { ProvisionSecretsRule } from "./provision-rule.js";
 import type { TokenAuthResult } from "./token-auth-result.js";
 
@@ -14,6 +17,7 @@ export type ProvisionAuthResult = {
 };
 
 export type ProvisionAuthTargetResult = {
+  target: ProvisionRequestTarget;
   rules: ProvisionAuthTargetRuleResult[];
   have: "allow" | "deny" | undefined;
   tokenAuthResult: TokenAuthResult | undefined;
