@@ -1,6 +1,6 @@
 import { build } from "esbuild";
 import { readFile } from "node:fs/promises";
-import { dirname, extname } from "node:path";
+import { extname } from "node:path";
 
 const [, , outfile] = process.argv;
 
@@ -35,11 +35,10 @@ await build({
         build.onLoad({ filter: /.*/ }, async ({ path: fn }) => {
           if (extname(fn) !== ".js") return undefined;
 
-          const dn = dirname(fn);
           const original = await readFile(fn, "utf8");
           const contents = original
-            .replaceAll("__dirname", JSON.stringify(dn))
-            .replaceAll("__filename", JSON.stringify(fn));
+            .replaceAll("__dirname", "import.meta.dirname")
+            .replaceAll("__filename", "import.meta.filename");
 
           return { contents };
         });
