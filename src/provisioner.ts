@@ -1,14 +1,12 @@
 import { info } from "@actions/core";
 import type { Octokit } from "@octokit/action";
 import { RequestError } from "@octokit/request-error";
-import type { AppRegistry } from "./app-registry.js";
 import { isRepoRef } from "./github-reference.js";
-import type { OctokitFactory } from "./octokit.js";
 import { pluralize } from "./pluralize.js";
 import type { ProvisionRequestTarget } from "./provision-request.js";
+import type { ProvisionerOctokitFinder } from "./provisioner-octokit.js";
 import type { SecretEncrypter } from "./secret-encrypter.js";
 import type { TokenCreationResult } from "./token-factory.js";
-import type { AppInput } from "./type/input.js";
 import type {
   ProvisionAuthResult,
   ProvisionAuthTargetResult,
@@ -57,9 +55,7 @@ export type ProvisioningErrorResult = {
 };
 
 export function createProvisioner(
-  appRegistry: AppRegistry,
-  appsInput: AppInput[],
-  octokitFactory: OctokitFactory,
+  findProvisionerOctokit: ProvisionerOctokitFinder,
   encryptSecret: SecretEncrypter,
 ): Provisioner {
   return async (tokens, authResults) => {
@@ -92,11 +88,9 @@ export function createProvisioner(
           continue;
         }
 
-        const [provisionerReg] = appRegistry.findProvisionersForAccountOrRepo(
-          targetAuth.target.target,
-        );
+        const octokit = findProvisionerOctokit(targetAuth.target.target);
 
-        if (!provisionerReg) {
+        if (!octokit) {
           targetResults.set(targetAuth, { type: "NO_PROVISIONER" });
 
           continue;
@@ -119,13 +113,6 @@ export function createProvisioner(
 
           continue;
         }
-
-        const { installation } = provisionerReg;
-        const octokit = octokitFactory.installationOctokit(
-          appsInput,
-          installation.app_id,
-          installation.id,
-        );
 
         try {
           await provisionToTarget(

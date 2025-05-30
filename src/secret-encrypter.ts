@@ -1,15 +1,13 @@
 import type { Octokit } from "@octokit/action";
 import sodium from "libsodium-wrappers";
-import type { AppRegistry } from "./app-registry.js";
 import {
   accountOrRepoRefToString,
   isEnvRef,
   isRepoRef,
 } from "./github-reference.js";
-import type { OctokitFactory } from "./octokit.js";
 import type { ProvisionRequestTarget } from "./provision-request.js";
+import type { ProvisionerOctokitFinder } from "./provisioner-octokit.js";
 import type { PublicKey } from "./type/github-api.js";
-import type { AppInput } from "./type/input.js";
 
 export type SecretEncrypter = (
   target: ProvisionRequestTarget,
@@ -17,30 +15,19 @@ export type SecretEncrypter = (
 ) => Promise<[encrypted: string, keyId: string]>;
 
 export function createSecretEncrypter(
-  appRegistry: AppRegistry,
-  appsInput: AppInput[],
-  octokitFactory: OctokitFactory,
+  findProvisionerOctokit: ProvisionerOctokitFinder,
 ): SecretEncrypter {
   const keys: Record<string, PublicKey> = {};
 
   return async (target, plaintext) => {
-    const [provisionerReg] = appRegistry.findProvisionersForAccountOrRepo(
-      target.target,
-    );
+    const octokit = findProvisionerOctokit(target.target);
 
-    if (!provisionerReg) {
+    if (!octokit) {
       throw new Error(
         "No provisioners found for target " +
           accountOrRepoRefToString(target.target),
       );
     }
-
-    const { installation } = provisionerReg;
-    const octokit = octokitFactory.installationOctokit(
-      appsInput,
-      installation.app_id,
-      installation.id,
-    );
 
     const keyCacheId = JSON.stringify([
       target.type,

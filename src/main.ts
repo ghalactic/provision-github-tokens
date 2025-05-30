@@ -13,6 +13,7 @@ import { errorStack } from "./error.js";
 import { createOctokitFactory } from "./octokit.js";
 import { createProvisionAuthorizer } from "./provision-authorizer.js";
 import { createProvisionRequestFactory } from "./provision-request.js";
+import { createProvisionerOctokitFinder } from "./provisioner-octokit.js";
 import { createProvisioner } from "./provisioner.js";
 import { registerTokenDeclarations } from "./register-token-declarations.js";
 import { createSecretEncrypter } from "./secret-encrypter.js";
@@ -42,12 +43,13 @@ async function main(): Promise<void> {
   });
 
   const appRegistry = createAppRegistry();
-  const declarationRegistry = createTokenDeclarationRegistry();
-  const environmentResolver = createEnvironmentResolver(
+  const findProvisionerOctokit = createProvisionerOctokitFinder(
     octokitFactory,
     appRegistry,
     appsInput,
   );
+  const declarationRegistry = createTokenDeclarationRegistry();
+  const environmentResolver = createEnvironmentResolver(findProvisionerOctokit);
   const createProvisionRequest = createProvisionRequestFactory(
     declarationRegistry,
     appRegistry,
@@ -70,15 +72,9 @@ async function main(): Promise<void> {
     appsInput,
     octokitFactory,
   );
-  const encryptSecret = createSecretEncrypter(
-    appRegistry,
-    appsInput,
-    octokitFactory,
-  );
+  const encryptSecret = createSecretEncrypter(findProvisionerOctokit);
   const provisionSecrets = createProvisioner(
-    appRegistry,
-    appsInput,
-    octokitFactory,
+    findProvisionerOctokit,
     encryptSecret,
   );
 
