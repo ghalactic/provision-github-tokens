@@ -3,15 +3,15 @@ import type { AccountOrRepoReference } from "./github-reference.js";
 import type { Octokit, OctokitFactory } from "./octokit.js";
 import type { AppInput } from "./type/input.js";
 
-export type ProvisionerOctokitFinder = (
+export type FindProvisionerOctokit = (
   target: AccountOrRepoReference,
 ) => [octokit: Octokit, reg: InstallationRegistration] | undefined;
 
-export function createProvisionerOctokitFinder(
+export function createFindProvisionerOctokit(
   octokitFactory: OctokitFactory,
   appRegistry: AppRegistry,
   appsInput: AppInput[],
-): ProvisionerOctokitFinder {
+): FindProvisionerOctokit {
   return (target) => {
     const [reg] = appRegistry.findProvisionersForAccountOrRepo(target);
 

@@ -1,7 +1,7 @@
 import { debug } from "@actions/core";
 import { repoRefToString, type RepoReference } from "./github-reference.js";
 import { anyPatternMatches, type Pattern } from "./pattern.js";
-import type { ProvisionerOctokitFinder } from "./provisioner-octokit.js";
+import type { FindProvisionerOctokit } from "./provisioner-octokit.js";
 import type { Environment } from "./type/github-api.js";
 
 export type EnvironmentResolver = {
@@ -12,7 +12,7 @@ export type EnvironmentResolver = {
 };
 
 export function createEnvironmentResolver(
-  findProvisionerOctokit: ProvisionerOctokitFinder,
+  findProvisionerOctokit: FindProvisionerOctokit,
 ): EnvironmentResolver {
   const envsByRepo: Record<string, string[]> = {};
 

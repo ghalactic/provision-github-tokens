@@ -13,7 +13,7 @@ import {
 import { createEnvironmentResolver } from "../../../src/environment-resolver.js";
 import { createNamePattern } from "../../../src/name-pattern.js";
 import { createOctokitFactory } from "../../../src/octokit.js";
-import { createProvisionerOctokitFinder } from "../../../src/provisioner-octokit.js";
+import { createFindProvisionerOctokit } from "../../../src/provisioner-octokit.js";
 import {
   createTestApp,
   createTestInstallation,
@@ -59,7 +59,7 @@ it("resolves environment names for a repo", async () => {
   appRegistry.registerApp(appRegA);
   appRegistry.registerInstallation(appAInstallationRegA);
 
-  const findProvisionerOctokit = createProvisionerOctokitFinder(
+  const findProvisionerOctokit = createFindProvisionerOctokit(
     octokitFactory,
     appRegistry,
     [
@@ -137,7 +137,7 @@ it("throws if no provisioner is found", async () => {
   appRegistry.registerApp(appRegA);
   appRegistry.registerInstallation(appAInstallationRegA);
 
-  const findProvisionerOctokit = createProvisionerOctokitFinder(
+  const findProvisionerOctokit = createFindProvisionerOctokit(
     octokitFactory,
     appRegistry,
     [

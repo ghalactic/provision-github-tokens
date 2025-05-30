@@ -6,7 +6,7 @@ import {
 } from "./github-reference.js";
 import type { Octokit } from "./octokit.js";
 import type { ProvisionRequestTarget } from "./provision-request.js";
-import type { ProvisionerOctokitFinder } from "./provisioner-octokit.js";
+import type { FindProvisionerOctokit } from "./provisioner-octokit.js";
 import type { PublicKey } from "./type/github-api.js";
 
 export type SecretEncrypter = (
@@ -15,7 +15,7 @@ export type SecretEncrypter = (
 ) => Promise<[encrypted: string, keyId: string]>;
 
 export function createSecretEncrypter(
-  findProvisionerOctokit: ProvisionerOctokitFinder,
+  findProvisionerOctokit: FindProvisionerOctokit,
 ): SecretEncrypter {
   const keys: Record<string, PublicKey> = {};
 

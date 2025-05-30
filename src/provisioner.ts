@@ -4,7 +4,7 @@ import { isRepoRef } from "./github-reference.js";
 import type { Octokit } from "./octokit.js";
 import { pluralize } from "./pluralize.js";
 import type { ProvisionRequestTarget } from "./provision-request.js";
-import type { ProvisionerOctokitFinder } from "./provisioner-octokit.js";
+import type { FindProvisionerOctokit } from "./provisioner-octokit.js";
 import type { SecretEncrypter } from "./secret-encrypter.js";
 import type { TokenCreationResult } from "./token-factory.js";
 import type {
@@ -55,7 +55,7 @@ export type ProvisioningErrorResult = {
 };
 
 export function createProvisioner(
-  findProvisionerOctokit: ProvisionerOctokitFinder,
+  findProvisionerOctokit: FindProvisionerOctokit,
   encryptSecret: SecretEncrypter,
 ): Provisioner {
   return async (tokens, authResults) => {

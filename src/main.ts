@@ -10,11 +10,11 @@ import { discoverApps } from "./discover-apps.js";
 import { discoverRequesters } from "./discover-requesters.js";
 import { createEnvironmentResolver } from "./environment-resolver.js";
 import { errorStack } from "./error.js";
-import { createIssuerOctokitFinder } from "./issuer-octokit.js";
+import { createFindIssuerOctokit } from "./issuer-octokit.js";
 import { createOctokitFactory } from "./octokit.js";
 import { createProvisionAuthorizer } from "./provision-authorizer.js";
 import { createProvisionRequestFactory } from "./provision-request.js";
-import { createProvisionerOctokitFinder } from "./provisioner-octokit.js";
+import { createFindProvisionerOctokit } from "./provisioner-octokit.js";
 import { createProvisioner } from "./provisioner.js";
 import { registerTokenDeclarations } from "./register-token-declarations.js";
 import { createSecretEncrypter } from "./secret-encrypter.js";
@@ -44,12 +44,12 @@ async function main(): Promise<void> {
   });
 
   const appRegistry = createAppRegistry();
-  const findIssuerOctokit = createIssuerOctokitFinder(
+  const findIssuerOctokit = createFindIssuerOctokit(
     octokitFactory,
     appRegistry,
     appsInput,
   );
-  const findProvisionerOctokit = createProvisionerOctokitFinder(
+  const findProvisionerOctokit = createFindProvisionerOctokit(
     octokitFactory,
     appRegistry,
     appsInput,

@@ -1,6 +1,6 @@
 import { info } from "@actions/core";
 import { RequestError } from "@octokit/request-error";
-import type { IssuerOctokitFinder } from "./issuer-octokit.js";
+import type { FindIssuerOctokit } from "./issuer-octokit.js";
 import { pluralize } from "./pluralize.js";
 import type { InstallationToken } from "./type/github-api.js";
 import type { TokenAuthResult } from "./type/token-auth-result.js";
@@ -40,7 +40,7 @@ export type TokenCreationErrorResult = {
 };
 
 export function createTokenFactory(
-  findIssuerOctokit: IssuerOctokitFinder,
+  findIssuerOctokit: FindIssuerOctokit,
 ): TokenFactory {
   return async (authResults) => {
     const creationResults = new Map<TokenAuthResult, TokenCreationResult>();

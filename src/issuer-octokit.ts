@@ -3,15 +3,15 @@ import type { Octokit, OctokitFactory } from "./octokit.js";
 import type { TokenRequest } from "./token-request.js";
 import type { AppInput } from "./type/input.js";
 
-export type IssuerOctokitFinder = (
+export type FindIssuerOctokit = (
   request: TokenRequest,
 ) => [octokit: Octokit, reg: InstallationRegistration] | undefined;
 
-export function createIssuerOctokitFinder(
+export function createFindIssuerOctokit(
   octokitFactory: OctokitFactory,
   appRegistry: AppRegistry,
   appsInput: AppInput[],
-): IssuerOctokitFinder {
+): FindIssuerOctokit {
   return (request) => {
     const [reg] = appRegistry.findIssuersForRequest(request);
 
