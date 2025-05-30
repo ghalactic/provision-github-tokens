@@ -65567,10 +65567,11 @@ function createEnvironmentResolver(findProvisionerOctokit) {
   async function repoEnvs(repo) {
     const repoName = repoRefToString(repo);
     if (envsByRepo[repoName]) return envsByRepo[repoName];
-    const octokit = findProvisionerOctokit(repo);
-    if (!octokit) {
+    const found = findProvisionerOctokit(repo);
+    if (!found) {
       throw new Error(`No provisioners found for repo ${repoName}`);
     }
+    const [octokit] = found;
     const envPages = octokit.paginate.iterator(
       octokit.rest.repos.getAllEnvironments,
       { owner: repo.account, repo: repo.repo }
@@ -65582,6 +65583,22 @@ function createEnvironmentResolver(findProvisionerOctokit) {
     (0, import_core8.debug)(`Repo ${repoName} has environments ${JSON.stringify(names)}`);
     return envsByRepo[repoName] = names;
   }
+}
+
+// src/issuer-octokit.ts
+function createIssuerOctokitFinder(octokitFactory, appRegistry, appsInput) {
+  return (request2) => {
+    const [reg] = appRegistry.findIssuersForRequest(request2);
+    if (!reg) return void 0;
+    return [
+      octokitFactory.installationOctokit(
+        appsInput,
+        reg.installation.app_id,
+        reg.installation.id
+      ),
+      reg
+    ];
+  };
 }
 
 // src/provision-authorizer.ts
@@ -65872,11 +65889,15 @@ function createProvisionRequestFactory(declarationRegistry, appRegistry, environ
 function createProvisionerOctokitFinder(octokitFactory, appRegistry, appsInput) {
   return (target) => {
     const [reg] = appRegistry.findProvisionersForAccountOrRepo(target);
-    return reg && octokitFactory.installationOctokit(
-      appsInput,
-      reg.installation.app_id,
-      reg.installation.id
-    );
+    if (!reg) return void 0;
+    return [
+      octokitFactory.installationOctokit(
+        appsInput,
+        reg.installation.app_id,
+        reg.installation.id
+      ),
+      reg
+    ];
   };
 }
 
@@ -65898,11 +65919,12 @@ function createProvisioner(findProvisionerOctokit, encryptSecret) {
           targetResults.set(targetAuth, { type: "NO_TOKEN" });
           continue;
         }
-        const octokit = findProvisionerOctokit(targetAuth.target.target);
-        if (!octokit) {
+        const found = findProvisionerOctokit(targetAuth.target.target);
+        if (!found) {
           targetResults.set(targetAuth, { type: "NO_PROVISIONER" });
           continue;
         }
+        const [octokit] = found;
         let encrypted;
         let keyId;
         try {
@@ -66046,12 +66068,13 @@ var import_libsodium_wrappers = __toESM(require_libsodium_wrappers(), 1);
 function createSecretEncrypter(findProvisionerOctokit) {
   const keys = {};
   return async (target, plaintext) => {
-    const octokit = findProvisionerOctokit(target.target);
-    if (!octokit) {
+    const found = findProvisionerOctokit(target.target);
+    if (!found) {
       throw new Error(
         "No provisioners found for target " + accountOrRepoRefToString(target.target)
       );
     }
+    const [octokit] = found;
     const keyCacheId = JSON.stringify([
       target.type,
       target.target.account,
@@ -66354,7 +66377,7 @@ function createTokenDeclarationRegistry() {
 
 // src/token-factory.ts
 var import_core10 = __toESM(require_core(), 1);
-function createTokenFactory(appRegistry, appsInput, octokitFactory) {
+function createTokenFactory(findIssuerOctokit) {
   return async (authResults) => {
     const creationResults = /* @__PURE__ */ new Map();
     for (const auth6 of authResults) {
@@ -66362,20 +66385,15 @@ function createTokenFactory(appRegistry, appsInput, octokitFactory) {
         creationResults.set(auth6, { type: "NOT_ALLOWED" });
         continue;
       }
-      const [issuerReg] = appRegistry.findIssuersForRequest(auth6.request);
-      if (!issuerReg) {
+      const found = findIssuerOctokit(auth6.request);
+      if (!found) {
         creationResults.set(auth6, { type: "NO_ISSUER" });
         continue;
       }
-      const { installation } = issuerReg;
-      const octokit = octokitFactory.installationOctokit(
-        appsInput,
-        installation.app_id,
-        installation.id
-      );
+      const [octokit, issuerReg] = found;
       try {
         const { data: token } = await octokit.rest.apps.createInstallationAccessToken({
-          installation_id: installation.id,
+          installation_id: issuerReg.installation.id,
           repositories: auth6.request.repos === "all" ? void 0 : auth6.request.repos,
           permissions: auth6.request.tokenDec.permissions
         });
@@ -66464,6 +66482,11 @@ async function main() {
     );
   });
   const appRegistry = createAppRegistry();
+  const findIssuerOctokit = createIssuerOctokitFinder(
+    octokitFactory,
+    appRegistry,
+    appsInput
+  );
   const findProvisionerOctokit = createProvisionerOctokitFinder(
     octokitFactory,
     appRegistry,
@@ -66488,11 +66511,7 @@ async function main() {
     provisionAuthorizer,
     tokenAuthorizer
   );
-  const createTokens = createTokenFactory(
-    appRegistry,
-    appsInput,
-    octokitFactory
-  );
+  const createTokens = createTokenFactory(findIssuerOctokit);
   const encryptSecret = createSecretEncrypter(findProvisionerOctokit);
   const provisionSecrets = createProvisioner(
     findProvisionerOctokit,

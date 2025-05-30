@@ -1,10 +1,10 @@
-import type { Octokit } from "@octokit/action";
 import sodium from "libsodium-wrappers";
 import {
   accountOrRepoRefToString,
   isEnvRef,
   isRepoRef,
 } from "./github-reference.js";
+import type { Octokit } from "./octokit.js";
 import type { ProvisionRequestTarget } from "./provision-request.js";
 import type { ProvisionerOctokitFinder } from "./provisioner-octokit.js";
 import type { PublicKey } from "./type/github-api.js";
@@ -20,14 +20,14 @@ export function createSecretEncrypter(
   const keys: Record<string, PublicKey> = {};
 
   return async (target, plaintext) => {
-    const octokit = findProvisionerOctokit(target.target);
-
-    if (!octokit) {
+    const found = findProvisionerOctokit(target.target);
+    if (!found) {
       throw new Error(
         "No provisioners found for target " +
           accountOrRepoRefToString(target.target),
       );
     }
+    const [octokit] = found;
 
     const keyCacheId = JSON.stringify([
       target.type,

@@ -1,10 +1,8 @@
 import { info } from "@actions/core";
 import { RequestError } from "@octokit/request-error";
-import type { AppRegistry } from "./app-registry.js";
-import type { OctokitFactory } from "./octokit.js";
+import type { IssuerOctokitFinder } from "./issuer-octokit.js";
 import { pluralize } from "./pluralize.js";
 import type { InstallationToken } from "./type/github-api.js";
-import type { AppInput } from "./type/input.js";
 import type { TokenAuthResult } from "./type/token-auth-result.js";
 
 export type TokenFactory = (
@@ -42,9 +40,7 @@ export type TokenCreationErrorResult = {
 };
 
 export function createTokenFactory(
-  appRegistry: AppRegistry,
-  appsInput: AppInput[],
-  octokitFactory: OctokitFactory,
+  findIssuerOctokit: IssuerOctokitFinder,
 ): TokenFactory {
   return async (authResults) => {
     const creationResults = new Map<TokenAuthResult, TokenCreationResult>();
@@ -56,25 +52,18 @@ export function createTokenFactory(
         continue;
       }
 
-      const [issuerReg] = appRegistry.findIssuersForRequest(auth.request);
-
-      if (!issuerReg) {
+      const found = findIssuerOctokit(auth.request);
+      if (!found) {
         creationResults.set(auth, { type: "NO_ISSUER" });
 
         continue;
       }
-
-      const { installation } = issuerReg;
-      const octokit = octokitFactory.installationOctokit(
-        appsInput,
-        installation.app_id,
-        installation.id,
-      );
+      const [octokit, issuerReg] = found;
 
       try {
         const { data: token } =
           await octokit.rest.apps.createInstallationAccessToken({
-            installation_id: installation.id,
+            installation_id: issuerReg.installation.id,
             repositories:
               auth.request.repos === "all" ? undefined : auth.request.repos,
             permissions: auth.request.tokenDec.permissions,

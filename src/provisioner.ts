@@ -1,7 +1,7 @@
 import { info } from "@actions/core";
-import type { Octokit } from "@octokit/action";
 import { RequestError } from "@octokit/request-error";
 import { isRepoRef } from "./github-reference.js";
+import type { Octokit } from "./octokit.js";
 import { pluralize } from "./pluralize.js";
 import type { ProvisionRequestTarget } from "./provision-request.js";
 import type { ProvisionerOctokitFinder } from "./provisioner-octokit.js";
@@ -88,13 +88,13 @@ export function createProvisioner(
           continue;
         }
 
-        const octokit = findProvisionerOctokit(targetAuth.target.target);
-
-        if (!octokit) {
+        const found = findProvisionerOctokit(targetAuth.target.target);
+        if (!found) {
           targetResults.set(targetAuth, { type: "NO_PROVISIONER" });
 
           continue;
         }
+        const [octokit] = found;
 
         let encrypted: string;
         let keyId: string;
