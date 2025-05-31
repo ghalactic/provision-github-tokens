@@ -5,6 +5,7 @@ import {
   __setApps,
   __setInstallations,
   __setOrgPublicKeys,
+  __setRepoPublicKeys,
 } from "../../../__mocks__/@octokit/action.js";
 import {
   createAppRegistry,
@@ -65,16 +66,31 @@ it("can encrypt secrets for all secret types", async () => {
     appsInput,
   );
 
+  __setApps([appA]);
+  __setInstallations([[appAInstallationA, [repoA]]]);
+
   const orgAActionsKey = await createTestKeyPair("1111");
   const orgACodespacesKey = await createTestKeyPair("2222");
   const orgADependabotKey = await createTestKeyPair("3333");
-
-  __setApps([appA]);
-  __setInstallations([[appAInstallationA, [repoA]]]);
   __setOrgPublicKeys("org-a", {
     actions: orgAActionsKey.githubPublic,
     codespaces: orgACodespacesKey.githubPublic,
     dependabot: orgADependabotKey.githubPublic,
+  });
+
+  const repoAActionsKey = await createTestKeyPair("4444");
+  const repoACodespacesKey = await createTestKeyPair("5555");
+  const repoADependabotKey = await createTestKeyPair("6666");
+  const envAKey = await createTestKeyPair("7777");
+  const envBKey = await createTestKeyPair("8888");
+  __setRepoPublicKeys("org-a", "repo-a", {
+    actions: repoAActionsKey.githubPublic,
+    codespaces: repoACodespacesKey.githubPublic,
+    dependabot: repoADependabotKey.githubPublic,
+    environments: {
+      "env-a": envAKey.githubPublic,
+      "env-b": envBKey.githubPublic,
+    },
   });
 
   const encryptSecret = createSecretEncrypter(findProvisionerOctokit);
@@ -106,4 +122,46 @@ it("can encrypt secrets for all secret types", async () => {
     "<plaintext>",
   );
   expect(forOrgADependabot[1]).toBe("3333");
+
+  const forRepoAActions = await encryptSecret(
+    {
+      platform: "github",
+      type: "actions",
+      target: { account: "org-a", repo: "repo-a" },
+    },
+    "<plaintext>",
+  );
+
+  expect(await decrypt(repoAActionsKey, forRepoAActions[0])).toBe(
+    "<plaintext>",
+  );
+  expect(forRepoAActions[1]).toBe("4444");
+
+  const forRepoACodespaces = await encryptSecret(
+    {
+      platform: "github",
+      type: "codespaces",
+      target: { account: "org-a", repo: "repo-a" },
+    },
+    "<plaintext>",
+  );
+
+  expect(await decrypt(repoACodespacesKey, forRepoACodespaces[0])).toBe(
+    "<plaintext>",
+  );
+  expect(forRepoACodespaces[1]).toBe("5555");
+
+  const forRepoADependabot = await encryptSecret(
+    {
+      platform: "github",
+      type: "dependabot",
+      target: { account: "org-a", repo: "repo-a" },
+    },
+    "<plaintext>",
+  );
+
+  expect(await decrypt(repoADependabotKey, forRepoADependabot[0])).toBe(
+    "<plaintext>",
+  );
+  expect(forRepoADependabot[1]).toBe("6666");
 });

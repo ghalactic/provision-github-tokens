@@ -164,7 +164,7 @@ export function Octokit({
             );
           }
 
-          if (!orgPublicKeys[org].actions) throw new TestRequestError(401);
+          if (!orgPublicKeys[org]?.actions) throw new TestRequestError(401);
 
           return { data: orgPublicKeys[org].actions };
         },
@@ -186,9 +186,11 @@ export function Octokit({
 
           const repoName = `${owner}/${repo}`;
 
-          if (!orgPublicKeys[repoName].actions) throw new TestRequestError(401);
+          if (!repoPublicKeys[repoName]?.actions) {
+            throw new TestRequestError(401);
+          }
 
-          return { data: orgPublicKeys[repoName].actions };
+          return { data: repoPublicKeys[repoName].actions };
         },
       },
 
@@ -286,7 +288,7 @@ export function Octokit({
             );
           }
 
-          if (!orgPublicKeys[org].codespaces) throw new TestRequestError(401);
+          if (!orgPublicKeys[org]?.codespaces) throw new TestRequestError(401);
 
           return { data: orgPublicKeys[org].codespaces };
         },
@@ -310,11 +312,11 @@ export function Octokit({
 
           const repoName = `${owner}/${repo}`;
 
-          if (!orgPublicKeys[repoName].codespaces) {
+          if (!repoPublicKeys[repoName]?.codespaces) {
             throw new TestRequestError(401);
           }
 
-          return { data: orgPublicKeys[repoName].codespaces };
+          return { data: repoPublicKeys[repoName].codespaces };
         },
       },
 
@@ -335,7 +337,7 @@ export function Octokit({
             );
           }
 
-          if (!orgPublicKeys[org].dependabot) throw new TestRequestError(401);
+          if (!orgPublicKeys[org]?.dependabot) throw new TestRequestError(401);
 
           return { data: orgPublicKeys[org].dependabot };
         },
@@ -359,11 +361,11 @@ export function Octokit({
 
           const repoName = `${owner}/${repo}`;
 
-          if (!orgPublicKeys[repoName].dependabot) {
+          if (!repoPublicKeys[repoName]?.dependabot) {
             throw new TestRequestError(401);
           }
 
-          return { data: orgPublicKeys[repoName].dependabot };
+          return { data: repoPublicKeys[repoName].dependabot };
         },
       },
 
