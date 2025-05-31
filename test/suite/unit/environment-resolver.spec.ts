@@ -1,6 +1,10 @@
-import { expect, it, vi } from "vitest";
-import { __getOutput } from "../../../__mocks__/@actions/core.js";
+import { beforeEach, expect, it, vi } from "vitest";
 import {
+  __getOutput,
+  __reset as __resetCore,
+} from "../../../__mocks__/@actions/core.js";
+import {
+  __reset as __resetOctokit,
   __setApps,
   __setEnvironments,
   __setInstallations,
@@ -24,6 +28,11 @@ import {
 
 vi.mock("@actions/core");
 vi.mock("@octokit/action");
+
+beforeEach(() => {
+  __resetCore();
+  __resetOctokit();
+});
 
 it("resolves environment names for a repo", async () => {
   const accountA = createTestInstallationAccount("Organization", 100, "org-a");

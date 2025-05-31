@@ -4,7 +4,9 @@ import {
   __addInstallationToken,
   __reset as __resetOctokit,
   __setApps,
+  __setErrors,
   __setInstallations,
+  TestRequestError,
 } from "../../../__mocks__/@octokit/action.js";
 import {
   createAppRegistry,
@@ -72,6 +74,11 @@ it("creates tokens based on token auth results", async () => {
   __setApps([appA]);
   __setInstallations([[appAInstallationA, [repoA]]]);
   __addInstallationToken(111, "all", { metadata: "read" });
+  __setErrors("apps.createInstallationAccessToken", [
+    undefined,
+    undefined,
+    new Error("<message>"),
+  ]);
 
   const createTokens = createTokenFactory(findIssuerOctokit);
 
@@ -135,11 +142,57 @@ it("creates tokens based on token auth results", async () => {
     isAllowed: true,
     rules: [],
   };
+  const unauthorizedResult: TokenAuthResult = {
+    type: "ALL_REPOS",
+    request: {
+      consumer: { account: "account-a" },
+      tokenDec: {
+        shared: false,
+        as: undefined,
+        account: "account-a",
+        repos: ["repo-a"],
+        permissions: { metadata: "read" },
+      },
+      repos: ["repo-a"],
+    },
+    maxWant: "read",
+    have: { metadata: "read" },
+    isSufficient: true,
+    isMissingRole: false,
+    isAllowed: true,
+    rules: [],
+  };
+  const errorResult: TokenAuthResult = {
+    type: "ALL_REPOS",
+    request: {
+      consumer: { account: "account-a" },
+      tokenDec: {
+        shared: false,
+        as: undefined,
+        account: "account-a",
+        repos: "all",
+        permissions: { metadata: "read" },
+      },
+      repos: "all",
+    },
+    maxWant: "read",
+    have: { metadata: "read" },
+    isSufficient: true,
+    isMissingRole: false,
+    isAllowed: true,
+    rules: [],
+  };
 
   expect(
     Array.from(
       (
-        await createTokens([notAllowedResult, noIssuerResult, createdResult])
+        await createTokens([
+          notAllowedResult,
+          noIssuerResult,
+          createdResult,
+          unauthorizedResult,
+          errorResult,
+        ])
       ).entries(),
     ),
   ).toEqual([
@@ -149,5 +202,10 @@ it("creates tokens based on token auth results", async () => {
       createdResult,
       { type: "CREATED", token: '<token 111.all.{"metadata":"read"}>' },
     ],
+    [
+      unauthorizedResult,
+      { type: "REQUEST_ERROR", error: new TestRequestError(401) },
+    ],
+    [errorResult, { type: "ERROR", error: new Error("<message>") }],
   ]);
 });

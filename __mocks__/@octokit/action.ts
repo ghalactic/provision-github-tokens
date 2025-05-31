@@ -299,7 +299,7 @@ function throwIfEndpointError(endpoint: string) {
   if (error) throw error;
 }
 
-class TestRequestError extends RequestError {
+export class TestRequestError extends RequestError {
   constructor(status: number) {
     super("", status, {
       request: { method: "GET", url: "https://api.org/", headers: {} },
