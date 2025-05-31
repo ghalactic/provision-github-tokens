@@ -1,4 +1,11 @@
-import { expect, it, vi } from "vitest";
+import { beforeEach, expect, it, vi } from "vitest";
+import { __reset as __resetCore } from "../../../__mocks__/@actions/core.js";
+import {
+  __addInstallationToken,
+  __reset as __resetOctokit,
+  __setApps,
+  __setInstallations,
+} from "../../../__mocks__/@octokit/action.js";
 import {
   createAppRegistry,
   type AppRegistration,
@@ -18,6 +25,11 @@ import {
 
 vi.mock("@actions/core");
 vi.mock("@octokit/action");
+
+beforeEach(() => {
+  __resetCore();
+  __resetOctokit();
+});
 
 it("creates tokens based on token auth results", async () => {
   const octokitFactory = createOctokitFactory();
@@ -57,6 +69,10 @@ it("creates tokens based on token auth results", async () => {
     appsInput,
   );
 
+  __setApps([appA]);
+  __setInstallations([[appAInstallationA, [repoA]]]);
+  __addInstallationToken(111, "all", { metadata: "read" });
+
   const createTokens = createTokenFactory(findIssuerOctokit);
 
   const notAllowedResult: TokenAuthResult = {
@@ -67,10 +83,10 @@ it("creates tokens based on token auth results", async () => {
         shared: false,
         as: undefined,
         account: "account-a",
-        repos: [],
+        repos: "all",
         permissions: { metadata: "read" },
       },
-      repos: [],
+      repos: "all",
     },
     maxWant: "write",
     have: { metadata: "read" },
@@ -87,10 +103,10 @@ it("creates tokens based on token auth results", async () => {
         shared: false,
         as: undefined,
         account: "account-b",
-        repos: [],
+        repos: "all",
         permissions: { metadata: "read" },
       },
-      repos: [],
+      repos: "all",
     },
     maxWant: "read",
     have: { metadata: "read" },
@@ -107,10 +123,10 @@ it("creates tokens based on token auth results", async () => {
         shared: false,
         as: undefined,
         account: "account-a",
-        repos: [],
+        repos: "all",
         permissions: { metadata: "read" },
       },
-      repos: [],
+      repos: "all",
     },
     maxWant: "read",
     have: { metadata: "read" },
@@ -129,6 +145,9 @@ it("creates tokens based on token auth results", async () => {
   ).toEqual([
     [notAllowedResult, { type: "NOT_ALLOWED" }],
     [noIssuerResult, { type: "NO_ISSUER" }],
-    [createdResult, { type: "CREATED", token: {} }],
+    [
+      createdResult,
+      { type: "CREATED", token: '<token 111.all.{"metadata":"read"}>' },
+    ],
   ]);
 });
