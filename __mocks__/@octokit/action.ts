@@ -192,6 +192,35 @@ export function Octokit({
 
           return { data: repoPublicKeys[repoName].actions };
         },
+
+        getEnvironmentPublicKey: async ({
+          owner,
+          repo,
+          environment_name,
+        }: RestEndpointMethodTypes["actions"]["getEnvironmentPublicKey"]["parameters"]) => {
+          throwIfEndpointError("actions.getEnvironmentPublicKey");
+
+          if (appId == null) {
+            throw new Error(
+              "Endpoint actions.getEnvironmentPublicKey requires appId",
+            );
+          }
+          if (installationId == null) {
+            throw new Error(
+              "Endpoint actions.getEnvironmentPublicKey requires installationId",
+            );
+          }
+
+          const repoName = `${owner}/${repo}`;
+
+          if (!repoPublicKeys[repoName]?.environments?.[environment_name]) {
+            throw new TestRequestError(401);
+          }
+
+          return {
+            data: repoPublicKeys[repoName].environments[environment_name],
+          };
+        },
       },
 
       apps: {

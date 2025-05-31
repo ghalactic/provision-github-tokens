@@ -164,4 +164,28 @@ it("can encrypt secrets for all secret types", async () => {
     "<plaintext>",
   );
   expect(forRepoADependabot[1]).toBe("6666");
+
+  const forEnvA = await encryptSecret(
+    {
+      platform: "github",
+      type: "environment",
+      target: { account: "org-a", repo: "repo-a", environment: "env-a" },
+    },
+    "<plaintext>",
+  );
+
+  expect(await decrypt(envAKey, forEnvA[0])).toBe("<plaintext>");
+  expect(forEnvA[1]).toBe("7777");
+
+  const forEnvB = await encryptSecret(
+    {
+      platform: "github",
+      type: "environment",
+      target: { account: "org-a", repo: "repo-a", environment: "env-b" },
+    },
+    "<plaintext>",
+  );
+
+  expect(await decrypt(envBKey, forEnvB[0])).toBe("<plaintext>");
+  expect(forEnvB[1]).toBe("8888");
 });
