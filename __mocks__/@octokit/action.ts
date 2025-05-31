@@ -318,6 +318,55 @@ export function Octokit({
         },
       },
 
+      dependabot: {
+        getOrgPublicKey: async ({
+          org,
+        }: RestEndpointMethodTypes["dependabot"]["getOrgPublicKey"]["parameters"]) => {
+          throwIfEndpointError("dependabot.getOrgPublicKey");
+
+          if (appId == null) {
+            throw new Error(
+              "Endpoint dependabot.getOrgPublicKey requires appId",
+            );
+          }
+          if (installationId == null) {
+            throw new Error(
+              "Endpoint dependabot.getOrgPublicKey requires installationId",
+            );
+          }
+
+          if (!orgPublicKeys[org].dependabot) throw new TestRequestError(401);
+
+          return { data: orgPublicKeys[org].dependabot };
+        },
+
+        getRepoPublicKey: async ({
+          owner,
+          repo,
+        }: RestEndpointMethodTypes["dependabot"]["getRepoPublicKey"]["parameters"]) => {
+          throwIfEndpointError("dependabot.getRepoPublicKey");
+
+          if (appId == null) {
+            throw new Error(
+              "Endpoint dependabot.getRepoPublicKey requires appId",
+            );
+          }
+          if (installationId == null) {
+            throw new Error(
+              "Endpoint dependabot.getRepoPublicKey requires installationId",
+            );
+          }
+
+          const repoName = `${owner}/${repo}`;
+
+          if (!orgPublicKeys[repoName].dependabot) {
+            throw new TestRequestError(401);
+          }
+
+          return { data: orgPublicKeys[repoName].dependabot };
+        },
+      },
+
       repos: {
         getAllEnvironments: "repos.getAllEnvironments",
 

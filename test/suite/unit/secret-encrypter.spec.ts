@@ -67,12 +67,14 @@ it("can encrypt secrets for all secret types", async () => {
 
   const orgAActionsKey = await createTestKeyPair("1111");
   const orgACodespacesKey = await createTestKeyPair("2222");
+  const orgADependabotKey = await createTestKeyPair("3333");
 
   __setApps([appA]);
   __setInstallations([[appAInstallationA, [repoA]]]);
   __setOrgPublicKeys("org-a", {
     actions: orgAActionsKey.githubPublic,
     codespaces: orgACodespacesKey.githubPublic,
+    dependabot: orgADependabotKey.githubPublic,
   });
 
   const encryptSecret = createSecretEncrypter(findProvisionerOctokit);
@@ -94,4 +96,14 @@ it("can encrypt secrets for all secret types", async () => {
     "<plaintext>",
   );
   expect(forOrgACodespaces[1]).toBe("2222");
+
+  const forOrgADependabot = await encryptSecret(
+    { platform: "github", type: "dependabot", target: { account: "org-a" } },
+    "<plaintext>",
+  );
+
+  expect(await decrypt(orgADependabotKey, forOrgADependabot[0])).toBe(
+    "<plaintext>",
+  );
+  expect(forOrgADependabot[1]).toBe("3333");
 });
