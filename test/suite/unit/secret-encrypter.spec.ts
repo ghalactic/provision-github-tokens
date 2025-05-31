@@ -189,3 +189,20 @@ it("can encrypt secrets for all secret types", async () => {
   expect(await decrypt(envBKey, forEnvB[0])).toBe("<plaintext>");
   expect(forEnvB[1]).toBe("8888");
 });
+
+it("throws if no provisioners are found for the target", async () => {
+  const encryptSecret = createSecretEncrypter(
+    createFindProvisionerOctokit(
+      createOctokitFactory(),
+      createAppRegistry(),
+      [],
+    ),
+  );
+
+  await expect(
+    encryptSecret(
+      { platform: "github", type: "actions", target: { account: "org-a" } },
+      "<plaintext>",
+    ),
+  ).rejects.toThrow("No provisioners found for target org-a");
+});
