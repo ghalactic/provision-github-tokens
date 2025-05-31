@@ -4,6 +4,7 @@ import stringify from "fast-json-stable-stringify";
 import type {
   Environment,
   Installation,
+  PublicKey,
   Repo,
 } from "../../src/type/github-api.js";
 import type { TestApp } from "../../test/github-api.js";
@@ -17,6 +18,19 @@ let installationTokens: {
 }[];
 let environments: Record<string, Environment[]>;
 let files: Record<string, Record<string, string>>;
+let orgPublicKeys: Record<
+  string,
+  { actions?: PublicKey; codespaces?: PublicKey; dependabot?: PublicKey }
+>;
+let repoPublicKeys: Record<
+  string,
+  {
+    actions?: PublicKey;
+    codespaces?: PublicKey;
+    dependabot?: PublicKey;
+    environments: Record<string, PublicKey>;
+  }
+>;
 let errorsByEndpoint: Record<string, (Error | undefined)[]>;
 
 export function __reset() {
@@ -25,6 +39,8 @@ export function __reset() {
   installationTokens = [];
   environments = {};
   files = {};
+  orgPublicKeys = {};
+  repoPublicKeys = {};
   errorsByEndpoint = {};
 }
 
@@ -60,6 +76,40 @@ export function __setFiles(
 ) {
   files = {};
   for (const [repo, f] of newFiles) files[repo.full_name] = f;
+}
+
+export function __setOrgPublicKeys(
+  org: string,
+  publicKeys: {
+    actions?: PublicKey;
+    codespaces?: PublicKey;
+    dependabot?: PublicKey;
+  },
+) {
+  orgPublicKeys[org] = publicKeys;
+}
+
+export function __setRepoPublicKeys(
+  owner: string,
+  repo: string,
+  {
+    actions,
+    codespaces,
+    dependabot,
+    environments = {},
+  }: {
+    actions?: PublicKey;
+    codespaces?: PublicKey;
+    dependabot?: PublicKey;
+    environments?: Record<string, PublicKey>;
+  },
+) {
+  repoPublicKeys[`${owner}/${repo}`] = {
+    actions,
+    codespaces,
+    dependabot,
+    environments,
+  };
 }
 
 export function __setErrors(endpoint: string, errors: (Error | undefined)[]) {
@@ -99,6 +149,49 @@ export function Octokit({
     },
 
     rest: {
+      actions: {
+        getOrgPublicKey: async ({
+          org,
+        }: RestEndpointMethodTypes["actions"]["getOrgPublicKey"]["parameters"]) => {
+          throwIfEndpointError("actions.getOrgPublicKey");
+
+          if (appId == null) {
+            throw new Error("Endpoint actions.getOrgPublicKey requires appId");
+          }
+          if (installationId == null) {
+            throw new Error(
+              "Endpoint actions.getOrgPublicKey requires installationId",
+            );
+          }
+
+          if (!orgPublicKeys[org].actions) throw new TestRequestError(401);
+
+          return { data: orgPublicKeys[org].actions };
+        },
+
+        getRepoPublicKey: async ({
+          owner,
+          repo,
+        }: RestEndpointMethodTypes["actions"]["getRepoPublicKey"]["parameters"]) => {
+          throwIfEndpointError("actions.getRepoPublicKey");
+
+          if (appId == null) {
+            throw new Error("Endpoint actions.getRepoPublicKey requires appId");
+          }
+          if (installationId == null) {
+            throw new Error(
+              "Endpoint actions.getRepoPublicKey requires installationId",
+            );
+          }
+
+          const repoName = `${owner}/${repo}`;
+
+          if (!orgPublicKeys[repoName].actions) throw new TestRequestError(401);
+
+          return { data: orgPublicKeys[repoName].actions };
+        },
+      },
+
       apps: {
         createInstallationAccessToken: async ({
           installation_id,
@@ -174,6 +267,55 @@ export function Octokit({
         listInstallations: "apps.listInstallations",
         listReposAccessibleToInstallation:
           "apps.listReposAccessibleToInstallation",
+      },
+
+      codespaces: {
+        getOrgPublicKey: async ({
+          org,
+        }: RestEndpointMethodTypes["codespaces"]["getOrgPublicKey"]["parameters"]) => {
+          throwIfEndpointError("codespaces.getOrgPublicKey");
+
+          if (appId == null) {
+            throw new Error(
+              "Endpoint codespaces.getOrgPublicKey requires appId",
+            );
+          }
+          if (installationId == null) {
+            throw new Error(
+              "Endpoint codespaces.getOrgPublicKey requires installationId",
+            );
+          }
+
+          if (!orgPublicKeys[org].codespaces) throw new TestRequestError(401);
+
+          return { data: orgPublicKeys[org].codespaces };
+        },
+
+        getRepoPublicKey: async ({
+          owner,
+          repo,
+        }: RestEndpointMethodTypes["codespaces"]["getRepoPublicKey"]["parameters"]) => {
+          throwIfEndpointError("codespaces.getRepoPublicKey");
+
+          if (appId == null) {
+            throw new Error(
+              "Endpoint codespaces.getRepoPublicKey requires appId",
+            );
+          }
+          if (installationId == null) {
+            throw new Error(
+              "Endpoint codespaces.getRepoPublicKey requires installationId",
+            );
+          }
+
+          const repoName = `${owner}/${repo}`;
+
+          if (!orgPublicKeys[repoName].codespaces) {
+            throw new TestRequestError(401);
+          }
+
+          return { data: orgPublicKeys[repoName].codespaces };
+        },
       },
 
       repos: {
