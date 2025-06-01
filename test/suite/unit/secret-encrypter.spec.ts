@@ -73,9 +73,9 @@ it("can encrypt secrets for all secret types", async () => {
   const orgACodespacesKey = await createTestKeyPair("2222");
   const orgADependabotKey = await createTestKeyPair("3333");
   __setOrgPublicKeys("org-a", {
-    actions: orgAActionsKey.githubPublic,
-    codespaces: orgACodespacesKey.githubPublic,
-    dependabot: orgADependabotKey.githubPublic,
+    actions: orgAActionsKey,
+    codespaces: orgACodespacesKey,
+    dependabot: orgADependabotKey,
   });
 
   const repoAActionsKey = await createTestKeyPair("4444");
@@ -84,12 +84,12 @@ it("can encrypt secrets for all secret types", async () => {
   const envAKey = await createTestKeyPair("7777");
   const envBKey = await createTestKeyPair("8888");
   __setRepoPublicKeys("org-a", "repo-a", {
-    actions: repoAActionsKey.githubPublic,
-    codespaces: repoACodespacesKey.githubPublic,
-    dependabot: repoADependabotKey.githubPublic,
+    actions: repoAActionsKey,
+    codespaces: repoACodespacesKey,
+    dependabot: repoADependabotKey,
     environments: {
-      "env-a": envAKey.githubPublic,
-      "env-b": envBKey.githubPublic,
+      "env-a": envAKey,
+      "env-b": envBKey,
     },
   });
 

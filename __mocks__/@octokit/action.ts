@@ -4,10 +4,10 @@ import stringify from "fast-json-stable-stringify";
 import type {
   Environment,
   Installation,
-  PublicKey,
   Repo,
 } from "../../src/type/github-api.js";
 import type { TestApp } from "../../test/github-api.js";
+import type { TestKeyPair } from "../../test/key.js";
 
 let apps: TestApp[];
 let installations: [installation: Installation, repos: Repo[]][];
@@ -18,17 +18,17 @@ let installationTokens: {
 }[];
 let environments: Record<string, Environment[]>;
 let files: Record<string, Record<string, string>>;
-let orgPublicKeys: Record<
+let orgKeys: Record<
   string,
-  { actions?: PublicKey; codespaces?: PublicKey; dependabot?: PublicKey }
+  { actions?: TestKeyPair; codespaces?: TestKeyPair; dependabot?: TestKeyPair }
 >;
-let repoPublicKeys: Record<
+let repoKeys: Record<
   string,
   {
-    actions?: PublicKey;
-    codespaces?: PublicKey;
-    dependabot?: PublicKey;
-    environments: Record<string, PublicKey>;
+    actions?: TestKeyPair;
+    codespaces?: TestKeyPair;
+    dependabot?: TestKeyPair;
+    environments: Record<string, TestKeyPair>;
   }
 >;
 let errorsByEndpoint: Record<string, (Error | undefined)[]>;
@@ -39,8 +39,8 @@ export function __reset() {
   installationTokens = [];
   environments = {};
   files = {};
-  orgPublicKeys = {};
-  repoPublicKeys = {};
+  orgKeys = {};
+  repoKeys = {};
   errorsByEndpoint = {};
 }
 
@@ -81,12 +81,12 @@ export function __setFiles(
 export function __setOrgPublicKeys(
   org: string,
   publicKeys: {
-    actions?: PublicKey;
-    codespaces?: PublicKey;
-    dependabot?: PublicKey;
+    actions?: TestKeyPair;
+    codespaces?: TestKeyPair;
+    dependabot?: TestKeyPair;
   },
 ) {
-  orgPublicKeys[org] = publicKeys;
+  orgKeys[org] = publicKeys;
 }
 
 export function __setRepoPublicKeys(
@@ -98,13 +98,13 @@ export function __setRepoPublicKeys(
     dependabot,
     environments = {},
   }: {
-    actions?: PublicKey;
-    codespaces?: PublicKey;
-    dependabot?: PublicKey;
-    environments?: Record<string, PublicKey>;
+    actions?: TestKeyPair;
+    codespaces?: TestKeyPair;
+    dependabot?: TestKeyPair;
+    environments?: Record<string, TestKeyPair>;
   },
 ) {
-  repoPublicKeys[`${owner}/${repo}`] = {
+  repoKeys[`${owner}/${repo}`] = {
     actions,
     codespaces,
     dependabot,
@@ -164,9 +164,9 @@ export function Octokit({
             );
           }
 
-          if (!orgPublicKeys[org]?.actions) throw new TestRequestError(401);
+          if (!orgKeys[org]?.actions) throw new TestRequestError(401);
 
-          return { data: orgPublicKeys[org].actions };
+          return { data: orgKeys[org].actions.githubPublic };
         },
 
         getRepoPublicKey: async ({
@@ -186,11 +186,11 @@ export function Octokit({
 
           const repoName = `${owner}/${repo}`;
 
-          if (!repoPublicKeys[repoName]?.actions) {
+          if (!repoKeys[repoName]?.actions) {
             throw new TestRequestError(401);
           }
 
-          return { data: repoPublicKeys[repoName].actions };
+          return { data: repoKeys[repoName].actions.githubPublic };
         },
 
         getEnvironmentPublicKey: async ({
@@ -213,12 +213,13 @@ export function Octokit({
 
           const repoName = `${owner}/${repo}`;
 
-          if (!repoPublicKeys[repoName]?.environments?.[environment_name]) {
+          if (!repoKeys[repoName]?.environments?.[environment_name]) {
             throw new TestRequestError(401);
           }
 
           return {
-            data: repoPublicKeys[repoName].environments[environment_name],
+            data: repoKeys[repoName].environments[environment_name]
+              .githubPublic,
           };
         },
       },
@@ -317,9 +318,9 @@ export function Octokit({
             );
           }
 
-          if (!orgPublicKeys[org]?.codespaces) throw new TestRequestError(401);
+          if (!orgKeys[org]?.codespaces) throw new TestRequestError(401);
 
-          return { data: orgPublicKeys[org].codespaces };
+          return { data: orgKeys[org].codespaces.githubPublic };
         },
 
         getRepoPublicKey: async ({
@@ -341,11 +342,11 @@ export function Octokit({
 
           const repoName = `${owner}/${repo}`;
 
-          if (!repoPublicKeys[repoName]?.codespaces) {
+          if (!repoKeys[repoName]?.codespaces) {
             throw new TestRequestError(401);
           }
 
-          return { data: repoPublicKeys[repoName].codespaces };
+          return { data: repoKeys[repoName].codespaces.githubPublic };
         },
       },
 
@@ -366,9 +367,9 @@ export function Octokit({
             );
           }
 
-          if (!orgPublicKeys[org]?.dependabot) throw new TestRequestError(401);
+          if (!orgKeys[org]?.dependabot) throw new TestRequestError(401);
 
-          return { data: orgPublicKeys[org].dependabot };
+          return { data: orgKeys[org].dependabot.githubPublic };
         },
 
         getRepoPublicKey: async ({
@@ -390,11 +391,11 @@ export function Octokit({
 
           const repoName = `${owner}/${repo}`;
 
-          if (!repoPublicKeys[repoName]?.dependabot) {
+          if (!repoKeys[repoName]?.dependabot) {
             throw new TestRequestError(401);
           }
 
-          return { data: repoPublicKeys[repoName].dependabot };
+          return { data: repoKeys[repoName].dependabot.githubPublic };
         },
       },
 
