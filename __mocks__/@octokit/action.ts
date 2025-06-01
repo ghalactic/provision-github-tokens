@@ -7,7 +7,7 @@ import type {
   Repo,
 } from "../../src/type/github-api.js";
 import type { TestApp } from "../../test/github-api.js";
-import type { TestKeyPair } from "../../test/key.js";
+import { decrypt, type TestKeyPair } from "../../test/key.js";
 
 let apps: TestApp[];
 let installations: [installation: Installation, repos: Repo[]][];
@@ -31,6 +31,14 @@ let repoKeys: Record<
     environments: Record<string, TestKeyPair>;
   }
 >;
+let orgSecrets: Record<
+  string,
+  {
+    actions: Record<string, string>;
+    codespaces: Record<string, string>;
+    dependabot: Record<string, string>;
+  }
+>;
 let errorsByEndpoint: Record<string, (Error | undefined)[]>;
 
 export function __reset() {
@@ -41,6 +49,7 @@ export function __reset() {
   files = {};
   orgKeys = {};
   repoKeys = {};
+  orgSecrets = {};
   errorsByEndpoint = {};
 }
 
@@ -112,6 +121,14 @@ export function __setRepoKeys(
   };
 }
 
+export function __getOrgSecrets(org: string): {
+  actions: Record<string, string>;
+  codespaces: Record<string, string>;
+  dependabot: Record<string, string>;
+} {
+  return orgSecrets[org] ?? { actions: {}, codespaces: {}, dependabot: {} };
+}
+
 export function __setErrors(endpoint: string, errors: (Error | undefined)[]) {
   errorsByEndpoint[endpoint] = errors;
 }
@@ -150,6 +167,41 @@ export function Octokit({
 
     rest: {
       actions: {
+        createOrUpdateOrgSecret: async ({
+          org,
+          secret_name,
+          encrypted_value,
+          key_id,
+          visibility,
+        }: RestEndpointMethodTypes["actions"]["createOrUpdateOrgSecret"]["parameters"]) => {
+          throwIfEndpointError("actions.createOrUpdateOrgSecret");
+
+          if (appId == null) {
+            throw new Error(
+              "Endpoint actions.createOrUpdateOrgSecret requires appId",
+            );
+          }
+          if (installationId == null) {
+            throw new Error(
+              "Endpoint actions.createOrUpdateOrgSecret requires installationId",
+            );
+          }
+
+          const key = orgKeys[org]?.actions;
+
+          if (visibility !== "all") throw new TestRequestError(400);
+          if (!encrypted_value || !key || key.githubPublic.key_id !== key_id) {
+            throw new TestRequestError(401);
+          }
+
+          try {
+            const decrypted = await decrypt(key, encrypted_value);
+            orgSecrets[org].actions[secret_name] = decrypted;
+          } catch {
+            throw new TestRequestError(400);
+          }
+        },
+
         getOrgPublicKey: async ({
           org,
         }: RestEndpointMethodTypes["actions"]["getOrgPublicKey"]["parameters"]) => {
