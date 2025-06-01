@@ -78,18 +78,18 @@ export function __setFiles(
   for (const [repo, f] of newFiles) files[repo.full_name] = f;
 }
 
-export function __setOrgPublicKeys(
+export function __setOrgKeys(
   org: string,
-  publicKeys: {
+  keys: {
     actions?: TestKeyPair;
     codespaces?: TestKeyPair;
     dependabot?: TestKeyPair;
   },
 ) {
-  orgKeys[org] = publicKeys;
+  orgKeys[org] = keys;
 }
 
-export function __setRepoPublicKeys(
+export function __setRepoKeys(
   owner: string,
   repo: string,
   {

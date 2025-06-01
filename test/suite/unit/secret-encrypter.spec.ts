@@ -4,8 +4,8 @@ import {
   __reset as __resetOctokit,
   __setApps,
   __setInstallations,
-  __setOrgPublicKeys,
-  __setRepoPublicKeys,
+  __setOrgKeys,
+  __setRepoKeys,
 } from "../../../__mocks__/@octokit/action.js";
 import {
   createAppRegistry,
@@ -72,7 +72,7 @@ it("can encrypt secrets for all secret types", async () => {
   const orgAActionsKey = await createTestKeyPair("1111");
   const orgACodespacesKey = await createTestKeyPair("2222");
   const orgADependabotKey = await createTestKeyPair("3333");
-  __setOrgPublicKeys("org-a", {
+  __setOrgKeys("org-a", {
     actions: orgAActionsKey,
     codespaces: orgACodespacesKey,
     dependabot: orgADependabotKey,
@@ -83,7 +83,7 @@ it("can encrypt secrets for all secret types", async () => {
   const repoADependabotKey = await createTestKeyPair("6666");
   const envAKey = await createTestKeyPair("7777");
   const envBKey = await createTestKeyPair("8888");
-  __setRepoPublicKeys("org-a", "repo-a", {
+  __setRepoKeys("org-a", "repo-a", {
     actions: repoAActionsKey,
     codespaces: repoACodespacesKey,
     dependabot: repoADependabotKey,
