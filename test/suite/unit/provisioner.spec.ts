@@ -5,6 +5,7 @@ import {
   __setApps,
   __setEnvironments,
   __setInstallations,
+  __setOrgKeys,
 } from "../../../__mocks__/@octokit/action.js";
 import {
   createAppRegistry,
@@ -15,9 +16,15 @@ import { createEncryptSecret } from "../../../src/encrypt-secret.js";
 import { createOctokitFactory } from "../../../src/octokit.js";
 import type { ProvisionRequestTarget } from "../../../src/provision-request.js";
 import { createFindProvisionerOctokit } from "../../../src/provisioner-octokit.js";
-import { createProvisioner } from "../../../src/provisioner.js";
+import {
+  createProvisioner,
+  type ProvisioningResult,
+} from "../../../src/provisioner.js";
 import type { TokenCreationResult } from "../../../src/token-factory.js";
-import type { ProvisionAuthResult } from "../../../src/type/provision-auth-result.js";
+import type {
+  ProvisionAuthResult,
+  ProvisionAuthTargetResult,
+} from "../../../src/type/provision-auth-result.js";
 import type { TokenAuthResult } from "../../../src/type/token-auth-result.js";
 import { createTestSecretDec, createTestTokenDec } from "../../declaration.js";
 import {
@@ -27,6 +34,7 @@ import {
   createTestInstallationRepo,
   createTestRepoEnvironment,
 } from "../../github-api.js";
+import { createTestKeyPair } from "../../key.js";
 
 vi.mock("@actions/core");
 vi.mock("@octokit/action");
@@ -64,6 +72,11 @@ it("provisions secrets based on provision auth results", async () => {
   __setApps([appA]);
   __setInstallations([[appAInstallationA, [repoA]]]);
   __setEnvironments([[repoA, [envA]]]);
+
+  const accountAActionsKey = await createTestKeyPair("1111");
+  __setOrgKeys("account-a", {
+    actions: accountAActionsKey,
+  });
 
   const octokitFactory = createOctokitFactory();
 
@@ -139,7 +152,6 @@ it("provisions secrets based on provision auth results", async () => {
     type: "actions",
     target: { account: "account-a" },
   };
-
   const accountXActionsTarget: ProvisionRequestTarget = {
     platform: "github",
     type: "actions",
@@ -186,7 +198,7 @@ it("provisions secrets based on provision auth results", async () => {
       {
         target: accountAActionsTarget,
         rules: [],
-        have: "deny",
+        have: "allow",
         tokenAuthResult: tokenAuthResultNotCreated,
         isTokenAllowed: true,
         isProvisionAllowed: true,
@@ -194,6 +206,15 @@ it("provisions secrets based on provision auth results", async () => {
       },
       {
         target: accountXActionsTarget,
+        rules: [],
+        have: "allow",
+        tokenAuthResult: tokenAuthResultCreated,
+        isTokenAllowed: true,
+        isProvisionAllowed: true,
+        isAllowed: true,
+      },
+      {
+        target: accountAActionsTarget,
         rules: [],
         have: "deny",
         tokenAuthResult: tokenAuthResultCreated,
@@ -207,20 +228,39 @@ it("provisions secrets based on provision auth results", async () => {
   };
 
   expect(
-    await provisionSecrets(tokenResults, [notAllowedResult, allowedResult]),
-  ).toEqual(
-    new Map([
+    resultsToArray(
+      await provisionSecrets(tokenResults, [notAllowedResult, allowedResult]),
+    ),
+  ).toEqual([
+    [
+      notAllowedResult,
+      [[notAllowedResult.results[0], { type: "NOT_ALLOWED" }]],
+    ],
+    [
+      allowedResult,
       [
-        notAllowedResult,
-        new Map([[notAllowedResult.results[0], { type: "NOT_ALLOWED" }]]),
+        [allowedResult.results[0], { type: "NO_TOKEN" }],
+        [allowedResult.results[1], { type: "NO_PROVISIONER" }],
+        [allowedResult.results[2], { type: "PROVISIONED" }],
       ],
-      [
-        allowedResult,
-        new Map([
-          [allowedResult.results[0], { type: "NO_TOKEN" }],
-          [allowedResult.results[1], { type: "NO_PROVISIONER" }],
-        ]),
-      ],
-    ]),
-  );
+    ],
+  ]);
 });
+
+function resultsToArray(
+  results: Map<
+    ProvisionAuthResult,
+    Map<ProvisionAuthTargetResult, ProvisioningResult>
+  >,
+): [ProvisionAuthResult, [ProvisionAuthTargetResult, ProvisioningResult][]][] {
+  const array: [
+    ProvisionAuthResult,
+    [ProvisionAuthTargetResult, ProvisioningResult][],
+  ][] = [];
+
+  for (const [auth, targetResults] of results.entries()) {
+    array.push([auth, Array.from(targetResults.entries())]);
+  }
+
+  return array;
+}

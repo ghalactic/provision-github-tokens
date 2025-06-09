@@ -196,6 +196,7 @@ export function Octokit({
 
           try {
             const decrypted = await decrypt(key, encrypted_value);
+            orgSecrets[org] ??= { actions: {}, codespaces: {}, dependabot: {} };
             orgSecrets[org].actions[secret_name] = decrypted;
           } catch {
             throw new TestRequestError(400);
