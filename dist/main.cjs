@@ -65547,6 +65547,87 @@ async function discoverRequesters(octokitFactory, appRegistry, appsInput) {
   return discovered;
 }
 
+// src/encrypt-secret.ts
+var import_libsodium_wrappers = __toESM(require_libsodium_wrappers(), 1);
+function createEncryptSecret(findProvisionerOctokit) {
+  const keys = {};
+  return async (target, plaintext) => {
+    const found = findProvisionerOctokit(target.target);
+    if (!found) {
+      throw new Error(
+        "No provisioners found for target " + accountOrRepoRefToString(target.target)
+      );
+    }
+    const [octokit] = found;
+    const keyCacheId = JSON.stringify([
+      target.type,
+      target.target.account,
+      isRepoRef(target.target) ? target.target.repo : void 0,
+      isEnvRef(target.target) ? target.target.environment : void 0
+    ]);
+    const key = keys[keyCacheId] ?? await getPublicKey(octokit, target);
+    keys[keyCacheId] = key;
+    await import_libsodium_wrappers.default.ready;
+    const binKey = import_libsodium_wrappers.default.from_base64(key.key, import_libsodium_wrappers.default.base64_variants.ORIGINAL);
+    const binPlaintext = import_libsodium_wrappers.default.from_string(plaintext);
+    const encryptedBytes = import_libsodium_wrappers.default.crypto_box_seal(
+      binPlaintext,
+      binKey,
+      "uint8array"
+    );
+    const encrypted = import_libsodium_wrappers.default.to_base64(
+      encryptedBytes,
+      import_libsodium_wrappers.default.base64_variants.ORIGINAL
+    );
+    return [encrypted, key.key_id];
+  };
+  async function getPublicKey(octokit, { type: type2, target }) {
+    if (type2 === "actions") {
+      if (isRepoRef(target)) {
+        return (await octokit.rest.actions.getRepoPublicKey({
+          owner: target.account,
+          repo: target.repo
+        })).data;
+      }
+      return (await octokit.rest.actions.getOrgPublicKey({
+        org: target.account
+      })).data;
+    }
+    if (type2 === "codespaces") {
+      if (isRepoRef(target)) {
+        return (await octokit.rest.codespaces.getRepoPublicKey({
+          owner: target.account,
+          repo: target.repo
+        })).data;
+      }
+      return (await octokit.rest.codespaces.getOrgPublicKey({
+        org: target.account
+      })).data;
+    }
+    if (type2 === "dependabot") {
+      if (isRepoRef(target)) {
+        return (await octokit.rest.dependabot.getRepoPublicKey({
+          owner: target.account,
+          repo: target.repo
+        })).data;
+      }
+      return (await octokit.rest.dependabot.getOrgPublicKey({
+        org: target.account
+      })).data;
+    }
+    if (type2 === "environment") {
+      return (await octokit.rest.actions.getEnvironmentPublicKey({
+        owner: target.account,
+        repo: target.repo,
+        environment_name: target.environment
+      })).data;
+    }
+    throw new Error(
+      `Invariant violation: Unexpected target type ${JSON.stringify(type2)}`
+    );
+  }
+}
+
 // src/environment-resolver.ts
 var import_core8 = __toESM(require_core(), 1);
 function createEnvironmentResolver(findProvisionerOctokit) {
@@ -66063,87 +66144,6 @@ function registerTokenDeclarations(declarationRegistry, requesters) {
   }
 }
 
-// src/secret-encrypter.ts
-var import_libsodium_wrappers = __toESM(require_libsodium_wrappers(), 1);
-function createSecretEncrypter(findProvisionerOctokit) {
-  const keys = {};
-  return async (target, plaintext) => {
-    const found = findProvisionerOctokit(target.target);
-    if (!found) {
-      throw new Error(
-        "No provisioners found for target " + accountOrRepoRefToString(target.target)
-      );
-    }
-    const [octokit] = found;
-    const keyCacheId = JSON.stringify([
-      target.type,
-      target.target.account,
-      isRepoRef(target.target) ? target.target.repo : void 0,
-      isEnvRef(target.target) ? target.target.environment : void 0
-    ]);
-    const key = keys[keyCacheId] ?? await getPublicKey(octokit, target);
-    keys[keyCacheId] = key;
-    await import_libsodium_wrappers.default.ready;
-    const binKey = import_libsodium_wrappers.default.from_base64(key.key, import_libsodium_wrappers.default.base64_variants.ORIGINAL);
-    const binPlaintext = import_libsodium_wrappers.default.from_string(plaintext);
-    const encryptedBytes = import_libsodium_wrappers.default.crypto_box_seal(
-      binPlaintext,
-      binKey,
-      "uint8array"
-    );
-    const encrypted = import_libsodium_wrappers.default.to_base64(
-      encryptedBytes,
-      import_libsodium_wrappers.default.base64_variants.ORIGINAL
-    );
-    return [encrypted, key.key_id];
-  };
-  async function getPublicKey(octokit, { type: type2, target }) {
-    if (type2 === "actions") {
-      if (isRepoRef(target)) {
-        return (await octokit.rest.actions.getRepoPublicKey({
-          owner: target.account,
-          repo: target.repo
-        })).data;
-      }
-      return (await octokit.rest.actions.getOrgPublicKey({
-        org: target.account
-      })).data;
-    }
-    if (type2 === "codespaces") {
-      if (isRepoRef(target)) {
-        return (await octokit.rest.codespaces.getRepoPublicKey({
-          owner: target.account,
-          repo: target.repo
-        })).data;
-      }
-      return (await octokit.rest.codespaces.getOrgPublicKey({
-        org: target.account
-      })).data;
-    }
-    if (type2 === "dependabot") {
-      if (isRepoRef(target)) {
-        return (await octokit.rest.dependabot.getRepoPublicKey({
-          owner: target.account,
-          repo: target.repo
-        })).data;
-      }
-      return (await octokit.rest.dependabot.getOrgPublicKey({
-        org: target.account
-      })).data;
-    }
-    if (type2 === "environment") {
-      return (await octokit.rest.actions.getEnvironmentPublicKey({
-        owner: target.account,
-        repo: target.repo,
-        environment_name: target.environment
-      })).data;
-    }
-    throw new Error(
-      `Invariant violation: Unexpected target type ${JSON.stringify(type2)}`
-    );
-  }
-}
-
 // src/token-authorizer.ts
 function createTokenAuthorizer(config) {
   const [resourcePatterns, consumerPatterns] = patternsForRules(config.rules);
@@ -66512,7 +66512,7 @@ async function main() {
     tokenAuthorizer
   );
   const createTokens = createTokenFactory(findIssuerOctokit);
-  const encryptSecret = createSecretEncrypter(findProvisionerOctokit);
+  const encryptSecret = createEncryptSecret(findProvisionerOctokit);
   const provisionSecrets = createProvisioner(
     findProvisionerOctokit,
     encryptSecret
