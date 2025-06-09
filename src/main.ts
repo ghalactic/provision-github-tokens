@@ -8,6 +8,7 @@ import { readAppsInput } from "./config/apps-input.js";
 import { readProviderConfig } from "./config/provider-config.js";
 import { discoverApps } from "./discover-apps.js";
 import { discoverRequesters } from "./discover-requesters.js";
+import { createEncryptSecret } from "./encrypt-secret.js";
 import { createEnvironmentResolver } from "./environment-resolver.js";
 import { errorStack } from "./error.js";
 import { createFindIssuerOctokit } from "./issuer-octokit.js";
@@ -17,7 +18,6 @@ import { createProvisionRequestFactory } from "./provision-request.js";
 import { createFindProvisionerOctokit } from "./provisioner-octokit.js";
 import { createProvisioner } from "./provisioner.js";
 import { registerTokenDeclarations } from "./register-token-declarations.js";
-import { createSecretEncrypter } from "./secret-encrypter.js";
 import { createTokenAuthorizer } from "./token-authorizer.js";
 import { createTokenDeclarationRegistry } from "./token-declaration-registry.js";
 import { createTokenFactory } from "./token-factory.js";
@@ -73,7 +73,7 @@ async function main(): Promise<void> {
     tokenAuthorizer,
   );
   const createTokens = createTokenFactory(findIssuerOctokit);
-  const encryptSecret = createSecretEncrypter(findProvisionerOctokit);
+  const encryptSecret = createEncryptSecret(findProvisionerOctokit);
   const provisionSecrets = createProvisioner(
     findProvisionerOctokit,
     encryptSecret,

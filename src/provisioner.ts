@@ -1,11 +1,11 @@
 import { info } from "@actions/core";
 import { RequestError } from "@octokit/request-error";
+import type { EncryptSecret } from "./encrypt-secret.js";
 import { isRepoRef } from "./github-reference.js";
 import type { Octokit } from "./octokit.js";
 import { pluralize } from "./pluralize.js";
 import type { ProvisionRequestTarget } from "./provision-request.js";
 import type { FindProvisionerOctokit } from "./provisioner-octokit.js";
-import type { SecretEncrypter } from "./secret-encrypter.js";
 import type { TokenCreationResult } from "./token-factory.js";
 import type {
   ProvisionAuthResult,
@@ -56,7 +56,7 @@ export type ProvisioningErrorResult = {
 
 export function createProvisioner(
   findProvisionerOctokit: FindProvisionerOctokit,
-  encryptSecret: SecretEncrypter,
+  encryptSecret: EncryptSecret,
 ): Provisioner {
   return async (tokens, authResults) => {
     const provisionResults = new Map<

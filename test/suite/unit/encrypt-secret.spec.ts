@@ -12,9 +12,9 @@ import {
   type AppRegistration,
   type InstallationRegistration,
 } from "../../../src/app-registry.js";
+import { createEncryptSecret } from "../../../src/encrypt-secret.js";
 import { createOctokitFactory } from "../../../src/octokit.js";
 import { createFindProvisionerOctokit } from "../../../src/provisioner-octokit.js";
-import { createSecretEncrypter } from "../../../src/secret-encrypter.js";
 import type { AppInput } from "../../../src/type/input.js";
 import {
   createTestApp,
@@ -93,7 +93,7 @@ it("can encrypt secrets for all secret types", async () => {
     },
   });
 
-  const encryptSecret = createSecretEncrypter(findProvisionerOctokit);
+  const encryptSecret = createEncryptSecret(findProvisionerOctokit);
 
   const forOrgAActions = await encryptSecret(
     { platform: "github", type: "actions", target: { account: "org-a" } },
@@ -191,7 +191,7 @@ it("can encrypt secrets for all secret types", async () => {
 });
 
 it("throws if no provisioners are found for the target", async () => {
-  const encryptSecret = createSecretEncrypter(
+  const encryptSecret = createEncryptSecret(
     createFindProvisionerOctokit(
       createOctokitFactory(),
       createAppRegistry(),

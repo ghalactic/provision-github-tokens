@@ -9,14 +9,14 @@ import type { ProvisionRequestTarget } from "./provision-request.js";
 import type { FindProvisionerOctokit } from "./provisioner-octokit.js";
 import type { PublicKey } from "./type/github-api.js";
 
-export type SecretEncrypter = (
+export type EncryptSecret = (
   target: ProvisionRequestTarget,
   plaintext: string,
 ) => Promise<[encrypted: string, keyId: string]>;
 
-export function createSecretEncrypter(
+export function createEncryptSecret(
   findProvisionerOctokit: FindProvisionerOctokit,
-): SecretEncrypter {
+): EncryptSecret {
   const keys: Record<string, PublicKey> = {};
 
   return async (target, plaintext) => {
