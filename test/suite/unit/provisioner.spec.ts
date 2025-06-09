@@ -134,10 +134,16 @@ it("provisions secrets based on provision auth results", async () => {
     [tokenAuthResultNotCreated, tokenCreationResultNotCreated],
   ]);
 
-  const orgAActionsTarget: ProvisionRequestTarget = {
+  const accountAActionsTarget: ProvisionRequestTarget = {
     platform: "github",
     type: "actions",
     target: { account: "account-a" },
+  };
+
+  const accountXActionsTarget: ProvisionRequestTarget = {
+    platform: "github",
+    type: "actions",
+    target: { account: "account-x" },
   };
 
   const notAllowedResult: ProvisionAuthResult = {
@@ -149,11 +155,11 @@ it("provisions secrets based on provision auth results", async () => {
         github: { accounts: { "account-a": { actions: true } } },
       }),
       name: "SECRET_A",
-      to: [orgAActionsTarget],
+      to: [accountAActionsTarget],
     },
     results: [
       {
-        target: orgAActionsTarget,
+        target: accountAActionsTarget,
         rules: [],
         have: "deny",
         tokenAuthResult: tokenAuthResultCreated,
@@ -174,14 +180,23 @@ it("provisions secrets based on provision auth results", async () => {
         github: { accounts: { "account-a": { actions: true } } },
       }),
       name: "SECRET_A",
-      to: [orgAActionsTarget],
+      to: [accountAActionsTarget],
     },
     results: [
       {
-        target: orgAActionsTarget,
+        target: accountAActionsTarget,
         rules: [],
         have: "deny",
         tokenAuthResult: tokenAuthResultNotCreated,
+        isTokenAllowed: true,
+        isProvisionAllowed: true,
+        isAllowed: true,
+      },
+      {
+        target: accountXActionsTarget,
+        rules: [],
+        have: "deny",
+        tokenAuthResult: tokenAuthResultCreated,
         isTokenAllowed: true,
         isProvisionAllowed: true,
         isAllowed: true,
@@ -201,7 +216,10 @@ it("provisions secrets based on provision auth results", async () => {
       ],
       [
         allowedResult,
-        new Map([[allowedResult.results[0], { type: "NO_TOKEN" }]]),
+        new Map([
+          [allowedResult.results[0], { type: "NO_TOKEN" }],
+          [allowedResult.results[1], { type: "NO_PROVISIONER" }],
+        ]),
       ],
     ]),
   );
