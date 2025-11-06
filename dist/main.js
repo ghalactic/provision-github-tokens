@@ -53867,6 +53867,15 @@ var generated_provider_rule_permissions_v1_schema_default = {
         "write"
       ]
     },
+    custom_properties_for_organizations: {
+      type: "string",
+      description: "The level of permission to grant the access token to view and edit custom properties for an organization, when allowed by the property.",
+      enum: [
+        "none",
+        "read",
+        "write"
+      ]
+    },
     members: {
       type: "string",
       description: "The level of permission to grant the access token for organization teams and members.",
@@ -53905,7 +53914,7 @@ var generated_provider_rule_permissions_v1_schema_default = {
     },
     organization_custom_properties: {
       type: "string",
-      description: "The level of permission to grant the access token for custom property management.",
+      description: "The level of permission to grant the access token for repository custom properties management at the organization level.",
       enum: [
         "none",
         "read",
@@ -54088,6 +54097,16 @@ var generated_provider_rule_permissions_v1_schema_default = {
         "none",
         "read",
         "write"
+      ]
+    },
+    enterprise_custom_properties_for_organizations: {
+      type: "string",
+      description: "The level of permission to grant the access token for organization custom properties management at the enterprise level.",
+      enum: [
+        "none",
+        "read",
+        "write",
+        "admin"
       ]
     }
   },
@@ -54301,6 +54320,14 @@ var generated_requester_token_permissions_v1_schema_default = {
         "write"
       ]
     },
+    custom_properties_for_organizations: {
+      type: "string",
+      description: "The level of permission to grant the access token to view and edit custom properties for an organization, when allowed by the property.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
     members: {
       type: "string",
       description: "The level of permission to grant the access token for organization teams and members.",
@@ -54335,7 +54362,7 @@ var generated_requester_token_permissions_v1_schema_default = {
     },
     organization_custom_properties: {
       type: "string",
-      description: "The level of permission to grant the access token for custom property management.",
+      description: "The level of permission to grant the access token for repository custom properties management at the organization level.",
       enum: [
         "read",
         "write",
@@ -54497,6 +54524,15 @@ var generated_requester_token_permissions_v1_schema_default = {
       enum: [
         "read",
         "write"
+      ]
+    },
+    enterprise_custom_properties_for_organizations: {
+      type: "string",
+      description: "The level of permission to grant the access token for organization custom properties management at the enterprise level.",
+      enum: [
+        "read",
+        "write",
+        "admin"
       ]
     }
   },

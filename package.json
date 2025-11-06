@@ -19,9 +19,9 @@
     "source-map-support": "^0.5.21"
   },
   "devDependencies": {
-    "@octokit/openapi": "^20.0.0",
-    "@octokit/openapi-types": "^26.0.0",
-    "@octokit/types": "^15.0.2",
+    "@octokit/openapi": "^21.0.0",
+    "@octokit/openapi-types": "^27.0.0",
+    "@octokit/types": "^16.0.0",
     "@types/js-yaml": "^4.0.9",
     "@types/json-schema": "^7.0.15",
     "@types/node": "^24.9.2",
