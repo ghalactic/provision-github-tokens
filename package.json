@@ -24,7 +24,7 @@
     "@octokit/types": "^16.0.0",
     "@types/js-yaml": "^4.0.9",
     "@types/json-schema": "^7.0.15",
-    "@types/node": "^24.9.2",
+    "@types/node": "^24.10.0",
     "@vitest/coverage-v8": "^4.0.6",
     "esbuild": "^0.25.12",
     "openapi-sampler": "^1.6.2",
