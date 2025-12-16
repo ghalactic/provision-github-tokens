@@ -58056,6 +58056,24 @@ var generated_provider_rule_permissions_v1_schema_default = {
         "write"
       ]
     },
+    artifact_metadata: {
+      type: "string",
+      description: "The level of permission to grant the access token to create and retrieve build artifact metadata records.",
+      enum: [
+        "none",
+        "read",
+        "write"
+      ]
+    },
+    attestations: {
+      type: "string",
+      description: "The level of permission to create and retrieve the access token for repository attestations.",
+      enum: [
+        "none",
+        "read",
+        "write"
+      ]
+    },
     checks: {
       type: "string",
       description: "The level of permission to grant the access token for checks on code.",
@@ -58101,6 +58119,15 @@ var generated_provider_rule_permissions_v1_schema_default = {
         "write"
       ]
     },
+    discussions: {
+      type: "string",
+      description: "The level of permission to grant the access token for discussions and related comments and labels.",
+      enum: [
+        "none",
+        "read",
+        "write"
+      ]
+    },
     environments: {
       type: "string",
       description: "The level of permission to grant the access token for managing repository environments.",
@@ -58113,6 +58140,15 @@ var generated_provider_rule_permissions_v1_schema_default = {
     issues: {
       type: "string",
       description: "The level of permission to grant the access token for issues and related comments, assignees, labels, and milestones.",
+      enum: [
+        "none",
+        "read",
+        "write"
+      ]
+    },
+    merge_queues: {
+      type: "string",
+      description: "The level of permission to grant the access token to manage the merge queues for a repository.",
       enum: [
         "none",
         "read",
@@ -58530,6 +58566,22 @@ var generated_requester_token_permissions_v1_schema_default = {
         "write"
       ]
     },
+    artifact_metadata: {
+      type: "string",
+      description: "The level of permission to grant the access token to create and retrieve build artifact metadata records.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    attestations: {
+      type: "string",
+      description: "The level of permission to create and retrieve the access token for repository attestations.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
     checks: {
       type: "string",
       description: "The level of permission to grant the access token for checks on code.",
@@ -58570,6 +58622,14 @@ var generated_requester_token_permissions_v1_schema_default = {
         "write"
       ]
     },
+    discussions: {
+      type: "string",
+      description: "The level of permission to grant the access token for discussions and related comments and labels.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
     environments: {
       type: "string",
       description: "The level of permission to grant the access token for managing repository environments.",
@@ -58581,6 +58641,14 @@ var generated_requester_token_permissions_v1_schema_default = {
     issues: {
       type: "string",
       description: "The level of permission to grant the access token for issues and related comments, assignees, labels, and milestones.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
+    merge_queues: {
+      type: "string",
+      description: "The level of permission to grant the access token to manage the merge queues for a repository.",
       enum: [
         "read",
         "write"
