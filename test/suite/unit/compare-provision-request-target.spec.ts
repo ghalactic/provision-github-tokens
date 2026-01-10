@@ -64,6 +64,11 @@ it("sorts targets by environment", () => {
     {
       platform: "github",
       type: "environment",
+      target: { account: "account-a", repo: "repo-a", environment: "env-a" },
+    },
+    {
+      platform: "github",
+      type: "environment",
       target: { account: "account-a", repo: "repo-a", environment: "env-c" },
     },
     {
@@ -74,6 +79,11 @@ it("sorts targets by environment", () => {
   ];
 
   expect(targets.toSorted(compareProvisionRequestTarget)).toEqual([
+    {
+      platform: "github",
+      type: "environment",
+      target: { account: "account-a", repo: "repo-a", environment: "env-a" },
+    },
     {
       platform: "github",
       type: "environment",
