@@ -65340,7 +65340,6 @@ function createProvisionAuthorizer(createTokenRequest, tokenAuthorizer, config) 
           if (!anyPatternMatches(requesterPatterns[i], requester)) continue;
           const rule = config.rules.secrets[i];
           let ruleHave;
-          let isRelevant = false;
           if (isRepoRef(entry.target)) {
             for (let j = 0; j < targetPatterns[i].repos.length; ++j) {
               const [repo, repoPattern, envPatterns] = targetPatterns[i].repos[j];
@@ -65350,10 +65349,7 @@ function createProvisionAuthorizer(createTokenRequest, tokenAuthorizer, config) 
                 rule.to.github.repos[repo].environments,
                 envPatterns
               ) : selectBySecretType(rule.to.github.repos[repo], entry.type);
-              if (repoPatternHave) {
-                isRelevant = true;
-                ruleHave = repoPatternHave;
-              }
+              if (repoPatternHave) ruleHave = repoPatternHave;
               if (ruleHave === "deny") break;
             }
             if (isSelfRepo) {
@@ -65362,10 +65358,7 @@ function createProvisionAuthorizer(createTokenRequest, tokenAuthorizer, config) 
                 rule.to.github.repo.environments,
                 targetPatterns[i].selfRepoEnvs
               ) : selectBySecretType(rule.to.github.repo, entry.type);
-              if (selfHave) {
-                isRelevant = true;
-                ruleHave = selfHave;
-              }
+              if (selfHave) ruleHave = selfHave;
             }
           } else {
             for (let j = 0; j < targetPatterns[i].accounts.length; ++j) {
@@ -65375,10 +65368,7 @@ function createProvisionAuthorizer(createTokenRequest, tokenAuthorizer, config) 
                 rule.to.github.accounts[account],
                 entry.type
               );
-              if (accountPatternHave) {
-                isRelevant = true;
-                ruleHave = accountPatternHave;
-              }
+              if (accountPatternHave) ruleHave = accountPatternHave;
               if (ruleHave === "deny") break;
             }
             if (isSelfAccount) {
@@ -65386,14 +65376,11 @@ function createProvisionAuthorizer(createTokenRequest, tokenAuthorizer, config) 
                 rule.to.github.account,
                 entry.type
               );
-              if (selfHave) {
-                isRelevant = true;
-                ruleHave = selfHave;
-              }
+              if (selfHave) ruleHave = selfHave;
             }
           }
-          if (!isRelevant) continue;
-          if (ruleHave) have = ruleHave;
+          if (!ruleHave) continue;
+          have = ruleHave;
           ruleResults.push({
             index: i,
             rule,

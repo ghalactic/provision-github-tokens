@@ -60,7 +60,6 @@ export function createProvisionAuthorizer(
 
           const rule = config.rules.secrets[i];
           let ruleHave: "allow" | "deny" | undefined;
-          let isRelevant = false;
 
           if (isRepoRef(entry.target)) {
             for (let j = 0; j < targetPatterns[i].repos.length; ++j) {
@@ -78,10 +77,7 @@ export function createProvisionAuthorizer(
                     )
                   : selectBySecretType(rule.to.github.repos[repo], entry.type);
 
-              if (repoPatternHave) {
-                isRelevant = true;
-                ruleHave = repoPatternHave;
-              }
+              if (repoPatternHave) ruleHave = repoPatternHave;
 
               if (ruleHave === "deny") break;
             }
@@ -96,10 +92,7 @@ export function createProvisionAuthorizer(
                     )
                   : selectBySecretType(rule.to.github.repo, entry.type);
 
-              if (selfHave) {
-                isRelevant = true;
-                ruleHave = selfHave;
-              }
+              if (selfHave) ruleHave = selfHave;
             }
           } else {
             for (let j = 0; j < targetPatterns[i].accounts.length; ++j) {
@@ -112,10 +105,7 @@ export function createProvisionAuthorizer(
                 entry.type,
               );
 
-              if (accountPatternHave) {
-                isRelevant = true;
-                ruleHave = accountPatternHave;
-              }
+              if (accountPatternHave) ruleHave = accountPatternHave;
 
               if (ruleHave === "deny") break;
             }
@@ -126,16 +116,13 @@ export function createProvisionAuthorizer(
                 entry.type,
               );
 
-              if (selfHave) {
-                isRelevant = true;
-                ruleHave = selfHave;
-              }
+              if (selfHave) ruleHave = selfHave;
             }
           }
 
-          if (!isRelevant) continue;
+          if (!ruleHave) continue;
 
-          if (ruleHave) have = ruleHave;
+          have = ruleHave;
           ruleResults.push({
             index: i,
             rule,
