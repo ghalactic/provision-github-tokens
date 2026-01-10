@@ -135,13 +135,12 @@ export function createTextProvisionAuthExplainer(
           return "Dependabot";
         case "environment":
           return `GitHub environment ${r.target.environment}`;
-        /* v8 ignore start */
       }
 
+      /* istanbul ignore next - @preserve */
       throw new Error(
         `Invariant violation: Unexpected secret type ${JSON.stringify(type)}`,
       );
-      /* v8 ignore stop */
     })(target);
 
     return `${type} secret in ${accountOrRepoRefToString(target.target)}`;

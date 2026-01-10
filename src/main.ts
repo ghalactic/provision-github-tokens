@@ -1,4 +1,4 @@
-/* v8 ignore start - TODO: remove coverage ignore */
+/* istanbul ignore file - TODO: remove coverage ignore - @preserve */
 import "source-map-support/register";
 
 import { group, setFailed } from "@actions/core";
@@ -81,4 +81,3 @@ async function main(): Promise<void> {
   // TODO: issue tokens
   // TODO: provision secrets
 }
-/* v8 ignore stop */

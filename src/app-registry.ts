@@ -266,20 +266,19 @@ export function createAppRegistry(): AppRegistry {
   ): AppRegistration {
     const appReg = appsByInstallation.get(instReg);
 
-    /* v8 ignore start - Prevented at registration time */
+    /* istanbul ignore next - Prevented at registration time - @preserve */
     if (!appReg) {
       throw new Error(
         "Invariant violation: " +
           `App ${instReg.installation.app_id} not registered`,
       );
     }
-    /* v8 ignore stop */
 
     return appReg;
   }
 
   function installationAccount(installation: Installation): string {
-    /* v8 ignore start - Prevented at discovery time */
+    /* istanbul ignore next - Prevented at discovery time - @preserve*/
     if (
       !installation.account ||
       !("login" in installation.account) ||
@@ -291,7 +290,6 @@ export function createAppRegistry(): AppRegistry {
           "is not associated with a named account",
       );
     }
-    /* v8 ignore stop */
 
     return installation.account.login;
   }

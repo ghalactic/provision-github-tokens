@@ -65933,6 +65933,13 @@ async function main() {
     await authorizer.authorize(Array.from(requesters.values()));
   });
 }
+/* istanbul ignore next - Prevented at registration time - @preserve */
+/* istanbul ignore next - Prevented at discovery time - @preserve*/
+/* istanbul ignore next - @preserve */
+/* istanbul ignore next - never seen errors be nullish - @preserve */
+/* istanbul ignore next - never seen without an account login - @preserve */
+/* istanbul ignore next - Header guarantees string data - @preserve */
+/* istanbul ignore file - TODO: remove coverage ignore - @preserve */
 /*! Bundled license information:
 
 undici/lib/fetch/body.js:

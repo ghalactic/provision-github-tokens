@@ -41,14 +41,13 @@ export async function discoverRequesters(
           mediaType: { format: "raw" },
         });
 
-        /* v8 ignore start - Header guarantees string data */
+        /* istanbul ignore next - Header guarantees string data - @preserve */
         if (typeof res.data !== "string") {
           throw new Error(
             "Invariant violation: " +
               `Unexpected repo contents type ${typeof res.data}`,
           );
         }
-        /* v8 ignore stop */
 
         configYAML = res.data;
       } catch (error) {

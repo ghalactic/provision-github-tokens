@@ -78,7 +78,7 @@ async function discoverApp(
     return 0;
   }
 
-  /* v8 ignore start */
+  /* istanbul ignore next - @preserve */
   if (!app) {
     debug(`App ${appInput.appId} can't access itself`);
 
@@ -86,7 +86,6 @@ async function discoverApp(
       `Invariant violation: App at index ${appIndex} can't access itself`,
     );
   }
-  /* v8 ignore stop */
 
   debug(`Discovered app ${JSON.stringify(app.name)} (${app.slug} / ${app.id})`);
 
@@ -210,12 +209,13 @@ async function discoverInstallation(
     }
   }
 
-  /* v8 ignore start - never seen without an account login */
+  /* istanbul ignore next - never seen without an account login - @preserve */
   const account =
     installation.account && "login" in installation.account
       ? installation.account.login
       : undefined;
 
+  /* istanbul ignore next - never seen without an account login - @preserve */
   if (account == null) {
     debug(
       `Skipping discovery of app ${appInput.appId} ` +
@@ -225,7 +225,6 @@ async function discoverInstallation(
 
     return;
   }
-  /* v8 ignore stop */
 
   debug(
     `Discovered app ${appInput.appId} ` +

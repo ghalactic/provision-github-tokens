@@ -261,13 +261,12 @@ export function createProvisionAuthorizer(
         return types.codespaces;
       case "dependabot":
         return types.dependabot;
-      /* v8 ignore start */
     }
 
+    /* istanbul ignore next - @preserve */
     throw new Error(
       `Invariant violation: Unexpected secret type ${JSON.stringify(type)}`,
     );
-    /* v8 ignore stop */
   }
 
   function applyEnvPatterns(

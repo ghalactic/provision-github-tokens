@@ -58,17 +58,15 @@ function createValidate<T>(
   return function validate(value) {
     const validator = ajv.getSchema(schemaId);
 
-    /* v8 ignore start */
+    /* istanbul ignore next - @preserve */
     if (!validator) {
       throw new Error(`Invariant violation: Undefined schema ${schemaId}`);
     }
-    /* v8 ignore stop */
 
     if (validator(value)) return value as T;
 
-    /* v8 ignore start - never seen errors be nullish */
+    /* istanbul ignore next - never seen errors be nullish - @preserve */
     const errors = validator.errors ?? [];
-    /* v8 ignore stop */
 
     const error = new ValidateError(
       `Invalid ${label}:\n${renderErrors(errors)}`,
