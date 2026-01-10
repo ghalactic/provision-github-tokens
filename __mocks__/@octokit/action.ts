@@ -7,7 +7,7 @@ import type {
   Repo,
 } from "../../src/type/github-api.js";
 import type { TestApp } from "../../test/github-api.js";
-import { decrypt, type TestKeyPair } from "../../test/key.js";
+import { type TestKeyPair } from "../../test/key.js";
 
 let apps: TestApp[];
 let installations: [installation: Installation, repos: Repo[]][];
