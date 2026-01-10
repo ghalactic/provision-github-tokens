@@ -16,3 +16,7 @@ export type InstallationAccount = components["schemas"]["simple-user"];
 export type InstallationRepo = NonNullable<
   Endpoints["GET /installation/repositories"]["response"]["data"]["repositories"][number]
 >;
+
+export type InstallationToken = NonNullable<
+  Endpoints["POST /app/installations/{installation_id}/access_tokens"]["response"]["data"]
+>;

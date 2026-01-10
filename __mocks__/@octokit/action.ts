@@ -1,5 +1,6 @@
 import type { RestEndpointMethodTypes } from "@octokit/action";
 import { RequestError } from "@octokit/request-error";
+import stringify from "fast-json-stable-stringify";
 import type {
   Environment,
   Installation,
@@ -9,13 +10,19 @@ import type { TestApp } from "../../test/github-api.js";
 
 let apps: TestApp[];
 let installations: [installation: Installation, repos: Repo[]][];
+let installationTokens: {
+  installationId: number;
+  repositories: "all" | string[];
+  permissions: Record<string, string>;
+}[];
 let environments: Record<string, Environment[]>;
 let files: Record<string, Record<string, string>>;
-let errorsByEndpoint: Record<string, (Error | undefined)[]> = {};
+let errorsByEndpoint: Record<string, (Error | undefined)[]>;
 
 export function __reset() {
   apps = [];
   installations = [];
+  installationTokens = [];
   environments = {};
   files = {};
   errorsByEndpoint = {};
@@ -29,6 +36,14 @@ export function __setInstallations(
   newInstallations: [installation: Installation, repos: Repo[]][],
 ) {
   installations = newInstallations;
+}
+
+export function __addInstallationToken(
+  installationId: number,
+  repositories: "all" | string[],
+  permissions: Record<string, string>,
+) {
+  installationTokens.push({ installationId, repositories, permissions });
 }
 
 export function __setEnvironments(
@@ -85,6 +100,61 @@ export function Octokit({
 
     rest: {
       apps: {
+        createInstallationAccessToken: async ({
+          installation_id,
+          repositories,
+          permissions,
+        }: RestEndpointMethodTypes["apps"]["createInstallationAccessToken"]["parameters"]) => {
+          throwIfEndpointError("apps.createInstallationAccessToken");
+
+          if (appId == null) {
+            throw new Error(
+              "Endpoint apps.createInstallationAccessToken requires appId",
+            );
+          }
+
+          const requestedPermissions = stringify(permissions);
+          const requestedRepos = repositories
+            ? stringify(repositories.toSorted())
+            : "all";
+
+          for (const [installation, repos] of installations) {
+            if (installation.app_id !== appId) continue;
+            if (installation.id !== installation_id) continue;
+
+            const registeredRepos = repos.map((r) => r.full_name);
+
+            for (const token of installationTokens) {
+              if (token.installationId !== installation_id) continue;
+
+              const tokenPermissions = stringify(token.permissions);
+              if (tokenPermissions !== requestedPermissions) continue;
+
+              if (repositories == null) {
+                if (token.repositories !== "all") continue;
+              } else {
+                if (token.repositories === "all") continue;
+
+                const tokenRepos = stringify(token.repositories.toSorted());
+                if (requestedRepos !== tokenRepos) continue;
+
+                if (!repositories.every((r) => registeredRepos.includes(r))) {
+                  continue;
+                }
+              }
+
+              return {
+                data:
+                  `<token ${installation_id}` +
+                  `.${requestedRepos}` +
+                  `.${requestedPermissions}>`,
+              };
+            }
+          }
+
+          throw new TestRequestError(401);
+        },
+
         getAuthenticated: async () => {
           throwIfEndpointError("apps.getAuthenticated");
 
@@ -229,7 +299,7 @@ function throwIfEndpointError(endpoint: string) {
   if (error) throw error;
 }
 
-class TestRequestError extends RequestError {
+export class TestRequestError extends RequestError {
   constructor(status: number) {
     super("", status, {
       request: { method: "GET", url: "https://api.org/", headers: {} },
