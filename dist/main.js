@@ -65323,11 +65323,11 @@ function createProvisionAuthorizer(createTokenRequest, tokenAuthorizer, config) 
   return {
     authorizeSecret(request2) {
       const targetResults = [];
-      for (const entry of request2.to) {
-        const isSelfAccount = request2.requester.account === entry.target.account;
-        const isSelfRepo = isRepoRef(entry.target) && request2.requester.account === entry.target.account && request2.requester.repo === entry.target.repo;
+      for (const target of request2.to) {
+        const isSelfAccount = request2.requester.account === target.target.account;
+        const isSelfRepo = isRepoRef(target.target) && request2.requester.account === target.target.account && request2.requester.repo === target.target.repo;
         const requester = repoRefToString(request2.requester);
-        const target = accountOrRepoRefToString(entry.target);
+        const targetName = accountOrRepoRefToString(target.target);
         const ruleResults = [];
         let have;
         for (let i = 0; i < config.rules.secrets.length; ++i) {
@@ -65335,33 +65335,33 @@ function createProvisionAuthorizer(createTokenRequest, tokenAuthorizer, config) 
           if (!anyPatternMatches(requesterPatterns[i], requester)) continue;
           const rule = config.rules.secrets[i];
           let ruleHave;
-          if (isRepoRef(entry.target)) {
+          if (isRepoRef(target.target)) {
             for (let j = 0; j < targetPatterns[i].repos.length; ++j) {
               const [repo, repoPattern, envPatterns] = targetPatterns[i].repos[j];
-              if (!repoPattern.test(target)) continue;
-              const repoPatternHave = entry.type === "environment" && isEnvRef(entry.target) ? applyEnvPatterns(
-                entry.target.environment,
+              if (!repoPattern.test(targetName)) continue;
+              const repoPatternHave = target.type === "environment" && isEnvRef(target.target) ? applyEnvPatterns(
+                target.target.environment,
                 rule.to.github.repos[repo].environments,
                 envPatterns
-              ) : selectBySecretType(rule.to.github.repos[repo], entry.type);
+              ) : selectBySecretType(rule.to.github.repos[repo], target.type);
               if (repoPatternHave) ruleHave = repoPatternHave;
               if (ruleHave === "deny") break;
             }
             if (isSelfRepo) {
-              const selfHave = entry.type === "environment" && isEnvRef(entry.target) ? applyEnvPatterns(
-                entry.target.environment,
+              const selfHave = target.type === "environment" && isEnvRef(target.target) ? applyEnvPatterns(
+                target.target.environment,
                 rule.to.github.repo.environments,
                 targetPatterns[i].selfRepoEnvs
-              ) : selectBySecretType(rule.to.github.repo, entry.type);
+              ) : selectBySecretType(rule.to.github.repo, target.type);
               if (selfHave) ruleHave = selfHave;
             }
           } else {
             for (let j = 0; j < targetPatterns[i].accounts.length; ++j) {
               const [account, accountPattern] = targetPatterns[i].accounts[j];
-              if (!accountPattern.test(target)) continue;
+              if (!accountPattern.test(targetName)) continue;
               const accountPatternHave = selectBySecretType(
                 rule.to.github.accounts[account],
-                entry.type
+                target.type
               );
               if (accountPatternHave) ruleHave = accountPatternHave;
               if (ruleHave === "deny") break;
@@ -65369,7 +65369,7 @@ function createProvisionAuthorizer(createTokenRequest, tokenAuthorizer, config) 
             if (isSelfAccount) {
               const selfHave = selectBySecretType(
                 rule.to.github.account,
-                entry.type
+                target.type
               );
               if (selfHave) ruleHave = selfHave;
             }
@@ -65389,12 +65389,13 @@ function createProvisionAuthorizer(createTokenRequest, tokenAuthorizer, config) 
           isTokenAllowed = false;
         } else {
           tokenAuthResult = tokenAuthorizer.authorizeToken(
-            createTokenRequest(request2.tokenDec, entry.target)
+            createTokenRequest(request2.tokenDec, target.target)
           );
           isTokenAllowed = tokenAuthResult.isAllowed;
         }
         const isProvisionAllowed = have === "allow";
         targetResults.push({
+          target,
           rules: ruleResults,
           have,
           tokenAuthResult,

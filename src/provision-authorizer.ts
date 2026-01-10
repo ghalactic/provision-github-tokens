@@ -41,15 +41,15 @@ export function createProvisionAuthorizer(
     authorizeSecret(request) {
       const targetResults: ProvisionAuthTargetResult[] = [];
 
-      for (const entry of request.to) {
+      for (const target of request.to) {
         const isSelfAccount =
-          request.requester.account === entry.target.account;
+          request.requester.account === target.target.account;
         const isSelfRepo =
-          isRepoRef(entry.target) &&
-          request.requester.account === entry.target.account &&
-          request.requester.repo === entry.target.repo;
+          isRepoRef(target.target) &&
+          request.requester.account === target.target.account &&
+          request.requester.repo === target.target.repo;
         const requester = repoRefToString(request.requester);
-        const target = accountOrRepoRefToString(entry.target);
+        const targetName = accountOrRepoRefToString(target.target);
 
         const ruleResults: ProvisionAuthTargetRuleResult[] = [];
         let have: "allow" | "deny" | undefined;
@@ -61,21 +61,21 @@ export function createProvisionAuthorizer(
           const rule = config.rules.secrets[i];
           let ruleHave: "allow" | "deny" | undefined;
 
-          if (isRepoRef(entry.target)) {
+          if (isRepoRef(target.target)) {
             for (let j = 0; j < targetPatterns[i].repos.length; ++j) {
               const [repo, repoPattern, envPatterns] =
                 targetPatterns[i].repos[j];
 
-              if (!repoPattern.test(target)) continue;
+              if (!repoPattern.test(targetName)) continue;
 
               const repoPatternHave =
-                entry.type === "environment" && isEnvRef(entry.target)
+                target.type === "environment" && isEnvRef(target.target)
                   ? applyEnvPatterns(
-                      entry.target.environment,
+                      target.target.environment,
                       rule.to.github.repos[repo].environments,
                       envPatterns,
                     )
-                  : selectBySecretType(rule.to.github.repos[repo], entry.type);
+                  : selectBySecretType(rule.to.github.repos[repo], target.type);
 
               if (repoPatternHave) ruleHave = repoPatternHave;
 
@@ -84,13 +84,13 @@ export function createProvisionAuthorizer(
 
             if (isSelfRepo) {
               const selfHave =
-                entry.type === "environment" && isEnvRef(entry.target)
+                target.type === "environment" && isEnvRef(target.target)
                   ? applyEnvPatterns(
-                      entry.target.environment,
+                      target.target.environment,
                       rule.to.github.repo.environments,
                       targetPatterns[i].selfRepoEnvs,
                     )
-                  : selectBySecretType(rule.to.github.repo, entry.type);
+                  : selectBySecretType(rule.to.github.repo, target.type);
 
               if (selfHave) ruleHave = selfHave;
             }
@@ -98,11 +98,11 @@ export function createProvisionAuthorizer(
             for (let j = 0; j < targetPatterns[i].accounts.length; ++j) {
               const [account, accountPattern] = targetPatterns[i].accounts[j];
 
-              if (!accountPattern.test(target)) continue;
+              if (!accountPattern.test(targetName)) continue;
 
               const accountPatternHave = selectBySecretType(
                 rule.to.github.accounts[account],
-                entry.type,
+                target.type,
               );
 
               if (accountPatternHave) ruleHave = accountPatternHave;
@@ -113,7 +113,7 @@ export function createProvisionAuthorizer(
             if (isSelfAccount) {
               const selfHave = selectBySecretType(
                 rule.to.github.account,
-                entry.type,
+                target.type,
               );
 
               if (selfHave) ruleHave = selfHave;
@@ -138,7 +138,7 @@ export function createProvisionAuthorizer(
           isTokenAllowed = false;
         } else {
           tokenAuthResult = tokenAuthorizer.authorizeToken(
-            createTokenRequest(request.tokenDec, entry.target),
+            createTokenRequest(request.tokenDec, target.target),
           );
           isTokenAllowed = tokenAuthResult.isAllowed;
         }
@@ -146,6 +146,7 @@ export function createProvisionAuthorizer(
         const isProvisionAllowed = have === "allow";
 
         targetResults.push({
+          target,
           rules: ruleResults,
           have,
           tokenAuthResult,
