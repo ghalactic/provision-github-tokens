@@ -1041,3 +1041,63 @@ it("doesn't allow secrets for undefined token declarations", () => {
           ✅ Allowed by rule #1"
   `);
 });
+
+it("doesn't allow secrets when the account matches but the secret type isn't allowed", () => {
+  const createTokenRequest = createTestTokenRequestFactory();
+  const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
+  const authorizer = createProvisionAuthorizer(
+    createTokenRequest,
+    tokenAuthorizer,
+    {
+      rules: {
+        secrets: [
+          {
+            secrets: ["SECRET_A"],
+            requesters: ["account-x/repo-x"],
+            to: {
+              github: {
+                account: {},
+                accounts: {
+                  "account-a": {
+                    codespaces: "allow",
+                  },
+                },
+                repo: { environments: {} },
+                repos: {},
+              },
+            },
+          },
+        ],
+      },
+    },
+  );
+
+  const resultA = authorizer.authorizeSecret({
+    requester: { account: "account-x", repo: "repo-x" },
+    tokenDec: createTestTokenDec(),
+    tokenDecIsRegistered: true,
+    secretDec: createTestSecretDec({ token: "account-y/repo-y.token-y" }),
+    name: "SECRET_A",
+    to: [
+      {
+        platform: "github",
+        type: "actions",
+        target: { account: "account-a" },
+      },
+    ],
+  });
+
+  const explain = createTextProvisionAuthExplainer(
+    tokenAuthorizer
+      .listResults()
+      .sort((a, b) => compareTokenRequest(a.request, b.request)),
+  );
+
+  expect(explain(resultA)).toMatchInlineSnapshot(`
+    "❌ Repo account-x/repo-x wasn't allowed to provision secret SECRET_A:
+      ✅ Can use token declaration account-y/repo-y.token-y
+      ❌ Can't provision token to GitHub Actions secret in account-a:
+        ✅ Account account-a was allowed access to token #1
+        ❌ Can't provision secret (no matching rules)"
+  `);
+});
