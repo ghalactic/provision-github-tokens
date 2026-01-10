@@ -292,6 +292,53 @@ it("discovers installations with roles", async () => {
   });
 });
 
+it("discovers provisioner-only installations", async () => {
+  const orgA = createTestInstallationAccount("Organization", 100, "org-a");
+  const repoA = createTestInstallationRepo(orgA, "repo-a");
+  const repoB = createTestInstallationRepo(orgA, "repo-b");
+  const appA = createTestApp(110, "app-a", "App A");
+  const appAInstallationA = createTestInstallation(111, appA, orgA, "all");
+
+  __setApps([appA]);
+  __setInstallations([[appAInstallationA, [repoA, repoB]]]);
+
+  const octokitFactory = createOctokitFactory();
+  const appRegistry = createAppRegistry();
+  await discoverApps(octokitFactory, appRegistry, [
+    {
+      appId: appA.id,
+      privateKey: appA.privateKey,
+      issuer: {
+        enabled: false,
+        roles: [],
+      },
+      provisioner: {
+        enabled: true,
+      },
+    },
+  ]);
+
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "::debug::Discovered app "App A" (app-a / 110)
+    ::debug::App 110 is a token provisioner
+    ::debug::Discovered app 110 installation 111 for account org-a
+    ::debug::Installation 111 has no permissions
+    ::debug::Installation 111 has access to all repos ["org-a/repo-a","org-a/repo-b"]
+    ::debug::Discovered 1 installation of "App A"
+    Discovered 1 installation of 1 app
+    "
+  `);
+  expect(appRegistry.apps.get(appA.id)).toEqual({
+    issuer: { enabled: false, roles: [] },
+    provisioner: { enabled: true },
+    app: appA,
+  });
+  expect(appRegistry.installations.get(appAInstallationA.id)).toEqual({
+    installation: appAInstallationA,
+    repos: [repoA, repoB],
+  });
+});
+
 it("discovers multiple installations of an app", async () => {
   const orgA = createTestInstallationAccount("Organization", 1000, "org-a");
   const repoA = createTestInstallationRepo(orgA, "repo-a");
