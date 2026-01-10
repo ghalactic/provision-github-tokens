@@ -1,6 +1,10 @@
-import { expect, it, vi } from "vitest";
-import { __getOutput } from "../../../__mocks__/@actions/core.js";
+import { beforeEach, expect, it, vi } from "vitest";
 import {
+  __getOutput,
+  __reset as __resetCore,
+} from "../../../__mocks__/@actions/core.js";
+import {
+  __reset as __resetOctokit,
   __setApps,
   __setEnvironments,
   __setInstallations,
@@ -13,6 +17,7 @@ import {
 import { createEnvironmentResolver } from "../../../src/environment-resolver.js";
 import { createNamePattern } from "../../../src/name-pattern.js";
 import { createOctokitFactory } from "../../../src/octokit.js";
+import { createFindProvisionerOctokit } from "../../../src/provisioner-octokit.js";
 import {
   createTestApp,
   createTestInstallation,
@@ -23,6 +28,11 @@ import {
 
 vi.mock("@actions/core");
 vi.mock("@octokit/action");
+
+beforeEach(() => {
+  __resetCore();
+  __resetOctokit();
+});
 
 it("resolves environment names for a repo", async () => {
   const accountA = createTestInstallationAccount("Organization", 100, "org-a");
@@ -58,7 +68,7 @@ it("resolves environment names for a repo", async () => {
   appRegistry.registerApp(appRegA);
   appRegistry.registerInstallation(appAInstallationRegA);
 
-  const environmentResolver = createEnvironmentResolver(
+  const findProvisionerOctokit = createFindProvisionerOctokit(
     octokitFactory,
     appRegistry,
     [
@@ -70,6 +80,8 @@ it("resolves environment names for a repo", async () => {
       },
     ],
   );
+
+  const environmentResolver = createEnvironmentResolver(findProvisionerOctokit);
 
   expect(
     await environmentResolver.resolveEnvironments(
@@ -134,7 +146,7 @@ it("throws if no provisioner is found", async () => {
   appRegistry.registerApp(appRegA);
   appRegistry.registerInstallation(appAInstallationRegA);
 
-  const environmentResolver = createEnvironmentResolver(
+  const findProvisionerOctokit = createFindProvisionerOctokit(
     octokitFactory,
     appRegistry,
     [
@@ -146,6 +158,8 @@ it("throws if no provisioner is found", async () => {
       },
     ],
   );
+
+  const environmentResolver = createEnvironmentResolver(findProvisionerOctokit);
 
   await expect(
     environmentResolver.resolveEnvironments(

@@ -1,10 +1,8 @@
 import { debug } from "@actions/core";
-import type { AppRegistry } from "./app-registry.js";
 import { repoRefToString, type RepoReference } from "./github-reference.js";
-import type { OctokitFactory } from "./octokit.js";
 import { anyPatternMatches, type Pattern } from "./pattern.js";
+import type { FindProvisionerOctokit } from "./provisioner-octokit.js";
 import type { Environment } from "./type/github-api.js";
-import type { AppInput } from "./type/input.js";
 
 export type EnvironmentResolver = {
   resolveEnvironments: (
@@ -14,9 +12,7 @@ export type EnvironmentResolver = {
 };
 
 export function createEnvironmentResolver(
-  octokitFactory: OctokitFactory,
-  appRegistry: AppRegistry,
-  appsInput: AppInput[],
+  findProvisionerOctokit: FindProvisionerOctokit,
 ): EnvironmentResolver {
   const envsByRepo: Record<string, string[]> = {};
 
@@ -42,18 +38,11 @@ export function createEnvironmentResolver(
 
     if (envsByRepo[repoName]) return envsByRepo[repoName];
 
-    const [provisionerReg] = appRegistry.findProvisionersForRepo(repo);
-
-    if (!provisionerReg) {
+    const found = findProvisionerOctokit(repo);
+    if (!found) {
       throw new Error(`No provisioners found for repo ${repoName}`);
     }
-
-    const { installation } = provisionerReg;
-    const octokit = octokitFactory.installationOctokit(
-      appsInput,
-      installation.app_id,
-      installation.id,
-    );
+    const [octokit] = found;
 
     const envPages = octokit.paginate.iterator(
       octokit.rest.repos.getAllEnvironments,

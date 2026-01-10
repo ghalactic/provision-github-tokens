@@ -65278,7 +65278,7 @@ async function discoverRequesters(octokitFactory, appRegistry, appsInput) {
 
 // src/environment-resolver.ts
 var import_core8 = __toESM(require_core(), 1);
-function createEnvironmentResolver(octokitFactory, appRegistry, appsInput) {
+function createEnvironmentResolver(findProvisionerOctokit) {
   const envsByRepo = {};
   return {
     async resolveEnvironments(repo, patterns) {
@@ -65296,16 +65296,11 @@ function createEnvironmentResolver(octokitFactory, appRegistry, appsInput) {
   async function repoEnvs(repo) {
     const repoName = repoRefToString(repo);
     if (envsByRepo[repoName]) return envsByRepo[repoName];
-    const [provisionerReg] = appRegistry.findProvisionersForRepo(repo);
-    if (!provisionerReg) {
+    const found = findProvisionerOctokit(repo);
+    if (!found) {
       throw new Error(`No provisioners found for repo ${repoName}`);
     }
-    const { installation } = provisionerReg;
-    const octokit = octokitFactory.installationOctokit(
-      appsInput,
-      installation.app_id,
-      installation.id
-    );
+    const [octokit] = found;
     const envPages = octokit.paginate.iterator(
       octokit.rest.repos.getAllEnvironments,
       { owner: repo.account, repo: repo.repo }
