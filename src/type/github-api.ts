@@ -20,3 +20,8 @@ export type InstallationRepo = NonNullable<
 export type InstallationToken = NonNullable<
   Endpoints["POST /app/installations/{installation_id}/access_tokens"]["response"]["data"]
 >;
+
+export type PublicKey = {
+  key_id: string;
+  key: string;
+};
