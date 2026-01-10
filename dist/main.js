@@ -19884,12 +19884,12 @@ var require_lib = __commonJS({
             throw new Error("Client has already been disposed.");
           }
           const parsedUrl = new URL(requestUrl);
-          let info5 = this._prepareRequest(verb, parsedUrl, headers);
+          let info6 = this._prepareRequest(verb, parsedUrl, headers);
           const maxTries = this._allowRetries && RetryableHttpVerbs.includes(verb) ? this._maxRetries + 1 : 1;
           let numTries = 0;
           let response;
           do {
-            response = yield this.requestRaw(info5, data);
+            response = yield this.requestRaw(info6, data);
             if (response && response.message && response.message.statusCode === HttpCodes.Unauthorized) {
               let authenticationHandler;
               for (const handler2 of this.handlers) {
@@ -19899,7 +19899,7 @@ var require_lib = __commonJS({
                 }
               }
               if (authenticationHandler) {
-                return authenticationHandler.handleAuthentication(this, info5, data);
+                return authenticationHandler.handleAuthentication(this, info6, data);
               } else {
                 return response;
               }
@@ -19922,8 +19922,8 @@ var require_lib = __commonJS({
                   }
                 }
               }
-              info5 = this._prepareRequest(verb, parsedRedirectUrl, headers);
-              response = yield this.requestRaw(info5, data);
+              info6 = this._prepareRequest(verb, parsedRedirectUrl, headers);
+              response = yield this.requestRaw(info6, data);
               redirectsRemaining--;
             }
             if (!response.message.statusCode || !HttpResponseRetryCodes.includes(response.message.statusCode)) {
@@ -19952,7 +19952,7 @@ var require_lib = __commonJS({
        * @param info
        * @param data
        */
-      requestRaw(info5, data) {
+      requestRaw(info6, data) {
         return __awaiter(this, void 0, void 0, function* () {
           return new Promise((resolve, reject) => {
             function callbackForResult(err, res) {
@@ -19964,7 +19964,7 @@ var require_lib = __commonJS({
                 resolve(res);
               }
             }
-            this.requestRawWithCallback(info5, data, callbackForResult);
+            this.requestRawWithCallback(info6, data, callbackForResult);
           });
         });
       }
@@ -19974,12 +19974,12 @@ var require_lib = __commonJS({
        * @param data
        * @param onResult
        */
-      requestRawWithCallback(info5, data, onResult) {
+      requestRawWithCallback(info6, data, onResult) {
         if (typeof data === "string") {
-          if (!info5.options.headers) {
-            info5.options.headers = {};
+          if (!info6.options.headers) {
+            info6.options.headers = {};
           }
-          info5.options.headers["Content-Length"] = Buffer.byteLength(data, "utf8");
+          info6.options.headers["Content-Length"] = Buffer.byteLength(data, "utf8");
         }
         let callbackCalled = false;
         function handleResult(err, res) {
@@ -19988,7 +19988,7 @@ var require_lib = __commonJS({
             onResult(err, res);
           }
         }
-        const req = info5.httpModule.request(info5.options, (msg) => {
+        const req = info6.httpModule.request(info6.options, (msg) => {
           const res = new HttpClientResponse(msg);
           handleResult(void 0, res);
         });
@@ -20000,7 +20000,7 @@ var require_lib = __commonJS({
           if (socket) {
             socket.end();
           }
-          handleResult(new Error(`Request timeout: ${info5.options.path}`));
+          handleResult(new Error(`Request timeout: ${info6.options.path}`));
         });
         req.on("error", function(err) {
           handleResult(err);
@@ -20036,27 +20036,27 @@ var require_lib = __commonJS({
         return this._getProxyAgentDispatcher(parsedUrl, proxyUrl);
       }
       _prepareRequest(method, requestUrl, headers) {
-        const info5 = {};
-        info5.parsedUrl = requestUrl;
-        const usingSsl = info5.parsedUrl.protocol === "https:";
-        info5.httpModule = usingSsl ? https : http;
+        const info6 = {};
+        info6.parsedUrl = requestUrl;
+        const usingSsl = info6.parsedUrl.protocol === "https:";
+        info6.httpModule = usingSsl ? https : http;
         const defaultPort = usingSsl ? 443 : 80;
-        info5.options = {};
-        info5.options.host = info5.parsedUrl.hostname;
-        info5.options.port = info5.parsedUrl.port ? parseInt(info5.parsedUrl.port) : defaultPort;
-        info5.options.path = (info5.parsedUrl.pathname || "") + (info5.parsedUrl.search || "");
-        info5.options.method = method;
-        info5.options.headers = this._mergeHeaders(headers);
+        info6.options = {};
+        info6.options.host = info6.parsedUrl.hostname;
+        info6.options.port = info6.parsedUrl.port ? parseInt(info6.parsedUrl.port) : defaultPort;
+        info6.options.path = (info6.parsedUrl.pathname || "") + (info6.parsedUrl.search || "");
+        info6.options.method = method;
+        info6.options.headers = this._mergeHeaders(headers);
         if (this.userAgent != null) {
-          info5.options.headers["user-agent"] = this.userAgent;
+          info6.options.headers["user-agent"] = this.userAgent;
         }
-        info5.options.agent = this._getAgent(info5.parsedUrl);
+        info6.options.agent = this._getAgent(info6.parsedUrl);
         if (this.handlers) {
           for (const handler2 of this.handlers) {
-            handler2.prepareRequest(info5.options);
+            handler2.prepareRequest(info6.options);
           }
         }
-        return info5;
+        return info6;
       }
       _mergeHeaders(headers) {
         if (this.requestOptions && this.requestOptions.headers) {
@@ -22111,7 +22111,7 @@ var require_core = __commonJS({
     exports.error = error;
     exports.warning = warning3;
     exports.notice = notice;
-    exports.info = info5;
+    exports.info = info6;
     exports.startGroup = startGroup;
     exports.endGroup = endGroup;
     exports.group = group2;
@@ -22208,7 +22208,7 @@ Support boolean input list: \`true | True | TRUE | false | False | FALSE\``);
     function notice(message, properties = {}) {
       (0, command_1.issueCommand)("notice", (0, utils_1.toCommandProperties)(properties), message instanceof Error ? message.toString() : message);
     }
-    function info5(message) {
+    function info6(message) {
       process.stdout.write(message + os.EOL);
     }
     function startGroup(name) {
@@ -55888,7 +55888,7 @@ var require_fast_json_stable_stringify = __commonJS({
 require_source_map_support().install();
 
 // src/main.ts
-var import_core9 = __toESM(require_core(), 1);
+var import_core10 = __toESM(require_core(), 1);
 
 // src/access-level.ts
 var ACCESS_RANK = {
@@ -65890,11 +65890,11 @@ async function errorRequest(state, octokit, error, options) {
 }
 async function wrapRequest(state, octokit, request2, options) {
   const limiter = new import_light.default();
-  limiter.on("failed", function(error, info5) {
+  limiter.on("failed", function(error, info6) {
     const maxRetries = ~~error.request.request.retries;
     const after = ~~error.request.request.retryAfter;
-    options.request.retryCount = info5.retryCount + 1;
-    if (maxRetries > info5.retryCount) {
+    options.request.retryCount = info6.retryCount + 1;
+    if (maxRetries > info6.retryCount) {
       return after * state.retryAfterBaseValue;
     }
   });
@@ -66322,6 +66322,22 @@ function createEnvironmentResolver(findProvisionerOctokit) {
     (0, import_core8.debug)(`Repo ${repoName} has environments ${JSON.stringify(names)}`);
     return envsByRepo[repoName] = names;
   }
+}
+
+// src/issuer-octokit.ts
+function createFindIssuerOctokit(octokitFactory, appRegistry, appsInput) {
+  return (request2) => {
+    const [reg] = appRegistry.findIssuersForRequest(request2);
+    if (!reg) return void 0;
+    return [
+      octokitFactory.installationOctokit(
+        appsInput,
+        reg.installation.app_id,
+        reg.installation.id
+      ),
+      reg
+    ];
+  };
 }
 
 // src/provision-authorizer.ts
@@ -66851,6 +66867,61 @@ function createTokenDeclarationRegistry() {
   };
 }
 
+// src/token-factory.ts
+var import_core9 = __toESM(require_core(), 1);
+function createTokenFactory(findIssuerOctokit) {
+  return async (authResults) => {
+    const creationResults = /* @__PURE__ */ new Map();
+    for (const auth6 of authResults) {
+      if (!auth6.isAllowed) {
+        creationResults.set(auth6, { type: "NOT_ALLOWED" });
+        continue;
+      }
+      const found = findIssuerOctokit(auth6.request);
+      if (!found) {
+        creationResults.set(auth6, { type: "NO_ISSUER" });
+        continue;
+      }
+      const [octokit, issuerReg] = found;
+      try {
+        const { data: token } = await octokit.rest.apps.createInstallationAccessToken({
+          installation_id: issuerReg.installation.id,
+          repositories: auth6.request.repos === "all" ? void 0 : auth6.request.repos,
+          permissions: auth6.request.tokenDec.permissions
+        });
+        creationResults.set(auth6, { type: "CREATED", token });
+      } catch (error) {
+        if (error instanceof RequestError) {
+          creationResults.set(auth6, { type: "REQUEST_ERROR", error });
+        } else {
+          creationResults.set(auth6, { type: "ERROR", error });
+        }
+      }
+    }
+    let createdCount = 0;
+    let notCreatedCount = 0;
+    for (const result of creationResults.values()) {
+      if (result.type === "CREATED") {
+        ++createdCount;
+      } else {
+        ++notCreatedCount;
+      }
+    }
+    if (createdCount > 0) {
+      (0, import_core9.info)(`Created ${pluralize(createdCount, "token", "tokens")}`);
+    }
+    if (notCreatedCount > 0) {
+      const pluralized = pluralize(
+        notCreatedCount,
+        "requested token wasn't",
+        "requested tokens weren't"
+      );
+      (0, import_core9.info)(`${pluralized} created`);
+    }
+    return creationResults;
+  };
+}
+
 // src/token-request.ts
 var import_fast_json_stable_stringify = __toESM(require_fast_json_stable_stringify(), 1);
 
@@ -66890,12 +66961,12 @@ function createTokenRequestFactory(appRegistry) {
 
 // src/main.ts
 main().catch((error) => {
-  (0, import_core9.setFailed)(errorStack(error));
+  (0, import_core10.setFailed)(errorStack(error));
 });
 async function main() {
   const appsInput = readAppsInput();
   const octokitFactory = createOctokitFactory();
-  const config = await (0, import_core9.group)("Reading config", async () => {
+  const config = await (0, import_core10.group)("Reading config", async () => {
     return await readProviderConfig(
       octokitFactory,
       process.env.GITHUB_REPOSITORY ?? "",
@@ -66903,6 +66974,11 @@ async function main() {
     );
   });
   const appRegistry = createAppRegistry();
+  const findIssuerOctokit = createFindIssuerOctokit(
+    octokitFactory,
+    appRegistry,
+    appsInput
+  );
   const findProvisionerOctokit = createFindProvisionerOctokit(
     octokitFactory,
     appRegistry,
@@ -66927,10 +67003,11 @@ async function main() {
     provisionAuthorizer,
     tokenAuthorizer
   );
-  await (0, import_core9.group)("Discovering apps", async () => {
+  const createTokens = createTokenFactory(findIssuerOctokit);
+  await (0, import_core10.group)("Discovering apps", async () => {
     await discoverApps(octokitFactory, appRegistry, appsInput);
   });
-  const requesters = await (0, import_core9.group)("Discovering requesters", async () => {
+  const requesters = await (0, import_core10.group)("Discovering requesters", async () => {
     const requesters2 = await discoverRequesters(
       octokitFactory,
       appRegistry,
@@ -66939,8 +67016,11 @@ async function main() {
     registerTokenDeclarations(declarationRegistry, requesters2);
     return requesters2;
   });
-  await (0, import_core9.group)("Authorizing requests", async () => {
+  await (0, import_core10.group)("Authorizing requests", async () => {
     await authorizer.authorize(Array.from(requesters.values()));
+  });
+  await (0, import_core10.group)("Creating tokens", async () => {
+    return await createTokens(tokenAuthorizer.listResults());
   });
 }
 /* istanbul ignore next - Prevented at registration time - @preserve */
