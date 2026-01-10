@@ -65584,6 +65584,22 @@ function createProvisionRequestFactory(declarationRegistry, appRegistry, environ
   }
 }
 
+// src/provisioner-octokit.ts
+function createFindProvisionerOctokit(octokitFactory, appRegistry, appsInput) {
+  return (target) => {
+    const [reg] = appRegistry.findProvisionersForAccountOrRepo(target);
+    if (!reg) return void 0;
+    return [
+      octokitFactory.installationOctokit(
+        appsInput,
+        reg.installation.app_id,
+        reg.installation.id
+      ),
+      reg
+    ];
+  };
+}
+
 // src/register-token-declarations.ts
 function registerTokenDeclarations(declarationRegistry, requesters) {
   for (const [, { requester, config }] of requesters) {
@@ -65876,12 +65892,13 @@ async function main() {
     );
   });
   const appRegistry = createAppRegistry();
-  const declarationRegistry = createTokenDeclarationRegistry();
-  const environmentResolver = createEnvironmentResolver(
+  const findProvisionerOctokit = createFindProvisionerOctokit(
     octokitFactory,
     appRegistry,
     appsInput
   );
+  const declarationRegistry = createTokenDeclarationRegistry();
+  const environmentResolver = createEnvironmentResolver(findProvisionerOctokit);
   const createProvisionRequest = createProvisionRequestFactory(
     declarationRegistry,
     appRegistry,
