@@ -8,6 +8,7 @@ import { readAppsInput } from "./config/apps-input.js";
 import { readProviderConfig } from "./config/provider-config.js";
 import { discoverApps } from "./discover-apps.js";
 import { discoverRequesters } from "./discover-requesters.js";
+import { createEncryptSecret } from "./encrypt-secret.js";
 import { createEnvironmentResolver } from "./environment-resolver.js";
 import { errorStack } from "./error.js";
 import { createFindIssuerOctokit } from "./issuer-octokit.js";
@@ -15,6 +16,7 @@ import { createOctokitFactory } from "./octokit.js";
 import { createProvisionAuthorizer } from "./provision-authorizer.js";
 import { createProvisionRequestFactory } from "./provision-request.js";
 import { createFindProvisionerOctokit } from "./provisioner-octokit.js";
+import { createProvisioner } from "./provisioner.js";
 import { registerTokenDeclarations } from "./register-token-declarations.js";
 import { createTokenAuthorizer } from "./token-authorizer.js";
 import { createTokenDeclarationRegistry } from "./token-declaration-registry.js";
@@ -68,6 +70,11 @@ async function main(): Promise<void> {
     tokenAuthorizer,
   );
   const createTokens = createTokenFactory(findIssuerOctokit);
+  const encryptSecret = createEncryptSecret(findProvisionerOctokit);
+  const provisionSecrets = createProvisioner(
+    findProvisionerOctokit,
+    encryptSecret,
+  );
 
   await group("Discovering apps", async () => {
     await discoverApps(octokitFactory, appRegistry, appsInput);
@@ -88,9 +95,11 @@ async function main(): Promise<void> {
     await authorizer.authorize(Array.from(requesters.values()));
   });
 
-  await group("Creating tokens", async () => {
+  const tokens = await group("Creating tokens", async () => {
     return await createTokens(tokenAuthorizer.listResults());
   });
 
-  // TODO: provision secrets
+  await group("Provisioning secrets", async () => {
+    await provisionSecrets(tokens, provisionAuthorizer.listResults());
+  });
 }

@@ -7,7 +7,7 @@ import type {
   Repo,
 } from "../../src/type/github-api.js";
 import type { TestApp } from "../../test/github-api.js";
-import { type TestKeyPair } from "../../test/key.js";
+import { decrypt, type TestKeyPair } from "../../test/key.js";
 
 let apps: TestApp[];
 let installations: [installation: Installation, repos: Repo[]][];
@@ -31,6 +31,23 @@ let repoKeys: Record<
     environments: Record<string, TestKeyPair>;
   }
 >;
+let orgSecrets: Record<
+  string,
+  {
+    actions: Record<string, string>;
+    codespaces: Record<string, string>;
+    dependabot: Record<string, string>;
+  }
+>;
+let repoSecrets: Record<
+  string,
+  {
+    actions: Record<string, string>;
+    codespaces: Record<string, string>;
+    dependabot: Record<string, string>;
+  }
+>;
+let envSecrets: Record<string, Record<string, string>>;
 let errorsByEndpoint: Record<string, (Error | undefined)[]>;
 
 export function __reset() {
@@ -41,6 +58,9 @@ export function __reset() {
   files = {};
   orgKeys = {};
   repoKeys = {};
+  orgSecrets = {};
+  repoSecrets = {};
+  envSecrets = {};
   errorsByEndpoint = {};
 }
 
@@ -116,6 +136,18 @@ export function __setErrors(endpoint: string, errors: (Error | undefined)[]) {
   errorsByEndpoint[endpoint] = errors;
 }
 
+export function __getOrgSecrets(org: string) {
+  return orgSecrets[org];
+}
+
+export function __getRepoSecrets(owner: string, repo: string) {
+  return repoSecrets[`${owner}/${repo}`];
+}
+
+export function __getEnvSecrets(owner: string, repo: string, env: string) {
+  return envSecrets[`${owner}/${repo}/${env}`];
+}
+
 export function Octokit({
   auth: { appId, privateKey, installationId } = {},
 }: {
@@ -150,6 +182,52 @@ export function Octokit({
 
     rest: {
       actions: {
+        createOrUpdateEnvironmentSecret: async ({
+          owner,
+          repo,
+          environment_name,
+          secret_name,
+          encrypted_value,
+          key_id,
+        }: RestEndpointMethodTypes["actions"]["createOrUpdateEnvironmentSecret"]["parameters"]) => {
+          throwIfEndpointError("actions.createOrUpdateEnvironmentSecret");
+
+          if (appId == null) {
+            throw new Error(
+              "Endpoint actions.createOrUpdateEnvironmentSecret requires appId",
+            );
+          }
+          if (installationId == null) {
+            throw new Error(
+              "Endpoint actions.createOrUpdateEnvironmentSecret requires installationId",
+            );
+          }
+
+          const repoName = `${owner}/${repo}`;
+          const envName = `${repoName}/${environment_name}`;
+          const key = repoKeys[repoName]?.environments?.[environment_name];
+
+          if (!encrypted_value || !key || key.githubPublic.key_id !== key_id) {
+            throw new TestRequestError(401);
+          }
+
+          try {
+            const decrypted = await decrypt(key, encrypted_value);
+            envSecrets[envName] ??= {};
+            envSecrets[envName][secret_name] = decrypted;
+          } catch {
+            throw new TestRequestError(400);
+          }
+        },
+
+        createOrUpdateOrgSecret: async (
+          params: RestEndpointMethodTypes["actions"]["createOrUpdateOrgSecret"]["parameters"],
+        ) => createOrUpdateOrgSecret("actions", params),
+
+        createOrUpdateRepoSecret: async (
+          params: RestEndpointMethodTypes["actions"]["createOrUpdateRepoSecret"]["parameters"],
+        ) => createOrUpdateRepoSecret("actions", params),
+
         getOrgPublicKey: async (
           params: RestEndpointMethodTypes["actions"]["getOrgPublicKey"]["parameters"],
         ) => getOrgPublicKey("actions", params),
@@ -267,6 +345,14 @@ export function Octokit({
       },
 
       codespaces: {
+        createOrUpdateOrgSecret: async (
+          params: RestEndpointMethodTypes["codespaces"]["createOrUpdateOrgSecret"]["parameters"],
+        ) => createOrUpdateOrgSecret("codespaces", params),
+
+        createOrUpdateRepoSecret: async (
+          params: RestEndpointMethodTypes["codespaces"]["createOrUpdateRepoSecret"]["parameters"],
+        ) => createOrUpdateRepoSecret("codespaces", params),
+
         getOrgPublicKey: async (
           params: RestEndpointMethodTypes["codespaces"]["getOrgPublicKey"]["parameters"],
         ) => getOrgPublicKey("codespaces", params),
@@ -277,6 +363,14 @@ export function Octokit({
       },
 
       dependabot: {
+        createOrUpdateOrgSecret: async (
+          params: RestEndpointMethodTypes["dependabot"]["createOrUpdateOrgSecret"]["parameters"],
+        ) => createOrUpdateOrgSecret("dependabot", params),
+
+        createOrUpdateRepoSecret: async (
+          params: RestEndpointMethodTypes["dependabot"]["createOrUpdateRepoSecret"]["parameters"],
+        ) => createOrUpdateRepoSecret("dependabot", params),
+
         getOrgPublicKey: async (
           params: RestEndpointMethodTypes["dependabot"]["getOrgPublicKey"]["parameters"],
         ) => getOrgPublicKey("dependabot", params),
@@ -322,6 +416,91 @@ export function Octokit({
       },
     },
   };
+
+  async function createOrUpdateOrgSecret(
+    secretType: "actions" | "codespaces" | "dependabot",
+    {
+      org,
+      secret_name,
+      encrypted_value,
+      key_id,
+      visibility,
+    }: {
+      org: string;
+      secret_name: string;
+      encrypted_value?: string;
+      key_id?: string;
+      visibility: "all" | "private" | "selected";
+      selected_repository_ids?: (string | number)[];
+    },
+  ) {
+    const endpoint = `${secretType}.createOrUpdateOrgSecret`;
+    throwIfEndpointError(endpoint);
+
+    if (appId == null) {
+      throw new Error(`Endpoint ${endpoint} requires appId`);
+    }
+    if (installationId == null) {
+      throw new Error(`Endpoint ${endpoint} requires installationId`);
+    }
+
+    const key = orgKeys[org]?.[secretType];
+
+    if (visibility !== "all") throw new TestRequestError(400);
+    if (!encrypted_value || !key || key.githubPublic.key_id !== key_id) {
+      throw new TestRequestError(401);
+    }
+
+    try {
+      const decrypted = await decrypt(key, encrypted_value);
+      orgSecrets[org] ??= { actions: {}, codespaces: {}, dependabot: {} };
+      orgSecrets[org][secretType][secret_name] = decrypted;
+    } catch {
+      throw new TestRequestError(400);
+    }
+  }
+
+  async function createOrUpdateRepoSecret(
+    secretType: "actions" | "codespaces" | "dependabot",
+    {
+      owner,
+      repo,
+      secret_name,
+      encrypted_value,
+      key_id,
+    }: {
+      owner: string;
+      repo: string;
+      secret_name: string;
+      encrypted_value?: string;
+      key_id?: string;
+    },
+  ) {
+    const endpoint = `${secretType}.createOrUpdateRepoSecret`;
+    throwIfEndpointError(endpoint);
+
+    if (appId == null) {
+      throw new Error(`Endpoint ${endpoint} requires appId`);
+    }
+    if (installationId == null) {
+      throw new Error(`Endpoint ${endpoint} requires installationId`);
+    }
+
+    const repoName = `${owner}/${repo}`;
+    const key = repoKeys[repoName]?.[secretType];
+
+    if (!encrypted_value || !key || key.githubPublic.key_id !== key_id) {
+      throw new TestRequestError(401);
+    }
+
+    try {
+      const decrypted = await decrypt(key, encrypted_value);
+      repoSecrets[repoName] ??= { actions: {}, codespaces: {}, dependabot: {} };
+      repoSecrets[repoName][secretType][secret_name] = decrypted;
+    } catch {
+      throw new TestRequestError(400);
+    }
+  }
 
   async function getOrgPublicKey(
     secretType: "actions" | "codespaces" | "dependabot",
