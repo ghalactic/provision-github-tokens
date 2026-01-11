@@ -6,6 +6,8 @@ export default defineConfig({
     coverage: {
       include: ["src/**/*.ts"],
       exclude: ["src/type/**"],
+      reportsDirectory: "artifacts/coverage/vitest",
+      reporter: ["lcov", "text"],
     },
     projects: ((isGHA) => {
       const projects: TestProjectConfiguration[] = [];
