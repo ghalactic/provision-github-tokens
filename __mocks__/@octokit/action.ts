@@ -150,48 +150,13 @@ export function Octokit({
 
     rest: {
       actions: {
-        getOrgPublicKey: async ({
-          org,
-        }: RestEndpointMethodTypes["actions"]["getOrgPublicKey"]["parameters"]) => {
-          throwIfEndpointError("actions.getOrgPublicKey");
+        getOrgPublicKey: async (
+          params: RestEndpointMethodTypes["actions"]["getOrgPublicKey"]["parameters"],
+        ) => getOrgPublicKey("actions", params),
 
-          if (appId == null) {
-            throw new Error("Endpoint actions.getOrgPublicKey requires appId");
-          }
-          if (installationId == null) {
-            throw new Error(
-              "Endpoint actions.getOrgPublicKey requires installationId",
-            );
-          }
-
-          if (!orgKeys[org]?.actions) throw new TestRequestError(401);
-
-          return { data: orgKeys[org].actions.githubPublic };
-        },
-
-        getRepoPublicKey: async ({
-          owner,
-          repo,
-        }: RestEndpointMethodTypes["actions"]["getRepoPublicKey"]["parameters"]) => {
-          throwIfEndpointError("actions.getRepoPublicKey");
-
-          if (appId == null) {
-            throw new Error("Endpoint actions.getRepoPublicKey requires appId");
-          }
-          if (installationId == null) {
-            throw new Error(
-              "Endpoint actions.getRepoPublicKey requires installationId",
-            );
-          }
-
-          const repoName = `${owner}/${repo}`;
-
-          if (!repoKeys[repoName]?.actions) {
-            throw new TestRequestError(401);
-          }
-
-          return { data: repoKeys[repoName].actions.githubPublic };
-        },
+        getRepoPublicKey: async (
+          params: RestEndpointMethodTypes["actions"]["getRepoPublicKey"]["parameters"],
+        ) => getRepoPublicKey("actions", params),
 
         getEnvironmentPublicKey: async ({
           owner,
@@ -302,101 +267,23 @@ export function Octokit({
       },
 
       codespaces: {
-        getOrgPublicKey: async ({
-          org,
-        }: RestEndpointMethodTypes["codespaces"]["getOrgPublicKey"]["parameters"]) => {
-          throwIfEndpointError("codespaces.getOrgPublicKey");
+        getOrgPublicKey: async (
+          params: RestEndpointMethodTypes["codespaces"]["getOrgPublicKey"]["parameters"],
+        ) => getOrgPublicKey("codespaces", params),
 
-          if (appId == null) {
-            throw new Error(
-              "Endpoint codespaces.getOrgPublicKey requires appId",
-            );
-          }
-          if (installationId == null) {
-            throw new Error(
-              "Endpoint codespaces.getOrgPublicKey requires installationId",
-            );
-          }
-
-          if (!orgKeys[org]?.codespaces) throw new TestRequestError(401);
-
-          return { data: orgKeys[org].codespaces.githubPublic };
-        },
-
-        getRepoPublicKey: async ({
-          owner,
-          repo,
-        }: RestEndpointMethodTypes["codespaces"]["getRepoPublicKey"]["parameters"]) => {
-          throwIfEndpointError("codespaces.getRepoPublicKey");
-
-          if (appId == null) {
-            throw new Error(
-              "Endpoint codespaces.getRepoPublicKey requires appId",
-            );
-          }
-          if (installationId == null) {
-            throw new Error(
-              "Endpoint codespaces.getRepoPublicKey requires installationId",
-            );
-          }
-
-          const repoName = `${owner}/${repo}`;
-
-          if (!repoKeys[repoName]?.codespaces) {
-            throw new TestRequestError(401);
-          }
-
-          return { data: repoKeys[repoName].codespaces.githubPublic };
-        },
+        getRepoPublicKey: async (
+          params: RestEndpointMethodTypes["codespaces"]["getRepoPublicKey"]["parameters"],
+        ) => getRepoPublicKey("codespaces", params),
       },
 
       dependabot: {
-        getOrgPublicKey: async ({
-          org,
-        }: RestEndpointMethodTypes["dependabot"]["getOrgPublicKey"]["parameters"]) => {
-          throwIfEndpointError("dependabot.getOrgPublicKey");
+        getOrgPublicKey: async (
+          params: RestEndpointMethodTypes["dependabot"]["getOrgPublicKey"]["parameters"],
+        ) => getOrgPublicKey("dependabot", params),
 
-          if (appId == null) {
-            throw new Error(
-              "Endpoint dependabot.getOrgPublicKey requires appId",
-            );
-          }
-          if (installationId == null) {
-            throw new Error(
-              "Endpoint dependabot.getOrgPublicKey requires installationId",
-            );
-          }
-
-          if (!orgKeys[org]?.dependabot) throw new TestRequestError(401);
-
-          return { data: orgKeys[org].dependabot.githubPublic };
-        },
-
-        getRepoPublicKey: async ({
-          owner,
-          repo,
-        }: RestEndpointMethodTypes["dependabot"]["getRepoPublicKey"]["parameters"]) => {
-          throwIfEndpointError("dependabot.getRepoPublicKey");
-
-          if (appId == null) {
-            throw new Error(
-              "Endpoint dependabot.getRepoPublicKey requires appId",
-            );
-          }
-          if (installationId == null) {
-            throw new Error(
-              "Endpoint dependabot.getRepoPublicKey requires installationId",
-            );
-          }
-
-          const repoName = `${owner}/${repo}`;
-
-          if (!repoKeys[repoName]?.dependabot) {
-            throw new TestRequestError(401);
-          }
-
-          return { data: repoKeys[repoName].dependabot.githubPublic };
-        },
+        getRepoPublicKey: async (
+          params: RestEndpointMethodTypes["dependabot"]["getRepoPublicKey"]["parameters"],
+        ) => getRepoPublicKey("dependabot", params),
       },
 
       repos: {
@@ -435,6 +322,46 @@ export function Octokit({
       },
     },
   };
+
+  async function getOrgPublicKey(
+    secretType: "actions" | "codespaces" | "dependabot",
+    { org }: { org: string },
+  ) {
+    const endpoint = `${secretType}.getOrgPublicKey`;
+    throwIfEndpointError(endpoint);
+
+    if (appId == null) {
+      throw new Error(`Endpoint ${endpoint} requires appId`);
+    }
+    if (installationId == null) {
+      throw new Error(`Endpoint ${endpoint} requires installationId`);
+    }
+
+    if (!orgKeys[org]?.[secretType]) throw new TestRequestError(401);
+
+    return { data: orgKeys[org][secretType].githubPublic };
+  }
+
+  async function getRepoPublicKey(
+    secretType: "actions" | "codespaces" | "dependabot",
+    { owner, repo }: { owner: string; repo: string },
+  ) {
+    const endpoint = `${secretType}.getRepoPublicKey`;
+    throwIfEndpointError(endpoint);
+
+    if (appId == null) {
+      throw new Error(`Endpoint ${endpoint} requires appId`);
+    }
+    if (installationId == null) {
+      throw new Error(`Endpoint ${endpoint} requires installationId`);
+    }
+
+    const repoName = `${owner}/${repo}`;
+
+    if (!repoKeys[repoName]?.[secretType]) throw new TestRequestError(401);
+
+    return { data: repoKeys[repoName][secretType].githubPublic };
+  }
 }
 
 Object.defineProperty(Octokit, "plugin", {
