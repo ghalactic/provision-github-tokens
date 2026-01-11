@@ -209,3 +209,17 @@ it("creates tokens based on token auth results", async () => {
     [errorResult, { type: "ERROR", error: new Error("<message>") }],
   ]);
 });
+
+it("returns empty map when no token auth results are given", async () => {
+  const octokitFactory = createOctokitFactory();
+  const appRegistry = createAppRegistry();
+  const appsInput: AppInput[] = [];
+  const findIssuerOctokit = createFindIssuerOctokit(
+    octokitFactory,
+    appRegistry,
+    appsInput,
+  );
+  const createTokens = createTokenFactory(findIssuerOctokit);
+
+  expect(Array.from((await createTokens([])).entries())).toEqual([]);
+});
