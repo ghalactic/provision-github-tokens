@@ -12,7 +12,7 @@ import {
   createTestInstallationRepo,
 } from "../../../github-api.js";
 
-it("resolves a list of repo patterns into a list of issuer-accessible repos", async () => {
+it("resolves a list of repo patterns into a list of issuer-accessible repos", () => {
   const accountA = createTestInstallationAccount("Organization", 100, "org-a");
   const repoA = createTestInstallationRepo(accountA, "repo-a");
   const repoB = createTestInstallationRepo(accountA, "repo-b");
@@ -57,7 +57,7 @@ it("resolves a list of repo patterns into a list of issuer-accessible repos", as
   ).toEqual([]);
 });
 
-it("doesn't resolve repos accessible only to non-issuer apps", async () => {
+it("doesn't resolve repos accessible only to non-issuer apps", () => {
   const accountA = createTestInstallationAccount("Organization", 100, "org-a");
   const repoA = createTestInstallationRepo(accountA, "repo-a");
   const accountB = createTestInstallationAccount("Organization", 200, "org-b");

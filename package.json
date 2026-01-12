@@ -20,6 +20,7 @@
     "source-map-support": "^0.5.21"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.2",
     "@octokit/openapi": "^22.0.0",
     "@octokit/openapi-types": "^27.0.0",
     "@octokit/types": "^16.0.0",
@@ -28,11 +29,15 @@
     "@types/libsodium-wrappers": "^0.7.14",
     "@types/node": "^24.10.4",
     "@vitest/coverage-v8": "^4.0.16",
+    "@vitest/eslint-plugin": "^1.6.6",
     "esbuild": "^0.27.2",
+    "eslint": "^9.39.2",
+    "eslint-config-prettier": "^10.1.8",
     "openapi-sampler": "^1.6.2",
     "prettier": "^3.7.4",
     "prettier-plugin-organize-imports": "^4.3.0",
     "typescript": "^5.9.3",
+    "typescript-eslint": "^8.52.0",
     "vitest": "^4.0.16"
   }
 }

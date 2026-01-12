@@ -4,7 +4,7 @@ import { registerTokenDeclarations } from "../../../src/register-token-declarati
 import { createTokenDeclarationRegistry } from "../../../src/token-declaration-registry.js";
 import type { TokenDeclaration } from "../../../src/token-declaration.js";
 
-it("registers token declarations from discovered requesters", async () => {
+it("registers token declarations from discovered requesters", () => {
   const declarationA: TokenDeclaration = {
     shared: false,
     as: undefined,

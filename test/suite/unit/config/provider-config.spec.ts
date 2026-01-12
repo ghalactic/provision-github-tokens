@@ -720,7 +720,7 @@ it("parses provider configs that are just comments", async () => {
   } satisfies ProviderConfig);
 });
 
-it("parses provider configs that are empty", async () => {
+it("parses provider configs that are empty", () => {
   expect(
     parseProviderConfig({ account: "account-self", repo: "repo-self" }, ""),
   ).toEqual({
@@ -823,7 +823,7 @@ it("throws when there are additional properties", async () => {
     `);
 });
 
-it("throws when the YAML is invalid", async () => {
+it("throws when the YAML is invalid", () => {
   expect(
     throws(() =>
       parseProviderConfig({ account: "account-self", repo: "repo-self" }, "{"),

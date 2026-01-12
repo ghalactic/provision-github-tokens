@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/require-await */
 import type { RestEndpointMethodTypes } from "@octokit/action";
 import { RequestError } from "@octokit/request-error";
 import stringify from "fast-json-stable-stringify";

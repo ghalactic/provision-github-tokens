@@ -134,6 +134,7 @@ async function waitFor<T>(
       })(),
       new Promise<never>((_, reject) => {
         if (signal.aborted) {
+          // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
           reject(signal.reason);
 
           return;
@@ -142,6 +143,7 @@ async function waitFor<T>(
         signal.addEventListener(
           "abort",
           () => {
+            // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
             reject(signal.reason);
           },
           { once: true },

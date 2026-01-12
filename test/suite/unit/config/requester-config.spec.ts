@@ -287,7 +287,7 @@ it("parses requester configs that are just comments", async () => {
   } satisfies RequesterConfig);
 });
 
-it("parses requester configs that are empty", async () => {
+it("parses requester configs that are empty", () => {
   expect(
     parseRequesterConfig({ account: "account-self", repo: "repo-self" }, ""),
   ).toEqual({
@@ -474,7 +474,7 @@ it("throws when there are additional properties", async () => {
     `);
 });
 
-it("throws when the YAML is invalid", async () => {
+it("throws when the YAML is invalid", () => {
   expect(
     throws(() =>
       parseRequesterConfig({ account: "account-self", repo: "repo-self" }, "{"),

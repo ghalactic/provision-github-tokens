@@ -19,6 +19,7 @@ import {
   type DiscoveredRequester,
 } from "../../../src/discover-requesters.js";
 import { createOctokitFactory } from "../../../src/octokit.js";
+import type { RequesterConfig } from "../../../src/type/requester-config.js";
 import {
   createTestApp,
   createTestInstallation,
@@ -135,14 +136,14 @@ it("discovers requesters in a single account", async () => {
         "org-a/repo-a",
         {
           requester: { account: "org-a", repo: "repo-a" },
-          config: expect.objectContaining({}),
+          config: expect.objectContaining({}) as RequesterConfig,
         },
       ],
       [
         "org-a/repo-c",
         {
           requester: { account: "org-a", repo: "repo-c" },
-          config: expect.objectContaining({}),
+          config: expect.objectContaining({}) as RequesterConfig,
         },
       ],
     ]),
@@ -272,14 +273,14 @@ it("discovers requesters in multiple account", async () => {
         "org-a/repo-a",
         {
           requester: { account: "org-a", repo: "repo-a" },
-          config: expect.objectContaining({}),
+          config: expect.objectContaining({}) as RequesterConfig,
         },
       ],
       [
         "user-b/repo-c",
         {
           requester: { account: "user-b", repo: "repo-c" },
-          config: expect.objectContaining({}),
+          config: expect.objectContaining({}) as RequesterConfig,
         },
       ],
     ]),
@@ -404,21 +405,21 @@ it("only discovers requesters once when multiple providers can access them", asy
         "org-a/repo-a",
         {
           requester: { account: "org-a", repo: "repo-a" },
-          config: expect.objectContaining({}),
+          config: expect.objectContaining({}) as RequesterConfig,
         },
       ],
       [
         "org-a/repo-b",
         {
           requester: { account: "org-a", repo: "repo-b" },
-          config: expect.objectContaining({}),
+          config: expect.objectContaining({}) as RequesterConfig,
         },
       ],
       [
         "org-a/repo-c",
         {
           requester: { account: "org-a", repo: "repo-c" },
-          config: expect.objectContaining({}),
+          config: expect.objectContaining({}) as RequesterConfig,
         },
       ],
     ]),
@@ -527,14 +528,14 @@ it("skips requesters with invalid configuration", async () => {
         "org-a/repo-a",
         {
           requester: { account: "org-a", repo: "repo-a" },
-          config: expect.objectContaining({}),
+          config: expect.objectContaining({}) as RequesterConfig,
         },
       ],
       [
         "org-a/repo-c",
         {
           requester: { account: "org-a", repo: "repo-c" },
-          config: expect.objectContaining({}),
+          config: expect.objectContaining({}) as RequesterConfig,
         },
       ],
     ]),

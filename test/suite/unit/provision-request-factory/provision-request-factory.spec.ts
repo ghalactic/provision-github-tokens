@@ -71,7 +71,6 @@ it("creates provision requests from secret declarations", async () => {
 it("supports provisioning to multiple targets", async () => {
   const repoAARef: RepoReference = { account: "account-a", repo: "repo-a" };
   const repoABRef: RepoReference = { account: "account-a", repo: "repo-b" };
-  const repoBARef: RepoReference = { account: "account-b", repo: "repo-a" };
 
   const declarationRegistry = createTokenDeclarationRegistry();
   const appRegistry = createAppRegistry();

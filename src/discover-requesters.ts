@@ -66,7 +66,7 @@ export async function discoverRequesters(
 
       try {
         config = parseRequesterConfig(requester, configYAML);
-      } catch (error) {
+      } catch {
         logError(`Requester ${full_name} has invalid config`);
 
         continue;

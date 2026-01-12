@@ -16,8 +16,8 @@ precommit:: verify-generated
 
 ################################################################################
 
-src/schema/generated.requester-token-permissions.v1.schema.json src/schema/generated.provider-rule-permissions.v1.schema.json: script/build-github-schemas.js artifacts/link-dependencies.touch
+src/schema/generated.requester-token-permissions.v1.schema.json src/schema/generated.provider-rule-permissions.v1.schema.json: script/build-github-schemas.ts artifacts/link-dependencies.touch
 	node "$<"
 
-dist/main.js dist/main.js.map: script/build.js artifacts/link-dependencies.touch $(JS_SOURCE_FILES)
+dist/main.js dist/main.js.map: script/build.ts artifacts/link-dependencies.touch $(JS_SOURCE_FILES)
 	node "$<" "$@"

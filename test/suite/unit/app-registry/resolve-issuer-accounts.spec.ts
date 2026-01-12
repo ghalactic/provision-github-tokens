@@ -11,7 +11,7 @@ import {
   createTestInstallationAccount,
 } from "../../../github-api.js";
 
-it("resolves a list of account patterns into a list of issuer-accessible accounts", async () => {
+it("resolves a list of account patterns into a list of issuer-accessible accounts", () => {
   const accountA = createTestInstallationAccount("Organization", 100, "org-a");
   const accountB = createTestInstallationAccount("User", 200, "user-b");
   const accountC = createTestInstallationAccount("Organization", 300, "org-c");
@@ -58,7 +58,7 @@ it("resolves a list of account patterns into a list of issuer-accessible account
   ).toEqual([]);
 });
 
-it("doesn't resolve accounts accessible only to non-issuer apps", async () => {
+it("doesn't resolve accounts accessible only to non-issuer apps", () => {
   const accountA = createTestInstallationAccount("Organization", 100, "org-a");
   const accountB = createTestInstallationAccount("Organization", 200, "org-b");
   const appA: AppRegistration = {

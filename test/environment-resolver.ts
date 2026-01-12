@@ -20,6 +20,7 @@ export function createTestEnvironmentResolver(): TestEnvironmentResolver {
       envsByRepo[repoName].push(...environments);
     },
 
+    // eslint-disable-next-line @typescript-eslint/require-await
     async resolveEnvironments(repo, patterns) {
       const repoName = repoRefToString(repo);
       const repoEnvs = envsByRepo[repoName] ?? [];

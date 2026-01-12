@@ -21,16 +21,16 @@ export function getInput(name: string) {
   return inputs[name] ?? "";
 }
 
-export const debug = vi.fn((message) => {
+export const debug = vi.fn((message: string) => {
   addLines("::debug::", message);
 });
 export const error = vi.fn((errorOrMessage) => {
   addLines("::error::", errorMessage(errorOrMessage));
 });
-export const info = vi.fn((message) => {
+export const info = vi.fn((message: string) => {
   addLines("", message);
 });
-export const warning = vi.fn((message) => {
+export const warning = vi.fn((message: string) => {
   addLines("::warning::", message);
 });
 

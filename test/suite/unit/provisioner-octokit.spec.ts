@@ -7,7 +7,6 @@ import {
 } from "../../../src/app-registry.js";
 import { createOctokitFactory } from "../../../src/octokit.js";
 import { createFindProvisionerOctokit } from "../../../src/provisioner-octokit.js";
-import type { TokenRequest } from "../../../src/token-request.js";
 import type { AppInput } from "../../../src/type/input.js";
 import {
   createTestApp,
@@ -56,18 +55,6 @@ it("can find octokit instances for provisioners", () => {
     appRegistry,
     appsInput,
   );
-
-  const tokenReq: TokenRequest = {
-    consumer: { account: "account-a" },
-    tokenDec: {
-      shared: false,
-      as: undefined,
-      account: "account-a",
-      repos: "all",
-      permissions: { metadata: "read" },
-    },
-    repos: "all",
-  };
 
   const actualA = findProvisionerOctokit({ account: "account-a" });
   const actualB = findProvisionerOctokit({ account: "account-a" });

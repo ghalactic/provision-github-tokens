@@ -120,7 +120,7 @@ const accountARepoACodespacesTarget: ProvisionRequestTarget = {
 let encryptSecret: Mock<EncryptSecret>;
 let provisionSecrets: Provisioner;
 
-beforeEach(async () => {
+beforeEach(() => {
   __resetCore();
   __resetOctokit();
 

@@ -4,10 +4,7 @@ import {
   type AppRegistration,
   type InstallationRegistration,
 } from "../../../../src/app-registry.js";
-import {
-  type AccountReference,
-  type RepoReference,
-} from "../../../../src/github-reference.js";
+import { type RepoReference } from "../../../../src/github-reference.js";
 import {
   createProvisionRequestFactory,
   type ProvisionRequestTarget,
@@ -29,7 +26,6 @@ import {
 vi.mock("@actions/core");
 
 it("supports self-repo targets", async () => {
-  const accountA: AccountReference = { account: "account-a" };
   const repoA: RepoReference = { account: "account-a", repo: "repo-a" };
 
   const declarationRegistry = createTokenDeclarationRegistry();

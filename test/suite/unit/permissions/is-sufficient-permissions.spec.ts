@@ -1,5 +1,6 @@
 import { expect, it } from "vitest";
 import { isSufficientPermissions } from "../../../../src/permissions.js";
+import type { PermissionAccess } from "../../../../src/type/permissions.js";
 import { throws } from "../../../error.js";
 
 it("throws for empty wanted permissions", () => {
@@ -28,14 +29,17 @@ it.each`
   ${"admin"} | ${"read"}
   ${"admin"} | ${"write"}
   ${"admin"} | ${"admin"}
-`("knows that $have is sufficient for $want", ({ have, want }) => {
-  expect(
-    isSufficientPermissions(
-      { metadata: "read", repository_projects: have },
-      { metadata: "read", repository_projects: want },
-    ),
-  ).toBe(true);
-});
+`(
+  "knows that $have is sufficient for $want",
+  ({ have, want }: { have: PermissionAccess; want: PermissionAccess }) => {
+    expect(
+      isSufficientPermissions(
+        { metadata: "read", repository_projects: have },
+        { metadata: "read", repository_projects: want },
+      ),
+    ).toBe(true);
+  },
+);
 
 it.each`
   have       | want
@@ -45,14 +49,17 @@ it.each`
   ${"read"}  | ${"write"}
   ${"read"}  | ${"admin"}
   ${"write"} | ${"admin"}
-`("knows that $have is not sufficient for $want", ({ have, want }) => {
-  expect(
-    isSufficientPermissions(
-      { metadata: "read", repository_projects: have },
-      { metadata: "read", repository_projects: want },
-    ),
-  ).toBe(false);
-});
+`(
+  "knows that $have is not sufficient for $want",
+  ({ have, want }: { have: PermissionAccess; want: PermissionAccess }) => {
+    expect(
+      isSufficientPermissions(
+        { metadata: "read", repository_projects: have },
+        { metadata: "read", repository_projects: want },
+      ),
+    ).toBe(false);
+  },
+);
 
 it("checks all permissions", () => {
   expect(
