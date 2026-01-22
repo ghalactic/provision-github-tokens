@@ -27,7 +27,7 @@
     "@types/js-yaml": "^4.0.9",
     "@types/json-schema": "^7.0.15",
     "@types/libsodium-wrappers": "^0.7.14",
-    "@types/node": "^24.10.8",
+    "@types/node": "^24.10.9",
     "@vitest/coverage-v8": "^4.0.17",
     "@vitest/eslint-plugin": "^1.6.6",
     "esbuild": "^0.27.2",
