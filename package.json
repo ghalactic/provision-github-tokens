@@ -15,7 +15,7 @@
     "ajv-errors": "^3.0.0",
     "fast-json-stable-stringify": "^2.1.0",
     "js-yaml": "^4.1.1",
-    "libsodium-wrappers": "^0.8.0",
+    "libsodium-wrappers": "^0.8.1",
     "regexp.escape": "^2.0.1",
     "source-map-support": "^0.5.21"
   },
