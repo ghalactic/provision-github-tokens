@@ -15,7 +15,7 @@
     "ajv-errors": "^3.0.0",
     "fast-json-stable-stringify": "^2.1.0",
     "js-yaml": "^4.1.1",
-    "libsodium-wrappers": "^0.8.1",
+    "libsodium-wrappers": "^0.8.2",
     "regexp.escape": "^2.0.1",
     "source-map-support": "^0.5.21"
   },
@@ -26,7 +26,6 @@
     "@octokit/types": "^16.0.0",
     "@types/js-yaml": "^4.0.9",
     "@types/json-schema": "^7.0.15",
-    "@types/libsodium-wrappers": "^0.7.14",
     "@types/node": "^24.10.9",
     "@vitest/coverage-v8": "^4.0.17",
     "@vitest/eslint-plugin": "^1.6.6",
