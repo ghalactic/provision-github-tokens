@@ -27,7 +27,7 @@
     "@types/js-yaml": "^4.0.9",
     "@types/json-schema": "^7.0.15",
     "@types/node": "^24.10.9",
-    "@vitest/coverage-v8": "^4.0.17",
+    "@vitest/coverage-v8": "^4.0.18",
     "@vitest/eslint-plugin": "^1.6.6",
     "esbuild": "^0.27.2",
     "eslint": "^9.39.2",
@@ -37,6 +37,6 @@
     "prettier-plugin-organize-imports": "^4.3.0",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.53.1",
-    "vitest": "^4.0.17"
+    "vitest": "^4.0.18"
   }
 }
