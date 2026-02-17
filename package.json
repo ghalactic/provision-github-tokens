@@ -20,7 +20,7 @@
     "source-map-support": "^0.5.21"
   },
   "devDependencies": {
-    "@eslint/js": "^9.39.2",
+    "@eslint/js": "^10.0.0",
     "@octokit/openapi": "^22.0.0",
     "@octokit/openapi-types": "^27.0.0",
     "@octokit/types": "^16.0.0",
@@ -28,15 +28,15 @@
     "@types/json-schema": "^7.0.15",
     "@types/node": "^24.10.12",
     "@vitest/coverage-v8": "^4.0.18",
-    "@vitest/eslint-plugin": "^1.6.7",
+    "@vitest/eslint-plugin": "^1.6.9",
     "esbuild": "^0.27.3",
-    "eslint": "^9.39.2",
+    "eslint": "^10.0.0",
     "eslint-config-prettier": "^10.1.8",
     "openapi-sampler": "^1.6.2",
     "prettier": "^3.8.1",
     "prettier-plugin-organize-imports": "^4.3.0",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.55.0",
+    "typescript-eslint": "^8.56.0",
     "vitest": "^4.0.18"
   }
 }

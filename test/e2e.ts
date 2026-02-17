@@ -152,6 +152,7 @@ async function waitFor<T>(
     ]);
   } catch (error) {
     if (error instanceof DOMException && error.name === "TimeoutError") {
+      // eslint-disable-next-line preserve-caught-error
       throw new Error(`Timed out waiting for ${description}`, { cause });
     }
 
