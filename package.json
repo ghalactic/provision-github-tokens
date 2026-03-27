@@ -30,7 +30,7 @@
     "@vitest/coverage-v8": "^4.1.0",
     "@vitest/eslint-plugin": "^1.6.12",
     "esbuild": "^0.27.4",
-    "eslint": "^10.0.3",
+    "eslint": "^10.1.0",
     "eslint-config-prettier": "^10.1.8",
     "openapi-sampler": "^1.7.2",
     "prettier": "^3.8.1",
