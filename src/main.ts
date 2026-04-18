@@ -1,5 +1,5 @@
 /* istanbul ignore file - TODO: remove coverage ignore - @preserve */
-import "source-map-support/register";
+import { install as installSourceMapSupport } from "source-map-support";
 
 import { group, setFailed } from "@actions/core";
 import { createAppRegistry } from "./app-registry.js";
@@ -22,6 +22,8 @@ import { createTokenAuthorizer } from "./token-authorizer.js";
 import { createTokenDeclarationRegistry } from "./token-declaration-registry.js";
 import { createTokenFactory } from "./token-factory.js";
 import { createTokenRequestFactory } from "./token-request.js";
+
+installSourceMapSupport();
 
 main().catch((error) => {
   setFailed(errorStack(error));
