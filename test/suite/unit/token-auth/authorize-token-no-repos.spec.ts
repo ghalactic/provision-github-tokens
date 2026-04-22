@@ -764,9 +764,7 @@ it("doesn't allow tokens for unauthorized permissions", () => {
   ).toMatchInlineSnapshot(`
     "❌ Account account-x was denied access to a token:
       ✅ Read access to account-a requested with role role-a
-      ❌ Insufficient access to account-a based on 1 rule:
-        ❌ Rule #1 gave insufficient access:
-          ❌ contents: have none, wanted read"
+      ❌ Insufficient access to account-a (no matching rules)"
   `);
   expect(
     explain(
@@ -785,9 +783,7 @@ it("doesn't allow tokens for unauthorized permissions", () => {
   ).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x was denied access to a token:
       ✅ Read access to account-a requested with role role-a
-      ❌ Insufficient access to account-a based on 1 rule:
-        ❌ Rule #1 gave insufficient access:
-          ❌ contents: have none, wanted read"
+      ❌ Insufficient access to account-a (no matching rules)"
   `);
 });
 
