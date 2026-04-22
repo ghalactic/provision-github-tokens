@@ -2,9 +2,11 @@
 
 ## Build, test, and lint
 
-This project uses a Make-based build system (via
-[makefiles.dev](https://makefiles.dev/v1)) with `npm exec` under the hood. Run
-`make` with no arguments to execute the default target (test).
+This project uses a Make-based build system (via [makefiles.dev]) with
+`npm exec` under the hood. Run `make` with no arguments to execute the default
+target (test).
+
+[makefiles.dev]: https://makefiles.dev
 
 ```sh
 make          # Run all unit tests (default target)
@@ -86,6 +88,18 @@ repos.
 - Validation uses Ajv with `ajv-errors` (`src/config/validation.ts`)
 
 ## Conventions
+
+### Markdown
+
+All Markdown should read well in both raw text and rendered HTML.
+
+- **Prettier** formats Markdown automatically (`proseWrap: "always"`,
+  `printWidth: 80`). Wrap prose to 80 columns.
+- **Link references** — Prefer `[text]` / `[text][ref]` with `[ref]: URL`
+  definitions close to where they are used (lowercased), rather than inline
+  `[text](URL)`. This keeps prose scannable in plain text and avoids long URLs
+  breaking the reading flow. Duplicate definitions are fine as long as they
+  resolve to the same URL. See `README.md` for an example.
 
 ### TypeScript
 
