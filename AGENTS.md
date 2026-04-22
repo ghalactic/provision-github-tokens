@@ -93,8 +93,12 @@ repos.
 
 All Markdown should read well in both raw text and rendered HTML.
 
-- **Prettier** formats Markdown automatically (`proseWrap: "always"`,
-  `printWidth: 80`). Wrap prose to 80 columns.
+- **Run Prettier before committing any Markdown file.** Use
+  `npx prettier --write <file>` and stage the result. Prettier rewraps prose,
+  reformats tables, and adjusts whitespace — you must incorporate these changes
+  before committing, not in a separate fixup commit.
+- Prettier config: `proseWrap: "always"`, `printWidth: 80`. Wrap prose to 80
+  columns.
 - **Link references** — Prefer `[text]` / `[text][ref]` with `[ref]: URL`
   definitions close to where they are used (lowercased), rather than inline
   `[text](URL)`. This keeps prose scannable in plain text and avoids long URLs
