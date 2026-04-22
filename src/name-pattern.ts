@@ -13,6 +13,7 @@ export function createNamePattern(pattern: string): Pattern {
   return {
     test: (string) => expression.test(string),
     toString: () => pattern,
+    isLiteral: literals.length === 1,
   };
 }
 
