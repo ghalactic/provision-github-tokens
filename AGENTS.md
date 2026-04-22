@@ -126,7 +126,6 @@ methods. Used via `GitHubPattern` (glob-style matching for accounts/repos) and
 - `src/type/` — Pure type definitions (no runtime code): `permissions.ts`,
   `provider-config.ts`, `requester-config.ts`, `token-auth-result.ts`,
   `provision-auth-result.ts`, `github-api.ts`, etc.
-- `additional.d.ts` — Module augmentation for `regexp.escape`
 - `octokit-openapi.d.ts` — Type augmentation for `@octokit/openapi`
 
 ### Testing

@@ -1,4 +1,3 @@
-import escape from "regexp.escape";
 import type { Pattern } from "./pattern.js";
 
 export function createNamePattern(pattern: string): Pattern {
@@ -21,7 +20,7 @@ function patternRegExp(literals: string[]): RegExp {
   let exp = "^";
   for (let i = 0; i < literals.length; ++i) {
     if (i) exp += "[^/]*";
-    exp += escape(literals[i]);
+    exp += RegExp.escape(literals[i]);
   }
   exp += "$";
 
