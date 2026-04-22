@@ -111,3 +111,27 @@ for (const [pattern, matches, nonMatches] of patterns) {
     });
   }
 }
+
+it("is literal for an account-only pattern without wildcards", () => {
+  expect(createGitHubPattern("account-a").isLiteral).toBe(true);
+});
+
+it("is literal for an account/repo pattern without wildcards", () => {
+  expect(createGitHubPattern("account-a/repo-a").isLiteral).toBe(true);
+});
+
+it("is not literal when the account part contains a wildcard", () => {
+  expect(createGitHubPattern("account-*").isLiteral).toBe(false);
+});
+
+it("is not literal when the repo part contains a wildcard", () => {
+  expect(createGitHubPattern("account-a/*").isLiteral).toBe(false);
+});
+
+it("is not literal when both parts contain wildcards", () => {
+  expect(createGitHubPattern("*/*").isLiteral).toBe(false);
+});
+
+it("is not literal for a lone wildcard", () => {
+  expect(createGitHubPattern("*").isLiteral).toBe(false);
+});

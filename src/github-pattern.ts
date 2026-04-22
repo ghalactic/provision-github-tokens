@@ -22,6 +22,8 @@ export function createGitHubPattern(pattern: string): Pattern {
     },
 
     toString: () => pattern,
+
+    isLiteral: account.isLiteral && (repo?.isLiteral ?? true),
   };
 }
 
