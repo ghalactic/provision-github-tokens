@@ -1,4 +1,4 @@
-import { isWriteAccess, maxAccess } from "./access-level.js";
+import { ACCESS_RANK, isWriteAccess, maxAccess } from "./access-level.js";
 import { createGitHubPattern } from "./github-pattern.js";
 import {
   accountOrRepoRefToString,
@@ -14,7 +14,7 @@ import type {
   PermissionsRule,
   PermissionsRuleResourceCriteria,
 } from "./type/permissions-rule.js";
-import type { Permissions } from "./type/permissions.js";
+import type { PermissionAccess, Permissions } from "./type/permissions.js";
 import type { ProviderPermissionsConfig } from "./type/provider-config.js";
 import {
   type TokenAuthResourceResult,
@@ -30,7 +30,8 @@ export type TokenAuthorizer = {
 export function createTokenAuthorizer(
   config: ProviderPermissionsConfig,
 ): TokenAuthorizer {
-  const [resourcePatterns, consumerPatterns] = patternsForRules(config.rules);
+  const [resourcePatterns, consumerPatterns, permissionPatterns] =
+    patternsForRules(config.rules);
   const results = new Map<TokenRequest, TokenAuthResult>();
 
   return {
@@ -87,7 +88,14 @@ export function createTokenAuthorizer(
 
       if (!isRelevant) continue;
 
-      updatePermissions(have, rule.permissions);
+      if (
+        !updatePermissions(
+          have,
+          permissionPatterns[i],
+          request.tokenDec.permissions,
+        )
+      )
+        continue;
 
       // Token is allowed if last rule is allowed
       isSufficient = isSufficientPermissions(
@@ -144,7 +152,14 @@ export function createTokenAuthorizer(
 
       if (!isRelevant) continue;
 
-      updatePermissions(have, rule.permissions);
+      if (
+        !updatePermissions(
+          have,
+          permissionPatterns[i],
+          request.tokenDec.permissions,
+        )
+      )
+        continue;
 
       // Token is allowed if last rule is allowed
       isSufficient = isSufficientPermissions(
@@ -206,7 +221,14 @@ export function createTokenAuthorizer(
 
         if (!isRelevant) continue;
 
-        updatePermissions(have, rule.permissions);
+        if (
+          !updatePermissions(
+            have,
+            permissionPatterns[i],
+            request.tokenDec.permissions,
+          )
+        )
+          continue;
 
         // Resource is allowed if last rule is allowed
         isResourceSufficient = isSufficientPermissions(
@@ -251,15 +273,21 @@ export function createTokenAuthorizer(
 
   function patternsForRules(
     rules: PermissionsRule[],
-  ): [Record<number, ResourceCriteriaPatterns[]>, Record<number, Pattern[]>] {
+  ): [
+    Record<number, ResourceCriteriaPatterns[]>,
+    Record<number, Pattern[]>,
+    Record<number, PermissionPatterns>,
+  ] {
     const resourcePatterns: Record<number, ResourceCriteriaPatterns[]> = {};
     const consumerPatterns: Record<number, Pattern[]> = {};
+    const permPatterns: Record<number, PermissionPatterns> = {};
 
     for (let i = 0; i < rules.length; ++i) {
-      [resourcePatterns[i], consumerPatterns[i]] = patternsForRule(rules[i]);
+      [resourcePatterns[i], consumerPatterns[i], permPatterns[i]] =
+        patternsForRule(rules[i]);
     }
 
-    return [resourcePatterns, consumerPatterns];
+    return [resourcePatterns, consumerPatterns, permPatterns];
   }
 
   function patternsForRule(
@@ -267,9 +295,14 @@ export function createTokenAuthorizer(
   ): [
     resourcePatterns: ResourceCriteriaPatterns[],
     consumerPatterns: Pattern[],
+    permissionPatterns: PermissionPatterns,
   ] {
     const resourcePatterns: ResourceCriteriaPatterns[] = [];
     const consumerPatterns: Pattern[] = [];
+    const permissionPatterns: PermissionPatterns = {
+      literals: new Map(),
+      patterns: [],
+    };
 
     for (const criteria of rule.resources) {
       resourcePatterns.push(patternsForResourceCriteria(criteria));
@@ -277,8 +310,17 @@ export function createTokenAuthorizer(
     for (const consumer of rule.consumers) {
       consumerPatterns.push(createGitHubPattern(consumer));
     }
+    for (const [name, access] of Object.entries(rule.permissions)) {
+      if (access == null) continue;
+      const pattern = createNamePattern(name);
+      if (pattern.isLiteral) {
+        permissionPatterns.literals.set(name, access);
+      } else {
+        permissionPatterns.patterns.push([pattern, access]);
+      }
+    }
 
-    return [resourcePatterns, consumerPatterns];
+    return [resourcePatterns, consumerPatterns, permissionPatterns];
   }
 
   function patternsForResourceCriteria(
@@ -312,17 +354,58 @@ export function createTokenAuthorizer(
 
   function updatePermissions(
     have: Permissions,
-    permissions: Permissions,
-  ): void {
-    Object.assign(have, permissions);
+    permPatterns: PermissionPatterns,
+    want: Permissions,
+  ): boolean {
+    const resolved = resolvePermissions(permPatterns, want);
+    const hasResolved = Object.keys(resolved).length > 0;
+    Object.assign(have, resolved);
 
     for (const [permission, access = "none"] of Object.entries(have)) {
       if (access === "none") delete have[permission];
     }
+
+    return hasResolved;
+  }
+
+  function resolvePermissions(
+    permPatterns: PermissionPatterns,
+    want: Permissions,
+  ): Permissions {
+    const resolved: Permissions = {};
+
+    for (const permission of Object.keys(want)) {
+      // Tier 1: max of all matching patterns
+      let maxPatternAccess: PermissionAccess | undefined;
+
+      for (const [pattern, access] of permPatterns.patterns) {
+        if (!pattern.test(permission)) continue;
+
+        if (
+          maxPatternAccess == null ||
+          ACCESS_RANK[access] > ACCESS_RANK[maxPatternAccess]
+        ) {
+          maxPatternAccess = access;
+        }
+      }
+
+      // Tier 2: literal unconditionally overrides
+      const literalAccess = permPatterns.literals.get(permission);
+
+      const finalAccess = literalAccess ?? maxPatternAccess;
+      if (finalAccess != null) resolved[permission] = finalAccess;
+    }
+
+    return resolved;
   }
 }
 
 type ResourceCriteriaPatterns = {
   accounts: Pattern[];
   repos: Pattern[];
+};
+
+type PermissionPatterns = {
+  literals: Map<string, PermissionAccess>;
+  patterns: [Pattern, PermissionAccess][];
 };
