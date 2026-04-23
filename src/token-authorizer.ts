@@ -90,13 +90,13 @@ export function createTokenAuthorizer(
         if (isRelevant) break;
       }
 
-      isRelevant &&= updatePermissions(
+      if (!isRelevant) continue;
+
+      updatePermissions(
         have,
         permissionPatterns[i],
         request.tokenDec.permissions,
       );
-
-      if (!isRelevant) continue;
 
       // Token is allowed if last rule is allowed
       isSufficient = isSufficientPermissions(
@@ -151,13 +151,13 @@ export function createTokenAuthorizer(
         if (isRelevant) break;
       }
 
-      isRelevant &&= updatePermissions(
+      if (!isRelevant) continue;
+
+      updatePermissions(
         have,
         permissionPatterns[i],
         request.tokenDec.permissions,
       );
-
-      if (!isRelevant) continue;
 
       // Token is allowed if last rule is allowed
       isSufficient = isSufficientPermissions(
@@ -217,13 +217,13 @@ export function createTokenAuthorizer(
           if (isRelevant) break;
         }
 
-        isRelevant &&= updatePermissions(
+        if (!isRelevant) continue;
+
+        updatePermissions(
           have,
           permissionPatterns[i],
           request.tokenDec.permissions,
         );
-
-        if (!isRelevant) continue;
 
         // Resource is allowed if last rule is allowed
         isResourceSufficient = isSufficientPermissions(
@@ -351,16 +351,12 @@ export function createTokenAuthorizer(
     have: Permissions,
     permPatterns: PermissionPatterns,
     want: Permissions,
-  ): boolean {
-    const resolved = resolvePermissions(permPatterns, want);
-    const hasResolved = Object.keys(resolved).length > 0;
-    Object.assign(have, resolved);
+  ): void {
+    Object.assign(have, resolvePermissions(permPatterns, want));
 
     for (const [permission, access = "none"] of Object.entries(have)) {
       if (access === "none") delete have[permission];
     }
-
-    return hasResolved;
   }
 
   function resolvePermissions(
