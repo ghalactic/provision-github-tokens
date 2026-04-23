@@ -21,6 +21,10 @@ create, analogous to an [AWS IAM permissions boundary]. Even if provider rules
 would allow a token request, the issuer cannot grant permissions it doesn't
 have.
 
+[ADR-0008]: 0008-use-provider-controlled-trust-for-token-authorization.md
+[AWS IAM permissions boundary]:
+  https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_boundaries.html
+
 ## Decision outcome
 
 An issuer installation's permissions act as a hard boundary for any tokens it
@@ -45,6 +49,9 @@ _and_ the issuer must have the requested permissions.
   can cause confusing authorization failures that require checking both
   configurations.
 
+[ADR-0011]:
+  0011-support-using-different-app-installations-for-issuance-and-provisioning.md
+
 ### Alternatives rejected
 
 - **Ignore installation permissions, rely only on provider rules**: not
@@ -65,5 +72,3 @@ _and_ the issuer must have the requested permissions.
 [ADR-0008]: 0008-use-provider-controlled-trust-for-token-authorization.md
 [ADR-0011]:
   0011-support-using-different-app-installations-for-issuance-and-provisioning.md
-[AWS IAM permissions boundary]:
-  https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_boundaries.html
