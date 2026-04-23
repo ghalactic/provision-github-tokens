@@ -45,3 +45,10 @@ veto power over every token request.
   intermediaries.
 - **Per-token static allowlists**: inflexible — doesn't support pattern-based
   rules or scale to many requesters.
+
+## More information
+
+- Related: [ADR-0012] — installation permissions act as an additional hard
+  boundary beyond the policy layer defined here
+
+[ADR-0012]: 0012-cap-issued-token-permissions-at-installation-boundaries.md
