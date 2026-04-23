@@ -98,8 +98,9 @@ export function createTokenAuthorizer(
           permissionPatterns[i],
           request.tokenDec.permissions,
         )
-      )
+      ) {
         continue;
+      }
 
       // Token is allowed if last rule is allowed
       isSufficient = isSufficientPermissions(
@@ -162,8 +163,9 @@ export function createTokenAuthorizer(
           permissionPatterns[i],
           request.tokenDec.permissions,
         )
-      )
+      ) {
         continue;
+      }
 
       // Token is allowed if last rule is allowed
       isSufficient = isSufficientPermissions(
@@ -231,8 +233,9 @@ export function createTokenAuthorizer(
             permissionPatterns[i],
             request.tokenDec.permissions,
           )
-        )
+        ) {
           continue;
+        }
 
         // Resource is allowed if last rule is allowed
         isResourceSufficient = isSufficientPermissions(
