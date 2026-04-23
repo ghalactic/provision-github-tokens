@@ -42,3 +42,5 @@ is needed.
 ## More information
 
 - Related: [ADR-0002] — two-tier resolution for permission name patterns
+
+[adr-0002]: 0002-use-two-tier-resolution-for-permission-name-patterns.md
