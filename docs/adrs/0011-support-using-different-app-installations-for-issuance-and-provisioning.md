@@ -26,24 +26,18 @@ boundary.
 
 ## Decision outcome
 
-A single GitHub App can serve as an issuer, a provisioner, or both:
+Each configured GitHub App is explicitly designated as an issuer, a provisioner,
+or both:
 
 - **Issuer** — creates installation access tokens for requesters
 - **Provisioner** — writes secrets to target repos and organizations
 
-Each of these can be enabled or disabled independently per app. The app registry
-tracks all configured apps, their installations, and whether each serves as an
-issuer, a provisioner, or both.
+The app registry tracks these designations and resolves which app to use for
+each operation based on where it's installed.
 
-When the system needs to issue a token, it queries the registry for issuers
-installed on the target. When it needs to write a secret, it queries for
-provisioners.
-
-A single app installation can serve as both issuer and provisioner
-simultaneously. This is a deliberate choice to keep setup developer-friendly —
-users who are happy to accept the combined permissions boundary don't need to
-manage multiple apps. Users who want tighter control can use separate apps for
-issuance and provisioning, keeping the issuer's permissions boundary minimal.
+Using a single app for both is deliberately supported to keep simple
+configurations simple. Users who want to keep the issuer's permissions boundary
+minimal can split the two across separate apps.
 
 ### Consequences
 
