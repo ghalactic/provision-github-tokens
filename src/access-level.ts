@@ -1,6 +1,6 @@
 import type { PermissionAccess, Permissions } from "./type/permissions.js";
 
-export const ACCESS_RANK = {
+const ACCESS_RANK = {
   none: 0,
   read: 1,
   write: 2,

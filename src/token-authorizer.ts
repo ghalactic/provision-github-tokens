@@ -1,4 +1,8 @@
-import { ACCESS_RANK, isWriteAccess, maxAccess } from "./access-level.js";
+import {
+  isSufficientAccess,
+  isWriteAccess,
+  maxAccess,
+} from "./access-level.js";
 import { createGitHubPattern } from "./github-pattern.js";
 import {
   accountOrRepoRefToString,
@@ -300,7 +304,7 @@ export function createTokenAuthorizer(
     const resourcePatterns: ResourceCriteriaPatterns[] = [];
     const consumerPatterns: Pattern[] = [];
     const permissionPatterns: PermissionPatterns = {
-      literals: new Map(),
+      literals: [],
       patterns: [],
     };
 
@@ -314,7 +318,7 @@ export function createTokenAuthorizer(
       if (access == null) continue;
       const pattern = createNamePattern(name);
       if (pattern.isLiteral) {
-        permissionPatterns.literals.set(name, access);
+        permissionPatterns.literals.push([pattern, access]);
       } else {
         permissionPatterns.patterns.push([pattern, access]);
       }
@@ -383,14 +387,19 @@ export function createTokenAuthorizer(
 
         if (
           maxPatternAccess == null ||
-          ACCESS_RANK[access] > ACCESS_RANK[maxPatternAccess]
+          isSufficientAccess(access, maxPatternAccess)
         ) {
           maxPatternAccess = access;
         }
       }
 
       // Tier 2: literal unconditionally overrides
-      const literalAccess = permPatterns.literals.get(permission);
+      let literalAccess: PermissionAccess | undefined;
+
+      for (const [pattern, access] of permPatterns.literals) {
+        if (!pattern.test(permission)) continue;
+        literalAccess = access;
+      }
 
       const finalAccess = literalAccess ?? maxPatternAccess;
       if (finalAccess != null) resolved[permission] = finalAccess;
@@ -406,6 +415,6 @@ type ResourceCriteriaPatterns = {
 };
 
 type PermissionPatterns = {
-  literals: Map<string, PermissionAccess>;
+  literals: [Pattern, PermissionAccess][];
   patterns: [Pattern, PermissionAccess][];
 };
