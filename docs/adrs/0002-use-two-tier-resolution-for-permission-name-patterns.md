@@ -6,7 +6,7 @@ decision-makers: ezzatron
 
 # Use two-tier resolution for permission name patterns
 
-## Context and Problem Statement
+## Context and problem statement
 
 Provider permission rules support glob-style patterns as permission keys (e.g.,
 `"*": write`, `"secret_*": write`). When a rule mixes pattern and literal keys,
@@ -20,7 +20,7 @@ permissions:
   contents: none # must override the wildcard
 ```
 
-## Decision Outcome
+## Decision outcome
 
 Two-tier resolution within each rule:
 
@@ -48,7 +48,7 @@ Inter-rule semantics are unchanged (last rule overrides via `Object.assign`).
 - **Specificity-based**: hard to define for globs, harder for providers to
   reason about.
 
-## More Information
+## More information
 
 - Related: [ADR-0003] — patterns resolve against requested permissions only
 
