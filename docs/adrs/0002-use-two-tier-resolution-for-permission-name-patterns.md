@@ -52,5 +52,5 @@ Inter-rule semantics are unchanged (last rule overrides via `Object.assign`).
 
 - Related: [ADR-0003] — patterns resolve against requested permissions only
 
-[ADR-0003]:
+[adr-0003]:
   0003-resolve-permission-patterns-against-requested-permissions-only.md

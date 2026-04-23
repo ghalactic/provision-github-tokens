@@ -64,5 +64,5 @@ minimal can split the two across separate apps.
 - Related: [ADR-0012] — installation permissions boundary explains why
   separating issuance and provisioning matters for security
 
-[ADR-0010]: 0010-separate-token-and-provision-authorization.md
-[ADR-0012]: 0012-cap-issued-token-permissions-at-installation-boundaries.md
+[adr-0010]: 0010-separate-token-and-provision-authorization.md
+[adr-0012]: 0012-cap-issued-token-permissions-at-installation-boundaries.md

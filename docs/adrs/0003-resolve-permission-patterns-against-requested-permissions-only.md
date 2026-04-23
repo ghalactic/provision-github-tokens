@@ -13,7 +13,7 @@ patterns be matched against? A hard-coded list of all GitHub permissions would
 require ongoing maintenance and clutter authorization results with permissions
 the requester never asked for.
 
-[ADR-0002]: 0002-use-two-tier-resolution-for-permission-name-patterns.md
+[adr-0002]: 0002-use-two-tier-resolution-for-permission-name-patterns.md
 
 ## Decision outcome
 

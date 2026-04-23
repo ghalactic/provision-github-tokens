@@ -54,6 +54,6 @@ use different GitHub Apps with different capabilities.
 - Related: [ADR-0011] — the issuer/provisioner split aligns with the two
   authorization layers
 
-[ADR-0008]: 0008-use-provider-controlled-trust-for-token-authorization.md
-[ADR-0011]:
+[adr-0008]: 0008-use-provider-controlled-trust-for-token-authorization.md
+[adr-0011]:
   0011-support-using-different-app-installations-for-issuance-and-provisioning.md
