@@ -35,6 +35,11 @@ make verify-generated
 make precommit
 ```
 
+**Always run `make precommit` after modifying source files** — it rebuilds the
+dist bundle, regenerates schemas, runs lint, and runs tests. If you only run
+`make test` and `make lint`, stale generated files won't be caught. Run
+`git status` afterwards to stage any regenerated files.
+
 The build bundles `src/main.ts` → `dist/main.js` using esbuild (via
 `script/build.ts`). Generated files that must be committed: `dist/main.js`,
 `dist/main.js.map`, and the two `generated.*.schema.json` files in
@@ -170,3 +175,17 @@ Permission levels are ranked: `none` (0) < `read` (1) < `write` (2) < `admin`
 Use `errorMessage()` and `errorStack()` from `src/error.ts` to safely extract
 messages from unknown error values. The top-level `main()` catches all errors
 and calls `setFailed()`.
+
+### Architecture Decision Records
+
+ADRs live in `docs/adrs/` using MADR format with numeric prefixes
+(`0001-title.md`). When writing or updating ADRs:
+
+- **Be concise** — only include sections that earn their keep. Drop optional
+  MADR sections (Decision Drivers, Pros and Cons, etc.) unless they add real
+  value.
+- **Self-contained** — do not reference GitHub issues or PRs for context. A
+  reader must understand the decision from the ADR alone.
+- **Resilient to refactoring** — do not reference specific file paths, function
+  names, or code symbols. Describe decisions in terms of concepts and behavior
+  so that ADRs don't need updating when code moves around.
