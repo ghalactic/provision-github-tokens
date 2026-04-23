@@ -38,7 +38,7 @@ _and_ the issuer must have the requested permissions.
 - Good, because this gives organizations direct control through GitHub's own app
   installation permissions UI — revoking a permission from an installation
   immediately prevents any token from including it.
-- Good, because this motivates separating issuer and provisioner roles (see
+- Good, because this motivates separating issuance and provisioning (see
   [ADR-0011]) — the provisioner's permissions don't expand the issuer's
   boundary.
 - Bad, because a mismatch between provider rules and installation permissions
@@ -59,11 +59,11 @@ _and_ the issuer must have the requested permissions.
 
 - Related: [ADR-0008] — provider-controlled trust defines the policy layer; this
   ADR defines the installation boundary layer
-- Related: [ADR-0011] — separating issuer and provisioner roles prevents the
+- Related: [ADR-0011] — separating issuance and provisioning prevents the
   provisioner's permissions from expanding the issuer's boundary
 
 [ADR-0008]: 0008-use-provider-controlled-trust-for-token-authorization.md
 [ADR-0011]:
-  0011-use-dual-app-roles-for-token-issuance-and-secret-provisioning.md
+  0011-support-using-different-app-installations-for-issuance-and-provisioning.md
 [AWS IAM permissions boundary]:
   https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_boundaries.html

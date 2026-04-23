@@ -35,8 +35,8 @@ use different GitHub Apps with different capabilities.
 
 - Good, because providers can independently control token permissions and secret
   placement.
-- Good, because the two checks mirror the two app roles (issuer and
-  provisioner), keeping concerns separated.
+- Good, because the two checks mirror the issuer/provisioner split, keeping
+  concerns separated.
 - Bad, because providers must configure two sets of rules instead of one.
 
 ### Alternatives rejected
@@ -51,8 +51,9 @@ use different GitHub Apps with different capabilities.
 
 - Related: [ADR-0008] — provider-controlled trust model defines the token
   authorization rules
-- Related: [ADR-0011] — dual app roles align with the two authorization layers
+- Related: [ADR-0011] — the issuer/provisioner split aligns with the two
+  authorization layers
 
 [ADR-0008]: 0008-use-provider-controlled-trust-for-token-authorization.md
 [ADR-0011]:
-  0011-use-dual-app-roles-for-token-issuance-and-secret-provisioning.md
+  0011-support-using-different-app-installations-for-issuance-and-provisioning.md
