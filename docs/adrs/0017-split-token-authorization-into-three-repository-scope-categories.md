@@ -13,12 +13,12 @@ set of repositories, or no repositories at all. These scopes have fundamentally
 different authorization characteristics.
 
 A critical constraint is that GitHub's permission model does not scope
-permissions to individual repositories. When a token has a permission like
-`issues: write`, that permission applies at the account level — even when the
-token is restricted to selected repositories. The token can only _access_ those
-selected repos, but the permission itself is granted account-wide. This means
-granting a permission to a token has broader implications than it might appear,
-and the authorization system must account for this.
+permissions to individual repositories. When a token is granted a permission,
+that permission applies at the account level — even when the token is restricted
+to selected repositories. The token can only _access_ those selected repos, but
+the permission itself is granted account-wide. This means granting a permission
+to a token has broader implications than it might appear, and the authorization
+system must account for this.
 
 ## Decision outcome
 
@@ -59,9 +59,9 @@ involving the same permission.
 
 - **Single authorization path for all scopes**: can't distinguish between
   all-repos and selected-repos requests, which have very different security
-  implications. Granting `issues: write` for selected repos is a narrower
-  decision than granting it for all repos, even though GitHub applies the
-  permission account-wide in both cases.
+  implications. Granting write access for selected repos is a narrower decision
+  than granting it for all repos, even though GitHub applies the permission
+  account-wide in both cases.
 - **Ignore repository scope in authorization**: would allow a consumer
   authorized for specific repos to request an all-repos token instead, bypassing
   the intended restrictions.
