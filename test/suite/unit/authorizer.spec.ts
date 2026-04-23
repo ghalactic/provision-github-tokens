@@ -185,7 +185,7 @@ it("authorizes all requests and outputs the results", async () => {
 
   const expectedTokenResultA: TokenAuthResult = {
     type: "ALL_REPOS",
-    have: { contents: "read", metadata: "read" },
+    have: { contents: "read" },
     isAllowed: true,
     isMissingRole: false,
     isSufficient: true,
@@ -197,7 +197,7 @@ it("authorizes all requests and outputs the results", async () => {
     },
     rules: [
       {
-        have: { contents: "read", metadata: "read" },
+        have: { contents: "read" },
         index: 0,
         isSufficient: true,
         rule: permissionsRuleA,
@@ -206,7 +206,7 @@ it("authorizes all requests and outputs the results", async () => {
   };
   const expectedTokenResultB: TokenAuthResult = {
     type: "ALL_REPOS",
-    have: { contents: "read", metadata: "read" },
+    have: { metadata: "read" },
     isAllowed: true,
     isMissingRole: false,
     isSufficient: true,
@@ -218,7 +218,7 @@ it("authorizes all requests and outputs the results", async () => {
     },
     rules: [
       {
-        have: { contents: "read", metadata: "read" },
+        have: { metadata: "read" },
         index: 0,
         isSufficient: true,
         rule: permissionsRuleA,

@@ -42,3 +42,23 @@ for (const [pattern, matches, nonMatches] of patterns) {
     });
   }
 }
+
+it("is literal when the pattern has no wildcards", () => {
+  expect(createNamePattern("contents").isLiteral).toBe(true);
+});
+
+it("is literal when the pattern has no wildcards and contains dots", () => {
+  expect(createNamePattern("name.a").isLiteral).toBe(true);
+});
+
+it("is not literal when the pattern contains a wildcard", () => {
+  expect(createNamePattern("secret_*").isLiteral).toBe(false);
+});
+
+it("is not literal when the pattern is a lone wildcard", () => {
+  expect(createNamePattern("*").isLiteral).toBe(false);
+});
+
+it("is not literal when the pattern contains multiple wildcards", () => {
+  expect(createNamePattern("*-name-*").isLiteral).toBe(false);
+});

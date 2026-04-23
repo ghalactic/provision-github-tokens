@@ -1,6 +1,7 @@
 export type Pattern = {
   test: (string: string) => boolean;
   toString: () => string;
+  readonly isLiteral: boolean;
 };
 
 export function anyPatternMatches(

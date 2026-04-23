@@ -1343,3 +1343,355 @@ it("doesn't allow write tokens if no role is specified", () => {
           ✅ repository_projects: have admin, wanted admin"
   `);
 });
+
+it("allows tokens when permissions use a wildcard pattern", () => {
+  const authorizer = createTokenAuthorizer({
+    rules: [
+      {
+        resources: [
+          {
+            accounts: ["account-a"],
+            noRepos: false,
+            allRepos: true,
+            selectedRepos: [],
+          },
+        ],
+        consumers: ["account-x"],
+        permissions: { "*": "write" },
+      },
+    ],
+  });
+
+  expect(
+    explain(
+      authorizer.authorizeToken({
+        consumer: { account: "account-x" },
+        tokenDec: {
+          shared: false,
+          as: "role-a",
+          account: "account-a",
+          repos: "all",
+          permissions: { contents: "write", metadata: "read" },
+        },
+        repos: "all",
+      }),
+    ),
+  ).toMatchInlineSnapshot(`
+    "✅ Account account-x was allowed access to a token:
+      ✅ Write access to all repos in account-a requested with role role-a
+      ✅ Sufficient access to all repos in account-a based on 1 rule:
+        ✅ Rule #1 gave sufficient access:
+          ✅ contents: have write, wanted write
+          ✅ metadata: have write, wanted read"
+  `);
+});
+
+it("allows literals to escalate above patterns within a single rule", () => {
+  const authorizer = createTokenAuthorizer({
+    rules: [
+      {
+        resources: [
+          {
+            accounts: ["account-a"],
+            noRepos: false,
+            allRepos: true,
+            selectedRepos: [],
+          },
+        ],
+        consumers: ["account-x"],
+        permissions: { "*": "read", contents: "write" },
+      },
+    ],
+  });
+
+  expect(
+    explain(
+      authorizer.authorizeToken({
+        consumer: { account: "account-x" },
+        tokenDec: {
+          shared: false,
+          as: "role-a",
+          account: "account-a",
+          repos: "all",
+          permissions: { contents: "write", metadata: "read" },
+        },
+        repos: "all",
+      }),
+    ),
+  ).toMatchInlineSnapshot(`
+    "✅ Account account-x was allowed access to a token:
+      ✅ Write access to all repos in account-a requested with role role-a
+      ✅ Sufficient access to all repos in account-a based on 1 rule:
+        ✅ Rule #1 gave sufficient access:
+          ✅ contents: have write, wanted write
+          ✅ metadata: have read, wanted read"
+  `);
+});
+
+it("allows literals to de-escalate below patterns within a single rule", () => {
+  const authorizer = createTokenAuthorizer({
+    rules: [
+      {
+        resources: [
+          {
+            accounts: ["account-a"],
+            noRepos: false,
+            allRepos: true,
+            selectedRepos: [],
+          },
+        ],
+        consumers: ["account-x"],
+        permissions: { "*": "write", contents: "none" },
+      },
+    ],
+  });
+
+  expect(
+    explain(
+      authorizer.authorizeToken({
+        consumer: { account: "account-x" },
+        tokenDec: {
+          shared: false,
+          as: "role-a",
+          account: "account-a",
+          repos: "all",
+          permissions: { contents: "write", metadata: "read" },
+        },
+        repos: "all",
+      }),
+    ),
+  ).toMatchInlineSnapshot(`
+    "❌ Account account-x was denied access to a token:
+      ✅ Write access to all repos in account-a requested with role role-a
+      ❌ Insufficient access to all repos in account-a based on 1 rule:
+        ❌ Rule #1 gave insufficient access:
+          ❌ contents: have none, wanted write
+          ✅ metadata: have write, wanted read"
+  `);
+});
+
+it("uses the max access level when multiple patterns match", () => {
+  const authorizer = createTokenAuthorizer({
+    rules: [
+      {
+        resources: [
+          {
+            accounts: ["account-a"],
+            noRepos: false,
+            allRepos: true,
+            selectedRepos: [],
+          },
+        ],
+        consumers: ["account-x"],
+        permissions: { "*": "read", "secret_*": "write" },
+      },
+    ],
+  });
+
+  expect(
+    explain(
+      authorizer.authorizeToken({
+        consumer: { account: "account-x" },
+        tokenDec: {
+          shared: false,
+          as: "role-a",
+          account: "account-a",
+          repos: "all",
+          permissions: {
+            contents: "read",
+            secret_scanning_alerts: "write",
+          },
+        },
+        repos: "all",
+      }),
+    ),
+  ).toMatchInlineSnapshot(`
+    "✅ Account account-x was allowed access to a token:
+      ✅ Write access to all repos in account-a requested with role role-a
+      ✅ Sufficient access to all repos in account-a based on 1 rule:
+        ✅ Rule #1 gave sufficient access:
+          ✅ contents: have read, wanted read
+          ✅ secret_scanning_alerts: have write, wanted write"
+  `);
+});
+
+it("uses the max access level when a broader pattern has higher access", () => {
+  const authorizer = createTokenAuthorizer({
+    rules: [
+      {
+        resources: [
+          {
+            accounts: ["account-a"],
+            noRepos: false,
+            allRepos: true,
+            selectedRepos: [],
+          },
+        ],
+        consumers: ["account-x"],
+        permissions: { "*": "write", "secret_*": "read" },
+      },
+    ],
+  });
+
+  expect(
+    explain(
+      authorizer.authorizeToken({
+        consumer: { account: "account-x" },
+        tokenDec: {
+          shared: false,
+          as: "role-a",
+          account: "account-a",
+          repos: "all",
+          permissions: {
+            secret_scanning_alerts: "write",
+          },
+        },
+        repos: "all",
+      }),
+    ),
+  ).toMatchInlineSnapshot(`
+    "✅ Account account-x was allowed access to a token:
+      ✅ Write access to all repos in account-a requested with role role-a
+      ✅ Sufficient access to all repos in account-a based on 1 rule:
+        ✅ Rule #1 gave sufficient access:
+          ✅ secret_scanning_alerts: have write, wanted write"
+  `);
+});
+
+it("skips undefined permission values in rules", () => {
+  const authorizer = createTokenAuthorizer({
+    rules: [
+      {
+        resources: [
+          {
+            accounts: ["account-a"],
+            noRepos: false,
+            allRepos: true,
+            selectedRepos: [],
+          },
+        ],
+        consumers: ["account-x"],
+        permissions: { contents: "write", metadata: undefined },
+      },
+    ],
+  });
+
+  expect(
+    explain(
+      authorizer.authorizeToken({
+        consumer: { account: "account-x" },
+        tokenDec: {
+          shared: false,
+          as: "role-a",
+          account: "account-a",
+          repos: "all",
+          permissions: { contents: "write", metadata: "read" },
+        },
+        repos: "all",
+      }),
+    ),
+  ).toMatchInlineSnapshot(`
+    "❌ Account account-x was denied access to a token:
+      ✅ Write access to all repos in account-a requested with role role-a
+      ❌ Insufficient access to all repos in account-a based on 1 rule:
+        ❌ Rule #1 gave insufficient access:
+          ✅ contents: have write, wanted write
+          ❌ metadata: have none, wanted read"
+  `);
+});
+
+it("does not grant permissions when no patterns match", () => {
+  const authorizer = createTokenAuthorizer({
+    rules: [
+      {
+        resources: [
+          {
+            accounts: ["account-a"],
+            noRepos: false,
+            allRepos: true,
+            selectedRepos: [],
+          },
+        ],
+        consumers: ["account-x"],
+        permissions: { "organization_*": "write" },
+      },
+    ],
+  });
+
+  expect(
+    explain(
+      authorizer.authorizeToken({
+        consumer: { account: "account-x" },
+        tokenDec: {
+          shared: false,
+          as: "role-a",
+          account: "account-a",
+          repos: "all",
+          permissions: { contents: "write" },
+        },
+        repos: "all",
+      }),
+    ),
+  ).toMatchInlineSnapshot(`
+    "❌ Account account-x was denied access to a token:
+      ✅ Write access to all repos in account-a requested with role role-a
+      ❌ Insufficient access to all repos in account-a based on 1 rule:
+        ❌ Rule #1 gave insufficient access:
+          ❌ contents: have none, wanted write"
+  `);
+});
+
+it("allows a later pattern rule to override a literal rule", () => {
+  const authorizer = createTokenAuthorizer({
+    rules: [
+      {
+        resources: [
+          {
+            accounts: ["account-a"],
+            noRepos: false,
+            allRepos: true,
+            selectedRepos: [],
+          },
+        ],
+        consumers: ["account-x"],
+        permissions: { contents: "read" },
+      },
+      {
+        resources: [
+          {
+            accounts: ["account-a"],
+            noRepos: false,
+            allRepos: true,
+            selectedRepos: [],
+          },
+        ],
+        consumers: ["account-x"],
+        permissions: { "*": "write" },
+      },
+    ],
+  });
+
+  expect(
+    explain(
+      authorizer.authorizeToken({
+        consumer: { account: "account-x" },
+        tokenDec: {
+          shared: false,
+          as: "role-a",
+          account: "account-a",
+          repos: "all",
+          permissions: { contents: "write" },
+        },
+        repos: "all",
+      }),
+    ),
+  ).toMatchInlineSnapshot(`
+    "✅ Account account-x was allowed access to a token:
+      ✅ Write access to all repos in account-a requested with role role-a
+      ✅ Sufficient access to all repos in account-a based on 2 rules:
+        ❌ Rule #1 gave insufficient access:
+          ❌ contents: have read, wanted write
+        ✅ Rule #2 gave sufficient access:
+          ✅ contents: have write, wanted write"
+  `);
+});
