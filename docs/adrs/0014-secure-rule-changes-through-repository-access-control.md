@@ -23,16 +23,15 @@ repository itself.
 
 This design assumes that the provider repository has stricter write access than
 the requesting repositories. In a typical setup, a platform or security team
-maintains the provider repository while various development teams maintain their
-own requesting repositories. The requesting teams have full control over their
-own token declarations (what they _want_), but cannot unilaterally change what
-they're _allowed_ — that requires a change to the provider repository.
+maintains the provider repository while development teams maintain their own
+requesting repositories. The requesting teams control their own token
+declarations (what they _want_), but cannot unilaterally change what they're
+_allowed_.
 
-This still supports self-service workflows. Development teams can submit pull
-requests against the provider repository to request changes to permission rules
-or provision targets. The team that owns the provider repository can review,
-audit, and approve or deny these changes using standard code review processes.
-The full history of rule changes is captured in the repository's commit log.
+Development teams can still self-serve by submitting pull requests against the
+provider repository for rule changes. The owning team reviews and approves or
+denies these changes using standard code review, with the full history captured
+in the commit log.
 
 ### Consequences
 

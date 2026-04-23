@@ -39,18 +39,11 @@ _and_ the issuer must have the requested permissions.
 
 - Good, because the issuer installation's permissions provide a clear, immutable
   security boundary that cannot be overridden by configuration.
-- Good, because this gives organizations direct control through GitHub's own app
-  installation permissions UI — revoking a permission from an installation
-  immediately prevents any token from including it.
-- Good, because this motivates separating issuance and provisioning (see
-  [ADR-0011]) — the provisioner's permissions don't expand the issuer's
-  boundary.
+- Good, because revoking a permission from an installation immediately prevents
+  any token from including it.
 - Bad, because a mismatch between provider rules and installation permissions
   can cause confusing authorization failures that require checking both
   configurations.
-
-[adr-0011]:
-  0011-support-using-different-app-installations-for-issuance-and-provisioning.md
 
 ### Alternatives rejected
 

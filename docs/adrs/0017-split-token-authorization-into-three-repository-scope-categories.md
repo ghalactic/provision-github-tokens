@@ -37,12 +37,8 @@ requested repository scope:
   public data with a higher rate limit, or managing organization settings
   without any repository access.
 
-Each category has its own matching criteria in permission rules. A rule can
-specify whether it applies to all-repos requests, no-repos requests, specific
-repo patterns, or any combination. This lets providers write rules that
-distinguish between "this consumer can read all repos" and "this consumer can
-read these specific repos" — which have different security implications despite
-involving the same permission.
+Each category has its own matching criteria in permission rules, letting
+providers distinguish between requests for different scopes.
 
 ### Consequences
 
