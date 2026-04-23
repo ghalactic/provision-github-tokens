@@ -92,15 +92,12 @@ export function createTokenAuthorizer(
 
       if (!isRelevant) continue;
 
-      if (
-        !updatePermissions(
-          have,
-          permissionPatterns[i],
-          request.tokenDec.permissions,
-        )
-      ) {
-        continue;
-      }
+      isRelevant = updatePermissions(
+        have,
+        permissionPatterns[i],
+        request.tokenDec.permissions,
+      );
+      if (!isRelevant) continue;
 
       // Token is allowed if last rule is allowed
       isSufficient = isSufficientPermissions(
@@ -157,15 +154,12 @@ export function createTokenAuthorizer(
 
       if (!isRelevant) continue;
 
-      if (
-        !updatePermissions(
-          have,
-          permissionPatterns[i],
-          request.tokenDec.permissions,
-        )
-      ) {
-        continue;
-      }
+      isRelevant = updatePermissions(
+        have,
+        permissionPatterns[i],
+        request.tokenDec.permissions,
+      );
+      if (!isRelevant) continue;
 
       // Token is allowed if last rule is allowed
       isSufficient = isSufficientPermissions(
@@ -227,15 +221,12 @@ export function createTokenAuthorizer(
 
         if (!isRelevant) continue;
 
-        if (
-          !updatePermissions(
-            have,
-            permissionPatterns[i],
-            request.tokenDec.permissions,
-          )
-        ) {
-          continue;
-        }
+        isRelevant = updatePermissions(
+          have,
+          permissionPatterns[i],
+          request.tokenDec.permissions,
+        );
+        if (!isRelevant) continue;
 
         // Resource is allowed if last rule is allowed
         isResourceSufficient = isSufficientPermissions(
