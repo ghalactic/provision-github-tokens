@@ -1,24 +1,25 @@
-# 1. Record architecture decisions
+---
+status: accepted
+date: 2024-08-24
+decision-makers: ezzatron
+---
 
-Date: 2026-04-22
+# Record architecture decisions
 
-## Status
+## Context and problem statement
 
-Accepted
+We need to record the architectural decisions made on this project so that
+future contributors can understand the reasoning behind them.
 
-## Context
-
-We need to record the architectural decisions made on this project.
-
-## Decision
+## Decision outcome
 
 We will use Architecture Decision Records, as described by Michael Nygard in his
-article [Documenting Architecture Decisions].
+article [Documenting architecture decisions].
 
 [documenting architecture decisions]:
   https://www.cognitect.com/blog/2011/11/15/documenting-architecture-decisions
 
-## Consequences
+### Consequences
 
 See Michael Nygard's article, linked above. For a lightweight ADR toolset, see
 [adrs].
