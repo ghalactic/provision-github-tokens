@@ -225,6 +225,21 @@ ADRs live in `docs/adrs/` using MADR format with numeric prefixes
   names, or code symbols. Describe decisions in terms of concepts and behavior
   so that ADRs don't need updating when code moves around.
 
+### Commit messages
+
+Write commit messages for **human readers**, not automated tooling.
+
+- **Do not use conventional commit prefixes** (e.g. `feat:`, `fix:`, `chore:`)
+- **Use the imperative mood** — write as if completing "If applied, this commit
+  will \_\_\_" (e.g. "Add error handling", not "Added error handling" or "Adds
+  error handling")
+- **Capitalize the subject line** and do not end it with a period
+- **Limit the subject line to 50 characters** (72 is the hard maximum)
+- **Separate subject from body with a blank line** — a subject-only message is
+  fine for most changes
+- **Wrap the body at 72 characters** and use it to explain _what_ and _why_, not
+  _how_ (the code shows how)
+
 ### Finishing a feature branch
 
 When development on a feature branch is complete (all code, tests, and ADRs are
