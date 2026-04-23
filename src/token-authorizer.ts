@@ -388,8 +388,7 @@ export function createTokenAuthorizer(
       let literalAccess: PermissionAccess | undefined;
 
       for (const [pattern, access] of permPatterns.literals) {
-        if (!pattern.test(permission)) continue;
-        literalAccess = access;
+        if (pattern.test(permission)) literalAccess = access;
       }
 
       const finalAccess = literalAccess ?? maxPatternAccess;
