@@ -90,9 +90,7 @@ export function createTokenAuthorizer(
         if (isRelevant) break;
       }
 
-      if (!isRelevant) continue;
-
-      isRelevant = updatePermissions(
+      isRelevant &&= updatePermissions(
         have,
         permissionPatterns[i],
         request.tokenDec.permissions,
@@ -153,9 +151,7 @@ export function createTokenAuthorizer(
         if (isRelevant) break;
       }
 
-      if (!isRelevant) continue;
-
-      isRelevant = updatePermissions(
+      isRelevant &&= updatePermissions(
         have,
         permissionPatterns[i],
         request.tokenDec.permissions,
@@ -221,9 +217,7 @@ export function createTokenAuthorizer(
           if (isRelevant) break;
         }
 
-        if (!isRelevant) continue;
-
-        isRelevant = updatePermissions(
+        isRelevant &&= updatePermissions(
           have,
           permissionPatterns[i],
           request.tokenDec.permissions,
