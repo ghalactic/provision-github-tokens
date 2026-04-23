@@ -1511,6 +1511,91 @@ it("uses the max access level when multiple patterns match", () => {
   `);
 });
 
+it("uses the max access level when a broader pattern has higher access", () => {
+  const authorizer = createTokenAuthorizer({
+    rules: [
+      {
+        resources: [
+          {
+            accounts: ["account-a"],
+            noRepos: false,
+            allRepos: true,
+            selectedRepos: [],
+          },
+        ],
+        consumers: ["account-x"],
+        permissions: { "*": "write", "secret_*": "read" },
+      },
+    ],
+  });
+
+  expect(
+    explain(
+      authorizer.authorizeToken({
+        consumer: { account: "account-x" },
+        tokenDec: {
+          shared: false,
+          as: "role-a",
+          account: "account-a",
+          repos: "all",
+          permissions: {
+            secret_scanning_alerts: "write",
+          },
+        },
+        repos: "all",
+      }),
+    ),
+  ).toMatchInlineSnapshot(`
+    "✅ Account account-x was allowed access to a token:
+      ✅ Write access to all repos in account-a requested with role role-a
+      ✅ Sufficient access to all repos in account-a based on 1 rule:
+        ✅ Rule #1 gave sufficient access:
+          ✅ secret_scanning_alerts: have write, wanted write"
+  `);
+});
+
+it("skips undefined permission values in rules", () => {
+  const authorizer = createTokenAuthorizer({
+    rules: [
+      {
+        resources: [
+          {
+            accounts: ["account-a"],
+            noRepos: false,
+            allRepos: true,
+            selectedRepos: [],
+          },
+        ],
+        consumers: ["account-x"],
+        permissions: { contents: "write", metadata: undefined },
+      },
+    ],
+  });
+
+  expect(
+    explain(
+      authorizer.authorizeToken({
+        consumer: { account: "account-x" },
+        tokenDec: {
+          shared: false,
+          as: "role-a",
+          account: "account-a",
+          repos: "all",
+          permissions: { contents: "write", metadata: "read" },
+        },
+        repos: "all",
+      }),
+    ),
+  ).toMatchInlineSnapshot(`
+    "❌ Account account-x was denied access to a token:
+      ✅ Write access to all repos in account-a requested with role role-a
+      ❌ Insufficient access to all repos in account-a based on 1 rule:
+        ❌ Rule #1 gave insufficient access:
+          ✅ contents: have write, wanted write
+          ❌ metadata: have none, wanted read"
+  `);
+});
+
 it("does not grant permissions when no patterns match", () => {
   const authorizer = createTokenAuthorizer({
     rules: [
