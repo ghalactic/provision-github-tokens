@@ -25,12 +25,13 @@ system must account for this.
 Token authorization is split into three distinct categories based on the
 requested repository scope:
 
-- **All repos** — the token can access all current and future repositories in
-  the account. Authorization evaluates a single set of permissions against the
-  rules.
-- **Selected repos** — the token can access a specific set of repositories.
-  Authorization evaluates permissions per-repo, and all requested repos must be
-  independently authorized for the token to be issued.
+- **All repos** — the token can access all repositories in the account,
+  including repositories created after the token is issued. Authorization
+  evaluates a single set of permissions against the rules.
+- **Selected repos** — the token can access a fixed set of repositories. New
+  repositories never implicitly expand the access grant. Authorization evaluates
+  permissions per-repo, and all requested repos must be independently authorized
+  for the token to be issued.
 - **No repos** — the token has no repository access. This category exists for
   tokens that only need account-level capabilities, such as read-only access to
   public data with a higher rate limit, or managing organization settings
