@@ -165,6 +165,35 @@ methods. Used via `GitHubPattern` (glob-style matching for accounts/repos) and
 - The `vitest/no-mocks-import` ESLint rule is disabled because tests import
   helpers from `__mocks__/`
 
+#### Coverage
+
+The project targets **100% test coverage** (`make coverage`). A human reviewer
+should be able to run coverage and immediately see pass/fail without
+investigating individual files.
+
+When introducing new code, write tests that fully cover it. If a branch is
+genuinely unreachable in tests, use an Istanbul ignore comment with `@preserve`
+(so esbuild keeps it) instead of leaving a coverage gap:
+
+```ts
+/* istanbul ignore next - @preserve */
+throw new Error("Invariant violation: ...");
+```
+
+Acceptable uses of coverage ignore comments — modeled on existing usage:
+
+- **Invariant-violation throws** — defensive guards for states that should be
+  structurally impossible (e.g. exhaustive switch/if-else defaults, null checks
+  after prior validation steps). Always throw with a message starting with
+  `"Invariant violation: "`.
+- **Never-observed API behavior** — defensive checks against theoretically
+  possible but never-seen GitHub API response shapes. Add a brief explanation
+  (e.g.
+  `/* istanbul ignore next - never seen without an account login - @preserve */`).
+
+Do **not** use coverage ignores to skip writing tests for reachable code paths.
+If a branch can be reached through normal inputs, write tests for it.
+
 ### Access level hierarchy
 
 Permission levels are ranked: `none` (0) < `read` (1) < `write` (2) < `admin`
