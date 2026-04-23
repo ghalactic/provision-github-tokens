@@ -97,6 +97,7 @@ export function createTokenAuthorizer(
         permissionPatterns[i],
         request.tokenDec.permissions,
       );
+
       if (!isRelevant) continue;
 
       // Token is allowed if last rule is allowed
@@ -159,6 +160,7 @@ export function createTokenAuthorizer(
         permissionPatterns[i],
         request.tokenDec.permissions,
       );
+
       if (!isRelevant) continue;
 
       // Token is allowed if last rule is allowed
@@ -226,6 +228,7 @@ export function createTokenAuthorizer(
           permissionPatterns[i],
           request.tokenDec.permissions,
         );
+
         if (!isRelevant) continue;
 
         // Resource is allowed if last rule is allowed
