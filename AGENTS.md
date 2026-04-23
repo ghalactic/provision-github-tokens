@@ -94,6 +94,12 @@ repos.
 
 ## Conventions
 
+### Writing style
+
+Use **sentence case** for all headings, labels, and prose — never title case.
+The only exception is references to external writing that has its own style
+rules (e.g. a proper noun, a product name, or a title defined elsewhere).
+
 ### Markdown
 
 All Markdown should read well in both raw text and rendered HTML.
