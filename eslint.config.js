@@ -6,7 +6,7 @@ import { defineConfig, globalIgnores } from "eslint/config";
 import tseslint from "typescript-eslint";
 
 export default defineConfig(
-  globalIgnores([".makefiles", "artifacts", "dist"]),
+  globalIgnores([".agents", ".makefiles", "artifacts", "dist"]),
   js.configs.recommended,
   tseslint.configs.recommendedTypeChecked,
   vitest.configs.recommended,

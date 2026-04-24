@@ -213,17 +213,10 @@ and calls `setFailed()`.
 
 ### Architecture Decision Records
 
-ADRs live in `docs/adrs/` using MADR format with numeric prefixes
-(`0001-title.md`). When writing or updating ADRs:
-
-- **Be concise** — only include sections that earn their keep. Drop optional
-  MADR sections (Decision Drivers, Pros and Cons, etc.) unless they add real
-  value.
-- **Self-contained** — do not reference GitHub issues or PRs for context. A
-  reader must understand the decision from the ADR alone.
-- **Resilient to refactoring** — do not reference specific file paths, function
-  names, or code symbols. Describe decisions in terms of concepts and behavior
-  so that ADRs don't need updating when code moves around.
+ADRs live in `docs/adrs/`. **Always use the repo-local ADR skill** at
+`.agents/skills/adr-skill/` when writing or updating ADRs — it encodes all
+project conventions (brevity, sentence case, no file paths, etc.) and walks you
+through the full workflow. Do not use globally installed ADR skills.
 
 ### Commit messages
 
