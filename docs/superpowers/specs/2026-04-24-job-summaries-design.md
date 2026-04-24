@@ -24,25 +24,9 @@ A level-3 heading with the primary stat:
 ### Provisioned 47 of 50 secrets
 ```
 
-If all secrets are provisioned, the heading reads "Provisioned 50 secrets". If
-none are provisioned, the heading reads "Provisioned 0 of 50 secrets".
-
-### Stats table
-
-A single-row table with labels as column headings and values in the data row:
-
-```markdown
-| Requesters | Organizations | Tokens | Consumers |
-| ---------: | ------------: | -----: | --------: |
-|         12 |             3 |      8 |         5 |
-```
-
-- **Requesters** — Number of unique requester repos
-- **Organizations** — Number of unique organizations across all requesters and
-  consumers
-- **Tokens** — Number of unique tokens issued
-- **Consumers** — Number of unique consumers (repos or accounts that received
-  tokens)
+If all secrets are provisioned, the heading reads "Provisioned 50 secrets" (or
+"Provisioned 1 secret" — proper pluralization throughout). If none are
+provisioned, the heading reads "Provisioned 0 of 50 secrets".
 
 ### Failures
 
@@ -140,11 +124,10 @@ Token headings describe the token by its properties:
 
 - **All repos:** "Token for org-a (all repos)"
 - **No repos:** "Token for org-a (no repos)"
-- **Selected repos with few repos:** "Token for org-a (repo-x, repo-y)"
-- **Selected repos with many repos:** "Token for org-a (N repos)"
+- **Selected repos:** "Token for org-a (N repos)" — always a count, never
+  individual names
 
-A threshold of 3 determines when to switch from listing individual repo names to
-showing a count. The full repo list is available in the expanded details.
+The full repo list is available in the expanded details.
 
 Token results are sorted using `compareTokenRequest` — consumer first, then
 account, then repos type, then repos, then permissions. Token anchors are
@@ -241,8 +224,7 @@ Fixture scenarios cover:
 - Environment targets (including environment names in the output)
 - Multiple requesters across multiple organizations
 - Multiple consumers
-- Selected repos tokens with few repos (listed in heading)
-- Selected repos tokens with many repos (count in heading)
+- Selected repos tokens (count in heading)
 - No repos tokens
 - Tokens with roles
 - Shared token declarations
