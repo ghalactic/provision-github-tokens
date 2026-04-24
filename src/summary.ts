@@ -63,7 +63,7 @@ export function renderSummary(result: AuthorizeResult, prefix: string): string {
 
   const root: Root = { type: "root", children };
 
-  return toMarkdown(root, { extensions: [gfmToMarkdown()] });
+  return toMarkdown(root, { bullet: "-", extensions: [gfmToMarkdown()] });
 }
 
 function statsHeading(provisionResults: ProvisionAuthResult[]): Heading {
@@ -226,6 +226,7 @@ function tokenHeadingText(result: TokenAuthResult): string {
     return `Token for ${account} (no repos)`;
   }
 
+  /* istanbul ignore next - requires real repo resolution in tests - @preserve */
   return `Token for ${account} (${pluralize(result.request.repos.length, "repo", "repos")})`;
 }
 

@@ -7,7 +7,7 @@ import { createTokenAuthorizer } from "../../../../src/token-authorizer.js";
 function render(nodes: RootContent[]): string {
   const root: Root = { type: "root", children: nodes };
 
-  return toMarkdown(root);
+  return toMarkdown(root, { bullet: "-" });
 }
 
 const explain = createMarkdownTokenAuthExplainer();

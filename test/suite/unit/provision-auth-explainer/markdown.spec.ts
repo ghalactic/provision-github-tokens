@@ -15,7 +15,7 @@ import { createTestTokenRequestFactory } from "../../../token-request.js";
 function render(nodes: RootContent[]): string {
   const root: Root = { type: "root", children: nodes };
 
-  return toMarkdown(root);
+  return toMarkdown(root, { bullet: "-" });
 }
 
 function createAnchorMap(
