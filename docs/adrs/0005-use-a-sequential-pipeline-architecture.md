@@ -13,7 +13,7 @@ requests, create tokens, and provision secrets. These operations have data
 dependencies — for example, authorization needs token declarations that come
 from requester discovery, and token creation needs authorization results.
 
-## Decision outcome
+## Decision
 
 Run the action as a fixed sequence of phases:
 
@@ -27,7 +27,7 @@ Run the action as a fixed sequence of phases:
 Each phase depends on outputs from prior phases. This ordering prevents cycles
 and ensures authorization decisions are made with complete information.
 
-### Consequences
+## Consequences
 
 - Good, because data dependencies are satisfied by construction — no phase runs
   before its inputs are ready.
@@ -35,7 +35,7 @@ and ensures authorization decisions are made with complete information.
 - Bad, because all discovery must complete before any authorization begins, even
   if some requesters could be processed earlier.
 
-### Alternatives rejected
+## Alternatives considered
 
 - **Event-driven**: complex state management with eventual consistency; hard to
   reason about when all inputs are ready.

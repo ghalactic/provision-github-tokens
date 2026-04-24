@@ -13,7 +13,7 @@ and what tokens each repo needs (declarations). Combining these into a single
 config file would either require the provider to enumerate every requesting repo
 or let requesting repos self-authorize.
 
-## Decision outcome
+## Decision
 
 Use two separate YAML config files:
 
@@ -25,14 +25,14 @@ Use two separate YAML config files:
 The provider controls policy centrally while requesters self-serve their own
 declarations without touching the provider repo.
 
-### Consequences
+## Consequences
 
 - Good, because policy and declarations are independently maintained.
 - Good, because adding a new requester doesn't require changes to the provider
   repo.
 - Bad, because two config files can drift out of sync if not coordinated.
 
-### Alternatives rejected
+## Alternatives considered
 
 - **Single centralized config**: doesn't scale — provider must enumerate every
   requester.

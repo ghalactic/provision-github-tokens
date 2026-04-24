@@ -20,7 +20,7 @@ the permission itself is granted account-wide. This means granting a permission
 to a token has broader implications than it might appear, and the authorization
 system must account for this.
 
-## Decision outcome
+## Decision
 
 Token authorization is split into three distinct categories based on the
 requested repository scope:
@@ -40,7 +40,7 @@ requested repository scope:
 Each category has its own matching criteria in permission rules, letting
 providers distinguish between requests for different scopes.
 
-### Consequences
+## Consequences
 
 - Good, because providers can set different permission policies for different
   repository scopes, reflecting the different risk profiles of each.
@@ -52,7 +52,7 @@ providers distinguish between requests for different scopes.
 - Bad, because providers must understand the three categories and configure
   rules for each scope they want to support.
 
-### Alternatives rejected
+## Alternatives considered
 
 - **Single authorization path for all scopes**: can't distinguish between
   all-repos and selected-repos requests, which have very different security

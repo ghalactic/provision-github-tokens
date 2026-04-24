@@ -18,7 +18,7 @@ the token. The app's name and avatar appear as the author in the GitHub UI.
 If the action silently picks an app, users lose control over which identity
 appears alongside their automated actions.
 
-## Decision outcome
+## Decision
 
 Token declarations that request write-level access or above must include an
 explicit role specifying which app should issue the token. The action refuses to
@@ -27,7 +27,7 @@ create a write-level token without a role.
 Read-only token declarations may omit the role, allowing the action to
 automatically select a suitable issuer.
 
-### Consequences
+## Consequences
 
 - Good, because users are always in control of which app identity is associated
   with write operations.
@@ -38,7 +38,7 @@ automatically select a suitable issuer.
 - Bad, because it adds a mandatory field to write-level token declarations,
   increasing configuration verbosity.
 
-### Alternatives rejected
+## Alternatives considered
 
 - **Always require a role**: unnecessarily verbose for read-only tokens where
   attribution isn't visible.

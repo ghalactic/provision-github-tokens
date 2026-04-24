@@ -15,7 +15,7 @@ every provision target would need to spell out the full repo owner and name —
 even when they match the requesting repo. This boilerplate adds noise and
 increases the chance of misconfiguration.
 
-## Decision outcome
+## Decision
 
 Several defaults and shortcuts reduce configuration for common cases:
 
@@ -31,7 +31,7 @@ Several defaults and shortcuts reduce configuration for common cases:
   pattern result. This lets providers write broad deny rules with a carve-out
   for self-provisioning, without needing separate rules.
 
-### Consequences
+## Consequences
 
 - Good, because the simplest and most common case (provision a secret to your
   own repo) requires the least configuration.
@@ -42,7 +42,7 @@ Several defaults and shortcuts reduce configuration for common cases:
 - Bad, because the interaction between self-targets and pattern-based targets
   adds a layer of resolution that providers need to understand.
 
-### Alternatives rejected
+## Alternatives considered
 
 - **No defaults — require explicit values everywhere**: unnecessarily verbose
   for the most common case and increases risk of copy-paste errors.

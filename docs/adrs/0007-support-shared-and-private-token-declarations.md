@@ -13,7 +13,7 @@ same target account). Without a sharing mechanism, each repo must duplicate the
 full token declaration. But making all declarations globally visible creates
 namespace conflicts and removes isolation between unrelated repos.
 
-## Decision outcome
+## Decision
 
 Token declarations have a sharing flag:
 
@@ -27,14 +27,14 @@ comes from the declaring repo itself.
 This supports both self-contained repos (private declarations) and organizations
 where a central repo defines reusable declarations for others.
 
-### Consequences
+## Consequences
 
 - Good, because shared declarations eliminate duplication across repos.
 - Good, because private-by-default prevents accidental exposure.
 - Bad, because shared declarations create coupling between repos — changes to a
   shared declaration affect all consumers.
 
-### Alternatives rejected
+## Alternatives considered
 
 - **All declarations private**: forces duplication across repos that need the
   same token.

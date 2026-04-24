@@ -15,13 +15,13 @@ permissions — either an empty object or one where every entry is `none` — th
 resulting API call would produce a token with the maximum possible permissions
 rather than a token with no permissions.
 
-## Decision outcome
+## Decision
 
 Token authorization rejects requests with empty permissions — permission objects
 where no entry has a meaningful access level (`read`, `write`, or `admin`). This
 validation happens before any authorization rules are evaluated.
 
-### Consequences
+## Consequences
 
 - Good, because config mistakes that result in empty permissions are caught as
   errors rather than producing unexpectedly powerful tokens.
@@ -29,7 +29,7 @@ validation happens before any authorization rules are evaluated.
 - Bad, because there is no way to intentionally request all of an installation's
   permissions — the request must always enumerate them.
 
-### Alternatives rejected
+## Alternatives considered
 
 - **Pass empty permissions through to the API**: would grant all installation
   permissions, completely undermining the permission rule system.

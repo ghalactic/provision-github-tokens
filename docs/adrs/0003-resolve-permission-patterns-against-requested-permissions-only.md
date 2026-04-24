@@ -15,7 +15,7 @@ the requester never asked for.
 
 [adr-0002]: 0002-use-two-tier-resolution-for-permission-name-patterns.md
 
-## Decision outcome
+## Decision
 
 Patterns resolve against the _requested_ permissions only — the set declared in
 the requester's token declaration. `"*": write` requesting
@@ -25,14 +25,14 @@ the requester's token declaration. `"*": write` requesting
 The system is permission-name-agnostic. No hard-coded permission list exists or
 is needed.
 
-### Consequences
+## Consequences
 
 - Good, because new GitHub permissions work automatically — nothing to maintain.
 - Good, because authorization results only contain relevant permissions.
 - Bad, because providers can't proactively grant permissions the requester
   didn't ask for.
 
-### Alternatives rejected
+## Alternatives considered
 
 - **All known GitHub permissions**: requires maintaining a list, clutters
   results.

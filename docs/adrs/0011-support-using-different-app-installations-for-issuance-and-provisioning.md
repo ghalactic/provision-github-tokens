@@ -24,7 +24,7 @@ At the same time, requiring two separate apps in every configuration would add
 unnecessary setup burden for users who are comfortable with a shared permissions
 boundary.
 
-## Decision outcome
+## Decision
 
 Each configured GitHub App is explicitly designated as an issuer, a provisioner,
 or both:
@@ -39,7 +39,7 @@ Using a single app for both is deliberately supported to keep simple
 configurations simple. Users who want to keep the issuer's permissions boundary
 minimal can split the two across separate apps.
 
-### Consequences
+## Consequences
 
 - Good, because a single app can serve as both issuer and provisioner, reducing
   setup overhead for simple configurations.
@@ -48,7 +48,7 @@ minimal can split the two across separate apps.
 - Bad, because explicitly designating issuers and provisioners adds
   configuration complexity compared to a single implicit purpose.
 
-### Alternatives rejected
+## Alternatives considered
 
 - **One purpose per app**: requires at least two apps in all configurations,
   even when one app could handle both.

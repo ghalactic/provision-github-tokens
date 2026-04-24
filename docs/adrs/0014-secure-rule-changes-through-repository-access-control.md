@@ -14,7 +14,7 @@ implications — relaxing a permission rule or adding a new provision target
 effectively grants access. The system needs a way to control who can make these
 changes without building a custom authorization layer on top.
 
-## Decision outcome
+## Decision
 
 The provider configuration — which contains all permission rules and provision
 rules — lives in a dedicated repository, separate from the repositories that
@@ -33,7 +33,7 @@ provider repository for rule changes. The owning team reviews and approves or
 denies these changes using standard code review, with the full history captured
 in the commit log.
 
-### Consequences
+## Consequences
 
 - Good, because no custom authorization mechanism is needed — repository access
   control and code review provide the security layer.
@@ -45,7 +45,7 @@ in the commit log.
   controls being correctly configured — a misconfigured repository could allow
   unauthorized rule changes.
 
-### Alternatives rejected
+## Alternatives considered
 
 - **In-app authorization for rule changes**: adds significant complexity — would
   need its own user management, permissions model, and audit logging, all of

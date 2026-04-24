@@ -13,7 +13,7 @@ tokens it needs and the repo that _receives_ the issued token. This was
 confusing because a declaring repo can request tokens be provisioned to a
 different repo entirely.
 
-## Decision outcome
+## Decision
 
 Use two distinct terms:
 
@@ -26,7 +26,7 @@ Use two distinct terms:
 The `consumers` field in permission rules is consistent with this terminology —
 it matches against the repos that will consume the token.
 
-### Consequences
+## Consequences
 
 - Good, because the two sides of a provisioning interaction now have distinct
   names.

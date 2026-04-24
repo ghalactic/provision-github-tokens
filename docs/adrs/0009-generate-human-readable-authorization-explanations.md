@@ -14,7 +14,7 @@ alone — multiple rules may interact, and the final decision depends on which
 patterns matched and what permissions they contributed. Without explanations,
 debugging denied requests requires reading the authorization logic itself.
 
-## Decision outcome
+## Decision
 
 Every authorization decision produces a human-readable text explanation that
 appears in the GitHub Actions log. The explanation describes:
@@ -27,14 +27,14 @@ appears in the GitHub Actions log. The explanation describes:
 Explanations are generated for both token authorization and provision
 authorization decisions.
 
-### Consequences
+## Consequences
 
 - Good, because denied requests are debuggable without reading the authorization
   logic.
 - Good, because logs serve as an audit trail for security reviews.
 - Bad, because explanations add verbosity to action logs.
 
-### Alternatives rejected
+## Alternatives considered
 
 - **Silent pass/fail**: no way to debug denied requests without reading source
   code.

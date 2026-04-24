@@ -14,7 +14,7 @@ predictable way to determine which rule takes effect. The resolution strategy
 must be easy to reason about and powerful enough to express both broad defaults
 and targeted exceptions.
 
-## Decision outcome
+## Decision
 
 When multiple rules match, later rules override earlier ones. This applies
 consistently to both permission rules and provision rules. Providers order their
@@ -26,7 +26,7 @@ exceptions below. The final state of permissions for a given consumer/target
 pair is determined by walking the rules top-to-bottom, with each matching rule's
 permissions overwriting what came before.
 
-### Consequences
+## Consequences
 
 - Good, because rule behavior is determined entirely by order — no implicit
   priority or specificity calculations.
@@ -37,7 +37,7 @@ permissions overwriting what came before.
 - Bad, because accidentally placing a broad rule after a specific one can
   silently override the specific rule.
 
-### Alternatives rejected
+## Alternatives considered
 
 - **Most-restrictive-wins**: makes it impossible to grant targeted exceptions to
   broad restrictions without removing the restriction entirely.

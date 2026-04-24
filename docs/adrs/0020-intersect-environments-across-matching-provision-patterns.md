@@ -15,7 +15,7 @@ must decide how to combine them — should the target repo receive secrets in th
 union of all matched environments, or only those environments that all patterns
 agree on?
 
-## Decision outcome
+## Decision
 
 When multiple repo patterns match the same target repository, their environment
 lists are intersected — only environments present in every matching pattern's
@@ -26,7 +26,7 @@ dependabot), which use union semantics. The asymmetry reflects the different
 risk profiles: environments often represent deployment stages where unintended
 access is higher-impact.
 
-### Consequences
+## Consequences
 
 - Good, because a broad repo pattern can't inadvertently extend environment
   access beyond what a more specific pattern intended.
@@ -35,7 +35,7 @@ access is higher-impact.
 - Bad, because a pattern with an empty environment list causes the intersection
   to be empty for any repo it matches.
 
-### Alternatives rejected
+## Alternatives considered
 
 - **Union of environments**: a broad pattern would override the intent of
   narrower patterns that restrict environments.

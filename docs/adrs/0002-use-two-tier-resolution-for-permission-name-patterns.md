@@ -20,7 +20,7 @@ permissions:
   contents: none # must override the wildcard
 ```
 
-## Decision outcome
+## Decision
 
 Two-tier resolution within each rule:
 
@@ -32,14 +32,14 @@ Two-tier resolution within each rule:
 If neither tier matches a requested permission, the rule doesn't affect it.
 Inter-rule semantics are unchanged (last rule overrides via `Object.assign`).
 
-### Consequences
+## Consequences
 
 - Good, because broad grants (`"*": write`) and targeted restrictions
   (`contents: none`) work in the same rule.
 - Bad, because among patterns, only the most permissive match wins — no
   "narrowest pattern wins" option.
 
-### Alternatives rejected
+## Alternatives considered
 
 - **Flat max-wins** (no tiers): can't de-escalate — `contents: none` loses to
   `"*": write`.

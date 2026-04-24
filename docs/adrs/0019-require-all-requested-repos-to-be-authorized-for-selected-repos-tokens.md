@@ -13,7 +13,7 @@ repos may be authorized while others are not. The system must decide whether to
 issue a token scoped to only the authorized repos, or to refuse the request
 entirely.
 
-## Decision outcome
+## Decision
 
 Selected-repos token authorization uses all-or-nothing semantics: every
 requested repository must be independently authorized, or the entire token
@@ -24,7 +24,7 @@ Each repo's permissions are evaluated separately against the rules, and the
 overall authorization is the logical AND of all per-repo results. A single
 unauthorized repo causes the entire request to be denied.
 
-### Consequences
+## Consequences
 
 - Good, because consumers can rely on getting exactly the repos they declared —
   there is no silent scope reduction that could cause downstream workflows to
@@ -34,7 +34,7 @@ unauthorized repo causes the entire request to be denied.
 - Bad, because a single misconfigured repo in a multi-repo declaration blocks
   all repos, even those that would be authorized individually.
 
-### Alternatives rejected
+## Alternatives considered
 
 - **Issue tokens for the authorized subset**: the consumer would receive a token
   with fewer repos than requested, leading to silent failures in workflows that

@@ -25,7 +25,7 @@ have.
 [aws iam permissions boundary]:
   https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_boundaries.html
 
-## Decision outcome
+## Decision
 
 An issuer installation's permissions act as a hard boundary for any tokens it
 creates. A token request is denied if it asks for any permission that the issuer
@@ -35,7 +35,7 @@ This boundary is enforced independently of — and in addition to — the provid
 permission rules. Both checks must pass: the provider must allow the request
 _and_ the issuer must have the requested permissions.
 
-### Consequences
+## Consequences
 
 - Good, because the issuer installation's permissions provide a clear, immutable
   security boundary that cannot be overridden by configuration.
@@ -45,7 +45,7 @@ _and_ the issuer must have the requested permissions.
   can cause confusing authorization failures that require checking both
   configurations.
 
-### Alternatives rejected
+## Alternatives considered
 
 - **Ignore installation permissions, rely only on provider rules**: not
   technically possible — GitHub's API enforces that installation tokens cannot

@@ -14,7 +14,7 @@ provider-side changes for every new requester. The discovery mechanism also
 needs a security boundary — not every repo in an organization should be able to
 participate.
 
-## Decision outcome
+## Decision
 
 Discover requesters by enumerating the repos accessible to provisioner app
 installations. If a provisioner app is installed on an org or repo, that org's
@@ -26,7 +26,7 @@ deliberately installed the provisioner app can participate. It's also
 self-service — adding a repo requires installing the app and adding a config
 file, with no changes to the provider.
 
-### Consequences
+## Consequences
 
 - Good, because the security boundary is enforced by GitHub's app installation
   model — no custom access control needed.
@@ -34,7 +34,7 @@ file, with no changes to the provider.
 - Bad, because discovery requires enumerating all installations and their repos,
   which scales with the number of installations.
 
-### Alternatives rejected
+## Alternatives considered
 
 - **Hardcoded allowlist in provider config**: inflexible — doesn't scale and
   requires provider changes for each new requester.

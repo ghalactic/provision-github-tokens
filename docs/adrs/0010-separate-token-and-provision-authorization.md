@@ -14,7 +14,7 @@ particular scope? Combining these into a single authorization check would mean
 that granting token permissions implicitly grants provisioning rights, or vice
 versa.
 
-## Decision outcome
+## Decision
 
 Authorization is split into two independent checks that must both pass:
 
@@ -31,7 +31,7 @@ up_.
 This also reflects the architecture — token issuance and secret provisioning may
 use different GitHub Apps with different capabilities.
 
-### Consequences
+## Consequences
 
 - Good, because providers can independently control token permissions and secret
   placement.
@@ -39,7 +39,7 @@ use different GitHub Apps with different capabilities.
   concerns separated.
 - Bad, because providers must configure two sets of rules instead of one.
 
-### Alternatives rejected
+## Alternatives considered
 
 - **Single unified authorization**: can't independently control token
   permissions vs. secret placement — granting a token implicitly allows

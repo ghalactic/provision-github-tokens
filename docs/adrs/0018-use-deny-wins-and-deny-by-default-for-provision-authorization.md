@@ -15,7 +15,7 @@ strategy, because misplacing a secret exposes a token to unintended consumers.
 
 [adr-0002]: 0002-use-two-tier-resolution-for-permission-name-patterns.md
 
-## Decision outcome
+## Decision
 
 Provision authorization uses two complementary postures:
 
@@ -27,7 +27,7 @@ Provision authorization uses two complementary postures:
   provisioning is denied. The three-state model (`allow`, `deny`, `undefined`)
   treats both `undefined` and `deny` as denied for the final decision.
 
-### Consequences
+## Consequences
 
 - Good, because broad deny patterns can't be overridden by narrower patterns in
   the same rule.
@@ -35,7 +35,7 @@ Provision authorization uses two complementary postures:
 - Bad, because the asymmetry with token authorization (max-wins) is a subtlety
   providers must understand.
 
-### Alternatives rejected
+## Alternatives considered
 
 - **Max-wins for provision patterns**: a specific allow could override a broad
   deny, risking unintended secret exposure.

@@ -13,7 +13,7 @@ actually allowed to have. If requesters control their own authorization, any
 repo could escalate its own permissions. The trust model must ensure that a
 central authority controls what tokens are issued.
 
-## Decision outcome
+## Decision
 
 The provider repo's configuration is the sole authority on what tokens
 requesters can obtain. Requesters declare what they _want_; the provider decides
@@ -28,7 +28,7 @@ Provider permission rules specify:
 Requesters cannot escalate beyond what the provider allows. The provider has
 veto power over every token request.
 
-### Consequences
+## Consequences
 
 - Good, because a single repo controls the security policy for all token
   issuance.
@@ -37,7 +37,7 @@ veto power over every token request.
 - Bad, because requesters depend on the provider to update rules when their
   needs change.
 
-### Alternatives rejected
+## Alternatives considered
 
 - **Requester-declared permissions with no central control**: insecure — any
   repo could request arbitrary permissions.
