@@ -6,7 +6,7 @@ import { defineConfig, globalIgnores } from "eslint/config";
 import tseslint from "typescript-eslint";
 
 export default defineConfig(
-  globalIgnores([".agents", ".makefiles", "artifacts", "dist"]),
+  globalIgnores([".makefiles", "artifacts", "dist"]),
   js.configs.recommended,
   tseslint.configs.recommendedTypeChecked,
   vitest.configs.recommended,
@@ -14,12 +14,12 @@ export default defineConfig(
   {
     languageOptions: {
       parserOptions: {
-        projectService: {
-          allowDefaultProject: ["*.js"],
-        },
+        projectService: true,
       },
     },
     rules: {
+      // typescript-eslint replaces no-undef
+      "no-undef": "off",
       // Importing helpers from __mocks_ is useful in tests
       "vitest/no-mocks-import": "off",
     },

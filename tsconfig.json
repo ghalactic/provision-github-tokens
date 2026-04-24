@@ -1,12 +1,15 @@
 {
   "compilerOptions": {
+    "allowJs": true,
     "esModuleInterop": true,
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
-    "noEmitOnError": true,
+    "noEmit": true,
     "resolveJsonModule": true,
     "sourceMap": true,
     "strict": true,
     "target": "ESNext"
-  }
+  },
+  "exclude": ["dist", "artifacts", ".makefiles"],
+  "include": ["**/*.js", "**/*.ts", ".agents/**/*.js"]
 }

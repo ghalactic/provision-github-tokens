@@ -10,16 +10,20 @@
 
 import fs from "node:fs";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
+/**
+ * @param {string} msg
+ * @returns {never}
+ */
 function die(msg) {
   process.stderr.write(`${msg}\n`);
   process.exit(1);
 }
 
+/**
+ * @param {string} text
+ * @returns {string}
+ */
 function slugify(text) {
   const t = String(text || "")
     .trim()
@@ -30,11 +34,34 @@ function slugify(text) {
   return trimmed || "decision";
 }
 
+/**
+ * @param {string} p
+ * @returns {string}
+ */
 function toPosix(p) {
   return p.split(path.sep).join("/");
 }
 
+/**
+ * @typedef {object} NewAdrArgs
+ * @property {string} repoRoot
+ * @property {string | null} dir
+ * @property {boolean} noCreateDir
+ * @property {string | null} title
+ * @property {string} status
+ * @property {string} strategy
+ * @property {string} deciders
+ * @property {boolean} updateIndex
+ * @property {string | null} indexFile
+ * @property {boolean} json
+ */
+
+/**
+ * @param {string[]} argv
+ * @returns {NewAdrArgs}
+ */
 function parseArgs(argv) {
+  /** @type {NewAdrArgs} */
   const out = {
     repoRoot: ".",
     dir: null,
@@ -97,6 +124,10 @@ function parseArgs(argv) {
   return out;
 }
 
+/**
+ * @param {string} repoRoot
+ * @returns {string | null}
+ */
 function detectAdrDir(repoRoot) {
   const candidates = [
     path.join(repoRoot, "docs", "decisions"),
@@ -115,8 +146,12 @@ function detectAdrDir(repoRoot) {
   return null;
 }
 
+/**
+ * @param {string} dir
+ * @returns {string[]}
+ */
 function listMdFiles(dir) {
-  let entries = [];
+  let entries;
   try {
     entries = fs.readdirSync(dir, { withFileTypes: true });
   } catch {
@@ -127,6 +162,10 @@ function listMdFiles(dir) {
     .map((e) => e.name);
 }
 
+/**
+ * @param {string} adrDir
+ * @returns {string}
+ */
 function detectStrategy(adrDir) {
   const md = listMdFiles(adrDir);
   for (const name of md) {
@@ -136,6 +175,10 @@ function detectStrategy(adrDir) {
   return "number";
 }
 
+/**
+ * @param {string} adrDir
+ * @returns {number | null}
+ */
 function detectNumberingWidth(adrDir) {
   const md = listMdFiles(adrDir);
   for (const name of md) {
@@ -145,6 +188,10 @@ function detectNumberingWidth(adrDir) {
   return null;
 }
 
+/**
+ * @param {string} adrDir
+ * @returns {number}
+ */
 function nextNumber(adrDir) {
   const md = listMdFiles(adrDir);
   let maxN = 0;
@@ -158,24 +205,29 @@ function nextNumber(adrDir) {
 }
 
 function loadTemplate() {
-  const skillRoot = path.resolve(__dirname, "..");
+  const skillRoot = path.resolve(import.meta.dirname, "..");
   const templatePath = path.join(skillRoot, "assets", "templates", "adr.md");
   if (!fs.existsSync(templatePath)) die(`Template not found: ${templatePath}`);
   return fs.readFileSync(templatePath, "utf8");
 }
 
+/**
+ * @param {string} raw
+ * @param {{title: string, status: string, date: string, deciders: string}} vars
+ * @returns {string}
+ */
 function renderTemplate(raw, vars) {
   let out = raw;
 
   // YAML front matter fields
   out = out.replace(
-    /^(status:\s*)["']?\{[^}]*\}["']?\s*$/m,
-    `$1${vars.status}`,
+    /^status:\s*["']?\{[^}]*\}["']?\s*$/m,
+    `status: ${vars.status}`,
   );
   out = out.replace(/^(date:\s*)\{[^}]*\}\s*$/m, `$1${vars.date}`);
   out = out.replace(
-    /^(decision-makers:\s*)["']?\{[^}]*\}["']?\s*$/m,
-    `$1${vars.deciders || ""}`,
+    /^decision-makers:\s*["']?\{[^}]*\}["']?\s*$/m,
+    vars.deciders ? `decision-makers: ${vars.deciders}` : "decision-makers:",
   );
 
   // Replace heading placeholder
@@ -191,6 +243,10 @@ function renderTemplate(raw, vars) {
   return out;
 }
 
+/**
+ * @param {string} adrDir
+ * @returns {string}
+ */
 function chooseIndexFile(adrDir) {
   for (const name of ["README.md", "index.md"]) {
     const p = path.join(adrDir, name);
@@ -199,6 +255,12 @@ function chooseIndexFile(adrDir) {
   return path.join(adrDir, "README.md");
 }
 
+/**
+ * @param {string[]} lines
+ * @param {RegExp} headingRegex
+ * @param {string} entryLine
+ * @returns {{lines: string[], inserted: boolean}}
+ */
 function insertIndexEntryUnderHeading(lines, headingRegex, entryLine) {
   const headingIndex = lines.findIndex((l) => headingRegex.test(l));
   if (headingIndex === -1) return { lines, inserted: false };
@@ -231,10 +293,19 @@ function insertIndexEntryUnderHeading(lines, headingRegex, entryLine) {
   return { lines: result, inserted: true };
 }
 
+/**
+ * @param {string} indexFile
+ * @param {object} root0
+ * @param {string} root0.relLink
+ * @param {string} root0.title
+ * @param {string} root0.status
+ * @param {string} root0.date
+ * @returns {boolean}
+ */
 function updateIndex(indexFile, { relLink, title, status, date }) {
-  let content = "";
-  if (fs.existsSync(indexFile)) content = fs.readFileSync(indexFile, "utf8");
-  else content = "# ADR Log\n\n";
+  const content = fs.existsSync(indexFile)
+    ? fs.readFileSync(indexFile, "utf8")
+    : "# ADR Log\n\n";
 
   if (content.includes(relLink)) return false;
 

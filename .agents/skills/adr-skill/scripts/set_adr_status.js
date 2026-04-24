@@ -1,28 +1,32 @@
 #!/usr/bin/env node
 /**
- * Update an ADR's status in-place.
- *
- * Supported patterns:
- * - Bullet status: "- Status: proposed" or "* Status: proposed"
- * - Nygard-style section: "## Status" followed by a single-line status value
+ * Update an ADR's YAML front matter status in-place.
  */
 
 import fs from "node:fs";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
+/**
+ * @param {string} msg
+ * @returns {never}
+ */
 function die(msg) {
   process.stderr.write(`${msg}\n`);
   process.exit(1);
 }
 
+/**
+ * @param {string} p
+ * @returns {string}
+ */
 function toPosix(p) {
   return p.split(path.sep).join("/");
 }
 
+/**
+ * @param {string[]} argv
+ * @returns {{file: string, status: string, json: boolean}}
+ */
 function parseArgs(argv) {
   if (argv.includes("--help") || argv.includes("-h")) {
     process.stdout.write(
@@ -40,6 +44,7 @@ function parseArgs(argv) {
   if (argv.length < 3) die("Missing <path>");
   const file = argv[2];
 
+  /** @type {string | null} */
   let status = null;
   let json = false;
   for (let i = 3; i < argv.length; i++) {
@@ -57,6 +62,11 @@ function parseArgs(argv) {
   return { file, status: String(status).trim(), json };
 }
 
+/**
+ * @param {string[]} lines
+ * @param {string} newStatus
+ * @returns {{lines: string[], changed: boolean}}
+ */
 function setYamlFrontMatterStatus(lines, newStatus) {
   if (lines.length < 2 || lines[0].trim() !== "---")
     return { lines, changed: false };
@@ -93,47 +103,6 @@ function setYamlFrontMatterStatus(lines, newStatus) {
   return { lines: out, changed };
 }
 
-function setBulletStatus(lines, newStatus) {
-  let changed = false;
-  const out = lines.map((line) => {
-    const m = line.match(/^([*-])\s*Status:\s*(.*)$/);
-    if (!m) return line;
-    changed = true;
-    return `${m[1]} Status: ${newStatus}`;
-  });
-  return { lines: out, changed };
-}
-
-function setSectionStatus(lines, newStatus) {
-  let changed = false;
-  const out = [];
-
-  for (let i = 0; i < lines.length; i++) {
-    out.push(lines[i]);
-
-    if (!/^##\s+Status\s*$/.test(lines[i])) continue;
-
-    let j = i + 1;
-    while (j < lines.length && lines[j].trim() === "") {
-      out.push(lines[j]);
-      j++;
-    }
-
-    if (j < lines.length && !/^##\s+/.test(lines[j])) {
-      out.push(newStatus);
-      changed = true;
-      i = j;
-      continue;
-    }
-
-    out.push(newStatus);
-    changed = true;
-    i = j - 1;
-  }
-
-  return { lines: out, changed };
-}
-
 function main() {
   const args = parseArgs(process.argv);
   const filePath = path.resolve(process.cwd(), args.file);
@@ -143,12 +112,10 @@ function main() {
   const hadTrailingNewline = content.endsWith("\n");
   const lines = content.replace(/\r\n/g, "\n").split("\n");
 
-  let r = setYamlFrontMatterStatus(lines, args.status);
-  if (!r.changed) r = setBulletStatus(lines, args.status);
-  if (!r.changed) r = setSectionStatus(lines, args.status);
+  const r = setYamlFrontMatterStatus(lines, args.status);
   if (!r.changed) {
     die(
-      "Could not find a status to update. Expected YAML front matter 'status:', '- Status:'/'* Status:', or a '## Status' section.",
+      "Could not find a status to update. Expected YAML front matter 'status:' field.",
     );
   }
 
