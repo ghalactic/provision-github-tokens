@@ -50,7 +50,7 @@ in the commit log.
 - **In-app authorization for rule changes**: adds significant complexity — would
   need its own user management, permissions model, and audit logging, all of
   which Git and GitHub already provide.
-- **Rules defined per-requester in each consuming repo**: no central control —
+- **Rules defined per-requester in each requesting repo**: no central control —
   equivalent to letting requesters self-authorize (see [ADR-0004]).
 - **Out-of-band rule management** (e.g. a separate admin UI or API): splits the
   source of truth, making it harder to audit and reason about what rules are

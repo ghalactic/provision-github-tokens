@@ -10,8 +10,8 @@ decision-makers: ezzatron
 
 The action needs to find which repos want tokens provisioned. A central registry
 of requesters in the provider config would be inflexible and require
-provider-side changes for every new consumer. The discovery mechanism also needs
-a security boundary — not every repo in an organization should be able to
+provider-side changes for every new requester. The discovery mechanism also
+needs a security boundary — not every repo in an organization should be able to
 participate.
 
 ## Decision outcome
