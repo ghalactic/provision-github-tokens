@@ -1,7 +1,7 @@
 /* istanbul ignore file - TODO: remove coverage ignore - @preserve */
 import { install as installSourceMapSupport } from "source-map-support";
 
-import { group, setFailed } from "@actions/core";
+import { group, setFailed, summary } from "@actions/core";
 import { createAppRegistry } from "./app-registry.js";
 import { createAuthorizer } from "./authorizer.js";
 import { readAppsInput } from "./config/apps-input.js";
@@ -18,6 +18,7 @@ import { createProvisionRequestFactory } from "./provision-request.js";
 import { createFindProvisionerOctokit } from "./provisioner-octokit.js";
 import { createProvisioner } from "./provisioner.js";
 import { registerTokenDeclarations } from "./register-token-declarations.js";
+import { renderSummary } from "./summary.js";
 import { createTokenAuthorizer } from "./token-authorizer.js";
 import { createTokenDeclarationRegistry } from "./token-declaration-registry.js";
 import { createTokenFactory } from "./token-factory.js";
@@ -93,8 +94,15 @@ async function main(): Promise<void> {
     return requesters;
   });
 
-  await group("Authorizing requests", async () => {
-    await authorizer.authorize(Array.from(requesters.values()));
+  const authorizeResult = await group("Authorizing requests", async () => {
+    return await authorizer.authorize(Array.from(requesters.values()));
+  });
+
+  await group("Writing summary", async () => {
+    const prefix = `pgt-${process.env.GITHUB_ACTION ?? ""}`;
+    const markdown = renderSummary(authorizeResult, prefix);
+
+    await summary.addRaw(markdown).write();
   });
 
   const tokens = await group("Creating tokens", async () => {
