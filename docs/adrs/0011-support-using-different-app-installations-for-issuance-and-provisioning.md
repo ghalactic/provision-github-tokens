@@ -20,6 +20,8 @@ installation, would expand the boundary of what tokens it could issue. Without
 separating issuance and provisioning, there's no way to give the provisioner the
 permissions it needs without also expanding the issuer's permissions boundary.
 
+[adr-0012]: 0012-cap-issued-token-permissions-at-installation-boundaries.md
+
 At the same time, requiring two separate apps in every configuration would add
 unnecessary setup burden for users who are comfortable with a shared permissions
 boundary.
