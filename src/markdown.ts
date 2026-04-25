@@ -1,99 +1,114 @@
-import type { Element, ElementContent } from "hast";
+import GithubSlugger from "github-slugger";
+import type { ElementContent } from "hast";
 import { toHtml } from "hast-util-to-html";
 import type {
+  Emphasis,
   Heading,
-  Html,
+  InlineCode,
   Link,
   List,
   ListItem,
   Paragraph,
-  PhrasingContent,
+  RootContent,
+  Text,
 } from "mdast";
+import { toString } from "mdast-util-to-string";
+import { createHash } from "node:crypto";
 
-export function bulletList(...items: ListItem[]): List {
-  return { type: "list", ordered: false, spread: false, children: items };
+const ALLOWED_ICON = "✅";
+const DENIED_ICON = "❌";
+
+export function anchorLink(
+  anchor: string,
+  ...children: Link["children"]
+): Link {
+  return link(`#user-content-${anchor}`, ...children);
 }
 
-export function detailsOpen(children: ElementContent[]): Html {
-  const summary: Element = {
+export type HeadingFactory = (
+  depth: Heading["depth"],
+  ...children: Heading["children"]
+) => [heading: Heading, id: string];
+
+export function createHeadingFactory(
+  stepSummaryPath: string,
+  slugger: GithubSlugger,
+): HeadingFactory {
+  const prefix = createHash("sha256")
+    .update(stepSummaryPath)
+    .digest("hex")
+    .slice(0, 8);
+
+  return (depth, ...children) => {
+    const heading: Heading = { type: "heading", depth, children };
+    const id = `${prefix}-${slugger.slug(toString(heading))}`;
+    const anchorHTML = toHtml({
+      type: "element",
+      tagName: "a",
+      properties: { id },
+      children: [],
+    });
+    heading.children.push({ type: "html", value: ` ${anchorHTML}` });
+
+    return [heading, id];
+  };
+}
+
+export function details(
+  summary: ElementContent[],
+  ...children: RootContent[]
+): RootContent[] {
+  const summaryHTML = toHtml({
     type: "element",
     tagName: "summary",
     properties: {},
-    children,
-  };
+    children: summary,
+  });
 
-  return { type: "html", value: `<details>\n${toHtml(summary)}` };
-}
-
-export function detailsClose(): Html {
-  return { type: "html", value: "</details>" };
-}
-
-export function heading(depth: 1 | 2 | 3 | 4 | 5 | 6, text: string): Heading {
-  return {
-    type: "heading",
-    depth,
-    children: [{ type: "text", value: text }],
-  };
-}
-
-export function headingWithAnchor(
-  depth: 1 | 2 | 3 | 4 | 5 | 6,
-  text: string,
-  anchorId: string,
-): Heading {
-  const anchor: Element = {
-    type: "element",
-    tagName: "a",
-    properties: { id: anchorId },
-    children: [],
-  };
-
-  return {
-    type: "heading",
-    depth,
-    children: [
-      { type: "text", value: text },
-      { type: "html", value: ` ${toHtml(anchor)}` },
-    ],
-  };
-}
-
-export function iconItem(
-  iconStr: string,
-  text: string,
-  sublist?: List,
-): ListItem {
-  const paragraph: Paragraph = {
-    type: "paragraph",
-    children: [{ type: "text", value: `${iconStr} ${text}` }],
-  };
-
-  return {
-    type: "listItem",
-    spread: false,
-    children: sublist ? [paragraph, sublist] : [paragraph],
-  };
-}
-
-export function linkItem(
-  textBefore: string,
-  linkText: string,
-  linkUrl: string,
-): ListItem {
-  const link: Link = {
-    type: "link",
-    url: linkUrl,
-    children: [{ type: "inlineCode", value: linkText }],
-  };
-  const phrasing: PhrasingContent[] = [
-    { type: "text", value: textBefore },
-    link,
+  return [
+    { type: "html", value: `<details>\n${summaryHTML}` },
+    ...children,
+    { type: "html", value: "</details>" },
   ];
+}
+
+export function emphasis(...children: Emphasis["children"]): Emphasis {
+  return { type: "emphasis", children };
+}
+
+export function inlineCode(code: string): InlineCode {
+  return { type: "inlineCode", value: code };
+}
+
+export function link(url: string | URL, ...children: Link["children"]): Link {
+  return { type: "link", url: url.toString(), children };
+}
+
+export function listItem(
+  ...children: (ListItem["children"][number] | undefined)[]
+): ListItem {
+  const definedChildren: ListItem["children"] = [];
+  for (const c of children) if (c) definedChildren.push(c);
 
   return {
     type: "listItem",
     spread: false,
-    children: [{ type: "paragraph", children: phrasing }],
+    children: definedChildren,
   };
+}
+
+export function paragraph(...children: Paragraph["children"]): Paragraph {
+  return { type: "paragraph", children };
+}
+
+export function renderIcon(isAllowed: boolean): string {
+  return isAllowed ? ALLOWED_ICON : DENIED_ICON;
+}
+
+export function text(value: string): Text {
+  return { type: "text", value };
+}
+
+export function unorderedList(...children: ListItem[]): List {
+  return { type: "list", ordered: false, spread: false, children };
 }

@@ -1,92 +1,101 @@
-import GithubSlugger from "github-slugger";
-import type {
-  Heading,
-  Link,
-  ListItem,
-  PhrasingContent,
-  Root,
-  RootContent,
-} from "mdast";
+import type { Heading, ListItem, RootContent } from "mdast";
 import { gfmToMarkdown } from "mdast-util-gfm";
 import { toMarkdown } from "mdast-util-to-markdown";
-import { createHash } from "node:crypto";
 import type { AuthorizeResult } from "./authorizer.js";
 import { compareProvisionRequest } from "./compare-provision-request.js";
 import { compareTokenRequest } from "./compare-token-request.js";
 import { repoRefToString } from "./github-reference.js";
 import {
-  bulletList,
-  heading,
-  headingWithAnchor,
-  linkItem,
+  anchorLink,
+  emphasis,
+  inlineCode,
+  link,
+  listItem,
+  paragraph,
+  renderIcon,
+  text,
+  unorderedList,
+  type HeadingFactory,
 } from "./markdown.js";
 import { pluralize } from "./pluralize.js";
 import { createMarkdownProvisionAuthExplainer } from "./provision-auth-explainer/markdown.js";
 import { createMarkdownTokenAuthExplainer } from "./token-auth-explainer/markdown.js";
 import type { ProvisionAuthResult } from "./type/provision-auth-result.js";
 import type { TokenAuthResult } from "./type/token-auth-result.js";
-
-type UsedByEntry = {
-  secretName: string;
-  secretAnchor: string;
-  requesterName: string;
-};
+import type { TokenHeadingReference } from "./type/token-heading-reference.js";
 
 export function renderSummary(
+  createHeading: HeadingFactory,
   result: AuthorizeResult,
-  stepSummaryPath: string,
   actionUrl: string,
 ): string {
-  const prefix = `pgt-${createHash("sha256").update(stepSummaryPath).digest("hex").slice(0, 8)}`;
-  const slugger = new GithubSlugger();
-
-  const provisionResults = [...result.provisionResults].sort((a, b) =>
+  const provisionResults = result.provisionResults.toSorted((a, b) =>
     compareProvisionRequest(a.request, b.request),
   );
-  const tokenResults = [...result.tokenResults].sort((a, b) =>
+  const tokenResults = result.tokenResults.toSorted((a, b) =>
     compareTokenRequest(a.request, b.request),
   );
 
-  const tokenAnchorMap = buildTokenAnchorMap(tokenResults, prefix);
-  const usedByMap = buildUsedByMap(provisionResults, prefix, slugger);
+  const secretHeadingMap = buildSecretHeadingMap(
+    createHeading,
+    provisionResults,
+  );
+  const { tokenHeadingMap, tokenReferenceMap } = buildTokenMaps(
+    createHeading,
+    tokenResults,
+  );
+  const { secretTokenLinkMap, usedByMap } = buildSecretTokenRelations(
+    provisionResults,
+    secretHeadingMap,
+    tokenReferenceMap,
+  );
 
   const explainToken = createMarkdownTokenAuthExplainer();
-  const explainProvision = createMarkdownProvisionAuthExplainer(tokenAnchorMap);
+  const explainProvision =
+    createMarkdownProvisionAuthExplainer(tokenReferenceMap);
 
-  const children: RootContent[] = [
-    statsHeading(provisionResults),
-    ...emptySection(provisionResults, tokenResults, actionUrl),
-    ...failuresSection(provisionResults, prefix, slugger),
-    ...secretProvisioningSection(
-      provisionResults,
-      explainProvision,
-      tokenAnchorMap,
-      prefix,
-      slugger,
-    ),
-    ...tokenIssuingSection(
-      tokenResults,
-      explainToken,
-      tokenAnchorMap,
-      usedByMap,
-    ),
-  ];
-
-  const root: Root = { type: "root", children };
-
-  return toMarkdown(root, { bullet: "-", extensions: [gfmToMarkdown()] });
+  return toMarkdown(
+    {
+      type: "root",
+      children: [
+        statsHeading(createHeading, provisionResults),
+        ...emptySection(provisionResults, tokenResults, actionUrl),
+        ...failuresSection(createHeading, provisionResults, secretHeadingMap),
+        ...secretProvisioningSection(
+          createHeading,
+          provisionResults,
+          explainProvision,
+          secretTokenLinkMap,
+          secretHeadingMap,
+        ),
+        ...tokenIssuingSection(
+          createHeading,
+          tokenResults,
+          explainToken,
+          tokenHeadingMap,
+          usedByMap,
+        ),
+      ],
+    },
+    { bullet: "-", extensions: [gfmToMarkdown()] },
+  );
 }
 
-function statsHeading(provisionResults: ProvisionAuthResult[]): Heading {
+function statsHeading(
+  createHeading: HeadingFactory,
+  provisionResults: ProvisionAuthResult[],
+): Heading {
   const total = provisionResults.length;
   const allowed = provisionResults.filter((r) => r.isAllowed).length;
 
-  const text =
+  const headingText =
     allowed === total
       ? `Provisioned ${pluralize(total, "secret", "secrets")}`
       : `Provisioned ${allowed} of ${pluralize(total, "secret", "secrets")}`;
 
-  return heading(2, text);
+  const [result] = createHeading(2, text(headingText));
+
+  return result;
 }
 
 function emptySection(
@@ -97,55 +106,47 @@ function emptySection(
   if (provisionResults.length > 0 || tokenResults.length > 0) return [];
 
   return [
-    {
-      type: "paragraph",
-      children: [
-        {
-          type: "emphasis",
-          children: [{ type: "text", value: "(no secrets provisioned)" }],
-        },
-      ],
-    },
-    {
-      type: "paragraph",
-      children: [
-        { type: "text", value: "Need help getting started? See the " },
-        {
-          type: "link",
-          url: new URL("#readme", actionUrl).toString(),
-          children: [{ type: "text", value: "docs" }],
-        },
-        { type: "text", value: "." },
-      ],
-    },
+    paragraph(emphasis(text("(no secrets provisioned)"))),
+    paragraph(
+      text("Need help getting started? See the "),
+      link(new URL("#readme", actionUrl), text("docs")),
+      text("."),
+    ),
   ];
 }
 
 function failuresSection(
+  createHeading: HeadingFactory,
   provisionResults: ProvisionAuthResult[],
-  prefix: string,
-  slugger: GithubSlugger,
+  secretHeadingMap: HeadingMap<ProvisionAuthResult>,
 ): RootContent[] {
   const failures = provisionResults.filter((r) => !r.isAllowed);
   if (failures.length === 0) return [];
 
-  const nodes: RootContent[] = [heading(3, "Failures")];
+  const [failuresHeading] = createHeading(3, text("Failures"));
+  const nodes: RootContent[] = [failuresHeading];
 
-  for (const [requesterName, group] of groupBy(failures, (r) =>
+  for (const [requesterName, group] of Map.groupBy(failures, (r) =>
     repoRefToString(r.request.requester),
   )) {
-    nodes.push(heading(4, requesterName));
+    const [requesterHeading] = createHeading(4, text(requesterName));
+    nodes.push(requesterHeading);
     nodes.push(
-      bulletList(
+      unorderedList(
         ...group.map((r) => {
-          const anchor = secretAnchorId(
-            prefix,
-            requesterName,
-            r.request.name,
-            slugger,
-          );
+          const secretHeading = secretHeadingMap.get(r);
 
-          return linkItem(`❌ `, r.request.name, `#user-content-${anchor}`);
+          /* istanbul ignore next - @preserve */
+          if (secretHeading == null) {
+            throw new Error("Invariant violation: missing secret heading");
+          }
+
+          return listItem(
+            paragraph(
+              text(`${renderIcon(false)} `),
+              anchorLink(secretHeading.id, inlineCode(r.request.name)),
+            ),
+          );
         }),
       ),
     );
@@ -155,68 +156,68 @@ function failuresSection(
 }
 
 function secretProvisioningSection(
+  createHeading: HeadingFactory,
   provisionResults: ProvisionAuthResult[],
   explainProvision: (result: ProvisionAuthResult) => RootContent[],
-  tokenAnchorMap: Map<TokenAuthResult, string>,
-  prefix: string,
-  slugger: GithubSlugger,
+  secretTokenLinkMap: Map<ProvisionAuthResult, TokenHeadingReference>,
+  secretHeadingMap: HeadingMap<ProvisionAuthResult>,
 ): RootContent[] {
   if (provisionResults.length === 0) return [];
 
-  const nodes: RootContent[] = [heading(3, "Secret provisioning")];
+  const [secretProvisioningHeading] = createHeading(
+    3,
+    text("Secret provisioning"),
+  );
+  const nodes: RootContent[] = [secretProvisioningHeading];
 
-  for (const [requesterName, group] of groupBy(provisionResults, (r) =>
-    repoRefToString(r.request.requester),
-  )) {
-    nodes.push(heading(4, requesterName));
+  appendGroupedContent(
+    createHeading,
+    nodes,
+    provisionResults,
+    (r) => repoRefToString(r.request.requester),
+    (result) => {
+      const secretHeading = secretHeadingMap.get(result);
 
-    for (const result of group) {
-      const anchor = secretAnchorId(
-        prefix,
-        requesterName,
-        result.request.name,
-        slugger,
-      );
+      /* istanbul ignore next - @preserve */
+      if (secretHeading == null) {
+        throw new Error("Invariant violation: missing secret heading");
+      }
 
-      nodes.push(headingWithAnchor(5, result.request.name, anchor));
-      nodes.push(...explainProvision(result));
-      nodes.push(...usesTokenLine(result, tokenAnchorMap));
-    }
-  }
+      return [
+        secretHeading.heading,
+        ...explainProvision(result),
+        ...usesTokenLine(createHeading, result, secretTokenLinkMap),
+      ];
+    },
+  );
 
   return nodes;
 }
 
 function tokenIssuingSection(
+  createHeading: HeadingFactory,
   tokenResults: TokenAuthResult[],
   explainToken: (result: TokenAuthResult) => RootContent[],
-  tokenAnchorMap: Map<TokenAuthResult, string>,
+  tokenHeadingMap: HeadingMap<TokenAuthResult>,
   usedByMap: Map<TokenAuthResult, UsedByEntry[]>,
 ): RootContent[] {
   if (tokenResults.length === 0) return [];
 
-  const nodes: RootContent[] = [heading(3, "Token issuing")];
+  const [tokenIssuingHeading] = createHeading(3, text("Token issuing"));
+  const nodes: RootContent[] = [tokenIssuingHeading];
 
-  for (const [consumerName, group] of groupBy(tokenResults, (r) =>
-    consumerRefToString(r),
-  )) {
-    nodes.push(heading(4, consumerName));
-
-    for (const result of group) {
-      const anchor = tokenAnchorMap.get(result);
+  appendGroupedContent(
+    createHeading,
+    nodes,
+    tokenResults,
+    (r) => consumerRefToString(r),
+    (result) => {
+      const tokenHeading = tokenHeadingMap.get(result);
 
       /* istanbul ignore next - @preserve */
-      if (anchor == null) {
-        throw new Error("Invariant violation: missing token anchor");
+      if (tokenHeading == null) {
+        throw new Error("Invariant violation: missing token heading");
       }
-
-      const tokenIndex = [...tokenAnchorMap.keys()].indexOf(result) + 1;
-
-      nodes.push(
-        headingWithAnchor(5, tokenHeadingText(tokenIndex, result), anchor),
-      );
-
-      nodes.push(...explainToken(result));
 
       const usedBy = usedByMap.get(result);
 
@@ -225,10 +226,16 @@ function tokenIssuingSection(
         throw new Error("Invariant violation: missing used-by entries");
       }
 
-      nodes.push(heading(6, "Used by"));
-      nodes.push(bulletList(...usedBy.map((entry) => usedByItem(entry))));
-    }
-  }
+      const [usedByHeading] = createHeading(6, text("Used by"));
+
+      return [
+        tokenHeading.heading,
+        ...explainToken(result),
+        usedByHeading,
+        unorderedList(...usedBy.map((entry) => usedByItem(entry))),
+      ];
+    },
+  );
 
   return nodes;
 }
@@ -245,42 +252,129 @@ function tokenHeadingText(index: number, result: TokenAuthResult): string {
     return `${n} — ${account} (no repos)`;
   }
 
-  return `${n} — ${account} (${pluralize(result.request.repos.length, "repo", "repos")})`;
+  return (
+    `${n} — ${account} ` +
+    `(${pluralize(result.request.repos.length, "repo", "repos")})`
+  );
 }
 
 function usesTokenLine(
+  createHeading: HeadingFactory,
   result: ProvisionAuthResult,
-  tokenAnchorMap: Map<TokenAuthResult, string>,
+  secretTokenLinkMap: Map<ProvisionAuthResult, TokenHeadingReference>,
 ): RootContent[] {
-  const tokenAuthResult = result.results.find(
-    (r) => r.tokenAuthResult,
-  )?.tokenAuthResult;
+  const tokenReference = secretTokenLinkMap.get(result);
+  if (!tokenReference) return [];
 
-  if (!tokenAuthResult) return [];
+  const [usesHeading] = createHeading(
+    6,
+    text("Uses "),
+    anchorLink(
+      tokenReference.headingId,
+      text(`token #${tokenReference.index}`),
+    ),
+  );
 
-  const anchor = tokenAnchorMap.get(tokenAuthResult);
+  return [usesHeading];
+}
 
-  /* istanbul ignore next - @preserve */
-  if (!anchor) {
-    throw new Error("Invariant violation: missing token anchor");
+function buildTokenMaps(
+  createHeading: HeadingFactory,
+  tokenResults: TokenAuthResult[],
+): {
+  tokenHeadingMap: HeadingMap<TokenAuthResult>;
+  tokenReferenceMap: Map<TokenAuthResult, TokenHeadingReference>;
+} {
+  const tokenHeadingMap: HeadingMap<TokenAuthResult> = new Map();
+  const tokenReferenceMap = new Map<TokenAuthResult, TokenHeadingReference>();
+  let tokenIndex = 1;
+
+  for (const [consumerName, group] of Map.groupBy(tokenResults, (r) =>
+    consumerRefToString(r),
+  )) {
+    void consumerName;
+
+    for (const result of group) {
+      const [node, id] = createHeading(
+        5,
+        text(tokenHeadingText(tokenIndex, result)),
+      );
+      tokenHeadingMap.set(result, { heading: node, id });
+      tokenReferenceMap.set(result, { headingId: id, index: tokenIndex });
+      tokenIndex += 1;
+    }
   }
 
-  const tokenIndex = [...tokenAnchorMap.keys()].indexOf(tokenAuthResult) + 1;
+  return { tokenHeadingMap, tokenReferenceMap };
+}
 
-  return [
-    {
-      type: "heading",
-      depth: 6,
-      children: [
-        { type: "text", value: "Uses " },
-        {
-          type: "link",
-          url: `#user-content-${anchor}`,
-          children: [{ type: "text", value: `token #${tokenIndex}` }],
-        },
-      ],
-    },
-  ];
+function buildSecretTokenRelations(
+  provisionResults: ProvisionAuthResult[],
+  secretHeadingMap: HeadingMap<ProvisionAuthResult>,
+  tokenReferenceMap: Map<TokenAuthResult, TokenHeadingReference>,
+): {
+  secretTokenLinkMap: Map<ProvisionAuthResult, TokenHeadingReference>;
+  usedByMap: Map<TokenAuthResult, UsedByEntry[]>;
+} {
+  const secretTokenLinkMap = new Map<
+    ProvisionAuthResult,
+    TokenHeadingReference
+  >();
+  const usedByMap = new Map<TokenAuthResult, UsedByEntry[]>();
+
+  for (const provisionResult of provisionResults) {
+    const requesterName = repoRefToString(provisionResult.request.requester);
+    const secretHeading = secretHeadingMap.get(provisionResult);
+
+    /* istanbul ignore next - @preserve */
+    if (secretHeading == null) {
+      throw new Error("Invariant violation: missing secret heading");
+    }
+
+    let tokenAuthResultForSecret: TokenAuthResult | undefined;
+
+    for (const targetResult of provisionResult.results) {
+      const { tokenAuthResult } = targetResult;
+      if (!tokenAuthResult) continue;
+
+      /* istanbul ignore else - @preserve */
+      if (!tokenAuthResultForSecret) {
+        tokenAuthResultForSecret = tokenAuthResult;
+      } else if (tokenAuthResultForSecret !== tokenAuthResult) {
+        throw new Error(
+          "Invariant violation: multiple token auth results for secret",
+        );
+      }
+
+      let entries = usedByMap.get(tokenAuthResult);
+      if (!entries) {
+        entries = [];
+        usedByMap.set(tokenAuthResult, entries);
+      }
+
+      const anchor = secretHeading.id;
+      if (!entries.some((entry) => entry.secretAnchor === anchor)) {
+        entries.push({
+          secretName: provisionResult.request.name,
+          secretAnchor: anchor,
+          requesterName,
+        });
+      }
+    }
+
+    if (!tokenAuthResultForSecret) continue;
+
+    const tokenReference = tokenReferenceMap.get(tokenAuthResultForSecret);
+
+    /* istanbul ignore next - @preserve */
+    if (tokenReference == null) {
+      throw new Error("Invariant violation: missing token reference");
+    }
+
+    secretTokenLinkMap.set(provisionResult, tokenReference);
+  }
+
+  return { secretTokenLinkMap, usedByMap };
 }
 
 function consumerRefToString(result: TokenAuthResult): string {
@@ -291,87 +385,55 @@ function consumerRefToString(result: TokenAuthResult): string {
     : consumer.account;
 }
 
-function buildTokenAnchorMap(
-  tokenResults: TokenAuthResult[],
-  prefix: string,
-): Map<TokenAuthResult, string> {
-  const map = new Map<TokenAuthResult, string>();
-
-  for (let i = 0; i < tokenResults.length; i++) {
-    map.set(tokenResults[i], `${prefix}-token-${i + 1}`);
-  }
-
-  return map;
-}
-
-function buildUsedByMap(
+function buildSecretHeadingMap(
+  createHeading: HeadingFactory,
   provisionResults: ProvisionAuthResult[],
-  prefix: string,
-  slugger: GithubSlugger,
-): Map<TokenAuthResult, UsedByEntry[]> {
-  const map = new Map<TokenAuthResult, UsedByEntry[]>();
+): HeadingMap<ProvisionAuthResult> {
+  const map: HeadingMap<ProvisionAuthResult> = new Map();
 
-  for (const provResult of provisionResults) {
-    const requesterName = repoRefToString(provResult.request.requester);
+  for (const [requesterName, group] of Map.groupBy(provisionResults, (r) =>
+    repoRefToString(r.request.requester),
+  )) {
+    void requesterName;
 
-    for (const targetResult of provResult.results) {
-      if (!targetResult.tokenAuthResult) continue;
-
-      let entries = map.get(targetResult.tokenAuthResult);
-      if (!entries) {
-        entries = [];
-        map.set(targetResult.tokenAuthResult, entries);
-      }
-
-      const anchor = secretAnchorId(
-        prefix,
-        requesterName,
-        provResult.request.name,
-        slugger,
-      );
-
-      if (!entries.some((e) => e.secretAnchor === anchor)) {
-        entries.push({
-          secretName: provResult.request.name,
-          secretAnchor: anchor,
-          requesterName,
-        });
-      }
+    for (const result of group) {
+      const [node, id] = createHeading(5, text(result.request.name));
+      map.set(result, { heading: node, id });
     }
   }
 
   return map;
 }
 
-function secretAnchorId(
-  prefix: string,
-  requesterName: string,
-  secretName: string,
-  slugger: GithubSlugger,
-): string {
-  slugger.reset();
+function appendGroupedContent<T>(
+  createHeading: HeadingFactory,
+  nodes: RootContent[],
+  items: T[],
+  key: (item: T) => string,
+  renderItem: (item: T) => RootContent[],
+): void {
+  for (const [name, group] of Map.groupBy(items, (item) => key(item))) {
+    const [groupHeading] = createHeading(4, text(name));
 
-  return `${prefix}-${slugger.slug(`${requesterName}--${secretName}`)}`;
-}
-
-function groupBy<T>(items: T[], key: (item: T) => string): [string, T[]][] {
-  return [...Map.groupBy(items, (item) => key(item))];
+    nodes.push(groupHeading);
+    for (const item of group) nodes.push(...renderItem(item));
+  }
 }
 
 function usedByItem(entry: UsedByEntry): ListItem {
-  const link: Link = {
-    type: "link",
-    url: `#user-content-${entry.secretAnchor}`,
-    children: [{ type: "inlineCode", value: entry.secretName }],
-  };
-  const phrasing: PhrasingContent[] = [
-    link,
-    { type: "text", value: ` (${entry.requesterName})` },
-  ];
-
-  return {
-    type: "listItem",
-    spread: false,
-    children: [{ type: "paragraph", children: phrasing }],
-  };
+  return listItem(
+    paragraph(
+      anchorLink(entry.secretAnchor, inlineCode(entry.secretName)),
+      text(` (${entry.requesterName})`),
+    ),
+  );
 }
+
+type UsedByEntry = {
+  secretName: string;
+  secretAnchor: string;
+  requesterName: string;
+};
+
+type HeadingEntry = { heading: Heading; id: string };
+type HeadingMap<T> = Map<T, HeadingEntry>;

@@ -10,12 +10,6 @@ const fixturesPath = join(
   "../../../fixture/token-auth-explainer",
 );
 
-function render(nodes: RootContent[]): string {
-  const root: Root = { type: "root", children: nodes };
-
-  return toMarkdown(root, { bullet: "-" });
-}
-
 const explain = createMarkdownTokenAuthExplainer();
 
 describe("ALL_REPOS", () => {
@@ -407,3 +401,9 @@ describe("SELECTED_REPOS", () => {
     );
   });
 });
+
+function render(nodes: RootContent[]): string {
+  const root: Root = { type: "root", children: nodes };
+
+  return toMarkdown(root, { bullet: "-" });
+}

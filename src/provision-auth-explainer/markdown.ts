@@ -1,12 +1,5 @@
 import type { ElementContent } from "hast";
-import type {
-  Link,
-  List,
-  ListItem,
-  Paragraph,
-  PhrasingContent,
-  RootContent,
-} from "mdast";
+import type { List, ListItem, RootContent } from "mdast";
 import { compareProvisionRequestTarget } from "../compare-provision-request-target.js";
 import {
   accountOrRepoRefToString,
@@ -14,10 +7,13 @@ import {
   repoRefToString,
 } from "../github-reference.js";
 import {
-  bulletList,
-  detailsClose,
-  detailsOpen,
-  iconItem,
+  anchorLink,
+  details,
+  listItem,
+  paragraph,
+  renderIcon,
+  text,
+  unorderedList,
 } from "../markdown.js";
 import type { ProvisionRequestTarget } from "../provision-request.js";
 import type {
@@ -28,19 +24,16 @@ import type {
 } from "../type/provision-auth-result.js";
 import type { ProvisionSecretsRule } from "../type/provision-rule.js";
 import type { TokenAuthResult } from "../type/token-auth-result.js";
-
-const ALLOWED_ICON = "✅";
-const DENIED_ICON = "❌";
+import type { TokenHeadingReference } from "../type/token-heading-reference.js";
 
 export function createMarkdownProvisionAuthExplainer(
-  tokenAnchorMap: Map<TokenAuthResult, string>,
+  tokenReferenceMap: Map<TokenAuthResult, TokenHeadingReference>,
 ): ProvisionAuthResultExplainer<RootContent[]> {
   return (result) => {
-    return [
-      detailsOpen(summaryChildren(result)),
-      bulletList(tokenDecItem(result), ...targetItems(result)),
-      detailsClose(),
-    ];
+    return details(
+      summaryChildren(result),
+      unorderedList(tokenDecItem(result), ...targetItems(result)),
+    );
   };
 
   function summaryChildren({
@@ -48,13 +41,11 @@ export function createMarkdownProvisionAuthExplainer(
     isAllowed,
   }: ProvisionAuthResult): ElementContent[] {
     return [
-      {
-        type: "text",
-        value:
-          `${icon(isAllowed)} Repo ${repoRefToString(request.requester)} ` +
+      text(
+        `${renderIcon(isAllowed)} Repo ${repoRefToString(request.requester)} ` +
           (isAllowed ? "was allowed" : "wasn't allowed") +
           ` to provision secret ${request.name}`,
-      },
+      ),
     ];
   }
 
@@ -63,16 +54,23 @@ export function createMarkdownProvisionAuthExplainer(
     const { secretDec, tokenDec, tokenDecIsRegistered } = request;
 
     if (tokenDec) {
-      return iconItem(
-        ALLOWED_ICON,
-        `Can use token declaration ${secretDec.token}`,
+      return listItem(
+        paragraph(
+          text(
+            `${renderIcon(true)} Can use token declaration ${secretDec.token}`,
+          ),
+        ),
       );
     }
 
-    return iconItem(
-      DENIED_ICON,
-      `Can't use token declaration ${secretDec.token} because ` +
-        (tokenDecIsRegistered ? "it isn't shared" : "it doesn't exist"),
+    return listItem(
+      paragraph(
+        text(
+          `${renderIcon(false)} Can't use ` +
+            `token declaration ${secretDec.token} because ` +
+            (tokenDecIsRegistered ? "it isn't shared" : "it doesn't exist"),
+        ),
+      ),
     );
   }
 
@@ -80,7 +78,9 @@ export function createMarkdownProvisionAuthExplainer(
     const { request, results, isMissingTargets } = result;
 
     if (isMissingTargets) {
-      return [iconItem(DENIED_ICON, "No targets specified")];
+      return [
+        listItem(paragraph(text(`${renderIcon(false)} No targets specified`))),
+      ];
     }
 
     const entries: [ProvisionRequestTarget, ProvisionAuthTargetResult][] = [];
@@ -98,10 +98,15 @@ export function createMarkdownProvisionAuthExplainer(
     target: ProvisionRequestTarget,
     result: ProvisionAuthTargetResult,
   ): ListItem {
-    return iconItem(
-      icon(result.isAllowed),
-      `${result.isAllowed ? "Can" : "Can't"} provision token to ${subjectText(target)}:`,
-      bulletList(tokenAuthItem(result), provisioningItem(result)),
+    return listItem(
+      paragraph(
+        text(
+          `${renderIcon(result.isAllowed)} ` +
+            `${result.isAllowed ? "Can" : "Can't"} provision token to ` +
+            `${subjectText(target)}:`,
+        ),
+      ),
+      unorderedList(tokenAuthItem(result), provisioningItem(result)),
     );
   }
 
@@ -109,9 +114,13 @@ export function createMarkdownProvisionAuthExplainer(
     const { isTokenAllowed, tokenAuthResult } = result;
 
     if (!tokenAuthResult) {
-      return iconItem(
-        DENIED_ICON,
-        "Token can't be authorized without a declaration",
+      return listItem(
+        paragraph(
+          text(
+            `${renderIcon(false)} Token can't be authorized ` +
+              `without a declaration`,
+          ),
+        ),
       );
     }
 
@@ -119,38 +128,38 @@ export function createMarkdownProvisionAuthExplainer(
     const kind = isRepoRef(tokenAuthResult.request.consumer)
       ? "Repo"
       : "Account";
-    const anchor = tokenAnchorMap.get(tokenAuthResult);
+    const tokenReference = tokenReferenceMap.get(tokenAuthResult);
 
     /* istanbul ignore next - @preserve */
-    if (anchor == null) {
-      throw new Error("Invariant violation: missing token anchor");
+    if (tokenReference == null) {
+      throw new Error("Invariant violation: missing token reference");
     }
 
-    const tokenIndex = [...tokenAnchorMap.keys()].indexOf(tokenAuthResult) + 1;
-
-    const link: Link = {
-      type: "link",
-      url: `#user-content-${anchor}`,
-      children: [{ type: "text", value: `token #${tokenIndex}` }],
-    };
-    const phrasing: PhrasingContent[] = [
-      {
-        type: "text",
-        value: `${icon(isTokenAllowed)} ${kind} ${name} was ${isTokenAllowed ? "allowed" : "denied"} access to `,
-      },
-      link,
-    ];
-    const paragraph: Paragraph = { type: "paragraph", children: phrasing };
-
-    return { type: "listItem", spread: false, children: [paragraph] };
+    return listItem(
+      paragraph(
+        text(
+          `${renderIcon(isTokenAllowed)} ${kind} ${name} was ` +
+            `${isTokenAllowed ? "allowed" : "denied"} access to `,
+        ),
+        anchorLink(
+          tokenReference.headingId,
+          text(`token #${tokenReference.index}`),
+        ),
+      ),
+    );
   }
 
   function provisioningItem(result: ProvisionAuthTargetResult): ListItem {
     const { isProvisionAllowed, rules } = result;
 
-    return iconItem(
-      icon(isProvisionAllowed),
-      `${isProvisionAllowed ? "Can" : "Can't"} provision secret ${basedOnRulesText(rules)}`,
+    return listItem(
+      paragraph(
+        text(
+          `${renderIcon(isProvisionAllowed)} ` +
+            `${isProvisionAllowed ? "Can" : "Can't"} provision secret ` +
+            `${basedOnRulesText(rules)}`,
+        ),
+      ),
       rulesSublist(rules),
     );
   }
@@ -169,22 +178,24 @@ export function createMarkdownProvisionAuthExplainer(
   ): List | undefined {
     if (rules.length < 1) return undefined;
 
-    return bulletList(
+    return unorderedList(
       ...rules.map(({ index, rule, have }) => {
         const isAllowed = have === "allow";
 
-        return iconItem(
-          icon(isAllowed),
-          `${isAllowed ? "Allowed" : "Denied"} by rule ${renderRule(index, rule)}`,
+        return listItem(
+          paragraph(
+            text(
+              `${renderIcon(isAllowed)} ${isAllowed ? "Allowed" : "Denied"} ` +
+                `by rule ${renderRule(index, rule)}`,
+            ),
+          ),
         );
       }),
     );
   }
 
   function subjectText(target: ProvisionRequestTarget): string {
-    const type = ((r) => {
-      const type = r.type;
-
+    const type = (({ type, target }) => {
       switch (type) {
         case "actions":
           return "GitHub Actions";
@@ -193,7 +204,7 @@ export function createMarkdownProvisionAuthExplainer(
         case "dependabot":
           return "Dependabot";
         case "environment":
-          return `GitHub environment ${r.target.environment}`;
+          return `GitHub environment ${target.environment}`;
       }
 
       /* istanbul ignore next - @preserve */
@@ -212,9 +223,5 @@ export function createMarkdownProvisionAuthExplainer(
     const n = `#${index + 1}`;
 
     return description ? `${n}: ${JSON.stringify(description)}` : n;
-  }
-
-  function icon(isAllowed: boolean): string {
-    return isAllowed ? ALLOWED_ICON : DENIED_ICON;
   }
 }

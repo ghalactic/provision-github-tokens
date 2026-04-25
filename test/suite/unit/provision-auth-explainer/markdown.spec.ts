@@ -1,11 +1,14 @@
+import GithubSlugger from "github-slugger";
 import type { Root, RootContent } from "mdast";
 import { toMarkdown } from "mdast-util-to-markdown";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { compareTokenRequest } from "../../../../src/compare-token-request.js";
+import { createHeadingFactory, text } from "../../../../src/markdown.js";
 import { createMarkdownProvisionAuthExplainer } from "../../../../src/provision-auth-explainer/markdown.js";
 import { createProvisionAuthorizer } from "../../../../src/provision-authorizer.js";
 import type { TokenAuthResult } from "../../../../src/type/token-auth-result.js";
+import type { TokenHeadingReference } from "../../../../src/type/token-heading-reference.js";
 import {
   createTestSecretDec,
   createTestTokenDec,
@@ -17,23 +20,6 @@ const fixturesPath = join(
   import.meta.dirname,
   "../../../fixture/provision-auth-explainer",
 );
-
-function render(nodes: RootContent[]): string {
-  const root: Root = { type: "root", children: nodes };
-
-  return toMarkdown(root, { bullet: "-" });
-}
-
-function createAnchorMap(
-  tokenResults: TokenAuthResult[],
-): Map<TokenAuthResult, string> {
-  const map = new Map<TokenAuthResult, string>();
-  for (let i = 0; i < tokenResults.length; i++) {
-    map.set(tokenResults[i], `pgt-test-token-${i + 1}`);
-  }
-
-  return map;
-}
 
 describe("allowed secrets", () => {
   it("explains an allowed actions secret", async () => {
@@ -80,8 +66,8 @@ describe("allowed secrets", () => {
     const tokenResults = tokenAuthorizer
       .listResults()
       .sort((a, b) => compareTokenRequest(a.request, b.request));
-    const anchorMap = createAnchorMap(tokenResults);
-    const explain = createMarkdownProvisionAuthExplainer(anchorMap);
+    const tokenReferenceMap = createTokenReferenceMap(tokenResults);
+    const explain = createMarkdownProvisionAuthExplainer(tokenReferenceMap);
 
     await expect(render(explain(result))).toMatchFileSnapshot(
       join(fixturesPath, "actions-allowed.md"),
@@ -133,8 +119,8 @@ describe("allowed secrets", () => {
     const tokenResults = tokenAuthorizer
       .listResults()
       .sort((a, b) => compareTokenRequest(a.request, b.request));
-    const anchorMap = createAnchorMap(tokenResults);
-    const explain = createMarkdownProvisionAuthExplainer(anchorMap);
+    const tokenReferenceMap = createTokenReferenceMap(tokenResults);
+    const explain = createMarkdownProvisionAuthExplainer(tokenReferenceMap);
 
     await expect(render(explain(result))).toMatchFileSnapshot(
       join(fixturesPath, "actions-allowed-with-description.md"),
@@ -193,8 +179,8 @@ describe("allowed secrets", () => {
     const tokenResults = tokenAuthorizer
       .listResults()
       .sort((a, b) => compareTokenRequest(a.request, b.request));
-    const anchorMap = createAnchorMap(tokenResults);
-    const explain = createMarkdownProvisionAuthExplainer(anchorMap);
+    const tokenReferenceMap = createTokenReferenceMap(tokenResults);
+    const explain = createMarkdownProvisionAuthExplainer(tokenReferenceMap);
 
     await expect(render(explain(result))).toMatchFileSnapshot(
       join(fixturesPath, "environment-allowed.md"),
@@ -247,8 +233,8 @@ describe("denied secrets", () => {
     const tokenResults = tokenAuthorizer
       .listResults()
       .sort((a, b) => compareTokenRequest(a.request, b.request));
-    const anchorMap = createAnchorMap(tokenResults);
-    const explain = createMarkdownProvisionAuthExplainer(anchorMap);
+    const tokenReferenceMap = createTokenReferenceMap(tokenResults);
+    const explain = createMarkdownProvisionAuthExplainer(tokenReferenceMap);
 
     await expect(render(explain(result))).toMatchFileSnapshot(
       join(fixturesPath, "actions-denied.md"),
@@ -299,8 +285,8 @@ describe("denied secrets", () => {
     const tokenResults = tokenAuthorizer
       .listResults()
       .sort((a, b) => compareTokenRequest(a.request, b.request));
-    const anchorMap = createAnchorMap(tokenResults);
-    const explain = createMarkdownProvisionAuthExplainer(anchorMap);
+    const tokenReferenceMap = createTokenReferenceMap(tokenResults);
+    const explain = createMarkdownProvisionAuthExplainer(tokenReferenceMap);
 
     await expect(render(explain(result))).toMatchFileSnapshot(
       join(fixturesPath, "missing-token-dec.md"),
@@ -351,8 +337,8 @@ describe("denied secrets", () => {
     const tokenResults = tokenAuthorizer
       .listResults()
       .sort((a, b) => compareTokenRequest(a.request, b.request));
-    const anchorMap = createAnchorMap(tokenResults);
-    const explain = createMarkdownProvisionAuthExplainer(anchorMap);
+    const tokenReferenceMap = createTokenReferenceMap(tokenResults);
+    const explain = createMarkdownProvisionAuthExplainer(tokenReferenceMap);
 
     await expect(render(explain(result))).toMatchFileSnapshot(
       join(fixturesPath, "non-shared-token-dec.md"),
@@ -377,8 +363,8 @@ describe("denied secrets", () => {
       to: [],
     });
 
-    const anchorMap = createAnchorMap([]);
-    const explain = createMarkdownProvisionAuthExplainer(anchorMap);
+    const tokenReferenceMap = createTokenReferenceMap([]);
+    const explain = createMarkdownProvisionAuthExplainer(tokenReferenceMap);
 
     await expect(render(explain(result))).toMatchFileSnapshot(
       join(fixturesPath, "missing-targets.md"),
@@ -462,11 +448,34 @@ describe("multiple targets", () => {
     const tokenResults = tokenAuthorizer
       .listResults()
       .sort((a, b) => compareTokenRequest(a.request, b.request));
-    const anchorMap = createAnchorMap(tokenResults);
-    const explain = createMarkdownProvisionAuthExplainer(anchorMap);
+    const tokenReferenceMap = createTokenReferenceMap(tokenResults);
+    const explain = createMarkdownProvisionAuthExplainer(tokenReferenceMap);
 
     await expect(render(explain(result))).toMatchFileSnapshot(
       join(fixturesPath, "multiple-targets.md"),
     );
   });
 });
+
+function createTokenReferenceMap(
+  tokenResults: TokenAuthResult[],
+): Map<TokenAuthResult, TokenHeadingReference> {
+  const map = new Map<TokenAuthResult, TokenHeadingReference>();
+  const createHeading = createHeadingFactory(
+    "/tmp/test-step-summary",
+    new GithubSlugger(),
+  );
+
+  for (let i = 0; i < tokenResults.length; i++) {
+    const [, headingId] = createHeading(5, text(`Token #${i + 1}`));
+    map.set(tokenResults[i], { headingId, index: i + 1 });
+  }
+
+  return map;
+}
+
+function render(nodes: RootContent[]): string {
+  const root: Root = { type: "root", children: nodes };
+
+  return toMarkdown(root, { bullet: "-" });
+}

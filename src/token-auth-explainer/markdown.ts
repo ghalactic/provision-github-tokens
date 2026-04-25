@@ -3,10 +3,12 @@ import type { List, ListItem, RootContent } from "mdast";
 import { isSufficientAccess } from "../access-level.js";
 import { accountOrRepoRefToString, isRepoRef } from "../github-reference.js";
 import {
-  bulletList,
-  detailsClose,
-  detailsOpen,
-  iconItem,
+  details,
+  listItem,
+  paragraph,
+  renderIcon,
+  text,
+  unorderedList,
 } from "../markdown.js";
 import { permissionAccess } from "../permissions.js";
 import { pluralize } from "../pluralize.js";
@@ -20,9 +22,6 @@ import type {
   TokenAuthResultNoRepos,
   TokenAuthResultSelectedRepos,
 } from "../type/token-auth-result.js";
-
-const ALLOWED_ICON = "✅";
-const DENIED_ICON = "❌";
 
 const ACCESS_LEVELS: Record<PermissionAccess, string> = {
   none: "No",
@@ -45,41 +44,57 @@ export function createMarkdownTokenAuthExplainer(): TokenAuthResultExplainer<
     const { request, isSufficient, rules } = result;
     const subject = `all repos in ${request.tokenDec.account}`;
 
-    return [
-      detailsOpen(summaryChildren(result)),
-      bulletList(
-        iconItem(
-          icon(!result.isMissingRole),
-          maxAccessAndRoleText(result, subject),
+    return details(
+      summaryChildren(result),
+      unorderedList(
+        listItem(
+          paragraph(
+            text(
+              `${renderIcon(!result.isMissingRole)} ` +
+                `${maxAccessAndRoleText(result, subject)}`,
+            ),
+          ),
         ),
-        iconItem(
-          icon(isSufficient),
-          `${isSufficient ? "Sufficient" : "Insufficient"} access to ${subject} ${basedOnRulesText(rules)}`,
+        listItem(
+          paragraph(
+            text(
+              `${renderIcon(isSufficient)} ` +
+                `${isSufficient ? "Sufficient" : "Insufficient"} access ` +
+                `to ${subject} ${basedOnRulesText(rules)}`,
+            ),
+          ),
           rulesSublist(request.tokenDec.permissions, rules),
         ),
       ),
-      detailsClose(),
-    ];
+    );
   }
 
   function explainNoRepos(result: TokenAuthResultNoRepos): RootContent[] {
     const { request, isSufficient, rules } = result;
 
-    return [
-      detailsOpen(summaryChildren(result)),
-      bulletList(
-        iconItem(
-          icon(!result.isMissingRole),
-          maxAccessAndRoleText(result, request.tokenDec.account),
+    return details(
+      summaryChildren(result),
+      unorderedList(
+        listItem(
+          paragraph(
+            text(
+              `${renderIcon(!result.isMissingRole)} ` +
+                `${maxAccessAndRoleText(result, request.tokenDec.account)}`,
+            ),
+          ),
         ),
-        iconItem(
-          icon(isSufficient),
-          `${isSufficient ? "Sufficient" : "Insufficient"} access to ${request.tokenDec.account} ${basedOnRulesText(rules)}`,
+        listItem(
+          paragraph(
+            text(
+              `${renderIcon(isSufficient)} ` +
+                `${isSufficient ? "Sufficient" : "Insufficient"} access ` +
+                `to ${request.tokenDec.account} ${basedOnRulesText(rules)}`,
+            ),
+          ),
           rulesSublist(request.tokenDec.permissions, rules),
         ),
       ),
-      detailsClose(),
-    ];
+    );
   }
 
   function explainSelectedRepos(
@@ -95,9 +110,15 @@ export function createMarkdownTokenAuthExplainer(): TokenAuthResultExplainer<
     const repoItems: ListItem[] = [];
     for (const [resourceRepo, resourceResult] of resourceEntries) {
       repoItems.push(
-        iconItem(
-          icon(resourceResult.isSufficient),
-          `${resourceResult.isSufficient ? "Sufficient" : "Insufficient"} access to repo ${resourceRepo} ${basedOnRulesText(resourceResult.rules)}`,
+        listItem(
+          paragraph(
+            text(
+              `${renderIcon(resourceResult.isSufficient)} ` +
+                `${resourceResult.isSufficient ? "Sufficient" : "Insufficient"} ` +
+                `access to repo ${resourceRepo} ` +
+                `${basedOnRulesText(resourceResult.rules)}`,
+            ),
+          ),
           rulesSublist(request.tokenDec.permissions, resourceResult.rules),
         ),
       );
@@ -110,18 +131,28 @@ export function createMarkdownTokenAuthExplainer(): TokenAuthResultExplainer<
     );
     const repos = pluralize(request.repos.length, "repo", "repos");
 
-    return [
-      detailsOpen(summaryChildren(result)),
-      bulletList(
-        iconItem(
-          icon(!result.isMissingRole),
-          maxAccessAndRoleText(result, subject),
+    return details(
+      summaryChildren(result),
+      unorderedList(
+        listItem(
+          paragraph(
+            text(
+              `${renderIcon(!result.isMissingRole)} ` +
+                `${maxAccessAndRoleText(result, subject)}`,
+            ),
+          ),
         ),
-        iconItem(icon(result.isMatched), `${repoPatterns} matched ${repos}`),
+        listItem(
+          paragraph(
+            text(
+              `${renderIcon(result.isMatched)} ` +
+                `${repoPatterns} matched ${repos}`,
+            ),
+          ),
+        ),
         ...repoItems,
       ),
-      detailsClose(),
-    ];
+    );
   }
 
   function summaryChildren({
@@ -132,10 +163,10 @@ export function createMarkdownTokenAuthExplainer(): TokenAuthResultExplainer<
     const kind = isRepoRef(request.consumer) ? "Repo" : "Account";
 
     return [
-      {
-        type: "text",
-        value: `${icon(isAllowed)} ${kind} ${name} was ${isAllowed ? "allowed" : "denied"} access to a token`,
-      },
+      text(
+        `${renderIcon(isAllowed)} ${kind} ${name} was ` +
+          `${isAllowed ? "allowed" : "denied"} access to a token`,
+      ),
     ];
   }
 
@@ -168,7 +199,9 @@ export function createMarkdownTokenAuthExplainer(): TokenAuthResultExplainer<
   ): List | undefined {
     if (rules.length < 1) return undefined;
 
-    return bulletList(...rules.map((ruleResult) => ruleItem(want, ruleResult)));
+    return unorderedList(
+      ...rules.map((ruleResult) => ruleItem(want, ruleResult)),
+    );
   }
 
   function ruleItem(
@@ -180,17 +213,27 @@ export function createMarkdownTokenAuthExplainer(): TokenAuthResultExplainer<
     for (const p of Object.keys(want).sort((a, b) => a.localeCompare(b))) {
       const h = permissionAccess(have, p);
       const w = permissionAccess(want, p);
-      const sufficient = isSufficientAccess(h, w);
 
       permItems.push(
-        iconItem(icon(sufficient), `${p}: have ${h}, wanted ${w}`),
+        listItem(
+          paragraph(
+            text(
+              `${renderIcon(isSufficientAccess(h, w))} ` +
+                `${p}: have ${h}, wanted ${w}`,
+            ),
+          ),
+        ),
       );
     }
 
-    return iconItem(
-      icon(isSufficient),
-      `Rule ${renderRule(index, rule)} gave ${isSufficient ? "sufficient" : "insufficient"} access:`,
-      bulletList(...permItems),
+    return listItem(
+      paragraph(
+        text(
+          `${renderIcon(isSufficient)} Rule ${renderRule(index, rule)} gave ` +
+            `${isSufficient ? "sufficient" : "insufficient"} access:`,
+        ),
+      ),
+      unorderedList(...permItems),
     );
   }
 
@@ -198,9 +241,5 @@ export function createMarkdownTokenAuthExplainer(): TokenAuthResultExplainer<
     const n = `#${index + 1}`;
 
     return description ? `${n}: ${JSON.stringify(description)}` : n;
-  }
-
-  function icon(isAllowed: boolean): string {
-    return isAllowed ? ALLOWED_ICON : DENIED_ICON;
   }
 }

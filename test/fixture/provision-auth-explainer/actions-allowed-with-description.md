@@ -3,7 +3,7 @@
 
 - ✅ Can use token declaration account-a/repo-a.tokenA
 - ✅ Can provision token to GitHub Actions secret in account-a:
-  - ✅ Account account-a was allowed access to [token #1](#user-content-pgt-test-token-1)
+  - ✅ Account account-a was allowed access to [token #1](#user-content-4bb7e3c2-token-1)
   - ✅ Can provision secret based on 1 rule:
     - ✅ Allowed by rule #1: "Allow CI secrets"
 
