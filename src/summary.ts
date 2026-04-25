@@ -1,4 +1,6 @@
 import GithubSlugger from "github-slugger";
+import type { Element } from "hast";
+import { toHtml } from "hast-util-to-html";
 import type {
   Heading,
   Link,
@@ -366,12 +368,19 @@ function headingWithAnchor(
   text: string,
   anchorId: string,
 ): Heading {
+  const anchor: Element = {
+    type: "element",
+    tagName: "a",
+    properties: { id: anchorId },
+    children: [],
+  };
+
   return {
     type: "heading",
     depth,
     children: [
       { type: "text", value: text },
-      { type: "html", value: ` <a id="${anchorId}"></a>` },
+      { type: "html", value: ` ${toHtml(anchor)}` },
     ],
   };
 }
