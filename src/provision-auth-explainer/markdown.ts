@@ -1,20 +1,18 @@
-import type { Element, ElementContent } from "hast";
-import { toHtml } from "hast-util-to-html";
-import type {
-  Html,
-  Link,
-  List,
-  ListItem,
-  Paragraph,
-  PhrasingContent,
-  RootContent,
-} from "mdast";
+import type { ElementContent } from "hast";
+import type { List, ListItem, RootContent } from "mdast";
 import { compareProvisionRequestTarget } from "../compare-provision-request-target.js";
 import {
   accountOrRepoRefToString,
   isRepoRef,
   repoRefToString,
 } from "../github-reference.js";
+import {
+  bulletList,
+  detailsClose,
+  detailsOpen,
+  iconItem,
+  iconItemWithLink,
+} from "../markdown.js";
 import type { ProvisionRequestTarget } from "../provision-request.js";
 import type {
   ProvisionAuthResult,
@@ -204,65 +202,4 @@ export function createMarkdownProvisionAuthExplainer(
   function icon(isAllowed: boolean): string {
     return isAllowed ? ALLOWED_ICON : DENIED_ICON;
   }
-}
-
-function iconItem(
-  iconStr: string,
-  text: string,
-  children?: ListItem[] | List,
-): ListItem {
-  const paragraph: Paragraph = {
-    type: "paragraph",
-    children: [{ type: "text", value: `${iconStr} ${text}` }],
-  };
-  const sublist: List | undefined = children
-    ? Array.isArray(children) && !("type" in children)
-      ? bulletList(...children)
-      : (children as List)
-    : undefined;
-
-  return {
-    type: "listItem",
-    spread: false,
-    children: sublist ? [paragraph, sublist] : [paragraph],
-  };
-}
-
-function iconItemWithLink(
-  iconStr: string,
-  textBefore: string,
-  linkText: string,
-  linkUrl: string,
-): ListItem {
-  const link: Link = {
-    type: "link",
-    url: linkUrl,
-    children: [{ type: "text", value: linkText }],
-  };
-  const phrasing: PhrasingContent[] = [
-    { type: "text", value: `${iconStr} ${textBefore}` },
-    link,
-  ];
-  const paragraph: Paragraph = { type: "paragraph", children: phrasing };
-
-  return { type: "listItem", spread: false, children: [paragraph] };
-}
-
-function bulletList(...items: ListItem[]): List {
-  return { type: "list", ordered: false, spread: false, children: items };
-}
-
-function detailsOpen(children: ElementContent[]): Html {
-  const summary: Element = {
-    type: "element",
-    tagName: "summary",
-    properties: {},
-    children,
-  };
-
-  return { type: "html", value: `<details>\n${toHtml(summary)}` };
-}
-
-function detailsClose(): Html {
-  return { type: "html", value: "</details>" };
 }

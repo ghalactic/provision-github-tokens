@@ -1,10 +1,7 @@
 import GithubSlugger from "github-slugger";
-import type { Element } from "hast";
-import { toHtml } from "hast-util-to-html";
 import type {
   Heading,
   Link,
-  List,
   ListItem,
   PhrasingContent,
   Root,
@@ -17,6 +14,12 @@ import type { AuthorizeResult } from "./authorizer.js";
 import { compareProvisionRequest } from "./compare-provision-request.js";
 import { compareTokenRequest } from "./compare-token-request.js";
 import { repoRefToString } from "./github-reference.js";
+import {
+  bulletList,
+  heading,
+  headingWithAnchor,
+  linkItem,
+} from "./markdown.js";
 import { pluralize } from "./pluralize.js";
 import { createMarkdownProvisionAuthExplainer } from "./provision-auth-explainer/markdown.js";
 import { createMarkdownTokenAuthExplainer } from "./token-auth-explainer/markdown.js";
@@ -353,62 +356,6 @@ function secretAnchorId(
 
 function groupBy<T>(items: T[], key: (item: T) => string): [string, T[]][] {
   return [...Map.groupBy(items, (item) => key(item))];
-}
-
-function heading(depth: 1 | 2 | 3 | 4 | 5 | 6, text: string): Heading {
-  return {
-    type: "heading",
-    depth,
-    children: [{ type: "text", value: text }],
-  };
-}
-
-function headingWithAnchor(
-  depth: 1 | 2 | 3 | 4 | 5 | 6,
-  text: string,
-  anchorId: string,
-): Heading {
-  const anchor: Element = {
-    type: "element",
-    tagName: "a",
-    properties: { id: anchorId },
-    children: [],
-  };
-
-  return {
-    type: "heading",
-    depth,
-    children: [
-      { type: "text", value: text },
-      { type: "html", value: ` ${toHtml(anchor)}` },
-    ],
-  };
-}
-
-function bulletList(...items: ListItem[]): List {
-  return { type: "list", ordered: false, spread: false, children: items };
-}
-
-function linkItem(
-  textBefore: string,
-  linkText: string,
-  linkUrl: string,
-): ListItem {
-  const link: Link = {
-    type: "link",
-    url: linkUrl,
-    children: [{ type: "inlineCode", value: linkText }],
-  };
-  const phrasing: PhrasingContent[] = [
-    { type: "text", value: textBefore },
-    link,
-  ];
-
-  return {
-    type: "listItem",
-    spread: false,
-    children: [{ type: "paragraph", children: phrasing }],
-  };
 }
 
 function usedByItem(entry: UsedByEntry): ListItem {

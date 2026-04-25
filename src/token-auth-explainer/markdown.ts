@@ -1,8 +1,13 @@
-import type { Element, ElementContent } from "hast";
-import { toHtml } from "hast-util-to-html";
-import type { Html, List, ListItem, Paragraph, RootContent } from "mdast";
+import type { ElementContent } from "hast";
+import type { List, ListItem, RootContent } from "mdast";
 import { isSufficientAccess } from "../access-level.js";
 import { accountOrRepoRefToString, isRepoRef } from "../github-reference.js";
+import {
+  bulletList,
+  detailsClose,
+  detailsOpen,
+  iconItem,
+} from "../markdown.js";
 import { permissionAccess } from "../permissions.js";
 import { pluralize } from "../pluralize.js";
 import type { PermissionsRule } from "../type/permissions-rule.js";
@@ -198,36 +203,4 @@ export function createMarkdownTokenAuthExplainer(): TokenAuthResultExplainer<
   function icon(isAllowed: boolean): string {
     return isAllowed ? ALLOWED_ICON : DENIED_ICON;
   }
-}
-
-function iconItem(iconStr: string, text: string, sublist?: List): ListItem {
-  const paragraph: Paragraph = {
-    type: "paragraph",
-    children: [{ type: "text", value: `${iconStr} ${text}` }],
-  };
-
-  return {
-    type: "listItem",
-    spread: false,
-    children: sublist ? [paragraph, sublist] : [paragraph],
-  };
-}
-
-function bulletList(...items: ListItem[]): List {
-  return { type: "list", ordered: false, spread: false, children: items };
-}
-
-function detailsOpen(children: ElementContent[]): Html {
-  const summary: Element = {
-    type: "element",
-    tagName: "summary",
-    properties: {},
-    children,
-  };
-
-  return { type: "html", value: `<details>\n${toHtml(summary)}` };
-}
-
-function detailsClose(): Html {
-  return { type: "html", value: "</details>" };
 }
