@@ -478,3 +478,67 @@ it("renders a summary with missing targets", async () => {
     }),
   ).toMatchFileSnapshot(join(fixturesPath, "missing-targets.md"));
 });
+
+it("renders a summary with multiple distinct targets", async () => {
+  const createTokenRequest = createTestTokenRequestFactory();
+  const tokenAuthorizer = createTestTokenAuthorizer({
+    metadata: "read",
+    contents: "write",
+  });
+  const provisionAuthorizer = createProvisionAuthorizer(
+    createTokenRequest,
+    tokenAuthorizer,
+    {
+      rules: {
+        secrets: [
+          {
+            secrets: ["SECRET_A"],
+            requesters: ["account-x/repo-x"],
+            to: {
+              github: {
+                account: {},
+                accounts: {
+                  "account-a": { actions: "allow" },
+                  "account-b": { actions: "allow" },
+                },
+                repo: { environments: {} },
+                repos: {},
+              },
+            },
+          },
+        ],
+      },
+    },
+  );
+
+  provisionAuthorizer.authorizeSecret({
+    requester: { account: "account-x", repo: "repo-x" },
+    tokenDec: createTestTokenDec(),
+    tokenDecIsRegistered: true,
+    secretDec: createTestSecretDec(),
+    name: "SECRET_A",
+    to: [
+      {
+        platform: "github",
+        type: "actions",
+        target: { account: "account-a" },
+      },
+      {
+        platform: "github",
+        type: "actions",
+        target: { account: "account-b" },
+      },
+    ],
+  });
+
+  const provisionResults = provisionAuthorizer
+    .listResults()
+    .sort((a, b) => compareProvisionRequest(a.request, b.request));
+
+  await expect(
+    renderSummary(githubServerURL, testDocsURL, {
+      provisionResults,
+      tokenResults: [],
+    }),
+  ).toMatchFileSnapshot(join(fixturesPath, "multiple-targets.md"));
+});
