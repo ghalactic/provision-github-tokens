@@ -1,7 +1,6 @@
 import GithubSlugger from "github-slugger";
 import type {
   Heading,
-  Html,
   Link,
   List,
   ListItem,
@@ -174,11 +173,7 @@ function secretProvisioningSection(
       );
 
       nodes.push(headingWithAnchor(5, result.request.name, anchor));
-      nodes.push(
-        html(`<details>\n<summary>${secretDetailsSummary(result)}</summary>`),
-      );
       nodes.push(...explainProvision(result));
-      nodes.push(html("</details>"));
     }
   }
 
@@ -224,45 +219,11 @@ function tokenIssuingSection(
       nodes.push(paragraph("Used by:"));
       nodes.push(bulletList(...usedBy.map((entry) => usedByItem(entry))));
 
-      nodes.push(
-        html(`<details>\n<summary>${tokenDetailsSummary(result)}</summary>`),
-      );
       nodes.push(...explainToken(result));
-      nodes.push(html("</details>"));
     }
   }
 
   return nodes;
-}
-
-function secretDetailsSummary(result: ProvisionAuthResult): string {
-  const { results, isAllowed, isMissingTargets } = result;
-
-  if (isMissingTargets) return "❌ Not provisioned — no targets";
-
-  const totalTargets = results.length;
-  const deniedTargets = results.filter((r) => !r.isAllowed).length;
-
-  if (isAllowed) {
-    return `✅ Provisioned to ${pluralize(totalTargets, "target", "targets")}`;
-  }
-
-  return `❌ Not provisioned — ${pluralize(deniedTargets, "target", "targets")} denied`;
-}
-
-function tokenDetailsSummary(result: TokenAuthResult): string {
-  if (result.isAllowed) {
-    const level =
-      result.maxWant === "admin"
-        ? "admin"
-        : result.maxWant === "write"
-          ? "write"
-          : "read";
-
-    return `✅ Allowed — ${level} access`;
-  }
-
-  return "❌ Denied";
 }
 
 function tokenHeadingText(index: number, result: TokenAuthResult): string {
@@ -380,10 +341,6 @@ function headingWithAnchor(
 
 function paragraph(text: string): Paragraph {
   return { type: "paragraph", children: [{ type: "text", value: text }] };
-}
-
-function html(value: string): Html {
-  return { type: "html", value };
 }
 
 function bulletList(...items: ListItem[]): List {

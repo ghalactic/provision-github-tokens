@@ -13,25 +13,23 @@
 ##### SECRET\_A <a id="pgt-4bb7e3c2-account-xrepo-x--secret_a"></a>
 
 <details>
-<summary>✅ Provisioned to 1 target</summary>
+<summary>✅ Repo account-x/repo-x was allowed to provision secret SECRET_A</summary>
 
-- ✅ Repo account-x/repo-x was allowed to provision secret SECRET\_A:
-  - ✅ Can use token declaration account-a/repo-a.tokenA
-  - ✅ Can provision token to GitHub Actions secret in account-a:
-    - ✅ Account account-a was allowed access to [token #1](#pgt-4bb7e3c2-token-1)
-    - ✅ Can provision secret based on 1 rule:
-      - ✅ Allowed by rule #1
+- ✅ Can use token declaration account-a/repo-a.tokenA
+- ✅ Can provision token to GitHub Actions secret in account-a:
+  - ✅ Account account-a was allowed access to [token #1](#pgt-4bb7e3c2-token-1)
+  - ✅ Can provision secret based on 1 rule:
+    - ✅ Allowed by rule #1
 
 </details>
 
 ##### SECRET\_B <a id="pgt-4bb7e3c2-account-xrepo-x--secret_b"></a>
 
 <details>
-<summary>❌ Not provisioned — no targets</summary>
+<summary>❌ Repo account-x/repo-x wasn't allowed to provision secret SECRET_B</summary>
 
-- ❌ Repo account-x/repo-x wasn't allowed to provision secret SECRET\_B:
-  - ✅ Can use token declaration account-a/repo-a.tokenA
-  - ❌ No targets specified
+- ✅ Can use token declaration account-a/repo-a.tokenA
+- ❌ No targets specified
 
 </details>
 
@@ -46,12 +44,11 @@ Used by:
 - [`SECRET_A`](#pgt-4bb7e3c2-account-xrepo-x--secret_a) (account-x/repo-x)
 
 <details>
-<summary>✅ Allowed — read access</summary>
+<summary>✅ Account account-a was allowed access to a token</summary>
 
-- ✅ Account account-a was allowed access to a token:
-  - ✅ Read access to all repos in account-a requested without a role
-  - ✅ Sufficient access to all repos in account-a based on 1 rule:
-    - ✅ Rule #1: "\<description>" gave sufficient access:
-      - ✅ metadata: have read, wanted read
+- ✅ Read access to all repos in account-a requested without a role
+- ✅ Sufficient access to all repos in account-a based on 1 rule:
+  - ✅ Rule #1: "\<description>" gave sufficient access:
+    - ✅ metadata: have read, wanted read
 
 </details>
