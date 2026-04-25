@@ -1,9 +1,11 @@
 import type {
   AlignType,
+  Definition,
   Emphasis,
   Heading,
   InlineCode,
   Link,
+  LinkReference,
   Paragraph,
   Table,
   TableCell,
@@ -17,14 +19,37 @@ import {
 
 const ALLOWED_ICON = "✅";
 const DENIED_ICON = "❌";
+const LINK_REF_PREFIX = "gh/";
 
-export function accountOrRepoLink(
+export function accountOrRepoDefinition(
   githubServerURL: string,
   accountOrRepo: AccountOrRepoReference,
-): Link {
+): Definition {
   const slug = accountOrRepoRefToString(accountOrRepo);
+  const identifier = `${LINK_REF_PREFIX}${slug}`;
 
-  return link(new URL(slug, githubServerURL), text(slug));
+  return {
+    type: "definition",
+    identifier,
+    label: identifier,
+    url: new URL(slug, githubServerURL).toString(),
+    title: null,
+  };
+}
+
+export function accountOrRepoLinkRef(
+  accountOrRepo: AccountOrRepoReference,
+): LinkReference {
+  const slug = accountOrRepoRefToString(accountOrRepo);
+  const identifier = `${LINK_REF_PREFIX}${slug}`;
+
+  return {
+    type: "linkReference",
+    identifier,
+    label: identifier,
+    referenceType: "full",
+    children: [text(slug)],
+  };
 }
 
 export function emphasis(...children: Emphasis["children"]): Emphasis {

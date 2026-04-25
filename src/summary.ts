@@ -8,7 +8,8 @@ import {
   type AccountOrRepoReference,
 } from "./github-reference.js";
 import {
-  accountOrRepoLink,
+  accountOrRepoDefinition,
+  accountOrRepoLinkRef,
   emphasis,
   heading,
   inlineCode,
@@ -40,8 +41,9 @@ export function renderSummary(
       children: [
         statsHeading(provisionResults),
         ...emptySection(provisionResults, result, actionURL),
-        ...failuresTable(githubServerURL, denied),
-        ...successesTable(githubServerURL, allowed),
+        ...failuresTable(denied),
+        ...successesTable(allowed),
+        ...definitions(githubServerURL, provisionResults),
       ],
     },
     { bullet: "-", extensions: [gfmToMarkdown()] },
@@ -77,50 +79,40 @@ function emptySection(
   ];
 }
 
-function failuresTable(
-  githubServerURL: string,
-  denied: ProvisionAuthResult[],
-): RootContent[] {
+function failuresTable(denied: ProvisionAuthResult[]): RootContent[] {
   if (denied.length === 0) return [];
 
   return [
     table(
       ["left", "left", "left", "left"],
       [[], [text("Requester")], [text("Secret")], [text("Targets")]],
-      denied.map((r) => secretRow(githubServerURL, r)),
+      denied.map((r) => secretRow(r)),
     ),
   ];
 }
 
-function successesTable(
-  githubServerURL: string,
-  allowed: ProvisionAuthResult[],
-): RootContent[] {
+function successesTable(allowed: ProvisionAuthResult[]): RootContent[] {
   if (allowed.length === 0) return [];
 
   return [
     table(
       ["left", "left", "left", "left"],
       [[], [text("Requester")], [text("Secret")], [text("Targets")]],
-      allowed.map((r) => secretRow(githubServerURL, r)),
+      allowed.map((r) => secretRow(r)),
     ),
   ];
 }
 
-function secretRow(
-  githubServerURL: string,
-  result: ProvisionAuthResult,
-): TableCell["children"][] {
+function secretRow(result: ProvisionAuthResult): TableCell["children"][] {
   return [
     [text(renderIcon(result.isAllowed))],
-    [accountOrRepoLink(githubServerURL, result.request.requester)],
+    [accountOrRepoLinkRef(result.request.requester)],
     [inlineCode(result.request.name)],
-    targetCellChildren(githubServerURL, result.request.to),
+    targetCellChildren(result.request.to),
   ];
 }
 
 function targetCellChildren(
-  githubServerURL: string,
   targets: ProvisionRequestTarget[],
 ): TableCell["children"] {
   const seen = new Set<string>();
@@ -143,8 +135,36 @@ function targetCellChildren(
 
   for (let i = 0; i < refs.length; i++) {
     if (i > 0) children.push(text(", "));
-    children.push(accountOrRepoLink(githubServerURL, refs[i]));
+    children.push(accountOrRepoLinkRef(refs[i]));
   }
 
   return children;
+}
+
+function definitions(
+  githubServerURL: string,
+  provisionResults: ProvisionAuthResult[],
+): RootContent[] {
+  const seen = new Set<string>();
+  const defs: RootContent[] = [];
+
+  for (const r of provisionResults) {
+    const requesterKey = accountOrRepoRefToString(r.request.requester);
+
+    if (!seen.has(requesterKey)) {
+      seen.add(requesterKey);
+      defs.push(accountOrRepoDefinition(githubServerURL, r.request.requester));
+    }
+
+    for (const t of r.request.to) {
+      const targetKey = accountOrRepoRefToString(t.target);
+
+      if (!seen.has(targetKey)) {
+        seen.add(targetKey);
+        defs.push(accountOrRepoDefinition(githubServerURL, t.target));
+      }
+    }
+  }
+
+  return defs;
 }
