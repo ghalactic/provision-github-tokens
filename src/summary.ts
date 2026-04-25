@@ -28,7 +28,11 @@ type UsedByEntry = {
   requesterName: string;
 };
 
-export function renderSummary(result: AuthorizeResult, prefix: string): string {
+export function renderSummary(
+  result: AuthorizeResult,
+  prefix: string,
+  actionUrl: string,
+): string {
   const slugger = new GithubSlugger();
 
   const provisionResults = [...result.provisionResults].sort((a, b) =>
@@ -46,6 +50,7 @@ export function renderSummary(result: AuthorizeResult, prefix: string): string {
 
   const children: RootContent[] = [
     statsHeading(provisionResults),
+    ...emptySection(provisionResults, tokenResults, actionUrl),
     ...failuresSection(provisionResults, prefix, slugger),
     ...secretProvisioningSection(
       provisionResults,
@@ -76,6 +81,38 @@ function statsHeading(provisionResults: ProvisionAuthResult[]): Heading {
       : `Provisioned ${allowed} of ${pluralize(total, "secret", "secrets")}`;
 
   return heading(2, text);
+}
+
+function emptySection(
+  provisionResults: ProvisionAuthResult[],
+  tokenResults: TokenAuthResult[],
+  actionUrl: string,
+): RootContent[] {
+  if (provisionResults.length > 0 || tokenResults.length > 0) return [];
+
+  return [
+    {
+      type: "paragraph",
+      children: [
+        {
+          type: "emphasis",
+          children: [{ type: "text", value: "(no secrets provisioned)" }],
+        },
+      ],
+    },
+    {
+      type: "paragraph",
+      children: [
+        { type: "text", value: "Need help getting started? See the " },
+        {
+          type: "link",
+          url: new URL("#readme", actionUrl).toString(),
+          children: [{ type: "text", value: "docs" }],
+        },
+        { type: "text", value: "." },
+      ],
+    },
+  ];
 }
 
 function failuresSection(
@@ -134,8 +171,7 @@ function secretProvisioningSection(
         slugger,
       );
 
-      nodes.push(heading(5, result.request.name));
-      nodes.push(html(`<a id="${anchor}"></a>`));
+      nodes.push(headingWithAnchor(5, result.request.name, anchor));
       nodes.push(
         html(`<details>\n<summary>${secretDetailsSummary(result)}</summary>`),
       );
@@ -165,8 +201,7 @@ function tokenIssuingSection(
     for (const result of group) {
       const anchor = tokenAnchorMap.get(result) ?? "";
 
-      nodes.push(heading(5, tokenHeadingText(result)));
-      nodes.push(html(`<a id="${anchor}"></a>`));
+      nodes.push(headingWithAnchor(5, tokenHeadingText(result), anchor));
 
       const usedBy = usedByMap.get(result) ?? [];
       if (usedBy.length > 0) {
@@ -328,6 +363,21 @@ function heading(depth: 1 | 2 | 3 | 4 | 5 | 6, text: string): Heading {
     type: "heading",
     depth,
     children: [{ type: "text", value: text }],
+  };
+}
+
+function headingWithAnchor(
+  depth: 1 | 2 | 3 | 4 | 5 | 6,
+  text: string,
+  anchorId: string,
+): Heading {
+  return {
+    type: "heading",
+    depth,
+    children: [
+      { type: "text", value: text },
+      { type: "html", value: ` <a id="${anchorId}"></a>` },
+    ],
   };
 }
 

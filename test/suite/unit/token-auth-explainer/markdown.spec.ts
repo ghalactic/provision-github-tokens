@@ -50,7 +50,7 @@ describe("ALL_REPOS", () => {
     });
 
     await expect(render(explain(result))).toMatchFileSnapshot(
-      join(fixturesPath, "all-repos-allowed-with-role/expected.md"),
+      join(fixturesPath, "all-repos-allowed-with-role.md"),
     );
   });
 
@@ -85,7 +85,7 @@ describe("ALL_REPOS", () => {
     });
 
     await expect(render(explain(result))).toMatchFileSnapshot(
-      join(fixturesPath, "all-repos-denied/expected.md"),
+      join(fixturesPath, "all-repos-denied.md"),
     );
   });
 
@@ -120,7 +120,7 @@ describe("ALL_REPOS", () => {
     });
 
     await expect(render(explain(result))).toMatchFileSnapshot(
-      join(fixturesPath, "all-repos-allowed-without-role/expected.md"),
+      join(fixturesPath, "all-repos-allowed-without-role.md"),
     );
   });
 
@@ -155,7 +155,7 @@ describe("ALL_REPOS", () => {
     });
 
     await expect(render(explain(result))).toMatchFileSnapshot(
-      join(fixturesPath, "all-repos-repo-consumer/expected.md"),
+      join(fixturesPath, "all-repos-repo-consumer.md"),
     );
   });
 
@@ -204,7 +204,7 @@ describe("ALL_REPOS", () => {
     });
 
     await expect(render(explain(result))).toMatchFileSnapshot(
-      join(fixturesPath, "all-repos-multiple-rules/expected.md"),
+      join(fixturesPath, "all-repos-multiple-rules.md"),
     );
   });
 
@@ -239,7 +239,7 @@ describe("ALL_REPOS", () => {
     });
 
     await expect(render(explain(result))).toMatchFileSnapshot(
-      join(fixturesPath, "all-repos-multiple-permissions/expected.md"),
+      join(fixturesPath, "all-repos-multiple-permissions.md"),
     );
   });
 });
@@ -276,7 +276,7 @@ describe("NO_REPOS", () => {
     });
 
     await expect(render(explain(result))).toMatchFileSnapshot(
-      join(fixturesPath, "no-repos-allowed/expected.md"),
+      join(fixturesPath, "no-repos-allowed.md"),
     );
   });
 
@@ -311,7 +311,7 @@ describe("NO_REPOS", () => {
     });
 
     await expect(render(explain(result))).toMatchFileSnapshot(
-      join(fixturesPath, "no-repos-denied/expected.md"),
+      join(fixturesPath, "no-repos-denied.md"),
     );
   });
 });
@@ -348,7 +348,7 @@ describe("SELECTED_REPOS", () => {
     });
 
     await expect(render(explain(result))).toMatchFileSnapshot(
-      join(fixturesPath, "selected-repos-allowed/expected.md"),
+      join(fixturesPath, "selected-repos-allowed.md"),
     );
   });
 
@@ -383,7 +383,7 @@ describe("SELECTED_REPOS", () => {
     });
 
     await expect(render(explain(result))).toMatchFileSnapshot(
-      join(fixturesPath, "selected-repos-denied/expected.md"),
+      join(fixturesPath, "selected-repos-denied.md"),
     );
   });
 
@@ -403,7 +403,7 @@ describe("SELECTED_REPOS", () => {
     });
 
     await expect(render(explain(result))).toMatchFileSnapshot(
-      join(fixturesPath, "selected-repos-no-rules/expected.md"),
+      join(fixturesPath, "selected-repos-no-rules.md"),
     );
   });
 });

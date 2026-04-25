@@ -9,6 +9,7 @@ import { createTestTokenAuthorizer } from "../../token-authorizer.js";
 import { createTestTokenRequestFactory } from "../../token-request.js";
 
 const fixturesPath = join(import.meta.dirname, "../../fixture/summary");
+const testDocsUrl = "https://github.example.com/test/action";
 
 describe("renderSummary", () => {
   it("renders a summary with all secrets provisioned", async () => {
@@ -77,8 +78,12 @@ describe("renderSummary", () => {
       .sort((a, b) => compareTokenRequest(a.request, b.request));
 
     await expect(
-      renderSummary({ provisionResults, tokenResults }, "pgt-test"),
-    ).toMatchFileSnapshot(join(fixturesPath, "all-provisioned/expected.md"));
+      renderSummary(
+        { provisionResults, tokenResults },
+        "pgt-test",
+        testDocsUrl,
+      ),
+    ).toMatchFileSnapshot(join(fixturesPath, "all-provisioned.md"));
   });
 
   it("renders a summary with some secrets denied", async () => {
@@ -147,8 +152,12 @@ describe("renderSummary", () => {
       .sort((a, b) => compareTokenRequest(a.request, b.request));
 
     await expect(
-      renderSummary({ provisionResults, tokenResults }, "pgt-test"),
-    ).toMatchFileSnapshot(join(fixturesPath, "some-denied/expected.md"));
+      renderSummary(
+        { provisionResults, tokenResults },
+        "pgt-test",
+        testDocsUrl,
+      ),
+    ).toMatchFileSnapshot(join(fixturesPath, "some-denied.md"));
   });
 
   it("renders a summary with all secrets denied", async () => {
@@ -183,14 +192,22 @@ describe("renderSummary", () => {
       .sort((a, b) => compareTokenRequest(a.request, b.request));
 
     await expect(
-      renderSummary({ provisionResults, tokenResults }, "pgt-test"),
-    ).toMatchFileSnapshot(join(fixturesPath, "all-denied/expected.md"));
+      renderSummary(
+        { provisionResults, tokenResults },
+        "pgt-test",
+        testDocsUrl,
+      ),
+    ).toMatchFileSnapshot(join(fixturesPath, "all-denied.md"));
   });
 
   it("renders a summary with no secrets requested", async () => {
     await expect(
-      renderSummary({ provisionResults: [], tokenResults: [] }, "pgt-test"),
-    ).toMatchFileSnapshot(join(fixturesPath, "empty/expected.md"));
+      renderSummary(
+        { provisionResults: [], tokenResults: [] },
+        "pgt-test",
+        testDocsUrl,
+      ),
+    ).toMatchFileSnapshot(join(fixturesPath, "empty.md"));
   });
 
   it("renders a summary with a single secret", async () => {
@@ -245,8 +262,12 @@ describe("renderSummary", () => {
       .sort((a, b) => compareTokenRequest(a.request, b.request));
 
     await expect(
-      renderSummary({ provisionResults, tokenResults }, "pgt-test"),
-    ).toMatchFileSnapshot(join(fixturesPath, "single-secret/expected.md"));
+      renderSummary(
+        { provisionResults, tokenResults },
+        "pgt-test",
+        testDocsUrl,
+      ),
+    ).toMatchFileSnapshot(join(fixturesPath, "single-secret.md"));
   });
 
   it("renders a summary with environment targets", async () => {
@@ -324,10 +345,12 @@ describe("renderSummary", () => {
       .sort((a, b) => compareTokenRequest(a.request, b.request));
 
     await expect(
-      renderSummary({ provisionResults, tokenResults }, "pgt-test"),
-    ).toMatchFileSnapshot(
-      join(fixturesPath, "environment-targets/expected.md"),
-    );
+      renderSummary(
+        { provisionResults, tokenResults },
+        "pgt-test",
+        testDocsUrl,
+      ),
+    ).toMatchFileSnapshot(join(fixturesPath, "environment-targets.md"));
   });
 
   it("renders a summary with multiple requesters and consumers", async () => {
@@ -396,10 +419,12 @@ describe("renderSummary", () => {
       .sort((a, b) => compareTokenRequest(a.request, b.request));
 
     await expect(
-      renderSummary({ provisionResults, tokenResults }, "pgt-test"),
-    ).toMatchFileSnapshot(
-      join(fixturesPath, "multiple-requesters/expected.md"),
-    );
+      renderSummary(
+        { provisionResults, tokenResults },
+        "pgt-test",
+        testDocsUrl,
+      ),
+    ).toMatchFileSnapshot(join(fixturesPath, "multiple-requesters.md"));
   });
 
   it("renders a summary with selected-repos and no-repos tokens", async () => {
@@ -475,10 +500,12 @@ describe("renderSummary", () => {
       .sort((a, b) => compareTokenRequest(a.request, b.request));
 
     await expect(
-      renderSummary({ provisionResults, tokenResults }, "pgt-test"),
-    ).toMatchFileSnapshot(
-      join(fixturesPath, "selected-and-no-repos/expected.md"),
-    );
+      renderSummary(
+        { provisionResults, tokenResults },
+        "pgt-test",
+        testDocsUrl,
+      ),
+    ).toMatchFileSnapshot(join(fixturesPath, "selected-and-no-repos.md"));
   });
 
   it("renders a summary with a token with a role", async () => {
@@ -533,7 +560,11 @@ describe("renderSummary", () => {
       .sort((a, b) => compareTokenRequest(a.request, b.request));
 
     await expect(
-      renderSummary({ provisionResults, tokenResults }, "pgt-test"),
-    ).toMatchFileSnapshot(join(fixturesPath, "token-with-role/expected.md"));
+      renderSummary(
+        { provisionResults, tokenResults },
+        "pgt-test",
+        testDocsUrl,
+      ),
+    ).toMatchFileSnapshot(join(fixturesPath, "token-with-role.md"));
   });
 });

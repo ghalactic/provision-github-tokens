@@ -31,13 +31,20 @@ main().catch((error) => {
 });
 
 async function main(): Promise<void> {
-  const githubRepository = process.env.GITHUB_REPOSITORY;
-  const githubRef = process.env.GITHUB_REF;
   const githubAction = process.env.GITHUB_ACTION;
+  const githubActionRepository = process.env.GITHUB_ACTION_REPOSITORY;
+  const githubRef = process.env.GITHUB_REF;
+  const githubRepository = process.env.GITHUB_REPOSITORY;
+  const githubServerUrl = process.env.GITHUB_SERVER_URL;
 
   /* istanbul ignore next - @preserve */
-  if (!githubRepository) {
-    throw new Error("Invariant violation: GITHUB_REPOSITORY is not set");
+  if (!githubAction) {
+    throw new Error("Invariant violation: GITHUB_ACTION is not set");
+  }
+
+  /* istanbul ignore next - @preserve */
+  if (!githubActionRepository) {
+    throw new Error("Invariant violation: GITHUB_ACTION_REPOSITORY is not set");
   }
 
   /* istanbul ignore next - @preserve */
@@ -46,9 +53,16 @@ async function main(): Promise<void> {
   }
 
   /* istanbul ignore next - @preserve */
-  if (!githubAction) {
-    throw new Error("Invariant violation: GITHUB_ACTION is not set");
+  if (!githubRepository) {
+    throw new Error("Invariant violation: GITHUB_REPOSITORY is not set");
   }
+
+  /* istanbul ignore next - @preserve */
+  if (!githubServerUrl) {
+    throw new Error("Invariant violation: GITHUB_SERVER_URL is not set");
+  }
+
+  const actionUrl = `${githubServerUrl}/${githubActionRepository}`;
 
   const appsInput = readAppsInput();
   const octokitFactory = createOctokitFactory();
@@ -117,10 +131,6 @@ async function main(): Promise<void> {
     return await authorizer.authorize(Array.from(requesters.values()));
   });
 
-  await summary
-    .addRaw(renderSummary(authorizeResult, `pgt-${githubAction}`))
-    .write();
-
   const tokens = await group("Creating tokens", async () => {
     return await createTokens(tokenAuthorizer.listResults());
   });
@@ -128,4 +138,8 @@ async function main(): Promise<void> {
   await group("Provisioning secrets", async () => {
     await provisionSecrets(tokens, provisionAuthorizer.listResults());
   });
+
+  await summary
+    .addRaw(renderSummary(authorizeResult, `pgt-${githubAction}`, actionUrl))
+    .write();
 }

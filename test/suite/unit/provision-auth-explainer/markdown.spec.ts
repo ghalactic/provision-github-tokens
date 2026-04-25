@@ -84,7 +84,7 @@ describe("allowed secrets", () => {
     const explain = createMarkdownProvisionAuthExplainer(anchorMap);
 
     await expect(render(explain(result))).toMatchFileSnapshot(
-      join(fixturesPath, "actions-allowed/expected.md"),
+      join(fixturesPath, "actions-allowed.md"),
     );
   });
 
@@ -144,7 +144,7 @@ describe("allowed secrets", () => {
     const explain = createMarkdownProvisionAuthExplainer(anchorMap);
 
     await expect(render(explain(result))).toMatchFileSnapshot(
-      join(fixturesPath, "environment-allowed/expected.md"),
+      join(fixturesPath, "environment-allowed.md"),
     );
   });
 });
@@ -198,7 +198,7 @@ describe("denied secrets", () => {
     const explain = createMarkdownProvisionAuthExplainer(anchorMap);
 
     await expect(render(explain(result))).toMatchFileSnapshot(
-      join(fixturesPath, "actions-denied/expected.md"),
+      join(fixturesPath, "actions-denied.md"),
     );
   });
 
@@ -250,7 +250,7 @@ describe("denied secrets", () => {
     const explain = createMarkdownProvisionAuthExplainer(anchorMap);
 
     await expect(render(explain(result))).toMatchFileSnapshot(
-      join(fixturesPath, "missing-token-dec/expected.md"),
+      join(fixturesPath, "missing-token-dec.md"),
     );
   });
 
@@ -302,7 +302,7 @@ describe("denied secrets", () => {
     const explain = createMarkdownProvisionAuthExplainer(anchorMap);
 
     await expect(render(explain(result))).toMatchFileSnapshot(
-      join(fixturesPath, "non-shared-token-dec/expected.md"),
+      join(fixturesPath, "non-shared-token-dec.md"),
     );
   });
 
@@ -328,7 +328,7 @@ describe("denied secrets", () => {
     const explain = createMarkdownProvisionAuthExplainer(anchorMap);
 
     await expect(render(explain(result))).toMatchFileSnapshot(
-      join(fixturesPath, "missing-targets/expected.md"),
+      join(fixturesPath, "missing-targets.md"),
     );
   });
 });
@@ -413,7 +413,7 @@ describe("multiple targets", () => {
     const explain = createMarkdownProvisionAuthExplainer(anchorMap);
 
     await expect(render(explain(result))).toMatchFileSnapshot(
-      join(fixturesPath, "multiple-targets/expected.md"),
+      join(fixturesPath, "multiple-targets.md"),
     );
   });
 });
