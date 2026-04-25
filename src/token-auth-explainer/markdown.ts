@@ -190,20 +190,11 @@ export function createMarkdownTokenAuthExplainer(): TokenAuthResultExplainer<
   }
 }
 
-function iconItem(
-  iconStr: string,
-  text: string,
-  children?: ListItem[] | List,
-): ListItem {
+function iconItem(iconStr: string, text: string, sublist?: List): ListItem {
   const paragraph: Paragraph = {
     type: "paragraph",
     children: [{ type: "text", value: `${iconStr} ${text}` }],
   };
-  const sublist: List | undefined = children
-    ? Array.isArray(children) && !("type" in children)
-      ? bulletList(...children)
-      : (children as List)
-    : undefined;
 
   return {
     type: "listItem",
