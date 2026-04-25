@@ -1,24 +1,20 @@
-## Provisioned 1000 of 1002 secrets
-
-> \[!WARNING]
->
-> 2 secrets are not shown. Check the logs for the full list.
+## Provisioned 992 of 1002 secrets
 
 |    | Requester                               | Secret        | Targets                   |
 | :- | :-------------------------------------- | :------------ | :------------------------ |
 | ❌  | [account-x/repo-x][gh/account-x/repo-x] | `SECRET_0000` | [account-a][gh/account-a] |
 | ❌  | [account-x/repo-x][gh/account-x/repo-x] | `SECRET_0001` | [account-a][gh/account-a] |
+| ❌  | [account-x/repo-x][gh/account-x/repo-x] | `SECRET_0002` | [account-a][gh/account-a] |
+| ❌  | [account-x/repo-x][gh/account-x/repo-x] | `SECRET_0003` | [account-a][gh/account-a] |
+| ❌  | [account-x/repo-x][gh/account-x/repo-x] | `SECRET_0004` | [account-a][gh/account-a] |
+| ❌  | [account-x/repo-x][gh/account-x/repo-x] | `SECRET_0005` | [account-a][gh/account-a] |
+| ❌  | [account-x/repo-x][gh/account-x/repo-x] | `SECRET_0006` | [account-a][gh/account-a] |
+| ❌  | [account-x/repo-x][gh/account-x/repo-x] | `SECRET_0007` | [account-a][gh/account-a] |
+| ❌  | [account-x/repo-x][gh/account-x/repo-x] | `SECRET_0008` | [account-a][gh/account-a] |
+| ❌  | [account-x/repo-x][gh/account-x/repo-x] | `SECRET_0009` | [account-a][gh/account-a] |
 
 |    | Requester                               | Secret        | Targets                   |
 | :- | :-------------------------------------- | :------------ | :------------------------ |
-| ✅  | [account-x/repo-x][gh/account-x/repo-x] | `SECRET_0002` | [account-a][gh/account-a] |
-| ✅  | [account-x/repo-x][gh/account-x/repo-x] | `SECRET_0003` | [account-a][gh/account-a] |
-| ✅  | [account-x/repo-x][gh/account-x/repo-x] | `SECRET_0004` | [account-a][gh/account-a] |
-| ✅  | [account-x/repo-x][gh/account-x/repo-x] | `SECRET_0005` | [account-a][gh/account-a] |
-| ✅  | [account-x/repo-x][gh/account-x/repo-x] | `SECRET_0006` | [account-a][gh/account-a] |
-| ✅  | [account-x/repo-x][gh/account-x/repo-x] | `SECRET_0007` | [account-a][gh/account-a] |
-| ✅  | [account-x/repo-x][gh/account-x/repo-x] | `SECRET_0008` | [account-a][gh/account-a] |
-| ✅  | [account-x/repo-x][gh/account-x/repo-x] | `SECRET_0009` | [account-a][gh/account-a] |
 | ✅  | [account-x/repo-x][gh/account-x/repo-x] | `SECRET_0010` | [account-a][gh/account-a] |
 | ✅  | [account-x/repo-x][gh/account-x/repo-x] | `SECRET_0011` | [account-a][gh/account-a] |
 | ✅  | [account-x/repo-x][gh/account-x/repo-x] | `SECRET_0012` | [account-a][gh/account-a] |
@@ -1009,6 +1005,10 @@
 | ✅  | [account-x/repo-x][gh/account-x/repo-x] | `SECRET_0997` | [account-a][gh/account-a] |
 | ✅  | [account-x/repo-x][gh/account-x/repo-x] | `SECRET_0998` | [account-a][gh/account-a] |
 | ✅  | [account-x/repo-x][gh/account-x/repo-x] | `SECRET_0999` | [account-a][gh/account-a] |
+
+> \[!IMPORTANT]
+>
+> Showing 1000 of 1002 secrets. Check the logs for the full list.
 
 [gh/account-a]: https://github.example.com/account-a
 

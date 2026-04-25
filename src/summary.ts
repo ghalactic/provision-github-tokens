@@ -47,10 +47,10 @@ export function renderSummary(
       type: "root",
       children: [
         statsHeading(provisionResults),
-        ...omittedNotice(omitted),
         ...emptySection(provisionResults, result, actionURL),
         ...failuresTable(denied),
         ...successesTable(allowed),
+        ...omittedNotice(provisionResults.length, omitted),
         ...definitions(githubServerURL, displayed),
       ],
     },
@@ -111,15 +111,15 @@ function successesTable(allowed: ProvisionAuthResult[]): RootContent[] {
   ];
 }
 
-function omittedNotice(omitted: number): RootContent[] {
+function omittedNotice(total: number, omitted: number): RootContent[] {
   if (omitted === 0) return [];
 
   return [
     blockquote(
-      paragraph(text("[!WARNING]")),
+      paragraph(text("[!IMPORTANT]")),
       paragraph(
         text(
-          `${pluralize(omitted, "secret is", "secrets are")} not shown. Check the logs for the full list.`,
+          `Showing ${total - omitted} of ${total} secrets. Check the logs for the full list.`,
         ),
       ),
     ),

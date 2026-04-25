@@ -549,7 +549,7 @@ it("truncates rows beyond the limit and shows a notice", async () => {
 
   for (let i = 0; i < 1002; i++) {
     const name = `SECRET_${String(i).padStart(4, "0")}`;
-    const isAllowed = i >= 2;
+    const isAllowed = i >= 10;
 
     provisionResults.push({
       request: {
