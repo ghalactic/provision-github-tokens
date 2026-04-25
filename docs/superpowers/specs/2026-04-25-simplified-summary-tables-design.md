@@ -44,10 +44,15 @@ sorted, and combined in the targets cell — separated by commas. Only accounts
 and repos are shown; the secret type (actions, codespaces, dependabot,
 environment) is not displayed.
 
-### Heading anchors
+### Headings
 
-The heading factory with anchor IDs is retained. The stats heading gets an
-anchor, consistent with the existing pattern.
+The heading factory (`createHeadingFactory`) is removed. Headings are built as
+plain mdast `Heading` nodes with no anchor IDs. This removes the need for
+`github-slugger`, `node:crypto` hashing, and `hast-util-to-html`.
+
+The `renderSummary` function no longer accepts a `HeadingFactory` parameter. A
+simple `heading()` helper is added to `markdown.ts` that creates a plain
+`Heading` node.
 
 ## Markdown helpers
 
@@ -76,6 +81,8 @@ No separate `tableRow` or `tableCell` helpers — those are internal to the
 The following helpers are removed from `markdown.ts` because they are no longer
 used:
 
+- `createHeadingFactory()` and `HeadingFactory` type
+- `anchorLink()`
 - `details()`
 - `HTMLInlineCode()`
 - `HTMLLink()`
@@ -103,9 +110,15 @@ Any other helpers that become unused after the rewrite are also removed.
 
 ### Dependency cleanup
 
-The `hast-util-to-html` and `@types/hast` dependencies are retained because
-`createHeadingFactory()` still uses `toHtml()` for anchor generation. The
-`ElementContent` type import is removed if it becomes unused.
+The following npm dependencies are removed:
+
+- `github-slugger` (and `@types/github-slugger` if present)
+- `hast-util-to-html`
+- `@types/hast`
+
+These were only used by the heading factory, the `details()` helper, and the
+markdown explainers — all of which are removed. The `node:crypto` import in
+`markdown.ts` is also removed.
 
 ## Formatting conventions
 
