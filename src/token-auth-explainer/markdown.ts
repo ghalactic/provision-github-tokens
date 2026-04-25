@@ -1,4 +1,4 @@
-import type { List, ListItem, Paragraph, RootContent } from "mdast";
+import type { Html, List, ListItem, Paragraph, RootContent } from "mdast";
 import { isSufficientAccess } from "../access-level.js";
 import { accountOrRepoRefToString, isRepoRef } from "../github-reference.js";
 import { permissionAccess } from "../permissions.js";
@@ -39,19 +39,19 @@ export function createMarkdownTokenAuthExplainer(): TokenAuthResultExplainer<
     const subject = `all repos in ${request.tokenDec.account}`;
 
     return [
+      html(`<details>\n<summary>${summaryText(result)}</summary>`),
       bulletList(
-        iconItem(icon(result.isAllowed), summaryText(result), [
-          iconItem(
-            icon(!result.isMissingRole),
-            maxAccessAndRoleText(result, subject),
-          ),
-          iconItem(
-            icon(isSufficient),
-            `${isSufficient ? "Sufficient" : "Insufficient"} access to ${subject} ${basedOnRulesText(rules)}`,
-            rulesSublist(request.tokenDec.permissions, rules),
-          ),
-        ]),
+        iconItem(
+          icon(!result.isMissingRole),
+          maxAccessAndRoleText(result, subject),
+        ),
+        iconItem(
+          icon(isSufficient),
+          `${isSufficient ? "Sufficient" : "Insufficient"} access to ${subject} ${basedOnRulesText(rules)}`,
+          rulesSublist(request.tokenDec.permissions, rules),
+        ),
       ),
+      html("</details>"),
     ];
   }
 
@@ -59,19 +59,19 @@ export function createMarkdownTokenAuthExplainer(): TokenAuthResultExplainer<
     const { request, isSufficient, rules } = result;
 
     return [
+      html(`<details>\n<summary>${summaryText(result)}</summary>`),
       bulletList(
-        iconItem(icon(result.isAllowed), summaryText(result), [
-          iconItem(
-            icon(!result.isMissingRole),
-            maxAccessAndRoleText(result, request.tokenDec.account),
-          ),
-          iconItem(
-            icon(isSufficient),
-            `${isSufficient ? "Sufficient" : "Insufficient"} access to ${request.tokenDec.account} ${basedOnRulesText(rules)}`,
-            rulesSublist(request.tokenDec.permissions, rules),
-          ),
-        ]),
+        iconItem(
+          icon(!result.isMissingRole),
+          maxAccessAndRoleText(result, request.tokenDec.account),
+        ),
+        iconItem(
+          icon(isSufficient),
+          `${isSufficient ? "Sufficient" : "Insufficient"} access to ${request.tokenDec.account} ${basedOnRulesText(rules)}`,
+          rulesSublist(request.tokenDec.permissions, rules),
+        ),
       ),
+      html("</details>"),
     ];
   }
 
@@ -104,16 +104,16 @@ export function createMarkdownTokenAuthExplainer(): TokenAuthResultExplainer<
     const repos = pluralize(request.repos.length, "repo", "repos");
 
     return [
+      html(`<details>\n<summary>${summaryText(result)}</summary>`),
       bulletList(
-        iconItem(icon(result.isAllowed), summaryText(result), [
-          iconItem(
-            icon(!result.isMissingRole),
-            maxAccessAndRoleText(result, subject),
-          ),
-          iconItem(icon(result.isMatched), `${repoPatterns} matched ${repos}`),
-          ...repoItems,
-        ]),
+        iconItem(
+          icon(!result.isMissingRole),
+          maxAccessAndRoleText(result, subject),
+        ),
+        iconItem(icon(result.isMatched), `${repoPatterns} matched ${repos}`),
+        ...repoItems,
       ),
+      html("</details>"),
     ];
   }
 
@@ -121,7 +121,7 @@ export function createMarkdownTokenAuthExplainer(): TokenAuthResultExplainer<
     const name = accountOrRepoRefToString(request.consumer);
     const kind = isRepoRef(request.consumer) ? "Repo" : "Account";
 
-    return `${kind} ${name} was ${isAllowed ? "allowed" : "denied"} access to a token:`;
+    return `${icon(isAllowed)} ${kind} ${name} was ${isAllowed ? "allowed" : "denied"} access to a token`;
   }
 
   function maxAccessAndRoleText(
@@ -214,4 +214,8 @@ function iconItem(
 
 function bulletList(...items: ListItem[]): List {
   return { type: "list", ordered: false, spread: false, children: items };
+}
+
+function html(value: string): Html {
+  return { type: "html", value };
 }

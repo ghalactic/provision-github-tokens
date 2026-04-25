@@ -1,5 +1,9 @@
-- ✅ Account account-x was allowed access to a token:
-  - ✅ Read access to account-a requested with role role-a
-  - ✅ Sufficient access to account-a based on 1 rule:
-    - ✅ Rule #1 gave sufficient access:
-      - ✅ members: have read, wanted read
+<details>
+<summary>✅ Account account-x was allowed access to a token</summary>
+
+- ✅ Read access to account-a requested with role role-a
+- ✅ Sufficient access to account-a based on 1 rule:
+  - ✅ Rule #1 gave sufficient access:
+    - ✅ members: have read, wanted read
+
+</details>
