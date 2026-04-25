@@ -4,8 +4,8 @@
 | :- | :-------------------------------------- | :--------- | :--------------------------------------------------- |
 | ✅  | [account-x/repo-x][gh/account-x/repo-x] | `SECRET_A` | [account-a][gh/account-a], [account-b][gh/account-b] |
 
-[gh/account-x/repo-x]: https://github.example.com/account-x/repo-x
-
 [gh/account-a]: https://github.example.com/account-a
 
 [gh/account-b]: https://github.example.com/account-b
+
+[gh/account-x/repo-x]: https://github.example.com/account-x/repo-x

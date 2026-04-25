@@ -146,14 +146,14 @@ function definitions(
   provisionResults: ProvisionAuthResult[],
 ): RootContent[] {
   const seen = new Set<string>();
-  const defs: RootContent[] = [];
+  const refs: AccountOrRepoReference[] = [];
 
   for (const r of provisionResults) {
     const requesterKey = accountOrRepoRefToString(r.request.requester);
 
     if (!seen.has(requesterKey)) {
       seen.add(requesterKey);
-      defs.push(accountOrRepoDefinition(githubServerURL, r.request.requester));
+      refs.push(r.request.requester);
     }
 
     for (const t of r.request.to) {
@@ -161,10 +161,14 @@ function definitions(
 
       if (!seen.has(targetKey)) {
         seen.add(targetKey);
-        defs.push(accountOrRepoDefinition(githubServerURL, t.target));
+        refs.push(t.target);
       }
     }
   }
 
-  return defs;
+  refs.sort((a, b) =>
+    accountOrRepoRefToString(a).localeCompare(accountOrRepoRefToString(b)),
+  );
+
+  return refs.map((ref) => accountOrRepoDefinition(githubServerURL, ref));
 }
