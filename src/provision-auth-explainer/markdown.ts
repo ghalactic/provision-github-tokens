@@ -1,12 +1,10 @@
 import type { ElementContent } from "hast";
-import type { List, ListItem, RootContent } from "mdast";
+import type { List, ListItem, Paragraph, RootContent } from "mdast";
 import { compareProvisionRequestTarget } from "../compare-provision-request-target.js";
+import { isRepoRef } from "../github-reference.js";
 import {
-  accountOrRepoRefToString,
-  isRepoRef,
-  repoRefToString,
-} from "../github-reference.js";
-import {
+  accountOrRepoHTMLLink,
+  accountOrRepoLink,
   anchorLink,
   details,
   listItem,
@@ -27,6 +25,7 @@ import type { TokenAuthResult } from "../type/token-auth-result.js";
 import type { TokenHeadingReference } from "../type/token-heading-reference.js";
 
 export function createMarkdownProvisionAuthExplainer(
+  githubServerURL: string,
   tokenReferenceMap: Map<TokenAuthResult, TokenHeadingReference>,
 ): ProvisionAuthResultExplainer<RootContent[]> {
   return (result) => {
@@ -41,9 +40,10 @@ export function createMarkdownProvisionAuthExplainer(
     isAllowed,
   }: ProvisionAuthResult): ElementContent[] {
     return [
+      text(`${renderIcon(isAllowed)} Repo `),
+      accountOrRepoHTMLLink(githubServerURL, request.requester),
       text(
-        `${renderIcon(isAllowed)} Repo ${repoRefToString(request.requester)} ` +
-          (isAllowed ? "was allowed" : "wasn't allowed") +
+        ` ${isAllowed ? "was allowed" : "wasn't allowed"}` +
           ` to provision secret ${request.name}`,
       ),
     ];
@@ -102,9 +102,10 @@ export function createMarkdownProvisionAuthExplainer(
       paragraph(
         text(
           `${renderIcon(result.isAllowed)} ` +
-            `${result.isAllowed ? "Can" : "Can't"} provision token to ` +
-            `${subjectText(target)}:`,
+            `${result.isAllowed ? "Can" : "Can't"} provision token to `,
         ),
+        ...subjectChildren(target),
+        text(":"),
       ),
       unorderedList(tokenAuthItem(result), provisioningItem(result)),
     );
@@ -124,10 +125,8 @@ export function createMarkdownProvisionAuthExplainer(
       );
     }
 
-    const name = accountOrRepoRefToString(tokenAuthResult.request.consumer);
-    const kind = isRepoRef(tokenAuthResult.request.consumer)
-      ? "Repo"
-      : "Account";
+    const { consumer } = tokenAuthResult.request;
+    const kind = isRepoRef(consumer) ? "Repo" : "Account";
     const tokenReference = tokenReferenceMap.get(tokenAuthResult);
 
     /* istanbul ignore next - @preserve */
@@ -137,10 +136,9 @@ export function createMarkdownProvisionAuthExplainer(
 
     return listItem(
       paragraph(
-        text(
-          `${renderIcon(isTokenAllowed)} ${kind} ${name} was ` +
-            `${isTokenAllowed ? "allowed" : "denied"} access to `,
-        ),
+        text(`${renderIcon(isTokenAllowed)} ${kind} `),
+        accountOrRepoLink(githubServerURL, consumer),
+        text(` was ${isTokenAllowed ? "allowed" : "denied"} access to `),
         anchorLink(
           tokenReference.headingId,
           text(`token #${tokenReference.index}`),
@@ -194,26 +192,36 @@ export function createMarkdownProvisionAuthExplainer(
     );
   }
 
-  function subjectText(target: ProvisionRequestTarget): string {
-    const type = (({ type, target }) => {
-      switch (type) {
-        case "actions":
-          return "GitHub Actions";
-        case "codespaces":
-          return "GitHub Codespaces";
-        case "dependabot":
-          return "Dependabot";
-        case "environment":
-          return `GitHub environment ${target.environment}`;
-      }
+  function subjectChildren(
+    target: ProvisionRequestTarget,
+  ): Paragraph["children"] {
+    switch (target.type) {
+      case "actions":
+        return [
+          text("GitHub Actions secret in "),
+          accountOrRepoLink(githubServerURL, target.target),
+        ];
+      case "codespaces":
+        return [
+          text("GitHub Codespaces secret in "),
+          accountOrRepoLink(githubServerURL, target.target),
+        ];
+      case "dependabot":
+        return [
+          text("Dependabot secret in "),
+          accountOrRepoLink(githubServerURL, target.target),
+        ];
+      case "environment":
+        return [
+          text(`GitHub environment ${target.target.environment} secret in `),
+          accountOrRepoLink(githubServerURL, target.target),
+        ];
+    }
 
-      /* istanbul ignore next - @preserve */
-      throw new Error(
-        `Invariant violation: Unexpected secret type ${JSON.stringify(type)}`,
-      );
-    })(target);
-
-    return `${type} secret in ${accountOrRepoRefToString(target.target)}`;
+    /* istanbul ignore next - @preserve */
+    throw new Error(
+      `Invariant violation: Unexpected secret type ${JSON.stringify(target)}`,
+    );
   }
 
   function renderRule(

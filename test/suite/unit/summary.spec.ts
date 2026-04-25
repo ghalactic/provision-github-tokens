@@ -14,7 +14,8 @@ import { createTestTokenAuthorizer } from "../../token-authorizer.js";
 import { createTestTokenRequestFactory } from "../../token-request.js";
 
 const fixturesPath = join(import.meta.dirname, "../../fixture/summary");
-const testDocsUrl = "https://github.example.com/test/action";
+const githubServerURL = "https://github.example.com";
+const testDocsURL = "https://github.example.com/test/action";
 let headingFactory: HeadingFactory;
 
 beforeEach(() => {
@@ -90,11 +91,10 @@ it("renders a summary with all secrets provisioned", async () => {
     .sort((a, b) => compareTokenRequest(a.request, b.request));
 
   await expect(
-    renderSummary(
-      headingFactory,
-      { provisionResults, tokenResults },
-      testDocsUrl,
-    ),
+    renderSummary(headingFactory, githubServerURL, testDocsURL, {
+      provisionResults,
+      tokenResults,
+    }),
   ).toMatchFileSnapshot(join(fixturesPath, "all-provisioned.md"));
 });
 
@@ -164,11 +164,10 @@ it("renders a summary with some secrets denied", async () => {
     .sort((a, b) => compareTokenRequest(a.request, b.request));
 
   await expect(
-    renderSummary(
-      headingFactory,
-      { provisionResults, tokenResults },
-      testDocsUrl,
-    ),
+    renderSummary(headingFactory, githubServerURL, testDocsURL, {
+      provisionResults,
+      tokenResults,
+    }),
   ).toMatchFileSnapshot(join(fixturesPath, "some-denied.md"));
 });
 
@@ -204,21 +203,19 @@ it("renders a summary with all secrets denied", async () => {
     .sort((a, b) => compareTokenRequest(a.request, b.request));
 
   await expect(
-    renderSummary(
-      headingFactory,
-      { provisionResults, tokenResults },
-      testDocsUrl,
-    ),
+    renderSummary(headingFactory, githubServerURL, testDocsURL, {
+      provisionResults,
+      tokenResults,
+    }),
   ).toMatchFileSnapshot(join(fixturesPath, "all-denied.md"));
 });
 
 it("renders a summary with no secrets requested", async () => {
   await expect(
-    renderSummary(
-      headingFactory,
-      { provisionResults: [], tokenResults: [] },
-      testDocsUrl,
-    ),
+    renderSummary(headingFactory, githubServerURL, testDocsURL, {
+      provisionResults: [],
+      tokenResults: [],
+    }),
   ).toMatchFileSnapshot(join(fixturesPath, "empty.md"));
 });
 
@@ -277,11 +274,10 @@ it("renders a summary with a single secret", async () => {
     .sort((a, b) => compareTokenRequest(a.request, b.request));
 
   await expect(
-    renderSummary(
-      headingFactory,
-      { provisionResults, tokenResults },
-      testDocsUrl,
-    ),
+    renderSummary(headingFactory, githubServerURL, testDocsURL, {
+      provisionResults,
+      tokenResults,
+    }),
   ).toMatchFileSnapshot(join(fixturesPath, "single-secret.md"));
 });
 
@@ -360,11 +356,10 @@ it("renders a summary with environment targets", async () => {
     .sort((a, b) => compareTokenRequest(a.request, b.request));
 
   await expect(
-    renderSummary(
-      headingFactory,
-      { provisionResults, tokenResults },
-      testDocsUrl,
-    ),
+    renderSummary(headingFactory, githubServerURL, testDocsURL, {
+      provisionResults,
+      tokenResults,
+    }),
   ).toMatchFileSnapshot(join(fixturesPath, "environment-targets.md"));
 });
 
@@ -434,11 +429,10 @@ it("renders a summary with multiple requesters and consumers", async () => {
     .sort((a, b) => compareTokenRequest(a.request, b.request));
 
   await expect(
-    renderSummary(
-      headingFactory,
-      { provisionResults, tokenResults },
-      testDocsUrl,
-    ),
+    renderSummary(headingFactory, githubServerURL, testDocsURL, {
+      provisionResults,
+      tokenResults,
+    }),
   ).toMatchFileSnapshot(join(fixturesPath, "multiple-requesters.md"));
 });
 
@@ -515,11 +509,10 @@ it("renders a summary with selected-repos and no-repos tokens", async () => {
     .sort((a, b) => compareTokenRequest(a.request, b.request));
 
   await expect(
-    renderSummary(
-      headingFactory,
-      { provisionResults, tokenResults },
-      testDocsUrl,
-    ),
+    renderSummary(headingFactory, githubServerURL, testDocsURL, {
+      provisionResults,
+      tokenResults,
+    }),
   ).toMatchFileSnapshot(join(fixturesPath, "selected-and-no-repos.md"));
 });
 
@@ -578,11 +571,10 @@ it("renders a summary with a token with a role", async () => {
     .sort((a, b) => compareTokenRequest(a.request, b.request));
 
   await expect(
-    renderSummary(
-      headingFactory,
-      { provisionResults, tokenResults },
-      testDocsUrl,
-    ),
+    renderSummary(headingFactory, githubServerURL, testDocsURL, {
+      provisionResults,
+      tokenResults,
+    }),
   ).toMatchFileSnapshot(join(fixturesPath, "token-with-role.md"));
 });
 
@@ -652,11 +644,10 @@ it("renders a summary with a missing token declaration", async () => {
     .sort((a, b) => compareTokenRequest(a.request, b.request));
 
   await expect(
-    renderSummary(
-      headingFactory,
-      { provisionResults, tokenResults },
-      testDocsUrl,
-    ),
+    renderSummary(headingFactory, githubServerURL, testDocsURL, {
+      provisionResults,
+      tokenResults,
+    }),
   ).toMatchFileSnapshot(join(fixturesPath, "missing-token-dec.md"));
 });
 
@@ -720,10 +711,9 @@ it("renders a summary with missing targets", async () => {
     .sort((a, b) => compareTokenRequest(a.request, b.request));
 
   await expect(
-    renderSummary(
-      headingFactory,
-      { provisionResults, tokenResults },
-      testDocsUrl,
-    ),
+    renderSummary(headingFactory, githubServerURL, testDocsURL, {
+      provisionResults,
+      tokenResults,
+    }),
   ).toMatchFileSnapshot(join(fixturesPath, "missing-targets.md"));
 });

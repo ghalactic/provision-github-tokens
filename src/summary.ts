@@ -4,8 +4,9 @@ import { toMarkdown } from "mdast-util-to-markdown";
 import type { AuthorizeResult } from "./authorizer.js";
 import { compareProvisionRequest } from "./compare-provision-request.js";
 import { compareTokenRequest } from "./compare-token-request.js";
-import { repoRefToString } from "./github-reference.js";
+import { repoRefFromName, repoRefToString } from "./github-reference.js";
 import {
+  accountOrRepoLink,
   anchorLink,
   emphasis,
   inlineCode,
@@ -26,8 +27,9 @@ import type { TokenHeadingReference } from "./type/token-heading-reference.js";
 
 export function renderSummary(
   createHeading: HeadingFactory,
+  githubServerURL: string,
+  actionURL: string,
   result: AuthorizeResult,
-  actionUrl: string,
 ): string {
   const provisionResults = result.provisionResults.toSorted((a, b) =>
     compareProvisionRequest(a.request, b.request),
@@ -42,27 +44,37 @@ export function renderSummary(
   );
   const { tokenHeadingMap, tokenReferenceMap } = buildTokenMaps(
     createHeading,
+    githubServerURL,
     tokenResults,
   );
   const { secretTokenLinkMap, usedByMap } = buildSecretTokenRelations(
+    githubServerURL,
     provisionResults,
     secretHeadingMap,
     tokenReferenceMap,
   );
 
-  const explainTokenAuth = createMarkdownTokenAuthExplainer();
-  const explainProvisionAuth =
-    createMarkdownProvisionAuthExplainer(tokenReferenceMap);
+  const explainTokenAuth = createMarkdownTokenAuthExplainer(githubServerURL);
+  const explainProvisionAuth = createMarkdownProvisionAuthExplainer(
+    githubServerURL,
+    tokenReferenceMap,
+  );
 
   return toMarkdown(
     {
       type: "root",
       children: [
         statsHeading(createHeading, provisionResults),
-        ...emptySection(provisionResults, tokenResults, actionUrl),
-        ...failuresSection(createHeading, provisionResults, secretHeadingMap),
+        ...emptySection(provisionResults, tokenResults, actionURL),
+        ...failuresSection(
+          createHeading,
+          githubServerURL,
+          provisionResults,
+          secretHeadingMap,
+        ),
         ...secretProvisioningSection(
           createHeading,
+          githubServerURL,
           provisionResults,
           explainProvisionAuth,
           secretTokenLinkMap,
@@ -70,6 +82,7 @@ export function renderSummary(
         ),
         ...tokenIssuingSection(
           createHeading,
+          githubServerURL,
           tokenResults,
           explainTokenAuth,
           tokenHeadingMap,
@@ -101,7 +114,7 @@ function statsHeading(
 function emptySection(
   provisionResults: ProvisionAuthResult[],
   tokenResults: TokenAuthResult[],
-  actionUrl: string,
+  actionURL: string,
 ): RootContent[] {
   if (provisionResults.length > 0 || tokenResults.length > 0) return [];
 
@@ -109,7 +122,7 @@ function emptySection(
     paragraph(emphasis(text("(no secrets provisioned)"))),
     paragraph(
       text("Need help getting started? See the "),
-      link(new URL("#readme", actionUrl), text("docs")),
+      link(new URL("#readme", actionURL), text("docs")),
       text("."),
     ),
   ];
@@ -117,6 +130,7 @@ function emptySection(
 
 function failuresSection(
   createHeading: HeadingFactory,
+  githubServerURL: string,
   provisionResults: ProvisionAuthResult[],
   secretHeadingMap: HeadingMap<ProvisionAuthResult>,
 ): RootContent[] {
@@ -129,7 +143,10 @@ function failuresSection(
   for (const [requesterName, group] of Map.groupBy(failures, (r) =>
     repoRefToString(r.request.requester),
   )) {
-    const [requesterHeading] = createHeading(4, text(requesterName));
+    const [requesterHeading] = createHeading(
+      4,
+      accountOrRepoLink(githubServerURL, repoRefFromName(requesterName)),
+    );
     nodes.push(requesterHeading);
     nodes.push(
       unorderedList(
@@ -157,6 +174,7 @@ function failuresSection(
 
 function secretProvisioningSection(
   createHeading: HeadingFactory,
+  githubServerURL: string,
   provisionResults: ProvisionAuthResult[],
   explainProvisionAuth: (result: ProvisionAuthResult) => RootContent[],
   secretTokenLinkMap: Map<ProvisionAuthResult, TokenHeadingReference>,
@@ -170,7 +188,10 @@ function secretProvisioningSection(
   for (const [requesterName, group] of Map.groupBy(provisionResults, (r) =>
     repoRefToString(r.request.requester),
   )) {
-    const [requesterHeading] = createHeading(4, text(requesterName));
+    const [requesterHeading] = createHeading(
+      4,
+      accountOrRepoLink(githubServerURL, repoRefFromName(requesterName)),
+    );
     nodes.push(requesterHeading);
 
     for (const result of group) {
@@ -196,6 +217,7 @@ function secretProvisioningSection(
 
 function tokenIssuingSection(
   createHeading: HeadingFactory,
+  githubServerURL: string,
   tokenResults: TokenAuthResult[],
   explainTokenAuth: (result: TokenAuthResult) => RootContent[],
   tokenHeadingMap: HeadingMap<TokenAuthResult>,
@@ -209,7 +231,10 @@ function tokenIssuingSection(
   for (const [consumerName, group] of Map.groupBy(tokenResults, (r) =>
     consumerRefToString(r),
   )) {
-    const [consumerHeading] = createHeading(4, text(consumerName));
+    const [consumerHeading] = createHeading(
+      4,
+      ...consumerHeadingChildren(githubServerURL, consumerName),
+    );
     nodes.push(consumerHeading);
 
     for (const result of group) {
@@ -242,22 +267,35 @@ function tokenIssuingSection(
   return nodes;
 }
 
-function tokenHeadingText(index: number, result: TokenAuthResult): string {
+function tokenHeadingChildren(
+  githubServerURL: string,
+  index: number,
+  result: TokenAuthResult,
+): Heading["children"] {
   const account = result.request.tokenDec.account;
   const n = `Token #${index}`;
 
   if (result.request.repos === "all") {
-    return `${n} — ${account} (all repos)`;
+    return [
+      text(`${n} - `),
+      accountOrRepoLink(githubServerURL, { account }),
+      text(" (all repos)"),
+    ];
   }
 
   if (result.request.repos.length === 0) {
-    return `${n} — ${account} (no repos)`;
+    return [
+      text(`${n} - `),
+      accountOrRepoLink(githubServerURL, { account }),
+      text(" (no repos)"),
+    ];
   }
 
-  return (
-    `${n} — ${account} ` +
-    `(${pluralize(result.request.repos.length, "repo", "repos")})`
-  );
+  return [
+    text(`${n} - `),
+    accountOrRepoLink(githubServerURL, { account }),
+    text(` (${pluralize(result.request.repos.length, "repo", "repos")})`),
+  ];
 }
 
 function usesTokenList(
@@ -286,6 +324,7 @@ function usesTokenList(
 
 function buildTokenMaps(
   createHeading: HeadingFactory,
+  githubServerURL: string,
   tokenResults: TokenAuthResult[],
 ): {
   tokenHeadingMap: HeadingMap<TokenAuthResult>;
@@ -303,7 +342,7 @@ function buildTokenMaps(
     for (const result of group) {
       const [node, id] = createHeading(
         5,
-        text(tokenHeadingText(tokenIndex, result)),
+        ...tokenHeadingChildren(githubServerURL, tokenIndex, result),
       );
       tokenHeadingMap.set(result, { heading: node, id });
       tokenReferenceMap.set(result, { headingId: id, index: tokenIndex });
@@ -315,6 +354,7 @@ function buildTokenMaps(
 }
 
 function buildSecretTokenRelations(
+  githubServerURL: string,
   provisionResults: ProvisionAuthResult[],
   secretHeadingMap: HeadingMap<ProvisionAuthResult>,
   tokenReferenceMap: Map<TokenAuthResult, TokenHeadingReference>,
@@ -361,6 +401,7 @@ function buildSecretTokenRelations(
       const anchor = secretHeading.id;
       if (!entries.some((entry) => entry.secretAnchor === anchor)) {
         entries.push({
+          githubServerURL,
           secretName: provisionResult.request.name,
           secretAnchor: anchor,
           requesterName,
@@ -415,16 +456,33 @@ function usedByItem(entry: UsedByEntry): ListItem {
   return listItem(
     paragraph(
       anchorLink(entry.secretAnchor, inlineCode(entry.secretName)),
-      text(` (${entry.requesterName})`),
+      text(" ("),
+      accountOrRepoLink(
+        entry.githubServerURL,
+        repoRefFromName(entry.requesterName),
+      ),
+      text(")"),
     ),
   );
 }
 
 type UsedByEntry = {
+  githubServerURL: string;
   secretName: string;
   secretAnchor: string;
   requesterName: string;
 };
+
+function consumerHeadingChildren(
+  githubServerURL: string,
+  consumer: string,
+): Heading["children"] {
+  if (consumer.includes("/")) {
+    return [accountOrRepoLink(githubServerURL, repoRefFromName(consumer))];
+  }
+
+  return [accountOrRepoLink(githubServerURL, { account: consumer })];
+}
 
 type HeadingEntry = { heading: Heading; id: string };
 type HeadingMap<T> = Map<T, HeadingEntry>;

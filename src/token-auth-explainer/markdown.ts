@@ -1,8 +1,10 @@
 import type { ElementContent } from "hast";
 import type { List, ListItem, RootContent } from "mdast";
 import { isSufficientAccess } from "../access-level.js";
-import { accountOrRepoRefToString, isRepoRef } from "../github-reference.js";
+import { isRepoRef, repoRefFromName } from "../github-reference.js";
 import {
+  accountOrRepoHTMLLink,
+  accountOrRepoLink,
   details,
   listItem,
   paragraph,
@@ -30,9 +32,9 @@ const ACCESS_LEVELS: Record<PermissionAccess, string> = {
   write: "Write",
 };
 
-export function createMarkdownTokenAuthExplainer(): TokenAuthResultExplainer<
-  RootContent[]
-> {
+export function createMarkdownTokenAuthExplainer(
+  githubServerURL: string,
+): TokenAuthResultExplainer<RootContent[]> {
   return (result) => {
     if (result.type === "ALL_REPOS") return explainAllRepos(result);
     if (result.type === "NO_REPOS") return explainNoRepos(result);
@@ -42,7 +44,7 @@ export function createMarkdownTokenAuthExplainer(): TokenAuthResultExplainer<
 
   function explainAllRepos(result: TokenAuthResultAllRepos): RootContent[] {
     const { request, isSufficient, rules } = result;
-    const subject = `all repos in ${request.tokenDec.account}`;
+    const account = { account: request.tokenDec.account };
 
     return details(
       summaryChildren(result),
@@ -51,8 +53,10 @@ export function createMarkdownTokenAuthExplainer(): TokenAuthResultExplainer<
           paragraph(
             text(
               `${renderIcon(!result.isMissingRole)} ` +
-                `${maxAccessAndRoleText(result, subject)}`,
+                `${ACCESS_LEVELS[result.maxWant]} access to all repos in `,
             ),
+            accountOrRepoLink(githubServerURL, account),
+            text(` ${roleRequestText(request.tokenDec.as)}`),
           ),
         ),
         listItem(
@@ -60,8 +64,10 @@ export function createMarkdownTokenAuthExplainer(): TokenAuthResultExplainer<
             text(
               `${renderIcon(isSufficient)} ` +
                 `${isSufficient ? "Sufficient" : "Insufficient"} access ` +
-                `to ${subject} ${basedOnRulesText(rules)}`,
+                `to all repos in `,
             ),
+            accountOrRepoLink(githubServerURL, account),
+            text(` ${basedOnRulesText(rules)}`),
           ),
           rulesSublist(request.tokenDec.permissions, rules),
         ),
@@ -71,6 +77,7 @@ export function createMarkdownTokenAuthExplainer(): TokenAuthResultExplainer<
 
   function explainNoRepos(result: TokenAuthResultNoRepos): RootContent[] {
     const { request, isSufficient, rules } = result;
+    const account = { account: request.tokenDec.account };
 
     return details(
       summaryChildren(result),
@@ -79,8 +86,10 @@ export function createMarkdownTokenAuthExplainer(): TokenAuthResultExplainer<
           paragraph(
             text(
               `${renderIcon(!result.isMissingRole)} ` +
-                `${maxAccessAndRoleText(result, request.tokenDec.account)}`,
+                `${ACCESS_LEVELS[result.maxWant]} access to `,
             ),
+            accountOrRepoLink(githubServerURL, account),
+            text(` ${roleRequestText(request.tokenDec.as)}`),
           ),
         ),
         listItem(
@@ -88,8 +97,10 @@ export function createMarkdownTokenAuthExplainer(): TokenAuthResultExplainer<
             text(
               `${renderIcon(isSufficient)} ` +
                 `${isSufficient ? "Sufficient" : "Insufficient"} access ` +
-                `to ${request.tokenDec.account} ${basedOnRulesText(rules)}`,
+                `to `,
             ),
+            accountOrRepoLink(githubServerURL, account),
+            text(` ${basedOnRulesText(rules)}`),
           ),
           rulesSublist(request.tokenDec.permissions, rules),
         ),
@@ -101,7 +112,7 @@ export function createMarkdownTokenAuthExplainer(): TokenAuthResultExplainer<
     result: TokenAuthResultSelectedRepos,
   ): RootContent[] {
     const { request, results } = result;
-    const subject = `repos in ${request.tokenDec.account}`;
+    const account = { account: request.tokenDec.account };
 
     const resourceEntries = Object.entries(results).sort(([a], [b]) =>
       a.localeCompare(b),
@@ -115,9 +126,10 @@ export function createMarkdownTokenAuthExplainer(): TokenAuthResultExplainer<
             text(
               `${renderIcon(resourceResult.isSufficient)} ` +
                 `${resourceResult.isSufficient ? "Sufficient" : "Insufficient"} ` +
-                `access to repo ${resourceRepo} ` +
-                `${basedOnRulesText(resourceResult.rules)}`,
+                `access to repo `,
             ),
+            accountOrRepoLink(githubServerURL, repoRefFromName(resourceRepo)),
+            text(` ${basedOnRulesText(resourceResult.rules)}`),
           ),
           rulesSublist(request.tokenDec.permissions, resourceResult.rules),
         ),
@@ -138,8 +150,10 @@ export function createMarkdownTokenAuthExplainer(): TokenAuthResultExplainer<
           paragraph(
             text(
               `${renderIcon(!result.isMissingRole)} ` +
-                `${maxAccessAndRoleText(result, subject)}`,
+                `${ACCESS_LEVELS[result.maxWant]} access to repos in `,
             ),
+            accountOrRepoLink(githubServerURL, account),
+            text(` ${roleRequestText(request.tokenDec.as)}`),
           ),
         ),
         listItem(
@@ -159,27 +173,18 @@ export function createMarkdownTokenAuthExplainer(): TokenAuthResultExplainer<
     request,
     isAllowed,
   }: TokenAuthResult): ElementContent[] {
-    const name = accountOrRepoRefToString(request.consumer);
-    const kind = isRepoRef(request.consumer) ? "Repo" : "Account";
-
     return [
       text(
-        `${renderIcon(isAllowed)} ${kind} ${name} was ` +
-          `${isAllowed ? "allowed" : "denied"} access to a token`,
+        `${renderIcon(isAllowed)} ` +
+          `${isRepoRef(request.consumer) ? "Repo" : "Account"} `,
       ),
+      accountOrRepoHTMLLink(githubServerURL, request.consumer),
+      text(` was ${isAllowed ? "allowed" : "denied"} access to a token`),
     ];
   }
 
-  function maxAccessAndRoleText(
-    { request, maxWant }: TokenAuthResult,
-    accessTo: string,
-  ): string {
-    return (
-      `${ACCESS_LEVELS[maxWant]} access to ${accessTo} ` +
-      (request.tokenDec.as
-        ? `requested with role ${request.tokenDec.as}`
-        : "requested without a role")
-    );
+  function roleRequestText(role: string | undefined): string {
+    return role ? `requested with role ${role}` : "requested without a role";
   }
 
   function basedOnRulesText(

@@ -1,9 +1,9 @@
 <details>
-<summary>✅ Repo account-x/repo-x was allowed to provision secret SECRET_A</summary>
+<summary>✅ Repo <a href="https://github.com/account-x/repo-x">account-x/repo-x</a> was allowed to provision secret SECRET_A</summary>
 
 - ✅ Can use token declaration account-a/repo-a.tokenA
-- ✅ Can provision token to GitHub Actions secret in account-a:
-  - ✅ Account account-a was allowed access to [token #1](#user-content-4bb7e3c2-token-1)
+- ✅ Can provision token to GitHub Actions secret in [account-a](https://github.com/account-a):
+  - ✅ Account [account-a](https://github.com/account-a) was allowed access to [token #1](#user-content-4bb7e3c2-token-1)
   - ✅ Can provision secret based on 1 rule:
     - ✅ Allowed by rule #1
 

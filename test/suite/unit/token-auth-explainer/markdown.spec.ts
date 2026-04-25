@@ -9,8 +9,7 @@ const fixturesPath = join(
   import.meta.dirname,
   "../../../fixture/token-auth-explainer",
 );
-
-const explain = createMarkdownTokenAuthExplainer();
+const githubServerURL = "https://github.com";
 
 describe("ALL_REPOS", () => {
   it("explains an allowed token with a role", async () => {
@@ -42,6 +41,8 @@ describe("ALL_REPOS", () => {
       },
       repos: "all",
     });
+
+    const explain = createMarkdownTokenAuthExplainer(githubServerURL);
 
     await expect(render(explain(result))).toMatchFileSnapshot(
       join(fixturesPath, "all-repos-allowed-with-role.md"),
@@ -78,6 +79,8 @@ describe("ALL_REPOS", () => {
       repos: "all",
     });
 
+    const explain = createMarkdownTokenAuthExplainer(githubServerURL);
+
     await expect(render(explain(result))).toMatchFileSnapshot(
       join(fixturesPath, "all-repos-denied.md"),
     );
@@ -113,6 +116,8 @@ describe("ALL_REPOS", () => {
       repos: "all",
     });
 
+    const explain = createMarkdownTokenAuthExplainer(githubServerURL);
+
     await expect(render(explain(result))).toMatchFileSnapshot(
       join(fixturesPath, "all-repos-allowed-without-role.md"),
     );
@@ -147,6 +152,8 @@ describe("ALL_REPOS", () => {
       },
       repos: "all",
     });
+
+    const explain = createMarkdownTokenAuthExplainer(githubServerURL);
 
     await expect(render(explain(result))).toMatchFileSnapshot(
       join(fixturesPath, "all-repos-repo-consumer.md"),
@@ -197,6 +204,8 @@ describe("ALL_REPOS", () => {
       repos: "all",
     });
 
+    const explain = createMarkdownTokenAuthExplainer(githubServerURL);
+
     await expect(render(explain(result))).toMatchFileSnapshot(
       join(fixturesPath, "all-repos-multiple-rules.md"),
     );
@@ -231,6 +240,8 @@ describe("ALL_REPOS", () => {
       },
       repos: "all",
     });
+
+    const explain = createMarkdownTokenAuthExplainer(githubServerURL);
 
     await expect(render(explain(result))).toMatchFileSnapshot(
       join(fixturesPath, "all-repos-multiple-permissions.md"),
@@ -269,6 +280,8 @@ describe("NO_REPOS", () => {
       repos: [],
     });
 
+    const explain = createMarkdownTokenAuthExplainer(githubServerURL);
+
     await expect(render(explain(result))).toMatchFileSnapshot(
       join(fixturesPath, "no-repos-allowed.md"),
     );
@@ -303,6 +316,8 @@ describe("NO_REPOS", () => {
       },
       repos: [],
     });
+
+    const explain = createMarkdownTokenAuthExplainer(githubServerURL);
 
     await expect(render(explain(result))).toMatchFileSnapshot(
       join(fixturesPath, "no-repos-denied.md"),
@@ -341,6 +356,8 @@ describe("SELECTED_REPOS", () => {
       repos: ["repo-a", "repo-b"],
     });
 
+    const explain = createMarkdownTokenAuthExplainer(githubServerURL);
+
     await expect(render(explain(result))).toMatchFileSnapshot(
       join(fixturesPath, "selected-repos-allowed.md"),
     );
@@ -376,6 +393,8 @@ describe("SELECTED_REPOS", () => {
       repos: ["repo-a", "repo-b"],
     });
 
+    const explain = createMarkdownTokenAuthExplainer(githubServerURL);
+
     await expect(render(explain(result))).toMatchFileSnapshot(
       join(fixturesPath, "selected-repos-denied.md"),
     );
@@ -395,6 +414,8 @@ describe("SELECTED_REPOS", () => {
       },
       repos: ["repo-a"],
     });
+
+    const explain = createMarkdownTokenAuthExplainer(githubServerURL);
 
     await expect(render(explain(result))).toMatchFileSnapshot(
       join(fixturesPath, "selected-repos-no-rules.md"),

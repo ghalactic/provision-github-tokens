@@ -20,6 +20,7 @@ const fixturesPath = join(
   import.meta.dirname,
   "../../../fixture/provision-auth-explainer",
 );
+const githubServerURL = "https://github.com";
 
 describe("allowed secrets", () => {
   it("explains an allowed actions secret", async () => {
@@ -67,7 +68,10 @@ describe("allowed secrets", () => {
       .listResults()
       .sort((a, b) => compareTokenRequest(a.request, b.request));
     const tokenReferenceMap = createTokenReferenceMap(tokenResults);
-    const explain = createMarkdownProvisionAuthExplainer(tokenReferenceMap);
+    const explain = createMarkdownProvisionAuthExplainer(
+      githubServerURL,
+      tokenReferenceMap,
+    );
 
     await expect(render(explain(result))).toMatchFileSnapshot(
       join(fixturesPath, "actions-allowed.md"),
@@ -120,7 +124,10 @@ describe("allowed secrets", () => {
       .listResults()
       .sort((a, b) => compareTokenRequest(a.request, b.request));
     const tokenReferenceMap = createTokenReferenceMap(tokenResults);
-    const explain = createMarkdownProvisionAuthExplainer(tokenReferenceMap);
+    const explain = createMarkdownProvisionAuthExplainer(
+      githubServerURL,
+      tokenReferenceMap,
+    );
 
     await expect(render(explain(result))).toMatchFileSnapshot(
       join(fixturesPath, "actions-allowed-with-description.md"),
@@ -180,7 +187,10 @@ describe("allowed secrets", () => {
       .listResults()
       .sort((a, b) => compareTokenRequest(a.request, b.request));
     const tokenReferenceMap = createTokenReferenceMap(tokenResults);
-    const explain = createMarkdownProvisionAuthExplainer(tokenReferenceMap);
+    const explain = createMarkdownProvisionAuthExplainer(
+      githubServerURL,
+      tokenReferenceMap,
+    );
 
     await expect(render(explain(result))).toMatchFileSnapshot(
       join(fixturesPath, "environment-allowed.md"),
@@ -234,7 +244,10 @@ describe("denied secrets", () => {
       .listResults()
       .sort((a, b) => compareTokenRequest(a.request, b.request));
     const tokenReferenceMap = createTokenReferenceMap(tokenResults);
-    const explain = createMarkdownProvisionAuthExplainer(tokenReferenceMap);
+    const explain = createMarkdownProvisionAuthExplainer(
+      githubServerURL,
+      tokenReferenceMap,
+    );
 
     await expect(render(explain(result))).toMatchFileSnapshot(
       join(fixturesPath, "actions-denied.md"),
@@ -286,7 +299,10 @@ describe("denied secrets", () => {
       .listResults()
       .sort((a, b) => compareTokenRequest(a.request, b.request));
     const tokenReferenceMap = createTokenReferenceMap(tokenResults);
-    const explain = createMarkdownProvisionAuthExplainer(tokenReferenceMap);
+    const explain = createMarkdownProvisionAuthExplainer(
+      githubServerURL,
+      tokenReferenceMap,
+    );
 
     await expect(render(explain(result))).toMatchFileSnapshot(
       join(fixturesPath, "missing-token-dec.md"),
@@ -338,7 +354,10 @@ describe("denied secrets", () => {
       .listResults()
       .sort((a, b) => compareTokenRequest(a.request, b.request));
     const tokenReferenceMap = createTokenReferenceMap(tokenResults);
-    const explain = createMarkdownProvisionAuthExplainer(tokenReferenceMap);
+    const explain = createMarkdownProvisionAuthExplainer(
+      githubServerURL,
+      tokenReferenceMap,
+    );
 
     await expect(render(explain(result))).toMatchFileSnapshot(
       join(fixturesPath, "non-shared-token-dec.md"),
@@ -364,7 +383,10 @@ describe("denied secrets", () => {
     });
 
     const tokenReferenceMap = createTokenReferenceMap([]);
-    const explain = createMarkdownProvisionAuthExplainer(tokenReferenceMap);
+    const explain = createMarkdownProvisionAuthExplainer(
+      githubServerURL,
+      tokenReferenceMap,
+    );
 
     await expect(render(explain(result))).toMatchFileSnapshot(
       join(fixturesPath, "missing-targets.md"),
@@ -449,7 +471,10 @@ describe("multiple targets", () => {
       .listResults()
       .sort((a, b) => compareTokenRequest(a.request, b.request));
     const tokenReferenceMap = createTokenReferenceMap(tokenResults);
-    const explain = createMarkdownProvisionAuthExplainer(tokenReferenceMap);
+    const explain = createMarkdownProvisionAuthExplainer(
+      githubServerURL,
+      tokenReferenceMap,
+    );
 
     await expect(render(explain(result))).toMatchFileSnapshot(
       join(fixturesPath, "multiple-targets.md"),

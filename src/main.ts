@@ -34,7 +34,7 @@ main().catch((error) => {
 async function main(): Promise<void> {
   const githubRef = process.env.GITHUB_REF;
   const githubRepository = process.env.GITHUB_REPOSITORY;
-  const githubServerUrl = process.env.GITHUB_SERVER_URL;
+  const githubServerURL = process.env.GITHUB_SERVER_URL;
   const githubStepSummary = process.env.GITHUB_STEP_SUMMARY;
 
   /* istanbul ignore next - @preserve */
@@ -48,7 +48,7 @@ async function main(): Promise<void> {
   }
 
   /* istanbul ignore next - @preserve */
-  if (!githubServerUrl) {
+  if (!githubServerURL) {
     throw new Error("Invariant violation: GITHUB_SERVER_URL is not set");
   }
 
@@ -59,7 +59,7 @@ async function main(): Promise<void> {
 
   const githubActionRepository =
     process.env.GITHUB_ACTION_REPOSITORY ?? githubRepository;
-  const actionUrl = `${githubServerUrl}/${githubActionRepository}`;
+  const actionURL = `${githubServerURL}/${githubActionRepository}`;
 
   const appsInput = readAppsInput();
   const octokitFactory = createOctokitFactory();
@@ -140,8 +140,9 @@ async function main(): Promise<void> {
     .addRaw(
       renderSummary(
         createHeadingFactory(githubStepSummary, new GithubSlugger()),
+        githubServerURL,
+        actionURL,
         authorizeResult,
-        actionUrl,
       ),
     )
     .write();

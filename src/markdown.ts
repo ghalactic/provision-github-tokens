@@ -14,9 +14,31 @@ import type {
 } from "mdast";
 import { toString } from "mdast-util-to-string";
 import { createHash } from "node:crypto";
+import {
+  accountOrRepoRefToString,
+  type AccountOrRepoReference,
+} from "./github-reference.js";
 
 const ALLOWED_ICON = "✅";
 const DENIED_ICON = "❌";
+
+export function accountOrRepoLink(
+  githubServerURL: string,
+  accountOrRepo: AccountOrRepoReference,
+): Link {
+  const slug = accountOrRepoRefToString(accountOrRepo);
+
+  return link(new URL(slug, githubServerURL), text(slug));
+}
+
+export function accountOrRepoHTMLLink(
+  githubServerURL: string,
+  accountOrRepo: AccountOrRepoReference,
+): ElementContent {
+  const slug = accountOrRepoRefToString(accountOrRepo);
+
+  return HTMLLink(new URL(slug, githubServerURL), text(slug));
+}
 
 export function anchorLink(
   anchor: string,
@@ -74,6 +96,18 @@ export function details(
 
 export function emphasis(...children: Emphasis["children"]): Emphasis {
   return { type: "emphasis", children };
+}
+
+export function HTMLLink(
+  url: string | URL,
+  ...children: ElementContent[]
+): ElementContent {
+  return {
+    type: "element",
+    tagName: "a",
+    properties: { href: url.toString() },
+    children,
+  };
 }
 
 export function inlineCode(code: string): InlineCode {
