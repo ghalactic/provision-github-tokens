@@ -15,7 +15,9 @@ needed that handles this reliably and stays maintainable.
 ## Decision
 
 Build summaries by constructing an mdast (Markdown Abstract Syntax Tree) and
-serializing to Markdown.
+serializing to Markdown. Where the mdast tree needs embedded HTML fragments
+(e.g. `<summary>` or anchor elements), those fragments are built as hast nodes
+and serialized to HTML strings.
 
 ## Consequences
 
@@ -23,7 +25,9 @@ serializing to Markdown.
   nested output.
 - Good, because sections can be added or restructured without worrying about
   whitespace or escaping.
-- Bad, because the mdast libraries add to the bundle size.
+- Good, because hast provides proper escaping and composability for HTML
+  fragments embedded within the Markdown AST.
+- Bad, because the mdast and hast libraries add to the bundle size.
 
 ## Alternatives considered
 
