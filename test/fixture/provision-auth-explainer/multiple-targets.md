@@ -1,5 +1,5 @@
 <details>
-<summary>✅ Repo <a href="https://github.com/account-x/repo-x">account-x/repo-x</a> was allowed to provision secret SECRET_A</summary>
+<summary>✅ Repo <a href="https://github.com/account-x/repo-x">account-x/repo-x</a> was allowed to provision secret <code>SECRET_A</code></summary>
 
 - ✅ Can use token declaration account-a/repo-a.tokenA
 - ✅ Can provision token to GitHub Actions secret in [account-a](https://github.com/account-a):

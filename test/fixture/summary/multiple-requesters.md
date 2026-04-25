@@ -2,14 +2,14 @@
 
 ### Secrets <a id="4bb7e3c2-secrets"></a>
 
-#### [account-x/repo-x](https://github.example.com/account-x/repo-x) <a id="4bb7e3c2-account-xrepo-x"></a>
+#### Requested by [account-x/repo-x](https://github.example.com/account-x/repo-x) <a id="4bb7e3c2-requested-by-account-xrepo-x"></a>
 
-##### SECRET\_A <a id="4bb7e3c2-secret_a"></a>
+##### `SECRET_A` <a id="4bb7e3c2-secret_a"></a>
 
 ###### Authorization result <a id="4bb7e3c2-authorization-result"></a>
 
 <details>
-<summary>✅ Repo <a href="https://github.example.com/account-x/repo-x">account-x/repo-x</a> was allowed to provision secret SECRET_A</summary>
+<summary>✅ Repo <a href="https://github.example.com/account-x/repo-x">account-x/repo-x</a> was allowed to provision secret <code>SECRET_A</code></summary>
 
 - ✅ Can use token declaration account-a/repo-a.tokenA
 - ✅ Can provision token to GitHub Actions secret in [account-a](https://github.example.com/account-a):
@@ -23,14 +23,14 @@
 
 - [Token #1](#user-content-4bb7e3c2-token-1---account-a-all-repos)
 
-#### [account-y/repo-y](https://github.example.com/account-y/repo-y) <a id="4bb7e3c2-account-yrepo-y"></a>
+#### Requested by [account-y/repo-y](https://github.example.com/account-y/repo-y) <a id="4bb7e3c2-requested-by-account-yrepo-y"></a>
 
-##### SECRET\_B <a id="4bb7e3c2-secret_b"></a>
+##### `SECRET_B` <a id="4bb7e3c2-secret_b"></a>
 
 ###### Authorization result <a id="4bb7e3c2-authorization-result-1"></a>
 
 <details>
-<summary>✅ Repo <a href="https://github.example.com/account-y/repo-y">account-y/repo-y</a> was allowed to provision secret SECRET_B</summary>
+<summary>✅ Repo <a href="https://github.example.com/account-y/repo-y">account-y/repo-y</a> was allowed to provision secret <code>SECRET_B</code></summary>
 
 - ✅ Can use token declaration account-a/repo-a.tokenA
 - ✅ Can provision token to GitHub Actions secret in [account-a](https://github.example.com/account-a):
@@ -46,7 +46,7 @@
 
 ### Tokens <a id="4bb7e3c2-tokens"></a>
 
-#### [account-a](https://github.example.com/account-a) <a id="4bb7e3c2-account-a"></a>
+#### Consumed by [account-a](https://github.example.com/account-a) <a id="4bb7e3c2-consumed-by-account-a"></a>
 
 ##### Token #1 - [account-a](https://github.example.com/account-a) (all repos) <a id="4bb7e3c2-token-1---account-a-all-repos"></a>
 

@@ -98,6 +98,15 @@ export function emphasis(...children: Emphasis["children"]): Emphasis {
   return { type: "emphasis", children };
 }
 
+export function HTMLInlineCode(code: string): ElementContent {
+  return {
+    type: "element",
+    tagName: "code",
+    properties: {},
+    children: [{ type: "text", value: code }],
+  };
+}
+
 export function HTMLLink(
   url: string | URL,
   ...children: ElementContent[]

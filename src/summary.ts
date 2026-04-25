@@ -4,7 +4,11 @@ import { toMarkdown } from "mdast-util-to-markdown";
 import type { AuthorizeResult } from "./authorizer.js";
 import { compareProvisionRequest } from "./compare-provision-request.js";
 import { compareTokenRequest } from "./compare-token-request.js";
-import { repoRefFromName, repoRefToString } from "./github-reference.js";
+import {
+  createAccountRef,
+  repoRefFromName,
+  repoRefToString,
+} from "./github-reference.js";
 import {
   accountOrRepoLink,
   anchorLink,
@@ -190,6 +194,7 @@ function secretProvisioningSection(
   )) {
     const [requesterHeading] = createHeading(
       4,
+      text("Requested by "),
       accountOrRepoLink(githubServerURL, repoRefFromName(requesterName)),
     );
     nodes.push(requesterHeading);
@@ -233,7 +238,10 @@ function tokenIssuingSection(
   )) {
     const [consumerHeading] = createHeading(
       4,
-      ...consumerHeadingChildren(githubServerURL, consumerName),
+      text("Consumed by "),
+      consumerName.includes("/")
+        ? accountOrRepoLink(githubServerURL, repoRefFromName(consumerName))
+        : accountOrRepoLink(githubServerURL, createAccountRef(consumerName)),
     );
     nodes.push(consumerHeading);
 
@@ -444,7 +452,7 @@ function buildSecretHeadingMap(
     void requesterName;
 
     for (const result of group) {
-      const [node, id] = createHeading(5, text(result.request.name));
+      const [node, id] = createHeading(5, inlineCode(result.request.name));
       map.set(result, { heading: node, id });
     }
   }
@@ -472,17 +480,6 @@ type UsedByEntry = {
   secretAnchor: string;
   requesterName: string;
 };
-
-function consumerHeadingChildren(
-  githubServerURL: string,
-  consumer: string,
-): Heading["children"] {
-  if (consumer.includes("/")) {
-    return [accountOrRepoLink(githubServerURL, repoRefFromName(consumer))];
-  }
-
-  return [accountOrRepoLink(githubServerURL, { account: consumer })];
-}
 
 type HeadingEntry = { heading: Heading; id: string };
 type HeadingMap<T> = Map<T, HeadingEntry>;

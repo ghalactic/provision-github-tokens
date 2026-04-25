@@ -8,14 +8,14 @@
 
 ### Secrets <a id="4bb7e3c2-secrets"></a>
 
-#### [account-x/repo-x](https://github.example.com/account-x/repo-x) <a id="4bb7e3c2-account-xrepo-x-1"></a>
+#### Requested by [account-x/repo-x](https://github.example.com/account-x/repo-x) <a id="4bb7e3c2-requested-by-account-xrepo-x"></a>
 
-##### SECRET\_NO\_REPOS <a id="4bb7e3c2-secret_no_repos"></a>
+##### `SECRET_NO_REPOS` <a id="4bb7e3c2-secret_no_repos"></a>
 
 ###### Authorization result <a id="4bb7e3c2-authorization-result"></a>
 
 <details>
-<summary>✅ Repo <a href="https://github.example.com/account-x/repo-x">account-x/repo-x</a> was allowed to provision secret SECRET_NO_REPOS</summary>
+<summary>✅ Repo <a href="https://github.example.com/account-x/repo-x">account-x/repo-x</a> was allowed to provision secret <code>SECRET_NO_REPOS</code></summary>
 
 - ✅ Can use token declaration account-a/repo-a.tokenA
 - ✅ Can provision token to GitHub Actions secret in [account-a](https://github.example.com/account-a):
@@ -29,12 +29,12 @@
 
 - [Token #1](#user-content-4bb7e3c2-token-1---account-a-no-repos)
 
-##### SECRET\_SELECTED <a id="4bb7e3c2-secret_selected"></a>
+##### `SECRET_SELECTED` <a id="4bb7e3c2-secret_selected"></a>
 
 ###### Authorization result <a id="4bb7e3c2-authorization-result-1"></a>
 
 <details>
-<summary>❌ Repo <a href="https://github.example.com/account-x/repo-x">account-x/repo-x</a> wasn't allowed to provision secret SECRET_SELECTED</summary>
+<summary>❌ Repo <a href="https://github.example.com/account-x/repo-x">account-x/repo-x</a> wasn't allowed to provision secret <code>SECRET_SELECTED</code></summary>
 
 - ✅ Can use token declaration account-a/repo-a.tokenA
 - ❌ Can't provision token to GitHub Actions secret in [account-a](https://github.example.com/account-a):
@@ -50,7 +50,7 @@
 
 ### Tokens <a id="4bb7e3c2-tokens"></a>
 
-#### [account-a](https://github.example.com/account-a) <a id="4bb7e3c2-account-a"></a>
+#### Consumed by [account-a](https://github.example.com/account-a) <a id="4bb7e3c2-consumed-by-account-a"></a>
 
 ##### Token #1 - [account-a](https://github.example.com/account-a) (no repos) <a id="4bb7e3c2-token-1---account-a-no-repos"></a>
 

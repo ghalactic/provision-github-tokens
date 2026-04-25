@@ -7,6 +7,7 @@ import {
   accountOrRepoLink,
   anchorLink,
   details,
+  HTMLInlineCode,
   listItem,
   paragraph,
   renderIcon,
@@ -44,8 +45,9 @@ export function createMarkdownProvisionAuthExplainer(
       accountOrRepoHTMLLink(githubServerURL, request.requester),
       text(
         ` ${isAllowed ? "was allowed" : "wasn't allowed"}` +
-          ` to provision secret ${request.name}`,
+          ` to provision secret `,
       ),
+      HTMLInlineCode(request.name),
     ];
   }
 
