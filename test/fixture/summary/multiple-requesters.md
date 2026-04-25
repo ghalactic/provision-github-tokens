@@ -6,8 +6,6 @@
 
 ##### SECRET\_A <a id="pgt-4bb7e3c2-account-xrepo-x--secret_a"></a>
 
-Uses [token #1](#pgt-4bb7e3c2-token-1)
-
 <details>
 <summary>✅ Repo account-x/repo-x was allowed to provision secret SECRET_A</summary>
 
@@ -19,11 +17,11 @@ Uses [token #1](#pgt-4bb7e3c2-token-1)
 
 </details>
 
+###### Uses [token #1](#pgt-4bb7e3c2-token-1)
+
 #### account-y/repo-y
 
 ##### SECRET\_B <a id="pgt-4bb7e3c2-account-yrepo-y--secret_b"></a>
-
-Uses [token #1](#pgt-4bb7e3c2-token-1)
 
 <details>
 <summary>✅ Repo account-y/repo-y was allowed to provision secret SECRET_B</summary>
@@ -36,16 +34,13 @@ Uses [token #1](#pgt-4bb7e3c2-token-1)
 
 </details>
 
+###### Uses [token #1](#pgt-4bb7e3c2-token-1)
+
 ### Token issuing
 
 #### account-a
 
 ##### Token #1 — account-a (all repos) <a id="pgt-4bb7e3c2-token-1"></a>
-
-Used by:
-
-- [`SECRET_A`](#pgt-4bb7e3c2-account-xrepo-x--secret_a) (account-x/repo-x)
-- [`SECRET_B`](#pgt-4bb7e3c2-account-yrepo-y--secret_b) (account-y/repo-y)
 
 <details>
 <summary>✅ Account account-a was allowed access to a token</summary>
@@ -56,3 +51,8 @@ Used by:
     - ✅ metadata: have read, wanted read
 
 </details>
+
+###### Used by
+
+- [`SECRET_A`](#pgt-4bb7e3c2-account-xrepo-x--secret_a) (account-x/repo-x)
+- [`SECRET_B`](#pgt-4bb7e3c2-account-yrepo-y--secret_b) (account-y/repo-y)

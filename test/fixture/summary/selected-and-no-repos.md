@@ -12,8 +12,6 @@
 
 ##### SECRET\_NO\_REPOS <a id="pgt-4bb7e3c2-account-xrepo-x--secret_no_repos"></a>
 
-Uses [token #1](#pgt-4bb7e3c2-token-1)
-
 <details>
 <summary>✅ Repo account-x/repo-x was allowed to provision secret SECRET_NO_REPOS</summary>
 
@@ -25,9 +23,9 @@ Uses [token #1](#pgt-4bb7e3c2-token-1)
 
 </details>
 
-##### SECRET\_SELECTED <a id="pgt-4bb7e3c2-account-xrepo-x--secret_selected"></a>
+###### Uses [token #1](#pgt-4bb7e3c2-token-1)
 
-Uses [token #2](#pgt-4bb7e3c2-token-2)
+##### SECRET\_SELECTED <a id="pgt-4bb7e3c2-account-xrepo-x--secret_selected"></a>
 
 <details>
 <summary>❌ Repo account-x/repo-x wasn't allowed to provision secret SECRET_SELECTED</summary>
@@ -40,15 +38,13 @@ Uses [token #2](#pgt-4bb7e3c2-token-2)
 
 </details>
 
+###### Uses [token #2](#pgt-4bb7e3c2-token-2)
+
 ### Token issuing
 
 #### account-a
 
 ##### Token #1 — account-a (no repos) <a id="pgt-4bb7e3c2-token-1"></a>
-
-Used by:
-
-- [`SECRET_NO_REPOS`](#pgt-4bb7e3c2-account-xrepo-x--secret_no_repos) (account-x/repo-x)
 
 <details>
 <summary>✅ Account account-a was allowed access to a token</summary>
@@ -60,11 +56,11 @@ Used by:
 
 </details>
 
+###### Used by
+
+- [`SECRET_NO_REPOS`](#pgt-4bb7e3c2-account-xrepo-x--secret_no_repos) (account-x/repo-x)
+
 ##### Token #2 — account-a (3 repos) <a id="pgt-4bb7e3c2-token-2"></a>
-
-Used by:
-
-- [`SECRET_SELECTED`](#pgt-4bb7e3c2-account-xrepo-x--secret_selected) (account-x/repo-x)
 
 <details>
 <summary>❌ Account account-a was denied access to a token</summary>
@@ -82,3 +78,7 @@ Used by:
     - ✅ contents: have write, wanted write
 
 </details>
+
+###### Used by
+
+- [`SECRET_SELECTED`](#pgt-4bb7e3c2-account-xrepo-x--secret_selected) (account-x/repo-x)

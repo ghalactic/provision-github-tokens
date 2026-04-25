@@ -4,7 +4,6 @@ import type {
   Link,
   List,
   ListItem,
-  Paragraph,
   PhrasingContent,
   Root,
   RootContent,
@@ -175,8 +174,8 @@ function secretProvisioningSection(
       );
 
       nodes.push(headingWithAnchor(5, result.request.name, anchor));
-      nodes.push(...usesTokenLine(result, tokenAnchorMap));
       nodes.push(...explainProvision(result));
+      nodes.push(...usesTokenLine(result, tokenAnchorMap));
     }
   }
 
@@ -212,6 +211,8 @@ function tokenIssuingSection(
         headingWithAnchor(5, tokenHeadingText(tokenIndex, result), anchor),
       );
 
+      nodes.push(...explainToken(result));
+
       const usedBy = usedByMap.get(result);
 
       /* istanbul ignore next - @preserve */
@@ -219,10 +220,8 @@ function tokenIssuingSection(
         throw new Error("Invariant violation: missing used-by entries");
       }
 
-      nodes.push(paragraph("Used by:"));
+      nodes.push(heading(6, "Used by"));
       nodes.push(bulletList(...usedBy.map((entry) => usedByItem(entry))));
-
-      nodes.push(...explainToken(result));
     }
   }
 
@@ -265,7 +264,8 @@ function usesTokenLine(
 
   return [
     {
-      type: "paragraph",
+      type: "heading",
+      depth: 6,
       children: [
         { type: "text", value: "Uses " },
         {
@@ -374,10 +374,6 @@ function headingWithAnchor(
       { type: "html", value: ` <a id="${anchorId}"></a>` },
     ],
   };
-}
-
-function paragraph(text: string): Paragraph {
-  return { type: "paragraph", children: [{ type: "text", value: text }] };
 }
 
 function bulletList(...items: ListItem[]): List {
