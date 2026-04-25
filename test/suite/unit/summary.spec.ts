@@ -544,7 +544,7 @@ it("renders a summary with multiple distinct targets", async () => {
   ).toMatchFileSnapshot(join(fixturesPath, "multiple-targets.md"));
 });
 
-it("truncates rows beyond the limit and shows a notice", () => {
+it("truncates rows beyond the limit and shows a notice", async () => {
   const provisionResults: ProvisionAuthResult[] = [];
 
   for (let i = 0; i < 1002; i++) {
@@ -572,18 +572,10 @@ it("truncates rows beyond the limit and shows a notice", () => {
     });
   }
 
-  const rendered = renderSummary(githubServerURL, testDocsURL, {
-    provisionResults,
-    tokenResults: [],
-  });
-
-  const rows = rendered.match(/^[|] [✅❌]/gm) ?? [];
-  expect(rows).toHaveLength(1000);
-
-  const deniedRows = rendered.match(/^[|] ❌/gm) ?? [];
-  expect(deniedRows).toHaveLength(2);
-
-  expect(rendered).toContain("secrets are not shown");
-  expect(rendered).toContain("[!WARNING]");
-  expect(rendered).toContain("Check the logs for the full list");
+  await expect(
+    renderSummary(githubServerURL, testDocsURL, {
+      provisionResults,
+      tokenResults: [],
+    }),
+  ).toMatchFileSnapshot(join(fixturesPath, "row-limit.md"));
 });
