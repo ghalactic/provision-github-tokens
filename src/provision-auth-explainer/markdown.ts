@@ -1,3 +1,5 @@
+import type { Element, ElementContent } from "hast";
+import { toHtml } from "hast-util-to-html";
 import type {
   Html,
   Link,
@@ -31,18 +33,25 @@ export function createMarkdownProvisionAuthExplainer(
 ): ProvisionAuthResultExplainer<RootContent[]> {
   return (result) => {
     return [
-      html(`<details>\n<summary>${summaryText(result)}</summary>`),
+      detailsOpen(summaryChildren(result)),
       bulletList(tokenDecItem(result), ...targetItems(result)),
-      html("</details>"),
+      detailsClose(),
     ];
   };
 
-  function summaryText({ request, isAllowed }: ProvisionAuthResult): string {
-    return (
-      `${icon(isAllowed)} Repo ${repoRefToString(request.requester)} ` +
-      (isAllowed ? "was allowed" : "wasn't allowed") +
-      ` to provision secret ${request.name}`
-    );
+  function summaryChildren({
+    request,
+    isAllowed,
+  }: ProvisionAuthResult): ElementContent[] {
+    return [
+      {
+        type: "text",
+        value:
+          `${icon(isAllowed)} Repo ${repoRefToString(request.requester)} ` +
+          (isAllowed ? "was allowed" : "wasn't allowed") +
+          ` to provision secret ${request.name}`,
+      },
+    ];
   }
 
   function tokenDecItem(result: ProvisionAuthResult): ListItem {
@@ -197,10 +206,6 @@ export function createMarkdownProvisionAuthExplainer(
   }
 }
 
-function html(value: string): Html {
-  return { type: "html", value };
-}
-
 function iconItem(
   iconStr: string,
   text: string,
@@ -245,4 +250,19 @@ function iconItemWithLink(
 
 function bulletList(...items: ListItem[]): List {
   return { type: "list", ordered: false, spread: false, children: items };
+}
+
+function detailsOpen(children: ElementContent[]): Html {
+  const summary: Element = {
+    type: "element",
+    tagName: "summary",
+    properties: {},
+    children,
+  };
+
+  return { type: "html", value: `<details>\n${toHtml(summary)}` };
+}
+
+function detailsClose(): Html {
+  return { type: "html", value: "</details>" };
 }
