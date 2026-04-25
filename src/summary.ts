@@ -9,6 +9,7 @@ import {
 import {
   accountOrRepoDefinition,
   accountOrRepoLinkRef,
+  blockquote,
   emphasis,
   heading,
   inlineCode,
@@ -46,10 +47,10 @@ export function renderSummary(
       type: "root",
       children: [
         statsHeading(provisionResults),
+        ...omittedNotice(omitted),
         ...emptySection(provisionResults, result, actionURL),
         ...failuresTable(denied),
         ...successesTable(allowed),
-        ...omittedNotice(omitted),
         ...definitions(githubServerURL, displayed),
       ],
     },
@@ -114,10 +115,11 @@ function omittedNotice(omitted: number): RootContent[] {
   if (omitted === 0) return [];
 
   return [
-    paragraph(
-      emphasis(
+    blockquote(
+      paragraph(text("[!WARNING]")),
+      paragraph(
         text(
-          `(${pluralize(omitted, "secret", "secrets")} not shown, check the logs for the full list)`,
+          `${pluralize(omitted, "secret is", "secrets are")} not shown. Check the logs for the full list.`,
         ),
       ),
     ),

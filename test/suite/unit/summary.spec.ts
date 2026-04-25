@@ -583,6 +583,7 @@ it("truncates rows beyond the limit and shows a notice", () => {
   const deniedRows = rendered.match(/^[|] ❌/gm) ?? [];
   expect(deniedRows).toHaveLength(2);
 
-  expect(rendered).toContain("(2 secrets not shown");
-  expect(rendered).toContain("check the logs for the full list");
+  expect(rendered).toContain("secrets are not shown");
+  expect(rendered).toContain("[!WARNING]");
+  expect(rendered).toContain("Check the logs for the full list");
 });

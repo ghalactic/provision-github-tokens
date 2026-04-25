@@ -1,5 +1,6 @@
 import type {
   AlignType,
+  Blockquote,
   Definition,
   Emphasis,
   Heading,
@@ -50,6 +51,10 @@ export function accountOrRepoLinkRef(
     referenceType: "full",
     children: [text(slug)],
   };
+}
+
+export function blockquote(...children: Blockquote["children"]): Blockquote {
+  return { type: "blockquote", children };
 }
 
 export function emphasis(...children: Emphasis["children"]): Emphasis {
