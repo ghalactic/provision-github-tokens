@@ -4,8 +4,6 @@ import type {
   Heading,
   InlineCode,
   Link,
-  List,
-  ListItem,
   Paragraph,
   Table,
   TableCell,
@@ -48,19 +46,6 @@ export function link(url: string | URL, ...children: Link["children"]): Link {
   return { type: "link", url: url.toString(), children };
 }
 
-export function listItem(
-  ...children: (ListItem["children"][number] | undefined)[]
-): ListItem {
-  const definedChildren: ListItem["children"] = [];
-  for (const c of children) if (c) definedChildren.push(c);
-
-  return {
-    type: "listItem",
-    spread: false,
-    children: definedChildren,
-  };
-}
-
 export function paragraph(...children: Paragraph["children"]): Paragraph {
   return { type: "paragraph", children };
 }
@@ -98,8 +83,4 @@ export function table(
 
 export function text(value: string): Text {
   return { type: "text", value };
-}
-
-export function unorderedList(...children: ListItem[]): List {
-  return { type: "list", ordered: false, spread: false, children };
 }

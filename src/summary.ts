@@ -5,7 +5,6 @@ import type { AuthorizeResult } from "./authorizer.js";
 import { compareProvisionRequest } from "./compare-provision-request.js";
 import {
   accountOrRepoRefToString,
-  repoRefToString,
   type AccountOrRepoReference,
 } from "./github-reference.js";
 import {
@@ -20,8 +19,8 @@ import {
   text,
 } from "./markdown.js";
 import { pluralize } from "./pluralize.js";
-import type { ProvisionAuthResult } from "./type/provision-auth-result.js";
 import type { ProvisionRequestTarget } from "./provision-request.js";
+import type { ProvisionAuthResult } from "./type/provision-auth-result.js";
 
 export function renderSummary(
   githubServerURL: string,
