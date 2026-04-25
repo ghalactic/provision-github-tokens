@@ -4,7 +4,7 @@
 
 #### account-x/repo-x
 
-- ❌ [`SECRET_A`](#pgt-4bb7e3c2-account-xrepo-x--secret_a)
+- ❌ [`SECRET_A`](#user-content-pgt-4bb7e3c2-account-xrepo-x--secret_a)
 
 ### Secret provisioning
 
@@ -17,12 +17,12 @@
 
 - ✅ Can use token declaration account-a/repo-a.tokenA
 - ❌ Can't provision token to GitHub Actions secret in account-a:
-  - ❌ Account account-a was denied access to [token #1](#pgt-4bb7e3c2-token-1)
+  - ❌ Account account-a was denied access to [token #1](#user-content-pgt-4bb7e3c2-token-1)
   - ❌ Can't provision secret (no matching rules)
 
 </details>
 
-###### Uses [token #1](#pgt-4bb7e3c2-token-1)
+###### Uses [token #1](#user-content-pgt-4bb7e3c2-token-1)
 
 ### Token issuing
 
@@ -42,4 +42,4 @@
 
 ###### Used by
 
-- [`SECRET_A`](#pgt-4bb7e3c2-account-xrepo-x--secret_a) (account-x/repo-x)
+- [`SECRET_A`](#user-content-pgt-4bb7e3c2-account-xrepo-x--secret_a) (account-x/repo-x)

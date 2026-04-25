@@ -119,7 +119,7 @@ export function createMarkdownProvisionAuthExplainer(
       icon(isTokenAllowed),
       `${kind} ${name} was ${isTokenAllowed ? "allowed" : "denied"} access to `,
       `token #${tokenIndex}`,
-      `#${anchor}`,
+      `#user-content-${anchor}`,
     );
   }
 

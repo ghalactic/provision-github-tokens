@@ -140,7 +140,7 @@ function failuresSection(
             slugger,
           );
 
-          return linkItem(`❌ `, r.request.name, `#${anchor}`);
+          return linkItem(`❌ `, r.request.name, `#user-content-${anchor}`);
         }),
       ),
     );
@@ -270,7 +270,7 @@ function usesTokenLine(
         { type: "text", value: "Uses " },
         {
           type: "link",
-          url: `#${anchor}`,
+          url: `#user-content-${anchor}`,
           children: [{ type: "text", value: `token #${tokenIndex}` }],
         },
       ],
@@ -405,7 +405,7 @@ function linkItem(
 function usedByItem(entry: UsedByEntry): ListItem {
   const link: Link = {
     type: "link",
-    url: `#${entry.secretAnchor}`,
+    url: `#user-content-${entry.secretAnchor}`,
     children: [{ type: "inlineCode", value: entry.secretName }],
   };
   const phrasing: PhrasingContent[] = [

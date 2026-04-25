@@ -4,7 +4,7 @@
 
 #### account-x/repo-x
 
-- ❌ [`SECRET_SELECTED`](#pgt-4bb7e3c2-account-xrepo-x--secret_selected)
+- ❌ [`SECRET_SELECTED`](#user-content-pgt-4bb7e3c2-account-xrepo-x--secret_selected)
 
 ### Secret provisioning
 
@@ -17,13 +17,13 @@
 
 - ✅ Can use token declaration account-a/repo-a.tokenA
 - ✅ Can provision token to GitHub Actions secret in account-a:
-  - ✅ Account account-a was allowed access to [token #1](#pgt-4bb7e3c2-token-1)
+  - ✅ Account account-a was allowed access to [token #1](#user-content-pgt-4bb7e3c2-token-1)
   - ✅ Can provision secret based on 1 rule:
     - ✅ Allowed by rule #1
 
 </details>
 
-###### Uses [token #1](#pgt-4bb7e3c2-token-1)
+###### Uses [token #1](#user-content-pgt-4bb7e3c2-token-1)
 
 ##### SECRET\_SELECTED <a id="pgt-4bb7e3c2-account-xrepo-x--secret_selected"></a>
 
@@ -32,13 +32,13 @@
 
 - ✅ Can use token declaration account-a/repo-a.tokenA
 - ❌ Can't provision token to GitHub Actions secret in account-a:
-  - ❌ Account account-a was denied access to [token #2](#pgt-4bb7e3c2-token-2)
+  - ❌ Account account-a was denied access to [token #2](#user-content-pgt-4bb7e3c2-token-2)
   - ✅ Can provision secret based on 1 rule:
     - ✅ Allowed by rule #1
 
 </details>
 
-###### Uses [token #2](#pgt-4bb7e3c2-token-2)
+###### Uses [token #2](#user-content-pgt-4bb7e3c2-token-2)
 
 ### Token issuing
 
@@ -58,7 +58,7 @@
 
 ###### Used by
 
-- [`SECRET_NO_REPOS`](#pgt-4bb7e3c2-account-xrepo-x--secret_no_repos) (account-x/repo-x)
+- [`SECRET_NO_REPOS`](#user-content-pgt-4bb7e3c2-account-xrepo-x--secret_no_repos) (account-x/repo-x)
 
 ##### Token #2 — account-a (3 repos) <a id="pgt-4bb7e3c2-token-2"></a>
 
@@ -81,4 +81,4 @@
 
 ###### Used by
 
-- [`SECRET_SELECTED`](#pgt-4bb7e3c2-account-xrepo-x--secret_selected) (account-x/repo-x)
+- [`SECRET_SELECTED`](#user-content-pgt-4bb7e3c2-account-xrepo-x--secret_selected) (account-x/repo-x)
