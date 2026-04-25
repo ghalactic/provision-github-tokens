@@ -12,6 +12,8 @@
 
 ##### SECRET\_NO\_REPOS <a id="pgt-4bb7e3c2-account-xrepo-x--secret_no_repos"></a>
 
+Uses [token #1](#pgt-4bb7e3c2-token-1)
+
 <details>
 <summary>✅ Repo account-x/repo-x was allowed to provision secret SECRET_NO_REPOS</summary>
 
@@ -24,6 +26,8 @@
 </details>
 
 ##### SECRET\_SELECTED <a id="pgt-4bb7e3c2-account-xrepo-x--secret_selected"></a>
+
+Uses [token #2](#pgt-4bb7e3c2-token-2)
 
 <details>
 <summary>❌ Repo account-x/repo-x wasn't allowed to provision secret SECRET_SELECTED</summary>

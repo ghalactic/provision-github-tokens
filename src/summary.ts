@@ -56,6 +56,7 @@ export function renderSummary(
     ...secretProvisioningSection(
       provisionResults,
       explainProvision,
+      tokenAnchorMap,
       prefix,
       slugger,
     ),
@@ -152,6 +153,7 @@ function failuresSection(
 function secretProvisioningSection(
   provisionResults: ProvisionAuthResult[],
   explainProvision: (result: ProvisionAuthResult) => RootContent[],
+  tokenAnchorMap: Map<TokenAuthResult, string>,
   prefix: string,
   slugger: GithubSlugger,
 ): RootContent[] {
@@ -173,6 +175,7 @@ function secretProvisioningSection(
       );
 
       nodes.push(headingWithAnchor(5, result.request.name, anchor));
+      nodes.push(...usesTokenLine(result, tokenAnchorMap));
       nodes.push(...explainProvision(result));
     }
   }
@@ -239,6 +242,40 @@ function tokenHeadingText(index: number, result: TokenAuthResult): string {
   }
 
   return `${n} — ${account} (${pluralize(result.request.repos.length, "repo", "repos")})`;
+}
+
+function usesTokenLine(
+  result: ProvisionAuthResult,
+  tokenAnchorMap: Map<TokenAuthResult, string>,
+): RootContent[] {
+  const tokenAuthResult = result.results.find(
+    (r) => r.tokenAuthResult,
+  )?.tokenAuthResult;
+
+  if (!tokenAuthResult) return [];
+
+  const anchor = tokenAnchorMap.get(tokenAuthResult);
+
+  /* istanbul ignore next - @preserve */
+  if (!anchor) {
+    throw new Error("Invariant violation: missing token anchor");
+  }
+
+  const tokenIndex = [...tokenAnchorMap.keys()].indexOf(tokenAuthResult) + 1;
+
+  return [
+    {
+      type: "paragraph",
+      children: [
+        { type: "text", value: "Uses " },
+        {
+          type: "link",
+          url: `#${anchor}`,
+          children: [{ type: "text", value: `token #${tokenIndex}` }],
+        },
+      ],
+    },
+  ];
 }
 
 function consumerRefToString(result: TokenAuthResult): string {

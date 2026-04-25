@@ -12,6 +12,8 @@
 
 ##### SECRET\_A <a id="pgt-4bb7e3c2-account-xrepo-x--secret_a"></a>
 
+Uses [token #1](#pgt-4bb7e3c2-token-1)
+
 <details>
 <summary>❌ Repo account-x/repo-x wasn't allowed to provision secret SECRET_A</summary>
 
