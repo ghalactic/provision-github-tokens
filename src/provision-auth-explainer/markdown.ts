@@ -1,4 +1,5 @@
 import type {
+  Html,
   Link,
   List,
   ListItem,
@@ -30,20 +31,17 @@ export function createMarkdownProvisionAuthExplainer(
 ): ProvisionAuthResultExplainer<RootContent[]> {
   return (result) => {
     return [
-      bulletList(
-        iconItem(icon(result.isAllowed), summaryText(result), [
-          tokenDecItem(result),
-          ...targetItems(result),
-        ]),
-      ),
+      html(`<details>\n<summary>${summaryText(result)}</summary>`),
+      bulletList(tokenDecItem(result), ...targetItems(result)),
+      html("</details>"),
     ];
   };
 
   function summaryText({ request, isAllowed }: ProvisionAuthResult): string {
     return (
-      `Repo ${repoRefToString(request.requester)} ` +
+      `${icon(isAllowed)} Repo ${repoRefToString(request.requester)} ` +
       (isAllowed ? "was allowed" : "wasn't allowed") +
-      ` to provision secret ${request.name}:`
+      ` to provision secret ${request.name}`
     );
   }
 
@@ -197,6 +195,10 @@ export function createMarkdownProvisionAuthExplainer(
   function icon(isAllowed: boolean): string {
     return isAllowed ? ALLOWED_ICON : DENIED_ICON;
   }
+}
+
+function html(value: string): Html {
+  return { type: "html", value };
 }
 
 function iconItem(
