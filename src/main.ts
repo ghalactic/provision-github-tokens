@@ -32,7 +32,6 @@ main().catch((error) => {
 
 async function main(): Promise<void> {
   const githubAction = process.env.GITHUB_ACTION;
-  const githubActionRepository = process.env.GITHUB_ACTION_REPOSITORY;
   const githubRef = process.env.GITHUB_REF;
   const githubRepository = process.env.GITHUB_REPOSITORY;
   const githubServerUrl = process.env.GITHUB_SERVER_URL;
@@ -40,11 +39,6 @@ async function main(): Promise<void> {
   /* istanbul ignore next - @preserve */
   if (!githubAction) {
     throw new Error("Invariant violation: GITHUB_ACTION is not set");
-  }
-
-  /* istanbul ignore next - @preserve */
-  if (!githubActionRepository) {
-    throw new Error("Invariant violation: GITHUB_ACTION_REPOSITORY is not set");
   }
 
   /* istanbul ignore next - @preserve */
@@ -62,6 +56,8 @@ async function main(): Promise<void> {
     throw new Error("Invariant violation: GITHUB_SERVER_URL is not set");
   }
 
+  const githubActionRepository =
+    process.env.GITHUB_ACTION_REPOSITORY ?? githubRepository;
   const actionUrl = `${githubServerUrl}/${githubActionRepository}`;
 
   const appsInput = readAppsInput();
