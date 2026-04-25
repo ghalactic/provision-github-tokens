@@ -61,6 +61,13 @@ export function emphasis(...children: Emphasis["children"]): Emphasis {
   return { type: "emphasis", children };
 }
 
+export function GFMAlert(
+  type: "NOTE" | "TIP" | "IMPORTANT" | "WARNING" | "CAUTION",
+  ...children: Blockquote["children"]
+): Blockquote {
+  return blockquote(paragraph(text(`[!${type}]`)), ...children);
+}
+
 export function heading(
   depth: Heading["depth"],
   ...children: Heading["children"]

@@ -9,8 +9,8 @@ import {
 import {
   accountOrRepoDefinition,
   accountOrRepoLinkRef,
-  blockquote,
   emphasis,
+  GFMAlert,
   heading,
   inlineCode,
   link,
@@ -115,11 +115,12 @@ function omittedNotice(total: number, omitted: number): RootContent[] {
   if (omitted === 0) return [];
 
   return [
-    blockquote(
-      paragraph(text("[!IMPORTANT]")),
+    GFMAlert(
+      "IMPORTANT",
       paragraph(
         text(
-          `Showing ${total - omitted} of ${total} secrets. Check the logs for the full list.`,
+          `Showing ${total - omitted} of ${total} secrets. ` +
+            `Check the logs for the full list.`,
         ),
       ),
     ),
