@@ -1,7 +1,5 @@
-import GithubSlugger from "github-slugger";
-import type { ElementContent } from "hast";
-import { toHtml } from "hast-util-to-html";
 import type {
+  AlignType,
   Emphasis,
   Heading,
   InlineCode,
@@ -9,11 +7,11 @@ import type {
   List,
   ListItem,
   Paragraph,
-  RootContent,
+  Table,
+  TableCell,
+  TableRow,
   Text,
 } from "mdast";
-import { toString } from "mdast-util-to-string";
-import { createHash } from "node:crypto";
 import {
   accountOrRepoRefToString,
   type AccountOrRepoReference,
@@ -31,92 +29,15 @@ export function accountOrRepoLink(
   return link(new URL(slug, githubServerURL), text(slug));
 }
 
-export function accountOrRepoHTMLLink(
-  githubServerURL: string,
-  accountOrRepo: AccountOrRepoReference,
-): ElementContent {
-  const slug = accountOrRepoRefToString(accountOrRepo);
-
-  return HTMLLink(new URL(slug, githubServerURL), text(slug));
-}
-
-export function anchorLink(
-  anchor: string,
-  ...children: Link["children"]
-): Link {
-  return link(`#user-content-${anchor}`, ...children);
-}
-
-export type HeadingFactory = (
-  depth: Heading["depth"],
-  ...children: Heading["children"]
-) => [heading: Heading, id: string];
-
-export function createHeadingFactory(
-  stepSummaryPath: string,
-  slugger: GithubSlugger,
-): HeadingFactory {
-  const prefix = createHash("sha256")
-    .update(stepSummaryPath)
-    .digest("hex")
-    .slice(0, 8);
-
-  return (depth, ...children) => {
-    const heading: Heading = { type: "heading", depth, children };
-    const id = `${prefix}-${slugger.slug(toString(heading))}`;
-    const anchorHTML = toHtml({
-      type: "element",
-      tagName: "a",
-      properties: { id },
-      children: [],
-    });
-    heading.children.push({ type: "html", value: ` ${anchorHTML}` });
-
-    return [heading, id];
-  };
-}
-
-export function details(
-  summary: ElementContent[],
-  ...children: RootContent[]
-): RootContent[] {
-  const summaryHTML = toHtml({
-    type: "element",
-    tagName: "summary",
-    properties: {},
-    children: summary,
-  });
-
-  return [
-    { type: "html", value: `<details>\n${summaryHTML}` },
-    ...children,
-    { type: "html", value: "</details>" },
-  ];
-}
-
 export function emphasis(...children: Emphasis["children"]): Emphasis {
   return { type: "emphasis", children };
 }
 
-export function HTMLInlineCode(code: string): ElementContent {
-  return {
-    type: "element",
-    tagName: "code",
-    properties: {},
-    children: [{ type: "text", value: code }],
-  };
-}
-
-export function HTMLLink(
-  url: string | URL,
-  ...children: ElementContent[]
-): ElementContent {
-  return {
-    type: "element",
-    tagName: "a",
-    properties: { href: url.toString() },
-    children,
-  };
+export function heading(
+  depth: Heading["depth"],
+  ...children: Heading["children"]
+): Heading {
+  return { type: "heading", depth, children };
 }
 
 export function inlineCode(code: string): InlineCode {
@@ -146,6 +67,33 @@ export function paragraph(...children: Paragraph["children"]): Paragraph {
 
 export function renderIcon(isAllowed: boolean): string {
   return isAllowed ? ALLOWED_ICON : DENIED_ICON;
+}
+
+export function table(
+  align: AlignType[] | undefined,
+  headings: TableCell["children"][],
+  rows: TableCell["children"][][],
+): Table {
+  return {
+    type: "table",
+    align,
+    children: [
+      {
+        type: "tableRow",
+        children: headings.map(
+          (children): TableCell => ({ type: "tableCell", children }),
+        ),
+      },
+      ...rows.map(
+        (row): TableRow => ({
+          type: "tableRow",
+          children: row.map(
+            (children): TableCell => ({ type: "tableCell", children }),
+          ),
+        }),
+      ),
+    ],
+  };
 }
 
 export function text(value: string): Text {
