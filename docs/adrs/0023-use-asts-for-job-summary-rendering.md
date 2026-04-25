@@ -8,30 +8,25 @@ decision-makers: ezzatron
 
 ## Context and problem statement
 
-The job summary uses complex nested Markdown — collapsible sections,
-cross-reference anchors, nested lists, and status icons. A rendering approach is
-needed that handles this reliably and stays maintainable.
+The job summary contains structured Markdown — GFM tables, headings, and link
+reference definitions. A rendering approach is needed that handles this reliably
+and stays maintainable.
 
 ## Decision
 
 Build summaries by constructing an mdast (Markdown Abstract Syntax Tree) and
-serializing to Markdown. Where the mdast tree needs embedded HTML fragments
-(e.g. `<summary>` or anchor elements), those fragments are built as hast nodes
-and serialized to HTML strings.
+serializing to Markdown with the GFM extension.
 
 ## Consequences
 
-- Good, because AST composition avoids brittle string concatenation for deeply
-  nested output.
+- Good, because AST composition avoids brittle string concatenation.
 - Good, because sections can be added or restructured without worrying about
   whitespace or escaping.
-- Good, because hast provides proper escaping and composability for HTML
-  fragments embedded within the Markdown AST.
-- Bad, because the mdast and hast libraries add to the bundle size.
+- Bad, because the mdast libraries add to the bundle size.
 
 ## Alternatives considered
 
-- **String concatenation:** no dependencies, but fragile for deeply nested
-  Markdown.
+- **String concatenation:** no dependencies, but fragile for structured Markdown
+  with tables and link references.
 - **`@actions/core` summary helpers:** imperative mutation-based API that makes
-  composition difficult and doesn't support the level of nesting needed.
+  composition difficult.
