@@ -119,7 +119,7 @@ function targetCellChildren(
   const refs: AccountOrRepoReference[] = [];
 
   for (const t of targets) {
-    const key = accountOrRepoRefToString(t.target);
+    const key = accountOrRepoRefToString(t.target).toLowerCase();
 
     if (!seen.has(key)) {
       seen.add(key);
@@ -128,7 +128,9 @@ function targetCellChildren(
   }
 
   refs.sort((a, b) =>
-    accountOrRepoRefToString(a).localeCompare(accountOrRepoRefToString(b)),
+    accountOrRepoRefToString(a)
+      .toLowerCase()
+      .localeCompare(accountOrRepoRefToString(b).toLowerCase()),
   );
 
   const children: TableCell["children"] = [];
@@ -149,7 +151,9 @@ function definitions(
   const refs: AccountOrRepoReference[] = [];
 
   for (const r of provisionResults) {
-    const requesterKey = accountOrRepoRefToString(r.request.requester);
+    const requesterKey = accountOrRepoRefToString(
+      r.request.requester,
+    ).toLowerCase();
 
     if (!seen.has(requesterKey)) {
       seen.add(requesterKey);
@@ -157,7 +161,7 @@ function definitions(
     }
 
     for (const t of r.request.to) {
-      const targetKey = accountOrRepoRefToString(t.target);
+      const targetKey = accountOrRepoRefToString(t.target).toLowerCase();
 
       if (!seen.has(targetKey)) {
         seen.add(targetKey);
@@ -167,7 +171,9 @@ function definitions(
   }
 
   refs.sort((a, b) =>
-    accountOrRepoRefToString(a).localeCompare(accountOrRepoRefToString(b)),
+    accountOrRepoRefToString(a)
+      .toLowerCase()
+      .localeCompare(accountOrRepoRefToString(b).toLowerCase()),
   );
 
   return refs.map((ref) => accountOrRepoDefinition(githubServerURL, ref));

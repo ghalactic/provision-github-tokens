@@ -26,7 +26,7 @@ export function accountOrRepoDefinition(
   accountOrRepo: AccountOrRepoReference,
 ): Definition {
   const slug = accountOrRepoRefToString(accountOrRepo);
-  const identifier = `${LINK_REF_PREFIX}${slug}`;
+  const identifier = `${LINK_REF_PREFIX}${slug}`.toLowerCase();
 
   return {
     type: "definition",
@@ -41,7 +41,7 @@ export function accountOrRepoLinkRef(
   accountOrRepo: AccountOrRepoReference,
 ): LinkReference {
   const slug = accountOrRepoRefToString(accountOrRepo);
-  const identifier = `${LINK_REF_PREFIX}${slug}`;
+  const identifier = `${LINK_REF_PREFIX}${slug}`.toLowerCase();
 
   return {
     type: "linkReference",
