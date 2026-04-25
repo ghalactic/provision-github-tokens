@@ -1,5 +1,12 @@
 import type { ElementContent } from "hast";
-import type { List, ListItem, RootContent } from "mdast";
+import type {
+  Link,
+  List,
+  ListItem,
+  Paragraph,
+  PhrasingContent,
+  RootContent,
+} from "mdast";
 import { compareProvisionRequestTarget } from "../compare-provision-request-target.js";
 import {
   accountOrRepoRefToString,
@@ -11,7 +18,6 @@ import {
   detailsClose,
   detailsOpen,
   iconItem,
-  iconItemWithLink,
 } from "../markdown.js";
 import type { ProvisionRequestTarget } from "../provision-request.js";
 import type {
@@ -95,7 +101,7 @@ export function createMarkdownProvisionAuthExplainer(
     return iconItem(
       icon(result.isAllowed),
       `${result.isAllowed ? "Can" : "Can't"} provision token to ${subjectText(target)}:`,
-      [tokenAuthItem(result), provisioningItem(result)],
+      bulletList(tokenAuthItem(result), provisioningItem(result)),
     );
   }
 
@@ -122,12 +128,21 @@ export function createMarkdownProvisionAuthExplainer(
 
     const tokenIndex = [...tokenAnchorMap.keys()].indexOf(tokenAuthResult) + 1;
 
-    return iconItemWithLink(
-      icon(isTokenAllowed),
-      `${kind} ${name} was ${isTokenAllowed ? "allowed" : "denied"} access to `,
-      `token #${tokenIndex}`,
-      `#user-content-${anchor}`,
-    );
+    const link: Link = {
+      type: "link",
+      url: `#user-content-${anchor}`,
+      children: [{ type: "text", value: `token #${tokenIndex}` }],
+    };
+    const phrasing: PhrasingContent[] = [
+      {
+        type: "text",
+        value: `${icon(isTokenAllowed)} ${kind} ${name} was ${isTokenAllowed ? "allowed" : "denied"} access to `,
+      },
+      link,
+    ];
+    const paragraph: Paragraph = { type: "paragraph", children: phrasing };
+
+    return { type: "listItem", spread: false, children: [paragraph] };
   }
 
   function provisioningItem(result: ProvisionAuthTargetResult): ListItem {

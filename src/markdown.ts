@@ -62,43 +62,18 @@ export function headingWithAnchor(
 export function iconItem(
   iconStr: string,
   text: string,
-  children?: ListItem[] | List,
+  sublist?: List,
 ): ListItem {
   const paragraph: Paragraph = {
     type: "paragraph",
     children: [{ type: "text", value: `${iconStr} ${text}` }],
   };
-  const sublist: List | undefined = children
-    ? Array.isArray(children) && !("type" in children)
-      ? bulletList(...children)
-      : (children as List)
-    : undefined;
 
   return {
     type: "listItem",
     spread: false,
     children: sublist ? [paragraph, sublist] : [paragraph],
   };
-}
-
-export function iconItemWithLink(
-  iconStr: string,
-  textBefore: string,
-  linkText: string,
-  linkUrl: string,
-): ListItem {
-  const link: Link = {
-    type: "link",
-    url: linkUrl,
-    children: [{ type: "text", value: linkText }],
-  };
-  const phrasing: PhrasingContent[] = [
-    { type: "text", value: `${iconStr} ${textBefore}` },
-    link,
-  ];
-  const paragraph: Paragraph = { type: "paragraph", children: phrasing };
-
-  return { type: "listItem", spread: false, children: [paragraph] };
 }
 
 export function linkItem(
