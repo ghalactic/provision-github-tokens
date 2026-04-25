@@ -12,6 +12,7 @@ import type {
 } from "mdast";
 import { gfmToMarkdown } from "mdast-util-gfm";
 import { toMarkdown } from "mdast-util-to-markdown";
+import { createHash } from "node:crypto";
 import type { AuthorizeResult } from "./authorizer.js";
 import { compareProvisionRequest } from "./compare-provision-request.js";
 import { compareTokenRequest } from "./compare-token-request.js";
@@ -30,9 +31,10 @@ type UsedByEntry = {
 
 export function renderSummary(
   result: AuthorizeResult,
-  prefix: string,
+  stepSummaryPath: string,
   actionUrl: string,
 ): string {
+  const prefix = `pgt-${createHash("sha256").update(stepSummaryPath).digest("hex").slice(0, 8)}`;
   const slugger = new GithubSlugger();
 
   const provisionResults = [...result.provisionResults].sort((a, b) =>
@@ -206,7 +208,11 @@ function tokenIssuingSection(
         throw new Error("Invariant violation: missing token anchor");
       }
 
-      nodes.push(headingWithAnchor(5, tokenHeadingText(result), anchor));
+      const tokenIndex = [...tokenAnchorMap.keys()].indexOf(result) + 1;
+
+      nodes.push(
+        headingWithAnchor(5, tokenHeadingText(tokenIndex, result), anchor),
+      );
 
       const usedBy = usedByMap.get(result);
 
@@ -259,18 +265,19 @@ function tokenDetailsSummary(result: TokenAuthResult): string {
   return "❌ Denied";
 }
 
-function tokenHeadingText(result: TokenAuthResult): string {
+function tokenHeadingText(index: number, result: TokenAuthResult): string {
   const account = result.request.tokenDec.account;
+  const n = `Token #${index}`;
 
   if (result.request.repos === "all") {
-    return `Token for ${account} (all repos)`;
+    return `${n} — ${account} (all repos)`;
   }
 
   if (result.request.repos.length === 0) {
-    return `Token for ${account} (no repos)`;
+    return `${n} — ${account} (no repos)`;
   }
 
-  return `Token for ${account} (${pluralize(result.request.repos.length, "repo", "repos")})`;
+  return `${n} — ${account} (${pluralize(result.request.repos.length, "repo", "repos")})`;
 }
 
 function consumerRefToString(result: TokenAuthResult): string {

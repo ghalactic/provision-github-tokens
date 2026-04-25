@@ -4,13 +4,13 @@
 
 #### account-x/repo-x
 
-- ❌ [`SECRET_A`](#pgt-test-account-xrepo-x--secret_a)
+- ❌ [`SECRET_A`](#pgt-4bb7e3c2-account-xrepo-x--secret_a)
 
 ### Secret provisioning
 
 #### account-x/repo-x
 
-##### SECRET\_A <a id="pgt-test-account-xrepo-x--secret_a"></a>
+##### SECRET\_A <a id="pgt-4bb7e3c2-account-xrepo-x--secret_a"></a>
 
 <details>
 <summary>❌ Not provisioned — 1 target denied</summary>
@@ -18,7 +18,7 @@
 - ❌ Repo account-x/repo-x wasn't allowed to provision secret SECRET\_A:
   - ✅ Can use token declaration account-a/repo-a.tokenA
   - ❌ Can't provision token to GitHub Actions secret in account-a:
-    - ❌ Account account-a was denied access to [token #1](#pgt-test-token-1)
+    - ❌ Account account-a was denied access to [token #1](#pgt-4bb7e3c2-token-1)
     - ❌ Can't provision secret (no matching rules)
 
 </details>
@@ -27,11 +27,11 @@
 
 #### account-a
 
-##### Token for account-a (all repos) <a id="pgt-test-token-1"></a>
+##### Token #1 — account-a (all repos) <a id="pgt-4bb7e3c2-token-1"></a>
 
 Used by:
 
-- [`SECRET_A`](#pgt-test-account-xrepo-x--secret_a) (account-x/repo-x)
+- [`SECRET_A`](#pgt-4bb7e3c2-account-xrepo-x--secret_a) (account-x/repo-x)
 
 <details>
 <summary>❌ Denied</summary>

@@ -10,6 +10,7 @@ import { createTestTokenRequestFactory } from "../../token-request.js";
 
 const fixturesPath = join(import.meta.dirname, "../../fixture/summary");
 const testDocsUrl = "https://github.example.com/test/action";
+const testStepSummaryPath = "/tmp/test-step-summary";
 
 describe("renderSummary", () => {
   it("renders a summary with all secrets provisioned", async () => {
@@ -80,7 +81,7 @@ describe("renderSummary", () => {
     await expect(
       renderSummary(
         { provisionResults, tokenResults },
-        "pgt-test",
+        testStepSummaryPath,
         testDocsUrl,
       ),
     ).toMatchFileSnapshot(join(fixturesPath, "all-provisioned.md"));
@@ -154,7 +155,7 @@ describe("renderSummary", () => {
     await expect(
       renderSummary(
         { provisionResults, tokenResults },
-        "pgt-test",
+        testStepSummaryPath,
         testDocsUrl,
       ),
     ).toMatchFileSnapshot(join(fixturesPath, "some-denied.md"));
@@ -194,7 +195,7 @@ describe("renderSummary", () => {
     await expect(
       renderSummary(
         { provisionResults, tokenResults },
-        "pgt-test",
+        testStepSummaryPath,
         testDocsUrl,
       ),
     ).toMatchFileSnapshot(join(fixturesPath, "all-denied.md"));
@@ -204,7 +205,7 @@ describe("renderSummary", () => {
     await expect(
       renderSummary(
         { provisionResults: [], tokenResults: [] },
-        "pgt-test",
+        testStepSummaryPath,
         testDocsUrl,
       ),
     ).toMatchFileSnapshot(join(fixturesPath, "empty.md"));
@@ -267,7 +268,7 @@ describe("renderSummary", () => {
     await expect(
       renderSummary(
         { provisionResults, tokenResults },
-        "pgt-test",
+        testStepSummaryPath,
         testDocsUrl,
       ),
     ).toMatchFileSnapshot(join(fixturesPath, "single-secret.md"));
@@ -350,7 +351,7 @@ describe("renderSummary", () => {
     await expect(
       renderSummary(
         { provisionResults, tokenResults },
-        "pgt-test",
+        testStepSummaryPath,
         testDocsUrl,
       ),
     ).toMatchFileSnapshot(join(fixturesPath, "environment-targets.md"));
@@ -424,7 +425,7 @@ describe("renderSummary", () => {
     await expect(
       renderSummary(
         { provisionResults, tokenResults },
-        "pgt-test",
+        testStepSummaryPath,
         testDocsUrl,
       ),
     ).toMatchFileSnapshot(join(fixturesPath, "multiple-requesters.md"));
@@ -505,7 +506,7 @@ describe("renderSummary", () => {
     await expect(
       renderSummary(
         { provisionResults, tokenResults },
-        "pgt-test",
+        testStepSummaryPath,
         testDocsUrl,
       ),
     ).toMatchFileSnapshot(join(fixturesPath, "selected-and-no-repos.md"));
@@ -568,7 +569,7 @@ describe("renderSummary", () => {
     await expect(
       renderSummary(
         { provisionResults, tokenResults },
-        "pgt-test",
+        testStepSummaryPath,
         testDocsUrl,
       ),
     ).toMatchFileSnapshot(join(fixturesPath, "token-with-role.md"));
@@ -642,7 +643,7 @@ describe("renderSummary", () => {
     await expect(
       renderSummary(
         { provisionResults, tokenResults },
-        "pgt-test",
+        testStepSummaryPath,
         testDocsUrl,
       ),
     ).toMatchFileSnapshot(join(fixturesPath, "missing-token-dec.md"));
@@ -710,7 +711,7 @@ describe("renderSummary", () => {
     await expect(
       renderSummary(
         { provisionResults, tokenResults },
-        "pgt-test",
+        testStepSummaryPath,
         testDocsUrl,
       ),
     ).toMatchFileSnapshot(join(fixturesPath, "missing-targets.md"));

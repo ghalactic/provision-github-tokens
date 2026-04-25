@@ -31,15 +31,10 @@ main().catch((error) => {
 });
 
 async function main(): Promise<void> {
-  const githubAction = process.env.GITHUB_ACTION;
   const githubRef = process.env.GITHUB_REF;
   const githubRepository = process.env.GITHUB_REPOSITORY;
   const githubServerUrl = process.env.GITHUB_SERVER_URL;
-
-  /* istanbul ignore next - @preserve */
-  if (!githubAction) {
-    throw new Error("Invariant violation: GITHUB_ACTION is not set");
-  }
+  const githubStepSummary = process.env.GITHUB_STEP_SUMMARY;
 
   /* istanbul ignore next - @preserve */
   if (!githubRef) {
@@ -54,6 +49,11 @@ async function main(): Promise<void> {
   /* istanbul ignore next - @preserve */
   if (!githubServerUrl) {
     throw new Error("Invariant violation: GITHUB_SERVER_URL is not set");
+  }
+
+  /* istanbul ignore next - @preserve */
+  if (!githubStepSummary) {
+    throw new Error("Invariant violation: GITHUB_STEP_SUMMARY is not set");
   }
 
   const githubActionRepository =
@@ -136,6 +136,6 @@ async function main(): Promise<void> {
   });
 
   await summary
-    .addRaw(renderSummary(authorizeResult, `pgt-${githubAction}`, actionUrl))
+    .addRaw(renderSummary(authorizeResult, githubStepSummary, actionUrl))
     .write();
 }
