@@ -22,14 +22,24 @@ import { pluralize } from "./pluralize.js";
 import type { ProvisionRequestTarget } from "./provision-request.js";
 import type { ProvisionAuthResult } from "./type/provision-auth-result.js";
 
+const MAX_ROWS = 1000;
+
 export function renderSummary(
   githubServerURL: string,
   actionURL: string,
   result: AuthorizeResult,
 ): string {
   const { provisionResults } = result;
-  const allowed = provisionResults.filter((r) => r.isAllowed);
-  const denied = provisionResults.filter((r) => !r.isAllowed);
+  const allDenied = provisionResults.filter((r) => !r.isAllowed);
+  const allAllowed = provisionResults.filter((r) => r.isAllowed);
+
+  const denied = allDenied.slice(0, MAX_ROWS);
+  const remaining = Math.max(0, MAX_ROWS - denied.length);
+  const allowed = allAllowed.slice(0, remaining);
+  const displayed = [...denied, ...allowed];
+
+  const omitted =
+    allDenied.length - denied.length + (allAllowed.length - allowed.length);
 
   return toMarkdown(
     {
@@ -39,7 +49,8 @@ export function renderSummary(
         ...emptySection(provisionResults, result, actionURL),
         ...failuresTable(denied),
         ...successesTable(allowed),
-        ...definitions(githubServerURL, provisionResults),
+        ...omittedNotice(omitted),
+        ...definitions(githubServerURL, displayed),
       ],
     },
     { bullet: "-", extensions: [gfmToMarkdown()] },
@@ -95,6 +106,20 @@ function successesTable(allowed: ProvisionAuthResult[]): RootContent[] {
       ["left", "left", "left", "left"],
       [[], [text("Requester")], [text("Secret")], [text("Targets")]],
       allowed.map((r) => secretRow(r)),
+    ),
+  ];
+}
+
+function omittedNotice(omitted: number): RootContent[] {
+  if (omitted === 0) return [];
+
+  return [
+    paragraph(
+      emphasis(
+        text(
+          `(${pluralize(omitted, "secret", "secrets")} not shown, check the logs for the full list)`,
+        ),
+      ),
     ),
   ];
 }
