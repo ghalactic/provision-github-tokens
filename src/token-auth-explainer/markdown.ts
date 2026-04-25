@@ -1,3 +1,5 @@
+import type { Element, ElementContent } from "hast";
+import { toHtml } from "hast-util-to-html";
 import type { Html, List, ListItem, Paragraph, RootContent } from "mdast";
 import { isSufficientAccess } from "../access-level.js";
 import { accountOrRepoRefToString, isRepoRef } from "../github-reference.js";
@@ -39,7 +41,7 @@ export function createMarkdownTokenAuthExplainer(): TokenAuthResultExplainer<
     const subject = `all repos in ${request.tokenDec.account}`;
 
     return [
-      html(`<details>\n<summary>${summaryText(result)}</summary>`),
+      detailsOpen(summaryChildren(result)),
       bulletList(
         iconItem(
           icon(!result.isMissingRole),
@@ -51,7 +53,7 @@ export function createMarkdownTokenAuthExplainer(): TokenAuthResultExplainer<
           rulesSublist(request.tokenDec.permissions, rules),
         ),
       ),
-      html("</details>"),
+      detailsClose(),
     ];
   }
 
@@ -59,7 +61,7 @@ export function createMarkdownTokenAuthExplainer(): TokenAuthResultExplainer<
     const { request, isSufficient, rules } = result;
 
     return [
-      html(`<details>\n<summary>${summaryText(result)}</summary>`),
+      detailsOpen(summaryChildren(result)),
       bulletList(
         iconItem(
           icon(!result.isMissingRole),
@@ -71,7 +73,7 @@ export function createMarkdownTokenAuthExplainer(): TokenAuthResultExplainer<
           rulesSublist(request.tokenDec.permissions, rules),
         ),
       ),
-      html("</details>"),
+      detailsClose(),
     ];
   }
 
@@ -104,7 +106,7 @@ export function createMarkdownTokenAuthExplainer(): TokenAuthResultExplainer<
     const repos = pluralize(request.repos.length, "repo", "repos");
 
     return [
-      html(`<details>\n<summary>${summaryText(result)}</summary>`),
+      detailsOpen(summaryChildren(result)),
       bulletList(
         iconItem(
           icon(!result.isMissingRole),
@@ -113,15 +115,23 @@ export function createMarkdownTokenAuthExplainer(): TokenAuthResultExplainer<
         iconItem(icon(result.isMatched), `${repoPatterns} matched ${repos}`),
         ...repoItems,
       ),
-      html("</details>"),
+      detailsClose(),
     ];
   }
 
-  function summaryText({ request, isAllowed }: TokenAuthResult): string {
+  function summaryChildren({
+    request,
+    isAllowed,
+  }: TokenAuthResult): ElementContent[] {
     const name = accountOrRepoRefToString(request.consumer);
     const kind = isRepoRef(request.consumer) ? "Repo" : "Account";
 
-    return `${icon(isAllowed)} ${kind} ${name} was ${isAllowed ? "allowed" : "denied"} access to a token`;
+    return [
+      {
+        type: "text",
+        value: `${icon(isAllowed)} ${kind} ${name} was ${isAllowed ? "allowed" : "denied"} access to a token`,
+      },
+    ];
   }
 
   function maxAccessAndRoleText(
@@ -207,6 +217,17 @@ function bulletList(...items: ListItem[]): List {
   return { type: "list", ordered: false, spread: false, children: items };
 }
 
-function html(value: string): Html {
-  return { type: "html", value };
+function detailsOpen(children: ElementContent[]): Html {
+  const summary: Element = {
+    type: "element",
+    tagName: "summary",
+    properties: {},
+    children,
+  };
+
+  return { type: "html", value: `<details>\n${toHtml(summary)}` };
+}
+
+function detailsClose(): Html {
+  return { type: "html", value: "</details>" };
 }
