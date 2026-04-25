@@ -1,6 +1,5 @@
 /* istanbul ignore file - TODO: remove coverage ignore - @preserve */
 import { group, setFailed, summary } from "@actions/core";
-import GithubSlugger from "github-slugger";
 import { install as installSourceMapSupport } from "source-map-support";
 import { createAppRegistry } from "./app-registry.js";
 import { createAuthorizer } from "./authorizer.js";
@@ -12,7 +11,6 @@ import { createEncryptSecret } from "./encrypt-secret.js";
 import { createEnvironmentResolver } from "./environment-resolver.js";
 import { errorStack } from "./error.js";
 import { createFindIssuerOctokit } from "./issuer-octokit.js";
-import { createHeadingFactory } from "./markdown.js";
 import { createOctokitFactory } from "./octokit.js";
 import { createProvisionAuthorizer } from "./provision-authorizer.js";
 import { createProvisionRequestFactory } from "./provision-request.js";
@@ -35,8 +33,6 @@ async function main(): Promise<void> {
   const githubRef = process.env.GITHUB_REF;
   const githubRepository = process.env.GITHUB_REPOSITORY;
   const githubServerURL = process.env.GITHUB_SERVER_URL;
-  const githubStepSummary = process.env.GITHUB_STEP_SUMMARY;
-
   /* istanbul ignore next - @preserve */
   if (!githubRef) {
     throw new Error("Invariant violation: GITHUB_REF is not set");
@@ -50,11 +46,6 @@ async function main(): Promise<void> {
   /* istanbul ignore next - @preserve */
   if (!githubServerURL) {
     throw new Error("Invariant violation: GITHUB_SERVER_URL is not set");
-  }
-
-  /* istanbul ignore next - @preserve */
-  if (!githubStepSummary) {
-    throw new Error("Invariant violation: GITHUB_STEP_SUMMARY is not set");
   }
 
   const githubActionRepository =
@@ -137,13 +128,6 @@ async function main(): Promise<void> {
   });
 
   await summary
-    .addRaw(
-      renderSummary(
-        createHeadingFactory(githubStepSummary, new GithubSlugger()),
-        githubServerURL,
-        actionURL,
-        authorizeResult,
-      ),
-    )
+    .addRaw(renderSummary(githubServerURL, actionURL, authorizeResult))
     .write();
 }
