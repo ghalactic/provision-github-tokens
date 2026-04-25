@@ -2,7 +2,6 @@ import type { RootContent, TableCell } from "mdast";
 import { gfmToMarkdown } from "mdast-util-gfm";
 import { toMarkdown } from "mdast-util-to-markdown";
 import type { AuthorizeResult } from "./authorizer.js";
-import { compareProvisionRequest } from "./compare-provision-request.js";
 import {
   accountOrRepoRefToString,
   type AccountOrRepoReference,
@@ -28,10 +27,7 @@ export function renderSummary(
   actionURL: string,
   result: AuthorizeResult,
 ): string {
-  const provisionResults = result.provisionResults.toSorted((a, b) =>
-    compareProvisionRequest(a.request, b.request),
-  );
-
+  const { provisionResults } = result;
   const allowed = provisionResults.filter((r) => r.isAllowed);
   const denied = provisionResults.filter((r) => !r.isAllowed);
 
