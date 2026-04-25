@@ -8,6 +8,9 @@ jobs:
     name: Run action for CI
     runs-on: ubuntu-latest
 
+    env:
+      GITHUB_ACTION_REPOSITORY: ${{ github.repository }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v6
