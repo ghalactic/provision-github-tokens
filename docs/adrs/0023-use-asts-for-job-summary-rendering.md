@@ -4,7 +4,7 @@ date: 2026-04-24
 decision-makers: ezzatron
 ---
 
-# Use mdast AST for job summary rendering
+# Use ASTs for job summary rendering
 
 ## Context and problem statement
 
