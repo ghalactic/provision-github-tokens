@@ -6,11 +6,13 @@
 
 - ❌ [`SECRET_SELECTED`](#user-content-4bb7e3c2-secret_selected)
 
-### Secret provisioning <a id="4bb7e3c2-secret-provisioning"></a>
+### Secrets <a id="4bb7e3c2-secrets"></a>
 
 #### account-x/repo-x <a id="4bb7e3c2-account-xrepo-x-1"></a>
 
 ##### SECRET\_NO\_REPOS <a id="4bb7e3c2-secret_no_repos"></a>
+
+###### Authorization result <a id="4bb7e3c2-authorization-result"></a>
 
 <details>
 <summary>✅ Repo account-x/repo-x was allowed to provision secret SECRET_NO_REPOS</summary>
@@ -23,9 +25,13 @@
 
 </details>
 
-###### Uses [token #1](#user-content-4bb7e3c2-token-1--account-a-no-repos) <a id="4bb7e3c2-uses-token-1"></a>
+###### Uses <a id="4bb7e3c2-uses"></a>
+
+- [Token #1](#user-content-4bb7e3c2-token-1--account-a-no-repos)
 
 ##### SECRET\_SELECTED <a id="4bb7e3c2-secret_selected"></a>
+
+###### Authorization result <a id="4bb7e3c2-authorization-result-1"></a>
 
 <details>
 <summary>❌ Repo account-x/repo-x wasn't allowed to provision secret SECRET_SELECTED</summary>
@@ -38,13 +44,17 @@
 
 </details>
 
-###### Uses [token #2](#user-content-4bb7e3c2-token-2--account-a-3-repos) <a id="4bb7e3c2-uses-token-2"></a>
+###### Uses <a id="4bb7e3c2-uses-1"></a>
 
-### Token issuing <a id="4bb7e3c2-token-issuing"></a>
+- [Token #2](#user-content-4bb7e3c2-token-2--account-a-3-repos)
+
+### Tokens <a id="4bb7e3c2-tokens"></a>
 
 #### account-a <a id="4bb7e3c2-account-a"></a>
 
 ##### Token #1 — account-a (no repos) <a id="4bb7e3c2-token-1--account-a-no-repos"></a>
+
+###### Authorization result <a id="4bb7e3c2-authorization-result-2"></a>
 
 <details>
 <summary>✅ Account account-a was allowed access to a token</summary>
@@ -61,6 +71,8 @@
 - [`SECRET_NO_REPOS`](#user-content-4bb7e3c2-secret_no_repos) (account-x/repo-x)
 
 ##### Token #2 — account-a (3 repos) <a id="4bb7e3c2-token-2--account-a-3-repos"></a>
+
+###### Authorization result <a id="4bb7e3c2-authorization-result-3"></a>
 
 <details>
 <summary>❌ Account account-a was denied access to a token</summary>

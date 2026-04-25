@@ -1,10 +1,12 @@
 ## Provisioned 2 secrets <a id="4bb7e3c2-provisioned-2-secrets"></a>
 
-### Secret provisioning <a id="4bb7e3c2-secret-provisioning"></a>
+### Secrets <a id="4bb7e3c2-secrets"></a>
 
 #### account-x/repo-x <a id="4bb7e3c2-account-xrepo-x"></a>
 
 ##### SECRET\_A <a id="4bb7e3c2-secret_a"></a>
+
+###### Authorization result <a id="4bb7e3c2-authorization-result"></a>
 
 <details>
 <summary>✅ Repo account-x/repo-x was allowed to provision secret SECRET_A</summary>
@@ -17,11 +19,15 @@
 
 </details>
 
-###### Uses [token #1](#user-content-4bb7e3c2-token-1--account-a-all-repos) <a id="4bb7e3c2-uses-token-1"></a>
+###### Uses <a id="4bb7e3c2-uses"></a>
+
+- [Token #1](#user-content-4bb7e3c2-token-1--account-a-all-repos)
 
 #### account-y/repo-y <a id="4bb7e3c2-account-yrepo-y"></a>
 
 ##### SECRET\_B <a id="4bb7e3c2-secret_b"></a>
+
+###### Authorization result <a id="4bb7e3c2-authorization-result-1"></a>
 
 <details>
 <summary>✅ Repo account-y/repo-y was allowed to provision secret SECRET_B</summary>
@@ -34,13 +40,17 @@
 
 </details>
 
-###### Uses [token #1](#user-content-4bb7e3c2-token-1--account-a-all-repos) <a id="4bb7e3c2-uses-token-1-1"></a>
+###### Uses <a id="4bb7e3c2-uses-1"></a>
 
-### Token issuing <a id="4bb7e3c2-token-issuing"></a>
+- [Token #1](#user-content-4bb7e3c2-token-1--account-a-all-repos)
+
+### Tokens <a id="4bb7e3c2-tokens"></a>
 
 #### account-a <a id="4bb7e3c2-account-a"></a>
 
 ##### Token #1 — account-a (all repos) <a id="4bb7e3c2-token-1--account-a-all-repos"></a>
+
+###### Authorization result <a id="4bb7e3c2-authorization-result-2"></a>
 
 <details>
 <summary>✅ Account account-a was allowed access to a token</summary>

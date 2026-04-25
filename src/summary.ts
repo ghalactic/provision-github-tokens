@@ -50,8 +50,8 @@ export function renderSummary(
     tokenReferenceMap,
   );
 
-  const explainToken = createMarkdownTokenAuthExplainer();
-  const explainProvision =
+  const explainTokenAuth = createMarkdownTokenAuthExplainer();
+  const explainProvisionAuth =
     createMarkdownProvisionAuthExplainer(tokenReferenceMap);
 
   return toMarkdown(
@@ -64,14 +64,14 @@ export function renderSummary(
         ...secretProvisioningSection(
           createHeading,
           provisionResults,
-          explainProvision,
+          explainProvisionAuth,
           secretTokenLinkMap,
           secretHeadingMap,
         ),
         ...tokenIssuingSection(
           createHeading,
           tokenResults,
-          explainToken,
+          explainTokenAuth,
           tokenHeadingMap,
           usedByMap,
         ),
@@ -158,24 +158,22 @@ function failuresSection(
 function secretProvisioningSection(
   createHeading: HeadingFactory,
   provisionResults: ProvisionAuthResult[],
-  explainProvision: (result: ProvisionAuthResult) => RootContent[],
+  explainProvisionAuth: (result: ProvisionAuthResult) => RootContent[],
   secretTokenLinkMap: Map<ProvisionAuthResult, TokenHeadingReference>,
   secretHeadingMap: HeadingMap<ProvisionAuthResult>,
 ): RootContent[] {
   if (provisionResults.length === 0) return [];
 
-  const [secretProvisioningHeading] = createHeading(
-    3,
-    text("Secret provisioning"),
-  );
-  const nodes: RootContent[] = [secretProvisioningHeading];
+  const [secretsHeading] = createHeading(3, text("Secrets"));
+  const nodes: RootContent[] = [secretsHeading];
 
-  appendGroupedContent(
-    createHeading,
-    nodes,
-    provisionResults,
-    (r) => repoRefToString(r.request.requester),
-    (result) => {
+  for (const [requesterName, group] of Map.groupBy(provisionResults, (r) =>
+    repoRefToString(r.request.requester),
+  )) {
+    const [requesterHeading] = createHeading(4, text(requesterName));
+    nodes.push(requesterHeading);
+
+    for (const result of group) {
       const secretHeading = secretHeadingMap.get(result);
 
       /* istanbul ignore next - @preserve */
@@ -183,13 +181,15 @@ function secretProvisioningSection(
         throw new Error("Invariant violation: missing secret heading");
       }
 
-      return [
-        secretHeading.heading,
-        ...explainProvision(result),
-        ...usesTokenLine(createHeading, result, secretTokenLinkMap),
-      ];
-    },
-  );
+      nodes.push(secretHeading.heading);
+
+      const [authHeading] = createHeading(6, text("Authorization result"));
+      nodes.push(authHeading);
+      nodes.push(...explainProvisionAuth(result));
+
+      nodes.push(...usesTokenList(createHeading, result, secretTokenLinkMap));
+    }
+  }
 
   return nodes;
 }
@@ -197,21 +197,22 @@ function secretProvisioningSection(
 function tokenIssuingSection(
   createHeading: HeadingFactory,
   tokenResults: TokenAuthResult[],
-  explainToken: (result: TokenAuthResult) => RootContent[],
+  explainTokenAuth: (result: TokenAuthResult) => RootContent[],
   tokenHeadingMap: HeadingMap<TokenAuthResult>,
   usedByMap: Map<TokenAuthResult, UsedByEntry[]>,
 ): RootContent[] {
   if (tokenResults.length === 0) return [];
 
-  const [tokenIssuingHeading] = createHeading(3, text("Token issuing"));
-  const nodes: RootContent[] = [tokenIssuingHeading];
+  const [tokensHeading] = createHeading(3, text("Tokens"));
+  const nodes: RootContent[] = [tokensHeading];
 
-  appendGroupedContent(
-    createHeading,
-    nodes,
-    tokenResults,
-    (r) => consumerRefToString(r),
-    (result) => {
+  for (const [consumerName, group] of Map.groupBy(tokenResults, (r) =>
+    consumerRefToString(r),
+  )) {
+    const [consumerHeading] = createHeading(4, text(consumerName));
+    nodes.push(consumerHeading);
+
+    for (const result of group) {
       const tokenHeading = tokenHeadingMap.get(result);
 
       /* istanbul ignore next - @preserve */
@@ -226,16 +227,17 @@ function tokenIssuingSection(
         throw new Error("Invariant violation: missing used-by entries");
       }
 
-      const [usedByHeading] = createHeading(6, text("Used by"));
+      nodes.push(tokenHeading.heading);
 
-      return [
-        tokenHeading.heading,
-        ...explainToken(result),
-        usedByHeading,
-        unorderedList(...usedBy.map((entry) => usedByItem(entry))),
-      ];
-    },
-  );
+      const [authHeading] = createHeading(6, text("Authorization result"));
+      nodes.push(authHeading);
+      nodes.push(...explainTokenAuth(result));
+
+      const [usedByHeading] = createHeading(6, text("Used by"));
+      nodes.push(usedByHeading);
+      nodes.push(unorderedList(...usedBy.map((entry) => usedByItem(entry))));
+    }
+  }
 
   return nodes;
 }
@@ -258,7 +260,7 @@ function tokenHeadingText(index: number, result: TokenAuthResult): string {
   );
 }
 
-function usesTokenLine(
+function usesTokenList(
   createHeading: HeadingFactory,
   result: ProvisionAuthResult,
   secretTokenLinkMap: Map<ProvisionAuthResult, TokenHeadingReference>,
@@ -266,16 +268,20 @@ function usesTokenLine(
   const tokenReference = secretTokenLinkMap.get(result);
   if (!tokenReference) return [];
 
-  const [usesHeading] = createHeading(
-    6,
-    text("Uses "),
-    anchorLink(
-      tokenReference.headingId,
-      text(`token #${tokenReference.index}`),
+  const [usesHeading] = createHeading(6, text("Uses"));
+
+  const usesList = unorderedList(
+    listItem(
+      paragraph(
+        anchorLink(
+          tokenReference.headingId,
+          text(`Token #${tokenReference.index}`),
+        ),
+      ),
     ),
   );
 
-  return [usesHeading];
+  return [usesHeading, usesList];
 }
 
 function buildTokenMaps(
@@ -403,21 +409,6 @@ function buildSecretHeadingMap(
   }
 
   return map;
-}
-
-function appendGroupedContent<T>(
-  createHeading: HeadingFactory,
-  nodes: RootContent[],
-  items: T[],
-  key: (item: T) => string,
-  renderItem: (item: T) => RootContent[],
-): void {
-  for (const [name, group] of Map.groupBy(items, (item) => key(item))) {
-    const [groupHeading] = createHeading(4, text(name));
-
-    nodes.push(groupHeading);
-    for (const item of group) nodes.push(...renderItem(item));
-  }
 }
 
 function usedByItem(entry: UsedByEntry): ListItem {
