@@ -199,15 +199,24 @@ function tokenIssuingSection(
     nodes.push(heading(4, consumerName));
 
     for (const result of group) {
-      const anchor = tokenAnchorMap.get(result) ?? "";
+      const anchor = tokenAnchorMap.get(result);
+
+      /* istanbul ignore next - @preserve */
+      if (anchor == null) {
+        throw new Error("Invariant violation: missing token anchor");
+      }
 
       nodes.push(headingWithAnchor(5, tokenHeadingText(result), anchor));
 
-      const usedBy = usedByMap.get(result) ?? [];
-      if (usedBy.length > 0) {
-        nodes.push(paragraph("Used by:"));
-        nodes.push(bulletList(...usedBy.map((entry) => usedByItem(entry))));
+      const usedBy = usedByMap.get(result);
+
+      /* istanbul ignore next - @preserve */
+      if (usedBy == null) {
+        throw new Error("Invariant violation: missing used-by entries");
       }
+
+      nodes.push(paragraph("Used by:"));
+      nodes.push(bulletList(...usedBy.map((entry) => usedByItem(entry))));
 
       nodes.push(
         html(`<details>\n<summary>${tokenDetailsSummary(result)}</summary>`),
@@ -261,7 +270,6 @@ function tokenHeadingText(result: TokenAuthResult): string {
     return `Token for ${account} (no repos)`;
   }
 
-  /* istanbul ignore next - requires real repo resolution in tests - @preserve */
   return `Token for ${account} (${pluralize(result.request.repos.length, "repo", "repos")})`;
 }
 
@@ -337,25 +345,7 @@ function secretAnchorId(
 }
 
 function groupBy<T>(items: T[], key: (item: T) => string): [string, T[]][] {
-  const groups: [string, T[]][] = [];
-  let currentKey = "";
-  let currentGroup: T[] = [];
-
-  for (const item of items) {
-    const k = key(item);
-
-    if (k !== currentKey) {
-      if (currentGroup.length > 0) groups.push([currentKey, currentGroup]);
-      currentKey = k;
-      currentGroup = [item];
-    } else {
-      currentGroup.push(item);
-    }
-  }
-
-  if (currentGroup.length > 0) groups.push([currentKey, currentGroup]);
-
-  return groups;
+  return [...Map.groupBy(items, (item) => key(item))];
 }
 
 function heading(depth: 1 | 2 | 3 | 4 | 5 | 6, text: string): Heading {

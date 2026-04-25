@@ -29,12 +29,12 @@ Used by:
 - [`SECRET_A`](#pgt-test-account-xrepo-x--secret_a) (account-x/repo-x)
 
 <details>
-<summary>✅ Allowed — read access</summary>
+<summary>✅ Allowed — write access</summary>
 
 - ✅ Account account-a was allowed access to a token:
-  - ✅ Read access to all repos in account-a requested without a role
+  - ✅ Write access to all repos in account-a requested with role writer
   - ✅ Sufficient access to all repos in account-a based on 1 rule:
     - ✅ Rule #1: "\<description>" gave sufficient access:
-      - ✅ metadata: have read, wanted read
+      - ✅ contents: have write, wanted write
 
 </details>

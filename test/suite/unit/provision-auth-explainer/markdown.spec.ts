@@ -88,6 +88,59 @@ describe("allowed secrets", () => {
     );
   });
 
+  it("explains an allowed actions secret with a rule description", async () => {
+    const createTokenRequest = createTestTokenRequestFactory();
+    const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
+    const authorizer = createProvisionAuthorizer(
+      createTokenRequest,
+      tokenAuthorizer,
+      {
+        rules: {
+          secrets: [
+            {
+              description: "Allow CI secrets",
+              secrets: ["SECRET_A"],
+              requesters: ["account-x/repo-x"],
+              to: {
+                github: {
+                  account: {},
+                  accounts: { "account-a": { actions: "allow" } },
+                  repo: { environments: {} },
+                  repos: {},
+                },
+              },
+            },
+          ],
+        },
+      },
+    );
+
+    const result = authorizer.authorizeSecret({
+      requester: { account: "account-x", repo: "repo-x" },
+      tokenDec: createTestTokenDec(),
+      tokenDecIsRegistered: true,
+      secretDec: createTestSecretDec(),
+      name: "SECRET_A",
+      to: [
+        {
+          platform: "github",
+          type: "actions",
+          target: { account: "account-a" },
+        },
+      ],
+    });
+
+    const tokenResults = tokenAuthorizer
+      .listResults()
+      .sort((a, b) => compareTokenRequest(a.request, b.request));
+    const anchorMap = createAnchorMap(tokenResults);
+    const explain = createMarkdownProvisionAuthExplainer(anchorMap);
+
+    await expect(render(explain(result))).toMatchFileSnapshot(
+      join(fixturesPath, "actions-allowed-with-description.md"),
+    );
+  });
+
   it("explains an allowed environment secret", async () => {
     const createTokenRequest = createTestTokenRequestFactory();
     const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });

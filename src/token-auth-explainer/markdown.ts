@@ -175,7 +175,7 @@ export function createMarkdownTokenAuthExplainer(): TokenAuthResultExplainer<
     return iconItem(
       icon(isSufficient),
       `Rule ${renderRule(index, rule)} gave ${isSufficient ? "sufficient" : "insufficient"} access:`,
-      permItems.length > 0 ? bulletList(...permItems) : undefined,
+      bulletList(...permItems),
     );
   }
 

@@ -108,7 +108,13 @@ export function createMarkdownProvisionAuthExplainer(
     const kind = isRepoRef(tokenAuthResult.request.consumer)
       ? "Repo"
       : "Account";
-    const anchor = tokenAnchorMap.get(tokenAuthResult) ?? "";
+    const anchor = tokenAnchorMap.get(tokenAuthResult);
+
+    /* istanbul ignore next - @preserve */
+    if (anchor == null) {
+      throw new Error("Invariant violation: missing token anchor");
+    }
+
     const tokenIndex = [...tokenAnchorMap.keys()].indexOf(tokenAuthResult) + 1;
 
     return iconItemWithLink(
