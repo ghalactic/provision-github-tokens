@@ -31,14 +31,33 @@ main().catch((error) => {
 });
 
 async function main(): Promise<void> {
+  const githubRepository = process.env.GITHUB_REPOSITORY;
+  const githubRef = process.env.GITHUB_REF;
+  const githubAction = process.env.GITHUB_ACTION;
+
+  /* istanbul ignore next - @preserve */
+  if (!githubRepository) {
+    throw new Error("Invariant violation: GITHUB_REPOSITORY is not set");
+  }
+
+  /* istanbul ignore next - @preserve */
+  if (!githubRef) {
+    throw new Error("Invariant violation: GITHUB_REF is not set");
+  }
+
+  /* istanbul ignore next - @preserve */
+  if (!githubAction) {
+    throw new Error("Invariant violation: GITHUB_ACTION is not set");
+  }
+
   const appsInput = readAppsInput();
   const octokitFactory = createOctokitFactory();
 
   const config = await group("Reading config", async () => {
     return await readProviderConfig(
       octokitFactory,
-      process.env.GITHUB_REPOSITORY ?? "",
-      process.env.GITHUB_REF ?? "",
+      githubRepository,
+      githubRef,
     );
   });
 
@@ -98,12 +117,9 @@ async function main(): Promise<void> {
     return await authorizer.authorize(Array.from(requesters.values()));
   });
 
-  await group("Writing summary", async () => {
-    const prefix = `pgt-${process.env.GITHUB_ACTION ?? ""}`;
-    const markdown = renderSummary(authorizeResult, prefix);
-
-    await summary.addRaw(markdown).write();
-  });
+  await summary
+    .addRaw(renderSummary(authorizeResult, `pgt-${githubAction}`))
+    .write();
 
   const tokens = await group("Creating tokens", async () => {
     return await createTokens(tokenAuthorizer.listResults());

@@ -1,4 +1,4 @@
-### Provisioned 0 of 1 secret
+## Provisioned 0 of 1 secret
 
 ### Failures
 

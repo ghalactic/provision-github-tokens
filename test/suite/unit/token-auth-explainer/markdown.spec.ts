@@ -1,8 +1,14 @@
 import type { Root, RootContent } from "mdast";
 import { toMarkdown } from "mdast-util-to-markdown";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { createMarkdownTokenAuthExplainer } from "../../../../src/token-auth-explainer/markdown.js";
 import { createTokenAuthorizer } from "../../../../src/token-authorizer.js";
+
+const fixturesPath = join(
+  import.meta.dirname,
+  "../../../fixture/token-auth-explainer",
+);
 
 function render(nodes: RootContent[]): string {
   const root: Root = { type: "root", children: nodes };
@@ -44,7 +50,7 @@ describe("ALL_REPOS", () => {
     });
 
     await expect(render(explain(result))).toMatchFileSnapshot(
-      "../../../fixture/token-auth-explainer/all-repos-allowed-with-role/expected.md",
+      join(fixturesPath, "all-repos-allowed-with-role/expected.md"),
     );
   });
 
@@ -79,7 +85,7 @@ describe("ALL_REPOS", () => {
     });
 
     await expect(render(explain(result))).toMatchFileSnapshot(
-      "../../../fixture/token-auth-explainer/all-repos-denied/expected.md",
+      join(fixturesPath, "all-repos-denied/expected.md"),
     );
   });
 
@@ -114,7 +120,7 @@ describe("ALL_REPOS", () => {
     });
 
     await expect(render(explain(result))).toMatchFileSnapshot(
-      "../../../fixture/token-auth-explainer/all-repos-allowed-without-role/expected.md",
+      join(fixturesPath, "all-repos-allowed-without-role/expected.md"),
     );
   });
 
@@ -149,7 +155,7 @@ describe("ALL_REPOS", () => {
     });
 
     await expect(render(explain(result))).toMatchFileSnapshot(
-      "../../../fixture/token-auth-explainer/all-repos-repo-consumer/expected.md",
+      join(fixturesPath, "all-repos-repo-consumer/expected.md"),
     );
   });
 
@@ -198,7 +204,7 @@ describe("ALL_REPOS", () => {
     });
 
     await expect(render(explain(result))).toMatchFileSnapshot(
-      "../../../fixture/token-auth-explainer/all-repos-multiple-rules/expected.md",
+      join(fixturesPath, "all-repos-multiple-rules/expected.md"),
     );
   });
 
@@ -233,7 +239,7 @@ describe("ALL_REPOS", () => {
     });
 
     await expect(render(explain(result))).toMatchFileSnapshot(
-      "../../../fixture/token-auth-explainer/all-repos-multiple-permissions/expected.md",
+      join(fixturesPath, "all-repos-multiple-permissions/expected.md"),
     );
   });
 });
@@ -270,7 +276,7 @@ describe("NO_REPOS", () => {
     });
 
     await expect(render(explain(result))).toMatchFileSnapshot(
-      "../../../fixture/token-auth-explainer/no-repos-allowed/expected.md",
+      join(fixturesPath, "no-repos-allowed/expected.md"),
     );
   });
 
@@ -305,7 +311,7 @@ describe("NO_REPOS", () => {
     });
 
     await expect(render(explain(result))).toMatchFileSnapshot(
-      "../../../fixture/token-auth-explainer/no-repos-denied/expected.md",
+      join(fixturesPath, "no-repos-denied/expected.md"),
     );
   });
 });
@@ -342,7 +348,7 @@ describe("SELECTED_REPOS", () => {
     });
 
     await expect(render(explain(result))).toMatchFileSnapshot(
-      "../../../fixture/token-auth-explainer/selected-repos-allowed/expected.md",
+      join(fixturesPath, "selected-repos-allowed/expected.md"),
     );
   });
 
@@ -377,7 +383,7 @@ describe("SELECTED_REPOS", () => {
     });
 
     await expect(render(explain(result))).toMatchFileSnapshot(
-      "../../../fixture/token-auth-explainer/selected-repos-denied/expected.md",
+      join(fixturesPath, "selected-repos-denied/expected.md"),
     );
   });
 
@@ -397,7 +403,7 @@ describe("SELECTED_REPOS", () => {
     });
 
     await expect(render(explain(result))).toMatchFileSnapshot(
-      "../../../fixture/token-auth-explainer/selected-repos-no-rules/expected.md",
+      join(fixturesPath, "selected-repos-no-rules/expected.md"),
     );
   });
 });

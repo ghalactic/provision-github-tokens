@@ -1,5 +1,6 @@
 import type { Root, RootContent } from "mdast";
 import { toMarkdown } from "mdast-util-to-markdown";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import { compareTokenRequest } from "../../../../src/compare-token-request.js";
 import { createMarkdownProvisionAuthExplainer } from "../../../../src/provision-auth-explainer/markdown.js";
@@ -11,6 +12,11 @@ import {
 } from "../../../declaration.js";
 import { createTestTokenAuthorizer } from "../../../token-authorizer.js";
 import { createTestTokenRequestFactory } from "../../../token-request.js";
+
+const fixturesPath = join(
+  import.meta.dirname,
+  "../../../fixture/provision-auth-explainer",
+);
 
 function render(nodes: RootContent[]): string {
   const root: Root = { type: "root", children: nodes };
@@ -78,7 +84,7 @@ describe("allowed secrets", () => {
     const explain = createMarkdownProvisionAuthExplainer(anchorMap);
 
     await expect(render(explain(result))).toMatchFileSnapshot(
-      "../../../fixture/provision-auth-explainer/actions-allowed/expected.md",
+      join(fixturesPath, "actions-allowed/expected.md"),
     );
   });
 
@@ -138,7 +144,7 @@ describe("allowed secrets", () => {
     const explain = createMarkdownProvisionAuthExplainer(anchorMap);
 
     await expect(render(explain(result))).toMatchFileSnapshot(
-      "../../../fixture/provision-auth-explainer/environment-allowed/expected.md",
+      join(fixturesPath, "environment-allowed/expected.md"),
     );
   });
 });
@@ -192,7 +198,7 @@ describe("denied secrets", () => {
     const explain = createMarkdownProvisionAuthExplainer(anchorMap);
 
     await expect(render(explain(result))).toMatchFileSnapshot(
-      "../../../fixture/provision-auth-explainer/actions-denied/expected.md",
+      join(fixturesPath, "actions-denied/expected.md"),
     );
   });
 
@@ -244,7 +250,7 @@ describe("denied secrets", () => {
     const explain = createMarkdownProvisionAuthExplainer(anchorMap);
 
     await expect(render(explain(result))).toMatchFileSnapshot(
-      "../../../fixture/provision-auth-explainer/missing-token-dec/expected.md",
+      join(fixturesPath, "missing-token-dec/expected.md"),
     );
   });
 
@@ -296,7 +302,7 @@ describe("denied secrets", () => {
     const explain = createMarkdownProvisionAuthExplainer(anchorMap);
 
     await expect(render(explain(result))).toMatchFileSnapshot(
-      "../../../fixture/provision-auth-explainer/non-shared-token-dec/expected.md",
+      join(fixturesPath, "non-shared-token-dec/expected.md"),
     );
   });
 
@@ -322,7 +328,7 @@ describe("denied secrets", () => {
     const explain = createMarkdownProvisionAuthExplainer(anchorMap);
 
     await expect(render(explain(result))).toMatchFileSnapshot(
-      "../../../fixture/provision-auth-explainer/missing-targets/expected.md",
+      join(fixturesPath, "missing-targets/expected.md"),
     );
   });
 });
@@ -407,7 +413,7 @@ describe("multiple targets", () => {
     const explain = createMarkdownProvisionAuthExplainer(anchorMap);
 
     await expect(render(explain(result))).toMatchFileSnapshot(
-      "../../../fixture/provision-auth-explainer/multiple-targets/expected.md",
+      join(fixturesPath, "multiple-targets/expected.md"),
     );
   });
 });
