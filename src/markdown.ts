@@ -2,7 +2,6 @@ import type {
   AlignType,
   Blockquote,
   Definition,
-  Emphasis,
   Heading,
   InlineCode,
   Link,
@@ -55,10 +54,6 @@ export function accountOrRepoLinkRef(
 
 export function blockquote(...children: Blockquote["children"]): Blockquote {
   return { type: "blockquote", children };
-}
-
-export function emphasis(...children: Emphasis["children"]): Emphasis {
-  return { type: "emphasis", children };
 }
 
 export function GFMAlert(

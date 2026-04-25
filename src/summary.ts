@@ -9,7 +9,6 @@ import {
 import {
   accountOrRepoDefinition,
   accountOrRepoLinkRef,
-  emphasis,
   GFMAlert,
   heading,
   inlineCode,
@@ -78,11 +77,13 @@ function emptySection(
   if (provisionResults.length > 0 || result.tokenResults.length > 0) return [];
 
   return [
-    paragraph(emphasis(text("(no secrets provisioned)"))),
-    paragraph(
-      text("Need help getting started? See the "),
-      link(new URL("#readme", actionURL), text("docs")),
-      text("."),
+    GFMAlert(
+      "TIP",
+      paragraph(
+        text("Need help getting started? See the "),
+        link(new URL("#readme", actionURL), text("docs")),
+        text("."),
+      ),
     ),
   ];
 }
