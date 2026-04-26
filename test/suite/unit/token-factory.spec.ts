@@ -194,7 +194,7 @@ it("creates tokens based on token auth results", async () => {
   ]);
   expect(results.get(createdResult)).toMatchObject({
     type: "CREATED",
-    token: expect.any(String),
+    token: expect.any(String) as unknown as string,
   });
   expect(results.get(unauthorizedResult)).toMatchObject({
     type: "REQUEST_ERROR",
@@ -313,7 +313,7 @@ it("deduplicates token creation for identical token shapes", async () => {
     rules: [],
   };
 
-  const results = await createTokens([consumerAResult, consumerBResult]);
+  await createTokens([consumerAResult, consumerBResult]);
   expect(getTokenFactoryInfoOutputLines()).toMatchInlineSnapshot(`
     [
       "",
@@ -641,7 +641,9 @@ it("does not deduplicate tokens with different repos", async () => {
 
   // FIXME: The explainer does not expose enough detail to distinguish these
   // CREATED and REQUEST_ERROR results, so keep the identity check for now.
-  expect(results.get(allReposResult)).not.toBe(results.get(selectedReposResult));
+  expect(results.get(allReposResult)).not.toBe(
+    results.get(selectedReposResult),
+  );
 });
 
 it("does not return cached CREATED result for NOT_ALLOWED auth results", async () => {
@@ -729,7 +731,7 @@ it("does not return cached CREATED result for NOT_ALLOWED auth results", async (
     rules: [],
   };
 
-  const results = await createTokens([allowedResult, notAllowedResult]);
+  await createTokens([allowedResult, notAllowedResult]);
   expect(getTokenFactoryInfoOutputLines()).toMatchInlineSnapshot(`
     [
       "",
@@ -798,7 +800,7 @@ it("caches NO_ISSUER results for identical token shapes", async () => {
     rules: [],
   };
 
-  const results = await createTokens([consumerAResult, consumerBResult]);
+  await createTokens([consumerAResult, consumerBResult]);
   expect(getTokenFactoryInfoOutputLines()).toMatchInlineSnapshot(`
     [
       "",
@@ -897,7 +899,7 @@ it("caches error results for identical token shapes", async () => {
     rules: [],
   };
 
-  const results = await createTokens([consumerAResult, consumerBResult]);
+  await createTokens([consumerAResult, consumerBResult]);
   expect(getTokenFactoryInfoOutputLines()).toMatchInlineSnapshot(`
     [
       "",
@@ -997,7 +999,7 @@ it("logs dedup-aware message when tokens are deduplicated", async () => {
     rules: [],
   };
 
-  const results = await createTokens([consumerAResult, consumerBResult]);
+  await createTokens([consumerAResult, consumerBResult]);
   expect(getTokenFactoryInfoOutputLines()).toMatchInlineSnapshot(`
     [
       "",
@@ -1082,7 +1084,7 @@ it("logs simple message when no tokens are deduplicated", async () => {
     rules: [],
   };
 
-  const results = await createTokens([consumerAResult]);
+  await createTokens([consumerAResult]);
   expect(getTokenFactoryInfoOutputLines()).toMatchInlineSnapshot(`
     [
       "",
@@ -1122,6 +1124,7 @@ function getTokenFactoryInfoOutputLines(): string[] {
     .split("\n")
     .map((line) => line.trimEnd())
     .filter(
-      (line) => !line.startsWith("::debug::") && !line.startsWith("::warning::"),
+      (line) =>
+        !line.startsWith("::debug::") && !line.startsWith("::warning::"),
     );
 }

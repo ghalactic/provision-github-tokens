@@ -452,7 +452,9 @@ it("logs debug output when encryption fails with an unexpected error", async () 
 
   await provisionSecrets(tokenResults, [allowedResult]);
 
-  expect(__getOutput()).toContain("::debug::GitHub Actions secret in account-a:");
+  expect(__getOutput()).toContain(
+    "::debug::GitHub Actions secret in account-a:",
+  );
   expect(__getOutput()).toContain("::debug::    Error: <message>");
 });
 
@@ -722,7 +724,8 @@ function getProvisionerInfoOutput(): string {
     .split("\n")
     .map((line) => line.trimEnd())
     .filter(
-      (line) => !line.startsWith("::debug::") && !line.startsWith("::warning::"),
+      (line) =>
+        !line.startsWith("::debug::") && !line.startsWith("::warning::"),
     )
     .join("\n");
 }
