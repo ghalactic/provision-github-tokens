@@ -924,9 +924,10 @@ it("logs dedup-aware message when tokens are deduplicated", async () => {
 
   await createTokens([consumerAResult, consumerBResult]);
 
-  expect(__getOutput()).toContain(
-    "Created 1 unique token for 2 token requests",
-  );
+  expect(__getOutput()).toContain("Token #1:");
+  expect(__getOutput()).toContain("✅ Token created for account-a");
+  expect(__getOutput()).toContain("Token #2:");
+  expect(__getOutput()).toContain("✅ Same token as #1");
 });
 
 it("logs simple message when no tokens are deduplicated", async () => {
@@ -996,8 +997,9 @@ it("logs simple message when no tokens are deduplicated", async () => {
 
   await createTokens([consumerAResult]);
 
-  expect(__getOutput()).toContain("Created 1 token\n");
-  expect(__getOutput()).not.toContain("unique");
+  expect(__getOutput()).toContain("Token #1:");
+  expect(__getOutput()).toContain("✅ Token created for account-a");
+  expect(__getOutput()).not.toContain("Same token as #1");
 });
 
 it("returns empty map when no token auth results are given", async () => {
@@ -1012,4 +1014,5 @@ it("returns empty map when no token auth results are given", async () => {
   const createTokens = createTokenFactory(findIssuerOctokit);
 
   expect(Array.from((await createTokens([])).entries())).toEqual([]);
+  expect(__getOutput()).toContain("::warning::❌ No tokens were created");
 });
