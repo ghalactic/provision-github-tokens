@@ -20,77 +20,41 @@ npm exec -- vitest --run test/suite/unit/token-factory.spec.ts
 # Run tests matching a name pattern
 npm exec -- vitest --run -t "pattern"
 
-# Build the dist bundle
-make dist/main.js
-
 # Regenerate all generated files (schemas, dist bundle, etc.)
 make regenerate
 
-# Verify generated files match committed versions
-make verify-generated
-
 # Full pre-commit check (lint + tests + verify-generated)
-# IMPORTANT: This can auto-fix formatting and regenerate files.
-# Always run `git status` afterwards to see what changed.
 make precommit
 ```
 
-**Always run `make precommit` after modifying source files** — it rebuilds the
-dist bundle, regenerates schemas, runs lint, and runs tests. If you only run
-`make test` and `make lint`, stale generated files won't be caught. Run
-`git status` afterwards to stage any regenerated files.
+### Generated files and the change workflow
 
 The build bundles `src/main.ts` → `dist/main.js` using esbuild (via
-`script/build.ts`). Generated files that must be committed: `dist/main.js`,
-`dist/main.js.map`, and the two `generated.*.schema.json` files in
-`src/schema/`.
+`script/build.ts`). Because this is a GitHub Action, GitHub runs `dist/main.js`
+directly — it does not build from source at runtime. The bundled output and
+other generated files (schemas, source maps) **must be committed to the
+repository**. The `GENERATED_FILES` variable in `Makefile` is the authoritative
+list.
 
-## Architecture
+After modifying source files, follow this workflow **in order** before
+committing:
+
+1. **Regenerate** — Run `make regenerate` to rebuild all generated files.
+2. **Stage** — Run `git status` to see what changed, then stage the regenerated
+   files. Trust that the generators produce correct output — do not read through
+   generated files to verify them.
+3. **Precommit** — Run `make precommit` to lint, test, and verify that all
+   generated files are up to date.
+
+This order matters. `make precommit` includes a `verify-generated` step that
+fails if the committed generated files don't match the source. Regenerating and
+staging first avoids a wasted round-trip.
+
+## Purpose and scope
 
 This is a **GitHub Action** (`action.yml`, runs on `node24`) that declaratively
 provisions GitHub tokens as repository/organization secrets across multiple
 repos.
-
-### Pipeline flow (orchestrated by `src/main.ts`)
-
-1. **Read config** — Parse the provider YAML config (from the repo running the
-   action) and the apps input (GitHub App credentials)
-2. **Discover apps** — Find all GitHub App installations and register them in
-   `AppRegistry`
-3. **Discover requesters** — Find repos containing
-   `.github/ghalactic/provision-github-tokens.yml` requester configs; register
-   their token declarations in `TokenDeclarationRegistry`
-4. **Authorize** — `TokenAuthorizer` validates token permission requests against
-   provider rules; `ProvisionAuthorizer` validates where secrets can be
-   provisioned
-5. **Create tokens** — `TokenFactory` issues GitHub installation access tokens
-   for authorized requests
-6. **Provision secrets** — `Provisioner` encrypts tokens (libsodium) and stores
-   them as GitHub secrets (actions, codespaces, dependabot, or environment)
-
-### Key subsystems
-
-| Module                                                  | Responsibility                                                                                             |
-| ------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| `AppRegistry`                                           | Central registry of GitHub Apps, their installations, and which app can issue/provision for a given target |
-| `TokenAuthorizer`                                       | Evaluates token requests against permission rules from provider config                                     |
-| `ProvisionAuthorizer`                                   | Evaluates secret provisioning requests against provision rules                                             |
-| `TokenDeclarationRegistry`                              | Tracks token declarations from requester repos (shared or private)                                         |
-| `TokenFactory`                                          | Creates installation access tokens via the GitHub API                                                      |
-| `Provisioner`                                           | Encrypts and writes secrets to repos/orgs/environments                                                     |
-| `token-auth-explainer/` and `provision-auth-explainer/` | Generate human-readable text explanations of authorization decisions                                       |
-
-### Config system
-
-- **Provider config** (`src/config/provider-config.ts`) — YAML file in the
-  provider repo defining permission rules and provision rules. Schema:
-  `src/schema/provider.v1.schema.json`
-- **Requester config** (`src/config/requester-config.ts`) — YAML file in each
-  consuming repo declaring desired tokens and secrets. Schema:
-  `src/schema/requester.v1.schema.json`
-- **Apps input** (`src/config/apps-input.ts`) — GitHub Action input containing
-  app credentials (parsed from YAML)
-- Validation uses Ajv with `ajv-errors` (`src/config/validation.ts`)
 
 ## Conventions
 
@@ -125,37 +89,6 @@ All Markdown should read well in both raw text and rendered HTML.
   bundling
 - Formatting via **Prettier** with `prettier-plugin-organize-imports`
   (auto-sorts imports)
-
-### Factory/creator pattern
-
-Most subsystems use a `createX()` factory function that returns a typed object
-or closure. The factory accepts dependencies as parameters (manual dependency
-injection). See `createTokenAuthorizer()`, `createAppRegistry()`,
-`createProvisioner()`, etc.
-
-### Discriminated unions for results
-
-Authorization results use discriminated unions with a `type` field:
-
-```ts
-type TokenAuthResult =
-  | { type: "ALL_REPOS"; ... }
-  | { type: "NO_REPOS"; ... }
-  | { type: "SELECTED_REPOS"; ... }
-```
-
-### Pattern matching
-
-Custom `Pattern` interface (`src/pattern.ts`) with `test()` and `toString()`
-methods. Used via `GitHubPattern` (glob-style matching for accounts/repos) and
-`NamePattern` (case-insensitive glob for names).
-
-### Type organization
-
-- `src/type/` — Pure type definitions (no runtime code): `permissions.ts`,
-  `provider-config.ts`, `requester-config.ts`, `token-auth-result.ts`,
-  `provision-auth-result.ts`, `github-api.ts`, etc.
-- `octokit-openapi.d.ts` — Type augmentation for `@octokit/openapi`
 
 ### Testing
 
@@ -218,6 +151,13 @@ ADRs live in `docs/adrs/`. **Always use the repo-local ADR skill** at
 project conventions (brevity, sentence case, no file paths, etc.) and walks you
 through the full workflow. Do not use globally installed ADR skills.
 
+**Consult ADRs during research.** When investigating an area of the codebase,
+search `docs/adrs/` for ADRs that relate to the subsystem or concept you're
+working on. ADRs capture the _why_ behind design decisions — reading them before
+making changes helps you avoid inadvertently contradicting prior decisions or
+re-litigating settled debates. If you find that existing ADRs conflict with
+proposed changes, surface this to the user before proceeding.
+
 ### Commit messages
 
 Write commit messages for **human readers**, not automated tooling.
@@ -246,3 +186,47 @@ committed), clean up Superpowers working files before the branch is merged:
    feature branch should be captured in ADRs (using available ADR skills) before
    the working files are deleted. ADRs are the lasting record; plans and specs
    are ephemeral.
+
+### Responding to PR feedback
+
+When asked to address PR review feedback, follow this process:
+
+#### 1. Gather feedback
+
+- Fetch all review threads on the PR (e.g. via `get_review_comments`).
+- **Skip resolved threads** — they have already been addressed.
+- Identify the PR author — treat their comments as likely coming from the user
+  you are chatting with (they are usually the same person).
+- Collect each unresolved thread into a summary: the file, line range, reviewer
+  comment, and any follow-up discussion within the thread.
+
+#### 2. Triage with the user
+
+- Present the collected feedback items to the user in a clear list.
+- For each item, briefly describe the reviewer's concern and suggest a possible
+  resolution approach.
+- Work with the user via chat to decide which items to address and how. The user
+  may choose to address all feedback, a subset, or propose alternative
+  resolutions. Do not start implementing until the user has confirmed the
+  approach.
+
+#### 3. Implement changes
+
+- Implement the agreed-upon changes. Group related feedback items into atomic
+  commits wherever possible.
+- Follow the
+  [generated files workflow](#generated-files-and-the-change-workflow)
+  (regenerate → review → stage → precommit) before committing.
+- Push all commits before replying to any review threads.
+
+#### 4. Reply and resolve threads
+
+- For each addressed feedback item, reply to the corresponding review thread.
+- Every reply **must** include:
+  - A clear indication that the response was generated by the agent (e.g.
+    _"Generated by <Agent Name>"_).
+  - A reference to the commit SHA in which the feedback was resolved (e.g.
+    _"Addressed in <short commit SHA>"_).
+- After replying, **resolve the thread** so it no longer appears as outstanding.
+- Do **not** reply to or resolve threads that were not addressed in this round —
+  leave them for future discussion.
