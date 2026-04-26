@@ -1,10 +1,10 @@
-import { info } from "@actions/core";
+import { info, warning } from "@actions/core";
 import { RequestError } from "@octokit/request-error";
 import type { EncryptSecret } from "./encrypt-secret.js";
 import { isRepoRef } from "./github-reference.js";
 import type { Octokit } from "./octokit.js";
-import { pluralize } from "./pluralize.js";
 import type { ProvisionRequestTarget } from "./provision-request.js";
+import { createTextProvisioningExplainer } from "./provisioning-explainer/text.js";
 import type { FindProvisionerOctokit } from "./provisioner-octokit.js";
 import type { TokenCreationResult } from "./token-factory.js";
 import type {
@@ -147,29 +147,18 @@ export function createProvisioner(
       }
     }
 
-    let provisionedCount = 0;
-    let notProvisionedCount = 0;
+    const explain = createTextProvisioningExplainer();
 
-    for (const result of provisionResults.values()) {
-      for (const targetResult of result.values()) {
-        if (targetResult.type === "PROVISIONED") {
-          ++provisionedCount;
-        } else {
-          ++notProvisionedCount;
-        }
+    if (provisionResults.size > 0) {
+      let i = 0;
+      for (const [authResult, targetResults] of provisionResults) {
+        ++i;
+        info(`\nSecret #${i}:\n`);
+        info(explain(authResult, targetResults));
       }
-    }
-
-    if (provisionedCount > 0) {
-      info(`Provisioned ${pluralize(provisionedCount, "secret", "secrets")}`);
-    }
-    if (notProvisionedCount > 0) {
-      const pluralized = pluralize(
-        notProvisionedCount,
-        "requested secret wasn't",
-        "requested secrets weren't",
-      );
-      info(`${pluralized} provisioned`);
+    } else {
+      info("");
+      warning("❌ No secrets were provisioned");
     }
 
     return provisionResults;
