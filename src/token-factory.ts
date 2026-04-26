@@ -45,7 +45,7 @@ export function createTokenFactory(
   findIssuerOctokit: FindIssuerOctokit,
 ): TokenFactory {
   return async (authResults) => {
-    const cache: Partial<Record<string, TokenCreationResult>> = {};
+    const cache: Record<string, TokenCreationResult> = {};
     const creationResults = new Map<TokenAuthResult, TokenCreationResult>();
 
     for (const auth of authResults) {
@@ -64,38 +64,31 @@ export function createTokenFactory(
         continue;
       }
 
-      const found = findIssuerOctokit(auth.request);
+      const result: TokenCreationResult = await (async () => {
+        const found = findIssuerOctokit(auth.request);
 
-      if (!found) {
-        const result: TokenCreationResult = { type: "NO_ISSUER" };
-        cache[key] = result;
-        creationResults.set(auth, result);
+        if (!found) return { type: "NO_ISSUER" };
 
-        continue;
-      }
+        const [octokit, issuerReg] = found;
 
-      const [octokit, issuerReg] = found;
+        try {
+          const { data: token } =
+            await octokit.rest.apps.createInstallationAccessToken({
+              installation_id: issuerReg.installation.id,
+              repositories:
+                auth.request.repos === "all" ? undefined : auth.request.repos,
+              permissions: auth.request.tokenDec.permissions,
+            });
 
-      try {
-        const { data: token } =
-          await octokit.rest.apps.createInstallationAccessToken({
-            installation_id: issuerReg.installation.id,
-            repositories:
-              auth.request.repos === "all" ? undefined : auth.request.repos,
-            permissions: auth.request.tokenDec.permissions,
-          });
-
-        const result: TokenCreationResult = { type: "CREATED", token };
-        cache[key] = result;
-        creationResults.set(auth, result);
-      } catch (error) {
-        const result: TokenCreationResult =
-          error instanceof RequestError
+          return { type: "CREATED", token };
+        } catch (error) {
+          return error instanceof RequestError
             ? { type: "REQUEST_ERROR", error }
             : { type: "ERROR", error };
-        cache[key] = result;
-        creationResults.set(auth, result);
-      }
+        }
+      })();
+
+      creationResults.set(auth, (cache[key] = result));
     }
 
     let createdCount = 0;
@@ -113,9 +106,7 @@ export function createTokenFactory(
       let uniqueCreatedCount = 0;
 
       for (const key in cache) {
-        if (cache[key]?.type === "CREATED") {
-          ++uniqueCreatedCount;
-        }
+        if (cache[key].type === "CREATED") ++uniqueCreatedCount;
       }
 
       if (uniqueCreatedCount < createdCount) {
