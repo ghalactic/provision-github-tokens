@@ -25,8 +25,8 @@ rules, semantics remain last-rule-wins.
 - Good, because overlapping patterns fail closed and reduce accidental
   over-grants.
 - Good, because literal keys still provide explicit per-permission exceptions.
-- Bad, because providers that relied on max-wins must reorder or rewrite
-  patterns.
+- Bad, because providers that relied on max-wins must rewrite overlapping
+  patterns, split logic across rules, or otherwise adjust rule structure.
 
 ## Alternatives considered
 
