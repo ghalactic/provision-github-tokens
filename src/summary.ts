@@ -166,7 +166,7 @@ function omittedNotice(total: number, omitted: number): RootContent[] {
 
 function successRow(result: ProvisionAuthResult): TableCell["children"][] {
   return [
-    [text(renderIcon(result.isAllowed))],
+    [text(renderIcon(true))],
     [accountOrRepoLinkRef(result.request.requester)],
     [inlineCode(result.request.name)],
     targetCellChildren(result.request.to),
