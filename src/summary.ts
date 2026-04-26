@@ -143,7 +143,7 @@ function successesTable(allowed: ProvisionAuthResult[]): RootContent[] {
     table(
       ["left", "left", "left", "left"],
       [[], [text("Requester")], [text("Secret")], [text("Targets")]],
-      allowed.map((r) => secretRow(r)),
+        allowed.map((r) => successRow(r)),
     ),
   ];
 }
@@ -164,7 +164,7 @@ function omittedNotice(total: number, omitted: number): RootContent[] {
   ];
 }
 
-function secretRow(result: ProvisionAuthResult): TableCell["children"][] {
+function successRow(result: ProvisionAuthResult): TableCell["children"][] {
   return [
     [text(renderIcon(result.isAllowed))],
     [accountOrRepoLinkRef(result.request.requester)],
