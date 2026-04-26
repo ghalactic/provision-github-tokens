@@ -489,6 +489,66 @@ it("does not return cached CREATED result for NOT_ALLOWED auth results", async (
   expect(results.get(notAllowedResult)).toEqual({ type: "NOT_ALLOWED" });
 });
 
+it("caches NO_ISSUER results for identical token shapes", async () => {
+  const octokitFactory = createOctokitFactory();
+  const appRegistry = createAppRegistry();
+
+  const appsInput: AppInput[] = [];
+  const findIssuerOctokit = createFindIssuerOctokit(
+    octokitFactory,
+    appRegistry,
+    appsInput,
+  );
+
+  const createTokens = createTokenFactory(findIssuerOctokit);
+
+  const consumerAResult: TokenAuthResult = {
+    type: "ALL_REPOS",
+    request: {
+      consumer: { account: "consumer-a" },
+      tokenDec: {
+        shared: false,
+        as: undefined,
+        account: "account-a",
+        repos: "all",
+        permissions: { metadata: "read" },
+      },
+      repos: "all",
+    },
+    maxWant: "read",
+    have: { metadata: "read" },
+    isSufficient: true,
+    isMissingRole: false,
+    isAllowed: true,
+    rules: [],
+  };
+  const consumerBResult: TokenAuthResult = {
+    type: "ALL_REPOS",
+    request: {
+      consumer: { account: "consumer-b" },
+      tokenDec: {
+        shared: false,
+        as: undefined,
+        account: "account-a",
+        repos: "all",
+        permissions: { metadata: "read" },
+      },
+      repos: "all",
+    },
+    maxWant: "read",
+    have: { metadata: "read" },
+    isSufficient: true,
+    isMissingRole: false,
+    isAllowed: true,
+    rules: [],
+  };
+
+  const results = await createTokens([consumerAResult, consumerBResult]);
+
+  expect(results.get(consumerAResult)).toBe(results.get(consumerBResult));
+  expect(results.get(consumerAResult)).toEqual({ type: "NO_ISSUER" });
+});
+
 it("returns empty map when no token auth results are given", async () => {
   const octokitFactory = createOctokitFactory();
   const appRegistry = createAppRegistry();
