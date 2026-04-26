@@ -304,6 +304,97 @@ it("deduplicates token creation for identical token shapes", async () => {
   });
 });
 
+it("isolates tokens by role even when other token shape fields match", async () => {
+  const octokitFactory = createOctokitFactory();
+
+  const accountA = createTestInstallationAccount(
+    "Organization",
+    100,
+    "account-a",
+  );
+  const repoA = createTestInstallationRepo(accountA, "repo-a");
+  const appA = createTestApp(110, "app-a", "App A", { contents: "write" });
+  const appRegA: AppRegistration = {
+    app: appA,
+    issuer: { enabled: true, roles: ["role-a", "role-b"] },
+    provisioner: { enabled: false },
+  };
+  const appAInstallationA = createTestInstallation(111, appA, accountA, "all");
+  const appAInstallationRegA: InstallationRegistration = {
+    installation: appAInstallationA,
+    repos: [repoA],
+  };
+  const appRegistry = createAppRegistry();
+  appRegistry.registerApp(appRegA);
+  appRegistry.registerInstallation(appAInstallationRegA);
+
+  const appsInput: AppInput[] = [
+    {
+      appId: 110,
+      privateKey: "<private key A>",
+      issuer: { enabled: true, roles: ["role-a", "role-b"] },
+      provisioner: { enabled: false },
+    },
+  ];
+  const findIssuerOctokit = createFindIssuerOctokit(
+    octokitFactory,
+    appRegistry,
+    appsInput,
+  );
+
+  __setApps([appA]);
+  __setInstallations([[appAInstallationA, [repoA]]]);
+  __addInstallationToken(111, "all", { contents: "write" });
+  __addInstallationToken(111, "all", { contents: "write" });
+
+  const createTokens = createTokenFactory(findIssuerOctokit);
+
+  const roleAResult: TokenAuthResult = {
+    type: "ALL_REPOS",
+    request: {
+      consumer: { account: "account-a" },
+      tokenDec: {
+        shared: false,
+        as: "role-a",
+        account: "account-a",
+        repos: "all",
+        permissions: { contents: "write" },
+      },
+      repos: "all",
+    },
+    maxWant: "write",
+    have: { contents: "write" },
+    isSufficient: true,
+    isMissingRole: false,
+    isAllowed: true,
+    rules: [],
+  };
+  const roleBResult: TokenAuthResult = {
+    type: "ALL_REPOS",
+    request: {
+      consumer: { account: "account-a" },
+      tokenDec: {
+        shared: false,
+        as: "role-b",
+        account: "account-a",
+        repos: "all",
+        permissions: { contents: "write" },
+      },
+      repos: "all",
+    },
+    maxWant: "write",
+    have: { contents: "write" },
+    isSufficient: true,
+    isMissingRole: false,
+    isAllowed: true,
+    rules: [],
+  };
+
+  const results = await createTokens([roleAResult, roleBResult]);
+
+  expect(results.get(roleAResult)).not.toBe(results.get(roleBResult));
+});
+
 it("returns empty map when no token auth results are given", async () => {
   const octokitFactory = createOctokitFactory();
   const appRegistry = createAppRegistry();
