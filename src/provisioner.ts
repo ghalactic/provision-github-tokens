@@ -4,8 +4,8 @@ import type { EncryptSecret } from "./encrypt-secret.js";
 import { isRepoRef } from "./github-reference.js";
 import type { Octokit } from "./octokit.js";
 import type { ProvisionRequestTarget } from "./provision-request.js";
-import { createTextProvisioningExplainer } from "./provisioning-explainer/text.js";
 import type { FindProvisionerOctokit } from "./provisioner-octokit.js";
+import { createTextProvisioningExplainer } from "./provisioning-explainer/text.js";
 import type { TokenCreationResult } from "./token-factory.js";
 import type {
   ProvisionAuthResult,

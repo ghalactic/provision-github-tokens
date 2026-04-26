@@ -2,9 +2,7 @@ import { debug } from "@actions/core";
 import { errorMessage, errorStack } from "../error.js";
 import type { TokenCreationResult } from "../token-factory.js";
 import type { TokenAuthResult } from "../type/token-auth-result.js";
-import type {
-  TokenCreationResultExplainer,
-} from "../type/token-creation-result.js";
+import type { TokenCreationResultExplainer } from "../type/token-creation-result.js";
 
 const ALLOWED_ICON = "✅";
 const DENIED_ICON = "❌";

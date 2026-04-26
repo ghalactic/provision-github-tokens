@@ -143,7 +143,7 @@ function successesTable(allowed: ProvisionAuthResult[]): RootContent[] {
     table(
       ["left", "left", "left", "left"],
       [[], [text("Requester")], [text("Secret")], [text("Targets")]],
-        allowed.map((r) => successRow(r)),
+      allowed.map((r) => successRow(r)),
     ),
   ];
 }

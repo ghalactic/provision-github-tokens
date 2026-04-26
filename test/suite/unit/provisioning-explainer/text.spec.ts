@@ -151,7 +151,9 @@ it("includes target context in failure summaries and debug blocks", () => {
 
   const coreOutput = __getOutput();
 
-  expect(coreOutput).toContain("::debug::Dependabot secret in account-a/repo-a:");
+  expect(coreOutput).toContain(
+    "::debug::Dependabot secret in account-a/repo-a:",
+  );
   expect(coreOutput).toContain("::debug::    {");
   expect(coreOutput).toContain('::debug::      "message": "forbidden",');
   expect(coreOutput).toContain('::debug::        "reason": "missing scope"');
