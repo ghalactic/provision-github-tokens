@@ -1,5 +1,8 @@
 import { beforeEach, expect, it, vi, type Mock } from "vitest";
-import { __reset as __resetCore } from "../../../../__mocks__/@actions/core.js";
+import {
+  __getOutput,
+  __reset as __resetCore,
+} from "../../../../__mocks__/@actions/core.js";
 import {
   __getEnvSecrets,
   __getOrgSecrets,
@@ -11,7 +14,6 @@ import {
   __setInstallations,
   __setOrgKeys,
   __setRepoKeys,
-  TestRequestError,
 } from "../../../../__mocks__/@octokit/action.js";
 import {
   createAppRegistry,
@@ -47,7 +49,6 @@ import { createTestKeyPair } from "../../../key.js";
 import {
   createTestProvisionAuthTargetResultAllowed,
   createTestProvisionAuthTargetResultNotAllowed,
-  provisionResultsToArray,
 } from "../../../result.js";
 
 vi.mock("@actions/core");
@@ -263,16 +264,16 @@ it("doesn't provision secrets when provisioning is not allowed", async () => {
     isAllowed: false,
   };
 
-  expect(
-    provisionResultsToArray(
-      await provisionSecrets(tokenResults, [notAllowedResult]),
-    ),
-  ).toEqual([
-    [
-      notAllowedResult,
-      [[notAllowedResult.results[0], { type: "NOT_ALLOWED" }]],
-    ],
-  ]);
+  await provisionSecrets(tokenResults, [notAllowedResult]);
+
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "
+    Secret #1:
+
+    ❌ Repo account-a/repo-a didn't fully provision secret SECRET_A:
+      ❌ Not allowed to GitHub Actions secret in account-a
+    "
+  `);
 });
 
 it("doesn't provision secrets when the token wasn't created", async () => {
@@ -299,13 +300,16 @@ it("doesn't provision secrets when the token wasn't created", async () => {
     isAllowed: true,
   };
 
-  expect(
-    provisionResultsToArray(
-      await provisionSecrets(tokenResults, [allowedResult]),
-    ),
-  ).toEqual([
-    [allowedResult, [[allowedResult.results[0], { type: "NO_TOKEN" }]]],
-  ]);
+  await provisionSecrets(tokenResults, [allowedResult]);
+
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "
+    Secret #1:
+
+    ❌ Repo account-a/repo-a didn't fully provision secret SECRET_A:
+      ❌ Token wasn't created for GitHub Actions secret in account-a
+    "
+  `);
 });
 
 it("doesn't provision secrets when no suitable provisioners are found", async () => {
@@ -332,13 +336,16 @@ it("doesn't provision secrets when no suitable provisioners are found", async ()
     isAllowed: true,
   };
 
-  expect(
-    provisionResultsToArray(
-      await provisionSecrets(tokenResults, [allowedResult]),
-    ),
-  ).toEqual([
-    [allowedResult, [[allowedResult.results[0], { type: "NO_PROVISIONER" }]]],
-  ]);
+  await provisionSecrets(tokenResults, [allowedResult]);
+
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "
+    Secret #1:
+
+    ❌ Repo account-a/repo-a didn't fully provision secret SECRET_A:
+      ❌ No suitable provisioner app for GitHub Actions secret in account-x
+    "
+  `);
 });
 
 it("doesn't provision secrets when encryption fails with a GitHub API error", async () => {
@@ -367,21 +374,16 @@ it("doesn't provision secrets when encryption fails with a GitHub API error", as
     isAllowed: true,
   };
 
-  expect(
-    provisionResultsToArray(
-      await provisionSecrets(tokenResults, [allowedResult]),
-    ),
-  ).toEqual([
-    [
-      allowedResult,
-      [
-        [
-          allowedResult.results[0],
-          { type: "REQUEST_ERROR", error: new TestRequestError(401) },
-        ],
-      ],
-    ],
-  ]);
+  await provisionSecrets(tokenResults, [allowedResult]);
+
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "
+    Secret #1:
+
+    ❌ Repo account-a/repo-a didn't fully provision secret SECRET_A:
+      ❌ Failed to provision to GitHub Actions secret in account-a: 401: 
+    "
+  `);
 });
 
 it("doesn't provision secrets when encryption fails with an unexpected error", async () => {
@@ -410,21 +412,20 @@ it("doesn't provision secrets when encryption fails with an unexpected error", a
     isAllowed: true,
   };
 
-  expect(
-    provisionResultsToArray(
-      await provisionSecrets(tokenResults, [allowedResult]),
-    ),
-  ).toEqual([
-    [
-      allowedResult,
-      [
-        [
-          allowedResult.results[0],
-          { type: "ERROR", error: new Error("<message>") },
-        ],
-      ],
-    ],
-  ]);
+  await provisionSecrets(tokenResults, [allowedResult]);
+
+  const output = __getOutput().replace(/^::debug::\s+at .+\n?/gm, "");
+
+  expect(output).toMatchInlineSnapshot(`
+    "
+    Secret #1:
+
+    ::debug::GitHub Actions secret in account-a:
+    ::debug::    Error: <message>
+    ❌ Repo account-a/repo-a didn't fully provision secret SECRET_A:
+      ❌ Failed to provision to GitHub Actions secret in account-a: <message>
+    "
+  `);
 });
 
 it("can provision multiple secrets of the same type", async () => {
@@ -494,28 +495,26 @@ it("can provision multiple secrets of the same type", async () => {
     isAllowed: true,
   };
 
-  expect(
-    provisionResultsToArray(
-      await provisionSecrets(tokenResults, [allowedResultA, allowedResultB]),
-    ),
-  ).toEqual([
-    [
-      allowedResultA,
-      [
-        [allowedResultA.results[0], { type: "PROVISIONED" }],
-        [allowedResultA.results[1], { type: "PROVISIONED" }],
-        [allowedResultA.results[2], { type: "PROVISIONED" }],
-      ],
-    ],
-    [
-      allowedResultB,
-      [
-        [allowedResultB.results[0], { type: "PROVISIONED" }],
-        [allowedResultB.results[1], { type: "PROVISIONED" }],
-        [allowedResultB.results[2], { type: "PROVISIONED" }],
-      ],
-    ],
-  ]);
+  await provisionSecrets(tokenResults, [allowedResultA, allowedResultB]);
+
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "
+    Secret #1:
+
+    ✅ Repo account-a/repo-a provisioned secret SECRET_A:
+      ✅ Provisioned to GitHub Actions secret in account-a
+      ✅ Provisioned to GitHub Actions secret in account-a/repo-a
+      ✅ Provisioned to GitHub environment env-a secret in account-a/repo-a
+
+    Secret #2:
+
+    ✅ Repo account-a/repo-a provisioned secret SECRET_B:
+      ✅ Provisioned to GitHub Actions secret in account-a
+      ✅ Provisioned to GitHub Actions secret in account-a/repo-a
+      ✅ Provisioned to GitHub environment env-a secret in account-a/repo-a
+    "
+  `);
+  // FIXME: Keep direct state assertions because explainer output cannot capture stored secrets.
   expect(__getOrgSecrets("account-a")).toEqual({
     actions: { SECRET_A: "<token-a>", SECRET_B: "<token-b>" },
     codespaces: {},
@@ -588,24 +587,23 @@ it("can provision a secret to multiple targets", async () => {
     isAllowed: true,
   };
 
-  expect(
-    provisionResultsToArray(
-      await provisionSecrets(tokenResults, [allowedResult]),
-    ),
-  ).toEqual([
-    [
-      allowedResult,
-      [
-        [allowedResult.results[0], { type: "PROVISIONED" }],
-        [allowedResult.results[1], { type: "PROVISIONED" }],
-        [allowedResult.results[2], { type: "PROVISIONED" }],
-        [allowedResult.results[3], { type: "PROVISIONED" }],
-        [allowedResult.results[4], { type: "PROVISIONED" }],
-        [allowedResult.results[5], { type: "PROVISIONED" }],
-        [allowedResult.results[6], { type: "PROVISIONED" }],
-      ],
-    ],
-  ]);
+  await provisionSecrets(tokenResults, [allowedResult]);
+
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "
+    Secret #1:
+
+    ✅ Repo account-a/repo-a provisioned secret SECRET_A:
+      ✅ Provisioned to GitHub Actions secret in account-a
+      ✅ Provisioned to GitHub Codespaces secret in account-a
+      ✅ Provisioned to Dependabot secret in account-a
+      ✅ Provisioned to GitHub Actions secret in account-a/repo-a
+      ✅ Provisioned to GitHub Codespaces secret in account-a/repo-a
+      ✅ Provisioned to Dependabot secret in account-a/repo-a
+      ✅ Provisioned to GitHub environment env-a secret in account-a/repo-a
+    "
+  `);
+  // FIXME: Keep direct state assertions because explainer output cannot capture stored secrets.
   expect(__getOrgSecrets("account-a")).toEqual({
     actions: { SECRET_A: "<token-a>" },
     codespaces: { SECRET_A: "<token-a>" },
@@ -672,22 +670,21 @@ it("doesn't stop provisioning when some targets fail", async () => {
     isAllowed: true,
   };
 
-  expect(
-    provisionResultsToArray(
-      await provisionSecrets(tokenResults, [notAllowedResult, allowedResult]),
-    ),
-  ).toEqual([
-    [
-      notAllowedResult,
-      [[notAllowedResult.results[0], { type: "NOT_ALLOWED" }]],
-    ],
-    [
-      allowedResult,
-      [
-        [allowedResult.results[0], { type: "NO_TOKEN" }],
-        [allowedResult.results[1], { type: "NO_PROVISIONER" }],
-        [allowedResult.results[2], { type: "PROVISIONED" }],
-      ],
-    ],
-  ]);
+  await provisionSecrets(tokenResults, [notAllowedResult, allowedResult]);
+
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "
+    Secret #1:
+
+    ❌ Repo account-a/repo-a didn't fully provision secret SECRET_A:
+      ❌ Not allowed to GitHub Actions secret in account-a
+
+    Secret #2:
+
+    ❌ Repo account-a/repo-a didn't fully provision secret SECRET_A:
+      ❌ Token wasn't created for GitHub Actions secret in account-a
+      ✅ Provisioned to GitHub Actions secret in account-a
+      ❌ No suitable provisioner app for GitHub Actions secret in account-x
+    "
+  `);
 });
