@@ -86,18 +86,14 @@ export function createAppRegistry(): AppRegistry {
         issuers.set(registration.installation.id, registration);
         issuerAccounts.add(account);
 
-        for (const { full_name } of registration.repos) {
-          issuerRepos.add(full_name);
-        }
+        for (const r of registration.repos) issuerRepos.add(r.full_name);
       }
 
       if (appReg.provisioner.enabled) {
         provisioners.set(registration.installation.id, registration);
         provisionerAccounts.add(account);
 
-        for (const { full_name } of registration.repos) {
-          provisionerRepos.add(full_name);
-        }
+        for (const r of registration.repos) provisionerRepos.add(r.full_name);
       }
     },
 

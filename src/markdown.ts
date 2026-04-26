@@ -22,7 +22,7 @@ const DENIED_ICON = "❌";
 const LINK_REF_PREFIX = "gh/";
 
 export function accountOrRepoDefinition(
-  githubServerURL: string,
+  githubServerUrl: string,
   accountOrRepo: AccountOrRepoReference,
 ): Definition {
   const slug = accountOrRepoRefToString(accountOrRepo);
@@ -32,7 +32,7 @@ export function accountOrRepoDefinition(
     type: "definition",
     identifier,
     label: identifier,
-    url: new URL(slug, githubServerURL).toString(),
+    url: new URL(slug, githubServerUrl).toString(),
     title: null,
   };
 }
@@ -56,7 +56,7 @@ export function blockquote(...children: Blockquote["children"]): Blockquote {
   return { type: "blockquote", children };
 }
 
-export function GFMAlert(
+export function gfmAlert(
   type: "NOTE" | "TIP" | "IMPORTANT" | "WARNING" | "CAUTION",
   ...children: Blockquote["children"]
 ): Blockquote {

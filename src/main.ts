@@ -28,7 +28,7 @@ try {
 
   const githubRef = process.env.GITHUB_REF;
   const githubRepository = process.env.GITHUB_REPOSITORY;
-  const githubServerURL = process.env.GITHUB_SERVER_URL;
+  const githubServerUrl = process.env.GITHUB_SERVER_URL;
   /* istanbul ignore next - @preserve */
   if (!githubRef) {
     throw new Error("Invariant violation: GITHUB_REF is not set");
@@ -40,13 +40,13 @@ try {
   }
 
   /* istanbul ignore next - @preserve */
-  if (!githubServerURL) {
+  if (!githubServerUrl) {
     throw new Error("Invariant violation: GITHUB_SERVER_URL is not set");
   }
 
   const githubActionRepository =
     process.env.GITHUB_ACTION_REPOSITORY ?? githubRepository;
-  const actionURL = `${githubServerURL}/${githubActionRepository}`;
+  const actionUrl = `${githubServerUrl}/${githubActionRepository}`;
 
   const appsInput = readAppsInput();
   const octokitFactory = createOctokitFactory();
@@ -124,7 +124,7 @@ try {
   });
 
   await summary
-    .addRaw(renderSummary(githubServerURL, actionURL, authorizeResult))
+    .addRaw(renderSummary(githubServerUrl, actionUrl, authorizeResult))
     .write();
 } catch (error) {
   setFailed(errorStack(error));

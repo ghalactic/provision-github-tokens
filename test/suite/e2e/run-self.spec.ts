@@ -4,9 +4,9 @@ import {
   E2E_TIMEOUT,
   waitForWorkflowRunToSucceed,
 } from "../../e2e.js";
-import { getGHAContext } from "../../gha.js";
+import { getGhaContext } from "../../gha.js";
 
-const ghaContext = getGHAContext();
+const ghaContext = getGhaContext();
 
 it(
   "can run itself via workflow_dispatch",

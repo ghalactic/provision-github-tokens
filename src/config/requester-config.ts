@@ -14,10 +14,10 @@ export function parseRequesterConfig(
   definingRepo: RepoReference,
   yaml: string,
 ): RequesterConfig {
-  return normalizeRequesterConfig(definingRepo, parseYAML(yaml));
+  return normalizeRequesterConfig(definingRepo, parseYaml(yaml));
 }
 
-function parseYAML(yaml: string): PartialRequesterConfig {
+function parseYaml(yaml: string): PartialRequesterConfig {
   try {
     const parsed = load(yaml);
 

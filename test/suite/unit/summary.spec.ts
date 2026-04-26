@@ -9,8 +9,8 @@ import { createTestTokenAuthorizer } from "../../token-authorizer.js";
 import { createTestTokenRequestFactory } from "../../token-request.js";
 
 const fixturesPath = join(import.meta.dirname, "../../fixture/summary");
-const githubServerURL = "https://github.example.com";
-const testDocsURL = "https://github.example.com/test/action";
+const githubServerUrl = "https://github.example.com";
+const testDocsUrl = "https://github.example.com/test/action";
 
 it("renders a summary with all secrets provisioned", async () => {
   const createTokenRequest = createTestTokenRequestFactory();
@@ -75,7 +75,7 @@ it("renders a summary with all secrets provisioned", async () => {
     .sort((a, b) => compareProvisionRequest(a.request, b.request));
 
   await expect(
-    renderSummary(githubServerURL, testDocsURL, {
+    renderSummary(githubServerUrl, testDocsUrl, {
       provisionResults,
       tokenResults: [],
     }),
@@ -145,7 +145,7 @@ it("renders a summary with some secrets denied", async () => {
     .sort((a, b) => compareProvisionRequest(a.request, b.request));
 
   await expect(
-    renderSummary(githubServerURL, testDocsURL, {
+    renderSummary(githubServerUrl, testDocsUrl, {
       provisionResults,
       tokenResults: [],
     }),
@@ -181,7 +181,7 @@ it("renders a summary with all secrets denied", async () => {
     .sort((a, b) => compareProvisionRequest(a.request, b.request));
 
   await expect(
-    renderSummary(githubServerURL, testDocsURL, {
+    renderSummary(githubServerUrl, testDocsUrl, {
       provisionResults,
       tokenResults: [],
     }),
@@ -190,7 +190,7 @@ it("renders a summary with all secrets denied", async () => {
 
 it("renders a summary with no secrets requested", async () => {
   await expect(
-    renderSummary(githubServerURL, testDocsURL, {
+    renderSummary(githubServerUrl, testDocsUrl, {
       provisionResults: [],
       tokenResults: [],
     }),
@@ -269,7 +269,7 @@ it("renders a summary with environment targets", async () => {
     .sort((a, b) => compareProvisionRequest(a.request, b.request));
 
   await expect(
-    renderSummary(githubServerURL, testDocsURL, {
+    renderSummary(githubServerUrl, testDocsUrl, {
       provisionResults,
       tokenResults: [],
     }),
@@ -339,7 +339,7 @@ it("renders a summary with multiple requesters", async () => {
     .sort((a, b) => compareProvisionRequest(a.request, b.request));
 
   await expect(
-    renderSummary(githubServerURL, testDocsURL, {
+    renderSummary(githubServerUrl, testDocsUrl, {
       provisionResults,
       tokenResults: [],
     }),
@@ -409,7 +409,7 @@ it("renders a summary with a missing token declaration", async () => {
     .sort((a, b) => compareProvisionRequest(a.request, b.request));
 
   await expect(
-    renderSummary(githubServerURL, testDocsURL, {
+    renderSummary(githubServerUrl, testDocsUrl, {
       provisionResults,
       tokenResults: [],
     }),
@@ -473,7 +473,7 @@ it("renders a summary with missing targets", async () => {
     .sort((a, b) => compareProvisionRequest(a.request, b.request));
 
   await expect(
-    renderSummary(githubServerURL, testDocsURL, {
+    renderSummary(githubServerUrl, testDocsUrl, {
       provisionResults,
       tokenResults: [],
     }),
@@ -537,7 +537,7 @@ it("renders a summary with multiple distinct targets", async () => {
     .sort((a, b) => compareProvisionRequest(a.request, b.request));
 
   await expect(
-    renderSummary(githubServerURL, testDocsURL, {
+    renderSummary(githubServerUrl, testDocsUrl, {
       provisionResults,
       tokenResults: [],
     }),
@@ -573,7 +573,7 @@ it("truncates rows beyond the limit and shows a notice", async () => {
   }
 
   await expect(
-    renderSummary(githubServerURL, testDocsURL, {
+    renderSummary(githubServerUrl, testDocsUrl, {
       provisionResults,
       tokenResults: [],
     }),

@@ -80,16 +80,6 @@ All Markdown should read well in both raw text and rendered HTML.
   breaking the reading flow. Duplicate definitions are fine as long as they
   resolve to the same URL. See `README.md` for an example.
 
-### TypeScript
-
-- **ESM with explicit `.js` extensions** in all imports (e.g.,
-  `import { foo } from "./bar.js"`)
-- **Strict TypeScript** with `NodeNext` module resolution
-- **No emit** — TypeScript is used only for type-checking; esbuild handles
-  bundling
-- Formatting via **Prettier** with `prettier-plugin-organize-imports`
-  (auto-sorts imports)
-
 ### Testing
 
 - **Vitest** with two projects: `unit` (always runs) and `e2e` (only in GitHub

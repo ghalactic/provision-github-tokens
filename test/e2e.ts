@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 import { sleep } from "./async.js";
 import type { GitHubActionsContext } from "./gha.js";
 import type { Reference, WorkflowRun } from "./octokit.js";

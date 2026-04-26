@@ -27,11 +27,11 @@ export async function discoverRequesters(
       installation.id,
     );
 
-    for (const { owner, name: repo, full_name } of repos) {
-      if (discovered.has(full_name)) continue;
+    for (const r of repos) {
+      if (discovered.has(r.full_name)) continue;
 
-      const requester = createRepoRef(owner.login, repo);
-      let configYAML: string;
+      const requester = createRepoRef(r.owner.login, r.name);
+      let configYaml: string;
 
       try {
         const res = await octokit.rest.repos.getContent({
@@ -49,25 +49,25 @@ export async function discoverRequesters(
           );
         }
 
-        configYAML = res.data;
+        configYaml = res.data;
       } catch (error) {
         handleRequestError(error, {
           404: () => {
-            debug(`Repo ${full_name} is not a requester`);
+            debug(`Repo ${r.full_name} is not a requester`);
           },
         });
 
         continue;
       }
 
-      debug(`Discovered requester ${full_name}`);
+      debug(`Discovered requester ${r.full_name}`);
 
       let config: RequesterConfig;
 
       try {
-        config = parseRequesterConfig(requester, configYAML);
+        config = parseRequesterConfig(requester, configYaml);
       } catch {
-        logError(`Requester ${full_name} has invalid config`);
+        logError(`Requester ${r.full_name} has invalid config`);
 
         continue;
       }
@@ -78,7 +78,7 @@ export async function discoverRequesters(
           ? "1 token declaration"
           : `${tokenDecNames.length} token declarations`;
       debug(
-        `Requester ${full_name} has ${tokenDecs} ` +
+        `Requester ${r.full_name} has ${tokenDecs} ` +
           JSON.stringify(tokenDecNames),
       );
 
@@ -88,11 +88,11 @@ export async function discoverRequesters(
           ? "1 secret declaration"
           : `${secretDecNames.length} secret declarations`;
       debug(
-        `Requester ${full_name} has ${secretDecs} ` +
+        `Requester ${r.full_name} has ${secretDecs} ` +
           JSON.stringify(secretDecNames),
       );
 
-      discovered.set(full_name, { requester: requester, config });
+      discovered.set(r.full_name, { requester: requester, config });
     }
   }
 

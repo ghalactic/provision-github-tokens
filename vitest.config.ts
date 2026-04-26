@@ -9,10 +9,10 @@ export default defineConfig({
       reportsDirectory: "artifacts/coverage/vitest",
       reporter: ["html", "lcov", "text"],
     },
-    projects: ((isGHA) => {
+    projects: ((isGha) => {
       const projects: TestProjectConfiguration[] = [];
 
-      if (isGHA) {
+      if (isGha) {
         projects.push({
           extends: true,
           test: {

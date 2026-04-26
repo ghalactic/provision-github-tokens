@@ -184,16 +184,10 @@ async function discoverInstallation(
   appInput: AppInput,
   installation: Installation,
 ): Promise<void> {
-  const {
-    id: installationId,
-    repository_selection,
-    permissions,
-  } = installation;
-
   const installationOctokit = octokitFactory.installationOctokit(
     appsInput,
     appInput.appId,
-    installationId,
+    installation.id,
   );
 
   const repoPages = installationOctokit.paginate.iterator(
@@ -219,7 +213,7 @@ async function discoverInstallation(
   if (account == null) {
     debug(
       `Skipping discovery of app ${appInput.appId} ` +
-        `installation ${installationId} ` +
+        `installation ${installation.id} ` +
         `because it is not associated with a named account`,
     );
 
@@ -228,28 +222,28 @@ async function discoverInstallation(
 
   debug(
     `Discovered app ${appInput.appId} ` +
-      `installation ${installationId} for account ${account}`,
+      `installation ${installation.id} for account ${account}`,
   );
 
-  if (isEmptyPermissions(permissions)) {
-    debug(`Installation ${installationId} has no permissions`);
+  if (isEmptyPermissions(installation.permissions)) {
+    debug(`Installation ${installation.id} has no permissions`);
   } else {
     debug(
-      `Installation ${installationId} has permissions ` +
-        `${JSON.stringify(permissions)}`,
+      `Installation ${installation.id} has permissions ` +
+        `${JSON.stringify(installation.permissions)}`,
     );
   }
 
-  if (repository_selection === "all") {
+  if (installation.repository_selection === "all") {
     debug(
-      `Installation ${installationId} has access to all repos ` +
+      `Installation ${installation.id} has access to all repos ` +
         `${JSON.stringify(repoNames)}`,
     );
   } else if (repos.length < 1) {
-    debug(`Installation ${installationId} has access to no repos`);
+    debug(`Installation ${installation.id} has access to no repos`);
   } else {
     debug(
-      `Installation ${installationId} has access to selected repos ` +
+      `Installation ${installation.id} has access to selected repos ` +
         `${JSON.stringify(repoNames)}`,
     );
   }

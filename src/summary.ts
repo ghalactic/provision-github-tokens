@@ -9,7 +9,7 @@ import {
 import {
   accountOrRepoDefinition,
   accountOrRepoLinkRef,
-  GFMAlert,
+  gfmAlert,
   heading,
   inlineCode,
   link,
@@ -25,8 +25,8 @@ import type { ProvisionAuthResult } from "./type/provision-auth-result.js";
 const MAX_ROWS = 1000;
 
 export function renderSummary(
-  githubServerURL: string,
-  actionURL: string,
+  githubServerUrl: string,
+  actionUrl: string,
   result: AuthorizeResult,
 ): string {
   const { provisionResults } = result;
@@ -46,11 +46,11 @@ export function renderSummary(
       type: "root",
       children: [
         statsHeading(provisionResults),
-        ...emptySection(provisionResults, result, actionURL),
+        ...emptySection(provisionResults, result, actionUrl),
         ...failuresTable(denied),
         ...successesTable(allowed),
         ...omittedNotice(provisionResults.length, omitted),
-        ...definitions(githubServerURL, displayed),
+        ...definitions(githubServerUrl, displayed),
       ],
     },
     { bullet: "-", extensions: [gfmToMarkdown()] },
@@ -72,16 +72,16 @@ function statsHeading(provisionResults: ProvisionAuthResult[]): RootContent {
 function emptySection(
   provisionResults: ProvisionAuthResult[],
   result: AuthorizeResult,
-  actionURL: string,
+  actionUrl: string,
 ): RootContent[] {
   if (provisionResults.length > 0 || result.tokenResults.length > 0) return [];
 
   return [
-    GFMAlert(
+    gfmAlert(
       "TIP",
       paragraph(
         text("Need help getting started? See the "),
-        link(new URL("#readme", actionURL), text("docs")),
+        link(new URL("#readme", actionUrl), text("docs")),
         text("."),
       ),
     ),
@@ -116,7 +116,7 @@ function omittedNotice(total: number, omitted: number): RootContent[] {
   if (omitted === 0) return [];
 
   return [
-    GFMAlert(
+    gfmAlert(
       "IMPORTANT",
       paragraph(
         text(
@@ -169,7 +169,7 @@ function targetCellChildren(
 }
 
 function definitions(
-  githubServerURL: string,
+  githubServerUrl: string,
   provisionResults: ProvisionAuthResult[],
 ): RootContent[] {
   const seen = new Set<string>();
@@ -201,5 +201,5 @@ function definitions(
       .localeCompare(accountOrRepoRefToString(b).toLowerCase()),
   );
 
-  return refs.map((ref) => accountOrRepoDefinition(githubServerURL, ref));
+  return refs.map((ref) => accountOrRepoDefinition(githubServerUrl, ref));
 }

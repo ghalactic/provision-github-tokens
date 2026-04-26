@@ -2,6 +2,7 @@ import { Octokit } from "@octokit/action";
 import { retry } from "@octokit/plugin-retry";
 import type { Endpoints } from "@octokit/types";
 
+// eslint-disable-next-line @typescript-eslint/naming-convention -- class constructor
 const CustomOctokit = Octokit.plugin(retry);
 
 export type TestOctokit = InstanceType<typeof CustomOctokit>;

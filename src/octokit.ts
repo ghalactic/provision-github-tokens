@@ -4,6 +4,7 @@ import { retry } from "@octokit/plugin-retry";
 import { RequestError } from "@octokit/request-error";
 import type { AppInput } from "./type/input.js";
 
+// eslint-disable-next-line @typescript-eslint/naming-convention -- class constructor
 const CustomOctokit = OctokitAction.plugin(retry);
 
 export type Octokit = InstanceType<typeof CustomOctokit>;

@@ -13,7 +13,7 @@ export type GitHubActionsContext = {
   sha: string;
 };
 
-export function getGHAContext(): GitHubActionsContext {
+export function getGhaContext(): GitHubActionsContext {
   const {
     GITHUB_EVENT_NAME: eventName = "",
     GITHUB_HEAD_REF: headRef = "",

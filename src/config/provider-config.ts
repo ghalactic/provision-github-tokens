@@ -38,10 +38,10 @@ export function parseProviderConfig(
   definingRepo: RepoReference,
   yaml: string,
 ): ProviderConfig {
-  return normalizeProviderConfig(definingRepo, parseYAML(yaml));
+  return normalizeProviderConfig(definingRepo, parseYaml(yaml));
 }
 
-function parseYAML(yaml: string): ProviderConfig {
+function parseYaml(yaml: string): ProviderConfig {
   try {
     const parsed = load(yaml);
 
