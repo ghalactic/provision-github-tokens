@@ -266,7 +266,7 @@ it("doesn't provision secrets when provisioning is not allowed", async () => {
 
   await provisionSecrets(tokenResults, [notAllowedResult]);
 
-  expect(getProvisionerInfoOutput()).toMatchInlineSnapshot(`
+  expect(__getOutput()).toMatchInlineSnapshot(`
     "
     Secret #1:
 
@@ -302,7 +302,7 @@ it("doesn't provision secrets when the token wasn't created", async () => {
 
   await provisionSecrets(tokenResults, [allowedResult]);
 
-  expect(getProvisionerInfoOutput()).toMatchInlineSnapshot(`
+  expect(__getOutput()).toMatchInlineSnapshot(`
     "
     Secret #1:
 
@@ -338,7 +338,7 @@ it("doesn't provision secrets when no suitable provisioners are found", async ()
 
   await provisionSecrets(tokenResults, [allowedResult]);
 
-  expect(getProvisionerInfoOutput()).toMatchInlineSnapshot(`
+  expect(__getOutput()).toMatchInlineSnapshot(`
     "
     Secret #1:
 
@@ -376,18 +376,20 @@ it("doesn't provision secrets when encryption fails with a GitHub API error", as
 
   await provisionSecrets(tokenResults, [allowedResult]);
 
-  expect(getProvisionerInfoOutput()).toMatchInlineSnapshot(`
+  expect(__getOutput()).toMatchInlineSnapshot(`
     "
     Secret #1:
 
     ❌ Repo account-a/repo-a didn't fully provision secret SECRET_A:
-      ❌ Failed to provision to GitHub Actions secret in account-a: 401:
+      ❌ Failed to provision to GitHub Actions secret in account-a: 401: 
     "
   `);
 });
 
 it("doesn't provision secrets when encryption fails with an unexpected error", async () => {
-  __setErrors("actions.getOrgPublicKey", [new Error("<message>")]);
+  const error = new Error("<message>");
+  error.stack = "Error: <message>\n    at encrypt.ts:1:1";
+  __setErrors("actions.getOrgPublicKey", [error]);
 
   const tokenResults = new Map<TokenAuthResult, TokenCreationResult>([
     [tokenAuthResultA, tokenCreationResultCreatedA],
@@ -414,48 +416,17 @@ it("doesn't provision secrets when encryption fails with an unexpected error", a
 
   await provisionSecrets(tokenResults, [allowedResult]);
 
-  expect(getProvisionerInfoOutput()).toMatchInlineSnapshot(`
+  expect(__getOutput()).toMatchInlineSnapshot(`
     "
     Secret #1:
 
+    ::debug::GitHub Actions secret in account-a:
+    ::debug::    Error: <message>
+    ::debug::        at encrypt.ts:1:1
     ❌ Repo account-a/repo-a didn't fully provision secret SECRET_A:
       ❌ Failed to provision to GitHub Actions secret in account-a: <message>
     "
   `);
-});
-
-it("logs debug output when encryption fails with an unexpected error", async () => {
-  __setErrors("actions.getOrgPublicKey", [new Error("<message>")]);
-
-  const tokenResults = new Map<TokenAuthResult, TokenCreationResult>([
-    [tokenAuthResultA, tokenCreationResultCreatedA],
-  ]);
-
-  const allowedResult: ProvisionAuthResult = {
-    request: {
-      requester: { account: "account-a", repo: "repo-a" },
-      tokenDec: tokenDecA,
-      tokenDecIsRegistered: true,
-      secretDec: secretDecA,
-      name: "SECRET_A",
-      to: [accountAActionsTarget],
-    },
-    results: [
-      createTestProvisionAuthTargetResultAllowed({
-        target: accountAActionsTarget,
-        tokenAuthResult: tokenAuthResultA,
-      }),
-    ],
-    isMissingTargets: false,
-    isAllowed: true,
-  };
-
-  await provisionSecrets(tokenResults, [allowedResult]);
-
-  expect(__getOutput()).toContain(
-    "::debug::GitHub Actions secret in account-a:",
-  );
-  expect(__getOutput()).toContain("::debug::    Error: <message>");
 });
 
 it("can provision multiple secrets of the same type", async () => {
@@ -527,7 +498,7 @@ it("can provision multiple secrets of the same type", async () => {
 
   await provisionSecrets(tokenResults, [allowedResultA, allowedResultB]);
 
-  expect(getProvisionerInfoOutput()).toMatchInlineSnapshot(`
+  expect(__getOutput()).toMatchInlineSnapshot(`
     "
     Secret #1:
 
@@ -619,7 +590,7 @@ it("can provision a secret to multiple targets", async () => {
 
   await provisionSecrets(tokenResults, [allowedResult]);
 
-  expect(getProvisionerInfoOutput()).toMatchInlineSnapshot(`
+  expect(__getOutput()).toMatchInlineSnapshot(`
     "
     Secret #1:
 
@@ -702,7 +673,7 @@ it("doesn't stop provisioning when some targets fail", async () => {
 
   await provisionSecrets(tokenResults, [notAllowedResult, allowedResult]);
 
-  expect(getProvisionerInfoOutput()).toMatchInlineSnapshot(`
+  expect(__getOutput()).toMatchInlineSnapshot(`
     "
     Secret #1:
 
@@ -723,16 +694,9 @@ it("warns when no auth results are provided", async () => {
   const results = await provisionSecrets(new Map(), []);
 
   expect(results.size).toBe(0);
-  expect(__getOutput()).toContain("::warning::❌ No secrets were provisioned");
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "
+    ::warning::❌ No secrets were provisioned
+    "
+  `);
 });
-
-function getProvisionerInfoOutput(): string {
-  return __getOutput()
-    .split("\n")
-    .map((line) => line.trimEnd())
-    .filter(
-      (line) =>
-        !line.startsWith("::debug::") && !line.startsWith("::warning::"),
-    )
-    .join("\n");
-}

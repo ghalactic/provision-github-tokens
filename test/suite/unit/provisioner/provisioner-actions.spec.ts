@@ -213,10 +213,18 @@ it("handles GitHub API errors when provisioning org-level Actions secrets", asyn
   ]);
 
   const coreOutput = __getOutput();
-  expect(coreOutput).toContain("::debug::GitHub Actions secret in account-a:");
-  expect(coreOutput).toContain(
-    '::debug::      "message": "Resource not accessible"',
-  );
+  expect(coreOutput).toMatchInlineSnapshot(`
+    "
+    Secret #1:
+
+    ::debug::GitHub Actions secret in account-a:
+    ::debug::    {
+    ::debug::      "message": "Resource not accessible"
+    ::debug::    }
+    ❌ Repo account-a/repo-a didn't fully provision secret SECRET_A:
+      ❌ Failed to provision to GitHub Actions secret in account-a: 403: 
+    "
+  `);
 });
 
 it("handles unexpected errors when provisioning org-level Actions secrets", async () => {
@@ -256,9 +264,17 @@ it("handles unexpected errors when provisioning org-level Actions secrets", asyn
   ]);
 
   const coreOutput = __getOutput();
-  expect(coreOutput).toContain("::debug::GitHub Actions secret in account-a:");
-  expect(coreOutput).toContain("::debug::    Error: <message>");
-  expect(coreOutput).toContain("::debug::        at provisioner.ts:1:1");
+  expect(coreOutput).toMatchInlineSnapshot(`
+    "
+    Secret #1:
+
+    ::debug::GitHub Actions secret in account-a:
+    ::debug::    Error: <message>
+    ::debug::        at provisioner.ts:1:1
+    ❌ Repo account-a/repo-a didn't fully provision secret SECRET_A:
+      ❌ Failed to provision to GitHub Actions secret in account-a: <message>
+    "
+  `);
 });
 
 it("can provision org-level Actions secrets", async () => {

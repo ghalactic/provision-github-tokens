@@ -77,10 +77,12 @@ it("creates tokens based on token auth results", async () => {
   __setApps([appA]);
   __setInstallations([[appAInstallationA, [repoA]]]);
   __addInstallationToken(111, "all", { metadata: "read" });
+  const unexpectedError = new Error("<message>");
+  unexpectedError.stack = "Error: <message>\n    at token-factory.ts:1:1";
   __setErrors("apps.createInstallationAccessToken", [
     undefined,
     new TestRequestError(401, { message: "Bad credentials" }),
-    new Error("<message>"),
+    unexpectedError,
   ]);
 
   const createTokens = createTokenFactory(findIssuerOctokit);
@@ -203,35 +205,34 @@ it("creates tokens based on token auth results", async () => {
   expect(results.get(errorResult)).toMatchObject({
     type: "ERROR",
   });
-  expect(getTokenFactoryInfoOutputLines()).toMatchInlineSnapshot(`
-    [
-      "",
-      "Token #1:",
-      "",
-      "❌ Token not allowed",
-      "",
-      "Token #2:",
-      "",
-      "❌ No suitable issuer app",
-      "",
-      "Token #3:",
-      "",
-      "✅ Token created for account-a",
-      "",
-      "Token #4:",
-      "",
-      "❌ Failed to create token: 401:",
-      "",
-      "Token #5:",
-      "",
-      "❌ Failed to create token: <message>",
-    ]
-  `);
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "
+    Token #1:
 
-  const coreOutput = __getOutput();
-  expect(coreOutput).toContain("::debug::  {");
-  expect(coreOutput).toContain('::debug::    "message": "Bad credentials"');
-  expect(coreOutput).toContain("::debug::  }");
+    ❌ Token not allowed
+
+    Token #2:
+
+    ❌ No suitable issuer app
+
+    Token #3:
+
+    ✅ Token created for account-a
+
+    Token #4:
+
+    ::debug::  {
+    ::debug::    "message": "Bad credentials"
+    ::debug::  }
+    ❌ Failed to create token: 401: 
+
+    Token #5:
+
+    ::debug::  Error: <message>
+    ::debug::      at token-factory.ts:1:1
+    ❌ Failed to create token: <message>
+    "
+  `);
 });
 
 it("deduplicates token creation for identical token shapes", async () => {
@@ -320,17 +321,16 @@ it("deduplicates token creation for identical token shapes", async () => {
   };
 
   await createTokens([consumerAResult, consumerBResult]);
-  expect(getTokenFactoryInfoOutputLines()).toMatchInlineSnapshot(`
-    [
-      "",
-      "Token #1:",
-      "",
-      "✅ Token created for account-a",
-      "",
-      "Token #2:",
-      "",
-      "✅ Same token as #1",
-    ]
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "
+    Token #1:
+
+    ✅ Token created for account-a
+
+    Token #2:
+
+    ✅ Same token as #1
+    "
   `);
 });
 
@@ -420,17 +420,16 @@ it("isolates tokens by role even when other token shape fields match", async () 
   };
 
   const results = await createTokens([roleAResult, roleBResult]);
-  expect(getTokenFactoryInfoOutputLines()).toMatchInlineSnapshot(`
-    [
-      "",
-      "Token #1:",
-      "",
-      "✅ Token created for account-a",
-      "",
-      "Token #2:",
-      "",
-      "✅ Token created for account-a",
-    ]
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "
+    Token #1:
+
+    ✅ Token created for account-a
+
+    Token #2:
+
+    ✅ Token created for account-a
+    "
   `);
 
   // FIXME: The explainer does not expose enough detail to distinguish these
@@ -528,17 +527,16 @@ it("does not deduplicate tokens with different permissions", async () => {
   };
 
   const results = await createTokens([metadataResult, contentsResult]);
-  expect(getTokenFactoryInfoOutputLines()).toMatchInlineSnapshot(`
-    [
-      "",
-      "Token #1:",
-      "",
-      "✅ Token created for account-a",
-      "",
-      "Token #2:",
-      "",
-      "✅ Token created for account-a",
-    ]
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "
+    Token #1:
+
+    ✅ Token created for account-a
+
+    Token #2:
+
+    ✅ Token created for account-a
+    "
   `);
 
   // FIXME: The explainer does not expose enough detail to distinguish these
@@ -632,17 +630,16 @@ it("does not deduplicate tokens with different repos", async () => {
   };
 
   const results = await createTokens([allReposResult, selectedReposResult]);
-  expect(getTokenFactoryInfoOutputLines()).toMatchInlineSnapshot(`
-    [
-      "",
-      "Token #1:",
-      "",
-      "✅ Token created for account-a",
-      "",
-      "Token #2:",
-      "",
-      "❌ Failed to create token: 401:",
-    ]
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "
+    Token #1:
+
+    ✅ Token created for account-a
+
+    Token #2:
+
+    ❌ Failed to create token: 401: 
+    "
   `);
 
   // FIXME: The explainer does not expose enough detail to distinguish these
@@ -738,17 +735,16 @@ it("does not return cached CREATED result for NOT_ALLOWED auth results", async (
   };
 
   await createTokens([allowedResult, notAllowedResult]);
-  expect(getTokenFactoryInfoOutputLines()).toMatchInlineSnapshot(`
-    [
-      "",
-      "Token #1:",
-      "",
-      "✅ Token created for account-a",
-      "",
-      "Token #2:",
-      "",
-      "❌ Token not allowed",
-    ]
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "
+    Token #1:
+
+    ✅ Token created for account-a
+
+    Token #2:
+
+    ❌ Token not allowed
+    "
   `);
 });
 
@@ -807,17 +803,16 @@ it("caches NO_ISSUER results for identical token shapes", async () => {
   };
 
   const results = await createTokens([consumerAResult, consumerBResult]);
-  expect(getTokenFactoryInfoOutputLines()).toMatchInlineSnapshot(`
-    [
-      "",
-      "Token #1:",
-      "",
-      "❌ No suitable issuer app",
-      "",
-      "Token #2:",
-      "",
-      "❌ No suitable issuer app",
-    ]
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "
+    Token #1:
+
+    ❌ No suitable issuer app
+
+    Token #2:
+
+    ❌ No suitable issuer app
+    "
   `);
   expect(results.get(consumerAResult)).toEqual({ type: "NO_ISSUER" });
   expect(results.get(consumerAResult)).toBe(results.get(consumerBResult));
@@ -908,17 +903,16 @@ it("caches error results for identical token shapes", async () => {
   };
 
   const results = await createTokens([consumerAResult, consumerBResult]);
-  expect(getTokenFactoryInfoOutputLines()).toMatchInlineSnapshot(`
-    [
-      "",
-      "Token #1:",
-      "",
-      "❌ Failed to create token: 401:",
-      "",
-      "Token #2:",
-      "",
-      "❌ Failed to create token: 401:",
-    ]
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "
+    Token #1:
+
+    ❌ Failed to create token: 401: 
+
+    Token #2:
+
+    ❌ Failed to create token: 401: 
+    "
   `);
   const cachedResult = results.get(consumerAResult);
 
@@ -1015,23 +1009,17 @@ it("logs dedup-aware message when tokens are deduplicated", async () => {
   };
 
   await createTokens([consumerAResult, consumerBResult]);
-  expect(getTokenFactoryInfoOutputLines()).toMatchInlineSnapshot(`
-    [
-      "",
-      "Token #1:",
-      "",
-      "✅ Token created for account-a",
-      "",
-      "Token #2:",
-      "",
-      "✅ Same token as #1",
-    ]
-  `);
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "
+    Token #1:
 
-  expect(__getOutput()).toContain("Token #1:");
-  expect(__getOutput()).toContain("✅ Token created for account-a");
-  expect(__getOutput()).toContain("Token #2:");
-  expect(__getOutput()).toContain("✅ Same token as #1");
+    ✅ Token created for account-a
+
+    Token #2:
+
+    ✅ Same token as #1
+    "
+  `);
 });
 
 it("logs simple message when no tokens are deduplicated", async () => {
@@ -1100,18 +1088,13 @@ it("logs simple message when no tokens are deduplicated", async () => {
   };
 
   await createTokens([consumerAResult]);
-  expect(getTokenFactoryInfoOutputLines()).toMatchInlineSnapshot(`
-    [
-      "",
-      "Token #1:",
-      "",
-      "✅ Token created for account-a",
-    ]
-  `);
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "
+    Token #1:
 
-  expect(__getOutput()).toContain("Token #1:");
-  expect(__getOutput()).toContain("✅ Token created for account-a");
-  expect(__getOutput()).not.toContain("Same token as #1");
+    ✅ Token created for account-a
+    "
+  `);
 });
 
 it("returns empty map when no token auth results are given", async () => {
@@ -1127,19 +1110,10 @@ it("returns empty map when no token auth results are given", async () => {
 
   const results = await createTokens([]);
 
-  // FIXME: An empty result set has no explainer output, so keep this low-level
-  // assertion until the factory exposes a more direct empty-state summary.
   expect(Array.from(results.entries())).toEqual([]);
-  expect(__getOutput()).toContain("::warning::❌ No tokens were created");
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "
+    ::warning::❌ No tokens were created
+    "
+  `);
 });
-
-function getTokenFactoryInfoOutputLines(): string[] {
-  return __getOutput()
-    .trimEnd()
-    .split("\n")
-    .map((line) => line.trimEnd())
-    .filter(
-      (line) =>
-        !line.startsWith("::debug::") && !line.startsWith("::warning::"),
-    );
-}
