@@ -41,15 +41,6 @@ export type TokenCreationErrorResult = {
   error: unknown;
 };
 
-function tokenCreationCacheKey(request: TokenRequest): string {
-  return stringify({
-    account: request.tokenDec.account,
-    as: request.tokenDec.as,
-    permissions: request.tokenDec.permissions,
-    repos: request.repos,
-  });
-}
-
 export function createTokenFactory(
   findIssuerOctokit: FindIssuerOctokit,
 ): TokenFactory {
@@ -155,4 +146,13 @@ export function createTokenFactory(
 
     return creationResults;
   };
+}
+
+function tokenCreationCacheKey(request: TokenRequest): string {
+  return stringify({
+    account: request.tokenDec.account,
+    as: request.tokenDec.as,
+    permissions: request.tokenDec.permissions,
+    repos: request.repos,
+  });
 }
