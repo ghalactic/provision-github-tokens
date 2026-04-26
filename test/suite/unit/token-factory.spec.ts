@@ -1,5 +1,8 @@
 import { beforeEach, expect, it, vi } from "vitest";
-import { __reset as __resetCore } from "../../../__mocks__/@actions/core.js";
+import {
+  __getOutput,
+  __reset as __resetCore,
+} from "../../../__mocks__/@actions/core.js";
 import {
   __addInstallationToken,
   __reset as __resetOctokit,
@@ -640,6 +643,168 @@ it("caches error results for identical token shapes", async () => {
     type: "REQUEST_ERROR",
     error: new TestRequestError(401),
   });
+});
+
+it("logs dedup-aware message when tokens are deduplicated", async () => {
+  const octokitFactory = createOctokitFactory();
+
+  const accountA = createTestInstallationAccount(
+    "Organization",
+    100,
+    "account-a",
+  );
+  const repoA = createTestInstallationRepo(accountA, "repo-a");
+  const appA = createTestApp(110, "app-a", "App A", { metadata: "read" });
+  const appRegA: AppRegistration = {
+    app: appA,
+    issuer: { enabled: true, roles: [] },
+    provisioner: { enabled: false },
+  };
+  const appAInstallationA = createTestInstallation(111, appA, accountA, "all");
+  const appAInstallationRegA: InstallationRegistration = {
+    installation: appAInstallationA,
+    repos: [repoA],
+  };
+  const appRegistry = createAppRegistry();
+  appRegistry.registerApp(appRegA);
+  appRegistry.registerInstallation(appAInstallationRegA);
+
+  const appsInput: AppInput[] = [
+    {
+      appId: 110,
+      privateKey: "<private key A>",
+      issuer: { enabled: true, roles: [] },
+      provisioner: { enabled: false },
+    },
+  ];
+  const findIssuerOctokit = createFindIssuerOctokit(
+    octokitFactory,
+    appRegistry,
+    appsInput,
+  );
+
+  __setApps([appA]);
+  __setInstallations([[appAInstallationA, [repoA]]]);
+  __addInstallationToken(111, "all", { metadata: "read" });
+
+  const createTokens = createTokenFactory(findIssuerOctokit);
+
+  const consumerAResult: TokenAuthResult = {
+    type: "ALL_REPOS",
+    request: {
+      consumer: { account: "consumer-a" },
+      tokenDec: {
+        shared: false,
+        as: undefined,
+        account: "account-a",
+        repos: "all",
+        permissions: { metadata: "read" },
+      },
+      repos: "all",
+    },
+    maxWant: "read",
+    have: { metadata: "read" },
+    isSufficient: true,
+    isMissingRole: false,
+    isAllowed: true,
+    rules: [],
+  };
+  const consumerBResult: TokenAuthResult = {
+    type: "ALL_REPOS",
+    request: {
+      consumer: { account: "consumer-b" },
+      tokenDec: {
+        shared: false,
+        as: undefined,
+        account: "account-a",
+        repos: "all",
+        permissions: { metadata: "read" },
+      },
+      repos: "all",
+    },
+    maxWant: "read",
+    have: { metadata: "read" },
+    isSufficient: true,
+    isMissingRole: false,
+    isAllowed: true,
+    rules: [],
+  };
+
+  await createTokens([consumerAResult, consumerBResult]);
+
+  expect(__getOutput()).toContain(
+    "Created 1 unique token for 2 token requests",
+  );
+});
+
+it("logs simple message when no tokens are deduplicated", async () => {
+  const octokitFactory = createOctokitFactory();
+
+  const accountA = createTestInstallationAccount(
+    "Organization",
+    100,
+    "account-a",
+  );
+  const repoA = createTestInstallationRepo(accountA, "repo-a");
+  const appA = createTestApp(110, "app-a", "App A", { metadata: "read" });
+  const appRegA: AppRegistration = {
+    app: appA,
+    issuer: { enabled: true, roles: [] },
+    provisioner: { enabled: false },
+  };
+  const appAInstallationA = createTestInstallation(111, appA, accountA, "all");
+  const appAInstallationRegA: InstallationRegistration = {
+    installation: appAInstallationA,
+    repos: [repoA],
+  };
+  const appRegistry = createAppRegistry();
+  appRegistry.registerApp(appRegA);
+  appRegistry.registerInstallation(appAInstallationRegA);
+
+  const appsInput: AppInput[] = [
+    {
+      appId: 110,
+      privateKey: "<private key A>",
+      issuer: { enabled: true, roles: [] },
+      provisioner: { enabled: false },
+    },
+  ];
+  const findIssuerOctokit = createFindIssuerOctokit(
+    octokitFactory,
+    appRegistry,
+    appsInput,
+  );
+
+  __setApps([appA]);
+  __setInstallations([[appAInstallationA, [repoA]]]);
+  __addInstallationToken(111, "all", { metadata: "read" });
+
+  const createTokens = createTokenFactory(findIssuerOctokit);
+
+  const consumerAResult: TokenAuthResult = {
+    type: "ALL_REPOS",
+    request: {
+      consumer: { account: "consumer-a" },
+      tokenDec: {
+        shared: false,
+        as: undefined,
+        account: "account-a",
+        repos: "all",
+        permissions: { metadata: "read" },
+      },
+      repos: "all",
+    },
+    maxWant: "read",
+    have: { metadata: "read" },
+    isSufficient: true,
+    isMissingRole: false,
+    isAllowed: true,
+    rules: [],
+  };
+
+  await createTokens([consumerAResult]);
+
+  expect(__getOutput()).toContain("Created 1 token");
 });
 
 it("returns empty map when no token auth results are given", async () => {

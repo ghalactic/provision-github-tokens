@@ -3,9 +3,9 @@ import { RequestError } from "@octokit/request-error";
 import stringify from "fast-json-stable-stringify";
 import type { FindIssuerOctokit } from "./issuer-octokit.js";
 import { pluralize } from "./pluralize.js";
+import type { TokenRequest } from "./token-request.js";
 import type { InstallationToken } from "./type/github-api.js";
 import type { TokenAuthResult } from "./type/token-auth-result.js";
-import type { TokenRequest } from "./token-request.js";
 
 export type TokenFactory = (
   authResults: TokenAuthResult[],
@@ -119,8 +119,31 @@ export function createTokenFactory(
     }
 
     if (createdCount > 0) {
-      info(`Created ${pluralize(createdCount, "token", "tokens")}`);
+      let uniqueCreatedCount = 0;
+
+      for (const key in cache) {
+        if (cache[key].type === "CREATED") {
+          ++uniqueCreatedCount;
+        }
+      }
+
+      if (uniqueCreatedCount < createdCount) {
+        const uniqueTokens = pluralize(
+          uniqueCreatedCount,
+          "unique token",
+          "unique tokens",
+        );
+        const tokenRequests = pluralize(
+          createdCount,
+          "token request",
+          "token requests",
+        );
+        info(`Created ${uniqueTokens} for ${tokenRequests}`);
+      } else {
+        info(`Created ${pluralize(createdCount, "token", "tokens")}`);
+      }
     }
+
     if (notCreatedCount > 0) {
       const pluralized = pluralize(
         notCreatedCount,
