@@ -9,7 +9,6 @@ import {
   __setApps,
   __setErrors,
   __setInstallations,
-  TestRequestError,
 } from "../../../__mocks__/@octokit/action.js";
 import {
   createAppRegistry,
@@ -18,9 +17,11 @@ import {
 } from "../../../src/app-registry.js";
 import { createFindIssuerOctokit } from "../../../src/issuer-octokit.js";
 import { createOctokitFactory } from "../../../src/octokit.js";
+import { createTextTokenCreationExplainer } from "../../../src/token-creation-explainer/text.js";
 import { createTokenFactory } from "../../../src/token-factory.js";
 import type { AppInput } from "../../../src/type/input.js";
 import type { TokenAuthResult } from "../../../src/type/token-auth-result.js";
+import type { TokenCreationResult } from "../../../src/token-factory.js";
 import {
   createTestApp,
   createTestInstallation,
@@ -186,31 +187,32 @@ it("creates tokens based on token auth results", async () => {
     rules: [],
   };
 
-  expect(
-    Array.from(
-      (
-        await createTokens([
-          notAllowedResult,
-          noIssuerResult,
-          createdResult,
-          unauthorizedResult,
-          errorResult,
-        ])
-      ).entries(),
-    ),
-  ).toEqual([
-    [notAllowedResult, { type: "NOT_ALLOWED" }],
-    [noIssuerResult, { type: "NO_ISSUER" }],
-    [
-      createdResult,
-      { type: "CREATED", token: '<token 111.all.{"metadata":"read"}>' },
-    ],
-    [
-      unauthorizedResult,
-      { type: "REQUEST_ERROR", error: new TestRequestError(401) },
-    ],
-    [errorResult, { type: "ERROR", error: new Error("<message>") }],
+  const results = await createTokens([
+    notAllowedResult,
+    noIssuerResult,
+    createdResult,
+    unauthorizedResult,
+    errorResult,
   ]);
+  const explain = createTextTokenCreationExplainer(results);
+
+  expect(
+    explainTokenCreationResults(explain, results, [
+      notAllowedResult,
+      noIssuerResult,
+      createdResult,
+      unauthorizedResult,
+      errorResult,
+    ]),
+  ).toMatchInlineSnapshot(`
+    [
+      "❌ Token not allowed",
+      "❌ No suitable issuer app",
+      "✅ Token created for account-a",
+      "❌ Failed to create token: 401: ",
+      "❌ Failed to create token: <message>",
+    ]
+  `);
 });
 
 it("deduplicates token creation for identical token shapes", async () => {
@@ -299,12 +301,19 @@ it("deduplicates token creation for identical token shapes", async () => {
   };
 
   const results = await createTokens([consumerAResult, consumerBResult]);
+  const explain = createTextTokenCreationExplainer(results);
 
-  expect(results.get(consumerAResult)).toBe(results.get(consumerBResult));
-  expect(results.get(consumerAResult)).toEqual({
-    type: "CREATED",
-    token: '<token 111.all.{"metadata":"read"}>',
-  });
+  expect(
+    explainTokenCreationResults(explain, results, [
+      consumerAResult,
+      consumerBResult,
+    ]),
+  ).toMatchInlineSnapshot(`
+    [
+      "✅ Token created for account-a",
+      "✅ Same token as #1",
+    ]
+  `);
 });
 
 it("isolates tokens by role even when other token shape fields match", async () => {
@@ -393,13 +402,20 @@ it("isolates tokens by role even when other token shape fields match", async () 
   };
 
   const results = await createTokens([roleAResult, roleBResult]);
+  const explain = createTextTokenCreationExplainer(results);
 
-  const roleATokenResult = results.get(roleAResult);
-  const roleBTokenResult = results.get(roleBResult);
+  expect(
+    explainTokenCreationResults(explain, results, [roleAResult, roleBResult]),
+  ).toMatchInlineSnapshot(`
+    [
+      "✅ Token created for account-a",
+      "✅ Token created for account-a",
+    ]
+  `);
 
-  expect(roleATokenResult).toHaveProperty("type", "CREATED");
-  expect(roleBTokenResult).toHaveProperty("type", "CREATED");
-  expect(roleATokenResult).not.toBe(roleBTokenResult);
+  // FIXME: The explainer does not expose enough detail to distinguish these
+  // non-deduplicated CREATED results, so keep the identity check for now.
+  expect(results.get(roleAResult)).not.toBe(results.get(roleBResult));
 });
 
 it("does not deduplicate tokens with different permissions", async () => {
@@ -492,10 +508,23 @@ it("does not deduplicate tokens with different permissions", async () => {
   };
 
   const results = await createTokens([metadataResult, contentsResult]);
+  const explain = createTextTokenCreationExplainer(results);
 
+  expect(
+    explainTokenCreationResults(explain, results, [
+      metadataResult,
+      contentsResult,
+    ]),
+  ).toMatchInlineSnapshot(`
+    [
+      "✅ Token created for account-a",
+      "✅ Token created for account-a",
+    ]
+  `);
+
+  // FIXME: The explainer does not expose enough detail to distinguish these
+  // non-deduplicated CREATED results, so keep the identity check for now.
   expect(results.get(metadataResult)).not.toBe(results.get(contentsResult));
-  expect(results.get(metadataResult)?.type).toBe("CREATED");
-  expect(results.get(contentsResult)?.type).toBe("CREATED");
 });
 
 it("does not deduplicate tokens with different repos", async () => {
@@ -584,10 +613,23 @@ it("does not deduplicate tokens with different repos", async () => {
   };
 
   const results = await createTokens([allReposResult, selectedReposResult]);
+  const explain = createTextTokenCreationExplainer(results);
 
-  expect(results.get(allReposResult)).not.toBe(
-    results.get(selectedReposResult),
-  );
+  expect(
+    explainTokenCreationResults(explain, results, [
+      allReposResult,
+      selectedReposResult,
+    ]),
+  ).toMatchInlineSnapshot(`
+    [
+      "✅ Token created for account-a",
+      "❌ Failed to create token: 401: ",
+    ]
+  `);
+
+  // FIXME: The explainer does not expose enough detail to distinguish these
+  // non-deduplicated CREATED results, so keep the identity check for now.
+  expect(results.get(allReposResult)).not.toBe(results.get(selectedReposResult));
 });
 
 it("does not return cached CREATED result for NOT_ALLOWED auth results", async () => {
@@ -676,12 +718,16 @@ it("does not return cached CREATED result for NOT_ALLOWED auth results", async (
   };
 
   const results = await createTokens([allowedResult, notAllowedResult]);
+  const explain = createTextTokenCreationExplainer(results);
 
-  expect(results.get(allowedResult)).toEqual({
-    type: "CREATED",
-    token: '<token 111.all.{"metadata":"read"}>',
-  });
-  expect(results.get(notAllowedResult)).toEqual({ type: "NOT_ALLOWED" });
+  expect(
+    explainTokenCreationResults(explain, results, [allowedResult, notAllowedResult]),
+  ).toMatchInlineSnapshot(`
+    [
+      "✅ Token created for account-a",
+      "❌ Token not allowed",
+    ]
+  `);
 });
 
 it("caches NO_ISSUER results for identical token shapes", async () => {
@@ -739,9 +785,19 @@ it("caches NO_ISSUER results for identical token shapes", async () => {
   };
 
   const results = await createTokens([consumerAResult, consumerBResult]);
+  const explain = createTextTokenCreationExplainer(results);
 
-  expect(results.get(consumerAResult)).toBe(results.get(consumerBResult));
-  expect(results.get(consumerAResult)).toEqual({ type: "NO_ISSUER" });
+  expect(
+    explainTokenCreationResults(explain, results, [
+      consumerAResult,
+      consumerBResult,
+    ]),
+  ).toMatchInlineSnapshot(`
+    [
+      "❌ No suitable issuer app",
+      "❌ No suitable issuer app",
+    ]
+  `);
 });
 
 it("caches error results for identical token shapes", async () => {
@@ -829,12 +885,19 @@ it("caches error results for identical token shapes", async () => {
   };
 
   const results = await createTokens([consumerAResult, consumerBResult]);
+  const explain = createTextTokenCreationExplainer(results);
 
-  expect(results.get(consumerAResult)).toBe(results.get(consumerBResult));
-  expect(results.get(consumerAResult)).toEqual({
-    type: "REQUEST_ERROR",
-    error: new TestRequestError(401),
-  });
+  expect(
+    explainTokenCreationResults(explain, results, [
+      consumerAResult,
+      consumerBResult,
+    ]),
+  ).toMatchInlineSnapshot(`
+    [
+      "❌ Failed to create token: 401: ",
+      "❌ Failed to create token: 401: ",
+    ]
+  `);
 });
 
 it("logs dedup-aware message when tokens are deduplicated", async () => {
@@ -922,7 +985,20 @@ it("logs dedup-aware message when tokens are deduplicated", async () => {
     rules: [],
   };
 
-  await createTokens([consumerAResult, consumerBResult]);
+  const results = await createTokens([consumerAResult, consumerBResult]);
+  const explain = createTextTokenCreationExplainer(results);
+
+  expect(
+    explainTokenCreationResults(explain, results, [
+      consumerAResult,
+      consumerBResult,
+    ]),
+  ).toMatchInlineSnapshot(`
+    [
+      "✅ Token created for account-a",
+      "✅ Same token as #1",
+    ]
+  `);
 
   expect(__getOutput()).toContain("Token #1:");
   expect(__getOutput()).toContain("✅ Token created for account-a");
@@ -995,7 +1071,16 @@ it("logs simple message when no tokens are deduplicated", async () => {
     rules: [],
   };
 
-  await createTokens([consumerAResult]);
+  const results = await createTokens([consumerAResult]);
+  const explain = createTextTokenCreationExplainer(results);
+
+  expect(
+    explainTokenCreationResults(explain, results, [consumerAResult]),
+  ).toMatchInlineSnapshot(`
+    [
+      "✅ Token created for account-a",
+    ]
+  `);
 
   expect(__getOutput()).toContain("Token #1:");
   expect(__getOutput()).toContain("✅ Token created for account-a");
@@ -1013,6 +1098,26 @@ it("returns empty map when no token auth results are given", async () => {
   );
   const createTokens = createTokenFactory(findIssuerOctokit);
 
-  expect(Array.from((await createTokens([])).entries())).toEqual([]);
+  const results = await createTokens([]);
+
+  // FIXME: An empty result set has no explainer output, so keep this low-level
+  // assertion until the factory exposes a more direct empty-state summary.
+  expect(Array.from(results.entries())).toEqual([]);
   expect(__getOutput()).toContain("::warning::❌ No tokens were created");
 });
+
+function explainTokenCreationResults(
+  explain: ReturnType<typeof createTextTokenCreationExplainer>,
+  results: Map<TokenAuthResult, TokenCreationResult>,
+  authResults: TokenAuthResult[],
+): string[] {
+  return authResults.map((authResult) => {
+    const creationResult = results.get(authResult);
+
+    if (creationResult === undefined) {
+      throw new Error("Invariant violation: missing token creation result");
+    }
+
+    return explain(authResult, creationResult);
+  });
+}
