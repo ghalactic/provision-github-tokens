@@ -47,6 +47,20 @@ it("includes target context in failure summaries and debug blocks", () => {
       environment: "env-a",
     },
   } satisfies ProvisionRequestTarget;
+  const targetE = {
+    platform: "github",
+    type: "actions",
+    target: { account: "account-b" },
+  } satisfies ProvisionRequestTarget;
+  const targetF = {
+    platform: "github",
+    type: "environment",
+    target: {
+      account: "account-b",
+      repo: "repo-b",
+      environment: "env-b",
+    },
+  } satisfies ProvisionRequestTarget;
 
   const targetAResult = createTestProvisionAuthTargetResultAllowed({
     target: targetA,
@@ -59,6 +73,12 @@ it("includes target context in failure summaries and debug blocks", () => {
   });
   const targetDResult = createTestProvisionAuthTargetResultAllowed({
     target: targetD,
+  });
+  const targetEResult = createTestProvisionAuthTargetResultNotAllowed({
+    target: targetE,
+  });
+  const targetFResult = createTestProvisionAuthTargetResultNotAllowed({
+    target: targetF,
   });
 
   const requestErrorBody = {
@@ -75,9 +95,16 @@ it("includes target context in failure summaries and debug blocks", () => {
       tokenDecIsRegistered: true,
       secretDec: createTestSecretDec(),
       name: "SECRET_NAME",
-      to: [targetD, targetB, targetA, targetC],
+      to: [targetD, targetB, targetA, targetC, targetE, targetF],
     },
-    results: [targetDResult, targetBResult, targetAResult, targetCResult],
+    results: [
+      targetDResult,
+      targetBResult,
+      targetAResult,
+      targetCResult,
+      targetEResult,
+      targetFResult,
+    ],
   };
 
   const targetResults = new Map([
@@ -98,29 +125,41 @@ it("includes target context in failure summaries and debug blocks", () => {
     ],
     [targetAResult, { type: "PROVISIONED" } as ProvisioningResult],
     [targetBResult, { type: "NOT_ALLOWED" } as ProvisioningResult],
+    [targetEResult, { type: "NO_TOKEN" } as ProvisioningResult],
+    [targetFResult, { type: "NO_PROVISIONER" } as ProvisioningResult],
   ]);
 
   const explain = createTextProvisioningExplainer();
+  const output = explain(authResult, targetResults);
 
-  expect(explain(authResult, targetResults)).toMatchInlineSnapshot(`
+  expect(output).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x didn't fully provision secret SECRET_NAME:
       ✅ Provisioned to GitHub Actions secret in account-a
       ❌ Not allowed to GitHub Codespaces secret in account-a/repo-a
       ❌ Failed to provision to Dependabot secret in account-a/repo-a: 403: Forbidden
-      ❌ Failed to provision to GitHub environment env-a secret in account-a/repo-a: boom"
-  `);
+      ❌ Failed to provision to GitHub environment env-a secret in account-a/repo-a: boom
+      ❌ Token wasn't created for GitHub Actions secret in account-b
+      ❌ No suitable provisioner app for GitHub environment env-b secret in account-b/repo-b"
+    `);
 
-  const output = __getOutput();
-
-  expect(output).toContain("::debug::Dependabot secret in account-a/repo-a:");
-  expect(output).toContain("::debug::    {");
-  expect(output).toContain('::debug::      "message": "forbidden",');
-  expect(output).toContain('::debug::        "reason": "missing scope"');
   expect(output).toContain(
+    "Token wasn't created for GitHub Actions secret in account-b",
+  );
+  expect(output).toContain(
+    "No suitable provisioner app for GitHub environment env-b secret in account-b/repo-b",
+  );
+
+  const coreOutput = __getOutput();
+
+  expect(coreOutput).toContain("::debug::Dependabot secret in account-a/repo-a:");
+  expect(coreOutput).toContain("::debug::    {");
+  expect(coreOutput).toContain('::debug::      "message": "forbidden",');
+  expect(coreOutput).toContain('::debug::        "reason": "missing scope"');
+  expect(coreOutput).toContain(
     "::debug::GitHub environment env-a secret in account-a/repo-a:",
   );
-  expect(output).toContain("::debug::    Error: boom");
-  expect(output).toContain("::debug::        at target-a.ts:1:1");
+  expect(coreOutput).toContain("::debug::    Error: boom");
+  expect(coreOutput).toContain("::debug::        at target-a.ts:1:1");
 });
 
 it("falls back when debug body serialization fails", () => {
