@@ -34,7 +34,7 @@ export function createTextTokenCreationExplainer(
       firstIndex !== undefined &&
       firstIndex !== currentIndex
     ) {
-      return `${renderIcon(creationResult.type === "CREATED")} Same token as #${firstIndex + 1}`;
+      return `${ALLOWED_ICON} Same token as #${firstIndex + 1}`;
     }
 
     return explainResult(authResult, creationResult);
@@ -82,8 +82,4 @@ function debugMultiLine(indent: string, text: string): void {
   for (const line of text.split("\n")) {
     debug(`${indent}${line}`);
   }
-}
-
-function renderIcon(isAllowed: boolean): string {
-  return isAllowed ? ALLOWED_ICON : DENIED_ICON;
 }
