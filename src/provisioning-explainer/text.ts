@@ -7,7 +7,6 @@ import {
 } from "../github-reference.js";
 import type { ProvisionRequestTarget } from "../provision-request.js";
 import type { ProvisioningResult } from "../provisioner.js";
-import type { ProvisionAuthResult } from "../type/provision-auth-result.js";
 import type { ProvisioningResultExplainer } from "../type/provisioning-result.js";
 
 const ALLOWED_ICON = "✅";
@@ -23,7 +22,7 @@ export function createTextProvisioningExplainer(): ProvisioningResultExplainer<s
 
     let output =
       `${renderIcon(allProvisioned)} ` +
-      `${explainRequester(authResult.request.requester)} ` +
+      `Repo ${repoRefToString(authResult.request.requester)} ` +
       `${allProvisioned ? "provisioned" : "didn't fully provision"} ` +
       `secret ${authResult.request.name}:`;
 
@@ -78,12 +77,6 @@ export function createTextProvisioningExplainer(): ProvisioningResultExplainer<s
         return `\n  ${summary}`;
       }
     }
-  }
-
-  function explainRequester(
-    requester: ProvisionAuthResult["request"]["requester"],
-  ): string {
-    return `Repo ${repoRefToString(requester)}`;
   }
 
   function explainSubject(target: ProvisionRequestTarget): string {
