@@ -800,7 +800,7 @@ it("caches NO_ISSUER results for identical token shapes", async () => {
     rules: [],
   };
 
-  await createTokens([consumerAResult, consumerBResult]);
+  const results = await createTokens([consumerAResult, consumerBResult]);
   expect(getTokenFactoryInfoOutputLines()).toMatchInlineSnapshot(`
     [
       "",
@@ -813,6 +813,7 @@ it("caches NO_ISSUER results for identical token shapes", async () => {
       "❌ No suitable issuer app",
     ]
   `);
+  expect(results.get(consumerAResult)).toBe(results.get(consumerBResult));
 });
 
 it("caches error results for identical token shapes", async () => {
@@ -899,7 +900,7 @@ it("caches error results for identical token shapes", async () => {
     rules: [],
   };
 
-  await createTokens([consumerAResult, consumerBResult]);
+  const results = await createTokens([consumerAResult, consumerBResult]);
   expect(getTokenFactoryInfoOutputLines()).toMatchInlineSnapshot(`
     [
       "",
@@ -912,6 +913,7 @@ it("caches error results for identical token shapes", async () => {
       "❌ Failed to create token: 401:",
     ]
   `);
+  expect(results.get(consumerAResult)).toBe(results.get(consumerBResult));
 });
 
 it("logs dedup-aware message when tokens are deduplicated", async () => {
