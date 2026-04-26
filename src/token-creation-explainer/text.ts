@@ -62,7 +62,7 @@ function explainResult(
       const body = result.error.response?.data;
 
       if (body !== undefined) {
-        debugMultiLine("  ", stringifyDebugBody(body));
+        debugMultiLine("  ", JSON.stringify(body, null, 2));
       }
 
       return summary;
@@ -81,15 +81,6 @@ function explainResult(
 function debugMultiLine(indent: string, text: string): void {
   for (const line of text.split("\n")) {
     debug(`${indent}${line}`);
-  }
-}
-
-function stringifyDebugBody(body: unknown): string {
-  try {
-    return JSON.stringify(body, null, 2) ?? "undefined";
-  } catch {
-    /* istanbul ignore next - defensive against non-serializable response bodies - @preserve */
-    return String(body);
   }
 }
 

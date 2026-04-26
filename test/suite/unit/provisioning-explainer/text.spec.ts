@@ -164,53 +164,6 @@ it("includes target context in failure summaries and debug blocks", () => {
   expect(coreOutput).toContain("::debug::        at target-a.ts:1:1");
 });
 
-it("falls back when debug body serialization fails", () => {
-  const target = {
-    platform: "github",
-    type: "actions",
-    target: { account: "account-a" },
-  } satisfies ProvisionRequestTarget;
-
-  const targetResult = createTestProvisionAuthTargetResultNotAllowed({
-    target,
-  });
-  const body: Record<string, unknown> = { message: "circular" };
-  body.self = body;
-
-  const authResult: ProvisionAuthResult = {
-    isAllowed: false,
-    isMissingTargets: false,
-    request: {
-      requester: { account: "account-x", repo: "repo-x" },
-      tokenDec: createTestTokenDec(),
-      tokenDecIsRegistered: true,
-      secretDec: createTestSecretDec(),
-      name: "SECRET_NAME",
-      to: [target],
-    },
-    results: [targetResult],
-  };
-
-  const targetResults = new Map([
-    [
-      targetResult,
-      {
-        type: "REQUEST_ERROR",
-        error: {
-          status: 500,
-          message: "Internal Server Error",
-          response: { data: body },
-        },
-      } as ProvisioningResult,
-    ],
-  ]);
-
-  const explain = createTextProvisioningExplainer();
-
-  expect(() => explain(authResult, targetResults)).not.toThrow();
-  expect(__getOutput()).toContain("::debug::    [object Object]");
-});
-
 function createError(): Error {
   const error = new Error("boom");
   error.stack = "Error: boom\n    at target-a.ts:1:1";
