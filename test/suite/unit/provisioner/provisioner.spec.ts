@@ -380,6 +380,8 @@ it("doesn't provision secrets when encryption fails with a GitHub API error", as
     "
     Secret #1:
 
+    ::debug::GitHub Actions secret in account-a:
+    ::debug::    (no response data)
     ❌ Repo account-a/repo-a didn't fully provision secret SECRET_A:
       ❌ Failed to provision to GitHub Actions secret in account-a: 401: 
     "
