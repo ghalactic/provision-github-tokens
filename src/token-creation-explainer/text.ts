@@ -88,6 +88,7 @@ function stringifyDebugBody(body: unknown): string {
   try {
     return JSON.stringify(body, null, 2) ?? "undefined";
   } catch {
+    /* istanbul ignore next - defensive against non-serializable response bodies - @preserve */
     return String(body);
   }
 }

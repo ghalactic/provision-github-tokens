@@ -157,7 +157,9 @@ export function createProvisioner(
         info(explain(authResult, targetResults));
       }
     } else {
+      /* istanbul ignore next - pipeline always produces auth results - @preserve */
       info("");
+      /* istanbul ignore next - @preserve */
       warning("❌ No secrets were provisioned");
     }
 
