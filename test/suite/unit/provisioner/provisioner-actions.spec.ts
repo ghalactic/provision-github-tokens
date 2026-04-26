@@ -1,5 +1,8 @@
 import { beforeEach, expect, it, vi, type Mock } from "vitest";
-import { __reset as __resetCore } from "../../../../__mocks__/@actions/core.js";
+import {
+  __getOutput,
+  __reset as __resetCore,
+} from "../../../../__mocks__/@actions/core.js";
 import {
   __getOrgSecrets,
   __getRepoSecrets,
@@ -160,6 +163,9 @@ beforeEach(() => {
 });
 
 it("handles GitHub API errors when provisioning org-level Actions secrets", async () => {
+  __setErrors("actions.createOrUpdateOrgSecret", [
+    new TestRequestError(403, { message: "Resource not accessible" }),
+  ]);
   encryptSecret.mockResolvedValue(["XXXX", "XXXX"]);
 
   const tokenResults = new Map<TokenAuthResult, TokenCreationResult>([
@@ -195,15 +201,28 @@ it("handles GitHub API errors when provisioning org-level Actions secrets", asyn
       [
         [
           allowedResult.results[0],
-          { type: "REQUEST_ERROR", error: new TestRequestError(401) },
+          {
+            type: "REQUEST_ERROR",
+            error: new TestRequestError(403, {
+              message: "Resource not accessible",
+            }),
+          },
         ],
       ],
     ],
   ]);
+
+  const coreOutput = __getOutput();
+  expect(coreOutput).toContain("::debug::GitHub Actions secret in account-a:");
+  expect(coreOutput).toContain(
+    '::debug::      "message": "Resource not accessible"',
+  );
 });
 
 it("handles unexpected errors when provisioning org-level Actions secrets", async () => {
-  __setErrors("actions.createOrUpdateOrgSecret", [new Error("<message>")]);
+  const error = new Error("<message>");
+  error.stack = "Error: <message>\n    at provisioner.ts:1:1";
+  __setErrors("actions.createOrUpdateOrgSecret", [error]);
 
   const tokenResults = new Map<TokenAuthResult, TokenCreationResult>([
     [tokenAuthResultA, tokenCreationResultCreatedA],
@@ -233,16 +252,13 @@ it("handles unexpected errors when provisioning org-level Actions secrets", asyn
       await provisionSecrets(tokenResults, [allowedResult]),
     ),
   ).toEqual([
-    [
-      allowedResult,
-      [
-        [
-          allowedResult.results[0],
-          { type: "ERROR", error: new Error("<message>") },
-        ],
-      ],
-    ],
+    [allowedResult, [[allowedResult.results[0], { type: "ERROR", error }]]],
   ]);
+
+  const coreOutput = __getOutput();
+  expect(coreOutput).toContain("::debug::GitHub Actions secret in account-a:");
+  expect(coreOutput).toContain("::debug::    Error: <message>");
+  expect(coreOutput).toContain("::debug::        at provisioner.ts:1:1");
 });
 
 it("can provision org-level Actions secrets", async () => {
