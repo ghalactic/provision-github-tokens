@@ -209,10 +209,21 @@ function failureReason(
   if (!authResult.isAllowed) return "Secret not allowed";
 
   for (const targetAuth of authResult.results) {
-    if (!targetAuth.tokenAuthResult) continue;
+    /* istanbul ignore next - @preserve */
+    if (!targetAuth.tokenAuthResult) {
+      throw new Error(
+        "Invariant violation: Missing token auth result for allowed target",
+      );
+    }
 
     const tokenResult = tokens.get(targetAuth.tokenAuthResult);
-    if (!tokenResult) continue;
+
+    /* istanbul ignore next - @preserve */
+    if (!tokenResult) {
+      throw new Error(
+        "Invariant violation: Missing token creation result for allowed target",
+      );
+    }
 
     if (tokenResult.type === "NO_ISSUER") return "No suitable issuer";
     if (tokenResult.type === "REQUEST_ERROR" || tokenResult.type === "ERROR") {
@@ -221,32 +232,35 @@ function failureReason(
   }
 
   const targetResults = provisionResults.get(authResult);
-  if (targetResults) {
-    let provisionedCount = 0;
-    let failedCount = 0;
-    let hasNoProvisioner = false;
 
-    for (const result of targetResults.values()) {
-      if (result.type === "PROVISIONED") {
-        ++provisionedCount;
-      } else {
-        ++failedCount;
-        if (result.type === "NO_PROVISIONER") hasNoProvisioner = true;
-      }
-    }
-
-    if (hasNoProvisioner && failedCount === targetResults.size) {
-      return "No suitable provisioner";
-    }
-
-    if (provisionedCount > 0 && failedCount > 0) {
-      return "Failed to provision to some targets";
-    }
-
-    return "Failed to provision";
+  /* istanbul ignore next - @preserve */
+  if (!targetResults) {
+    throw new Error(
+      "Invariant violation: Missing provisioning results for auth result",
+    );
   }
 
-  /* istanbul ignore next - all known failure types handled above - @preserve */
+  let provisionedCount = 0;
+  let failedCount = 0;
+  let hasNoProvisioner = false;
+
+  for (const result of targetResults.values()) {
+    if (result.type === "PROVISIONED") {
+      ++provisionedCount;
+    } else {
+      ++failedCount;
+      if (result.type === "NO_PROVISIONER") hasNoProvisioner = true;
+    }
+  }
+
+  if (hasNoProvisioner && failedCount === targetResults.size) {
+    return "No suitable provisioner";
+  }
+
+  if (provisionedCount > 0 && failedCount > 0) {
+    return "Failed to provision to some targets";
+  }
+
   return "Failed to provision";
 }
 
