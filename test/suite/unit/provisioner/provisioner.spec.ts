@@ -719,6 +719,13 @@ it("doesn't stop provisioning when some targets fail", async () => {
   `);
 });
 
+it("warns when no auth results are provided", async () => {
+  const results = await provisionSecrets(new Map(), []);
+
+  expect(results.size).toBe(0);
+  expect(__getOutput()).toContain("::warning::❌ No secrets were provisioned");
+});
+
 function getProvisionerInfoOutput(): string {
   return __getOutput()
     .split("\n")
