@@ -23,13 +23,9 @@ import { createTokenDeclarationRegistry } from "./token-declaration-registry.js"
 import { createTokenFactory } from "./token-factory.js";
 import { createTokenRequestFactory } from "./token-request.js";
 
-installSourceMapSupport();
+try {
+  installSourceMapSupport();
 
-main().catch((error) => {
-  setFailed(errorStack(error));
-});
-
-async function main(): Promise<void> {
   const githubRef = process.env.GITHUB_REF;
   const githubRepository = process.env.GITHUB_REPOSITORY;
   const githubServerURL = process.env.GITHUB_SERVER_URL;
@@ -130,4 +126,6 @@ async function main(): Promise<void> {
   await summary
     .addRaw(renderSummary(githubServerURL, actionURL, authorizeResult))
     .write();
+} catch (error) {
+  setFailed(errorStack(error));
 }
