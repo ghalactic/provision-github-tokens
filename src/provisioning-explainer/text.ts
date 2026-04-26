@@ -14,7 +14,9 @@ export function createTextProvisioningExplainer(): ProvisioningResultExplainer<s
   return (authResult, targetResults) => {
     const allProvisioned =
       targetResults.size > 0 &&
-      [...targetResults.values()].every((result) => result.type === "PROVISIONED");
+      [...targetResults.values()].every(
+        (result) => result.type === "PROVISIONED",
+      );
 
     let output =
       `${renderIcon(allProvisioned)} ` +
@@ -22,8 +24,8 @@ export function createTextProvisioningExplainer(): ProvisioningResultExplainer<s
       `${allProvisioned ? "provisioned" : "didn't fully provision"} ` +
       `secret ${authResult.request.name}:`;
 
-    for (const [targetAuth, result] of [...targetResults.entries()].sort(([a], [b]) =>
-      compareProvisionRequestTarget(a.target, b.target),
+    for (const [targetAuth, result] of [...targetResults.entries()].sort(
+      ([a], [b]) => compareProvisionRequestTarget(a.target, b.target),
     )) {
       output += explainTarget(targetAuth.target, result);
     }
@@ -42,36 +44,42 @@ export function createTextProvisioningExplainer(): ProvisioningResultExplainer<s
         return `\n  ${ALLOWED_ICON} Provisioned to ${subject}`;
 
       case "NOT_ALLOWED":
-        return `\n  ${DENIED_ICON} Not allowed`;
+        return `\n  ${DENIED_ICON} Not allowed to ${subject}`;
 
       case "NO_TOKEN":
-        return `\n  ${DENIED_ICON} Token wasn't created`;
+        return `\n  ${DENIED_ICON} Token wasn't created for ${subject}`;
 
       case "NO_PROVISIONER":
-        return `\n  ${DENIED_ICON} No suitable provisioner app`;
+        return `\n  ${DENIED_ICON} No suitable provisioner app for ${subject}`;
 
       case "REQUEST_ERROR": {
-        const summary = `${DENIED_ICON} Failed to provision: ${result.error.status}: ${result.error.message}`;
+        const summary =
+          `${DENIED_ICON} Failed to provision to ${subject}: ` +
+          `${result.error.status}: ${result.error.message}`;
         const body = result.error.response?.data;
 
         if (body !== undefined) {
-          debugMultiLine("    ", JSON.stringify(body, null, 2));
+          debugTargetBlock(subject, stringifyDebugBody(body));
         }
 
         return `\n  ${summary}`;
       }
 
       case "ERROR": {
-        const summary = `${DENIED_ICON} Failed to provision: ${errorMessage(result.error)}`;
+        const summary =
+          `${DENIED_ICON} Failed to provision to ${subject}: ` +
+          `${errorMessage(result.error)}`;
 
-        debugMultiLine("    ", errorStack(result.error));
+        debugTargetBlock(subject, errorStack(result.error));
 
         return `\n  ${summary}`;
       }
     }
   }
 
-  function explainRequester(requester: ProvisionAuthResult["request"]["requester"]): string {
+  function explainRequester(
+    requester: ProvisionAuthResult["request"]["requester"],
+  ): string {
     return `${isRepoRef(requester) ? "Repo" : "Account"} ${accountOrRepoRefToString(requester)}`;
   }
 
@@ -103,6 +111,19 @@ export function createTextProvisioningExplainer(): ProvisioningResultExplainer<s
 function debugMultiLine(indent: string, text: string): void {
   for (const line of text.split("\n")) {
     debug(`${indent}${line}`);
+  }
+}
+
+function debugTargetBlock(subject: string, text: string): void {
+  debug(`${subject}:`);
+  debugMultiLine("    ", text);
+}
+
+function stringifyDebugBody(body: unknown): string {
+  try {
+    return JSON.stringify(body, null, 2) ?? String(body);
+  } catch {
+    return String(body);
   }
 }
 
