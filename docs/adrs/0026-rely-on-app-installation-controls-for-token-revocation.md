@@ -30,13 +30,13 @@ installation or app. The action does not implement per-token revocation.
 ## Alternatives considered
 
 - **Consumer-side revocation workflows**: each consuming repo would need
-  workflows that the provisioner could trigger to revoke tokens. Too complex to
+  workflows that the provider could trigger to revoke tokens. Too complex to
   coordinate and fragile to maintain at scale.
-- **Central token storage**: the provisioner retains issued tokens for later
+- **Central token storage**: the provider retains issued tokens for later
   revocation. Creates a high-value attack target — a single breach exposes every
   active token.
 - **Encrypted secrets with a revocable gate key**: provision encrypted secrets
-  alongside a separate decryption key that the provisioner can delete to
+  alongside a separate decryption key that the provider can delete to
   effectively revoke access. Collapses to the same all-or-nothing granularity as
   installation-level controls (one key per secret is impractical), and requires
   every consumer to perform decryption — which excludes consumers like
