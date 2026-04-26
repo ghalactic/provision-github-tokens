@@ -198,11 +198,15 @@ function failureReason(
     Map<ProvisionAuthTargetResult, ProvisioningResult>
   >,
 ): string {
-  if (!authResult.isAllowed) return "Secret not allowed";
+  if (authResult.isMissingTargets || authResult.request.to.length === 0) {
+    return "Failed to provision";
+  }
 
   for (const targetAuth of authResult.results) {
     if (!targetAuth.isTokenAllowed) return "Token not allowed";
   }
+
+  if (!authResult.isAllowed) return "Secret not allowed";
 
   for (const targetAuth of authResult.results) {
     if (!targetAuth.tokenAuthResult) continue;
