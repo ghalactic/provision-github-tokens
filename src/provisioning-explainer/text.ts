@@ -59,7 +59,7 @@ export function createTextProvisioningExplainer(): ProvisioningResultExplainer<s
         const body = result.error.response?.data;
 
         if (body !== undefined) {
-          debugTargetBlock(subject, stringifyDebugBody(body));
+          debugTargetBlock(subject, JSON.stringify(body, null, 2));
         }
 
         return `\n  ${summary}`;
@@ -117,14 +117,6 @@ function debugMultiLine(indent: string, text: string): void {
 function debugTargetBlock(subject: string, text: string): void {
   debug(`${subject}:`);
   debugMultiLine("    ", text);
-}
-
-function stringifyDebugBody(body: unknown): string {
-  try {
-    return JSON.stringify(body, null, 2) ?? String(body);
-  } catch {
-    return String(body);
-  }
 }
 
 function renderIcon(isAllowed: boolean): string {
