@@ -813,6 +813,7 @@ it("caches NO_ISSUER results for identical token shapes", async () => {
       "❌ No suitable issuer app",
     ]
   `);
+  expect(results.get(consumerAResult)).toEqual({ type: "NO_ISSUER" });
   expect(results.get(consumerAResult)).toBe(results.get(consumerBResult));
 });
 
@@ -913,6 +914,12 @@ it("caches error results for identical token shapes", async () => {
       "❌ Failed to create token: 401:",
     ]
   `);
+  const cachedResult = results.get(consumerAResult);
+
+  expect(cachedResult).toMatchObject({
+    type: "REQUEST_ERROR",
+    error: { status: 401 },
+  });
   expect(results.get(consumerAResult)).toBe(results.get(consumerBResult));
 });
 
