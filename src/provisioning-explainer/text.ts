@@ -1,7 +1,10 @@
 import { debug } from "@actions/core";
 import { compareProvisionRequestTarget } from "../compare-provision-request-target.js";
 import { errorMessage, errorStack } from "../error.js";
-import { accountOrRepoRefToString, isRepoRef } from "../github-reference.js";
+import {
+  accountOrRepoRefToString,
+  repoRefToString,
+} from "../github-reference.js";
 import type { ProvisionRequestTarget } from "../provision-request.js";
 import type { ProvisioningResult } from "../provisioner.js";
 import type { ProvisionAuthResult } from "../type/provision-auth-result.js";
@@ -80,7 +83,7 @@ export function createTextProvisioningExplainer(): ProvisioningResultExplainer<s
   function explainRequester(
     requester: ProvisionAuthResult["request"]["requester"],
   ): string {
-    return `${isRepoRef(requester) ? "Repo" : "Account"} ${accountOrRepoRefToString(requester)}`;
+    return `Repo ${repoRefToString(requester)}`;
   }
 
   function explainSubject(target: ProvisionRequestTarget): string {
