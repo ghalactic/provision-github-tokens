@@ -2,3 +2,4 @@
 /artifacts/
 /dist/
 /src/schema/generated.*
+/test/fixture/

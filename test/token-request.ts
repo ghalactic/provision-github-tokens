@@ -24,7 +24,9 @@ export function createTestTokenRequestFactory(): TokenRequestFactory {
       });
 
       repos = ["repo-a", "repo-b", "repo-c"]
-        .filter((repo) => anyPatternMatches(repoPatterns, repo))
+        .filter((repo) =>
+          anyPatternMatches(repoPatterns, `${tokenDec.account}/${repo}`),
+        )
         .sort();
     }
 
