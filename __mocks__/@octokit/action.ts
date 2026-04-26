@@ -631,17 +631,15 @@ function throwIfEndpointError(endpoint: string) {
 }
 
 export class TestRequestError extends RequestError {
-  constructor(status: number, body?: unknown) {
+  constructor(status: number, data: unknown = {}) {
     super("", status, {
       request: { method: "GET", url: "https://api.org/", headers: {} },
-      ...(body !== undefined && {
-        response: {
-          url: "https://api.org/",
-          status,
-          headers: {},
-          data: body,
-        },
-      }),
+      response: {
+        url: "https://api.org/",
+        status,
+        headers: {},
+        data,
+      },
     });
   }
 }
