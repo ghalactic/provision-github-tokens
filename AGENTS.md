@@ -123,6 +123,13 @@ Acceptable uses of coverage ignore comments — modeled on existing usage:
 Do **not** use coverage ignores to skip writing tests for reachable code paths.
 If a branch can be reached through normal inputs, write tests for it.
 
+### Code style
+
+**Exported symbols before unexported symbols.** In every module, place exported
+functions, types, interfaces, and classes above unexported ones. Use function
+hoisting to keep exports at the top — define unexported helper functions below
+the exported functions that call them, not above.
+
 ### Access level hierarchy
 
 Permission levels are ranked: `none` (0) < `read` (1) < `write` (2) < `admin`
