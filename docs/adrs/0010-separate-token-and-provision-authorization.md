@@ -9,10 +9,10 @@ decision-makers: ezzatron
 ## Context and problem statement
 
 A requester's request involves two distinct questions: can it obtain a token
-with certain permissions, and can it place that token as a secret in a
-particular scope? Combining these into a single authorization check would mean
-that granting token permissions implicitly grants provisioning rights, or vice
-versa.
+with certain permissions, and can it place that token as a secret of a
+particular type at a particular target? Combining these into a single
+authorization check would mean that granting token permissions implicitly grants
+provisioning rights, or vice versa.
 
 ## Decision
 
@@ -20,11 +20,11 @@ Authorization is split into two independent checks that must both pass:
 
 1. **Token authorization** — can this requester get a token with these
    permissions for these repos?
-2. **Provision authorization** — can this requester place a secret in this scope
+2. **Provision authorization** — can this requester place a secret of this type
    (actions, codespaces, dependabot, environment) at this target?
 
 These are orthogonal: a requester might be allowed to obtain a token but not
-provision it to a particular secret scope, or vice versa. Splitting them gives
+provision it to a particular target, or vice versa. Splitting them gives
 providers fine-grained control over both _what tokens exist_ and _where they end
 up_.
 
