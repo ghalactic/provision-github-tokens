@@ -4,6 +4,7 @@ import {
   __reset as __resetCore,
 } from "../../../__mocks__/@actions/core.js";
 import {
+  TestRequestError,
   __addInstallationToken,
   __reset as __resetOctokit,
   __setApps,
@@ -78,7 +79,7 @@ it("creates tokens based on token auth results", async () => {
   __addInstallationToken(111, "all", { metadata: "read" });
   __setErrors("apps.createInstallationAccessToken", [
     undefined,
-    undefined,
+    new TestRequestError(401, { message: "Bad credentials" }),
     new Error("<message>"),
   ]);
 
@@ -226,6 +227,11 @@ it("creates tokens based on token auth results", async () => {
       "❌ Failed to create token: <message>",
     ]
   `);
+
+  const coreOutput = __getOutput();
+  expect(coreOutput).toContain("::debug::  {");
+  expect(coreOutput).toContain('::debug::    "message": "Bad credentials"');
+  expect(coreOutput).toContain("::debug::  }");
 });
 
 it("deduplicates token creation for identical token shapes", async () => {

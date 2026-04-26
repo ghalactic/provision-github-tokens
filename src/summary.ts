@@ -246,6 +246,7 @@ function failureReason(
     return "Failed to provision";
   }
 
+  /* istanbul ignore next - all known failure types handled above - @preserve */
   return "Failed to provision";
 }
 
