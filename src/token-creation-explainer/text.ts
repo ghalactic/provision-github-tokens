@@ -63,6 +63,8 @@ function explainResult(
 
       if (body !== undefined) {
         debugMultiLine("  ", JSON.stringify(body, null, 2));
+      } else {
+        debugMultiLine("  ", "(no response data)");
       }
 
       return summary;

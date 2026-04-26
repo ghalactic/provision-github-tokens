@@ -62,6 +62,8 @@ export function createTextProvisioningExplainer(): ProvisioningResultExplainer<s
 
         if (body !== undefined) {
           debugTargetBlock(subject, JSON.stringify(body, null, 2));
+        } else {
+          debugTargetBlock(subject, "(no response data)");
         }
 
         return `\n  ${summary}`;

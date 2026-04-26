@@ -638,6 +638,7 @@ it("does not deduplicate tokens with different repos", async () => {
 
     Token #2:
 
+    ::debug::  (no response data)
     ❌ Failed to create token: 401: 
     "
   `);
@@ -907,10 +908,12 @@ it("caches error results for identical token shapes", async () => {
     "
     Token #1:
 
+    ::debug::  (no response data)
     ❌ Failed to create token: 401: 
 
     Token #2:
 
+    ::debug::  (no response data)
     ❌ Failed to create token: 401: 
     "
   `);
