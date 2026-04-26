@@ -20,18 +20,33 @@ import {
 } from "./markdown.js";
 import { pluralize } from "./pluralize.js";
 import type { ProvisionRequestTarget } from "./provision-request.js";
-import type { ProvisionAuthResult } from "./type/provision-auth-result.js";
+import type { ProvisioningResult } from "./provisioner.js";
+import type { TokenCreationResult } from "./token-factory.js";
+import type {
+  ProvisionAuthResult,
+  ProvisionAuthTargetResult,
+} from "./type/provision-auth-result.js";
+import type { TokenAuthResult } from "./type/token-auth-result.js";
 
 const MAX_ROWS = 1000;
 
 export function renderSummary(
   githubServerUrl: string,
   actionUrl: string,
-  result: AuthorizeResult,
+  authResult: AuthorizeResult,
+  tokens: Map<TokenAuthResult, TokenCreationResult>,
+  provisionResults: Map<
+    ProvisionAuthResult,
+    Map<ProvisionAuthTargetResult, ProvisioningResult>
+  >,
 ): string {
-  const { provisionResults } = result;
-  const allDenied = provisionResults.filter((r) => !r.isAllowed);
-  const allAllowed = provisionResults.filter((r) => r.isAllowed);
+  const { provisionResults: authResults } = authResult;
+  const allDenied = authResults.filter(
+    (r) => !isFullyProvisioned(r, provisionResults),
+  );
+  const allAllowed = authResults.filter((r) =>
+    isFullyProvisioned(r, provisionResults),
+  );
 
   const denied = allDenied.slice(0, MAX_ROWS);
   const remaining = Math.max(0, MAX_ROWS - denied.length);
@@ -45,11 +60,11 @@ export function renderSummary(
     {
       type: "root",
       children: [
-        statsHeading(provisionResults),
-        ...emptySection(provisionResults, result, actionUrl),
-        ...failuresTable(denied),
+        statsHeading(authResults, provisionResults),
+        ...emptySection(authResults, authResult, actionUrl),
+        ...failuresTable(denied, tokens, provisionResults),
         ...successesTable(allowed),
-        ...omittedNotice(provisionResults.length, omitted),
+        ...omittedNotice(authResults.length, omitted),
         ...definitions(githubServerUrl, displayed),
       ],
     },
@@ -57,9 +72,17 @@ export function renderSummary(
   );
 }
 
-function statsHeading(provisionResults: ProvisionAuthResult[]): RootContent {
-  const total = provisionResults.length;
-  const allowed = provisionResults.filter((r) => r.isAllowed).length;
+function statsHeading(
+  authResults: ProvisionAuthResult[],
+  provisionResults: Map<
+    ProvisionAuthResult,
+    Map<ProvisionAuthTargetResult, ProvisioningResult>
+  >,
+): RootContent {
+  const total = authResults.length;
+  const allowed = authResults.filter((r) =>
+    isFullyProvisioned(r, provisionResults),
+  ).length;
 
   const headingText =
     allowed === total
@@ -70,11 +93,11 @@ function statsHeading(provisionResults: ProvisionAuthResult[]): RootContent {
 }
 
 function emptySection(
-  provisionResults: ProvisionAuthResult[],
-  result: AuthorizeResult,
+  authResults: ProvisionAuthResult[],
+  authResult: AuthorizeResult,
   actionUrl: string,
 ): RootContent[] {
-  if (provisionResults.length > 0 || result.tokenResults.length > 0) return [];
+  if (authResults.length > 0 || authResult.tokenResults.length > 0) return [];
 
   return [
     gfmAlert(
@@ -88,14 +111,27 @@ function emptySection(
   ];
 }
 
-function failuresTable(denied: ProvisionAuthResult[]): RootContent[] {
+function failuresTable(
+  denied: ProvisionAuthResult[],
+  tokens: Map<TokenAuthResult, TokenCreationResult>,
+  provisionResults: Map<
+    ProvisionAuthResult,
+    Map<ProvisionAuthTargetResult, ProvisioningResult>
+  >,
+): RootContent[] {
   if (denied.length === 0) return [];
 
   return [
     table(
-      ["left", "left", "left", "left"],
-      [[], [text("Requester")], [text("Secret")], [text("Targets")]],
-      denied.map((r) => secretRow(r)),
+      ["left", "left", "left", "left", "left"],
+      [
+        [],
+        [text("Requester")],
+        [text("Secret")],
+        [text("Targets")],
+        [text("Reason")],
+      ],
+      denied.map((r) => failureRow(r, tokens, provisionResults)),
     ),
   ];
 }
@@ -135,6 +171,95 @@ function secretRow(result: ProvisionAuthResult): TableCell["children"][] {
     [inlineCode(result.request.name)],
     targetCellChildren(result.request.to),
   ];
+}
+
+function failureRow(
+  result: ProvisionAuthResult,
+  tokens: Map<TokenAuthResult, TokenCreationResult>,
+  provisionResults: Map<
+    ProvisionAuthResult,
+    Map<ProvisionAuthTargetResult, ProvisioningResult>
+  >,
+): TableCell["children"][] {
+  return [
+    [text(renderIcon(false))],
+    [accountOrRepoLinkRef(result.request.requester)],
+    [inlineCode(result.request.name)],
+    targetCellChildren(result.request.to),
+    [text(failureReason(result, tokens, provisionResults))],
+  ];
+}
+
+function failureReason(
+  authResult: ProvisionAuthResult,
+  tokens: Map<TokenAuthResult, TokenCreationResult>,
+  provisionResults: Map<
+    ProvisionAuthResult,
+    Map<ProvisionAuthTargetResult, ProvisioningResult>
+  >,
+): string {
+  if (!authResult.isAllowed) return "Secret not allowed";
+
+  for (const targetAuth of authResult.results) {
+    if (!targetAuth.isTokenAllowed) return "Token not allowed";
+  }
+
+  for (const targetAuth of authResult.results) {
+    if (!targetAuth.tokenAuthResult) continue;
+
+    const tokenResult = tokens.get(targetAuth.tokenAuthResult);
+    if (!tokenResult) continue;
+
+    if (tokenResult.type === "NO_ISSUER") return "No suitable issuer";
+    if (tokenResult.type === "REQUEST_ERROR" || tokenResult.type === "ERROR") {
+      return "Failed to issue token";
+    }
+  }
+
+  const targetResults = provisionResults.get(authResult);
+  if (targetResults) {
+    let provisionedCount = 0;
+    let failedCount = 0;
+    let hasNoProvisioner = false;
+
+    for (const result of targetResults.values()) {
+      if (result.type === "PROVISIONED") {
+        ++provisionedCount;
+      } else {
+        ++failedCount;
+        if (result.type === "NO_PROVISIONER") hasNoProvisioner = true;
+      }
+    }
+
+    if (hasNoProvisioner && failedCount === targetResults.size) {
+      return "No suitable provisioner";
+    }
+
+    if (provisionedCount > 0 && failedCount > 0) {
+      return "Failed to provision to some targets";
+    }
+
+    return "Failed to provision";
+  }
+
+  return "Failed to provision";
+}
+
+function isFullyProvisioned(
+  authResult: ProvisionAuthResult,
+  provisionResults: Map<
+    ProvisionAuthResult,
+    Map<ProvisionAuthTargetResult, ProvisioningResult>
+  >,
+): boolean {
+  const targetResults = provisionResults.get(authResult);
+  if (!targetResults || targetResults.size === 0) return false;
+
+  for (const result of targetResults.values()) {
+    if (result.type !== "PROVISIONED") return false;
+  }
+
+  return true;
 }
 
 function targetCellChildren(
