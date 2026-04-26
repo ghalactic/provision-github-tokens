@@ -366,17 +366,17 @@ export function createTokenAuthorizer(
     const resolved: Permissions = {};
 
     for (const permission of Object.keys(want)) {
-      // Tier 1: max of all matching patterns
-      let maxPatternAccess: PermissionAccess | undefined;
+      // Tier 1: min of all matching patterns
+      let minPatternAccess: PermissionAccess | undefined;
 
       for (const [pattern, access] of permPatterns.patterns) {
         if (!pattern.test(permission)) continue;
 
         if (
-          maxPatternAccess == null ||
-          isSufficientAccess(access, maxPatternAccess)
+          minPatternAccess == null ||
+          isSufficientAccess(minPatternAccess, access)
         ) {
-          maxPatternAccess = access;
+          minPatternAccess = access;
         }
       }
 
@@ -387,7 +387,7 @@ export function createTokenAuthorizer(
         if (pattern.test(permission)) literalAccess = access;
       }
 
-      const finalAccess = literalAccess ?? maxPatternAccess;
+      const finalAccess = literalAccess ?? minPatternAccess;
       if (finalAccess != null) resolved[permission] = finalAccess;
     }
 
