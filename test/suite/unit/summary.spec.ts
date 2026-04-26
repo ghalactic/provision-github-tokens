@@ -27,6 +27,7 @@ type SummaryOutcome =
   | "no-issuer"
   | "issue-error"
   | "no-provisioner"
+  | "empty-provision-results"
   | "partial-failure"
   | "failed-provision";
 
@@ -641,6 +642,7 @@ it("renders failure reasons for provisioning outcomes", async () => {
       createAuthResult("SECRET_NO_ISSUER", [targetA]),
       createAuthResult("SECRET_ISSUE_ERROR", [targetA]),
       createAuthResult("SECRET_NO_PROVISIONER", [targetA]),
+      createAuthResult("SECRET_FAILED_PROVISION_EMPTY", [targetA]),
       createAuthResult("SECRET_PARTIAL_FAILURE", [targetA, targetB]),
       createAuthResult("SECRET_FAILED_PROVISION", [targetA]),
     ],
@@ -653,6 +655,7 @@ it("renders failure reasons for provisioning outcomes", async () => {
       SECRET_NO_ISSUER: "no-issuer",
       SECRET_ISSUE_ERROR: "issue-error",
       SECRET_NO_PROVISIONER: "no-provisioner",
+      SECRET_FAILED_PROVISION_EMPTY: "empty-provision-results",
       SECRET_PARTIAL_FAILURE: "partial-failure",
       SECRET_FAILED_PROVISION: "failed-provision",
     }),
@@ -743,6 +746,13 @@ function createSummaryResults(
         for (const targetAuth of authResult.results) {
           targetResults.set(targetAuth, { type: "NO_PROVISIONER" });
         }
+        setTokenResults(tokens, authResult, {
+          type: "CREATED",
+          token: createTestToken(),
+        });
+        break;
+
+      case "empty-provision-results":
         setTokenResults(tokens, authResult, {
           type: "CREATED",
           token: createTestToken(),
