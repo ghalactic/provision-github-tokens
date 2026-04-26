@@ -119,7 +119,7 @@ try {
     return await createTokens(tokenAuthorizer.listResults());
   });
 
-  const provisionResults = await group("Provisioning secrets", async () => {
+  const provisioningResults = await group("Provisioning secrets", async () => {
     return await provisionSecrets(tokens, provisionAuthorizer.listResults());
   });
 
@@ -130,7 +130,7 @@ try {
         actionUrl,
         authorizeResult,
         tokens,
-        provisionResults,
+        provisioningResults,
       ),
     )
     .write();
