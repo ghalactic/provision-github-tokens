@@ -1,4 +1,4 @@
-## Provisioned 992 of 1002 secrets
+### Provisioned 992 of 1002 secrets
 
 |    | Requester                               | Secret        | Targets                   |
 | :- | :-------------------------------------- | :------------ | :------------------------ |

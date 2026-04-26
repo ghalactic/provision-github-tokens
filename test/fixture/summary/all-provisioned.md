@@ -1,4 +1,4 @@
-## Provisioned 2 secrets
+### Provisioned 2 secrets
 
 |    | Requester                               | Secret     | Targets                   |
 | :- | :-------------------------------------- | :--------- | :------------------------ |

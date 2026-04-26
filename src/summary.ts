@@ -66,7 +66,7 @@ function statsHeading(provisionResults: ProvisionAuthResult[]): RootContent {
       ? `Provisioned ${pluralize(total, "secret", "secrets")}`
       : `Provisioned ${allowed} of ${pluralize(total, "secret", "secrets")}`;
 
-  return heading(2, text(headingText));
+  return heading(3, text(headingText));
 }
 
 function emptySection(
