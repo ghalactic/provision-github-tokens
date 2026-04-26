@@ -21,16 +21,16 @@ installations. If a provisioner app is installed on an org or repo, that org's
 repos become candidates. The action then checks each candidate for a requester
 config file.
 
-This creates a natural security boundary: only repos where an admin has
-deliberately installed the provisioner app can participate. It's also
-self-service — adding a repo requires installing the app and adding a config
-file, with no changes to the provider.
+This creates a natural security boundary: only repos accessible to a provisioner
+app installation can participate. Apps are typically installed at the org level,
+so adding a new requester is just adding a config file — no changes to the
+provider or app installation are needed.
 
 ## Consequences
 
 - Good, because the security boundary is enforced by GitHub's app installation
   model — no custom access control needed.
-- Good, because onboarding is self-service for org admins.
+- Good, because onboarding a new requester is just adding a config file.
 - Bad, because discovery requires enumerating all installations and their repos,
   which scales with the number of installations.
 
