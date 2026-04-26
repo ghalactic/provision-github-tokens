@@ -173,7 +173,7 @@ it("creates tokens based on token auth results", async () => {
         shared: false,
         as: undefined,
         account: "account-a",
-        repos: "all",
+        repos: ["repo-a", "repo-b"],
         permissions: { metadata: "read" },
       },
       repos: ["repo-a", "repo-b"],
@@ -348,7 +348,6 @@ it("isolates tokens by role even when other token shape fields match", async () 
   __setApps([appA]);
   __setInstallations([[appAInstallationA, [repoA]]]);
   __addInstallationToken(111, "all", { contents: "write" });
-  __addInstallationToken(111, "all", { contents: "write" });
 
   const createTokens = createTokenFactory(findIssuerOctokit);
 
@@ -395,7 +394,12 @@ it("isolates tokens by role even when other token shape fields match", async () 
 
   const results = await createTokens([roleAResult, roleBResult]);
 
-  expect(results.get(roleAResult)).not.toBe(results.get(roleBResult));
+  const roleATokenResult = results.get(roleAResult);
+  const roleBTokenResult = results.get(roleBResult);
+
+  expect(roleATokenResult).toHaveProperty("type", "CREATED");
+  expect(roleBTokenResult).toHaveProperty("type", "CREATED");
+  expect(roleATokenResult).not.toBe(roleBTokenResult);
 });
 
 it("does not deduplicate tokens with different permissions", async () => {

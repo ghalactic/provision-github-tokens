@@ -45,7 +45,7 @@ export function createTokenFactory(
   findIssuerOctokit: FindIssuerOctokit,
 ): TokenFactory {
   return async (authResults) => {
-    const cache: Record<string, TokenCreationResult> = {};
+    const cache: Partial<Record<string, TokenCreationResult>> = {};
     const creationResults = new Map<TokenAuthResult, TokenCreationResult>();
 
     for (const auth of authResults) {
@@ -113,7 +113,7 @@ export function createTokenFactory(
       let uniqueCreatedCount = 0;
 
       for (const key in cache) {
-        if (cache[key].type === "CREATED") {
+        if (cache[key]?.type === "CREATED") {
           ++uniqueCreatedCount;
         }
       }
