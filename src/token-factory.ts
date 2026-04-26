@@ -1,9 +1,11 @@
 import { info } from "@actions/core";
 import { RequestError } from "@octokit/request-error";
+import stringify from "fast-json-stable-stringify";
 import type { FindIssuerOctokit } from "./issuer-octokit.js";
 import { pluralize } from "./pluralize.js";
 import type { InstallationToken } from "./type/github-api.js";
 import type { TokenAuthResult } from "./type/token-auth-result.js";
+import type { TokenRequest } from "./token-request.js";
 
 export type TokenFactory = (
   authResults: TokenAuthResult[],
@@ -39,10 +41,20 @@ export type TokenCreationErrorResult = {
   error: unknown;
 };
 
+function tokenCreationCacheKey(request: TokenRequest): string {
+  return stringify({
+    account: request.tokenDec.account,
+    as: request.tokenDec.as,
+    permissions: request.tokenDec.permissions,
+    repos: request.repos,
+  });
+}
+
 export function createTokenFactory(
   findIssuerOctokit: FindIssuerOctokit,
 ): TokenFactory {
   return async (authResults) => {
+    const cache: Record<string, TokenCreationResult> = {};
     const creationResults = new Map<TokenAuthResult, TokenCreationResult>();
 
     for (const auth of authResults) {
@@ -52,12 +64,25 @@ export function createTokenFactory(
         continue;
       }
 
-      const found = findIssuerOctokit(auth.request);
-      if (!found) {
-        creationResults.set(auth, { type: "NO_ISSUER" });
+      const key = tokenCreationCacheKey(auth.request);
+      const cached = cache[key];
+
+      if (cached) {
+        creationResults.set(auth, cached);
 
         continue;
       }
+
+      const found = findIssuerOctokit(auth.request);
+
+      if (!found) {
+        const result: TokenCreationResult = { type: "NO_ISSUER" };
+        cache[key] = result;
+        creationResults.set(auth, result);
+
+        continue;
+      }
+
       const [octokit, issuerReg] = found;
 
       try {
@@ -69,13 +94,16 @@ export function createTokenFactory(
             permissions: auth.request.tokenDec.permissions,
           });
 
-        creationResults.set(auth, { type: "CREATED", token });
+        const result: TokenCreationResult = { type: "CREATED", token };
+        cache[key] = result;
+        creationResults.set(auth, result);
       } catch (error) {
-        if (error instanceof RequestError) {
-          creationResults.set(auth, { type: "REQUEST_ERROR", error });
-        } else {
-          creationResults.set(auth, { type: "ERROR", error });
-        }
+        const result: TokenCreationResult =
+          error instanceof RequestError
+            ? { type: "REQUEST_ERROR", error }
+            : { type: "ERROR", error };
+        cache[key] = result;
+        creationResults.set(auth, result);
       }
     }
 
