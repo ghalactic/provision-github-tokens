@@ -141,6 +141,12 @@ ADRs live in `docs/adrs/`. **Always use the repo-local ADR skill** at
 project conventions (brevity, sentence case, no file paths, etc.) and walks you
 through the full workflow. Do not use globally installed ADR skills.
 
+**ADRs tend to come out too verbose on the first pass.** After completing a new
+ADR, immediately re-read it and cut it down as if a reviewer had said "The new
+ADR is too verbose." Tighten every section, remove redundant phrasing, and
+collapse multi-sentence explanations into single sentences where possible.
+Commit the trimmed version — not the first draft.
+
 **Consult ADRs during research.** When investigating an area of the codebase,
 search `docs/adrs/` for ADRs that relate to the subsystem or concept you're
 working on. ADRs capture the _why_ behind design decisions — reading them before
@@ -163,19 +169,20 @@ Write commit messages for **human readers**, not automated tooling.
 - **Wrap the body at 72 characters** and use it to explain _what_ and _why_, not
   _how_ (the code shows how)
 
-### Finishing a feature branch
+### Finishing a development branch
 
-When development on a feature branch is complete (all code, tests, and ADRs are
-committed), clean up Superpowers working files before the branch is merged:
+When development on a feature branch is complete (all code and tests are
+committed and passing), perform the following cleanup **before pushing and
+creating a PR**:
 
-1. **Delete plan and spec files** — Remove any files under `docs/superpowers/`
+1. **Distill decisions into ADRs** — Any architectural decisions made during the
+   feature branch should be captured in ADRs (using available ADR skills). ADRs
+   are the lasting record; plans and specs are ephemeral.
+2. **Delete plan and spec files** — Remove any files under `docs/superpowers/`
    (plans, specs, retros). These are useful during development but become stale
    quickly and confuse code reviewers when they don't match the final
    implementation. They remain in Git history for posterity.
-2. **Distill decisions into ADRs** — Any architectural decisions made during the
-   feature branch should be captured in ADRs (using available ADR skills) before
-   the working files are deleted. ADRs are the lasting record; plans and specs
-   are ephemeral.
+3. **Push and create the PR** — Only after the above steps are committed.
 
 ### Responding to PR feedback
 
