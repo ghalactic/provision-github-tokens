@@ -398,6 +398,194 @@ it("isolates tokens by role even when other token shape fields match", async () 
   expect(results.get(roleAResult)).not.toBe(results.get(roleBResult));
 });
 
+it("does not deduplicate tokens with different permissions", async () => {
+  const octokitFactory = createOctokitFactory();
+
+  const accountA = createTestInstallationAccount(
+    "Organization",
+    100,
+    "account-a",
+  );
+  const repoA = createTestInstallationRepo(accountA, "repo-a");
+  const appA = createTestApp(110, "app-a", "App A", {
+    metadata: "read",
+    contents: "read",
+  });
+  const appRegA: AppRegistration = {
+    app: appA,
+    issuer: { enabled: true, roles: [] },
+    provisioner: { enabled: false },
+  };
+  const appAInstallationA = createTestInstallation(111, appA, accountA, "all");
+  const appAInstallationRegA: InstallationRegistration = {
+    installation: appAInstallationA,
+    repos: [repoA],
+  };
+  const appRegistry = createAppRegistry();
+  appRegistry.registerApp(appRegA);
+  appRegistry.registerInstallation(appAInstallationRegA);
+
+  const appsInput: AppInput[] = [
+    {
+      appId: 110,
+      privateKey: "<private key A>",
+      issuer: { enabled: true, roles: [] },
+      provisioner: { enabled: false },
+    },
+  ];
+  const findIssuerOctokit = createFindIssuerOctokit(
+    octokitFactory,
+    appRegistry,
+    appsInput,
+  );
+
+  __setApps([appA]);
+  __setInstallations([[appAInstallationA, [repoA]]]);
+  __addInstallationToken(111, "all", { metadata: "read" });
+  __addInstallationToken(111, "all", { contents: "read" });
+
+  const createTokens = createTokenFactory(findIssuerOctokit);
+
+  const metadataResult: TokenAuthResult = {
+    type: "ALL_REPOS",
+    request: {
+      consumer: { account: "account-a" },
+      tokenDec: {
+        shared: false,
+        as: undefined,
+        account: "account-a",
+        repos: "all",
+        permissions: { metadata: "read" },
+      },
+      repos: "all",
+    },
+    maxWant: "read",
+    have: { metadata: "read" },
+    isSufficient: true,
+    isMissingRole: false,
+    isAllowed: true,
+    rules: [],
+  };
+  const contentsResult: TokenAuthResult = {
+    type: "ALL_REPOS",
+    request: {
+      consumer: { account: "account-a" },
+      tokenDec: {
+        shared: false,
+        as: undefined,
+        account: "account-a",
+        repos: "all",
+        permissions: { contents: "read" },
+      },
+      repos: "all",
+    },
+    maxWant: "read",
+    have: { contents: "read" },
+    isSufficient: true,
+    isMissingRole: false,
+    isAllowed: true,
+    rules: [],
+  };
+
+  const results = await createTokens([metadataResult, contentsResult]);
+
+  expect(results.get(metadataResult)).not.toBe(results.get(contentsResult));
+  expect(results.get(metadataResult)?.type).toBe("CREATED");
+  expect(results.get(contentsResult)?.type).toBe("CREATED");
+});
+
+it("does not deduplicate tokens with different repos", async () => {
+  const octokitFactory = createOctokitFactory();
+
+  const accountA = createTestInstallationAccount(
+    "Organization",
+    100,
+    "account-a",
+  );
+  const repoA = createTestInstallationRepo(accountA, "repo-a");
+  const appA = createTestApp(110, "app-a", "App A", { metadata: "read" });
+  const appRegA: AppRegistration = {
+    app: appA,
+    issuer: { enabled: true, roles: [] },
+    provisioner: { enabled: false },
+  };
+  const appAInstallationA = createTestInstallation(111, appA, accountA, "all");
+  const appAInstallationRegA: InstallationRegistration = {
+    installation: appAInstallationA,
+    repos: [repoA],
+  };
+  const appRegistry = createAppRegistry();
+  appRegistry.registerApp(appRegA);
+  appRegistry.registerInstallation(appAInstallationRegA);
+
+  const appsInput: AppInput[] = [
+    {
+      appId: 110,
+      privateKey: "<private key A>",
+      issuer: { enabled: true, roles: [] },
+      provisioner: { enabled: false },
+    },
+  ];
+  const findIssuerOctokit = createFindIssuerOctokit(
+    octokitFactory,
+    appRegistry,
+    appsInput,
+  );
+
+  __setApps([appA]);
+  __setInstallations([[appAInstallationA, [repoA]]]);
+  __addInstallationToken(111, "all", { metadata: "read" });
+
+  const createTokens = createTokenFactory(findIssuerOctokit);
+
+  const allReposResult: TokenAuthResult = {
+    type: "ALL_REPOS",
+    request: {
+      consumer: { account: "account-a" },
+      tokenDec: {
+        shared: false,
+        as: undefined,
+        account: "account-a",
+        repos: "all",
+        permissions: { metadata: "read" },
+      },
+      repos: "all",
+    },
+    maxWant: "read",
+    have: { metadata: "read" },
+    isSufficient: true,
+    isMissingRole: false,
+    isAllowed: true,
+    rules: [],
+  };
+  const selectedReposResult: TokenAuthResult = {
+    type: "ALL_REPOS",
+    request: {
+      consumer: { account: "account-a" },
+      tokenDec: {
+        shared: false,
+        as: undefined,
+        account: "account-a",
+        repos: ["repo-a"],
+        permissions: { metadata: "read" },
+      },
+      repos: ["repo-a"],
+    },
+    maxWant: "read",
+    have: { metadata: "read" },
+    isSufficient: true,
+    isMissingRole: false,
+    isAllowed: true,
+    rules: [],
+  };
+
+  const results = await createTokens([allReposResult, selectedReposResult]);
+
+  expect(results.get(allReposResult)).not.toBe(
+    results.get(selectedReposResult),
+  );
+});
+
 it("does not return cached CREATED result for NOT_ALLOWED auth results", async () => {
   const octokitFactory = createOctokitFactory();
 
@@ -804,7 +992,8 @@ it("logs simple message when no tokens are deduplicated", async () => {
 
   await createTokens([consumerAResult]);
 
-  expect(__getOutput()).toContain("Created 1 token");
+  expect(__getOutput()).toContain("Created 1 token\n");
+  expect(__getOutput()).not.toContain("unique");
 });
 
 it("returns empty map when no token auth results are given", async () => {
