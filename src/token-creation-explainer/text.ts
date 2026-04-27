@@ -1,6 +1,5 @@
-import { debug } from "@actions/core";
 import { errorMessage, errorStack } from "../error.js";
-import { indent } from "../text.js";
+import { debugLines, indentLines } from "../text.js";
 import type { TokenCreationResult } from "../token-factory.js";
 import type { TokenAuthResult } from "../type/token-auth-result.js";
 import type { TokenCreationResultExplainer } from "../type/token-creation-result.js";
@@ -59,21 +58,18 @@ function explainResult(
       const summary = `${DENIED_ICON} Failed to create token: ${result.error.status}: ${result.error.message}`;
       const body = result.error.response?.data;
 
-      if (typeof body === "undefined") {
-        debug(indent("  ", "(no response data)"));
-      } else {
-        debug(indent("  ", JSON.stringify(body, null, 2)));
-      }
+      const detail =
+        typeof body === "undefined"
+          ? "(no response data)"
+          : JSON.stringify(body, null, 2);
 
-      return summary;
+      return `${summary}\n${debugLines(indentLines("  ", detail))}`;
     }
 
     case "ERROR": {
       const summary = `${DENIED_ICON} Failed to create token: ${errorMessage(result.error)}`;
 
-      debug(indent("  ", errorStack(result.error)));
-
-      return summary;
+      return `${summary}\n${debugLines(indentLines("  ", errorStack(result.error)))}`;
     }
   }
 }

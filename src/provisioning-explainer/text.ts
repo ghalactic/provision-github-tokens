@@ -1,4 +1,3 @@
-import { debug } from "@actions/core";
 import { compareProvisionRequestTarget } from "../compare-provision-request-target.js";
 import { errorMessage, errorStack } from "../error.js";
 import {
@@ -7,7 +6,7 @@ import {
 } from "../github-reference.js";
 import type { ProvisionRequestTarget } from "../provision-request.js";
 import type { ProvisioningResult } from "../provisioner.js";
-import { indent } from "../text.js";
+import { debugLines, indentLines } from "../text.js";
 import type { ProvisioningResultExplainer } from "../type/provisioning-result.js";
 
 const SUCCESS_ICON = "✅";
@@ -73,15 +72,15 @@ export function createTextProvisioningExplainer(): ProvisioningResultExplainer<s
           `${result.error.status}: ${result.error.message}`;
         const body = result.error.response?.data;
 
-        if (typeof body === "undefined") {
-          debug(`${subject}:`);
-          debug(indent("    ", "(no response data)"));
-        } else {
-          debug(`${subject}:`);
-          debug(indent("    ", JSON.stringify(body, null, 2)));
-        }
+        const detail =
+          typeof body === "undefined"
+            ? "(no response data)"
+            : JSON.stringify(body, null, 2);
 
-        return `\n  ${summary}`;
+        return (
+          `\n  ${summary}` +
+          `\n${debugLines(indentLines("    ", `${subject}:\n${indentLines("    ", detail)}`))}`
+        );
       }
 
       case "ERROR": {
@@ -89,10 +88,10 @@ export function createTextProvisioningExplainer(): ProvisioningResultExplainer<s
           `${FAILURE_ICON} Failed to provision to ${subject}: ` +
           `${errorMessage(result.error)}`;
 
-        debug(`${subject}:`);
-        debug(indent("    ", errorStack(result.error)));
-
-        return `\n  ${summary}`;
+        return (
+          `\n  ${summary}` +
+          `\n${debugLines(indentLines("    ", `${subject}:\n${indentLines("    ", errorStack(result.error))}`))}`
+        );
       }
     }
   }

@@ -216,12 +216,12 @@ it("handles GitHub API errors when provisioning org-level Actions secrets", asyn
     "
     Secret #1:
 
-    ::debug::GitHub Actions secret in account-a:
-    ::debug::    {
-    ::debug::      "message": "Resource not accessible"
-    ::debug::    }
     ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
       ❌ Failed to provision to GitHub Actions secret in account-a: 403: 
+    ::debug::    GitHub Actions secret in account-a:
+    ::debug::        {
+    ::debug::          "message": "Resource not accessible"
+    ::debug::        }
     "
   `);
 });
@@ -266,11 +266,11 @@ it("handles unexpected errors when provisioning org-level Actions secrets", asyn
     "
     Secret #1:
 
-    ::debug::GitHub Actions secret in account-a:
-    ::debug::    Error: <message>
-    ::debug::        at provisioner.ts:1:1
     ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
       ❌ Failed to provision to GitHub Actions secret in account-a: <message>
+    ::debug::    GitHub Actions secret in account-a:
+    ::debug::        Error: <message>
+    ::debug::            at provisioner.ts:1:1
     "
   `);
 });
