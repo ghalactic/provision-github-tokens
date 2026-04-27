@@ -217,7 +217,7 @@ it("handles GitHub API errors when provisioning org-level Actions secrets", asyn
     Secret #1:
 
     ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
-      ❌ Failed to provision to GitHub Actions secret in account-a: 403: Forbidden
+      ❌ Failed to provision to GitHub Actions secret in account-a: 403 - Forbidden
     ::debug::      {
     ::debug::        "message": "Resource not accessible"
     ::debug::      }
