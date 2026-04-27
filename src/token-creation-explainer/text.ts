@@ -30,8 +30,8 @@ export function createTextTokenCreationExplainer(
 
     if (
       creationResult.type === "CREATED" &&
-      currentIndex !== undefined &&
-      firstIndex !== undefined &&
+      typeof currentIndex !== "undefined" &&
+      typeof firstIndex !== "undefined" &&
       firstIndex !== currentIndex
     ) {
       return `${ALLOWED_ICON} Same token as #${firstIndex + 1}`;
@@ -61,10 +61,10 @@ function explainResult(
       const summary = `${DENIED_ICON} Failed to create token: ${result.error.status}: ${result.error.message}`;
       const body = result.error.response?.data;
 
-      if (body !== undefined) {
-        debugMultiLine("  ", JSON.stringify(body, null, 2));
-      } else {
+      if (typeof body === "undefined") {
         debugMultiLine("  ", "(no response data)");
+      } else {
+        debugMultiLine("  ", JSON.stringify(body, null, 2));
       }
 
       return summary;
