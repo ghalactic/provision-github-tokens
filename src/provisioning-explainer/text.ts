@@ -23,12 +23,21 @@ export function createTextProvisioningExplainer(): ProvisioningResultExplainer<s
     const allProvisioned = [...targetResults.values()].every(
       (result) => result.type === "PROVISIONED",
     );
+    const noneProvisioned = [...targetResults.values()].every(
+      (result) => result.type !== "PROVISIONED",
+    );
+
+    const status = allProvisioned
+      ? "was provisioned"
+      : noneProvisioned
+        ? "wasn't provisioned"
+        : "was partially provisioned";
+    const icon = allProvisioned ? SUCCESS_ICON : FAILURE_ICON;
 
     let output =
-      `${allProvisioned ? SUCCESS_ICON : FAILURE_ICON} ` +
-      `Repo ${repoRefToString(authResult.request.requester)} ` +
-      `${allProvisioned ? "provisioned" : "didn't fully provision"} ` +
-      `secret ${authResult.request.name}:`;
+      `${icon} ` +
+      `Secret ${authResult.request.name} ${status} ` +
+      `for repo ${repoRefToString(authResult.request.requester)}:`;
 
     for (const [targetAuth, result] of [...targetResults.entries()].sort(
       ([a], [b]) => compareProvisionRequestTarget(a.target, b.target),

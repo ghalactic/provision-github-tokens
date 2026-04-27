@@ -270,7 +270,7 @@ it("doesn't provision secrets when provisioning is not allowed", async () => {
     "
     Secret #1:
 
-    ❌ Repo account-a/repo-a didn't fully provision secret SECRET_A:
+    ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
       ❌ Not allowed to GitHub Actions secret in account-a
     "
   `);
@@ -306,7 +306,7 @@ it("doesn't provision secrets when the token wasn't created", async () => {
     "
     Secret #1:
 
-    ❌ Repo account-a/repo-a didn't fully provision secret SECRET_A:
+    ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
       ❌ Token wasn't created for GitHub Actions secret in account-a
     "
   `);
@@ -342,7 +342,7 @@ it("doesn't provision secrets when no suitable provisioners are found", async ()
     "
     Secret #1:
 
-    ❌ Repo account-a/repo-a didn't fully provision secret SECRET_A:
+    ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
       ❌ No suitable provisioner for GitHub Actions secret in account-x
     "
   `);
@@ -382,7 +382,7 @@ it("doesn't provision secrets when encryption fails with a GitHub API error", as
 
     ::debug::GitHub Actions secret in account-a:
     ::debug::    (no response data)
-    ❌ Repo account-a/repo-a didn't fully provision secret SECRET_A:
+    ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
       ❌ Failed to provision to GitHub Actions secret in account-a: 401: 
     "
   `);
@@ -425,7 +425,7 @@ it("doesn't provision secrets when encryption fails with an unexpected error", a
     ::debug::GitHub Actions secret in account-a:
     ::debug::    Error: <message>
     ::debug::        at encrypt.ts:1:1
-    ❌ Repo account-a/repo-a didn't fully provision secret SECRET_A:
+    ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
       ❌ Failed to provision to GitHub Actions secret in account-a: <message>
     "
   `);
@@ -504,14 +504,14 @@ it("can provision multiple secrets of the same type", async () => {
     "
     Secret #1:
 
-    ✅ Repo account-a/repo-a provisioned secret SECRET_A:
+    ✅ Secret SECRET_A was provisioned for repo account-a/repo-a:
       ✅ Provisioned to GitHub Actions secret in account-a
       ✅ Provisioned to GitHub Actions secret in account-a/repo-a
       ✅ Provisioned to GitHub environment env-a secret in account-a/repo-a
 
     Secret #2:
 
-    ✅ Repo account-a/repo-a provisioned secret SECRET_B:
+    ✅ Secret SECRET_B was provisioned for repo account-a/repo-a:
       ✅ Provisioned to GitHub Actions secret in account-a
       ✅ Provisioned to GitHub Actions secret in account-a/repo-a
       ✅ Provisioned to GitHub environment env-a secret in account-a/repo-a
@@ -596,7 +596,7 @@ it("can provision a secret to multiple targets", async () => {
     "
     Secret #1:
 
-    ✅ Repo account-a/repo-a provisioned secret SECRET_A:
+    ✅ Secret SECRET_A was provisioned for repo account-a/repo-a:
       ✅ Provisioned to GitHub Actions secret in account-a
       ✅ Provisioned to GitHub Codespaces secret in account-a
       ✅ Provisioned to Dependabot secret in account-a
@@ -679,12 +679,12 @@ it("doesn't stop provisioning when some targets fail", async () => {
     "
     Secret #1:
 
-    ❌ Repo account-a/repo-a didn't fully provision secret SECRET_A:
+    ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
       ❌ Not allowed to GitHub Actions secret in account-a
 
     Secret #2:
 
-    ❌ Repo account-a/repo-a didn't fully provision secret SECRET_A:
+    ❌ Secret SECRET_A was partially provisioned for repo account-a/repo-a:
       ❌ Token wasn't created for GitHub Actions secret in account-a
       ✅ Provisioned to GitHub Actions secret in account-a
       ❌ No suitable provisioner for GitHub Actions secret in account-x

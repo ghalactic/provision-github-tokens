@@ -220,7 +220,7 @@ it("handles GitHub API errors when provisioning org-level Actions secrets", asyn
     ::debug::    {
     ::debug::      "message": "Resource not accessible"
     ::debug::    }
-    ❌ Repo account-a/repo-a didn't fully provision secret SECRET_A:
+    ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
       ❌ Failed to provision to GitHub Actions secret in account-a: 403: 
     "
   `);
@@ -269,7 +269,7 @@ it("handles unexpected errors when provisioning org-level Actions secrets", asyn
     ::debug::GitHub Actions secret in account-a:
     ::debug::    Error: <message>
     ::debug::        at provisioner.ts:1:1
-    ❌ Repo account-a/repo-a didn't fully provision secret SECRET_A:
+    ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
       ❌ Failed to provision to GitHub Actions secret in account-a: <message>
     "
   `);
