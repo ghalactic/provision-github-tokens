@@ -10,8 +10,8 @@ import type { ProvisioningResult } from "../provisioner.js";
 import { indent } from "../text.js";
 import type { ProvisioningResultExplainer } from "../type/provisioning-result.js";
 
-const ALLOWED_ICON = "✅";
-const DENIED_ICON = "❌";
+const SUCCESS_ICON = "✅";
+const FAILURE_ICON = "❌";
 
 export function createTextProvisioningExplainer(): ProvisioningResultExplainer<string> {
   return (authResult, targetResults) => {
@@ -22,7 +22,7 @@ export function createTextProvisioningExplainer(): ProvisioningResultExplainer<s
       );
 
     let output =
-      `${renderIcon(allProvisioned)} ` +
+      `${allProvisioned ? SUCCESS_ICON : FAILURE_ICON} ` +
       `Repo ${repoRefToString(authResult.request.requester)} ` +
       `${allProvisioned ? "provisioned" : "didn't fully provision"} ` +
       `secret ${authResult.request.name}:`;
@@ -44,20 +44,20 @@ export function createTextProvisioningExplainer(): ProvisioningResultExplainer<s
 
     switch (result.type) {
       case "PROVISIONED":
-        return `\n  ${ALLOWED_ICON} Provisioned to ${subject}`;
+        return `\n  ${SUCCESS_ICON} Provisioned to ${subject}`;
 
       case "NOT_ALLOWED":
-        return `\n  ${DENIED_ICON} Not allowed to ${subject}`;
+        return `\n  ${FAILURE_ICON} Not allowed to ${subject}`;
 
       case "NO_TOKEN":
-        return `\n  ${DENIED_ICON} Token wasn't created for ${subject}`;
+        return `\n  ${FAILURE_ICON} Token wasn't created for ${subject}`;
 
       case "NO_PROVISIONER":
-        return `\n  ${DENIED_ICON} No suitable provisioner app for ${subject}`;
+        return `\n  ${FAILURE_ICON} No suitable provisioner app for ${subject}`;
 
       case "REQUEST_ERROR": {
         const summary =
-          `${DENIED_ICON} Failed to provision to ${subject}: ` +
+          `${FAILURE_ICON} Failed to provision to ${subject}: ` +
           `${result.error.status}: ${result.error.message}`;
         const body = result.error.response?.data;
 
@@ -74,7 +74,7 @@ export function createTextProvisioningExplainer(): ProvisioningResultExplainer<s
 
       case "ERROR": {
         const summary =
-          `${DENIED_ICON} Failed to provision to ${subject}: ` +
+          `${FAILURE_ICON} Failed to provision to ${subject}: ` +
           `${errorMessage(result.error)}`;
 
         debug(`${subject}:`);
@@ -108,8 +108,4 @@ export function createTextProvisioningExplainer(): ProvisioningResultExplainer<s
 
     return `${type} secret in ${accountOrRepoRefToString(target.target)}`;
   }
-}
-
-function renderIcon(isAllowed: boolean): string {
-  return isAllowed ? ALLOWED_ICON : DENIED_ICON;
 }
