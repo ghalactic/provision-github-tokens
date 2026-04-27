@@ -15,11 +15,14 @@ const FAILURE_ICON = "❌";
 
 export function createTextProvisioningExplainer(): ProvisioningResultExplainer<string> {
   return (authResult, targetResults) => {
-    const allProvisioned =
-      targetResults.size > 0 &&
-      [...targetResults.values()].every(
-        (result) => result.type === "PROVISIONED",
-      );
+    /* istanbul ignore next - @preserve */
+    if (targetResults.size < 1) {
+      throw new Error("Invariant violation: targetResults must not be empty");
+    }
+
+    const allProvisioned = [...targetResults.values()].every(
+      (result) => result.type === "PROVISIONED",
+    );
 
     let output =
       `${allProvisioned ? SUCCESS_ICON : FAILURE_ICON} ` +
