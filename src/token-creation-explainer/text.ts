@@ -17,10 +17,7 @@ export function createTextTokenCreationExplainer(
   let index = 0;
   for (const [authResult, result] of results) {
     authResultIndexes.set(authResult, index);
-
-    if (!resultIndexes.has(result)) {
-      resultIndexes.set(result, index);
-    }
+    if (!resultIndexes.has(result)) resultIndexes.set(result, index);
 
     ++index;
   }
