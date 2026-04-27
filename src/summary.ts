@@ -7,7 +7,6 @@ import {
   type AccountOrRepoReference,
 } from "./github-reference.js";
 import {
-  accountOrRepoDefinition,
   accountOrRepoLinkRef,
   gfmAlert,
   heading,
@@ -34,27 +33,30 @@ export function renderSummary(
   githubServerUrl: string,
   actionUrl: string,
   authResult: AuthorizeResult,
-  tokens: Map<TokenAuthResult, TokenCreationResult>,
+  tokenCreationResults: Map<TokenAuthResult, TokenCreationResult>,
   provisionResults: Map<
     ProvisionAuthResult,
     Map<ProvisionAuthTargetResult, ProvisioningResult>
   >,
 ): string {
   const { provisionResults: authResults } = authResult;
-  const allDenied = authResults.filter(
+
+  const allDeniedRows = authResults.filter(
     (r) => !isFullyProvisioned(r, provisionResults),
   );
-  const allAllowed = authResults.filter((r) =>
+  const allAllowedRows = authResults.filter((r) =>
     isFullyProvisioned(r, provisionResults),
   );
 
-  const denied = allDenied.slice(0, MAX_ROWS);
-  const remaining = Math.max(0, MAX_ROWS - denied.length);
-  const allowed = allAllowed.slice(0, remaining);
-  const displayed = [...denied, ...allowed];
+  const deniedRows = allDeniedRows.slice(0, MAX_ROWS);
+  const remainingRowCount = Math.max(0, MAX_ROWS - deniedRows.length);
+  const allowedRows = allAllowedRows.slice(0, remainingRowCount);
 
-  const omitted =
-    allDenied.length - denied.length + (allAllowed.length - allowed.length);
+  const omittedDeniedCount = allDeniedRows.length - deniedRows.length;
+  const omittedAllowedCount = allAllowedRows.length - allowedRows.length;
+  const omittedCount = omittedDeniedCount + omittedAllowedCount;
+
+  const definitions: Record<string, string> = {};
 
   return toMarkdown(
     {
@@ -62,10 +64,16 @@ export function renderSummary(
       children: [
         statsHeading(authResults, provisionResults),
         ...emptySection(authResults, authResult, actionUrl),
-        ...failuresTable(denied, tokens, provisionResults),
-        ...successesTable(allowed),
-        ...omittedNotice(authResults.length, omitted),
-        ...definitions(githubServerUrl, displayed),
+        ...failuresTable(
+          deniedRows,
+          tokenCreationResults,
+          provisionResults,
+          definitions,
+          githubServerUrl,
+        ),
+        ...successesTable(allowedRows, definitions, githubServerUrl),
+        ...omittedNotice(authResults.length, omittedCount),
+        ...definitionsAst(definitions),
       ],
     },
     { bullet: "-", extensions: [gfmToMarkdown()] },
@@ -79,17 +87,20 @@ function statsHeading(
     Map<ProvisionAuthTargetResult, ProvisioningResult>
   >,
 ): RootContent {
-  const total = authResults.length;
-  const allowed = authResults.filter((r) =>
+  const totalCount = authResults.length;
+  const allowedCount = authResults.filter((r) =>
     isFullyProvisioned(r, provisionResults),
   ).length;
 
-  const headingText =
-    allowed === total
-      ? `Provisioned ${pluralize(total, "secret", "secrets")}`
-      : `Provisioned ${allowed} of ${pluralize(total, "secret", "secrets")}`;
-
-  return heading(3, text(headingText));
+  return heading(
+    3,
+    text(
+      allowedCount === totalCount
+        ? `Provisioned ${pluralize(totalCount, "secret", "secrets")}`
+        : `Provisioned ${allowedCount} of ` +
+            `${pluralize(totalCount, "secret", "secrets")}`,
+    ),
+  );
 }
 
 function emptySection(
@@ -112,14 +123,16 @@ function emptySection(
 }
 
 function failuresTable(
-  denied: ProvisionAuthResult[],
-  tokens: Map<TokenAuthResult, TokenCreationResult>,
+  deniedRows: ProvisionAuthResult[],
+  tokenCreationResults: Map<TokenAuthResult, TokenCreationResult>,
   provisionResults: Map<
     ProvisionAuthResult,
     Map<ProvisionAuthTargetResult, ProvisioningResult>
   >,
+  definitions: Record<string, string>,
+  githubServerUrl: string,
 ): RootContent[] {
-  if (denied.length === 0) return [];
+  if (deniedRows.length === 0) return [];
 
   return [
     table(
@@ -131,32 +144,47 @@ function failuresTable(
         [text("Targets")],
         [text("Reason")],
       ],
-      denied.map((r) => failureRow(r, tokens, provisionResults)),
+      deniedRows.map((r) =>
+        failureRow(
+          r,
+          tokenCreationResults,
+          provisionResults,
+          definitions,
+          githubServerUrl,
+        ),
+      ),
     ),
   ];
 }
 
-function successesTable(allowed: ProvisionAuthResult[]): RootContent[] {
-  if (allowed.length === 0) return [];
+function successesTable(
+  allowedRows: ProvisionAuthResult[],
+  definitions: Record<string, string>,
+  githubServerUrl: string,
+): RootContent[] {
+  if (allowedRows.length === 0) return [];
 
   return [
     table(
       ["left", "left", "left", "left"],
       [[], [text("Requester")], [text("Secret")], [text("Targets")]],
-      allowed.map((r) => successRow(r)),
+      allowedRows.map((r) => successRow(r, definitions, githubServerUrl)),
     ),
   ];
 }
 
-function omittedNotice(total: number, omitted: number): RootContent[] {
-  if (omitted === 0) return [];
+function omittedNotice(
+  totalCount: number,
+  omittedCount: number,
+): RootContent[] {
+  if (omittedCount === 0) return [];
 
   return [
     gfmAlert(
       "IMPORTANT",
       paragraph(
         text(
-          `Showing ${total - omitted} of ${total} secrets. ` +
+          `Showing ${totalCount - omittedCount} of ${totalCount} secrets. ` +
             `Check the logs for the full list.`,
         ),
       ),
@@ -164,35 +192,45 @@ function omittedNotice(total: number, omitted: number): RootContent[] {
   ];
 }
 
-function successRow(result: ProvisionAuthResult): TableCell["children"][] {
+function successRow(
+  result: ProvisionAuthResult,
+  definitions: Record<string, string>,
+  githubServerUrl: string,
+): TableCell["children"][] {
+  addAccountOrRepoDef(definitions, githubServerUrl, result.request.requester);
+
   return [
     [text(renderIcon(true))],
     [accountOrRepoLinkRef(result.request.requester)],
     [inlineCode(result.request.name)],
-    targetCellChildren(result.request.to),
+    targetCellChildren(result.request.to, definitions, githubServerUrl),
   ];
 }
 
 function failureRow(
   result: ProvisionAuthResult,
-  tokens: Map<TokenAuthResult, TokenCreationResult>,
+  tokenCreationResults: Map<TokenAuthResult, TokenCreationResult>,
   provisionResults: Map<
     ProvisionAuthResult,
     Map<ProvisionAuthTargetResult, ProvisioningResult>
   >,
+  definitions: Record<string, string>,
+  githubServerUrl: string,
 ): TableCell["children"][] {
+  addAccountOrRepoDef(definitions, githubServerUrl, result.request.requester);
+
   return [
     [text(renderIcon(false))],
     [accountOrRepoLinkRef(result.request.requester)],
     [inlineCode(result.request.name)],
-    targetCellChildren(result.request.to),
-    [text(failureReason(result, tokens, provisionResults))],
+    targetCellChildren(result.request.to, definitions, githubServerUrl),
+    [text(failureReason(result, tokenCreationResults, provisionResults))],
   ];
 }
 
 function failureReason(
   authResult: ProvisionAuthResult,
-  tokens: Map<TokenAuthResult, TokenCreationResult>,
+  tokenCreationResults: Map<TokenAuthResult, TokenCreationResult>,
   provisionResults: Map<
     ProvisionAuthResult,
     Map<ProvisionAuthTargetResult, ProvisioningResult>
@@ -216,7 +254,7 @@ function failureReason(
       );
     }
 
-    const tokenResult = tokens.get(targetAuth.tokenAuthResult);
+    const tokenResult = tokenCreationResults.get(targetAuth.tokenAuthResult);
 
     /* istanbul ignore next - @preserve */
     if (!tokenResult) {
@@ -225,9 +263,13 @@ function failureReason(
       );
     }
 
-    if (tokenResult.type === "NO_ISSUER") return "No suitable issuer";
-    if (tokenResult.type === "REQUEST_ERROR" || tokenResult.type === "ERROR") {
-      return "Failed to issue token";
+    switch (tokenResult.type) {
+      case "NO_ISSUER":
+        return "No suitable issuer";
+
+      case "REQUEST_ERROR":
+      case "ERROR":
+        return "Failed to issue token";
     }
   }
 
@@ -272,7 +314,8 @@ function isFullyProvisioned(
   >,
 ): boolean {
   const targetResults = provisionResults.get(authResult);
-  if (!targetResults || targetResults.size === 0) return false;
+
+  if (!targetResults?.size) return false;
 
   for (const result of targetResults.values()) {
     if (result.type !== "PROVISIONED") return false;
@@ -283,67 +326,51 @@ function isFullyProvisioned(
 
 function targetCellChildren(
   targets: ProvisionRequestTarget[],
+  definitions: Record<string, string>,
+  githubServerUrl: string,
 ): TableCell["children"] {
   const seen = new Set<string>();
-  const refs: AccountOrRepoReference[] = [];
+  const refs: [key: string, ref: AccountOrRepoReference][] = [];
 
   for (const t of targets) {
+    addAccountOrRepoDef(definitions, githubServerUrl, t.target);
     const key = accountOrRepoRefToString(t.target).toLowerCase();
 
     if (!seen.has(key)) {
       seen.add(key);
-      refs.push(t.target);
+      refs.push([key, t.target]);
     }
   }
 
-  refs.sort((a, b) =>
-    accountOrRepoRefToString(a)
-      .toLowerCase()
-      .localeCompare(accountOrRepoRefToString(b).toLowerCase()),
-  );
+  refs.sort(([a], [b]) => a.localeCompare(b));
 
   const children: TableCell["children"] = [];
 
-  for (let i = 0; i < refs.length; i++) {
+  for (let i = 0; i < refs.length; ++i) {
     if (i > 0) children.push(text(", "));
-    children.push(accountOrRepoLinkRef(refs[i]));
+    children.push(accountOrRepoLinkRef(refs[i][1]));
   }
 
   return children;
 }
 
-function definitions(
+function definitionsAst(definitions: Record<string, string>): RootContent[] {
+  return Object.entries(definitions)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([identifier, url]) => ({
+      type: "definition",
+      identifier,
+      label: identifier,
+      url,
+      title: null,
+    }));
+}
+
+function addAccountOrRepoDef(
+  definitions: Record<string, string>,
   githubServerUrl: string,
-  provisionResults: ProvisionAuthResult[],
-): RootContent[] {
-  const seen = new Set<string>();
-  const refs: AccountOrRepoReference[] = [];
-
-  for (const r of provisionResults) {
-    const requesterKey = accountOrRepoRefToString(
-      r.request.requester,
-    ).toLowerCase();
-
-    if (!seen.has(requesterKey)) {
-      seen.add(requesterKey);
-      refs.push(r.request.requester);
-    }
-
-    for (const t of r.request.to) {
-      const targetKey = accountOrRepoRefToString(t.target).toLowerCase();
-
-      if (!seen.has(targetKey)) {
-        seen.add(targetKey);
-        refs.push(t.target);
-      }
-    }
-  }
-
-  refs.sort((a, b) =>
-    accountOrRepoRefToString(a)
-      .toLowerCase()
-      .localeCompare(accountOrRepoRefToString(b).toLowerCase()),
-  );
-
-  return refs.map((ref) => accountOrRepoDefinition(githubServerUrl, ref));
+  accountOrRepo: AccountOrRepoReference,
+): void {
+  const slug = accountOrRepoRefToString(accountOrRepo).toLowerCase();
+  definitions[`gh/${slug}`] = new URL(slug, githubServerUrl).toString();
 }

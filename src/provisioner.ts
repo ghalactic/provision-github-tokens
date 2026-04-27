@@ -158,7 +158,7 @@ export function createProvisioner(
       }
     } else {
       info("");
-      warning("❌ No secrets were provisioned");
+      warning("⚠️ No secrets were provisioned");
     }
 
     return provisionResults;

@@ -115,12 +115,15 @@ try {
     return await authorizer.authorize(Array.from(requesters.values()));
   });
 
-  const tokens = await group("Creating tokens", async () => {
+  const tokenCreationResults = await group("Creating tokens", async () => {
     return await createTokens(tokenAuthorizer.listResults());
   });
 
   const provisioningResults = await group("Provisioning secrets", async () => {
-    return await provisionSecrets(tokens, provisionAuthorizer.listResults());
+    return await provisionSecrets(
+      tokenCreationResults,
+      provisionAuthorizer.listResults(),
+    );
   });
 
   await summary
@@ -129,7 +132,7 @@ try {
         githubServerUrl,
         actionUrl,
         authorizeResult,
-        tokens,
+        tokenCreationResults,
         provisioningResults,
       ),
     )

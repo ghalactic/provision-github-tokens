@@ -1,4 +1,3 @@
-// src/type/provisioning-result.ts
 import type { ProvisioningResult } from "../provisioner.js";
 import type {
   ProvisionAuthResult,

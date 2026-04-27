@@ -696,7 +696,7 @@ it("warns when no auth results are provided", async () => {
   expect(results.size).toBe(0);
   expect(__getOutput()).toMatchInlineSnapshot(`
     "
-    ::warning::❌ No secrets were provisioned
+    ::warning::⚠️ No secrets were provisioned
     "
   `);
 });

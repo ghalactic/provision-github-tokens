@@ -102,7 +102,7 @@ export function createTokenFactory(
       }
     } else {
       info("");
-      warning("❌ No tokens were created");
+      warning("⚠️ No tokens were created");
     }
 
     return creationResults;

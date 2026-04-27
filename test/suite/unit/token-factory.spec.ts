@@ -1116,7 +1116,7 @@ it("returns empty map when no token auth results are given", async () => {
   expect(Array.from(results.entries())).toEqual([]);
   expect(__getOutput()).toMatchInlineSnapshot(`
     "
-    ::warning::❌ No tokens were created
+    ::warning::⚠️ No tokens were created
     "
   `);
 });
