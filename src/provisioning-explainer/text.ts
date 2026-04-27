@@ -69,7 +69,7 @@ export function createTextProvisioningExplainer(): ProvisioningResultExplainer<s
       case "REQUEST_ERROR": {
         const summary =
           `${FAILURE_ICON} Failed to provision to ${subject}: ` +
-          `${result.error.status}: ${result.error.message}`;
+          `${result.error.status} - ${result.error.message}`;
         const body = result.error.response?.data;
 
         const detail =

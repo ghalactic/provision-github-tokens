@@ -221,7 +221,7 @@ it("creates tokens based on token auth results", async () => {
 
     Token #4:
 
-    ❌ Failed to create token: 401: Unauthorized
+    ❌ Failed to create token: 401 - Unauthorized
     ::debug::    {
     ::debug::      "message": "Bad credentials"
     ::debug::    }
@@ -638,7 +638,7 @@ it("does not deduplicate tokens with different repos", async () => {
 
     Token #2:
 
-    ❌ Failed to create token: 401: Unauthorized
+    ❌ Failed to create token: 401 - Unauthorized
     ::debug::    (no response data)
     "
   `);
@@ -908,12 +908,12 @@ it("caches error results for identical token shapes", async () => {
     "
     Token #1:
 
-    ❌ Failed to create token: 401: Unauthorized
+    ❌ Failed to create token: 401 - Unauthorized
     ::debug::    (no response data)
 
     Token #2:
 
-    ❌ Failed to create token: 401: Unauthorized
+    ❌ Failed to create token: 401 - Unauthorized
     ::debug::    (no response data)
     "
   `);

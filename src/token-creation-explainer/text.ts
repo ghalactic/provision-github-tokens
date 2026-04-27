@@ -55,7 +55,7 @@ function explainResult(
       return `${DENIED_ICON} No suitable issuer`;
 
     case "REQUEST_ERROR": {
-      const summary = `${DENIED_ICON} Failed to create token: ${result.error.status}: ${result.error.message}`;
+      const summary = `${DENIED_ICON} Failed to create token: ${result.error.status} - ${result.error.message}`;
       const body = result.error.response?.data;
 
       const detail =
