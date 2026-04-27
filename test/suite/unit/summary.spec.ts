@@ -15,46 +15,6 @@ import type { TokenAuthResult } from "../../../src/type/token-auth-result.js";
 import { createTestSecretDec, createTestTokenDec } from "../../declaration.js";
 import { createTestTokenAuthorizer } from "../../token-authorizer.js";
 import { createTestTokenRequestFactory } from "../../token-request.js";
-
-const fixturesPath = join(import.meta.dirname, "../../fixture/summary");
-const githubServerUrl = "https://github.example.com";
-const testDocsUrl = "https://github.example.com/test/action";
-
-type SummaryOutcome =
-  | "success"
-  | "secret-not-allowed"
-  | "token-not-allowed"
-  | "no-issuer"
-  | "issue-error"
-  | "no-provisioner"
-  | "empty-provision-results"
-  | "partial-failure"
-  | "failed-provision";
-
-type SummaryTarget = {
-  platform: "github";
-  type: "actions";
-  target: { account: string };
-};
-
-function renderSummaryFixture(
-  authResult: AuthorizeResult,
-  outcomes: Record<string, SummaryOutcome> = {},
-): string {
-  const { tokens, provisionResults } = createSummaryResults(
-    authResult.provisionResults,
-    outcomes,
-  );
-
-  return renderSummary(
-    githubServerUrl,
-    testDocsUrl,
-    authResult,
-    tokens,
-    provisionResults,
-  );
-}
-
 it("renders a summary with all secrets provisioned", async () => {
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({
@@ -685,6 +645,45 @@ it("renders failure reasons for provisioning outcomes", async () => {
     };
   }
 });
+
+const fixturesPath = join(import.meta.dirname, "../../fixture/summary");
+const githubServerUrl = "https://github.example.com";
+const testDocsUrl = "https://github.example.com/test/action";
+
+type SummaryOutcome =
+  | "success"
+  | "secret-not-allowed"
+  | "token-not-allowed"
+  | "no-issuer"
+  | "issue-error"
+  | "no-provisioner"
+  | "empty-provision-results"
+  | "partial-failure"
+  | "failed-provision";
+
+type SummaryTarget = {
+  platform: "github";
+  type: "actions";
+  target: { account: string };
+};
+
+function renderSummaryFixture(
+  authResult: AuthorizeResult,
+  outcomes: Record<string, SummaryOutcome> = {},
+): string {
+  const { tokens, provisionResults } = createSummaryResults(
+    authResult.provisionResults,
+    outcomes,
+  );
+
+  return renderSummary(
+    githubServerUrl,
+    testDocsUrl,
+    authResult,
+    tokens,
+    provisionResults,
+  );
+}
 
 function createSummaryResults(
   authResults: ProvisionAuthResult[],
