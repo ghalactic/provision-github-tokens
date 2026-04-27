@@ -1,5 +1,6 @@
 import { debug } from "@actions/core";
 import { errorMessage, errorStack } from "../error.js";
+import { indent } from "../text.js";
 import type { TokenCreationResult } from "../token-factory.js";
 import type { TokenAuthResult } from "../type/token-auth-result.js";
 import type { TokenCreationResultExplainer } from "../type/token-creation-result.js";
@@ -62,9 +63,9 @@ function explainResult(
       const body = result.error.response?.data;
 
       if (typeof body === "undefined") {
-        debugMultiLine("  ", "(no response data)");
+        debug(indent("  ", "(no response data)"));
       } else {
-        debugMultiLine("  ", JSON.stringify(body, null, 2));
+        debug(indent("  ", JSON.stringify(body, null, 2)));
       }
 
       return summary;
@@ -73,15 +74,9 @@ function explainResult(
     case "ERROR": {
       const summary = `${DENIED_ICON} Failed to create token: ${errorMessage(result.error)}`;
 
-      debugMultiLine("  ", errorStack(result.error));
+      debug(indent("  ", errorStack(result.error)));
 
       return summary;
     }
-  }
-}
-
-function debugMultiLine(indent: string, text: string): void {
-  for (const line of text.split("\n")) {
-    debug(`${indent}${line}`);
   }
 }
