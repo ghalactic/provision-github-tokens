@@ -212,8 +212,7 @@ it("handles GitHub API errors when provisioning org-level Actions secrets", asyn
     ],
   ]);
 
-  const coreOutput = __getOutput();
-  expect(coreOutput).toMatchInlineSnapshot(`
+  expect(__getOutput()).toMatchInlineSnapshot(`
     "
     Secret #1:
 
@@ -263,8 +262,7 @@ it("handles unexpected errors when provisioning org-level Actions secrets", asyn
     [allowedResult, [[allowedResult.results[0], { type: "ERROR", error }]]],
   ]);
 
-  const coreOutput = __getOutput();
-  expect(coreOutput).toMatchInlineSnapshot(`
+  expect(__getOutput()).toMatchInlineSnapshot(`
     "
     Secret #1:
 
