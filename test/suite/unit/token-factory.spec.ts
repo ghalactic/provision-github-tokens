@@ -222,15 +222,15 @@ it("creates tokens based on token auth results", async () => {
     Token #4:
 
     ❌ Failed to create token: 401: 
-    ::debug::  {
-    ::debug::    "message": "Bad credentials"
-    ::debug::  }
+    ::debug::    {
+    ::debug::      "message": "Bad credentials"
+    ::debug::    }
 
     Token #5:
 
     ❌ Failed to create token: <message>
-    ::debug::  Error: <message>
-    ::debug::      at token-factory.ts:1:1
+    ::debug::    Error: <message>
+    ::debug::        at token-factory.ts:1:1
     "
   `);
 });
@@ -639,7 +639,7 @@ it("does not deduplicate tokens with different repos", async () => {
     Token #2:
 
     ❌ Failed to create token: 401: 
-    ::debug::  (no response data)
+    ::debug::    (no response data)
     "
   `);
 
@@ -909,12 +909,12 @@ it("caches error results for identical token shapes", async () => {
     Token #1:
 
     ❌ Failed to create token: 401: 
-    ::debug::  (no response data)
+    ::debug::    (no response data)
 
     Token #2:
 
     ❌ Failed to create token: 401: 
-    ::debug::  (no response data)
+    ::debug::    (no response data)
     "
   `);
   const cachedResult = results.get(consumerAResult);

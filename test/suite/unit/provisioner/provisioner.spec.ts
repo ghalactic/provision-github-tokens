@@ -382,7 +382,7 @@ it("doesn't provision secrets when encryption fails with a GitHub API error", as
 
     ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
       ❌ Failed to provision to GitHub Actions secret in account-a: 401: 
-    ::debug::    (no response data)
+    ::debug::      (no response data)
     "
   `);
 });
@@ -423,8 +423,8 @@ it("doesn't provision secrets when encryption fails with an unexpected error", a
 
     ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
       ❌ Failed to provision to GitHub Actions secret in account-a: <message>
-    ::debug::    Error: <message>
-    ::debug::        at encrypt.ts:1:1
+    ::debug::      Error: <message>
+    ::debug::          at encrypt.ts:1:1
     "
   `);
 });

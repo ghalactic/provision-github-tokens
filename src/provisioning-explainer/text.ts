@@ -78,7 +78,7 @@ export function createTextProvisioningExplainer(): ProvisioningResultExplainer<s
             : JSON.stringify(body, null, 2);
 
         return (
-          `\n  ${summary}` + `\n${debugLines(indentLines("    ", detail))}`
+          `\n  ${summary}` + `\n${debugLines(indentLines("      ", detail))}`
         );
       }
 
@@ -89,7 +89,7 @@ export function createTextProvisioningExplainer(): ProvisioningResultExplainer<s
 
         return (
           `\n  ${summary}` +
-          `\n${debugLines(indentLines("    ", errorStack(result.error)))}`
+          `\n${debugLines(indentLines("      ", errorStack(result.error)))}`
         );
       }
     }

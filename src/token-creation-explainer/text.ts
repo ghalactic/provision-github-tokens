@@ -63,13 +63,13 @@ function explainResult(
           ? "(no response data)"
           : JSON.stringify(body, null, 2);
 
-      return `${summary}\n${debugLines(indentLines("  ", detail))}`;
+      return `${summary}\n${debugLines(indentLines("    ", detail))}`;
     }
 
     case "ERROR": {
       const summary = `${DENIED_ICON} Failed to create token: ${errorMessage(result.error)}`;
 
-      return `${summary}\n${debugLines(indentLines("  ", errorStack(result.error)))}`;
+      return `${summary}\n${debugLines(indentLines("    ", errorStack(result.error)))}`;
     }
   }
 }
