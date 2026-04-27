@@ -634,7 +634,7 @@ export class TestRequestError extends RequestError {
   constructor(status: number, body?: unknown) {
     super("", status, {
       request: { method: "GET", url: "https://api.org/", headers: {} },
-      ...(body !== undefined && {
+      ...(typeof body !== "undefined" && {
         response: {
           url: "https://api.org/",
           status,

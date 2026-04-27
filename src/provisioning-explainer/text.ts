@@ -60,10 +60,10 @@ export function createTextProvisioningExplainer(): ProvisioningResultExplainer<s
           `${result.error.status}: ${result.error.message}`;
         const body = result.error.response?.data;
 
-        if (body !== undefined) {
-          debugTargetBlock(subject, JSON.stringify(body, null, 2));
-        } else {
+        if (typeof body === "undefined") {
           debugTargetBlock(subject, "(no response data)");
+        } else {
+          debugTargetBlock(subject, JSON.stringify(body, null, 2));
         }
 
         return `\n  ${summary}`;
