@@ -343,7 +343,7 @@ it("doesn't provision secrets when no suitable provisioners are found", async ()
     Secret #1:
 
     ❌ Repo account-a/repo-a didn't fully provision secret SECRET_A:
-      ❌ No suitable provisioner app for GitHub Actions secret in account-x
+      ❌ No suitable provisioner for GitHub Actions secret in account-x
     "
   `);
 });
@@ -687,7 +687,7 @@ it("doesn't stop provisioning when some targets fail", async () => {
     ❌ Repo account-a/repo-a didn't fully provision secret SECRET_A:
       ❌ Token wasn't created for GitHub Actions secret in account-a
       ✅ Provisioned to GitHub Actions secret in account-a
-      ❌ No suitable provisioner app for GitHub Actions secret in account-x
+      ❌ No suitable provisioner for GitHub Actions secret in account-x
     "
   `);
 });
