@@ -1,5 +1,5 @@
 import { errorMessage, errorStack } from "../error.js";
-import { debugLines, indentLines } from "../text.js";
+import { prefixLines } from "../text.js";
 import type { TokenCreationResult } from "../token-factory.js";
 import type { TokenAuthResult } from "../type/token-auth-result.js";
 import type { TokenCreationResultExplainer } from "../type/token-creation-result.js";
@@ -42,7 +42,7 @@ function explainResult(
   authResult: TokenAuthResult,
   result: TokenCreationResult,
 ): string {
-  const account = authResult.request.tokenDec.account;
+  const { account } = authResult.request.tokenDec;
 
   switch (result.type) {
     case "CREATED":
@@ -55,21 +55,24 @@ function explainResult(
       return `${DENIED_ICON} No suitable issuer`;
 
     case "REQUEST_ERROR": {
-      const summary = `${DENIED_ICON} Failed to create token: ${result.error.status} - ${result.error.message}`;
-      const body = result.error.response?.data;
+      const summary =
+        `${DENIED_ICON} Failed to create token: ` +
+        `${result.error.status} - ${result.error.message}`;
 
+      const body = result.error.response?.data;
       const detail =
         typeof body === "undefined"
           ? "(no response data)"
           : JSON.stringify(body, null, 2);
 
-      return `${summary}\n${debugLines(indentLines("    ", detail))}`;
+      return `${summary}\n${prefixLines("::debug::    ", detail)}`;
     }
 
     case "ERROR": {
-      const summary = `${DENIED_ICON} Failed to create token: ${errorMessage(result.error)}`;
-
-      return `${summary}\n${debugLines(indentLines("    ", errorStack(result.error)))}`;
+      return (
+        `${DENIED_ICON} Failed to create token: ${errorMessage(result.error)}` +
+        `\n${prefixLines("::debug::    ", errorStack(result.error))}`
+      );
     }
   }
 }

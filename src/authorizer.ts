@@ -56,7 +56,7 @@ export function createAuthorizer(
         }
       } else {
         info("");
-        warning("❌ No secrets were authorized");
+        warning("⚠️ No secrets were authorized");
       }
 
       if (tokenResults.length > 0) {
@@ -66,7 +66,7 @@ export function createAuthorizer(
         }
       } else {
         info("");
-        warning("❌ No tokens were authorized");
+        warning("⚠️ No tokens were authorized");
       }
 
       info("");

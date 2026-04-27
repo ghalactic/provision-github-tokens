@@ -476,7 +476,7 @@ it("handles empty token requests", async () => {
         ✅ Can provision secret based on 1 rule:
           ✅ Allowed by rule #1
 
-    ::warning::❌ No tokens were authorized
+    ::warning::⚠️ No tokens were authorized
 
     "
   `);
@@ -512,9 +512,9 @@ it("handles empty provision requests", async () => {
   } satisfies AuthorizeResult);
   expect(__getOutput()).toMatchInlineSnapshot(`
     "
-    ::warning::❌ No secrets were authorized
+    ::warning::⚠️ No secrets were authorized
 
-    ::warning::❌ No tokens were authorized
+    ::warning::⚠️ No tokens were authorized
 
     "
   `);

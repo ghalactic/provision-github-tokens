@@ -6,7 +6,7 @@ import {
 } from "../github-reference.js";
 import type { ProvisionRequestTarget } from "../provision-request.js";
 import type { ProvisioningResult } from "../provisioner.js";
-import { debugLines, indentLines } from "../text.js";
+import { prefixLines } from "../text.js";
 import type { ProvisioningResultExplainer } from "../type/provisioning-result.js";
 
 const SUCCESS_ICON = "✅";
@@ -20,10 +20,13 @@ export function createTextProvisioningExplainer(): ProvisioningResultExplainer<s
     }
 
     const allProvisioned = [...targetResults.values()].every(
-      (result) => result.type === "PROVISIONED",
+      (r) => r.type === "PROVISIONED",
     );
     const noneProvisioned = [...targetResults.values()].every(
-      (result) => result.type !== "PROVISIONED",
+      (r) => r.type !== "PROVISIONED",
+    );
+    const sortedTargetResults = [...targetResults.entries()].sort(([a], [b]) =>
+      compareProvisionRequestTarget(a.target, b.target),
     );
 
     const status = allProvisioned
@@ -38,9 +41,7 @@ export function createTextProvisioningExplainer(): ProvisioningResultExplainer<s
       `Secret ${authResult.request.name} ${status} ` +
       `for repo ${repoRefToString(authResult.request.requester)}:`;
 
-    for (const [targetAuth, result] of [...targetResults.entries()].sort(
-      ([a], [b]) => compareProvisionRequestTarget(a.target, b.target),
-    )) {
+    for (const [targetAuth, result] of sortedTargetResults) {
       output += explainTarget(targetAuth.target, result);
     }
 
@@ -77,19 +78,14 @@ export function createTextProvisioningExplainer(): ProvisioningResultExplainer<s
             ? "(no response data)"
             : JSON.stringify(body, null, 2);
 
-        return (
-          `\n  ${summary}` + `\n${debugLines(indentLines("      ", detail))}`
-        );
+        return `\n  ${summary}\n${prefixLines("::debug::      ", detail)}`;
       }
 
       case "ERROR": {
-        const summary =
-          `${FAILURE_ICON} Failed to provision to ${subject}: ` +
-          `${errorMessage(result.error)}`;
-
         return (
-          `\n  ${summary}` +
-          `\n${debugLines(indentLines("      ", errorStack(result.error)))}`
+          `\n  ${FAILURE_ICON} Failed to provision to ${subject}: ` +
+          `${errorMessage(result.error)}` +
+          `\n${prefixLines("::debug::      ", errorStack(result.error))}`
         );
       }
     }
