@@ -7,6 +7,7 @@ import {
 } from "../github-reference.js";
 import type { ProvisionRequestTarget } from "../provision-request.js";
 import type { ProvisioningResult } from "../provisioner.js";
+import { indent } from "../text.js";
 import type { ProvisioningResultExplainer } from "../type/provisioning-result.js";
 
 const ALLOWED_ICON = "✅";
@@ -61,9 +62,11 @@ export function createTextProvisioningExplainer(): ProvisioningResultExplainer<s
         const body = result.error.response?.data;
 
         if (typeof body === "undefined") {
-          debugTargetBlock(subject, "(no response data)");
+          debug(`${subject}:`);
+          debug(indent("    ", "(no response data)"));
         } else {
-          debugTargetBlock(subject, JSON.stringify(body, null, 2));
+          debug(`${subject}:`);
+          debug(indent("    ", JSON.stringify(body, null, 2)));
         }
 
         return `\n  ${summary}`;
@@ -74,7 +77,8 @@ export function createTextProvisioningExplainer(): ProvisioningResultExplainer<s
           `${DENIED_ICON} Failed to provision to ${subject}: ` +
           `${errorMessage(result.error)}`;
 
-        debugTargetBlock(subject, errorStack(result.error));
+        debug(`${subject}:`);
+        debug(indent("    ", errorStack(result.error)));
 
         return `\n  ${summary}`;
       }
@@ -104,17 +108,6 @@ export function createTextProvisioningExplainer(): ProvisioningResultExplainer<s
 
     return `${type} secret in ${accountOrRepoRefToString(target.target)}`;
   }
-}
-
-function debugMultiLine(indent: string, text: string): void {
-  for (const line of text.split("\n")) {
-    debug(`${indent}${line}`);
-  }
-}
-
-function debugTargetBlock(subject: string, text: string): void {
-  debug(`${subject}:`);
-  debugMultiLine("    ", text);
 }
 
 function renderIcon(isAllowed: boolean): string {
