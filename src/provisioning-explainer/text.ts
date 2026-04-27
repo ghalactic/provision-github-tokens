@@ -56,7 +56,7 @@ export function createTextProvisioningExplainer(): ProvisioningResultExplainer<s
         return `\n  ${FAILURE_ICON} Token wasn't created for ${subject}`;
 
       case "NO_PROVISIONER":
-        return `\n  ${FAILURE_ICON} No suitable provisioner app for ${subject}`;
+        return `\n  ${FAILURE_ICON} No suitable provisioner for ${subject}`;
 
       case "REQUEST_ERROR": {
         const summary =

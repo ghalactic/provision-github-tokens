@@ -213,7 +213,7 @@ it("creates tokens based on token auth results", async () => {
 
     Token #2:
 
-    ❌ No suitable issuer app
+    ❌ No suitable issuer
 
     Token #3:
 
@@ -808,11 +808,11 @@ it("caches NO_ISSUER results for identical token shapes", async () => {
     "
     Token #1:
 
-    ❌ No suitable issuer app
+    ❌ No suitable issuer
 
     Token #2:
 
-    ❌ No suitable issuer app
+    ❌ No suitable issuer
     "
   `);
   expect(results.get(consumerAResult)).toEqual({ type: "NO_ISSUER" });
