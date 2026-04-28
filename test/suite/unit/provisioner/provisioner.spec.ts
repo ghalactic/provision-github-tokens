@@ -240,6 +240,37 @@ beforeEach(() => {
   provisionSecrets = createProvisioner(findProvisionerOctokit, encryptSecret);
 });
 
+it("handles secrets with no targets to provision to", async () => {
+  const tokenResults = new Map<TokenAuthResult, TokenCreationResult>([
+    [tokenAuthResultA, tokenCreationResultCreatedA],
+  ]);
+
+  const missingTargetsResult: ProvisionAuthResult = {
+    request: {
+      requester: { account: "account-a", repo: "repo-a" },
+      tokenDec: tokenDecA,
+      tokenDecIsRegistered: true,
+      secretDec: secretDecA,
+      name: "SECRET_A",
+      to: [],
+    },
+    results: [],
+    isMissingTargets: true,
+    isAllowed: false,
+  };
+
+  await provisionSecrets(tokenResults, [missingTargetsResult]);
+
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "
+    Secret #1:
+
+    ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
+      ❌ No targets to provision to
+    "
+  `);
+});
+
 it("doesn't provision secrets when provisioning is not allowed", async () => {
   const tokenResults = new Map<TokenAuthResult, TokenCreationResult>([
     [tokenAuthResultA, tokenCreationResultCreatedA],

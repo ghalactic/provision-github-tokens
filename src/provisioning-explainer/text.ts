@@ -14,9 +14,13 @@ const FAILURE_ICON = "❌";
 
 export function createTextProvisioningExplainer(): ProvisioningResultExplainer<string> {
   return (authResult, targetResults) => {
-    /* istanbul ignore next - @preserve */
     if (targetResults.size < 1) {
-      throw new Error("Invariant violation: targetResults must not be empty");
+      return (
+        `${FAILURE_ICON} ` +
+        `Secret ${authResult.request.name} wasn't provisioned ` +
+        `for repo ${repoRefToString(authResult.request.requester)}:` +
+        `\n  ${FAILURE_ICON} No targets to provision to`
+      );
     }
 
     const allProvisioned = [...targetResults.values()].every(
