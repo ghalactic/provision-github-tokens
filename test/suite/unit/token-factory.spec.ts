@@ -148,7 +148,7 @@ it("creates tokens based on token auth results", async () => {
     rules: [],
   };
   const unauthorizedResult: TokenAuthResult = {
-    type: "ALL_REPOS",
+    type: "SELECTED_REPOS",
     request: {
       consumer: { account: "account-a" },
       tokenDec: {
@@ -161,14 +161,16 @@ it("creates tokens based on token auth results", async () => {
       repos: ["repo-a"],
     },
     maxWant: "read",
-    have: { metadata: "read" },
+    results: {
+      "repo-a": { rules: [], have: { metadata: "read" }, isSufficient: true },
+    },
+    isMatched: true,
     isSufficient: true,
     isMissingRole: false,
     isAllowed: true,
-    rules: [],
   };
   const errorResult: TokenAuthResult = {
-    type: "ALL_REPOS",
+    type: "SELECTED_REPOS",
     request: {
       consumer: { account: "account-a" },
       tokenDec: {
@@ -181,11 +183,14 @@ it("creates tokens based on token auth results", async () => {
       repos: ["repo-a", "repo-b"],
     },
     maxWant: "read",
-    have: { metadata: "read" },
+    results: {
+      "repo-a": { rules: [], have: { metadata: "read" }, isSufficient: true },
+      "repo-b": { rules: [], have: { metadata: "read" }, isSufficient: true },
+    },
+    isMatched: true,
     isSufficient: true,
     isMissingRole: false,
     isAllowed: true,
-    rules: [],
   };
 
   const results = await createTokens([
@@ -581,6 +586,7 @@ it("does not deduplicate tokens with different repos", async () => {
   __setApps([appA]);
   __setInstallations([[appAInstallationA, [repoA]]]);
   __addInstallationToken(111, "all", { metadata: "read" });
+  __addInstallationToken(111, ["repo-a"], { metadata: "read" });
 
   const createTokens = createTokenFactory(findIssuerOctokit);
 
@@ -605,7 +611,7 @@ it("does not deduplicate tokens with different repos", async () => {
     rules: [],
   };
   const selectedReposResult: TokenAuthResult = {
-    type: "ALL_REPOS",
+    type: "SELECTED_REPOS",
     request: {
       consumer: { account: "account-a" },
       tokenDec: {
@@ -618,11 +624,13 @@ it("does not deduplicate tokens with different repos", async () => {
       repos: ["repo-a"],
     },
     maxWant: "read",
-    have: { metadata: "read" },
+    results: {
+      "repo-a": { rules: [], have: { metadata: "read" }, isSufficient: true },
+    },
+    isMatched: true,
     isSufficient: true,
     isMissingRole: false,
     isAllowed: true,
-    rules: [],
   };
 
   const results = await createTokens([allReposResult, selectedReposResult]);
@@ -634,13 +642,10 @@ it("does not deduplicate tokens with different repos", async () => {
 
     Token #2:
 
-    ❌ Failed to create token: 401 - Unauthorized
-    ::debug::    (no response data)
+    ✅ Token created for account-a
     "
   `);
 
-  // FIXME: The explainer does not expose enough detail to distinguish these
-  // CREATED and REQUEST_ERROR results, so keep the identity check for now.
   expect(results.get(allReposResult)).not.toBe(
     results.get(selectedReposResult),
   );

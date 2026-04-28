@@ -292,7 +292,7 @@ export function Octokit({
             if (installation.app_id !== appId) continue;
             if (installation.id !== installation_id) continue;
 
-            const registeredRepos = repos.map((r) => r.full_name);
+            const registeredRepos = repos.map((r) => r.name);
 
             for (const token of installationTokens) {
               if (token.installationId !== installation_id) continue;
