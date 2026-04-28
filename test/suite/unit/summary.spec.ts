@@ -15,6 +15,7 @@ import type { TokenAuthResult } from "../../../src/type/token-auth-result.js";
 import { createTestSecretDec, createTestTokenDec } from "../../declaration.js";
 import { createTestTokenAuthorizer } from "../../token-authorizer.js";
 import { createTestTokenRequestFactory } from "../../token-request.js";
+
 it("renders a summary with all secrets provisioned", async () => {
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({
