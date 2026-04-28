@@ -237,7 +237,13 @@ function failureReason(
   >,
 ): string {
   if (authResult.isMissingTargets || authResult.request.to.length === 0) {
-    return "Failed to provision";
+    return "No targets to provision to";
+  }
+
+  if (authResult.request.tokenDec == null) {
+    return authResult.request.tokenDecIsRegistered
+      ? "Token declaration isn't shared"
+      : "Token declaration doesn't exist";
   }
 
   for (const targetAuth of authResult.results) {
