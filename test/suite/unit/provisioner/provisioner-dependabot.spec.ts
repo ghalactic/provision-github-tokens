@@ -248,15 +248,7 @@ it("handles unexpected errors when provisioning org-level Dependabot secrets", a
       await provisionSecrets(tokenResults, [allowedResult]),
     ),
   ).toEqual([
-    [
-      allowedResult,
-      [
-        [
-          allowedResult.results[0],
-          { type: "ERROR", error },
-        ],
-      ],
-    ],
+    [allowedResult, [[allowedResult.results[0], { type: "ERROR", error }]]],
   ]);
 
   expect(__getOutput()).toMatchInlineSnapshot(`
@@ -404,15 +396,7 @@ it("handles unexpected errors when provisioning repo-level Dependabot secrets", 
       await provisionSecrets(tokenResults, [allowedResult]),
     ),
   ).toEqual([
-    [
-      allowedResult,
-      [
-        [
-          allowedResult.results[0],
-          { type: "ERROR", error },
-        ],
-      ],
-    ],
+    [allowedResult, [[allowedResult.results[0], { type: "ERROR", error }]]],
   ]);
 
   expect(__getOutput()).toMatchInlineSnapshot(`

@@ -406,15 +406,7 @@ it("handles unexpected errors when provisioning repo-level Actions secrets", asy
       await provisionSecrets(tokenResults, [allowedResult]),
     ),
   ).toEqual([
-    [
-      allowedResult,
-      [
-        [
-          allowedResult.results[0],
-          { type: "ERROR", error },
-        ],
-      ],
-    ],
+    [allowedResult, [[allowedResult.results[0], { type: "ERROR", error }]]],
   ]);
 
   expect(__getOutput()).toMatchInlineSnapshot(`
