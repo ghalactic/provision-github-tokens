@@ -197,6 +197,8 @@ it("creates tokens based on token auth results", async () => {
   ]);
   expect(results.get(createdResult)).toMatchObject({
     type: "CREATED",
+    // FIXME: The Octokit mock returns a plain string instead of an
+    // InstallationToken object. Fix the mock to return { token, expires_at }.
     token: expect.any(String) as unknown as string,
   });
   expect(results.get(unauthorizedResult)).toMatchObject({
