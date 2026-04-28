@@ -433,9 +433,6 @@ it("isolates tokens by role even when other token shape fields match", async () 
     ✅ Token created for account-a
     "
   `);
-
-  // FIXME: The explainer does not expose enough detail to distinguish these
-  // non-deduplicated CREATED results, so keep the identity check for now.
   expect(results.get(roleAResult)).not.toBe(results.get(roleBResult));
 });
 
@@ -540,9 +537,6 @@ it("does not deduplicate tokens with different permissions", async () => {
     ✅ Token created for account-a
     "
   `);
-
-  // FIXME: The explainer does not expose enough detail to distinguish these
-  // non-deduplicated CREATED results, so keep the identity check for now.
   expect(results.get(metadataResult)).not.toBe(results.get(contentsResult));
 });
 
