@@ -302,7 +302,7 @@ it("doesn't provision secrets when provisioning is not allowed", async () => {
     Secret #1:
 
     ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
-      ❌ Not allowed to GitHub Actions secret in account-a
+      ❌ Not allowed to provision to GitHub Actions secret in account-a
     "
   `);
 });
@@ -709,7 +709,7 @@ it("doesn't stop provisioning when some targets fail", async () => {
     Secret #1:
 
     ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
-      ❌ Not allowed to GitHub Actions secret in account-a
+      ❌ Not allowed to provision to GitHub Actions secret in account-a
 
     Secret #2:
 

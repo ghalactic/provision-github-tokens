@@ -63,7 +63,7 @@ export function createTextProvisioningExplainer(): ProvisioningResultExplainer<s
         return `\n  ${SUCCESS_ICON} Provisioned to ${subject}`;
 
       case "NOT_ALLOWED":
-        return `\n  ${FAILURE_ICON} Not allowed to ${subject}`;
+        return `\n  ${FAILURE_ICON} Not allowed to provision to ${subject}`;
 
       case "NO_TOKEN":
         return `\n  ${FAILURE_ICON} Token wasn't created for ${subject}`;
