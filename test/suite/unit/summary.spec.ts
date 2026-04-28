@@ -1,5 +1,6 @@
 import { join } from "node:path";
 import { expect, it } from "vitest";
+import { TestRequestError } from "../../../__mocks__/@octokit/action.js";
 import { compareProvisionRequest } from "../../../src/compare-provision-request.js";
 import { createProvisionAuthorizer } from "../../../src/provision-authorizer.js";
 import type { ProvisioningResult } from "../../../src/provisioner.js";
@@ -1388,7 +1389,7 @@ it("renders failure reasons for provisioning outcomes", async () => {
   issueErrorTargets.set(issueErrorTargetA, { type: "NO_TOKEN" });
   tokens.set(issueErrorTokenAuth, {
     type: "REQUEST_ERROR",
-    error: new Error("boom") as never,
+    error: new TestRequestError(500),
   });
   provisioningResults.set(secretIssueError, issueErrorTargets);
 
