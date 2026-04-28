@@ -1,12 +1,10 @@
 import { join } from "node:path";
 import { expect, it } from "vitest";
-import type { AuthorizeResult } from "../../../src/authorizer.js";
 import { compareProvisionRequest } from "../../../src/compare-provision-request.js";
 import { createProvisionAuthorizer } from "../../../src/provision-authorizer.js";
 import type { ProvisioningResult } from "../../../src/provisioner.js";
 import { renderSummary } from "../../../src/summary.js";
 import type { TokenCreationResult } from "../../../src/token-factory.js";
-import type { InstallationToken } from "../../../src/type/github-api.js";
 import type {
   ProvisionAuthResult,
   ProvisionAuthTargetResult,
@@ -15,6 +13,10 @@ import type { TokenAuthResult } from "../../../src/type/token-auth-result.js";
 import { createTestSecretDec, createTestTokenDec } from "../../declaration.js";
 import { createTestTokenAuthorizer } from "../../token-authorizer.js";
 import { createTestTokenRequestFactory } from "../../token-request.js";
+
+const fixturesPath = join(import.meta.dirname, "../../fixture/summary");
+const githubServerUrl = "https://github.example.com";
+const testDocsUrl = "https://github.example.com/test/action";
 
 it("renders a summary with all secrets provisioned", async () => {
   const createTokenRequest = createTestTokenRequestFactory();
@@ -78,11 +80,53 @@ it("renders a summary with all secrets provisioned", async () => {
     .listResults()
     .sort((a, b) => compareProvisionRequest(a.request, b.request));
 
+  const tokens = new Map<TokenAuthResult, TokenCreationResult>();
+  const provisioningResults = new Map<
+    ProvisionAuthResult,
+    Map<ProvisionAuthTargetResult, ProvisioningResult>
+  >();
+
+  for (const authResult of provisionResults) {
+    const targetResults = new Map<
+      ProvisionAuthTargetResult,
+      ProvisioningResult
+    >();
+    provisioningResults.set(authResult, targetResults);
+
+    if (authResult.isAllowed) {
+      for (const targetAuth of authResult.results) {
+        targetResults.set(targetAuth, { type: "PROVISIONED" });
+        if (
+          targetAuth.tokenAuthResult &&
+          !tokens.has(targetAuth.tokenAuthResult)
+        ) {
+          tokens.set(targetAuth.tokenAuthResult, {
+            type: "CREATED",
+            token: { token: "<token>", expires_at: "2001-02-03T04:05:06Z" },
+          });
+        }
+      }
+    } else {
+      for (const targetAuth of authResult.results) {
+        targetResults.set(targetAuth, { type: "NOT_ALLOWED" });
+        if (
+          targetAuth.tokenAuthResult &&
+          !tokens.has(targetAuth.tokenAuthResult)
+        ) {
+          tokens.set(targetAuth.tokenAuthResult, { type: "NOT_ALLOWED" });
+        }
+      }
+    }
+  }
+
   await expect(
-    renderSummaryFixture({
-      provisionResults,
-      tokenResults: [],
-    }),
+    renderSummary(
+      githubServerUrl,
+      testDocsUrl,
+      { provisionResults, tokenResults: [] },
+      tokens,
+      provisioningResults,
+    ),
   ).toMatchFileSnapshot(join(fixturesPath, "all-provisioned.md"));
 });
 
@@ -148,11 +192,53 @@ it("renders a summary with some secrets denied", async () => {
     .listResults()
     .sort((a, b) => compareProvisionRequest(a.request, b.request));
 
+  const tokens = new Map<TokenAuthResult, TokenCreationResult>();
+  const provisioningResults = new Map<
+    ProvisionAuthResult,
+    Map<ProvisionAuthTargetResult, ProvisioningResult>
+  >();
+
+  for (const authResult of provisionResults) {
+    const targetResults = new Map<
+      ProvisionAuthTargetResult,
+      ProvisioningResult
+    >();
+    provisioningResults.set(authResult, targetResults);
+
+    if (authResult.isAllowed) {
+      for (const targetAuth of authResult.results) {
+        targetResults.set(targetAuth, { type: "PROVISIONED" });
+        if (
+          targetAuth.tokenAuthResult &&
+          !tokens.has(targetAuth.tokenAuthResult)
+        ) {
+          tokens.set(targetAuth.tokenAuthResult, {
+            type: "CREATED",
+            token: { token: "<token>", expires_at: "2001-02-03T04:05:06Z" },
+          });
+        }
+      }
+    } else {
+      for (const targetAuth of authResult.results) {
+        targetResults.set(targetAuth, { type: "NOT_ALLOWED" });
+        if (
+          targetAuth.tokenAuthResult &&
+          !tokens.has(targetAuth.tokenAuthResult)
+        ) {
+          tokens.set(targetAuth.tokenAuthResult, { type: "NOT_ALLOWED" });
+        }
+      }
+    }
+  }
+
   await expect(
-    renderSummaryFixture({
-      provisionResults,
-      tokenResults: [],
-    }),
+    renderSummary(
+      githubServerUrl,
+      testDocsUrl,
+      { provisionResults, tokenResults: [] },
+      tokens,
+      provisioningResults,
+    ),
   ).toMatchFileSnapshot(join(fixturesPath, "some-denied.md"));
 });
 
@@ -184,20 +270,71 @@ it("renders a summary with all secrets denied", async () => {
     .listResults()
     .sort((a, b) => compareProvisionRequest(a.request, b.request));
 
+  const tokens = new Map<TokenAuthResult, TokenCreationResult>();
+  const provisioningResults = new Map<
+    ProvisionAuthResult,
+    Map<ProvisionAuthTargetResult, ProvisioningResult>
+  >();
+
+  for (const authResult of provisionResults) {
+    const targetResults = new Map<
+      ProvisionAuthTargetResult,
+      ProvisioningResult
+    >();
+    provisioningResults.set(authResult, targetResults);
+
+    if (authResult.isAllowed) {
+      for (const targetAuth of authResult.results) {
+        targetResults.set(targetAuth, { type: "PROVISIONED" });
+        if (
+          targetAuth.tokenAuthResult &&
+          !tokens.has(targetAuth.tokenAuthResult)
+        ) {
+          tokens.set(targetAuth.tokenAuthResult, {
+            type: "CREATED",
+            token: { token: "<token>", expires_at: "2001-02-03T04:05:06Z" },
+          });
+        }
+      }
+    } else {
+      for (const targetAuth of authResult.results) {
+        targetResults.set(targetAuth, { type: "NOT_ALLOWED" });
+        if (
+          targetAuth.tokenAuthResult &&
+          !tokens.has(targetAuth.tokenAuthResult)
+        ) {
+          tokens.set(targetAuth.tokenAuthResult, { type: "NOT_ALLOWED" });
+        }
+      }
+    }
+  }
+
   await expect(
-    renderSummaryFixture({
-      provisionResults,
-      tokenResults: [],
-    }),
+    renderSummary(
+      githubServerUrl,
+      testDocsUrl,
+      { provisionResults, tokenResults: [] },
+      tokens,
+      provisioningResults,
+    ),
   ).toMatchFileSnapshot(join(fixturesPath, "all-denied.md"));
 });
 
 it("renders a summary with no secrets requested", async () => {
+  const tokens = new Map<TokenAuthResult, TokenCreationResult>();
+  const provisioningResults = new Map<
+    ProvisionAuthResult,
+    Map<ProvisionAuthTargetResult, ProvisioningResult>
+  >();
+
   await expect(
-    renderSummaryFixture({
-      provisionResults: [],
-      tokenResults: [],
-    }),
+    renderSummary(
+      githubServerUrl,
+      testDocsUrl,
+      { provisionResults: [], tokenResults: [] },
+      tokens,
+      provisioningResults,
+    ),
   ).toMatchFileSnapshot(join(fixturesPath, "empty.md"));
 });
 
@@ -272,11 +409,53 @@ it("renders a summary with environment targets", async () => {
     .listResults()
     .sort((a, b) => compareProvisionRequest(a.request, b.request));
 
+  const tokens = new Map<TokenAuthResult, TokenCreationResult>();
+  const provisioningResults = new Map<
+    ProvisionAuthResult,
+    Map<ProvisionAuthTargetResult, ProvisioningResult>
+  >();
+
+  for (const authResult of provisionResults) {
+    const targetResults = new Map<
+      ProvisionAuthTargetResult,
+      ProvisioningResult
+    >();
+    provisioningResults.set(authResult, targetResults);
+
+    if (authResult.isAllowed) {
+      for (const targetAuth of authResult.results) {
+        targetResults.set(targetAuth, { type: "PROVISIONED" });
+        if (
+          targetAuth.tokenAuthResult &&
+          !tokens.has(targetAuth.tokenAuthResult)
+        ) {
+          tokens.set(targetAuth.tokenAuthResult, {
+            type: "CREATED",
+            token: { token: "<token>", expires_at: "2001-02-03T04:05:06Z" },
+          });
+        }
+      }
+    } else {
+      for (const targetAuth of authResult.results) {
+        targetResults.set(targetAuth, { type: "NOT_ALLOWED" });
+        if (
+          targetAuth.tokenAuthResult &&
+          !tokens.has(targetAuth.tokenAuthResult)
+        ) {
+          tokens.set(targetAuth.tokenAuthResult, { type: "NOT_ALLOWED" });
+        }
+      }
+    }
+  }
+
   await expect(
-    renderSummaryFixture({
-      provisionResults,
-      tokenResults: [],
-    }),
+    renderSummary(
+      githubServerUrl,
+      testDocsUrl,
+      { provisionResults, tokenResults: [] },
+      tokens,
+      provisioningResults,
+    ),
   ).toMatchFileSnapshot(join(fixturesPath, "environment-targets.md"));
 });
 
@@ -342,11 +521,53 @@ it("renders a summary with multiple requesters", async () => {
     .listResults()
     .sort((a, b) => compareProvisionRequest(a.request, b.request));
 
+  const tokens = new Map<TokenAuthResult, TokenCreationResult>();
+  const provisioningResults = new Map<
+    ProvisionAuthResult,
+    Map<ProvisionAuthTargetResult, ProvisioningResult>
+  >();
+
+  for (const authResult of provisionResults) {
+    const targetResults = new Map<
+      ProvisionAuthTargetResult,
+      ProvisioningResult
+    >();
+    provisioningResults.set(authResult, targetResults);
+
+    if (authResult.isAllowed) {
+      for (const targetAuth of authResult.results) {
+        targetResults.set(targetAuth, { type: "PROVISIONED" });
+        if (
+          targetAuth.tokenAuthResult &&
+          !tokens.has(targetAuth.tokenAuthResult)
+        ) {
+          tokens.set(targetAuth.tokenAuthResult, {
+            type: "CREATED",
+            token: { token: "<token>", expires_at: "2001-02-03T04:05:06Z" },
+          });
+        }
+      }
+    } else {
+      for (const targetAuth of authResult.results) {
+        targetResults.set(targetAuth, { type: "NOT_ALLOWED" });
+        if (
+          targetAuth.tokenAuthResult &&
+          !tokens.has(targetAuth.tokenAuthResult)
+        ) {
+          tokens.set(targetAuth.tokenAuthResult, { type: "NOT_ALLOWED" });
+        }
+      }
+    }
+  }
+
   await expect(
-    renderSummaryFixture({
-      provisionResults,
-      tokenResults: [],
-    }),
+    renderSummary(
+      githubServerUrl,
+      testDocsUrl,
+      { provisionResults, tokenResults: [] },
+      tokens,
+      provisioningResults,
+    ),
   ).toMatchFileSnapshot(join(fixturesPath, "multiple-requesters.md"));
 });
 
@@ -412,11 +633,53 @@ it("renders a summary with a missing token declaration", async () => {
     .listResults()
     .sort((a, b) => compareProvisionRequest(a.request, b.request));
 
+  const tokens = new Map<TokenAuthResult, TokenCreationResult>();
+  const provisioningResults = new Map<
+    ProvisionAuthResult,
+    Map<ProvisionAuthTargetResult, ProvisioningResult>
+  >();
+
+  for (const authResult of provisionResults) {
+    const targetResults = new Map<
+      ProvisionAuthTargetResult,
+      ProvisioningResult
+    >();
+    provisioningResults.set(authResult, targetResults);
+
+    if (authResult.isAllowed) {
+      for (const targetAuth of authResult.results) {
+        targetResults.set(targetAuth, { type: "PROVISIONED" });
+        if (
+          targetAuth.tokenAuthResult &&
+          !tokens.has(targetAuth.tokenAuthResult)
+        ) {
+          tokens.set(targetAuth.tokenAuthResult, {
+            type: "CREATED",
+            token: { token: "<token>", expires_at: "2001-02-03T04:05:06Z" },
+          });
+        }
+      }
+    } else {
+      for (const targetAuth of authResult.results) {
+        targetResults.set(targetAuth, { type: "NOT_ALLOWED" });
+        if (
+          targetAuth.tokenAuthResult &&
+          !tokens.has(targetAuth.tokenAuthResult)
+        ) {
+          tokens.set(targetAuth.tokenAuthResult, { type: "NOT_ALLOWED" });
+        }
+      }
+    }
+  }
+
   await expect(
-    renderSummaryFixture({
-      provisionResults,
-      tokenResults: [],
-    }),
+    renderSummary(
+      githubServerUrl,
+      testDocsUrl,
+      { provisionResults, tokenResults: [] },
+      tokens,
+      provisioningResults,
+    ),
   ).toMatchFileSnapshot(join(fixturesPath, "missing-token-dec.md"));
 });
 
@@ -476,11 +739,53 @@ it("renders a summary with missing targets", async () => {
     .listResults()
     .sort((a, b) => compareProvisionRequest(a.request, b.request));
 
+  const tokens = new Map<TokenAuthResult, TokenCreationResult>();
+  const provisioningResults = new Map<
+    ProvisionAuthResult,
+    Map<ProvisionAuthTargetResult, ProvisioningResult>
+  >();
+
+  for (const authResult of provisionResults) {
+    const targetResults = new Map<
+      ProvisionAuthTargetResult,
+      ProvisioningResult
+    >();
+    provisioningResults.set(authResult, targetResults);
+
+    if (authResult.isAllowed) {
+      for (const targetAuth of authResult.results) {
+        targetResults.set(targetAuth, { type: "PROVISIONED" });
+        if (
+          targetAuth.tokenAuthResult &&
+          !tokens.has(targetAuth.tokenAuthResult)
+        ) {
+          tokens.set(targetAuth.tokenAuthResult, {
+            type: "CREATED",
+            token: { token: "<token>", expires_at: "2001-02-03T04:05:06Z" },
+          });
+        }
+      }
+    } else {
+      for (const targetAuth of authResult.results) {
+        targetResults.set(targetAuth, { type: "NOT_ALLOWED" });
+        if (
+          targetAuth.tokenAuthResult &&
+          !tokens.has(targetAuth.tokenAuthResult)
+        ) {
+          tokens.set(targetAuth.tokenAuthResult, { type: "NOT_ALLOWED" });
+        }
+      }
+    }
+  }
+
   await expect(
-    renderSummaryFixture({
-      provisionResults,
-      tokenResults: [],
-    }),
+    renderSummary(
+      githubServerUrl,
+      testDocsUrl,
+      { provisionResults, tokenResults: [] },
+      tokens,
+      provisioningResults,
+    ),
   ).toMatchFileSnapshot(join(fixturesPath, "missing-targets.md"));
 });
 
@@ -540,11 +845,53 @@ it("renders a summary with multiple distinct targets", async () => {
     .listResults()
     .sort((a, b) => compareProvisionRequest(a.request, b.request));
 
+  const tokens = new Map<TokenAuthResult, TokenCreationResult>();
+  const provisioningResults = new Map<
+    ProvisionAuthResult,
+    Map<ProvisionAuthTargetResult, ProvisioningResult>
+  >();
+
+  for (const authResult of provisionResults) {
+    const targetResults = new Map<
+      ProvisionAuthTargetResult,
+      ProvisioningResult
+    >();
+    provisioningResults.set(authResult, targetResults);
+
+    if (authResult.isAllowed) {
+      for (const targetAuth of authResult.results) {
+        targetResults.set(targetAuth, { type: "PROVISIONED" });
+        if (
+          targetAuth.tokenAuthResult &&
+          !tokens.has(targetAuth.tokenAuthResult)
+        ) {
+          tokens.set(targetAuth.tokenAuthResult, {
+            type: "CREATED",
+            token: { token: "<token>", expires_at: "2001-02-03T04:05:06Z" },
+          });
+        }
+      }
+    } else {
+      for (const targetAuth of authResult.results) {
+        targetResults.set(targetAuth, { type: "NOT_ALLOWED" });
+        if (
+          targetAuth.tokenAuthResult &&
+          !tokens.has(targetAuth.tokenAuthResult)
+        ) {
+          tokens.set(targetAuth.tokenAuthResult, { type: "NOT_ALLOWED" });
+        }
+      }
+    }
+  }
+
   await expect(
-    renderSummaryFixture({
-      provisionResults,
-      tokenResults: [],
-    }),
+    renderSummary(
+      githubServerUrl,
+      testDocsUrl,
+      { provisionResults, tokenResults: [] },
+      tokens,
+      provisioningResults,
+    ),
   ).toMatchFileSnapshot(join(fixturesPath, "multiple-targets.md"));
 });
 
@@ -575,260 +922,45 @@ it("truncates rows beyond the limit and shows a notice", async () => {
       isAllowed,
     });
   }
+  const tokens = new Map<TokenAuthResult, TokenCreationResult>();
+  const provisioningResults = new Map<
+    ProvisionAuthResult,
+    Map<ProvisionAuthTargetResult, ProvisioningResult>
+  >();
+
+  for (const authResult of provisionResults) {
+    provisioningResults.set(
+      authResult,
+      new Map<ProvisionAuthTargetResult, ProvisioningResult>(),
+    );
+  }
 
   await expect(
-    renderSummaryFixture({
-      provisionResults,
-      tokenResults: [],
-    }),
+    renderSummary(
+      githubServerUrl,
+      testDocsUrl,
+      { provisionResults, tokenResults: [] },
+      tokens,
+      provisioningResults,
+    ),
   ).toMatchFileSnapshot(join(fixturesPath, "row-limit.md"));
 });
 
 it("renders failure reasons for provisioning outcomes", async () => {
   const requester = { account: "account-x", repo: "repo-x" };
-  const targetA: SummaryTarget = {
-    platform: "github",
-    type: "actions",
+  const targetA = {
+    platform: "github" as const,
+    type: "actions" as const,
     target: { account: "account-a" },
   };
-  const targetB: SummaryTarget = {
-    platform: "github",
-    type: "actions",
+  const targetB = {
+    platform: "github" as const,
+    type: "actions" as const,
     target: { account: "account-b" },
   };
 
-  const authResult: AuthorizeResult = {
-    provisionResults: [
-      createAuthResult("SECRET_TOKEN_NOT_ALLOWED", [targetA], false),
-      createAuthResult("SECRET_NO_ISSUER", [targetA]),
-      createAuthResult("SECRET_ISSUE_ERROR", [targetA]),
-      createAuthResult("SECRET_NO_PROVISIONER", [targetA]),
-      createAuthResult("SECRET_FAILED_PROVISION_EMPTY", [targetA]),
-      createAuthResult("SECRET_PARTIAL_FAILURE", [targetA, targetB]),
-      createAuthResult("SECRET_FAILED_PROVISION", [targetA]),
-    ],
-    tokenResults: [],
-  };
-
-  await expect(
-    renderSummaryFixture(authResult, {
-      SECRET_TOKEN_NOT_ALLOWED: "token-not-allowed",
-      SECRET_NO_ISSUER: "no-issuer",
-      SECRET_ISSUE_ERROR: "issue-error",
-      SECRET_NO_PROVISIONER: "no-provisioner",
-      SECRET_FAILED_PROVISION_EMPTY: "empty-provision-results",
-      SECRET_PARTIAL_FAILURE: "partial-failure",
-      SECRET_FAILED_PROVISION: "failed-provision",
-    }),
-  ).toMatchFileSnapshot(join(fixturesPath, "failure-reasons.md"));
-
-  function createAuthResult(
-    name: string,
-    to: readonly SummaryTarget[],
-    isTokenAllowed = true,
-  ): ProvisionAuthResult {
-    const tokenAuthResult = createTokenAuthResult(name);
-
-    return {
-      isAllowed: true,
-      isMissingTargets: false,
-      request: {
-        requester,
-        tokenDec: createTestTokenDec(),
-        tokenDecIsRegistered: true,
-        secretDec: createTestSecretDec(),
-        name,
-        to: [...to],
-      },
-      results: to.map((target) =>
-        createTargetAuthResult(target, tokenAuthResult, isTokenAllowed),
-      ),
-    };
-  }
-});
-
-const fixturesPath = join(import.meta.dirname, "../../fixture/summary");
-const githubServerUrl = "https://github.example.com";
-const testDocsUrl = "https://github.example.com/test/action";
-
-type SummaryOutcome =
-  | "success"
-  | "secret-not-allowed"
-  | "token-not-allowed"
-  | "no-issuer"
-  | "issue-error"
-  | "no-provisioner"
-  | "empty-provision-results"
-  | "partial-failure"
-  | "failed-provision";
-
-type SummaryTarget = {
-  platform: "github";
-  type: "actions";
-  target: { account: string };
-};
-
-function renderSummaryFixture(
-  authResult: AuthorizeResult,
-  outcomes: Record<string, SummaryOutcome> = {},
-): string {
-  const { tokens, provisionResults } = createSummaryResults(
-    authResult.provisionResults,
-    outcomes,
-  );
-
-  return renderSummary(
-    githubServerUrl,
-    testDocsUrl,
-    authResult,
-    tokens,
-    provisionResults,
-  );
-}
-
-function createSummaryResults(
-  authResults: ProvisionAuthResult[],
-  outcomes: Record<string, SummaryOutcome>,
-): {
-  tokens: Map<TokenAuthResult, TokenCreationResult>;
-  provisionResults: Map<
-    ProvisionAuthResult,
-    Map<ProvisionAuthTargetResult, ProvisioningResult>
-  >;
-} {
-  const tokens = new Map<TokenAuthResult, TokenCreationResult>();
-  const provisionResults = new Map<
-    ProvisionAuthResult,
-    Map<ProvisionAuthTargetResult, ProvisioningResult>
-  >();
-
-  for (const authResult of authResults) {
-    const outcome = outcomes[authResult.request.name] ?? outcomeFor(authResult);
-    const targetResults = new Map<
-      ProvisionAuthTargetResult,
-      ProvisioningResult
-    >();
-    provisionResults.set(authResult, targetResults);
-
-    switch (outcome) {
-      case "secret-not-allowed":
-        for (const targetAuth of authResult.results) {
-          targetResults.set(targetAuth, { type: "NOT_ALLOWED" });
-        }
-        setTokenResults(tokens, authResult, { type: "NOT_ALLOWED" });
-        break;
-
-      case "token-not-allowed":
-        for (const targetAuth of authResult.results) {
-          targetResults.set(targetAuth, { type: "NO_TOKEN" });
-        }
-        setTokenResults(tokens, authResult, { type: "NOT_ALLOWED" });
-        break;
-
-      case "no-issuer":
-        for (const targetAuth of authResult.results) {
-          targetResults.set(targetAuth, { type: "NO_TOKEN" });
-        }
-        setTokenResults(tokens, authResult, { type: "NO_ISSUER" });
-        break;
-
-      case "issue-error":
-        for (const targetAuth of authResult.results) {
-          targetResults.set(targetAuth, { type: "NO_TOKEN" });
-        }
-        setTokenResults(tokens, authResult, {
-          type: "REQUEST_ERROR",
-          error: new Error("boom") as never,
-        });
-        break;
-
-      case "no-provisioner":
-        for (const targetAuth of authResult.results) {
-          targetResults.set(targetAuth, { type: "NO_PROVISIONER" });
-        }
-        setTokenResults(tokens, authResult, {
-          type: "CREATED",
-          token: createTestToken(),
-        });
-        break;
-
-      case "empty-provision-results":
-        setTokenResults(tokens, authResult, {
-          type: "CREATED",
-          token: createTestToken(),
-        });
-        break;
-
-      case "partial-failure": {
-        if (authResult.results.length > 0) {
-          targetResults.set(authResult.results[0], { type: "PROVISIONED" });
-          for (let i = 1; i < authResult.results.length; i++) {
-            targetResults.set(authResult.results[i], {
-              type: "ERROR",
-              error: new Error("boom"),
-            });
-          }
-        }
-        setTokenResults(tokens, authResult, {
-          type: "CREATED",
-          token: createTestToken(),
-        });
-        break;
-      }
-
-      case "failed-provision":
-        for (const targetAuth of authResult.results) {
-          targetResults.set(targetAuth, {
-            type: "ERROR",
-            error: new Error("boom"),
-          });
-        }
-        setTokenResults(tokens, authResult, {
-          type: "CREATED",
-          token: createTestToken(),
-        });
-        break;
-
-      case "success":
-      default:
-        for (const targetAuth of authResult.results) {
-          targetResults.set(targetAuth, { type: "PROVISIONED" });
-        }
-        setTokenResults(tokens, authResult, {
-          type: "CREATED",
-          token: createTestToken(),
-        });
-        break;
-    }
-  }
-
-  return { tokens, provisionResults };
-}
-
-function outcomeFor(authResult: ProvisionAuthResult): SummaryOutcome {
-  return authResult.isAllowed ? "success" : "secret-not-allowed";
-}
-
-function setTokenResults(
-  tokens: Map<TokenAuthResult, TokenCreationResult>,
-  authResult: ProvisionAuthResult,
-  tokenResult: TokenCreationResult,
-): void {
-  for (const targetAuth of authResult.results) {
-    if (targetAuth.tokenAuthResult && !tokens.has(targetAuth.tokenAuthResult)) {
-      tokens.set(targetAuth.tokenAuthResult, tokenResult);
-    }
-  }
-}
-
-function createTestToken(): InstallationToken {
-  return { token: "<token>", expires_at: "2001-02-03T04:05:06Z" };
-}
-
-function createTokenAuthResult(name: string): TokenAuthResult {
-  void name;
-
-  return {
+  // SECRET_TOKEN_NOT_ALLOWED — token-not-allowed outcome
+  const tokenNotAllowedTokenAuth: TokenAuthResult = {
     type: "ALL_REPOS",
     have: { metadata: "read" },
     isAllowed: true,
@@ -842,20 +974,373 @@ function createTokenAuthResult(name: string): TokenAuthResult {
     },
     rules: [],
   };
-}
-
-function createTargetAuthResult(
-  target: SummaryTarget,
-  tokenAuthResult: TokenAuthResult,
-  isTokenAllowed = true,
-): ProvisionAuthTargetResult {
-  return {
-    target,
+  const tokenNotAllowedTargetA: ProvisionAuthTargetResult = {
+    target: targetA,
     rules: [],
     have: "allow",
-    tokenAuthResult,
-    isTokenAllowed,
+    tokenAuthResult: tokenNotAllowedTokenAuth,
+    isTokenAllowed: false,
     isProvisionAllowed: true,
-    isAllowed: isTokenAllowed,
+    isAllowed: false,
   };
-}
+  const secretTokenNotAllowed: ProvisionAuthResult = {
+    isAllowed: true,
+    isMissingTargets: false,
+    request: {
+      requester,
+      tokenDec: createTestTokenDec(),
+      tokenDecIsRegistered: true,
+      secretDec: createTestSecretDec(),
+      name: "SECRET_TOKEN_NOT_ALLOWED",
+      to: [targetA],
+    },
+    results: [tokenNotAllowedTargetA],
+  };
+
+  // SECRET_NO_ISSUER — no-issuer outcome
+  const noIssuerTokenAuth: TokenAuthResult = {
+    type: "ALL_REPOS",
+    have: { metadata: "read" },
+    isAllowed: true,
+    isMissingRole: false,
+    isSufficient: true,
+    maxWant: "read",
+    request: {
+      consumer: { account: "account-x" },
+      repos: "all",
+      tokenDec: createTestTokenDec(),
+    },
+    rules: [],
+  };
+  const noIssuerTargetA: ProvisionAuthTargetResult = {
+    target: targetA,
+    rules: [],
+    have: "allow",
+    tokenAuthResult: noIssuerTokenAuth,
+    isTokenAllowed: true,
+    isProvisionAllowed: true,
+    isAllowed: true,
+  };
+  const secretNoIssuer: ProvisionAuthResult = {
+    isAllowed: true,
+    isMissingTargets: false,
+    request: {
+      requester,
+      tokenDec: createTestTokenDec(),
+      tokenDecIsRegistered: true,
+      secretDec: createTestSecretDec(),
+      name: "SECRET_NO_ISSUER",
+      to: [targetA],
+    },
+    results: [noIssuerTargetA],
+  };
+
+  // SECRET_ISSUE_ERROR — issue-error outcome
+  const issueErrorTokenAuth: TokenAuthResult = {
+    type: "ALL_REPOS",
+    have: { metadata: "read" },
+    isAllowed: true,
+    isMissingRole: false,
+    isSufficient: true,
+    maxWant: "read",
+    request: {
+      consumer: { account: "account-x" },
+      repos: "all",
+      tokenDec: createTestTokenDec(),
+    },
+    rules: [],
+  };
+  const issueErrorTargetA: ProvisionAuthTargetResult = {
+    target: targetA,
+    rules: [],
+    have: "allow",
+    tokenAuthResult: issueErrorTokenAuth,
+    isTokenAllowed: true,
+    isProvisionAllowed: true,
+    isAllowed: true,
+  };
+  const secretIssueError: ProvisionAuthResult = {
+    isAllowed: true,
+    isMissingTargets: false,
+    request: {
+      requester,
+      tokenDec: createTestTokenDec(),
+      tokenDecIsRegistered: true,
+      secretDec: createTestSecretDec(),
+      name: "SECRET_ISSUE_ERROR",
+      to: [targetA],
+    },
+    results: [issueErrorTargetA],
+  };
+
+  // SECRET_NO_PROVISIONER — no-provisioner outcome
+  const noProvisionerTokenAuth: TokenAuthResult = {
+    type: "ALL_REPOS",
+    have: { metadata: "read" },
+    isAllowed: true,
+    isMissingRole: false,
+    isSufficient: true,
+    maxWant: "read",
+    request: {
+      consumer: { account: "account-x" },
+      repos: "all",
+      tokenDec: createTestTokenDec(),
+    },
+    rules: [],
+  };
+  const noProvisionerTargetA: ProvisionAuthTargetResult = {
+    target: targetA,
+    rules: [],
+    have: "allow",
+    tokenAuthResult: noProvisionerTokenAuth,
+    isTokenAllowed: true,
+    isProvisionAllowed: true,
+    isAllowed: true,
+  };
+  const secretNoProvisioner: ProvisionAuthResult = {
+    isAllowed: true,
+    isMissingTargets: false,
+    request: {
+      requester,
+      tokenDec: createTestTokenDec(),
+      tokenDecIsRegistered: true,
+      secretDec: createTestSecretDec(),
+      name: "SECRET_NO_PROVISIONER",
+      to: [targetA],
+    },
+    results: [noProvisionerTargetA],
+  };
+
+  // SECRET_FAILED_PROVISION_EMPTY — empty-provision-results outcome
+  const emptyProvisionTokenAuth: TokenAuthResult = {
+    type: "ALL_REPOS",
+    have: { metadata: "read" },
+    isAllowed: true,
+    isMissingRole: false,
+    isSufficient: true,
+    maxWant: "read",
+    request: {
+      consumer: { account: "account-x" },
+      repos: "all",
+      tokenDec: createTestTokenDec(),
+    },
+    rules: [],
+  };
+  const emptyProvisionTargetA: ProvisionAuthTargetResult = {
+    target: targetA,
+    rules: [],
+    have: "allow",
+    tokenAuthResult: emptyProvisionTokenAuth,
+    isTokenAllowed: true,
+    isProvisionAllowed: true,
+    isAllowed: true,
+  };
+  const secretEmptyProvision: ProvisionAuthResult = {
+    isAllowed: true,
+    isMissingTargets: false,
+    request: {
+      requester,
+      tokenDec: createTestTokenDec(),
+      tokenDecIsRegistered: true,
+      secretDec: createTestSecretDec(),
+      name: "SECRET_FAILED_PROVISION_EMPTY",
+      to: [targetA],
+    },
+    results: [emptyProvisionTargetA],
+  };
+
+  // SECRET_PARTIAL_FAILURE — partial-failure outcome (two targets)
+  const partialFailureTokenAuth: TokenAuthResult = {
+    type: "ALL_REPOS",
+    have: { metadata: "read" },
+    isAllowed: true,
+    isMissingRole: false,
+    isSufficient: true,
+    maxWant: "read",
+    request: {
+      consumer: { account: "account-x" },
+      repos: "all",
+      tokenDec: createTestTokenDec(),
+    },
+    rules: [],
+  };
+  const partialFailureTargetA: ProvisionAuthTargetResult = {
+    target: targetA,
+    rules: [],
+    have: "allow",
+    tokenAuthResult: partialFailureTokenAuth,
+    isTokenAllowed: true,
+    isProvisionAllowed: true,
+    isAllowed: true,
+  };
+  const partialFailureTargetB: ProvisionAuthTargetResult = {
+    target: targetB,
+    rules: [],
+    have: "allow",
+    tokenAuthResult: partialFailureTokenAuth,
+    isTokenAllowed: true,
+    isProvisionAllowed: true,
+    isAllowed: true,
+  };
+  const secretPartialFailure: ProvisionAuthResult = {
+    isAllowed: true,
+    isMissingTargets: false,
+    request: {
+      requester,
+      tokenDec: createTestTokenDec(),
+      tokenDecIsRegistered: true,
+      secretDec: createTestSecretDec(),
+      name: "SECRET_PARTIAL_FAILURE",
+      to: [targetA, targetB],
+    },
+    results: [partialFailureTargetA, partialFailureTargetB],
+  };
+
+  // SECRET_FAILED_PROVISION — failed-provision outcome
+  const failedProvisionTokenAuth: TokenAuthResult = {
+    type: "ALL_REPOS",
+    have: { metadata: "read" },
+    isAllowed: true,
+    isMissingRole: false,
+    isSufficient: true,
+    maxWant: "read",
+    request: {
+      consumer: { account: "account-x" },
+      repos: "all",
+      tokenDec: createTestTokenDec(),
+    },
+    rules: [],
+  };
+  const failedProvisionTargetA: ProvisionAuthTargetResult = {
+    target: targetA,
+    rules: [],
+    have: "allow",
+    tokenAuthResult: failedProvisionTokenAuth,
+    isTokenAllowed: true,
+    isProvisionAllowed: true,
+    isAllowed: true,
+  };
+  const secretFailedProvision: ProvisionAuthResult = {
+    isAllowed: true,
+    isMissingTargets: false,
+    request: {
+      requester,
+      tokenDec: createTestTokenDec(),
+      tokenDecIsRegistered: true,
+      secretDec: createTestSecretDec(),
+      name: "SECRET_FAILED_PROVISION",
+      to: [targetA],
+    },
+    results: [failedProvisionTargetA],
+  };
+
+  const provisionResults = [
+    secretTokenNotAllowed,
+    secretNoIssuer,
+    secretIssueError,
+    secretNoProvisioner,
+    secretEmptyProvision,
+    secretPartialFailure,
+    secretFailedProvision,
+  ];
+
+  const tokens = new Map<TokenAuthResult, TokenCreationResult>();
+  const provisioningResults = new Map<
+    ProvisionAuthResult,
+    Map<ProvisionAuthTargetResult, ProvisioningResult>
+  >();
+
+  // token-not-allowed
+  const tokenNotAllowedTargets = new Map<
+    ProvisionAuthTargetResult,
+    ProvisioningResult
+  >();
+  tokenNotAllowedTargets.set(tokenNotAllowedTargetA, { type: "NO_TOKEN" });
+  tokens.set(tokenNotAllowedTokenAuth, { type: "NOT_ALLOWED" });
+  provisioningResults.set(secretTokenNotAllowed, tokenNotAllowedTargets);
+
+  // no-issuer
+  const noIssuerTargets = new Map<
+    ProvisionAuthTargetResult,
+    ProvisioningResult
+  >();
+  noIssuerTargets.set(noIssuerTargetA, { type: "NO_TOKEN" });
+  tokens.set(noIssuerTokenAuth, { type: "NO_ISSUER" });
+  provisioningResults.set(secretNoIssuer, noIssuerTargets);
+
+  // issue-error
+  const issueErrorTargets = new Map<
+    ProvisionAuthTargetResult,
+    ProvisioningResult
+  >();
+  issueErrorTargets.set(issueErrorTargetA, { type: "NO_TOKEN" });
+  tokens.set(issueErrorTokenAuth, {
+    type: "REQUEST_ERROR",
+    error: new Error("boom") as never,
+  });
+  provisioningResults.set(secretIssueError, issueErrorTargets);
+
+  // no-provisioner
+  const noProvisionerTargets = new Map<
+    ProvisionAuthTargetResult,
+    ProvisioningResult
+  >();
+  noProvisionerTargets.set(noProvisionerTargetA, { type: "NO_PROVISIONER" });
+  tokens.set(noProvisionerTokenAuth, {
+    type: "CREATED",
+    token: { token: "<token>", expires_at: "2001-02-03T04:05:06Z" },
+  });
+  provisioningResults.set(secretNoProvisioner, noProvisionerTargets);
+
+  // empty-provision-results (no target results, but token is created)
+  const emptyProvisionTargets = new Map<
+    ProvisionAuthTargetResult,
+    ProvisioningResult
+  >();
+  tokens.set(emptyProvisionTokenAuth, {
+    type: "CREATED",
+    token: { token: "<token>", expires_at: "2001-02-03T04:05:06Z" },
+  });
+  provisioningResults.set(secretEmptyProvision, emptyProvisionTargets);
+
+  // partial-failure (first target provisioned, rest error)
+  const partialFailureTargets = new Map<
+    ProvisionAuthTargetResult,
+    ProvisioningResult
+  >();
+  partialFailureTargets.set(partialFailureTargetA, { type: "PROVISIONED" });
+  partialFailureTargets.set(partialFailureTargetB, {
+    type: "ERROR",
+    error: new Error("boom"),
+  });
+  tokens.set(partialFailureTokenAuth, {
+    type: "CREATED",
+    token: { token: "<token>", expires_at: "2001-02-03T04:05:06Z" },
+  });
+  provisioningResults.set(secretPartialFailure, partialFailureTargets);
+
+  // failed-provision
+  const failedProvisionTargets = new Map<
+    ProvisionAuthTargetResult,
+    ProvisioningResult
+  >();
+  failedProvisionTargets.set(failedProvisionTargetA, {
+    type: "ERROR",
+    error: new Error("boom"),
+  });
+  tokens.set(failedProvisionTokenAuth, {
+    type: "CREATED",
+    token: { token: "<token>", expires_at: "2001-02-03T04:05:06Z" },
+  });
+  provisioningResults.set(secretFailedProvision, failedProvisionTargets);
+
+  await expect(
+    renderSummary(
+      githubServerUrl,
+      testDocsUrl,
+      { provisionResults, tokenResults: [] },
+      tokens,
+      provisioningResults,
+    ),
+  ).toMatchFileSnapshot(join(fixturesPath, "failure-reasons.md"));
+});
