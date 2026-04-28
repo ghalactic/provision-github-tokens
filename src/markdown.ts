@@ -1,56 +1,18 @@
 import type {
   AlignType,
   Blockquote,
-  Definition,
   Heading,
   InlineCode,
   Link,
-  LinkReference,
   Paragraph,
   Table,
   TableCell,
   TableRow,
   Text,
 } from "mdast";
-import {
-  accountOrRepoRefToString,
-  type AccountOrRepoReference,
-} from "./github-reference.js";
 
 const ALLOWED_ICON = "✅";
 const DENIED_ICON = "❌";
-const LINK_REF_PREFIX = "gh/";
-
-export function accountOrRepoDefinition(
-  githubServerUrl: string,
-  accountOrRepo: AccountOrRepoReference,
-): Definition {
-  const slug = accountOrRepoRefToString(accountOrRepo);
-  const identifier = `${LINK_REF_PREFIX}${slug}`.toLowerCase();
-
-  return {
-    type: "definition",
-    identifier,
-    label: identifier,
-    url: new URL(slug, githubServerUrl).toString(),
-    title: null,
-  };
-}
-
-export function accountOrRepoLinkRef(
-  accountOrRepo: AccountOrRepoReference,
-): LinkReference {
-  const slug = accountOrRepoRefToString(accountOrRepo);
-  const identifier = `${LINK_REF_PREFIX}${slug}`.toLowerCase();
-
-  return {
-    type: "linkReference",
-    identifier,
-    label: identifier,
-    referenceType: "full",
-    children: [text(slug)],
-  };
-}
 
 export function blockquote(...children: Blockquote["children"]): Blockquote {
   return { type: "blockquote", children };
