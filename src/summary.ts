@@ -7,6 +7,7 @@ import {
   type AccountOrRepoReference,
 } from "./github-reference.js";
 import {
+  emphasis,
   gfmAlert,
   heading,
   inlineCode,
@@ -335,6 +336,8 @@ function targetCellChildren(
   definitions: Record<string, string>,
   githubServerUrl: string,
 ): TableCell["children"] {
+  if (targets.length < 1) return [emphasis(text("(none)"))];
+
   const seen = new Set<string>();
   const refs: [key: string, ref: AccountOrRepoReference][] = [];
 

@@ -1,6 +1,7 @@
 import type {
   AlignType,
   Blockquote,
+  Emphasis,
   Heading,
   InlineCode,
   Link,
@@ -16,6 +17,10 @@ const DENIED_ICON = "❌";
 
 export function blockquote(...children: Blockquote["children"]): Blockquote {
   return { type: "blockquote", children };
+}
+
+export function emphasis(...children: Emphasis["children"]): Emphasis {
+  return { type: "emphasis", children };
 }
 
 export function gfmAlert(
