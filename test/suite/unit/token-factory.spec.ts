@@ -441,7 +441,7 @@ it("isolates tokens by role even when other token shape fields match", async () 
   expect(results.get(roleAResult)).not.toBe(results.get(roleBResult));
 });
 
-it("does not deduplicate tokens with different permissions", async () => {
+it("doesn't deduplicate tokens with different permissions", async () => {
   const octokitFactory = createOctokitFactory();
 
   const accountA = createTestInstallationAccount(
@@ -545,7 +545,7 @@ it("does not deduplicate tokens with different permissions", async () => {
   expect(results.get(metadataResult)).not.toBe(results.get(contentsResult));
 });
 
-it("does not deduplicate tokens with different repos", async () => {
+it("doesn't deduplicate tokens with different repos", async () => {
   const octokitFactory = createOctokitFactory();
 
   const accountA = createTestInstallationAccount(
@@ -651,7 +651,7 @@ it("does not deduplicate tokens with different repos", async () => {
   );
 });
 
-it("does not return cached CREATED result for NOT_ALLOWED auth results", async () => {
+it("doesn't return cached CREATED result for NOT_ALLOWED auth results", async () => {
   const octokitFactory = createOctokitFactory();
 
   const accountA = createTestInstallationAccount(
