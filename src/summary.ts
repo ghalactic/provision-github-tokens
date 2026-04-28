@@ -1,4 +1,4 @@
-import type { RootContent, TableCell } from "mdast";
+import type { LinkReference, RootContent, TableCell } from "mdast";
 import { gfmToMarkdown } from "mdast-util-gfm";
 import { toMarkdown } from "mdast-util-to-markdown";
 import type { AuthorizeResult } from "./authorizer.js";
@@ -7,7 +7,6 @@ import {
   type AccountOrRepoReference,
 } from "./github-reference.js";
 import {
-  accountOrRepoLinkRef,
   gfmAlert,
   heading,
   inlineCode,
@@ -27,6 +26,7 @@ import type {
 } from "./type/provision-auth-result.js";
 import type { TokenAuthResult } from "./type/token-auth-result.js";
 
+const LINK_REF_PREFIX = "gh/";
 const MAX_ROWS = 1000;
 
 export function renderSummary(
@@ -366,11 +366,27 @@ function definitionsAst(definitions: Record<string, string>): RootContent[] {
     }));
 }
 
+function accountOrRepoLinkRef(
+  accountOrRepo: AccountOrRepoReference,
+): LinkReference {
+  const slug = accountOrRepoRefToString(accountOrRepo);
+  const identifier = `${LINK_REF_PREFIX}${slug}`.toLowerCase();
+
+  return {
+    type: "linkReference",
+    identifier,
+    label: identifier,
+    referenceType: "full",
+    children: [text(slug)],
+  };
+}
 function addAccountOrRepoDef(
   definitions: Record<string, string>,
   githubServerUrl: string,
   accountOrRepo: AccountOrRepoReference,
 ): void {
   const slug = accountOrRepoRefToString(accountOrRepo).toLowerCase();
-  definitions[`gh/${slug}`] = new URL(slug, githubServerUrl).toString();
+  const identifier = `${LINK_REF_PREFIX}${slug}`.toLowerCase();
+
+  definitions[identifier] = new URL(slug, githubServerUrl).toString();
 }
