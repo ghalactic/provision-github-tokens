@@ -683,6 +683,118 @@ it("renders a summary with a missing token declaration", async () => {
   ).toMatchFileSnapshot(join(fixturesPath, "missing-token-dec.md"));
 });
 
+it("renders a summary with an unshared token declaration", async () => {
+  const createTokenRequest = createTestTokenRequestFactory();
+  const tokenAuthorizer = createTestTokenAuthorizer({
+    metadata: "read",
+    contents: "write",
+  });
+  const provisionAuthorizer = createProvisionAuthorizer(
+    createTokenRequest,
+    tokenAuthorizer,
+    {
+      rules: {
+        secrets: [
+          {
+            secrets: ["SECRET_*"],
+            requesters: ["account-x/repo-x"],
+            to: {
+              github: {
+                account: {},
+                accounts: { "account-a": { actions: "allow" } },
+                repo: { environments: {} },
+                repos: {},
+              },
+            },
+          },
+        ],
+      },
+    },
+  );
+
+  provisionAuthorizer.authorizeSecret({
+    requester: { account: "account-x", repo: "repo-x" },
+    tokenDec: createTestTokenDec(),
+    tokenDecIsRegistered: true,
+    secretDec: createTestSecretDec(),
+    name: "SECRET_A",
+    to: [
+      {
+        platform: "github",
+        type: "actions",
+        target: { account: "account-a" },
+      },
+    ],
+  });
+  provisionAuthorizer.authorizeSecret({
+    requester: { account: "account-x", repo: "repo-x" },
+    tokenDec: undefined,
+    tokenDecIsRegistered: true,
+    secretDec: createTestSecretDec(),
+    name: "SECRET_B",
+    to: [
+      {
+        platform: "github",
+        type: "actions",
+        target: { account: "account-a" },
+      },
+    ],
+  });
+
+  const provisionResults = provisionAuthorizer
+    .listResults()
+    .sort((a, b) => compareProvisionRequest(a.request, b.request));
+
+  const tokens = new Map<TokenAuthResult, TokenCreationResult>();
+  const provisioningResults = new Map<
+    ProvisionAuthResult,
+    Map<ProvisionAuthTargetResult, ProvisioningResult>
+  >();
+
+  for (const authResult of provisionResults) {
+    const targetResults = new Map<
+      ProvisionAuthTargetResult,
+      ProvisioningResult
+    >();
+    provisioningResults.set(authResult, targetResults);
+
+    if (authResult.isAllowed) {
+      for (const targetAuth of authResult.results) {
+        targetResults.set(targetAuth, { type: "PROVISIONED" });
+        if (
+          targetAuth.tokenAuthResult &&
+          !tokens.has(targetAuth.tokenAuthResult)
+        ) {
+          tokens.set(targetAuth.tokenAuthResult, {
+            type: "CREATED",
+            token: { token: "<token>", expires_at: "2001-02-03T04:05:06Z" },
+          });
+        }
+      }
+    } else {
+      for (const targetAuth of authResult.results) {
+        targetResults.set(targetAuth, { type: "NOT_ALLOWED" });
+        if (
+          targetAuth.tokenAuthResult &&
+          !tokens.has(targetAuth.tokenAuthResult)
+        ) {
+          tokens.set(targetAuth.tokenAuthResult, { type: "NOT_ALLOWED" });
+        }
+      }
+    }
+  }
+
+  await expect(
+    renderSummary(
+      githubServerUrl,
+      testDocsUrl,
+      { provisionResults, tokenResults: [] },
+      tokens,
+      provisioningResults,
+    ),
+  ).toMatchFileSnapshot(join(fixturesPath, "unshared-token-dec.md"));
+});
+
 it("renders a summary with missing targets", async () => {
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({
