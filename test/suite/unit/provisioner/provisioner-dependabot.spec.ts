@@ -1,5 +1,8 @@
 import { beforeEach, expect, it, vi, type Mock } from "vitest";
-import { __reset as __resetCore } from "../../../../__mocks__/@actions/core.js";
+import {
+  __getOutput,
+  __reset as __resetCore,
+} from "../../../../__mocks__/@actions/core.js";
 import {
   __getOrgSecrets,
   __getRepoSecrets,
@@ -200,10 +203,22 @@ it("handles GitHub API errors when provisioning org-level Dependabot secrets", a
       ],
     ],
   ]);
+
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "
+    Secret #1:
+
+    ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
+      ❌ Failed to provision to Dependabot secret in account-a: 401 - Unauthorized
+    ::debug::      (no response data)
+    "
+  `);
 });
 
 it("handles unexpected errors when provisioning org-level Dependabot secrets", async () => {
-  __setErrors("dependabot.createOrUpdateOrgSecret", [new Error("<message>")]);
+  const error = new Error("<message>");
+  error.stack = "Error: <message>\n    at provisioner.ts:1:1";
+  __setErrors("dependabot.createOrUpdateOrgSecret", [error]);
 
   const tokenResults = new Map<TokenAuthResult, TokenCreationResult>([
     [tokenAuthResultA, tokenCreationResultCreatedA],
@@ -238,11 +253,22 @@ it("handles unexpected errors when provisioning org-level Dependabot secrets", a
       [
         [
           allowedResult.results[0],
-          { type: "ERROR", error: new Error("<message>") },
+          { type: "ERROR", error },
         ],
       ],
     ],
   ]);
+
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "
+    Secret #1:
+
+    ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
+      ❌ Failed to provision to Dependabot secret in account-a: <message>
+    ::debug::      Error: <message>
+    ::debug::          at provisioner.ts:1:1
+    "
+  `);
 });
 
 it("can provision org-level Dependabot secrets", async () => {
@@ -281,6 +307,15 @@ it("can provision org-level Dependabot secrets", async () => {
     codespaces: {},
     dependabot: { SECRET_A: "<token-a>" },
   });
+
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "
+    Secret #1:
+
+    ✅ Secret SECRET_A was provisioned for repo account-a/repo-a:
+      ✅ Provisioned to Dependabot secret in account-a
+    "
+  `);
 });
 
 it("handles GitHub API errors when provisioning repo-level Dependabot secrets", async () => {
@@ -324,10 +359,22 @@ it("handles GitHub API errors when provisioning repo-level Dependabot secrets", 
       ],
     ],
   ]);
+
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "
+    Secret #1:
+
+    ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
+      ❌ Failed to provision to Dependabot secret in account-a/repo-a: 401 - Unauthorized
+    ::debug::      (no response data)
+    "
+  `);
 });
 
 it("handles unexpected errors when provisioning repo-level Dependabot secrets", async () => {
-  __setErrors("dependabot.createOrUpdateRepoSecret", [new Error("<message>")]);
+  const error = new Error("<message>");
+  error.stack = "Error: <message>\n    at provisioner.ts:1:1";
+  __setErrors("dependabot.createOrUpdateRepoSecret", [error]);
 
   const tokenResults = new Map<TokenAuthResult, TokenCreationResult>([
     [tokenAuthResultA, tokenCreationResultCreatedA],
@@ -362,11 +409,22 @@ it("handles unexpected errors when provisioning repo-level Dependabot secrets", 
       [
         [
           allowedResult.results[0],
-          { type: "ERROR", error: new Error("<message>") },
+          { type: "ERROR", error },
         ],
       ],
     ],
   ]);
+
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "
+    Secret #1:
+
+    ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
+      ❌ Failed to provision to Dependabot secret in account-a/repo-a: <message>
+    ::debug::      Error: <message>
+    ::debug::          at provisioner.ts:1:1
+    "
+  `);
 });
 
 it("can provision repo-level Dependabot secrets", async () => {
@@ -405,4 +463,13 @@ it("can provision repo-level Dependabot secrets", async () => {
     codespaces: {},
     dependabot: { SECRET_A: "<token-a>" },
   });
+
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "
+    Secret #1:
+
+    ✅ Secret SECRET_A was provisioned for repo account-a/repo-a:
+      ✅ Provisioned to Dependabot secret in account-a/repo-a
+    "
+  `);
 });
