@@ -546,7 +546,6 @@ it("can provision multiple secrets of the same type", async () => {
       ✅ Provisioned to GitHub environment env-a secret in account-a/repo-a
     "
   `);
-  // FIXME: Keep direct state assertions because explainer output cannot capture stored secrets.
   expect(__getOrgSecrets("account-a")).toEqual({
     actions: { SECRET_A: "<token-a>", SECRET_B: "<token-b>" },
     codespaces: {},
@@ -635,7 +634,6 @@ it("can provision a secret to multiple targets", async () => {
       ✅ Provisioned to GitHub environment env-a secret in account-a/repo-a
     "
   `);
-  // FIXME: Keep direct state assertions because explainer output cannot capture stored secrets.
   expect(__getOrgSecrets("account-a")).toEqual({
     actions: { SECRET_A: "<token-a>" },
     codespaces: { SECRET_A: "<token-a>" },
