@@ -237,7 +237,11 @@ function failureReason(
     Map<ProvisionAuthTargetResult, ProvisioningResult>
   >,
 ): string {
-  if (authResult.isMissingTargets || authResult.request.to.length === 0) {
+  if (
+    authResult.isMissingTargets ||
+    authResult.request.to.length === 0 ||
+    authResult.results.length === 0
+  ) {
     return "No targets to provision to";
   }
 
@@ -247,37 +251,37 @@ function failureReason(
       : "Token declaration doesn't exist";
   }
 
-  for (const targetAuth of authResult.results) {
-    if (!targetAuth.isTokenAllowed) return "Token not allowed";
+  if (!authResult.results.every((t) => t.isTokenAllowed)) {
+    return "Token not allowed";
   }
 
   if (!authResult.isAllowed) return "Secret not allowed";
 
-  for (const targetAuth of authResult.results) {
-    /* istanbul ignore next - @preserve */
-    if (!targetAuth.tokenAuthResult) {
-      throw new Error(
-        "Invariant violation: Missing token auth result for allowed target",
-      );
-    }
+  // All targets in a secret share the same token declaration, and the consumer
+  // doesn't affect issuer selection, so the token creation result is the same
+  // for every target — just check the first one.
+  const firstTarget = authResult.results[0];
 
-    const tokenResult = tokenCreationResults.get(targetAuth.tokenAuthResult);
+  /* istanbul ignore next - @preserve */
+  if (!firstTarget.tokenAuthResult) {
+    throw new Error(
+      "Invariant violation: Missing token auth result for allowed target",
+    );
+  }
 
-    /* istanbul ignore next - @preserve */
-    if (!tokenResult) {
-      throw new Error(
-        "Invariant violation: Missing token creation result for allowed target",
-      );
-    }
+  const tokenResult = tokenCreationResults.get(firstTarget.tokenAuthResult);
 
-    switch (tokenResult.type) {
-      case "NO_ISSUER":
-        return "No suitable issuer";
+  /* istanbul ignore next - @preserve */
+  if (!tokenResult) {
+    throw new Error(
+      "Invariant violation: Missing token creation result for allowed target",
+    );
+  }
 
-      case "REQUEST_ERROR":
-      case "ERROR":
-        return "Failed to issue token";
-    }
+  if (tokenResult.type === "NO_ISSUER") return "No suitable issuer";
+
+  if (tokenResult.type === "REQUEST_ERROR" || tokenResult.type === "ERROR") {
+    return "Failed to issue token";
   }
 
   const targetResults = provisionResults.get(authResult);
