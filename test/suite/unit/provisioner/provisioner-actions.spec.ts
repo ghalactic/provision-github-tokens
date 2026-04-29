@@ -46,10 +46,7 @@ import {
   createTestRepoEnvironment,
 } from "../../../github-api.js";
 import { createTestKeyPair } from "../../../key.js";
-import {
-  createTestProvisionAuthTargetResultAllowed,
-  provisionResultsToArray,
-} from "../../../result.js";
+import { createTestProvisionAuthTargetResultAllowed } from "../../../result.js";
 
 vi.mock("@actions/core");
 vi.mock("@octokit/action");
@@ -191,26 +188,7 @@ it("handles GitHub API errors when provisioning org-level Actions secrets", asyn
     isAllowed: true,
   };
 
-  expect(
-    provisionResultsToArray(
-      await provisionSecrets(tokenResults, [allowedResult]),
-    ),
-  ).toEqual([
-    [
-      allowedResult,
-      [
-        [
-          allowedResult.results[0],
-          {
-            type: "REQUEST_ERROR",
-            error: new TestRequestError(403, {
-              message: "Resource not accessible",
-            }),
-          },
-        ],
-      ],
-    ],
-  ]);
+  await provisionSecrets(tokenResults, [allowedResult]);
 
   expect(__getOutput()).toMatchInlineSnapshot(`
     "
@@ -254,13 +232,7 @@ it("handles unexpected errors when provisioning org-level Actions secrets", asyn
     isAllowed: true,
   };
 
-  expect(
-    provisionResultsToArray(
-      await provisionSecrets(tokenResults, [allowedResult]),
-    ),
-  ).toEqual([
-    [allowedResult, [[allowedResult.results[0], { type: "ERROR", error }]]],
-  ]);
+  await provisionSecrets(tokenResults, [allowedResult]);
 
   expect(__getOutput()).toMatchInlineSnapshot(`
     "
@@ -299,19 +271,13 @@ it("can provision org-level Actions secrets", async () => {
     isAllowed: true,
   };
 
-  expect(
-    provisionResultsToArray(
-      await provisionSecrets(tokenResults, [allowedResult]),
-    ),
-  ).toEqual([
-    [allowedResult, [[allowedResult.results[0], { type: "PROVISIONED" }]]],
-  ]);
+  await provisionSecrets(tokenResults, [allowedResult]);
+
   expect(__getOrgSecrets("account-a")).toEqual({
     actions: { SECRET_A: "<token-a>" },
     codespaces: {},
     dependabot: {},
   });
-
   expect(__getOutput()).toMatchInlineSnapshot(`
     "
     Secret #1:
@@ -349,21 +315,7 @@ it("handles GitHub API errors when provisioning repo-level Actions secrets", asy
     isAllowed: true,
   };
 
-  expect(
-    provisionResultsToArray(
-      await provisionSecrets(tokenResults, [allowedResult]),
-    ),
-  ).toEqual([
-    [
-      allowedResult,
-      [
-        [
-          allowedResult.results[0],
-          { type: "REQUEST_ERROR", error: new TestRequestError(401) },
-        ],
-      ],
-    ],
-  ]);
+  await provisionSecrets(tokenResults, [allowedResult]);
 
   expect(__getOutput()).toMatchInlineSnapshot(`
     "
@@ -405,13 +357,7 @@ it("handles unexpected errors when provisioning repo-level Actions secrets", asy
     isAllowed: true,
   };
 
-  expect(
-    provisionResultsToArray(
-      await provisionSecrets(tokenResults, [allowedResult]),
-    ),
-  ).toEqual([
-    [allowedResult, [[allowedResult.results[0], { type: "ERROR", error }]]],
-  ]);
+  await provisionSecrets(tokenResults, [allowedResult]);
 
   expect(__getOutput()).toMatchInlineSnapshot(`
     "
@@ -450,19 +396,13 @@ it("can provision repo-level Actions secrets", async () => {
     isAllowed: true,
   };
 
-  expect(
-    provisionResultsToArray(
-      await provisionSecrets(tokenResults, [allowedResult]),
-    ),
-  ).toEqual([
-    [allowedResult, [[allowedResult.results[0], { type: "PROVISIONED" }]]],
-  ]);
+  await provisionSecrets(tokenResults, [allowedResult]);
+
   expect(__getRepoSecrets("account-a", "repo-a")).toEqual({
     actions: { SECRET_A: "<token-a>" },
     codespaces: {},
     dependabot: {},
   });
-
   expect(__getOutput()).toMatchInlineSnapshot(`
     "
     Secret #1:
