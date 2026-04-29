@@ -1319,13 +1319,22 @@ it("renders empty permissions in explainer output", () => {
     isAllowed: false,
     rules: [],
   };
-  const creationResult: TokenCreationResult = { type: "NOT_ALLOWED" };
+  const createdResult: TokenCreationResult = {
+    type: "CREATED",
+    token: "token" as never,
+  };
+  const notAllowedResult: TokenCreationResult = { type: "NOT_ALLOWED" };
   const results = new Map<TokenAuthResult, TokenCreationResult>([
-    [authResult, creationResult],
+    [authResult, notAllowedResult],
   ]);
   const explain = createTextTokenCreationExplainer(results);
 
-  expect(explain(authResult, creationResult)).toMatchInlineSnapshot(`
+  expect(explain(authResult, createdResult)).toMatchInlineSnapshot(`
+    "✅ token created with access to all repos in account-a:
+      ✅ Has access to all repos in account-a
+      ❌ No permissions requested"
+  `);
+  expect(explain(authResult, notAllowedResult)).toMatchInlineSnapshot(`
     "❌ Refused to create token with access to all repos in account-a:
       ❌ Token not allowed
       ℹ️ Wanted access to all repos in account-a
