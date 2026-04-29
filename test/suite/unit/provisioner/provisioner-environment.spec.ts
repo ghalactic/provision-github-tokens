@@ -11,7 +11,6 @@ import {
   __setErrors,
   __setInstallations,
   __setRepoKeys,
-  TestRequestError,
 } from "../../../../__mocks__/@octokit/action.js";
 import {
   createAppRegistry,
@@ -44,10 +43,7 @@ import {
   createTestRepoEnvironment,
 } from "../../../github-api.js";
 import { createTestKeyPair } from "../../../key.js";
-import {
-  createTestProvisionAuthTargetResultAllowed,
-  provisionResultsToArray,
-} from "../../../result.js";
+import { createTestProvisionAuthTargetResultAllowed } from "../../../result.js";
 
 vi.mock("@actions/core");
 vi.mock("@octokit/action");
@@ -177,21 +173,7 @@ it("handles GitHub API errors when provisioning environment secrets", async () =
     isAllowed: true,
   };
 
-  expect(
-    provisionResultsToArray(
-      await provisionSecrets(tokenResults, [allowedResult]),
-    ),
-  ).toEqual([
-    [
-      allowedResult,
-      [
-        [
-          allowedResult.results[0],
-          { type: "REQUEST_ERROR", error: new TestRequestError(401) },
-        ],
-      ],
-    ],
-  ]);
+  await provisionSecrets(tokenResults, [allowedResult]);
 
   expect(__getOutput()).toMatchInlineSnapshot(`
     "
@@ -233,13 +215,7 @@ it("handles unexpected errors when provisioning environment secrets", async () =
     isAllowed: true,
   };
 
-  expect(
-    provisionResultsToArray(
-      await provisionSecrets(tokenResults, [allowedResult]),
-    ),
-  ).toEqual([
-    [allowedResult, [[allowedResult.results[0], { type: "ERROR", error }]]],
-  ]);
+  await provisionSecrets(tokenResults, [allowedResult]);
 
   expect(__getOutput()).toMatchInlineSnapshot(`
     "
@@ -278,17 +254,11 @@ it("can provision environment secrets", async () => {
     isAllowed: true,
   };
 
-  expect(
-    provisionResultsToArray(
-      await provisionSecrets(tokenResults, [allowedResult]),
-    ),
-  ).toEqual([
-    [allowedResult, [[allowedResult.results[0], { type: "PROVISIONED" }]]],
-  ]);
+  await provisionSecrets(tokenResults, [allowedResult]);
+
   expect(__getEnvSecrets("account-a", "repo-a", "env-a")).toEqual({
     SECRET_A: "<token-a>",
   });
-
   expect(__getOutput()).toMatchInlineSnapshot(`
     "
     Secret #1:

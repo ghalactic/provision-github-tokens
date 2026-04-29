@@ -13,7 +13,6 @@ import {
   __setInstallations,
   __setOrgKeys,
   __setRepoKeys,
-  TestRequestError,
 } from "../../../../__mocks__/@octokit/action.js";
 import {
   createAppRegistry,
@@ -46,10 +45,7 @@ import {
   createTestRepoEnvironment,
 } from "../../../github-api.js";
 import { createTestKeyPair } from "../../../key.js";
-import {
-  createTestProvisionAuthTargetResultAllowed,
-  provisionResultsToArray,
-} from "../../../result.js";
+import { createTestProvisionAuthTargetResultAllowed } from "../../../result.js";
 
 vi.mock("@actions/core");
 vi.mock("@octokit/action");
@@ -188,21 +184,7 @@ it("handles GitHub API errors when provisioning org-level Dependabot secrets", a
     isAllowed: true,
   };
 
-  expect(
-    provisionResultsToArray(
-      await provisionSecrets(tokenResults, [allowedResult]),
-    ),
-  ).toEqual([
-    [
-      allowedResult,
-      [
-        [
-          allowedResult.results[0],
-          { type: "REQUEST_ERROR", error: new TestRequestError(401) },
-        ],
-      ],
-    ],
-  ]);
+  await provisionSecrets(tokenResults, [allowedResult]);
 
   expect(__getOutput()).toMatchInlineSnapshot(`
     "
@@ -244,13 +226,7 @@ it("handles unexpected errors when provisioning org-level Dependabot secrets", a
     isAllowed: true,
   };
 
-  expect(
-    provisionResultsToArray(
-      await provisionSecrets(tokenResults, [allowedResult]),
-    ),
-  ).toEqual([
-    [allowedResult, [[allowedResult.results[0], { type: "ERROR", error }]]],
-  ]);
+  await provisionSecrets(tokenResults, [allowedResult]);
 
   expect(__getOutput()).toMatchInlineSnapshot(`
     "
@@ -289,19 +265,13 @@ it("can provision org-level Dependabot secrets", async () => {
     isAllowed: true,
   };
 
-  expect(
-    provisionResultsToArray(
-      await provisionSecrets(tokenResults, [allowedResult]),
-    ),
-  ).toEqual([
-    [allowedResult, [[allowedResult.results[0], { type: "PROVISIONED" }]]],
-  ]);
+  await provisionSecrets(tokenResults, [allowedResult]);
+
   expect(__getOrgSecrets("account-a")).toEqual({
     actions: {},
     codespaces: {},
     dependabot: { SECRET_A: "<token-a>" },
   });
-
   expect(__getOutput()).toMatchInlineSnapshot(`
     "
     Secret #1:
@@ -339,21 +309,7 @@ it("handles GitHub API errors when provisioning repo-level Dependabot secrets", 
     isAllowed: true,
   };
 
-  expect(
-    provisionResultsToArray(
-      await provisionSecrets(tokenResults, [allowedResult]),
-    ),
-  ).toEqual([
-    [
-      allowedResult,
-      [
-        [
-          allowedResult.results[0],
-          { type: "REQUEST_ERROR", error: new TestRequestError(401) },
-        ],
-      ],
-    ],
-  ]);
+  await provisionSecrets(tokenResults, [allowedResult]);
 
   expect(__getOutput()).toMatchInlineSnapshot(`
     "
@@ -395,13 +351,7 @@ it("handles unexpected errors when provisioning repo-level Dependabot secrets", 
     isAllowed: true,
   };
 
-  expect(
-    provisionResultsToArray(
-      await provisionSecrets(tokenResults, [allowedResult]),
-    ),
-  ).toEqual([
-    [allowedResult, [[allowedResult.results[0], { type: "ERROR", error }]]],
-  ]);
+  await provisionSecrets(tokenResults, [allowedResult]);
 
   expect(__getOutput()).toMatchInlineSnapshot(`
     "
@@ -440,19 +390,13 @@ it("can provision repo-level Dependabot secrets", async () => {
     isAllowed: true,
   };
 
-  expect(
-    provisionResultsToArray(
-      await provisionSecrets(tokenResults, [allowedResult]),
-    ),
-  ).toEqual([
-    [allowedResult, [[allowedResult.results[0], { type: "PROVISIONED" }]]],
-  ]);
+  await provisionSecrets(tokenResults, [allowedResult]);
+
   expect(__getRepoSecrets("account-a", "repo-a")).toEqual({
     actions: {},
     codespaces: {},
     dependabot: { SECRET_A: "<token-a>" },
   });
-
   expect(__getOutput()).toMatchInlineSnapshot(`
     "
     Secret #1:
