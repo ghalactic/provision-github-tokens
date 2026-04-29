@@ -200,6 +200,7 @@ it("handles GitHub API errors when provisioning environment secrets", async () =
     ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
       ❌ Failed to provision to GitHub environment env-a secret in account-a/repo-a: 401 - Unauthorized
     ::debug::      (no response data)
+
     "
   `);
 });
@@ -248,6 +249,7 @@ it("handles unexpected errors when provisioning environment secrets", async () =
       ❌ Failed to provision to GitHub environment env-a secret in account-a/repo-a: <message>
     ::debug::      Error: <message>
     ::debug::          at provisioner.ts:1:1
+
     "
   `);
 });
@@ -293,6 +295,7 @@ it("can provision environment secrets", async () => {
 
     ✅ Secret SECRET_A was provisioned for repo account-a/repo-a:
       ✅ Provisioned to GitHub environment env-a secret in account-a/repo-a
+
     "
   `);
 });

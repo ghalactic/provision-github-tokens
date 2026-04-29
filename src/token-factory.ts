@@ -105,6 +105,8 @@ export function createTokenFactory(
       warning("⚠️ No tokens were created");
     }
 
+    info("");
+
     return creationResults;
   };
 }

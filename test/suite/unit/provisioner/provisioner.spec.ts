@@ -267,6 +267,7 @@ it("handles secrets with no targets to provision to", async () => {
 
     ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
       ❌ No targets to provision to
+
     "
   `);
 });
@@ -303,6 +304,7 @@ it("doesn't provision secrets when provisioning is not allowed", async () => {
 
     ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
       ❌ Not allowed to provision to GitHub Actions secret in account-a
+
     "
   `);
 });
@@ -339,6 +341,7 @@ it("doesn't provision secrets when the token wasn't created", async () => {
 
     ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
       ❌ Token wasn't created for GitHub Actions secret in account-a
+
     "
   `);
 });
@@ -375,6 +378,7 @@ it("doesn't provision secrets when no suitable provisioners are found", async ()
 
     ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
       ❌ No suitable provisioner for GitHub Actions secret in account-x
+
     "
   `);
 });
@@ -414,6 +418,7 @@ it("doesn't provision secrets when encryption fails with a GitHub API error", as
     ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
       ❌ Failed to provision to GitHub Actions secret in account-a: 401 - Unauthorized
     ::debug::      (no response data)
+
     "
   `);
 });
@@ -456,6 +461,7 @@ it("doesn't provision secrets when encryption fails with an unexpected error", a
       ❌ Failed to provision to GitHub Actions secret in account-a: <message>
     ::debug::      Error: <message>
     ::debug::          at encrypt.ts:1:1
+
     "
   `);
 });
@@ -544,6 +550,7 @@ it("can provision multiple secrets of the same type", async () => {
       ✅ Provisioned to GitHub Actions secret in account-a
       ✅ Provisioned to GitHub Actions secret in account-a/repo-a
       ✅ Provisioned to GitHub environment env-a secret in account-a/repo-a
+
     "
   `);
   expect(__getOrgSecrets("account-a")).toEqual({
@@ -632,6 +639,7 @@ it("can provision a secret to multiple targets", async () => {
       ✅ Provisioned to GitHub Codespaces secret in account-a/repo-a
       ✅ Provisioned to Dependabot secret in account-a/repo-a
       ✅ Provisioned to GitHub environment env-a secret in account-a/repo-a
+
     "
   `);
   expect(__getOrgSecrets("account-a")).toEqual({
@@ -715,6 +723,7 @@ it("doesn't stop provisioning when some targets fail", async () => {
       ❌ Token wasn't created for GitHub Actions secret in account-a
       ✅ Provisioned to GitHub Actions secret in account-a
       ❌ No suitable provisioner for GitHub Actions secret in account-x
+
     "
   `);
 });
@@ -726,6 +735,7 @@ it("warns when no auth results are provided", async () => {
   expect(__getOutput()).toMatchInlineSnapshot(`
     "
     ::warning::⚠️ No secrets were provisioned
+
     "
   `);
 });
