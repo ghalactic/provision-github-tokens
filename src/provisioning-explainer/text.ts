@@ -9,17 +9,17 @@ import type { ProvisioningResult } from "../provisioner.js";
 import { prefixLines } from "../text.js";
 import type { ProvisioningResultExplainer } from "../type/provisioning-result.js";
 
-const SUCCESS_ICON = "✅";
-const FAILURE_ICON = "❌";
+const PASS_ICON = "✅";
+const FAIL_ICON = "❌";
 
 export function createTextProvisioningExplainer(): ProvisioningResultExplainer<string> {
   return (authResult, targetResults) => {
     if (targetResults.size < 1) {
       return (
-        `${FAILURE_ICON} ` +
+        `${FAIL_ICON} ` +
         `Secret ${authResult.request.name} wasn't provisioned ` +
         `for repo ${repoRefToString(authResult.request.requester)}:` +
-        `\n  ${FAILURE_ICON} No targets to provision to`
+        `\n  ${FAIL_ICON} No targets to provision to`
       );
     }
 
@@ -38,7 +38,7 @@ export function createTextProvisioningExplainer(): ProvisioningResultExplainer<s
       : noneProvisioned
         ? "wasn't provisioned"
         : "was partially provisioned";
-    const icon = allProvisioned ? SUCCESS_ICON : FAILURE_ICON;
+    const icon = allProvisioned ? PASS_ICON : FAIL_ICON;
 
     let output =
       `${icon} ` +
@@ -60,20 +60,20 @@ export function createTextProvisioningExplainer(): ProvisioningResultExplainer<s
 
     switch (result.type) {
       case "PROVISIONED":
-        return `\n  ${SUCCESS_ICON} Provisioned to ${subject}`;
+        return `\n  ${PASS_ICON} Provisioned to ${subject}`;
 
       case "NOT_ALLOWED":
-        return `\n  ${FAILURE_ICON} Not allowed to provision to ${subject}`;
+        return `\n  ${FAIL_ICON} Not allowed to provision to ${subject}`;
 
       case "NO_TOKEN":
-        return `\n  ${FAILURE_ICON} Token wasn't created for ${subject}`;
+        return `\n  ${FAIL_ICON} Token wasn't created for ${subject}`;
 
       case "NO_PROVISIONER":
-        return `\n  ${FAILURE_ICON} No suitable provisioner for ${subject}`;
+        return `\n  ${FAIL_ICON} No suitable provisioner for ${subject}`;
 
       case "REQUEST_ERROR": {
         const summary =
-          `${FAILURE_ICON} Failed to provision to ${subject}: ` +
+          `${FAIL_ICON} Failed to provision to ${subject}: ` +
           `${result.error.status} - ${result.error.message}`;
         const body = result.error.response?.data;
 
@@ -87,7 +87,7 @@ export function createTextProvisioningExplainer(): ProvisioningResultExplainer<s
 
       case "ERROR": {
         return (
-          `\n  ${FAILURE_ICON} Failed to provision to ${subject}: ` +
+          `\n  ${FAIL_ICON} Failed to provision to ${subject}: ` +
           `${errorMessage(result.error)}` +
           `\n${prefixLines("::debug::      ", errorStack(result.error))}`
         );
