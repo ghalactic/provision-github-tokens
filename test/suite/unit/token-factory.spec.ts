@@ -18,7 +18,11 @@ import {
 } from "../../../src/app-registry.js";
 import { createFindIssuerOctokit } from "../../../src/issuer-octokit.js";
 import { createOctokitFactory } from "../../../src/octokit.js";
-import { createTokenFactory } from "../../../src/token-factory.js";
+import { createTextTokenCreationExplainer } from "../../../src/token-creation-explainer/text.js";
+import {
+  createTokenFactory,
+  type TokenCreationResult,
+} from "../../../src/token-factory.js";
 import type { AppInput } from "../../../src/type/input.js";
 import type { TokenAuthResult } from "../../../src/type/token-auth-result.js";
 import {
@@ -1212,5 +1216,119 @@ it("returns empty map when no token auth results are given", async () => {
     "
     ::warning::⚠️ No tokens were created
     "
+  `);
+});
+
+it("renders admin access level in explainer output", () => {
+  const authResult: TokenAuthResult = {
+    type: "ALL_REPOS",
+    request: {
+      consumer: { account: "consumer-a" },
+      tokenDec: {
+        shared: false,
+        as: "role-a",
+        account: "account-a",
+        repos: "all",
+        permissions: { organization_administration: "admin", metadata: "read" },
+      },
+      repos: "all",
+    },
+    maxWant: "admin",
+    have: { organization_administration: "admin", metadata: "read" },
+    isSufficient: true,
+    isMissingRole: false,
+    isAllowed: true,
+    rules: [],
+  };
+  const creationResult: TokenCreationResult = {
+    type: "CREATED",
+    token: "token" as never,
+  };
+  const results = new Map<TokenAuthResult, TokenCreationResult>([
+    [authResult, creationResult],
+  ]);
+  const explain = createTextTokenCreationExplainer(results);
+
+  expect(explain(authResult, creationResult)).toMatchInlineSnapshot(`
+    "✅ Admin token created with access to all repos in account-a:
+      ✅ Has admin access with role role-a
+      ✅ Has access to all repos in account-a
+      ✅ Has 2 permissions:
+        ✅ metadata: read
+        ✅ organization_administration: admin"
+  `);
+});
+
+it("renders no-repos (account-only) access in explainer output", () => {
+  const authResult: TokenAuthResult = {
+    type: "NO_REPOS",
+    request: {
+      consumer: { account: "consumer-a" },
+      tokenDec: {
+        shared: false,
+        as: "role-a",
+        account: "account-a",
+        repos: [],
+        permissions: { organization_administration: "admin" },
+      },
+      repos: [],
+    },
+    maxWant: "admin",
+    have: { organization_administration: "admin" },
+    isSufficient: true,
+    isMissingRole: false,
+    isAllowed: true,
+    rules: [],
+  };
+  const creationResult: TokenCreationResult = {
+    type: "CREATED",
+    token: "token" as never,
+  };
+  const results = new Map<TokenAuthResult, TokenCreationResult>([
+    [authResult, creationResult],
+  ]);
+  const explain = createTextTokenCreationExplainer(results);
+
+  expect(explain(authResult, creationResult)).toMatchInlineSnapshot(`
+    "✅ Admin token created with access to account-a:
+      ✅ Has admin access with role role-a
+      ✅ Has account-only access
+      ✅ Has 1 permission:
+        ✅ organization_administration: admin"
+  `);
+});
+
+it("renders empty permissions in explainer output", () => {
+  const authResult: TokenAuthResult = {
+    type: "ALL_REPOS",
+    request: {
+      consumer: { account: "consumer-a" },
+      tokenDec: {
+        shared: false,
+        as: undefined,
+        account: "account-a",
+        repos: "all",
+        permissions: {},
+      },
+      repos: "all",
+    },
+    maxWant: "read",
+    have: {},
+    isSufficient: false,
+    isMissingRole: false,
+    isAllowed: false,
+    rules: [],
+  };
+  const creationResult: TokenCreationResult = { type: "NOT_ALLOWED" };
+  const results = new Map<TokenAuthResult, TokenCreationResult>([
+    [authResult, creationResult],
+  ]);
+  const explain = createTextTokenCreationExplainer(results);
+
+  expect(explain(authResult, creationResult)).toMatchInlineSnapshot(`
+    "❌ Refused to create token with access to all repos in account-a:
+      ❌ Token not allowed
+      ℹ️ Wanted access to all repos in account-a
+      ❌ No permissions requested"
   `);
 });
