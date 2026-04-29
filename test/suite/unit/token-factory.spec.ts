@@ -1343,3 +1343,42 @@ it("renders empty permissions in explainer output", () => {
       ❌ No permissions requested"
   `);
 });
+
+it("filters out none permissions in explainer output", () => {
+  const authResult: TokenAuthResult = {
+    type: "ALL_REPOS",
+    request: {
+      consumer: { account: "consumer-a" },
+      tokenDec: {
+        shared: false,
+        as: undefined,
+        account: "account-a",
+        repos: "all",
+        permissions: { contents: "none", metadata: "read" },
+      },
+      repos: "all",
+    },
+    maxWant: "read",
+    have: { metadata: "read" },
+    isSufficient: true,
+    isMissingRole: false,
+    isAllowed: true,
+    rules: [],
+  };
+  const creationResult: TokenCreationResult = {
+    type: "CREATED",
+    token: "token" as never,
+  };
+  const results = new Map<TokenAuthResult, TokenCreationResult>([
+    [authResult, creationResult],
+  ]);
+  const explain = createTextTokenCreationExplainer(results);
+
+  expect(explain(authResult, creationResult)).toMatchInlineSnapshot(`
+    "✅ Read-only token created with access to all repos in account-a:
+      ✅ Has read access without a role
+      ✅ Has access to all repos in account-a
+      ✅ Has 1 permission:
+        ✅ metadata: read"
+  `);
+});
