@@ -1,33 +1,33 @@
 import { maxAccess } from "../access-level.js";
 import { errorMessage, errorStack } from "../error.js";
 import { pluralize } from "../pluralize.js";
-import { prefixLines } from "../text.js";
+import { capitalize, prefixLines } from "../text.js";
 import type { TokenCreationResult } from "../token-factory.js";
 import type { PermissionAccess, Permissions } from "../type/permissions.js";
 import type { TokenAuthResult } from "../type/token-auth-result.js";
 import type { TokenCreationResultExplainer } from "../type/token-creation-result.js";
 
-const ALLOWED_ICON = "✅";
-const DENIED_ICON = "❌";
+const PASS_ICON = "✅";
+const FAIL_ICON = "❌";
 const INFO_ICON = "ℹ️";
 
 export function createTextTokenCreationExplainer(
   results: Map<TokenAuthResult, TokenCreationResult>,
 ): TokenCreationResultExplainer<string> {
-  const resultIndexes = new Map<TokenCreationResult, number>();
-  const authResultIndexes = new Map<TokenAuthResult, number>();
+  const resultIndices = new Map<TokenCreationResult, number>();
+  const authResultIndices = new Map<TokenAuthResult, number>();
 
   let index = 0;
   for (const [authResult, result] of results) {
-    authResultIndexes.set(authResult, index);
-    if (!resultIndexes.has(result)) resultIndexes.set(result, index);
+    authResultIndices.set(authResult, index);
+    if (!resultIndices.has(result)) resultIndices.set(result, index);
 
     ++index;
   }
 
   return (authResult, creationResult) => {
-    const currentIndex = authResultIndexes.get(authResult);
-    const firstIndex = resultIndexes.get(creationResult);
+    const currentIndex = authResultIndices.get(authResult);
+    const firstIndex = resultIndices.get(creationResult);
 
     if (
       creationResult.type === "CREATED" &&
@@ -35,171 +35,169 @@ export function createTextTokenCreationExplainer(
       typeof firstIndex !== "undefined" &&
       firstIndex !== currentIndex
     ) {
-      return `${ALLOWED_ICON} Same token as #${firstIndex + 1}`;
+      return `${PASS_ICON} Same token as #${firstIndex + 1}`;
     }
 
     return explainResult(authResult, creationResult);
   };
-}
 
-function explainResult(
-  authResult: TokenAuthResult,
-  result: TokenCreationResult,
-): string {
-  const { account, permissions, as: role } = authResult.request.tokenDec;
-  const { repos } = authResult.request;
-  const access = maxAccess(permissions);
-  const isSuccess = result.type === "CREATED";
-  const permEntries = effectivePermissions(permissions);
-  const hasPermissions = permEntries.length > 0;
+  function explainResult(
+    authResult: TokenAuthResult,
+    result: TokenCreationResult,
+  ): string {
+    const { account, permissions, as: role } = authResult.request.tokenDec;
+    const { repos } = authResult.request;
+    const access = maxAccess(permissions);
+    const isSuccess = result.type === "CREATED";
+    const permEntries = effectivePermissions(permissions);
+    const hasPermissions = permEntries.length > 0;
 
-  const lines: string[] = [];
+    const lines: string[] = [];
 
-  lines.push(renderHeader(result.type, access, repos, account));
-  lines.push(...renderErrorLines(result));
+    lines.push(renderHeader(result.type, access, repos, account));
+    lines.push(...renderErrorLines(result));
 
-  const subIcon = isSuccess ? ALLOWED_ICON : INFO_ICON;
-  const verb = isSuccess ? "Has" : "Wanted";
+    const subIcon = isSuccess ? PASS_ICON : INFO_ICON;
+    const verb = isSuccess ? "Has" : "Wanted";
 
-  if (hasPermissions) {
-    const roleStr = role ? `with role ${role}` : "without a role";
-    lines.push(`  ${subIcon} ${verb} ${access} access ${roleStr}`);
-  }
-
-  lines.push(...renderRepoLines(subIcon, verb, repos, account));
-  lines.push(...renderPermissionLines(subIcon, verb, permEntries));
-
-  return lines.join("\n");
-}
-
-function renderHeader(
-  type: TokenCreationResult["type"],
-  access: PermissionAccess,
-  repos: "all" | string[],
-  account: string,
-): string {
-  const scope = repoScopeLabel(repos, account);
-  const isSuccess = type === "CREATED";
-  const icon = isSuccess ? ALLOWED_ICON : DENIED_ICON;
-  const label = headerAccessLabel(access);
-
-  if (isSuccess) {
-    return `${icon} ${capitalize(label)} token created with access to ${scope}:`;
-  }
-
-  const prefix = label ? `${label} ` : "";
-  const verb = type === "NOT_ALLOWED" ? "Refused" : "Failed";
-
-  return `${icon} ${verb} to create ${prefix}token with access to ${scope}:`;
-}
-
-function renderErrorLines(result: TokenCreationResult): string[] {
-  switch (result.type) {
-    case "CREATED":
-      return [];
-
-    case "NOT_ALLOWED":
-      return [`  ${DENIED_ICON} Token not allowed`];
-
-    case "NO_ISSUER":
-      return [`  ${DENIED_ICON} No suitable issuer`];
-
-    case "REQUEST_ERROR": {
-      const body = result.error.response?.data;
-      const detail =
-        typeof body === "undefined"
-          ? "(no response data)"
-          : JSON.stringify(body, null, 2);
-
-      return [
-        `  ${DENIED_ICON} ${result.error.status} - ${result.error.message}`,
-        prefixLines("::debug::      ", detail),
-      ];
+    if (hasPermissions) {
+      const roleStr = role ? `with role ${role}` : "without a role";
+      lines.push(`  ${subIcon} ${verb} ${access} access ${roleStr}`);
     }
 
-    case "ERROR":
-      return [
-        `  ${DENIED_ICON} ${errorMessage(result.error)}`,
-        prefixLines("::debug::      ", errorStack(result.error)),
-      ];
-  }
-}
+    lines.push(...renderRepoLines(subIcon, verb, repos, account));
+    lines.push(...renderPermissionLines(subIcon, verb, permEntries));
 
-function renderRepoLines(
-  icon: string,
-  verb: string,
-  repos: "all" | string[],
-  account: string,
-): string[] {
-  if (repos === "all") {
-    return [`  ${icon} ${verb} access to all repos in ${account}`];
+    return lines.join("\n");
   }
 
-  if (repos.length === 0) {
-    return [`  ${icon} ${verb} account-only access`];
+  function renderHeader(
+    type: TokenCreationResult["type"],
+    access: PermissionAccess,
+    repos: "all" | string[],
+    account: string,
+  ): string {
+    const scope = repoScopeLabel(repos, account);
+    const isSuccess = type === "CREATED";
+    const icon = isSuccess ? PASS_ICON : FAIL_ICON;
+    const label = headerAccessLabel(access);
+
+    if (isSuccess) {
+      return (
+        `${icon} ${capitalize(label)} token created ` +
+        `with access to ${scope}:`
+      );
+    }
+
+    const prefix = label ? `${label} ` : "";
+    const verb = type === "NOT_ALLOWED" ? "Refused" : "Failed";
+
+    return `${icon} ${verb} to create ${prefix}token with access to ${scope}:`;
   }
 
-  const lines = [
-    `  ${icon} ${verb} access to ${pluralize(repos.length, "repo", "repos")} in ${account}:`,
-  ];
+  function renderErrorLines(result: TokenCreationResult): string[] {
+    switch (result.type) {
+      case "CREATED":
+        return [];
 
-  for (const repo of repos) {
-    lines.push(`    ${icon} ${account}/${repo}`);
+      case "NOT_ALLOWED":
+        return [`  ${FAIL_ICON} Token not allowed`];
+
+      case "NO_ISSUER":
+        return [`  ${FAIL_ICON} No suitable issuer`];
+
+      case "REQUEST_ERROR": {
+        const body = result.error.response?.data;
+        const detail =
+          typeof body === "undefined"
+            ? "(no response data)"
+            : JSON.stringify(body, null, 2);
+
+        return [
+          `  ${FAIL_ICON} ${result.error.status} - ${result.error.message}`,
+          prefixLines("::debug::      ", detail),
+        ];
+      }
+
+      case "ERROR":
+        return [
+          `  ${FAIL_ICON} ${errorMessage(result.error)}`,
+          prefixLines("::debug::      ", errorStack(result.error)),
+        ];
+    }
   }
 
-  return lines;
-}
+  function renderRepoLines(
+    icon: string,
+    verb: string,
+    repos: "all" | string[],
+    account: string,
+  ): string[] {
+    if (repos === "all") {
+      return [`  ${icon} ${verb} access to all repos in ${account}`];
+    }
 
-function renderPermissionLines(
-  icon: string,
-  verb: string,
-  permEntries: [string, PermissionAccess][],
-): string[] {
-  if (permEntries.length === 0) {
-    return [`  ${DENIED_ICON} No permissions requested`];
+    if (repos.length < 1) return [`  ${icon} ${verb} account-only access`];
+
+    const lines = [
+      `  ${icon} ${verb} access ` +
+        `to ${pluralize(repos.length, "repo", "repos")} ` +
+        `in ${account}:`,
+    ];
+
+    for (const repo of repos) lines.push(`    ${icon} ${account}/${repo}`);
+
+    return lines;
   }
 
-  const lines = [
-    `  ${icon} ${verb} ${pluralize(permEntries.length, "permission", "permissions")}:`,
-  ];
+  function renderPermissionLines(
+    icon: string,
+    verb: string,
+    permEntries: [string, PermissionAccess][],
+  ): string[] {
+    if (permEntries.length < 1) {
+      return [`  ${FAIL_ICON} No permissions requested`];
+    }
 
-  for (const [name, access] of permEntries) {
-    lines.push(`    ${icon} ${name}: ${access}`);
+    const lines = [
+      `  ${icon} ${verb} ` +
+        `${pluralize(permEntries.length, "permission", "permissions")}:`,
+    ];
+
+    for (const [name, access] of permEntries) {
+      lines.push(`    ${icon} ${name}: ${access}`);
+    }
+
+    return lines;
   }
 
-  return lines;
-}
+  function headerAccessLabel(access: PermissionAccess): string {
+    switch (access) {
+      case "read":
+        return "read-only";
+      case "write":
+        return "write";
+      case "admin":
+        return "admin";
+    }
 
-function headerAccessLabel(access: PermissionAccess): string {
-  switch (access) {
-    case "read":
-      return "read-only";
-    case "write":
-      return "write";
-    case "admin":
-      return "admin";
-    case "none":
-      return "";
+    return "";
   }
-}
 
-function repoScopeLabel(repos: "all" | string[], account: string): string {
-  if (repos === "all") return `all repos in ${account}`;
-  if (repos.length === 0) return account;
+  function repoScopeLabel(repos: "all" | string[], account: string): string {
+    if (repos === "all") return `all repos in ${account}`;
+    if (repos.length < 1) return account;
 
-  return `${pluralize(repos.length, "repo", "repos")} in ${account}`;
-}
+    return `${pluralize(repos.length, "repo", "repos")} in ${account}`;
+  }
 
-function effectivePermissions(
-  permissions: Permissions,
-): [string, PermissionAccess][] {
-  return (
-    Object.entries(permissions).filter(
-      ([, access]) => access != null && access !== "none",
-    ) as [string, PermissionAccess][]
-  ).sort(([a], [b]) => a.localeCompare(b));
-}
-
-function capitalize(str: string): string {
-  return str.charAt(0).toUpperCase() + str.slice(1);
+  function effectivePermissions(
+    permissions: Permissions,
+  ): [string, PermissionAccess][] {
+    return (
+      Object.entries(permissions).filter(
+        ([, access]) => access != null && access !== "none",
+      ) as [string, PermissionAccess][]
+    ).sort(([a], [b]) => a.localeCompare(b));
+  }
 }
