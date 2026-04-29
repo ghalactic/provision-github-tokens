@@ -216,28 +216,55 @@ it("creates tokens based on token auth results", async () => {
     "
     Token #1:
 
-    ❌ Token not allowed
+    ❌ Refused to create read-only token with access to all repos in account-a:
+      ❌ Token not allowed
+      ℹ️ Wanted read access without a role
+      ℹ️ Wanted access to all repos in account-a
+      ℹ️ Wanted 1 permission:
+        ℹ️ metadata: read
 
     Token #2:
 
-    ❌ No suitable issuer
+    ❌ Failed to create read-only token with access to all repos in account-b:
+      ❌ No suitable issuer
+      ℹ️ Wanted read access without a role
+      ℹ️ Wanted access to all repos in account-b
+      ℹ️ Wanted 1 permission:
+        ℹ️ metadata: read
 
     Token #3:
 
-    ✅ Token created for account-a
+    ✅ Read-only token created with access to all repos in account-a:
+      ✅ Has read access without a role
+      ✅ Has access to all repos in account-a
+      ✅ Has 1 permission:
+        ✅ metadata: read
 
     Token #4:
 
-    ❌ Failed to create token: 401 - Unauthorized
-    ::debug::    {
-    ::debug::      "message": "Bad credentials"
-    ::debug::    }
+    ❌ Failed to create read-only token with access to 1 repo in account-a:
+      ❌ 401 - Unauthorized
+    ::debug::      {
+    ::debug::        "message": "Bad credentials"
+    ::debug::      }
+      ℹ️ Wanted read access without a role
+      ℹ️ Wanted access to 1 repo in account-a:
+        ℹ️ account-a/repo-a
+      ℹ️ Wanted 1 permission:
+        ℹ️ metadata: read
 
     Token #5:
 
-    ❌ Failed to create token: <message>
-    ::debug::    Error: <message>
-    ::debug::        at token-factory.ts:1:1
+    ❌ Failed to create read-only token with access to 2 repos in account-a:
+      ❌ <message>
+    ::debug::      Error: <message>
+    ::debug::          at token-factory.ts:1:1
+      ℹ️ Wanted read access without a role
+      ℹ️ Wanted access to 2 repos in account-a:
+        ℹ️ account-a/repo-a
+        ℹ️ account-a/repo-b
+      ℹ️ Wanted 1 permission:
+        ℹ️ metadata: read
     "
   `);
 });
@@ -332,7 +359,11 @@ it("deduplicates token creation for identical token shapes", async () => {
     "
     Token #1:
 
-    ✅ Token created for account-a
+    ✅ Read-only token created with access to all repos in account-a:
+      ✅ Has read access without a role
+      ✅ Has access to all repos in account-a
+      ✅ Has 1 permission:
+        ✅ metadata: read
 
     Token #2:
 
@@ -431,11 +462,19 @@ it("isolates tokens by role even when other token shape fields match", async () 
     "
     Token #1:
 
-    ✅ Token created for account-a
+    ✅ Write token created with access to all repos in account-a:
+      ✅ Has write access with role role-a
+      ✅ Has access to all repos in account-a
+      ✅ Has 1 permission:
+        ✅ contents: write
 
     Token #2:
 
-    ✅ Token created for account-a
+    ✅ Write token created with access to all repos in account-a:
+      ✅ Has write access with role role-b
+      ✅ Has access to all repos in account-a
+      ✅ Has 1 permission:
+        ✅ contents: write
     "
   `);
   expect(results.get(roleAResult)).not.toBe(results.get(roleBResult));
@@ -535,11 +574,19 @@ it("doesn't deduplicate tokens with different permissions", async () => {
     "
     Token #1:
 
-    ✅ Token created for account-a
+    ✅ Read-only token created with access to all repos in account-a:
+      ✅ Has read access without a role
+      ✅ Has access to all repos in account-a
+      ✅ Has 1 permission:
+        ✅ metadata: read
 
     Token #2:
 
-    ✅ Token created for account-a
+    ✅ Read-only token created with access to all repos in account-a:
+      ✅ Has read access without a role
+      ✅ Has access to all repos in account-a
+      ✅ Has 1 permission:
+        ✅ contents: read
     "
   `);
   expect(results.get(metadataResult)).not.toBe(results.get(contentsResult));
@@ -638,11 +685,20 @@ it("doesn't deduplicate tokens with different repos", async () => {
     "
     Token #1:
 
-    ✅ Token created for account-a
+    ✅ Read-only token created with access to all repos in account-a:
+      ✅ Has read access without a role
+      ✅ Has access to all repos in account-a
+      ✅ Has 1 permission:
+        ✅ metadata: read
 
     Token #2:
 
-    ✅ Token created for account-a
+    ✅ Read-only token created with access to 1 repo in account-a:
+      ✅ Has read access without a role
+      ✅ Has access to 1 repo in account-a:
+        ✅ account-a/repo-a
+      ✅ Has 1 permission:
+        ✅ metadata: read
     "
   `);
 
@@ -741,11 +797,20 @@ it("doesn't return cached CREATED result for NOT_ALLOWED auth results", async ()
     "
     Token #1:
 
-    ✅ Token created for account-a
+    ✅ Read-only token created with access to all repos in account-a:
+      ✅ Has read access without a role
+      ✅ Has access to all repos in account-a
+      ✅ Has 1 permission:
+        ✅ metadata: read
 
     Token #2:
 
-    ❌ Token not allowed
+    ❌ Refused to create read-only token with access to all repos in account-a:
+      ❌ Token not allowed
+      ℹ️ Wanted read access without a role
+      ℹ️ Wanted access to all repos in account-a
+      ℹ️ Wanted 1 permission:
+        ℹ️ metadata: read
     "
   `);
 });
@@ -809,11 +874,21 @@ it("caches NO_ISSUER results for identical token shapes", async () => {
     "
     Token #1:
 
-    ❌ No suitable issuer
+    ❌ Failed to create read-only token with access to all repos in account-a:
+      ❌ No suitable issuer
+      ℹ️ Wanted read access without a role
+      ℹ️ Wanted access to all repos in account-a
+      ℹ️ Wanted 1 permission:
+        ℹ️ metadata: read
 
     Token #2:
 
-    ❌ No suitable issuer
+    ❌ Failed to create read-only token with access to all repos in account-a:
+      ❌ No suitable issuer
+      ℹ️ Wanted read access without a role
+      ℹ️ Wanted access to all repos in account-a
+      ℹ️ Wanted 1 permission:
+        ℹ️ metadata: read
     "
   `);
   expect(results.get(consumerAResult)).toEqual({ type: "NO_ISSUER" });
@@ -909,13 +984,23 @@ it("caches error results for identical token shapes", async () => {
     "
     Token #1:
 
-    ❌ Failed to create token: 401 - Unauthorized
-    ::debug::    (no response data)
+    ❌ Failed to create read-only token with access to all repos in account-a:
+      ❌ 401 - Unauthorized
+    ::debug::      (no response data)
+      ℹ️ Wanted read access without a role
+      ℹ️ Wanted access to all repos in account-a
+      ℹ️ Wanted 1 permission:
+        ℹ️ metadata: read
 
     Token #2:
 
-    ❌ Failed to create token: 401 - Unauthorized
-    ::debug::    (no response data)
+    ❌ Failed to create read-only token with access to all repos in account-a:
+      ❌ 401 - Unauthorized
+    ::debug::      (no response data)
+      ℹ️ Wanted read access without a role
+      ℹ️ Wanted access to all repos in account-a
+      ℹ️ Wanted 1 permission:
+        ℹ️ metadata: read
     "
   `);
   const cachedResult = results.get(consumerAResult);
@@ -1017,7 +1102,11 @@ it("logs dedup-aware message when tokens are deduplicated", async () => {
     "
     Token #1:
 
-    ✅ Token created for account-a
+    ✅ Read-only token created with access to all repos in account-a:
+      ✅ Has read access without a role
+      ✅ Has access to all repos in account-a
+      ✅ Has 1 permission:
+        ✅ metadata: read
 
     Token #2:
 
@@ -1096,7 +1185,11 @@ it("logs simple message when no tokens are deduplicated", async () => {
     "
     Token #1:
 
-    ✅ Token created for account-a
+    ✅ Read-only token created with access to all repos in account-a:
+      ✅ Has read access without a role
+      ✅ Has access to all repos in account-a
+      ✅ Has 1 permission:
+        ✅ metadata: read
     "
   `);
 });
