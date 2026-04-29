@@ -222,19 +222,19 @@ it("creates tokens based on token auth results", async () => {
 
     ❌ Refused to create read-only token with access to all repos in account-a:
       ❌ Token not allowed
-      ℹ️ Wanted read access without a role
-      ℹ️ Wanted access to all repos in account-a
-      ℹ️ Wanted 1 permission:
-        ℹ️ metadata: read
+      ➖ Wanted read access without a role
+      ➖ Wanted access to all repos in account-a
+      ➖ Wanted 1 permission:
+        ➖ metadata: read
 
     Token #2:
 
     ❌ Failed to create read-only token with access to all repos in account-b:
       ❌ No suitable issuer
-      ℹ️ Wanted read access without a role
-      ℹ️ Wanted access to all repos in account-b
-      ℹ️ Wanted 1 permission:
-        ℹ️ metadata: read
+      ➖ Wanted read access without a role
+      ➖ Wanted access to all repos in account-b
+      ➖ Wanted 1 permission:
+        ➖ metadata: read
 
     Token #3:
 
@@ -251,11 +251,11 @@ it("creates tokens based on token auth results", async () => {
     ::debug::      {
     ::debug::        "message": "Bad credentials"
     ::debug::      }
-      ℹ️ Wanted read access without a role
-      ℹ️ Wanted access to 1 repo in account-a:
-        ℹ️ account-a/repo-a
-      ℹ️ Wanted 1 permission:
-        ℹ️ metadata: read
+      ➖ Wanted read access without a role
+      ➖ Wanted access to 1 repo in account-a:
+        ➖ account-a/repo-a
+      ➖ Wanted 1 permission:
+        ➖ metadata: read
 
     Token #5:
 
@@ -263,12 +263,12 @@ it("creates tokens based on token auth results", async () => {
       ❌ <message>
     ::debug::      Error: <message>
     ::debug::          at token-factory.ts:1:1
-      ℹ️ Wanted read access without a role
-      ℹ️ Wanted access to 2 repos in account-a:
-        ℹ️ account-a/repo-a
-        ℹ️ account-a/repo-b
-      ℹ️ Wanted 1 permission:
-        ℹ️ metadata: read
+      ➖ Wanted read access without a role
+      ➖ Wanted access to 2 repos in account-a:
+        ➖ account-a/repo-a
+        ➖ account-a/repo-b
+      ➖ Wanted 1 permission:
+        ➖ metadata: read
 
     "
   `);
@@ -816,10 +816,10 @@ it("doesn't return cached CREATED result for NOT_ALLOWED auth results", async ()
 
     ❌ Refused to create read-only token with access to all repos in account-a:
       ❌ Token not allowed
-      ℹ️ Wanted read access without a role
-      ℹ️ Wanted access to all repos in account-a
-      ℹ️ Wanted 1 permission:
-        ℹ️ metadata: read
+      ➖ Wanted read access without a role
+      ➖ Wanted access to all repos in account-a
+      ➖ Wanted 1 permission:
+        ➖ metadata: read
 
     "
   `);
@@ -886,19 +886,19 @@ it("caches NO_ISSUER results for identical token shapes", async () => {
 
     ❌ Failed to create read-only token with access to all repos in account-a:
       ❌ No suitable issuer
-      ℹ️ Wanted read access without a role
-      ℹ️ Wanted access to all repos in account-a
-      ℹ️ Wanted 1 permission:
-        ℹ️ metadata: read
+      ➖ Wanted read access without a role
+      ➖ Wanted access to all repos in account-a
+      ➖ Wanted 1 permission:
+        ➖ metadata: read
 
     Token #2:
 
     ❌ Failed to create read-only token with access to all repos in account-a:
       ❌ No suitable issuer
-      ℹ️ Wanted read access without a role
-      ℹ️ Wanted access to all repos in account-a
-      ℹ️ Wanted 1 permission:
-        ℹ️ metadata: read
+      ➖ Wanted read access without a role
+      ➖ Wanted access to all repos in account-a
+      ➖ Wanted 1 permission:
+        ➖ metadata: read
 
     "
   `);
@@ -998,20 +998,20 @@ it("caches error results for identical token shapes", async () => {
     ❌ Failed to create read-only token with access to all repos in account-a:
       ❌ 401 - Unauthorized
     ::debug::      (no response data)
-      ℹ️ Wanted read access without a role
-      ℹ️ Wanted access to all repos in account-a
-      ℹ️ Wanted 1 permission:
-        ℹ️ metadata: read
+      ➖ Wanted read access without a role
+      ➖ Wanted access to all repos in account-a
+      ➖ Wanted 1 permission:
+        ➖ metadata: read
 
     Token #2:
 
     ❌ Failed to create read-only token with access to all repos in account-a:
       ❌ 401 - Unauthorized
     ::debug::      (no response data)
-      ℹ️ Wanted read access without a role
-      ℹ️ Wanted access to all repos in account-a
-      ℹ️ Wanted 1 permission:
-        ℹ️ metadata: read
+      ➖ Wanted read access without a role
+      ➖ Wanted access to all repos in account-a
+      ➖ Wanted 1 permission:
+        ➖ metadata: read
 
     "
   `);
@@ -1339,7 +1339,7 @@ it("renders empty permissions in explainer output", () => {
   expect(explain(authResult, creationResult)).toMatchInlineSnapshot(`
     "❌ Refused to create token with access to all repos in account-a:
       ❌ Token not allowed
-      ℹ️ Wanted access to all repos in account-a
+      ➖ Wanted access to all repos in account-a
       ❌ No permissions requested"
   `);
 });

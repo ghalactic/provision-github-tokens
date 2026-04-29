@@ -9,7 +9,7 @@ import type { TokenCreationResultExplainer } from "../type/token-creation-result
 
 const PASS_ICON = "✅";
 const FAIL_ICON = "❌";
-const INFO_ICON = "ℹ️";
+const INFO_ICON = "➖";
 
 export function createTextTokenCreationExplainer(
   results: Map<TokenAuthResult, TokenCreationResult>,
