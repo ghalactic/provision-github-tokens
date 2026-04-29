@@ -221,6 +221,7 @@ it("handles GitHub API errors when provisioning org-level Actions secrets", asyn
     ::debug::      {
     ::debug::        "message": "Resource not accessible"
     ::debug::      }
+
     "
   `);
 });
@@ -269,6 +270,7 @@ it("handles unexpected errors when provisioning org-level Actions secrets", asyn
       ❌ Failed to provision to GitHub Actions secret in account-a: <message>
     ::debug::      Error: <message>
     ::debug::          at provisioner.ts:1:1
+
     "
   `);
 });
@@ -316,6 +318,7 @@ it("can provision org-level Actions secrets", async () => {
 
     ✅ Secret SECRET_A was provisioned for repo account-a/repo-a:
       ✅ Provisioned to GitHub Actions secret in account-a
+
     "
   `);
 });
@@ -369,6 +372,7 @@ it("handles GitHub API errors when provisioning repo-level Actions secrets", asy
     ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
       ❌ Failed to provision to GitHub Actions secret in account-a/repo-a: 401 - Unauthorized
     ::debug::      (no response data)
+
     "
   `);
 });
@@ -417,6 +421,7 @@ it("handles unexpected errors when provisioning repo-level Actions secrets", asy
       ❌ Failed to provision to GitHub Actions secret in account-a/repo-a: <message>
     ::debug::      Error: <message>
     ::debug::          at provisioner.ts:1:1
+
     "
   `);
 });
@@ -464,6 +469,7 @@ it("can provision repo-level Actions secrets", async () => {
 
     ✅ Secret SECRET_A was provisioned for repo account-a/repo-a:
       ✅ Provisioned to GitHub Actions secret in account-a/repo-a
+
     "
   `);
 });

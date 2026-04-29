@@ -269,6 +269,7 @@ it("creates tokens based on token auth results", async () => {
         ℹ️ account-a/repo-b
       ℹ️ Wanted 1 permission:
         ℹ️ metadata: read
+
     "
   `);
 });
@@ -372,6 +373,7 @@ it("deduplicates token creation for identical token shapes", async () => {
     Token #2:
 
     ✅ Same token as #1
+
     "
   `);
 });
@@ -479,6 +481,7 @@ it("isolates tokens by role even when other token shape fields match", async () 
       ✅ Has access to all repos in account-a
       ✅ Has 1 permission:
         ✅ contents: write
+
     "
   `);
   expect(results.get(roleAResult)).not.toBe(results.get(roleBResult));
@@ -591,6 +594,7 @@ it("doesn't deduplicate tokens with different permissions", async () => {
       ✅ Has access to all repos in account-a
       ✅ Has 1 permission:
         ✅ contents: read
+
     "
   `);
   expect(results.get(metadataResult)).not.toBe(results.get(contentsResult));
@@ -703,6 +707,7 @@ it("doesn't deduplicate tokens with different repos", async () => {
         ✅ account-a/repo-a
       ✅ Has 1 permission:
         ✅ metadata: read
+
     "
   `);
 
@@ -815,6 +820,7 @@ it("doesn't return cached CREATED result for NOT_ALLOWED auth results", async ()
       ℹ️ Wanted access to all repos in account-a
       ℹ️ Wanted 1 permission:
         ℹ️ metadata: read
+
     "
   `);
 });
@@ -893,6 +899,7 @@ it("caches NO_ISSUER results for identical token shapes", async () => {
       ℹ️ Wanted access to all repos in account-a
       ℹ️ Wanted 1 permission:
         ℹ️ metadata: read
+
     "
   `);
   expect(results.get(consumerAResult)).toEqual({ type: "NO_ISSUER" });
@@ -1005,6 +1012,7 @@ it("caches error results for identical token shapes", async () => {
       ℹ️ Wanted access to all repos in account-a
       ℹ️ Wanted 1 permission:
         ℹ️ metadata: read
+
     "
   `);
   const cachedResult = results.get(consumerAResult);
@@ -1115,6 +1123,7 @@ it("logs dedup-aware message when tokens are deduplicated", async () => {
     Token #2:
 
     ✅ Same token as #1
+
     "
   `);
 });
@@ -1194,6 +1203,7 @@ it("logs simple message when no tokens are deduplicated", async () => {
       ✅ Has access to all repos in account-a
       ✅ Has 1 permission:
         ✅ metadata: read
+
     "
   `);
 });
@@ -1215,6 +1225,7 @@ it("returns empty map when no token auth results are given", async () => {
   expect(__getOutput()).toMatchInlineSnapshot(`
     "
     ::warning::⚠️ No tokens were created
+
     "
   `);
 });
