@@ -133,7 +133,7 @@ function failuresTable(
   definitions: Record<string, string>,
   githubServerUrl: string,
 ): RootContent[] {
-  if (deniedRows.length === 0) return [];
+  if (deniedRows.length < 1) return [];
 
   return [
     table(
@@ -163,7 +163,7 @@ function successesTable(
   definitions: Record<string, string>,
   githubServerUrl: string,
 ): RootContent[] {
-  if (allowedRows.length === 0) return [];
+  if (allowedRows.length < 1) return [];
 
   return [
     table(
@@ -178,7 +178,7 @@ function omittedNotice(
   totalCount: number,
   omittedCount: number,
 ): RootContent[] {
-  if (omittedCount === 0) return [];
+  if (omittedCount < 1) return [];
 
   return [
     gfmAlert(
@@ -239,8 +239,8 @@ function failureReason(
 ): string {
   if (
     authResult.isMissingTargets ||
-    authResult.request.to.length === 0 ||
-    authResult.results.length === 0
+    authResult.request.to.length < 1 ||
+    authResult.results.length < 1
   ) {
     return "No targets to provision to";
   }
@@ -342,41 +342,47 @@ function targetCellChildren(
 ): TableCell["children"] {
   if (targets.length < 1) return [emphasis(text("(none)"))];
 
-  const seen = new Set<string>();
-  const refs: [key: string, ref: AccountOrRepoReference][] = [];
+  const refs = new Map<string, AccountOrRepoReference>();
 
   for (const t of targets) {
-    addAccountOrRepoDef(definitions, githubServerUrl, t.target);
-    const key = accountOrRepoRefToString(t.target).toLowerCase();
+    const identifier = addAccountOrRepoDef(
+      definitions,
+      githubServerUrl,
+      t.target,
+    );
 
-    if (!seen.has(key)) {
-      seen.add(key);
-      refs.push([key, t.target]);
-    }
+    if (!refs.has(identifier)) refs.set(identifier, t.target);
   }
 
-  refs.sort(([a], [b]) => a.localeCompare(b));
-
+  const refOrder = [...refs.keys()].sort((a, b) => a.localeCompare(b));
   const children: TableCell["children"] = [];
 
-  for (let i = 0; i < refs.length; ++i) {
+  for (let i = 0; i < refOrder.length; ++i) {
     if (i > 0) children.push(text(", "));
-    children.push(accountOrRepoLinkRef(refs[i][1]));
+    children.push(accountOrRepoLinkRef(refs.get(refOrder[i])!));
   }
 
   return children;
 }
 
 function definitionsAst(definitions: Record<string, string>): RootContent[] {
-  return Object.entries(definitions)
-    .sort(([a], [b]) => a.localeCompare(b))
-    .map(([identifier, url]) => ({
+  const entries = Object.entries(definitions).sort(([a], [b]) =>
+    a.localeCompare(b),
+  );
+
+  const ast: RootContent[] = [];
+
+  for (const [identifier, url] of entries) {
+    ast.push({
       type: "definition",
       identifier,
       label: identifier,
       url,
       title: null,
-    }));
+    });
+  }
+
+  return ast;
 }
 
 function accountOrRepoLinkRef(
@@ -397,9 +403,11 @@ function addAccountOrRepoDef(
   definitions: Record<string, string>,
   githubServerUrl: string,
   accountOrRepo: AccountOrRepoReference,
-): void {
+): string {
   const slug = accountOrRepoRefToString(accountOrRepo).toLowerCase();
   const identifier = `${LINK_REF_PREFIX}${slug}`.toLowerCase();
 
   definitions[identifier] = new URL(slug, githubServerUrl).toString();
+
+  return identifier;
 }
