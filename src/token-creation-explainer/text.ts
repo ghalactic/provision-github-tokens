@@ -84,7 +84,6 @@ function renderHeader(
   const label = headerAccessLabel(access);
 
   if (isSuccess) {
-    /* istanbul ignore next - empty permissions are rejected before creation - @preserve */
     const prefix = label ? `${capitalize(label)} ` : "";
 
     return `${icon} ${prefix}token created with access to ${scope}:`;
