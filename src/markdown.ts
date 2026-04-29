@@ -12,9 +12,6 @@ import type {
   Text,
 } from "mdast";
 
-const ALLOWED_ICON = "✅";
-const DENIED_ICON = "❌";
-
 export function blockquote(...children: Blockquote["children"]): Blockquote {
   return { type: "blockquote", children };
 }
@@ -47,10 +44,6 @@ export function link(url: string | URL, ...children: Link["children"]): Link {
 
 export function paragraph(...children: Paragraph["children"]): Paragraph {
   return { type: "paragraph", children };
-}
-
-export function renderIcon(isAllowed: boolean): string {
-  return isAllowed ? ALLOWED_ICON : DENIED_ICON;
 }
 
 export function table(
