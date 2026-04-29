@@ -1,15 +1,12 @@
 import { maxAccess } from "../access-level.js";
 import { errorMessage, errorStack } from "../error.js";
+import { FAIL_ICON, icon, PASS_ICON } from "../icon.js";
 import { pluralize } from "../pluralize.js";
 import { capitalize, prefixLines } from "../text.js";
 import type { TokenCreationResult } from "../token-factory.js";
 import type { PermissionAccess, Permissions } from "../type/permissions.js";
 import type { TokenAuthResult } from "../type/token-auth-result.js";
 import type { TokenCreationResultExplainer } from "../type/token-creation-result.js";
-
-const PASS_ICON = "✅";
-const FAIL_ICON = "❌";
-const INFO_ICON = "➖";
 
 export function createTextTokenCreationExplainer(
   results: Map<TokenAuthResult, TokenCreationResult>,
@@ -57,7 +54,7 @@ export function createTextTokenCreationExplainer(
     lines.push(renderHeader(result.type, access, repos, account));
     lines.push(...renderErrorLines(result));
 
-    const subIcon = isSuccess ? PASS_ICON : INFO_ICON;
+    const subIcon = icon(isSuccess || undefined);
     const verb = isSuccess ? "Has" : "Wanted";
 
     if (hasPermissions) {
@@ -79,12 +76,11 @@ export function createTextTokenCreationExplainer(
   ): string {
     const scope = repoScopeLabel(repos, account);
     const isSuccess = type === "CREATED";
-    const icon = isSuccess ? PASS_ICON : FAIL_ICON;
     const label = headerAccessLabel(access);
 
     if (isSuccess) {
       return (
-        `${icon} ${capitalize(label)} token created ` +
+        `${icon(isSuccess)} ${capitalize(label)} token created ` +
         `with access to ${scope}:`
       );
     }
@@ -92,7 +88,10 @@ export function createTextTokenCreationExplainer(
     const prefix = label ? `${label} ` : "";
     const verb = type === "NOT_ALLOWED" ? "Refused" : "Failed";
 
-    return `${icon} ${verb} to create ${prefix}token with access to ${scope}:`;
+    return (
+      `${icon(isSuccess)} ${verb} to create ${prefix}token ` +
+      `with access to ${scope}:`
+    );
   }
 
   function renderErrorLines(result: TokenCreationResult): string[] {
@@ -194,10 +193,14 @@ export function createTextTokenCreationExplainer(
   function effectivePermissions(
     permissions: Permissions,
   ): [string, PermissionAccess][] {
-    return (
-      Object.entries(permissions).filter(
-        ([, access]) => access != null && access !== "none",
-      ) as [string, PermissionAccess][]
-    ).sort(([a], [b]) => a.localeCompare(b));
+    const entries: [string, PermissionAccess][] = [];
+
+    for (const [name, access = "none"] of Object.entries(permissions)) {
+      if (access !== "none") entries.push([name, access]);
+    }
+
+    entries.sort(([a], [b]) => a.localeCompare(b));
+
+    return entries;
   }
 }

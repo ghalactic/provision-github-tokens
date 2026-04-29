@@ -6,6 +6,7 @@ import {
   accountOrRepoRefToString,
   type AccountOrRepoReference,
 } from "./github-reference.js";
+import { icon } from "./icon.js";
 import {
   emphasis,
   gfmAlert,
@@ -13,7 +14,6 @@ import {
   inlineCode,
   link,
   paragraph,
-  renderIcon,
   table,
   text,
 } from "./markdown.js";
@@ -201,7 +201,7 @@ function successRow(
   addAccountOrRepoDef(definitions, githubServerUrl, result.request.requester);
 
   return [
-    [text(renderIcon(true))],
+    [text(icon(true))],
     [accountOrRepoLinkRef(result.request.requester)],
     [inlineCode(result.request.name)],
     targetCellChildren(result.request.to, definitions, githubServerUrl),
@@ -221,7 +221,7 @@ function failureRow(
   addAccountOrRepoDef(definitions, githubServerUrl, result.request.requester);
 
   return [
-    [text(renderIcon(false))],
+    [text(icon(false))],
     [accountOrRepoLinkRef(result.request.requester)],
     [inlineCode(result.request.name)],
     targetCellChildren(result.request.to, definitions, githubServerUrl),

@@ -4,13 +4,11 @@ import {
   accountOrRepoRefToString,
   repoRefToString,
 } from "../github-reference.js";
+import { FAIL_ICON, icon, PASS_ICON } from "../icon.js";
 import type { ProvisionRequestTarget } from "../provision-request.js";
 import type { ProvisioningResult } from "../provisioner.js";
 import { prefixLines } from "../text.js";
 import type { ProvisioningResultExplainer } from "../type/provisioning-result.js";
-
-const PASS_ICON = "✅";
-const FAIL_ICON = "❌";
 
 export function createTextProvisioningExplainer(): ProvisioningResultExplainer<string> {
   return (authResult, targetResults) => {
@@ -38,10 +36,8 @@ export function createTextProvisioningExplainer(): ProvisioningResultExplainer<s
       : noneProvisioned
         ? "wasn't provisioned"
         : "was partially provisioned";
-    const icon = allProvisioned ? PASS_ICON : FAIL_ICON;
-
     let output =
-      `${icon} ` +
+      `${icon(allProvisioned)} ` +
       `Secret ${authResult.request.name} ${status} ` +
       `for repo ${repoRefToString(authResult.request.requester)}:`;
 
