@@ -1,5 +1,6 @@
 import { maxAccess } from "../access-level.js";
 import { errorMessage, errorStack } from "../error.js";
+import { pluralize } from "../pluralize.js";
 import { prefixLines } from "../text.js";
 import type { TokenCreationResult } from "../token-factory.js";
 import type { PermissionAccess, Permissions } from "../type/permissions.js";
@@ -140,9 +141,8 @@ function renderRepoLines(
     return [`  ${icon} ${verb} account-only access`];
   }
 
-  const repoWord = repos.length === 1 ? "repo" : "repos";
   const lines = [
-    `  ${icon} ${verb} access to ${repos.length} ${repoWord} in ${account}:`,
+    `  ${icon} ${verb} access to ${pluralize(repos.length, "repo", "repos")} in ${account}:`,
   ];
 
   for (const repo of repos) {
@@ -161,8 +161,9 @@ function renderPermissionLines(
     return [`  ${DENIED_ICON} No permissions requested`];
   }
 
-  const permWord = permEntries.length === 1 ? "permission" : "permissions";
-  const lines = [`  ${icon} ${verb} ${permEntries.length} ${permWord}:`];
+  const lines = [
+    `  ${icon} ${verb} ${pluralize(permEntries.length, "permission", "permissions")}:`,
+  ];
 
   for (const [name, access] of permEntries) {
     lines.push(`    ${icon} ${name}: ${access}`);
@@ -188,9 +189,7 @@ function repoScopeLabel(repos: "all" | string[], account: string): string {
   if (repos === "all") return `all repos in ${account}`;
   if (repos.length === 0) return account;
 
-  const repoWord = repos.length === 1 ? "repo" : "repos";
-
-  return `${repos.length} ${repoWord} in ${account}`;
+  return `${pluralize(repos.length, "repo", "repos")} in ${account}`;
 }
 
 function effectivePermissions(
