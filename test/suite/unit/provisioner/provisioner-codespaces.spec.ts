@@ -1,5 +1,8 @@
 import { beforeEach, expect, it, vi, type Mock } from "vitest";
-import { __reset as __resetCore } from "../../../../__mocks__/@actions/core.js";
+import {
+  __getOutput,
+  __reset as __resetCore,
+} from "../../../../__mocks__/@actions/core.js";
 import {
   __getOrgSecrets,
   __getRepoSecrets,
@@ -10,7 +13,6 @@ import {
   __setInstallations,
   __setOrgKeys,
   __setRepoKeys,
-  TestRequestError,
 } from "../../../../__mocks__/@octokit/action.js";
 import {
   createAppRegistry,
@@ -43,10 +45,7 @@ import {
   createTestRepoEnvironment,
 } from "../../../github-api.js";
 import { createTestKeyPair } from "../../../key.js";
-import {
-  createTestProvisionAuthTargetResultAllowed,
-  provisionResultsToArray,
-} from "../../../result.js";
+import { createTestProvisionAuthTargetResultAllowed } from "../../../result.js";
 
 vi.mock("@actions/core");
 vi.mock("@octokit/action");
@@ -185,25 +184,24 @@ it("handles GitHub API errors when provisioning org-level Codespaces secrets", a
     isAllowed: true,
   };
 
-  expect(
-    provisionResultsToArray(
-      await provisionSecrets(tokenResults, [allowedResult]),
-    ),
-  ).toEqual([
-    [
-      allowedResult,
-      [
-        [
-          allowedResult.results[0],
-          { type: "REQUEST_ERROR", error: new TestRequestError(401) },
-        ],
-      ],
-    ],
-  ]);
+  await provisionSecrets(tokenResults, [allowedResult]);
+
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "
+    Secret #1:
+
+    ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
+      ❌ Failed to provision to GitHub Codespaces secret in account-a: 401 - Unauthorized
+    ::debug::      (no response data)
+
+    "
+  `);
 });
 
 it("handles unexpected errors when provisioning org-level Codespaces secrets", async () => {
-  __setErrors("codespaces.createOrUpdateOrgSecret", [new Error("<message>")]);
+  const error = new Error("<message>");
+  error.stack = "Error: <message>\n    at provisioner.ts:1:1";
+  __setErrors("codespaces.createOrUpdateOrgSecret", [error]);
 
   const tokenResults = new Map<TokenAuthResult, TokenCreationResult>([
     [tokenAuthResultA, tokenCreationResultCreatedA],
@@ -228,21 +226,19 @@ it("handles unexpected errors when provisioning org-level Codespaces secrets", a
     isAllowed: true,
   };
 
-  expect(
-    provisionResultsToArray(
-      await provisionSecrets(tokenResults, [allowedResult]),
-    ),
-  ).toEqual([
-    [
-      allowedResult,
-      [
-        [
-          allowedResult.results[0],
-          { type: "ERROR", error: new Error("<message>") },
-        ],
-      ],
-    ],
-  ]);
+  await provisionSecrets(tokenResults, [allowedResult]);
+
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "
+    Secret #1:
+
+    ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
+      ❌ Failed to provision to GitHub Codespaces secret in account-a: <message>
+    ::debug::      Error: <message>
+    ::debug::          at provisioner.ts:1:1
+
+    "
+  `);
 });
 
 it("can provision org-level Codespaces secrets", async () => {
@@ -269,18 +265,22 @@ it("can provision org-level Codespaces secrets", async () => {
     isAllowed: true,
   };
 
-  expect(
-    provisionResultsToArray(
-      await provisionSecrets(tokenResults, [allowedResult]),
-    ),
-  ).toEqual([
-    [allowedResult, [[allowedResult.results[0], { type: "PROVISIONED" }]]],
-  ]);
+  await provisionSecrets(tokenResults, [allowedResult]);
+
   expect(__getOrgSecrets("account-a")).toEqual({
     actions: {},
     codespaces: { SECRET_A: "<token-a>" },
     dependabot: {},
   });
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "
+    Secret #1:
+
+    ✅ Secret SECRET_A was provisioned for repo account-a/repo-a:
+      ✅ Provisioned to GitHub Codespaces secret in account-a
+
+    "
+  `);
 });
 
 it("handles GitHub API errors when provisioning repo-level Codespaces secrets", async () => {
@@ -309,25 +309,24 @@ it("handles GitHub API errors when provisioning repo-level Codespaces secrets", 
     isAllowed: true,
   };
 
-  expect(
-    provisionResultsToArray(
-      await provisionSecrets(tokenResults, [allowedResult]),
-    ),
-  ).toEqual([
-    [
-      allowedResult,
-      [
-        [
-          allowedResult.results[0],
-          { type: "REQUEST_ERROR", error: new TestRequestError(401) },
-        ],
-      ],
-    ],
-  ]);
+  await provisionSecrets(tokenResults, [allowedResult]);
+
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "
+    Secret #1:
+
+    ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
+      ❌ Failed to provision to GitHub Codespaces secret in account-a/repo-a: 401 - Unauthorized
+    ::debug::      (no response data)
+
+    "
+  `);
 });
 
 it("handles unexpected errors when provisioning repo-level Codespaces secrets", async () => {
-  __setErrors("codespaces.createOrUpdateRepoSecret", [new Error("<message>")]);
+  const error = new Error("<message>");
+  error.stack = "Error: <message>\n    at provisioner.ts:1:1";
+  __setErrors("codespaces.createOrUpdateRepoSecret", [error]);
 
   const tokenResults = new Map<TokenAuthResult, TokenCreationResult>([
     [tokenAuthResultA, tokenCreationResultCreatedA],
@@ -352,21 +351,19 @@ it("handles unexpected errors when provisioning repo-level Codespaces secrets", 
     isAllowed: true,
   };
 
-  expect(
-    provisionResultsToArray(
-      await provisionSecrets(tokenResults, [allowedResult]),
-    ),
-  ).toEqual([
-    [
-      allowedResult,
-      [
-        [
-          allowedResult.results[0],
-          { type: "ERROR", error: new Error("<message>") },
-        ],
-      ],
-    ],
-  ]);
+  await provisionSecrets(tokenResults, [allowedResult]);
+
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "
+    Secret #1:
+
+    ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
+      ❌ Failed to provision to GitHub Codespaces secret in account-a/repo-a: <message>
+    ::debug::      Error: <message>
+    ::debug::          at provisioner.ts:1:1
+
+    "
+  `);
 });
 
 it("can provision repo-level Codespaces secrets", async () => {
@@ -393,16 +390,20 @@ it("can provision repo-level Codespaces secrets", async () => {
     isAllowed: true,
   };
 
-  expect(
-    provisionResultsToArray(
-      await provisionSecrets(tokenResults, [allowedResult]),
-    ),
-  ).toEqual([
-    [allowedResult, [[allowedResult.results[0], { type: "PROVISIONED" }]]],
-  ]);
+  await provisionSecrets(tokenResults, [allowedResult]);
+
   expect(__getRepoSecrets("account-a", "repo-a")).toEqual({
     actions: {},
     codespaces: { SECRET_A: "<token-a>" },
     dependabot: {},
   });
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "
+    Secret #1:
+
+    ✅ Secret SECRET_A was provisioned for repo account-a/repo-a:
+      ✅ Provisioned to GitHub Codespaces secret in account-a/repo-a
+
+    "
+  `);
 });

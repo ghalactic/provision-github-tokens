@@ -115,16 +115,27 @@ try {
     return await authorizer.authorize(Array.from(requesters.values()));
   });
 
-  const tokens = await group("Creating tokens", async () => {
+  const tokenCreationResults = await group("Creating tokens", async () => {
     return await createTokens(tokenAuthorizer.listResults());
   });
 
-  await group("Provisioning secrets", async () => {
-    await provisionSecrets(tokens, provisionAuthorizer.listResults());
+  const provisioningResults = await group("Provisioning secrets", async () => {
+    return await provisionSecrets(
+      tokenCreationResults,
+      provisionAuthorizer.listResults(),
+    );
   });
 
   await summary
-    .addRaw(renderSummary(githubServerUrl, actionUrl, authorizeResult))
+    .addRaw(
+      renderSummary(
+        githubServerUrl,
+        actionUrl,
+        authorizeResult,
+        tokenCreationResults,
+        provisioningResults,
+      ),
+    )
     .write();
 } catch (error) {
   setFailed(errorStack(error));

@@ -45,28 +45,28 @@ export function createAuthorizer(
         .listResults()
         .sort((a, b) => compareTokenRequest(a.request, b.request));
 
-      const provisionAuthExplainer =
+      const explainProvisionAuth =
         createTextProvisionAuthExplainer(tokenResults);
-      const tokenAuthExplainer = createTextTokenAuthExplainer();
+      const explainTokenAuth = createTextTokenAuthExplainer();
 
       if (provisionResults.length > 0) {
         for (let i = 1; i <= provisionResults.length; ++i) {
           info(`\nSecret #${i}:\n`);
-          info(provisionAuthExplainer(provisionResults[i - 1]));
+          info(explainProvisionAuth(provisionResults[i - 1]));
         }
       } else {
         info("");
-        warning("❌ No secrets were authorized");
+        warning("⚠️ No secrets were authorized");
       }
 
       if (tokenResults.length > 0) {
         for (let i = 1; i <= tokenResults.length; ++i) {
           info(`\nToken #${i}:\n`);
-          info(tokenAuthExplainer(tokenResults[i - 1]));
+          info(explainTokenAuth(tokenResults[i - 1]));
         }
       } else {
         info("");
-        warning("❌ No tokens were authorized");
+        warning("⚠️ No tokens were authorized");
       }
 
       info("");

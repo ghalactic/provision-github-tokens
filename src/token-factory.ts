@@ -1,8 +1,8 @@
-import { info } from "@actions/core";
+import { info, warning } from "@actions/core";
 import { RequestError } from "@octokit/request-error";
 import stringify from "fast-json-stable-stringify";
 import type { FindIssuerOctokit } from "./issuer-octokit.js";
-import { pluralize } from "./pluralize.js";
+import { createTextTokenCreationExplainer } from "./token-creation-explainer/text.js";
 import type { TokenRequest } from "./token-request.js";
 import type { InstallationToken } from "./type/github-api.js";
 import type { TokenAuthResult } from "./type/token-auth-result.js";
@@ -91,49 +91,21 @@ export function createTokenFactory(
       creationResults.set(auth, (cache[key] = result));
     }
 
-    let createdCount = 0;
-    let notCreatedCount = 0;
+    const explain = createTextTokenCreationExplainer(creationResults);
 
-    for (const result of creationResults.values()) {
-      if (result.type === "CREATED") {
-        ++createdCount;
-      } else {
-        ++notCreatedCount;
+    if (creationResults.size > 0) {
+      let i = 0;
+      for (const [authResult, creationResult] of creationResults) {
+        ++i;
+        info(`\nToken #${i}:\n`);
+        info(explain(authResult, creationResult));
       }
+    } else {
+      info("");
+      warning("⚠️ No tokens were created");
     }
 
-    if (createdCount > 0) {
-      let uniqueCreatedCount = 0;
-
-      for (const key in cache) {
-        if (cache[key].type === "CREATED") ++uniqueCreatedCount;
-      }
-
-      if (uniqueCreatedCount < createdCount) {
-        const uniqueTokens = pluralize(
-          uniqueCreatedCount,
-          "unique token",
-          "unique tokens",
-        );
-        const tokenRequests = pluralize(
-          createdCount,
-          "token request",
-          "token requests",
-        );
-        info(`Created ${uniqueTokens} for ${tokenRequests}`);
-      } else {
-        info(`Created ${pluralize(createdCount, "token", "tokens")}`);
-      }
-    }
-
-    if (notCreatedCount > 0) {
-      const pluralized = pluralize(
-        notCreatedCount,
-        "requested token wasn't",
-        "requested tokens weren't",
-      );
-      info(`${pluralized} created`);
-    }
+    info("");
 
     return creationResults;
   };

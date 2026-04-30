@@ -292,7 +292,7 @@ export function Octokit({
             if (installation.app_id !== appId) continue;
             if (installation.id !== installation_id) continue;
 
-            const registeredRepos = repos.map((r) => r.full_name);
+            const registeredRepos = repos.map((r) => r.name);
 
             for (const token of installationTokens) {
               if (token.installationId !== installation_id) continue;
@@ -630,10 +630,28 @@ function throwIfEndpointError(endpoint: string) {
   if (error) throw error;
 }
 
+const HTTP_STATUS_TEXT: Record<number, string> = {
+  400: "Bad Request",
+  401: "Unauthorized",
+  403: "Forbidden",
+  404: "Not Found",
+  406: "Not Acceptable",
+  422: "Unprocessable Entity",
+  500: "Internal Server Error",
+};
+
 export class TestRequestError extends RequestError {
-  constructor(status: number) {
-    super("", status, {
+  constructor(status: number, body?: unknown) {
+    super(HTTP_STATUS_TEXT[status] ?? `HTTP ${status}`, status, {
       request: { method: "GET", url: "https://api.org/", headers: {} },
+      ...(typeof body !== "undefined" && {
+        response: {
+          url: "https://api.org/",
+          status,
+          headers: {},
+          data: body,
+        },
+      }),
     });
   }
 }

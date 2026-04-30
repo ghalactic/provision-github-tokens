@@ -4,6 +4,7 @@ import {
   isRepoRef,
   repoRefToString,
 } from "../github-reference.js";
+import { FAIL_ICON, icon } from "../icon.js";
 import type { ProvisionRequestTarget } from "../provision-request.js";
 import type {
   ProvisionAuthResult,
@@ -13,9 +14,6 @@ import type {
 } from "../type/provision-auth-result.js";
 import type { ProvisionSecretsRule } from "../type/provision-rule.js";
 import type { TokenAuthResult } from "../type/token-auth-result.js";
-
-const ALLOWED_ICON = "✅";
-const DENIED_ICON = "❌";
 
 export function createTextProvisionAuthExplainer(
   tokenResults: TokenAuthResult[],
@@ -28,7 +26,7 @@ export function createTextProvisionAuthExplainer(
 
   function explainSummary({ request, isAllowed }: ProvisionAuthResult): string {
     return (
-      `${renderIcon(isAllowed)} Repo ${repoRefToString(request.requester)} ` +
+      `${icon(isAllowed)} Repo ${repoRefToString(request.requester)} ` +
       (isAllowed ? "was allowed" : "wasn't allowed") +
       ` to provision secret ${request.name}:`
     );
@@ -38,10 +36,13 @@ export function createTextProvisionAuthExplainer(
     const { request } = result;
     const { secretDec, tokenDec, tokenDecIsRegistered } = request;
 
-    if (tokenDec) return `\n  ✅ Can use token declaration ${secretDec.token}`;
+    if (tokenDec) {
+      return `\n  ${icon(true)} Can use token declaration ${secretDec.token}`;
+    }
 
     return (
-      `\n  ❌ Can't use token declaration ${secretDec.token} because ` +
+      `\n  ${icon(false)} ` +
+      `Can't use token declaration ${secretDec.token} because ` +
       (tokenDecIsRegistered ? "it isn't shared" : "it doesn't exist")
     );
   }
@@ -52,7 +53,7 @@ export function createTextProvisionAuthExplainer(
     isMissingTargets,
   }: ProvisionAuthResult): string {
     if (isMissingTargets) {
-      return `\n  ${renderIcon(false)} No targets specified`;
+      return `\n  ${icon(false)} No targets specified`;
     }
 
     const entries: [
@@ -79,7 +80,7 @@ export function createTextProvisionAuthExplainer(
     const { isAllowed } = result;
 
     return (
-      `\n  ${renderIcon(isAllowed)} ` +
+      `\n  ${icon(isAllowed)} ` +
       `${isAllowed ? "Can" : "Can't"} ` +
       `provision token to ${explainSubject(target)}:` +
       explainTargetToken(result) +
@@ -92,7 +93,10 @@ export function createTextProvisionAuthExplainer(
     tokenAuthResult,
   }: ProvisionAuthTargetResult): string {
     if (!tokenAuthResult) {
-      return `\n    ❌ Token can't be authorized without a declaration`;
+      return (
+        `\n    ${FAIL_ICON} ` +
+        `Token can't be authorized without a declaration`
+      );
     }
 
     const name = accountOrRepoRefToString(tokenAuthResult.request.consumer);
@@ -100,13 +104,13 @@ export function createTextProvisionAuthExplainer(
 
     if (isRepoRef(tokenAuthResult.request.consumer)) {
       return (
-        `\n    ${renderIcon(isTokenAllowed)} Repo ${name} ` +
+        `\n    ${icon(isTokenAllowed)} Repo ${name} ` +
         `was ${isTokenAllowed ? "allowed" : "denied"} access to token ${ref}`
       );
     }
 
     return (
-      `\n    ${renderIcon(isTokenAllowed)} Account ${name} ` +
+      `\n    ${icon(isTokenAllowed)} Account ${name} ` +
       `was ${isTokenAllowed ? "allowed" : "denied"} access to token ${ref}`
     );
   }
@@ -116,7 +120,7 @@ export function createTextProvisionAuthExplainer(
     rules,
   }: ProvisionAuthTargetResult): string {
     return (
-      `\n    ${renderIcon(isProvisionAllowed)} ` +
+      `\n    ${icon(isProvisionAllowed)} ` +
       `${isProvisionAllowed ? "Can" : "Can't"} ` +
       `provision secret ${explainBasedOnRules(rules)}`
     );
@@ -170,7 +174,7 @@ export function createTextProvisionAuthExplainer(
     const isAllowed = have === "allow";
 
     return (
-      `\n      ${renderIcon(isAllowed)} ` +
+      `\n      ${icon(isAllowed)} ` +
       `${isAllowed ? "Allowed" : "Denied"} by rule ${renderRule(index, rule)}`
     );
   }
@@ -182,9 +186,5 @@ export function createTextProvisionAuthExplainer(
     const n = `#${index + 1}`;
 
     return description ? `${n}: ${JSON.stringify(description)}` : n;
-  }
-
-  function renderIcon(isAllowed: boolean): string {
-    return isAllowed ? ALLOWED_ICON : DENIED_ICON;
   }
 }

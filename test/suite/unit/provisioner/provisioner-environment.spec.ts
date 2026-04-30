@@ -1,5 +1,8 @@
 import { beforeEach, expect, it, vi, type Mock } from "vitest";
-import { __reset as __resetCore } from "../../../../__mocks__/@actions/core.js";
+import {
+  __getOutput,
+  __reset as __resetCore,
+} from "../../../../__mocks__/@actions/core.js";
 import {
   __getEnvSecrets,
   __reset as __resetOctokit,
@@ -8,7 +11,6 @@ import {
   __setErrors,
   __setInstallations,
   __setRepoKeys,
-  TestRequestError,
 } from "../../../../__mocks__/@octokit/action.js";
 import {
   createAppRegistry,
@@ -41,10 +43,7 @@ import {
   createTestRepoEnvironment,
 } from "../../../github-api.js";
 import { createTestKeyPair } from "../../../key.js";
-import {
-  createTestProvisionAuthTargetResultAllowed,
-  provisionResultsToArray,
-} from "../../../result.js";
+import { createTestProvisionAuthTargetResultAllowed } from "../../../result.js";
 
 vi.mock("@actions/core");
 vi.mock("@octokit/action");
@@ -174,27 +173,24 @@ it("handles GitHub API errors when provisioning environment secrets", async () =
     isAllowed: true,
   };
 
-  expect(
-    provisionResultsToArray(
-      await provisionSecrets(tokenResults, [allowedResult]),
-    ),
-  ).toEqual([
-    [
-      allowedResult,
-      [
-        [
-          allowedResult.results[0],
-          { type: "REQUEST_ERROR", error: new TestRequestError(401) },
-        ],
-      ],
-    ],
-  ]);
+  await provisionSecrets(tokenResults, [allowedResult]);
+
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "
+    Secret #1:
+
+    ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
+      ❌ Failed to provision to GitHub environment env-a secret in account-a/repo-a: 401 - Unauthorized
+    ::debug::      (no response data)
+
+    "
+  `);
 });
 
 it("handles unexpected errors when provisioning environment secrets", async () => {
-  __setErrors("actions.createOrUpdateEnvironmentSecret", [
-    new Error("<message>"),
-  ]);
+  const error = new Error("<message>");
+  error.stack = "Error: <message>\n    at provisioner.ts:1:1";
+  __setErrors("actions.createOrUpdateEnvironmentSecret", [error]);
 
   const tokenResults = new Map<TokenAuthResult, TokenCreationResult>([
     [tokenAuthResultA, tokenCreationResultCreatedA],
@@ -219,21 +215,19 @@ it("handles unexpected errors when provisioning environment secrets", async () =
     isAllowed: true,
   };
 
-  expect(
-    provisionResultsToArray(
-      await provisionSecrets(tokenResults, [allowedResult]),
-    ),
-  ).toEqual([
-    [
-      allowedResult,
-      [
-        [
-          allowedResult.results[0],
-          { type: "ERROR", error: new Error("<message>") },
-        ],
-      ],
-    ],
-  ]);
+  await provisionSecrets(tokenResults, [allowedResult]);
+
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "
+    Secret #1:
+
+    ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
+      ❌ Failed to provision to GitHub environment env-a secret in account-a/repo-a: <message>
+    ::debug::      Error: <message>
+    ::debug::          at provisioner.ts:1:1
+
+    "
+  `);
 });
 
 it("can provision environment secrets", async () => {
@@ -260,14 +254,18 @@ it("can provision environment secrets", async () => {
     isAllowed: true,
   };
 
-  expect(
-    provisionResultsToArray(
-      await provisionSecrets(tokenResults, [allowedResult]),
-    ),
-  ).toEqual([
-    [allowedResult, [[allowedResult.results[0], { type: "PROVISIONED" }]]],
-  ]);
+  await provisionSecrets(tokenResults, [allowedResult]);
+
   expect(__getEnvSecrets("account-a", "repo-a", "env-a")).toEqual({
     SECRET_A: "<token-a>",
   });
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "
+    Secret #1:
+
+    ✅ Secret SECRET_A was provisioned for repo account-a/repo-a:
+      ✅ Provisioned to GitHub environment env-a secret in account-a/repo-a
+
+    "
+  `);
 });

@@ -1,8 +1,4 @@
-import type { ProvisioningResult } from "../src/provisioner.js";
-import type {
-  ProvisionAuthResult,
-  ProvisionAuthTargetResult,
-} from "../src/type/provision-auth-result.js";
+import type { ProvisionAuthTargetResult } from "../src/type/provision-auth-result.js";
 import { createTestTokenDec } from "./declaration.js";
 
 export function createTestProvisionAuthTargetResultAllowed(
@@ -67,22 +63,4 @@ export function createTestProvisionAuthTargetResultNotAllowed(
     isAllowed: false,
     ...result,
   };
-}
-
-export function provisionResultsToArray(
-  results: Map<
-    ProvisionAuthResult,
-    Map<ProvisionAuthTargetResult, ProvisioningResult>
-  >,
-): [ProvisionAuthResult, [ProvisionAuthTargetResult, ProvisioningResult][]][] {
-  const array: [
-    ProvisionAuthResult,
-    [ProvisionAuthTargetResult, ProvisioningResult][],
-  ][] = [];
-
-  for (const [auth, targetResults] of results.entries()) {
-    array.push([auth, Array.from(targetResults.entries())]);
-  }
-
-  return array;
 }
