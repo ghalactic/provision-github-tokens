@@ -14,6 +14,7 @@ import {
   __setInstallations,
   __setOrgKeys,
   __setRepoKeys,
+  TestRequestError,
 } from "../../../../__mocks__/@octokit/action.js";
 import {
   createAppRegistry,
@@ -346,6 +347,84 @@ it("doesn't provision secrets when the token wasn't created", async () => {
   `);
 });
 
+it("returns NO_TOKEN for all non-created token outcomes", async () => {
+  const tokenAuthResultNotAllowed: TokenAuthResult = {
+    ...tokenAuthResultA,
+    request: {
+      ...tokenAuthResultA.request,
+      consumer: { account: "consumer-not-allowed" },
+    },
+  };
+  const tokenAuthResultRequestError: TokenAuthResult = {
+    ...tokenAuthResultA,
+    request: {
+      ...tokenAuthResultA.request,
+      consumer: { account: "consumer-request-error" },
+    },
+  };
+  const tokenAuthResultError: TokenAuthResult = {
+    ...tokenAuthResultA,
+    request: {
+      ...tokenAuthResultA.request,
+      consumer: { account: "consumer-error" },
+    },
+  };
+
+  const tokenResults = new Map<TokenAuthResult, TokenCreationResult>([
+    [tokenAuthResultNotAllowed, { type: "NOT_ALLOWED" }],
+    [
+      tokenAuthResultRequestError,
+      { type: "REQUEST_ERROR", error: new TestRequestError(500) },
+    ],
+    [tokenAuthResultError, { type: "ERROR", error: new Error("boom") }],
+  ]);
+
+  const allowedResult: ProvisionAuthResult = {
+    request: {
+      requester: { account: "account-a", repo: "repo-a" },
+      tokenDec: tokenDecA,
+      tokenDecIsRegistered: true,
+      secretDec: secretDecA,
+      name: "SECRET_A",
+      to: [
+        accountAActionsTarget,
+        accountARepoAActionsTarget,
+        accountARepoAEnvATarget,
+      ],
+    },
+    results: [
+      createTestProvisionAuthTargetResultAllowed({
+        target: accountAActionsTarget,
+        tokenAuthResult: tokenAuthResultNotAllowed,
+      }),
+      createTestProvisionAuthTargetResultAllowed({
+        target: accountARepoAActionsTarget,
+        tokenAuthResult: tokenAuthResultRequestError,
+      }),
+      createTestProvisionAuthTargetResultAllowed({
+        target: accountARepoAEnvATarget,
+        tokenAuthResult: tokenAuthResultError,
+      }),
+    ],
+    isMissingTargets: false,
+    isAllowed: true,
+  };
+
+  await provisionSecrets(tokenResults, [allowedResult]);
+
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "
+    Secret #1:
+
+    ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
+      ❌ Token wasn't created for GitHub Actions secret in account-a
+      ❌ Token wasn't created for GitHub Actions secret in account-a/repo-a
+      ❌ Token wasn't created for GitHub environment env-a secret in account-a/repo-a
+
+    "
+  `);
+});
+
 it("doesn't provision secrets when no suitable provisioners are found", async () => {
   const tokenResults = new Map<TokenAuthResult, TokenCreationResult>([
     [tokenAuthResultA, tokenCreationResultCreatedA],
@@ -378,6 +457,92 @@ it("doesn't provision secrets when no suitable provisioners are found", async ()
 
     ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
       ❌ No suitable provisioner for GitHub Actions secret in account-x
+
+    "
+  `);
+});
+
+it("reports REQUEST_ERROR when target provisioning returns a GitHub API error", async () => {
+  __setErrors("actions.createOrUpdateOrgSecret", [
+    new TestRequestError(403, { message: "Resource not accessible" }),
+  ]);
+
+  const tokenResults = new Map<TokenAuthResult, TokenCreationResult>([
+    [tokenAuthResultA, tokenCreationResultCreatedA],
+  ]);
+
+  const allowedResult: ProvisionAuthResult = {
+    request: {
+      requester: { account: "account-a", repo: "repo-a" },
+      tokenDec: tokenDecA,
+      tokenDecIsRegistered: true,
+      secretDec: secretDecA,
+      name: "SECRET_A",
+      to: [accountAActionsTarget],
+    },
+    results: [
+      createTestProvisionAuthTargetResultAllowed({
+        target: accountAActionsTarget,
+        tokenAuthResult: tokenAuthResultA,
+      }),
+    ],
+    isMissingTargets: false,
+    isAllowed: true,
+  };
+
+  await provisionSecrets(tokenResults, [allowedResult]);
+
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "
+    Secret #1:
+
+    ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
+      ❌ Failed to provision to GitHub Actions secret in account-a: 403 - Forbidden
+    ::debug::      {
+    ::debug::        "message": "Resource not accessible"
+    ::debug::      }
+
+    "
+  `);
+});
+
+it("reports ERROR when target provisioning returns an unexpected error", async () => {
+  const error = new Error("<message>");
+  error.stack = "Error: <message>\\n    at provisioner.ts:1:1";
+  __setErrors("actions.createOrUpdateOrgSecret", [error]);
+
+  const tokenResults = new Map<TokenAuthResult, TokenCreationResult>([
+    [tokenAuthResultA, tokenCreationResultCreatedA],
+  ]);
+
+  const allowedResult: ProvisionAuthResult = {
+    request: {
+      requester: { account: "account-a", repo: "repo-a" },
+      tokenDec: tokenDecA,
+      tokenDecIsRegistered: true,
+      secretDec: secretDecA,
+      name: "SECRET_A",
+      to: [accountAActionsTarget],
+    },
+    results: [
+      createTestProvisionAuthTargetResultAllowed({
+        target: accountAActionsTarget,
+        tokenAuthResult: tokenAuthResultA,
+      }),
+    ],
+    isMissingTargets: false,
+    isAllowed: true,
+  };
+
+  await provisionSecrets(tokenResults, [allowedResult]);
+
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "
+    Secret #1:
+
+    ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
+      ❌ Failed to provision to GitHub Actions secret in account-a: <message>
+    ::debug::      Error: <message>\\n    at provisioner.ts:1:1
 
     "
   `);
