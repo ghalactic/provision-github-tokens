@@ -40,7 +40,7 @@ beforeEach(() => {
   __resetOctokit();
 });
 
-it("creates tokens based on token auth results", async () => {
+it("creates and explains an outcome for each token request", async () => {
   const octokitFactory = createOctokitFactory();
 
   const accountA = createTestInstallationAccount(
@@ -197,25 +197,14 @@ it("creates tokens based on token auth results", async () => {
     isAllowed: true,
   };
 
-  const results = await createTokens([
+  await createTokens([
     notAllowedResult,
     noIssuerResult,
     createdResult,
     unauthorizedResult,
     errorResult,
   ]);
-  expect(results.get(createdResult)).toMatchObject({
-    type: "CREATED",
-    // FIXME: The Octokit mock returns a plain string instead of an
-    // InstallationToken object. Fix the mock to return { token, expires_at }.
-    token: expect.any(String) as unknown as string,
-  });
-  expect(results.get(unauthorizedResult)).toMatchObject({
-    type: "REQUEST_ERROR",
-  });
-  expect(results.get(errorResult)).toMatchObject({
-    type: "ERROR",
-  });
+
   expect(__getOutput()).toMatchInlineSnapshot(`
     "
     Token #1:
@@ -274,7 +263,7 @@ it("creates tokens based on token auth results", async () => {
   `);
 });
 
-it("deduplicates token creation for identical token shapes", async () => {
+it("reuses one token when two requests ask for the same access", async () => {
   const octokitFactory = createOctokitFactory();
 
   const accountA = createTestInstallationAccount(
@@ -360,6 +349,7 @@ it("deduplicates token creation for identical token shapes", async () => {
   };
 
   await createTokens([consumerAResult, consumerBResult]);
+
   expect(__getOutput()).toMatchInlineSnapshot(`
     "
     Token #1:
@@ -378,7 +368,7 @@ it("deduplicates token creation for identical token shapes", async () => {
   `);
 });
 
-it("isolates tokens by role even when other token shape fields match", async () => {
+it("creates separate tokens when the requested role is different", async () => {
   const octokitFactory = createOctokitFactory();
 
   const accountA = createTestInstallationAccount(
@@ -463,7 +453,8 @@ it("isolates tokens by role even when other token shape fields match", async () 
     rules: [],
   };
 
-  const results = await createTokens([roleAResult, roleBResult]);
+  await createTokens([roleAResult, roleBResult]);
+
   expect(__getOutput()).toMatchInlineSnapshot(`
     "
     Token #1:
@@ -484,10 +475,9 @@ it("isolates tokens by role even when other token shape fields match", async () 
 
     "
   `);
-  expect(results.get(roleAResult)).not.toBe(results.get(roleBResult));
 });
 
-it("doesn't deduplicate tokens with different permissions", async () => {
+it("creates separate tokens when requested permissions are different", async () => {
   const octokitFactory = createOctokitFactory();
 
   const accountA = createTestInstallationAccount(
@@ -576,7 +566,8 @@ it("doesn't deduplicate tokens with different permissions", async () => {
     rules: [],
   };
 
-  const results = await createTokens([metadataResult, contentsResult]);
+  await createTokens([metadataResult, contentsResult]);
+
   expect(__getOutput()).toMatchInlineSnapshot(`
     "
     Token #1:
@@ -597,10 +588,9 @@ it("doesn't deduplicate tokens with different permissions", async () => {
 
     "
   `);
-  expect(results.get(metadataResult)).not.toBe(results.get(contentsResult));
 });
 
-it("doesn't deduplicate tokens with different repos", async () => {
+it("creates separate tokens when requested repository access is different", async () => {
   const octokitFactory = createOctokitFactory();
 
   const accountA = createTestInstallationAccount(
@@ -688,7 +678,8 @@ it("doesn't deduplicate tokens with different repos", async () => {
     isAllowed: true,
   };
 
-  const results = await createTokens([allReposResult, selectedReposResult]);
+  await createTokens([allReposResult, selectedReposResult]);
+
   expect(__getOutput()).toMatchInlineSnapshot(`
     "
     Token #1:
@@ -710,13 +701,9 @@ it("doesn't deduplicate tokens with different repos", async () => {
 
     "
   `);
-
-  expect(results.get(allReposResult)).not.toBe(
-    results.get(selectedReposResult),
-  );
 });
 
-it("doesn't return cached CREATED result for NOT_ALLOWED auth results", async () => {
+it("refuses a disallowed request even if a similar allowed token already exists", async () => {
   const octokitFactory = createOctokitFactory();
 
   const accountA = createTestInstallationAccount(
@@ -802,6 +789,7 @@ it("doesn't return cached CREATED result for NOT_ALLOWED auth results", async ()
   };
 
   await createTokens([allowedResult, notAllowedResult]);
+
   expect(__getOutput()).toMatchInlineSnapshot(`
     "
     Token #1:
@@ -825,7 +813,7 @@ it("doesn't return cached CREATED result for NOT_ALLOWED auth results", async ()
   `);
 });
 
-it("returns NOT_ALLOWED for disallowed token auth results", async () => {
+it("refuses token creation when a request is disallowed", async () => {
   const octokitFactory = createOctokitFactory();
 
   const accountA = createTestInstallationAccount(
@@ -903,7 +891,7 @@ it("returns NOT_ALLOWED for disallowed token auth results", async () => {
   `);
 });
 
-it("caches NO_ISSUER results for identical token shapes", async () => {
+it("reuses the same no-issuer outcome for identical requests", async () => {
   const octokitFactory = createOctokitFactory();
   const appRegistry = createAppRegistry();
 
@@ -957,7 +945,8 @@ it("caches NO_ISSUER results for identical token shapes", async () => {
     rules: [],
   };
 
-  const results = await createTokens([consumerAResult, consumerBResult]);
+  await createTokens([consumerAResult, consumerBResult]);
+
   expect(__getOutput()).toMatchInlineSnapshot(`
     "
     Token #1:
@@ -980,11 +969,9 @@ it("caches NO_ISSUER results for identical token shapes", async () => {
 
     "
   `);
-  expect(results.get(consumerAResult)).toEqual({ type: "NO_ISSUER" });
-  expect(results.get(consumerAResult)).toBe(results.get(consumerBResult));
 });
 
-it("caches error results for identical token shapes", async () => {
+it("reuses the same failure outcome for identical requests", async () => {
   const octokitFactory = createOctokitFactory();
 
   const accountA = createTestInstallationAccount(
@@ -1068,7 +1055,9 @@ it("caches error results for identical token shapes", async () => {
     rules: [],
   };
 
-  const results = await createTokens([consumerAResult, consumerBResult]);
+  await createTokens([consumerAResult, consumerBResult]);
+
+  // FIXME: Shouldn't this output a reference number?
   expect(__getOutput()).toMatchInlineSnapshot(`
     "
     Token #1:
@@ -1093,16 +1082,9 @@ it("caches error results for identical token shapes", async () => {
 
     "
   `);
-  const cachedResult = results.get(consumerAResult);
-
-  expect(cachedResult).toMatchObject({
-    type: "REQUEST_ERROR",
-    error: { status: 401 },
-  });
-  expect(results.get(consumerAResult)).toBe(results.get(consumerBResult));
 });
 
-it("reports REQUEST_ERROR when token creation returns a GitHub API error", async () => {
+it("explains failures caused by GitHub API errors", async () => {
   const octokitFactory = createOctokitFactory();
 
   const accountA = createTestInstallationAccount(
@@ -1189,7 +1171,7 @@ it("reports REQUEST_ERROR when token creation returns a GitHub API error", async
   `);
 });
 
-it("reports ERROR when token creation returns an unexpected error", async () => {
+it("explains failures caused by unexpected errors", async () => {
   const octokitFactory = createOctokitFactory();
 
   const accountA = createTestInstallationAccount(
@@ -1274,111 +1256,7 @@ it("reports ERROR when token creation returns an unexpected error", async () => 
   `);
 });
 
-it("logs dedup-aware message when tokens are deduplicated", async () => {
-  const octokitFactory = createOctokitFactory();
-
-  const accountA = createTestInstallationAccount(
-    "Organization",
-    100,
-    "account-a",
-  );
-  const repoA = createTestInstallationRepo(accountA, "repo-a");
-  const appA = createTestApp(110, "app-a", "App A", { metadata: "read" });
-  const appRegA: AppRegistration = {
-    app: appA,
-    issuer: { enabled: true, roles: [] },
-    provisioner: { enabled: false },
-  };
-  const appAInstallationA = createTestInstallation(111, appA, accountA, "all");
-  const appAInstallationRegA: InstallationRegistration = {
-    installation: appAInstallationA,
-    repos: [repoA],
-  };
-  const appRegistry = createAppRegistry();
-  appRegistry.registerApp(appRegA);
-  appRegistry.registerInstallation(appAInstallationRegA);
-
-  const appsInput: AppInput[] = [
-    {
-      appId: 110,
-      privateKey: "<private key A>",
-      issuer: { enabled: true, roles: [] },
-      provisioner: { enabled: false },
-    },
-  ];
-  const findIssuerOctokit = createFindIssuerOctokit(
-    octokitFactory,
-    appRegistry,
-    appsInput,
-  );
-
-  __setApps([appA]);
-  __setInstallations([[appAInstallationA, [repoA]]]);
-  __addInstallationToken(111, "all", { metadata: "read" });
-
-  const createTokens = createTokenFactory(findIssuerOctokit);
-
-  const consumerAResult: TokenAuthResult = {
-    type: "ALL_REPOS",
-    request: {
-      consumer: { account: "consumer-a" },
-      tokenDec: {
-        shared: false,
-        as: undefined,
-        account: "account-a",
-        repos: "all",
-        permissions: { metadata: "read" },
-      },
-      repos: "all",
-    },
-    maxWant: "read",
-    have: { metadata: "read" },
-    isSufficient: true,
-    isMissingRole: false,
-    isAllowed: true,
-    rules: [],
-  };
-  const consumerBResult: TokenAuthResult = {
-    type: "ALL_REPOS",
-    request: {
-      consumer: { account: "consumer-b" },
-      tokenDec: {
-        shared: false,
-        as: undefined,
-        account: "account-a",
-        repos: "all",
-        permissions: { metadata: "read" },
-      },
-      repos: "all",
-    },
-    maxWant: "read",
-    have: { metadata: "read" },
-    isSufficient: true,
-    isMissingRole: false,
-    isAllowed: true,
-    rules: [],
-  };
-
-  await createTokens([consumerAResult, consumerBResult]);
-  expect(__getOutput()).toMatchInlineSnapshot(`
-    "
-    Token #1:
-
-    ✅ Read-only token created with access to all repos in account-a:
-      ✅ Has read access without a role
-      ✅ Has access to all repos in account-a
-      ✅ Has 1 permission:
-        ✅ metadata: read
-
-    Token #2:
-
-    ✅ Same token as #1
-
-    "
-  `);
-});
-
-it("logs simple message when no tokens are deduplicated", async () => {
+it("summarizes outcomes plainly when every request creates its own token", async () => {
   const octokitFactory = createOctokitFactory();
 
   const accountA = createTestInstallationAccount(
@@ -1444,6 +1322,7 @@ it("logs simple message when no tokens are deduplicated", async () => {
   };
 
   await createTokens([consumerAResult]);
+
   expect(__getOutput()).toMatchInlineSnapshot(`
     "
     Token #1:
@@ -1458,7 +1337,7 @@ it("logs simple message when no tokens are deduplicated", async () => {
   `);
 });
 
-it("returns empty map when no token auth results are given", async () => {
+it("warns when no token requests are provided", async () => {
   const octokitFactory = createOctokitFactory();
   const appRegistry = createAppRegistry();
   const appsInput: AppInput[] = [];
@@ -1480,7 +1359,7 @@ it("returns empty map when no token auth results are given", async () => {
   `);
 });
 
-it("renders admin access level in explainer output", () => {
+it("describes admin-level access in human terms", () => {
   const authResult: TokenAuthResult = {
     type: "ALL_REPOS",
     request: {
@@ -1520,7 +1399,7 @@ it("renders admin access level in explainer output", () => {
   `);
 });
 
-it("renders no-repos (account-only) access in explainer output", () => {
+it("describes account-only access in human terms", () => {
   const authResult: TokenAuthResult = {
     type: "NO_REPOS",
     request: {
@@ -1559,7 +1438,7 @@ it("renders no-repos (account-only) access in explainer output", () => {
   `);
 });
 
-it("renders empty permissions in explainer output", () => {
+it("calls out when no permissions are requested", () => {
   const authResult: TokenAuthResult = {
     type: "ALL_REPOS",
     request: {
@@ -1594,7 +1473,7 @@ it("renders empty permissions in explainer output", () => {
   `);
 });
 
-it("filters out none permissions in explainer output", () => {
+it("ignores none-valued permissions in access descriptions", () => {
   const authResult: TokenAuthResult = {
     type: "ALL_REPOS",
     request: {

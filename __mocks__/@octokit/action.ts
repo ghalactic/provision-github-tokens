@@ -313,6 +313,7 @@ export function Octokit({
                 }
               }
 
+              // FIXME: Should return object type with token and expiration
               return {
                 data:
                   `<token ${installation_id}` +

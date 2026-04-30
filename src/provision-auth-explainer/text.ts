@@ -52,9 +52,7 @@ export function createTextProvisionAuthExplainer(
     results,
     isMissingTargets,
   }: ProvisionAuthResult): string {
-    if (isMissingTargets) {
-      return `\n  ${FAIL_ICON} No targets specified`;
-    }
+    if (isMissingTargets) return `\n  ${FAIL_ICON} No targets specified`;
 
     const entries: [
       target: ProvisionRequestTarget,

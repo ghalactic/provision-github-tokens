@@ -8,6 +8,13 @@ import type { PermissionAccess, Permissions } from "../type/permissions.js";
 import type { TokenAuthResult } from "../type/token-auth-result.js";
 import type { TokenCreationResultExplainer } from "../type/token-creation-result.js";
 
+const HEADER_ACCESS_LABELS: Record<PermissionAccess, string> = {
+  admin: "admin",
+  none: "",
+  read: "read-only",
+  write: "write",
+};
+
 export function createTextTokenCreationExplainer(
   results: Map<TokenAuthResult, TokenCreationResult>,
 ): TokenCreationResultExplainer<string> {
@@ -76,7 +83,7 @@ export function createTextTokenCreationExplainer(
   ): string {
     const scope = repoScopeLabel(repos, account);
     const isSuccess = type === "CREATED";
-    const label = headerAccessLabel(access);
+    const label = HEADER_ACCESS_LABELS[access];
 
     if (isSuccess) {
       return (
@@ -168,19 +175,6 @@ export function createTextTokenCreationExplainer(
     }
 
     return lines;
-  }
-
-  function headerAccessLabel(access: PermissionAccess): string {
-    switch (access) {
-      case "read":
-        return "read-only";
-      case "write":
-        return "write";
-      case "admin":
-        return "admin";
-    }
-
-    return "";
   }
 
   function repoScopeLabel(repos: "all" | string[], account: string): string {
