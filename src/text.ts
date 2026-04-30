@@ -1,5 +1,7 @@
 export function capitalize(text: string): string {
-  return `${text[0].toUpperCase()}${text.slice(1)}`;
+  const [first = "", ...rest] = text;
+
+  return `${first.toUpperCase()}${rest.join("")}`;
 }
 
 export function prefixLines(prefix: string, text: string): string {
