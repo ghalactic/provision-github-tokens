@@ -4,7 +4,7 @@ import {
   isRepoRef,
   repoRefToString,
 } from "../github-reference.js";
-import { FAIL_ICON, icon } from "../icon.js";
+import { FAIL_ICON, PASS_ICON, icon } from "../icon.js";
 import type { ProvisionRequestTarget } from "../provision-request.js";
 import type {
   ProvisionAuthResult,
@@ -37,11 +37,11 @@ export function createTextProvisionAuthExplainer(
     const { secretDec, tokenDec, tokenDecIsRegistered } = request;
 
     if (tokenDec) {
-      return `\n  ${icon(true)} Can use token declaration ${secretDec.token}`;
+      return `\n  ${PASS_ICON} Can use token declaration ${secretDec.token}`;
     }
 
     return (
-      `\n  ${icon(false)} ` +
+      `\n  ${FAIL_ICON} ` +
       `Can't use token declaration ${secretDec.token} because ` +
       (tokenDecIsRegistered ? "it isn't shared" : "it doesn't exist")
     );
@@ -53,7 +53,7 @@ export function createTextProvisionAuthExplainer(
     isMissingTargets,
   }: ProvisionAuthResult): string {
     if (isMissingTargets) {
-      return `\n  ${icon(false)} No targets specified`;
+      return `\n  ${FAIL_ICON} No targets specified`;
     }
 
     const entries: [
