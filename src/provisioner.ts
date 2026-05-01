@@ -3,56 +3,23 @@ import { RequestError } from "@octokit/request-error";
 import type { EncryptSecret } from "./encrypt-secret.js";
 import { isRepoRef } from "./github-reference.js";
 import type { Octokit } from "./octokit.js";
+import { createTextProvisionExplainer } from "./provision-explainer/text.js";
 import type { ProvisionRequestTarget } from "./provision-request.js";
 import type { FindProvisionerOctokit } from "./provisioner-octokit.js";
-import { createTextProvisioningExplainer } from "./provisioning-explainer/text.js";
-import type { TokenCreationResult } from "./token-factory.js";
 import type {
   ProvisionAuthResult,
   ProvisionAuthTargetResult,
 } from "./type/provision-auth-result.js";
+import type { ProvisionResult } from "./type/provision-result.js";
 import type { TokenAuthResult } from "./type/token-auth-result.js";
+import type { TokenCreationResult } from "./type/token-creation-result.js";
 
 export type Provisioner = (
   tokens: Map<TokenAuthResult, TokenCreationResult>,
   authResults: ProvisionAuthResult[],
 ) => Promise<
-  Map<ProvisionAuthResult, Map<ProvisionAuthTargetResult, ProvisioningResult>>
+  Map<ProvisionAuthResult, Map<ProvisionAuthTargetResult, ProvisionResult>>
 >;
-
-export type ProvisioningResult =
-  | ProvisioningNotAllowedResult
-  | ProvisioningNoTokenResult
-  | ProvisioningNoProvisionerResult
-  | ProvisioningProvisionedResult
-  | ProvisioningRequestErrorResult
-  | ProvisioningErrorResult;
-
-export type ProvisioningNotAllowedResult = {
-  type: "NOT_ALLOWED";
-};
-
-export type ProvisioningNoTokenResult = {
-  type: "NO_TOKEN";
-};
-
-export type ProvisioningNoProvisionerResult = {
-  type: "NO_PROVISIONER";
-};
-
-export type ProvisioningProvisionedResult = {
-  type: "PROVISIONED";
-};
-
-export type ProvisioningRequestErrorResult = {
-  type: "REQUEST_ERROR";
-  error: RequestError;
-};
-
-export type ProvisioningErrorResult = {
-  type: "ERROR";
-  error: unknown;
-};
 
 export function createProvisioner(
   findProvisionerOctokit: FindProvisionerOctokit,
@@ -61,13 +28,13 @@ export function createProvisioner(
   return async (tokens, authResults) => {
     const provisionResults = new Map<
       ProvisionAuthResult,
-      Map<ProvisionAuthTargetResult, ProvisioningResult>
+      Map<ProvisionAuthTargetResult, ProvisionResult>
     >();
 
     for (const auth of authResults) {
       const targetResults = new Map<
         ProvisionAuthTargetResult,
-        ProvisioningResult
+        ProvisionResult
       >();
       provisionResults.set(auth, targetResults);
 
@@ -147,7 +114,7 @@ export function createProvisioner(
       }
     }
 
-    const explain = createTextProvisioningExplainer();
+    const explain = createTextProvisionExplainer();
 
     if (provisionResults.size > 0) {
       let i = 0;

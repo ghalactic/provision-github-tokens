@@ -8,10 +8,12 @@ import {
 import { FAIL_ICON, icon } from "../icon.js";
 import { pluralize } from "../pluralize.js";
 import { capitalize, prefixLines } from "../text.js";
-import type { TokenCreationResult } from "../token-factory.js";
 import type { PermissionAccess, Permissions } from "../type/permissions.js";
 import type { TokenAuthResult } from "../type/token-auth-result.js";
-import type { TokenCreationResultExplainer } from "../type/token-creation-result.js";
+import type {
+  TokenCreationResult,
+  TokenCreationResultExplainer,
+} from "../type/token-creation-result.js";
 
 const HEADER_ACCESS_LABELS: Record<PermissionAccess, string> = {
   admin: "admin",

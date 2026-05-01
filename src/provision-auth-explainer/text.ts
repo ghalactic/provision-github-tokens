@@ -82,7 +82,7 @@ export function createTextProvisionAuthExplainer(
       `${isAllowed ? "Can" : "Can't"} ` +
       `provision token to ${explainSubject(target)}:` +
       explainTargetToken(result) +
-      explainTargetProvisioning(result)
+      explainTargetProvision(result)
     );
   }
 
@@ -113,7 +113,7 @@ export function createTextProvisionAuthExplainer(
     );
   }
 
-  function explainTargetProvisioning({
+  function explainTargetProvision({
     isProvisionAllowed,
     rules,
   }: ProvisionAuthTargetResult): string {

@@ -28,9 +28,9 @@ import {
   createProvisioner,
   type Provisioner,
 } from "../../../../src/provisioner.js";
-import type { TokenCreationResult } from "../../../../src/token-factory.js";
 import type { ProvisionAuthResult } from "../../../../src/type/provision-auth-result.js";
 import type { TokenAuthResult } from "../../../../src/type/token-auth-result.js";
+import type { TokenCreationResult } from "../../../../src/type/token-creation-result.js";
 import {
   createTestSecretDec,
   createTestTokenDec,

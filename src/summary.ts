@@ -19,13 +19,13 @@ import {
 } from "./markdown.js";
 import { pluralize } from "./pluralize.js";
 import type { ProvisionRequestTarget } from "./provision-request.js";
-import type { ProvisioningResult } from "./provisioner.js";
-import type { TokenCreationResult } from "./token-factory.js";
 import type {
   ProvisionAuthResult,
   ProvisionAuthTargetResult,
 } from "./type/provision-auth-result.js";
+import type { ProvisionResult } from "./type/provision-result.js";
 import type { TokenAuthResult } from "./type/token-auth-result.js";
+import type { TokenCreationResult } from "./type/token-creation-result.js";
 
 const LINK_REF_PREFIX = "gh/";
 const MAX_ROWS = 1000;
@@ -37,7 +37,7 @@ export function renderSummary(
   tokenCreationResults: Map<TokenAuthResult, TokenCreationResult>,
   provisionResults: Map<
     ProvisionAuthResult,
-    Map<ProvisionAuthTargetResult, ProvisioningResult>
+    Map<ProvisionAuthTargetResult, ProvisionResult>
   >,
 ): string {
   const { provisionResults: authResults } = authResult;
@@ -85,7 +85,7 @@ function statsHeading(
   authResults: ProvisionAuthResult[],
   provisionResults: Map<
     ProvisionAuthResult,
-    Map<ProvisionAuthTargetResult, ProvisioningResult>
+    Map<ProvisionAuthTargetResult, ProvisionResult>
   >,
 ): RootContent {
   const totalCount = authResults.length;
@@ -128,7 +128,7 @@ function failuresTable(
   tokenCreationResults: Map<TokenAuthResult, TokenCreationResult>,
   provisionResults: Map<
     ProvisionAuthResult,
-    Map<ProvisionAuthTargetResult, ProvisioningResult>
+    Map<ProvisionAuthTargetResult, ProvisionResult>
   >,
   definitions: Record<string, string>,
   githubServerUrl: string,
@@ -213,7 +213,7 @@ function failureRow(
   tokenCreationResults: Map<TokenAuthResult, TokenCreationResult>,
   provisionResults: Map<
     ProvisionAuthResult,
-    Map<ProvisionAuthTargetResult, ProvisioningResult>
+    Map<ProvisionAuthTargetResult, ProvisionResult>
   >,
   definitions: Record<string, string>,
   githubServerUrl: string,
@@ -234,7 +234,7 @@ function failureReason(
   tokenCreationResults: Map<TokenAuthResult, TokenCreationResult>,
   provisionResults: Map<
     ProvisionAuthResult,
-    Map<ProvisionAuthTargetResult, ProvisioningResult>
+    Map<ProvisionAuthTargetResult, ProvisionResult>
   >,
 ): string {
   if (
@@ -289,7 +289,7 @@ function failureReason(
   /* istanbul ignore next - @preserve */
   if (!targetResults) {
     throw new Error(
-      "Invariant violation: Missing provisioning results for auth result",
+      "Invariant violation: Missing provision results for auth result",
     );
   }
 
@@ -321,7 +321,7 @@ function isFullyProvisioned(
   authResult: ProvisionAuthResult,
   provisionResults: Map<
     ProvisionAuthResult,
-    Map<ProvisionAuthTargetResult, ProvisioningResult>
+    Map<ProvisionAuthTargetResult, ProvisionResult>
   >,
 ): boolean {
   const targetResults = provisionResults.get(authResult);

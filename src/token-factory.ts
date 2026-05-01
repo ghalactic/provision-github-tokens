@@ -4,42 +4,12 @@ import stringify from "fast-json-stable-stringify";
 import type { FindIssuerOctokit } from "./issuer-octokit.js";
 import { createTextTokenCreationExplainer } from "./token-creation-explainer/text.js";
 import type { TokenRequest } from "./token-request.js";
-import type { InstallationToken } from "./type/github-api.js";
 import type { TokenAuthResult } from "./type/token-auth-result.js";
+import type { TokenCreationResult } from "./type/token-creation-result.js";
 
 export type TokenFactory = (
   authResults: TokenAuthResult[],
 ) => Promise<Map<TokenAuthResult, TokenCreationResult>>;
-
-export type TokenCreationResult =
-  | TokenCreationNotAllowedResult
-  | TokenCreationNoIssuerResult
-  | TokenCreationCreatedResult
-  | TokenCreationRequestErrorResult
-  | TokenCreationErrorResult;
-
-export type TokenCreationNotAllowedResult = {
-  type: "NOT_ALLOWED";
-};
-
-export type TokenCreationNoIssuerResult = {
-  type: "NO_ISSUER";
-};
-
-export type TokenCreationCreatedResult = {
-  type: "CREATED";
-  token: InstallationToken;
-};
-
-export type TokenCreationRequestErrorResult = {
-  type: "REQUEST_ERROR";
-  error: RequestError;
-};
-
-export type TokenCreationErrorResult = {
-  type: "ERROR";
-  error: unknown;
-};
 
 export function createTokenFactory(
   findIssuerOctokit: FindIssuerOctokit,
