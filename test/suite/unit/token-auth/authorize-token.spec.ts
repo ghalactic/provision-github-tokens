@@ -275,3 +275,38 @@ it("throws if the requested permissions are empty", () => {
     ),
   ).toMatchInlineSnapshot(`"No permissions requested"`);
 });
+
+it('throws if the requested permissions are all "none"', () => {
+  const authorizer = createTokenAuthorizer({ rules: [] });
+
+  expect(
+    throws(() =>
+      authorizer.authorizeToken({
+        consumer: { account: "account-x" },
+        tokenDec: {
+          shared: false,
+          as: undefined,
+          account: "account-a",
+          repos: ["repo-a"],
+          permissions: { contents: "none", metadata: "none" },
+        },
+        repos: ["repo-a"],
+      }),
+    ),
+  ).toMatchInlineSnapshot(`"No permissions requested"`);
+  expect(
+    throws(() =>
+      authorizer.authorizeToken({
+        consumer: { account: "account-x", repo: "repo-x" },
+        tokenDec: {
+          shared: false,
+          as: undefined,
+          account: "account-a",
+          repos: ["repo-a"],
+          permissions: { contents: "none", metadata: "none" },
+        },
+        repos: ["repo-a"],
+      }),
+    ),
+  ).toMatchInlineSnapshot(`"No permissions requested"`);
+});

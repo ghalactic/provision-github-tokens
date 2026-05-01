@@ -1,6 +1,11 @@
 import { maxAccess } from "../access-level.js";
 import { errorMessage, errorStack } from "../error.js";
-import { FAIL_ICON, icon, PASS_ICON } from "../icon.js";
+import {
+  type AccountOrRepoReference,
+  isRepoRef,
+  repoRefToString,
+} from "../github-reference.js";
+import { FAIL_ICON, icon } from "../icon.js";
 import { pluralize } from "../pluralize.js";
 import { capitalize, prefixLines } from "../text.js";
 import type { TokenCreationResult } from "../token-factory.js";
@@ -34,12 +39,14 @@ export function createTextTokenCreationExplainer(
     const firstIndex = resultIndices.get(creationResult);
 
     if (
-      creationResult.type === "CREATED" &&
       typeof currentIndex !== "undefined" &&
       typeof firstIndex !== "undefined" &&
       firstIndex !== currentIndex
     ) {
-      return `${PASS_ICON} Same token as #${firstIndex + 1}`;
+      return (
+        `${icon(creationResult.type === "CREATED")} Same result ` +
+        `as token #${firstIndex + 1}`
+      );
     }
 
     return explainResult(authResult, creationResult);
@@ -59,7 +66,7 @@ export function createTextTokenCreationExplainer(
     const lines: string[] = [];
 
     lines.push(renderHeader(result.type, access, repos, account));
-    lines.push(...renderErrorLines(result));
+    lines.push(...renderErrorLines(result, authResult.request.consumer));
 
     const subIcon = icon(isSuccess || undefined);
     const verb = isSuccess ? "Has" : "Wanted";
@@ -101,13 +108,21 @@ export function createTextTokenCreationExplainer(
     );
   }
 
-  function renderErrorLines(result: TokenCreationResult): string[] {
+  function renderErrorLines(
+    result: TokenCreationResult,
+    consumer: AccountOrRepoReference,
+  ): string[] {
     switch (result.type) {
       case "CREATED":
         return [];
 
-      case "NOT_ALLOWED":
-        return [`  ${FAIL_ICON} Token not allowed`];
+      case "NOT_ALLOWED": {
+        const suffix = isRepoRef(consumer)
+          ? ` for repo ${repoRefToString(consumer)}`
+          : ` for account ${consumer.account}`;
+
+        return [`  ${FAIL_ICON} Token not allowed${suffix}`];
+      }
 
       case "NO_ISSUER":
         return [`  ${FAIL_ICON} No suitable issuer`];

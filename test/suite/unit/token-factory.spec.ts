@@ -18,11 +18,7 @@ import {
 } from "../../../src/app-registry.js";
 import { createFindIssuerOctokit } from "../../../src/issuer-octokit.js";
 import { createOctokitFactory } from "../../../src/octokit.js";
-import { createTextTokenCreationExplainer } from "../../../src/token-creation-explainer/text.js";
-import {
-  createTokenFactory,
-  type TokenCreationResult,
-} from "../../../src/token-factory.js";
+import { createTokenFactory } from "../../../src/token-factory.js";
 import type { AppInput } from "../../../src/type/input.js";
 import type { TokenAuthResult } from "../../../src/type/token-auth-result.js";
 import {
@@ -40,7 +36,29 @@ beforeEach(() => {
   __resetOctokit();
 });
 
-it("creates and explains an outcome for each token request", async () => {
+it("warns when no token requests are provided", async () => {
+  const octokitFactory = createOctokitFactory();
+  const appRegistry = createAppRegistry();
+  const appsInput: AppInput[] = [];
+  const findIssuerOctokit = createFindIssuerOctokit(
+    octokitFactory,
+    appRegistry,
+    appsInput,
+  );
+  const createTokens = createTokenFactory(findIssuerOctokit);
+
+  const results = await createTokens([]);
+
+  expect(Array.from(results.entries())).toEqual([]);
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "
+    ::warning::⚠️ No tokens were created
+
+    "
+  `);
+});
+
+it("creates read-only tokens", async () => {
   const octokitFactory = createOctokitFactory();
 
   const accountA = createTestInstallationAccount(
@@ -81,56 +99,8 @@ it("creates and explains an outcome for each token request", async () => {
   __setApps([appA]);
   __setInstallations([[appAInstallationA, [repoA]]]);
   __addInstallationToken(111, "all", { metadata: "read" });
-  const unexpectedError = new Error("<message>");
-  unexpectedError.stack = "Error: <message>\n    at token-factory.ts:1:1";
-  __setErrors("apps.createInstallationAccessToken", [
-    undefined,
-    new TestRequestError(401, { message: "Bad credentials" }),
-    unexpectedError,
-  ]);
-
   const createTokens = createTokenFactory(findIssuerOctokit);
 
-  const notAllowedResult: TokenAuthResult = {
-    type: "ALL_REPOS",
-    request: {
-      consumer: { account: "account-a" },
-      tokenDec: {
-        shared: false,
-        as: undefined,
-        account: "account-a",
-        repos: "all",
-        permissions: { metadata: "read" },
-      },
-      repos: "all",
-    },
-    maxWant: "write",
-    have: { metadata: "read" },
-    isSufficient: false,
-    isMissingRole: false,
-    isAllowed: false,
-    rules: [],
-  };
-  const noIssuerResult: TokenAuthResult = {
-    type: "ALL_REPOS",
-    request: {
-      consumer: { account: "account-a" },
-      tokenDec: {
-        shared: false,
-        as: undefined,
-        account: "account-b",
-        repos: "all",
-        permissions: { metadata: "read" },
-      },
-      repos: "all",
-    },
-    maxWant: "read",
-    have: { metadata: "read" },
-    isSufficient: true,
-    isMissingRole: false,
-    isAllowed: true,
-    rules: [],
-  };
   const createdResult: TokenAuthResult = {
     type: "ALL_REPOS",
     request: {
@@ -151,32 +121,404 @@ it("creates and explains an outcome for each token request", async () => {
     isAllowed: true,
     rules: [],
   };
-  const unauthorizedResult: TokenAuthResult = {
-    type: "SELECTED_REPOS",
+
+  await createTokens([createdResult]);
+
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "
+    Token #1:
+
+    ✅ Read-only token created with access to all repos in account-a:
+      ✅ Has read access without a role
+      ✅ Has access to all repos in account-a
+      ✅ Has 1 permission:
+        ✅ metadata: read
+
+    "
+  `);
+});
+
+it("creates write tokens", async () => {
+  const octokitFactory = createOctokitFactory();
+
+  const accountA = createTestInstallationAccount(
+    "Organization",
+    100,
+    "account-a",
+  );
+  const repoA = createTestInstallationRepo(accountA, "repo-a");
+  const appA = createTestApp(110, "app-a", "App A", { contents: "write" });
+  const appRegA: AppRegistration = {
+    app: appA,
+    issuer: { enabled: true, roles: ["role-a"] },
+    provisioner: { enabled: false },
+  };
+  const appAInstallationA = createTestInstallation(111, appA, accountA, "all");
+  const appAInstallationRegA: InstallationRegistration = {
+    installation: appAInstallationA,
+    repos: [repoA],
+  };
+  const appRegistry = createAppRegistry();
+  appRegistry.registerApp(appRegA);
+  appRegistry.registerInstallation(appAInstallationRegA);
+
+  const appsInput: AppInput[] = [
+    {
+      appId: 110,
+      privateKey: "<private key A>",
+      issuer: { enabled: true, roles: ["role-a"] },
+      provisioner: { enabled: false },
+    },
+  ];
+  const findIssuerOctokit = createFindIssuerOctokit(
+    octokitFactory,
+    appRegistry,
+    appsInput,
+  );
+
+  __setApps([appA]);
+  __setInstallations([[appAInstallationA, [repoA]]]);
+  __addInstallationToken(111, "all", { contents: "write" });
+
+  const createTokens = createTokenFactory(findIssuerOctokit);
+
+  const authResult: TokenAuthResult = {
+    type: "ALL_REPOS",
     request: {
-      consumer: { account: "account-a" },
+      consumer: { account: "consumer-a" },
+      tokenDec: {
+        shared: false,
+        as: "role-a",
+        account: "account-a",
+        repos: "all",
+        permissions: { contents: "write" },
+      },
+      repos: "all",
+    },
+    maxWant: "write",
+    have: { contents: "write" },
+    isSufficient: true,
+    isMissingRole: false,
+    isAllowed: true,
+    rules: [],
+  };
+
+  await createTokens([authResult]);
+
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "
+    Token #1:
+
+    ✅ Write token created with access to all repos in account-a:
+      ✅ Has write access with role role-a
+      ✅ Has access to all repos in account-a
+      ✅ Has 1 permission:
+        ✅ contents: write
+
+    "
+  `);
+});
+
+it("creates admin tokens", async () => {
+  const octokitFactory = createOctokitFactory();
+
+  const accountA = createTestInstallationAccount(
+    "Organization",
+    100,
+    "account-a",
+  );
+  const repoA = createTestInstallationRepo(accountA, "repo-a");
+  const appA = createTestApp(110, "app-a", "App A", {
+    organization_administration: "admin",
+    metadata: "read",
+  });
+  const appRegA: AppRegistration = {
+    app: appA,
+    issuer: { enabled: true, roles: ["role-a"] },
+    provisioner: { enabled: false },
+  };
+  const appAInstallationA = createTestInstallation(111, appA, accountA, "all");
+  const appAInstallationRegA: InstallationRegistration = {
+    installation: appAInstallationA,
+    repos: [repoA],
+  };
+  const appRegistry = createAppRegistry();
+  appRegistry.registerApp(appRegA);
+  appRegistry.registerInstallation(appAInstallationRegA);
+
+  const appsInput: AppInput[] = [
+    {
+      appId: 110,
+      privateKey: "<private key A>",
+      issuer: { enabled: true, roles: ["role-a"] },
+      provisioner: { enabled: false },
+    },
+  ];
+  const findIssuerOctokit = createFindIssuerOctokit(
+    octokitFactory,
+    appRegistry,
+    appsInput,
+  );
+
+  __setApps([appA]);
+  __setInstallations([[appAInstallationA, [repoA]]]);
+  __addInstallationToken(111, "all", {
+    organization_administration: "admin",
+    metadata: "read",
+  });
+  const createTokens = createTokenFactory(findIssuerOctokit);
+
+  const authResult: TokenAuthResult = {
+    type: "ALL_REPOS",
+    request: {
+      consumer: { account: "consumer-a" },
+      tokenDec: {
+        shared: false,
+        as: "role-a",
+        account: "account-a",
+        repos: "all",
+        permissions: { organization_administration: "admin", metadata: "read" },
+      },
+      repos: "all",
+    },
+    maxWant: "admin",
+    have: { organization_administration: "admin", metadata: "read" },
+    isSufficient: true,
+    isMissingRole: false,
+    isAllowed: true,
+    rules: [],
+  };
+
+  await createTokens([authResult]);
+
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "
+    Token #1:
+
+    ✅ Admin token created with access to all repos in account-a:
+      ✅ Has admin access with role role-a
+      ✅ Has access to all repos in account-a
+      ✅ Has 2 permissions:
+        ✅ metadata: read
+        ✅ organization_administration: admin
+
+    "
+  `);
+});
+
+it("creates account-only tokens", async () => {
+  const octokitFactory = createOctokitFactory();
+
+  const accountA = createTestInstallationAccount(
+    "Organization",
+    100,
+    "account-a",
+  );
+  const repoA = createTestInstallationRepo(accountA, "repo-a");
+  const appA = createTestApp(110, "app-a", "App A", {
+    organization_administration: "admin",
+  });
+  const appRegA: AppRegistration = {
+    app: appA,
+    issuer: { enabled: true, roles: ["role-a"] },
+    provisioner: { enabled: false },
+  };
+  const appAInstallationA = createTestInstallation(111, appA, accountA, "all");
+  const appAInstallationRegA: InstallationRegistration = {
+    installation: appAInstallationA,
+    repos: [repoA],
+  };
+  const appRegistry = createAppRegistry();
+  appRegistry.registerApp(appRegA);
+  appRegistry.registerInstallation(appAInstallationRegA);
+
+  const appsInput: AppInput[] = [
+    {
+      appId: 110,
+      privateKey: "<private key A>",
+      issuer: { enabled: true, roles: ["role-a"] },
+      provisioner: { enabled: false },
+    },
+  ];
+  const findIssuerOctokit = createFindIssuerOctokit(
+    octokitFactory,
+    appRegistry,
+    appsInput,
+  );
+
+  __setApps([appA]);
+  __setInstallations([[appAInstallationA, [repoA]]]);
+  __addInstallationToken(111, [], { organization_administration: "admin" });
+  const createTokens = createTokenFactory(findIssuerOctokit);
+
+  const authResult: TokenAuthResult = {
+    type: "NO_REPOS",
+    request: {
+      consumer: { account: "consumer-a" },
+      tokenDec: {
+        shared: false,
+        as: "role-a",
+        account: "account-a",
+        repos: [],
+        permissions: { organization_administration: "admin" },
+      },
+      repos: [],
+    },
+    maxWant: "admin",
+    have: { organization_administration: "admin" },
+    isSufficient: true,
+    isMissingRole: false,
+    isAllowed: true,
+    rules: [],
+  };
+
+  await createTokens([authResult]);
+
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "
+    Token #1:
+
+    ✅ Admin token created with access to account-a:
+      ✅ Has admin access with role role-a
+      ✅ Has account-only access
+      ✅ Has 1 permission:
+        ✅ organization_administration: admin
+
+    "
+  `);
+});
+
+it("creates all-repos tokens", async () => {
+  const octokitFactory = createOctokitFactory();
+
+  const accountA = createTestInstallationAccount(
+    "Organization",
+    100,
+    "account-a",
+  );
+  const repoA = createTestInstallationRepo(accountA, "repo-a");
+  const repoB = createTestInstallationRepo(accountA, "repo-b");
+  const appA = createTestApp(110, "app-a", "App A", { metadata: "read" });
+  const appRegA: AppRegistration = {
+    app: appA,
+    issuer: { enabled: true, roles: [] },
+    provisioner: { enabled: false },
+  };
+  const appAInstallationA = createTestInstallation(111, appA, accountA, "all");
+  const appAInstallationRegA: InstallationRegistration = {
+    installation: appAInstallationA,
+    repos: [repoA, repoB],
+  };
+  const appRegistry = createAppRegistry();
+  appRegistry.registerApp(appRegA);
+  appRegistry.registerInstallation(appAInstallationRegA);
+
+  const appsInput: AppInput[] = [
+    {
+      appId: 110,
+      privateKey: "<private key A>",
+      issuer: { enabled: true, roles: [] },
+      provisioner: { enabled: false },
+    },
+  ];
+  const findIssuerOctokit = createFindIssuerOctokit(
+    octokitFactory,
+    appRegistry,
+    appsInput,
+  );
+
+  __setApps([appA]);
+  __setInstallations([[appAInstallationA, [repoA, repoB]]]);
+  __addInstallationToken(111, "all", { metadata: "read" });
+
+  const createTokens = createTokenFactory(findIssuerOctokit);
+
+  const authResult: TokenAuthResult = {
+    type: "ALL_REPOS",
+    request: {
+      consumer: { account: "consumer-a" },
       tokenDec: {
         shared: false,
         as: undefined,
         account: "account-a",
-        repos: ["repo-a"],
+        repos: "all",
         permissions: { metadata: "read" },
       },
-      repos: ["repo-a"],
+      repos: "all",
     },
     maxWant: "read",
-    results: {
-      "repo-a": { rules: [], have: { metadata: "read" }, isSufficient: true },
-    },
-    isMatched: true,
+    have: { metadata: "read" },
     isSufficient: true,
     isMissingRole: false,
     isAllowed: true,
+    rules: [],
   };
-  const errorResult: TokenAuthResult = {
+
+  await createTokens([authResult]);
+
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "
+    Token #1:
+
+    ✅ Read-only token created with access to all repos in account-a:
+      ✅ Has read access without a role
+      ✅ Has access to all repos in account-a
+      ✅ Has 1 permission:
+        ✅ metadata: read
+
+    "
+  `);
+});
+
+it("creates selected-repos tokens", async () => {
+  const octokitFactory = createOctokitFactory();
+
+  const accountA = createTestInstallationAccount(
+    "Organization",
+    100,
+    "account-a",
+  );
+  const repoA = createTestInstallationRepo(accountA, "repo-a");
+  const repoB = createTestInstallationRepo(accountA, "repo-b");
+  const appA = createTestApp(110, "app-a", "App A", { metadata: "read" });
+  const appRegA: AppRegistration = {
+    app: appA,
+    issuer: { enabled: true, roles: [] },
+    provisioner: { enabled: false },
+  };
+  const appAInstallationA = createTestInstallation(111, appA, accountA, "all");
+  const appAInstallationRegA: InstallationRegistration = {
+    installation: appAInstallationA,
+    repos: [repoA, repoB],
+  };
+  const appRegistry = createAppRegistry();
+  appRegistry.registerApp(appRegA);
+  appRegistry.registerInstallation(appAInstallationRegA);
+
+  const appsInput: AppInput[] = [
+    {
+      appId: 110,
+      privateKey: "<private key A>",
+      issuer: { enabled: true, roles: [] },
+      provisioner: { enabled: false },
+    },
+  ];
+  const findIssuerOctokit = createFindIssuerOctokit(
+    octokitFactory,
+    appRegistry,
+    appsInput,
+  );
+
+  __setApps([appA]);
+  __setInstallations([[appAInstallationA, [repoA, repoB]]]);
+  __addInstallationToken(111, ["repo-a", "repo-b"], { metadata: "read" });
+
+  const createTokens = createTokenFactory(findIssuerOctokit);
+
+  const authResult: TokenAuthResult = {
     type: "SELECTED_REPOS",
     request: {
-      consumer: { account: "account-a" },
+      consumer: { account: "consumer-a" },
       tokenDec: {
         shared: false,
         as: undefined,
@@ -197,35 +539,95 @@ it("creates and explains an outcome for each token request", async () => {
     isAllowed: true,
   };
 
-  await createTokens([
-    notAllowedResult,
-    noIssuerResult,
-    createdResult,
-    unauthorizedResult,
-    errorResult,
-  ]);
+  await createTokens([authResult]);
 
   expect(__getOutput()).toMatchInlineSnapshot(`
     "
     Token #1:
 
-    ❌ Refused to create read-only token with access to all repos in account-a:
-      ❌ Token not allowed
-      ➖ Wanted read access without a role
-      ➖ Wanted access to all repos in account-a
-      ➖ Wanted 1 permission:
-        ➖ metadata: read
+    ✅ Read-only token created with access to 2 repos in account-a:
+      ✅ Has read access without a role
+      ✅ Has access to 2 repos in account-a:
+        ✅ account-a/repo-a
+        ✅ account-a/repo-b
+      ✅ Has 1 permission:
+        ✅ metadata: read
 
-    Token #2:
+    "
+  `);
+});
 
-    ❌ Failed to create read-only token with access to all repos in account-b:
-      ❌ No suitable issuer
-      ➖ Wanted read access without a role
-      ➖ Wanted access to all repos in account-b
-      ➖ Wanted 1 permission:
-        ➖ metadata: read
+it('ignores permissions with "none" access level', async () => {
+  const octokitFactory = createOctokitFactory();
 
-    Token #3:
+  const accountA = createTestInstallationAccount(
+    "Organization",
+    100,
+    "account-a",
+  );
+  const repoA = createTestInstallationRepo(accountA, "repo-a");
+  const appA = createTestApp(110, "app-a", "App A", {
+    metadata: "read",
+  });
+  const appRegA: AppRegistration = {
+    app: appA,
+    issuer: { enabled: true, roles: [] },
+    provisioner: { enabled: false },
+  };
+  const appAInstallationA = createTestInstallation(111, appA, accountA, "all");
+  const appAInstallationRegA: InstallationRegistration = {
+    installation: appAInstallationA,
+    repos: [repoA],
+  };
+  const appRegistry = createAppRegistry();
+  appRegistry.registerApp(appRegA);
+  appRegistry.registerInstallation(appAInstallationRegA);
+
+  const appsInput: AppInput[] = [
+    {
+      appId: 110,
+      privateKey: "<private key A>",
+      issuer: { enabled: true, roles: [] },
+      provisioner: { enabled: false },
+    },
+  ];
+  const findIssuerOctokit = createFindIssuerOctokit(
+    octokitFactory,
+    appRegistry,
+    appsInput,
+  );
+
+  __setApps([appA]);
+  __setInstallations([[appAInstallationA, [repoA]]]);
+  __addInstallationToken(111, "all", { contents: "none", metadata: "read" });
+  const createTokens = createTokenFactory(findIssuerOctokit);
+
+  const authResult: TokenAuthResult = {
+    type: "ALL_REPOS",
+    request: {
+      consumer: { account: "consumer-a" },
+      tokenDec: {
+        shared: false,
+        as: undefined,
+        account: "account-a",
+        repos: "all",
+        permissions: { contents: "none", metadata: "read" },
+      },
+      repos: "all",
+    },
+    maxWant: "read",
+    have: { metadata: "read" },
+    isSufficient: true,
+    isMissingRole: false,
+    isAllowed: true,
+    rules: [],
+  };
+
+  await createTokens([authResult]);
+
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "
+    Token #1:
 
     ✅ Read-only token created with access to all repos in account-a:
       ✅ Has read access without a role
@@ -233,37 +635,11 @@ it("creates and explains an outcome for each token request", async () => {
       ✅ Has 1 permission:
         ✅ metadata: read
 
-    Token #4:
-
-    ❌ Failed to create read-only token with access to 1 repo in account-a:
-      ❌ 401 - Unauthorized
-    ::debug::      {
-    ::debug::        "message": "Bad credentials"
-    ::debug::      }
-      ➖ Wanted read access without a role
-      ➖ Wanted access to 1 repo in account-a:
-        ➖ account-a/repo-a
-      ➖ Wanted 1 permission:
-        ➖ metadata: read
-
-    Token #5:
-
-    ❌ Failed to create read-only token with access to 2 repos in account-a:
-      ❌ <message>
-    ::debug::      Error: <message>
-    ::debug::          at token-factory.ts:1:1
-      ➖ Wanted read access without a role
-      ➖ Wanted access to 2 repos in account-a:
-        ➖ account-a/repo-a
-        ➖ account-a/repo-b
-      ➖ Wanted 1 permission:
-        ➖ metadata: read
-
     "
   `);
 });
 
-it("reuses one token when two requests ask for the same access", async () => {
+it("reuses one token for identical requests", async () => {
   const octokitFactory = createOctokitFactory();
 
   const accountA = createTestInstallationAccount(
@@ -347,8 +723,28 @@ it("reuses one token when two requests ask for the same access", async () => {
     isAllowed: true,
     rules: [],
   };
+  const consumerCResult: TokenAuthResult = {
+    type: "ALL_REPOS",
+    request: {
+      consumer: { account: "consumer-c" },
+      tokenDec: {
+        shared: false,
+        as: undefined,
+        account: "account-a",
+        repos: "all",
+        permissions: { metadata: "read" },
+      },
+      repos: "all",
+    },
+    maxWant: "read",
+    have: { metadata: "read" },
+    isSufficient: true,
+    isMissingRole: false,
+    isAllowed: true,
+    rules: [],
+  };
 
-  await createTokens([consumerAResult, consumerBResult]);
+  await createTokens([consumerAResult, consumerBResult, consumerCResult]);
 
   expect(__getOutput()).toMatchInlineSnapshot(`
     "
@@ -362,7 +758,392 @@ it("reuses one token when two requests ask for the same access", async () => {
 
     Token #2:
 
-    ✅ Same token as #1
+    ✅ Same result as token #1
+
+    Token #3:
+
+    ✅ Same result as token #1
+
+    "
+  `);
+});
+
+it("reuses the same no-issuer outcome for identical requests", async () => {
+  const octokitFactory = createOctokitFactory();
+  const appRegistry = createAppRegistry();
+
+  const appsInput: AppInput[] = [];
+  const findIssuerOctokit = createFindIssuerOctokit(
+    octokitFactory,
+    appRegistry,
+    appsInput,
+  );
+  const createTokens = createTokenFactory(findIssuerOctokit);
+
+  const authResultA: TokenAuthResult = {
+    type: "ALL_REPOS",
+    request: {
+      consumer: { account: "consumer-a" },
+      tokenDec: {
+        shared: false,
+        as: undefined,
+        account: "account-a",
+        repos: "all",
+        permissions: { metadata: "read" },
+      },
+      repos: "all",
+    },
+    maxWant: "read",
+    have: { metadata: "read" },
+    isSufficient: true,
+    isMissingRole: false,
+    isAllowed: true,
+    rules: [],
+  };
+  const authResultB: TokenAuthResult = {
+    type: "ALL_REPOS",
+    request: {
+      consumer: { account: "consumer-b" },
+      tokenDec: {
+        shared: false,
+        as: undefined,
+        account: "account-a",
+        repos: "all",
+        permissions: { metadata: "read" },
+      },
+      repos: "all",
+    },
+    maxWant: "read",
+    have: { metadata: "read" },
+    isSufficient: true,
+    isMissingRole: false,
+    isAllowed: true,
+    rules: [],
+  };
+
+  await createTokens([authResultA, authResultB]);
+
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "
+    Token #1:
+
+    ❌ Failed to create read-only token with access to all repos in account-a:
+      ❌ No suitable issuer
+      ➖ Wanted read access without a role
+      ➖ Wanted access to all repos in account-a
+      ➖ Wanted 1 permission:
+        ➖ metadata: read
+
+    Token #2:
+
+    ❌ Same result as token #1
+
+    "
+  `);
+});
+
+it("reuses the same failure outcome for identical requests", async () => {
+  const octokitFactory = createOctokitFactory();
+
+  const accountA = createTestInstallationAccount(
+    "Organization",
+    100,
+    "account-a",
+  );
+  const repoA = createTestInstallationRepo(accountA, "repo-a");
+  const appA = createTestApp(110, "app-a", "App A", {
+    metadata: "read",
+    contents: "read",
+  });
+  const appRegA: AppRegistration = {
+    app: appA,
+    issuer: { enabled: true, roles: [] },
+    provisioner: { enabled: false },
+  };
+  const appAInstallationA = createTestInstallation(111, appA, accountA, "all");
+  const appAInstallationRegA: InstallationRegistration = {
+    installation: appAInstallationA,
+    repos: [repoA],
+  };
+  const appRegistry = createAppRegistry();
+  appRegistry.registerApp(appRegA);
+  appRegistry.registerInstallation(appAInstallationRegA);
+
+  const appsInput: AppInput[] = [
+    {
+      appId: 110,
+      privateKey: "<private key A>",
+      issuer: { enabled: true, roles: [] },
+      provisioner: { enabled: false },
+    },
+  ];
+  const findIssuerOctokit = createFindIssuerOctokit(
+    octokitFactory,
+    appRegistry,
+    appsInput,
+  );
+
+  __setApps([appA]);
+  __setInstallations([[appAInstallationA, [repoA]]]);
+  const unexpectedError = new Error("<message>");
+  unexpectedError.stack = "Error: <message>\\n    at token-factory.ts:1:1";
+  __setErrors("apps.createInstallationAccessToken", [
+    new TestRequestError(403, { message: "Resource not accessible" }),
+    unexpectedError,
+  ]);
+  __addInstallationToken(111, "all", { metadata: "read" });
+
+  const createTokens = createTokenFactory(findIssuerOctokit);
+
+  // RequestError deduping
+  const authResultA: TokenAuthResult = {
+    type: "ALL_REPOS",
+    request: {
+      consumer: { account: "consumer-a" },
+      tokenDec: {
+        shared: false,
+        as: undefined,
+        account: "account-a",
+        repos: "all",
+        permissions: { metadata: "read" },
+      },
+      repos: "all",
+    },
+    maxWant: "read",
+    have: { metadata: "read" },
+    isSufficient: true,
+    isMissingRole: false,
+    isAllowed: true,
+    rules: [],
+  };
+  const authResultB: TokenAuthResult = {
+    type: "ALL_REPOS",
+    request: {
+      consumer: { account: "consumer-b" },
+      tokenDec: {
+        shared: false,
+        as: undefined,
+        account: "account-a",
+        repos: "all",
+        permissions: { metadata: "read" },
+      },
+      repos: "all",
+    },
+    maxWant: "read",
+    have: { metadata: "read" },
+    isSufficient: true,
+    isMissingRole: false,
+    isAllowed: true,
+    rules: [],
+  };
+
+  // Non-RequestError deduping (different permissions = different cache key)
+  const authResultC: TokenAuthResult = {
+    type: "ALL_REPOS",
+    request: {
+      consumer: { account: "consumer-a" },
+      tokenDec: {
+        shared: false,
+        as: undefined,
+        account: "account-a",
+        repos: "all",
+        permissions: { contents: "read" },
+      },
+      repos: "all",
+    },
+    maxWant: "read",
+    have: { contents: "read" },
+    isSufficient: true,
+    isMissingRole: false,
+    isAllowed: true,
+    rules: [],
+  };
+  const authResultD: TokenAuthResult = {
+    type: "ALL_REPOS",
+    request: {
+      consumer: { account: "consumer-b" },
+      tokenDec: {
+        shared: false,
+        as: undefined,
+        account: "account-a",
+        repos: "all",
+        permissions: { contents: "read" },
+      },
+      repos: "all",
+    },
+    maxWant: "read",
+    have: { contents: "read" },
+    isSufficient: true,
+    isMissingRole: false,
+    isAllowed: true,
+    rules: [],
+  };
+
+  const results = await createTokens([
+    authResultA,
+    authResultB,
+    authResultC,
+    authResultD,
+  ]);
+
+  expect(results.get(authResultA)).toBe(results.get(authResultB));
+  expect(results.get(authResultC)).toBe(results.get(authResultD));
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "
+    Token #1:
+
+    ❌ Failed to create read-only token with access to all repos in account-a:
+      ❌ 403 - Forbidden
+    ::debug::      {
+    ::debug::        "message": "Resource not accessible"
+    ::debug::      }
+      ➖ Wanted read access without a role
+      ➖ Wanted access to all repos in account-a
+      ➖ Wanted 1 permission:
+        ➖ metadata: read
+
+    Token #2:
+
+    ❌ Same result as token #1
+
+    Token #3:
+
+    ❌ Failed to create read-only token with access to all repos in account-a:
+      ❌ <message>
+    ::debug::      Error: <message>\\n    at token-factory.ts:1:1
+      ➖ Wanted read access without a role
+      ➖ Wanted access to all repos in account-a
+      ➖ Wanted 1 permission:
+        ➖ contents: read
+
+    Token #4:
+
+    ❌ Same result as token #3
+
+    "
+  `);
+});
+
+it("creates separate tokens when the requested account is different", async () => {
+  const octokitFactory = createOctokitFactory();
+
+  const accountA = createTestInstallationAccount(
+    "Organization",
+    100,
+    "account-a",
+  );
+  const accountB = createTestInstallationAccount(
+    "Organization",
+    200,
+    "account-b",
+  );
+  const repoA = createTestInstallationRepo(accountA, "repo-a");
+  const repoB = createTestInstallationRepo(accountB, "repo-b");
+  const appA = createTestApp(110, "app-a", "App A", { metadata: "read" });
+  const appRegA: AppRegistration = {
+    app: appA,
+    issuer: { enabled: true, roles: [] },
+    provisioner: { enabled: false },
+  };
+  const appAInstallationA = createTestInstallation(111, appA, accountA, "all");
+  const appAInstallationRegA: InstallationRegistration = {
+    installation: appAInstallationA,
+    repos: [repoA],
+  };
+  const appAInstallationB = createTestInstallation(112, appA, accountB, "all");
+  const appAInstallationRegB: InstallationRegistration = {
+    installation: appAInstallationB,
+    repos: [repoB],
+  };
+  const appRegistry = createAppRegistry();
+  appRegistry.registerApp(appRegA);
+  appRegistry.registerInstallation(appAInstallationRegA);
+  appRegistry.registerInstallation(appAInstallationRegB);
+
+  const appsInput: AppInput[] = [
+    {
+      appId: 110,
+      privateKey: "<private key A>",
+      issuer: { enabled: true, roles: [] },
+      provisioner: { enabled: false },
+    },
+  ];
+  const findIssuerOctokit = createFindIssuerOctokit(
+    octokitFactory,
+    appRegistry,
+    appsInput,
+  );
+
+  __setApps([appA]);
+  __setInstallations([
+    [appAInstallationA, [repoA]],
+    [appAInstallationB, [repoB]],
+  ]);
+  __addInstallationToken(111, "all", { metadata: "read" });
+  __addInstallationToken(112, "all", { metadata: "read" });
+
+  const createTokens = createTokenFactory(findIssuerOctokit);
+
+  const accountAResult: TokenAuthResult = {
+    type: "ALL_REPOS",
+    request: {
+      consumer: { account: "consumer-a" },
+      tokenDec: {
+        shared: false,
+        as: undefined,
+        account: "account-a",
+        repos: "all",
+        permissions: { metadata: "read" },
+      },
+      repos: "all",
+    },
+    maxWant: "read",
+    have: { metadata: "read" },
+    isSufficient: true,
+    isMissingRole: false,
+    isAllowed: true,
+    rules: [],
+  };
+  const accountBResult: TokenAuthResult = {
+    type: "ALL_REPOS",
+    request: {
+      consumer: { account: "consumer-a" },
+      tokenDec: {
+        shared: false,
+        as: undefined,
+        account: "account-b",
+        repos: "all",
+        permissions: { metadata: "read" },
+      },
+      repos: "all",
+    },
+    maxWant: "read",
+    have: { metadata: "read" },
+    isSufficient: true,
+    isMissingRole: false,
+    isAllowed: true,
+    rules: [],
+  };
+
+  await createTokens([accountAResult, accountBResult]);
+
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "
+    Token #1:
+
+    ✅ Read-only token created with access to all repos in account-a:
+      ✅ Has read access without a role
+      ✅ Has access to all repos in account-a
+      ✅ Has 1 permission:
+        ✅ metadata: read
+
+    Token #2:
+
+    ✅ Read-only token created with access to all repos in account-b:
+      ✅ Has read access without a role
+      ✅ Has access to all repos in account-b
+      ✅ Has 1 permission:
+        ✅ metadata: read
 
     "
   `);
@@ -703,7 +1484,7 @@ it("creates separate tokens when requested repository access is different", asyn
   `);
 });
 
-it("refuses a disallowed request even if a similar allowed token already exists", async () => {
+it("doesn't create tokens when not allowed", async () => {
   const octokitFactory = createOctokitFactory();
 
   const accountA = createTestInstallationAccount(
@@ -743,34 +1524,12 @@ it("refuses a disallowed request even if a similar allowed token already exists"
 
   __setApps([appA]);
   __setInstallations([[appAInstallationA, [repoA]]]);
-  __addInstallationToken(111, "all", { metadata: "read" });
-
   const createTokens = createTokenFactory(findIssuerOctokit);
 
-  const allowedResult: TokenAuthResult = {
-    type: "ALL_REPOS",
-    request: {
-      consumer: { account: "consumer-a" },
-      tokenDec: {
-        shared: false,
-        as: undefined,
-        account: "account-a",
-        repos: "all",
-        permissions: { metadata: "read" },
-      },
-      repos: "all",
-    },
-    maxWant: "read",
-    have: { metadata: "read" },
-    isSufficient: true,
-    isMissingRole: false,
-    isAllowed: true,
-    rules: [],
-  };
   const notAllowedResult: TokenAuthResult = {
     type: "ALL_REPOS",
     request: {
-      consumer: { account: "consumer-b" },
+      consumer: { account: "account-a" },
       tokenDec: {
         shared: false,
         as: undefined,
@@ -780,30 +1539,22 @@ it("refuses a disallowed request even if a similar allowed token already exists"
       },
       repos: "all",
     },
-    maxWant: "read",
+    maxWant: "write",
     have: { metadata: "read" },
-    isSufficient: true,
+    isSufficient: false,
     isMissingRole: false,
     isAllowed: false,
     rules: [],
   };
 
-  await createTokens([allowedResult, notAllowedResult]);
+  await createTokens([notAllowedResult]);
 
   expect(__getOutput()).toMatchInlineSnapshot(`
     "
     Token #1:
 
-    ✅ Read-only token created with access to all repos in account-a:
-      ✅ Has read access without a role
-      ✅ Has access to all repos in account-a
-      ✅ Has 1 permission:
-        ✅ metadata: read
-
-    Token #2:
-
     ❌ Refused to create read-only token with access to all repos in account-a:
-      ❌ Token not allowed
+      ❌ Token not allowed for account account-a
       ➖ Wanted read access without a role
       ➖ Wanted access to all repos in account-a
       ➖ Wanted 1 permission:
@@ -813,7 +1564,7 @@ it("refuses a disallowed request even if a similar allowed token already exists"
   `);
 });
 
-it("refuses token creation when a request is disallowed", async () => {
+it("shows separate explanations for non-allowed tokens", async () => {
   const octokitFactory = createOctokitFactory();
 
   const accountA = createTestInstallationAccount(
@@ -851,12 +1602,14 @@ it("refuses token creation when a request is disallowed", async () => {
     appsInput,
   );
 
+  __setApps([appA]);
+  __setInstallations([[appAInstallationA, [repoA]]]);
   const createTokens = createTokenFactory(findIssuerOctokit);
 
-  const disallowedResult: TokenAuthResult = {
+  const notAllowedResultA: TokenAuthResult = {
     type: "ALL_REPOS",
     request: {
-      consumer: { account: "consumer-a" },
+      consumer: { account: "account-x" },
       tokenDec: {
         shared: false,
         as: undefined,
@@ -866,22 +1619,54 @@ it("refuses token creation when a request is disallowed", async () => {
       },
       repos: "all",
     },
-    maxWant: "read",
+    maxWant: "write",
     have: { metadata: "read" },
-    isSufficient: true,
+    isSufficient: false,
+    isMissingRole: false,
+    isAllowed: false,
+    rules: [],
+  };
+  const notAllowedResultB: TokenAuthResult = {
+    type: "ALL_REPOS",
+    request: {
+      consumer: { account: "account-y", repo: "repo-y" },
+      tokenDec: {
+        shared: false,
+        as: undefined,
+        account: "account-a",
+        repos: "all",
+        permissions: { metadata: "read" },
+      },
+      repos: "all",
+    },
+    maxWant: "write",
+    have: { metadata: "read" },
+    isSufficient: false,
     isMissingRole: false,
     isAllowed: false,
     rules: [],
   };
 
-  await createTokens([disallowedResult]);
+  const results = await createTokens([notAllowedResultA, notAllowedResultB]);
 
+  expect(results.get(notAllowedResultA)).not.toBe(
+    results.get(notAllowedResultB),
+  );
   expect(__getOutput()).toMatchInlineSnapshot(`
     "
     Token #1:
 
     ❌ Refused to create read-only token with access to all repos in account-a:
-      ❌ Token not allowed
+      ❌ Token not allowed for account account-x
+      ➖ Wanted read access without a role
+      ➖ Wanted access to all repos in account-a
+      ➖ Wanted 1 permission:
+        ➖ metadata: read
+
+    Token #2:
+
+    ❌ Refused to create read-only token with access to all repos in account-a:
+      ❌ Token not allowed for repo account-y/repo-y
       ➖ Wanted read access without a role
       ➖ Wanted access to all repos in account-a
       ➖ Wanted 1 permission:
@@ -891,7 +1676,114 @@ it("refuses token creation when a request is disallowed", async () => {
   `);
 });
 
-it("reuses the same no-issuer outcome for identical requests", async () => {
+it("explains when no permissions were requested", async () => {
+  const octokitFactory = createOctokitFactory();
+
+  const accountA = createTestInstallationAccount(
+    "Organization",
+    100,
+    "account-a",
+  );
+  const repoA = createTestInstallationRepo(accountA, "repo-a");
+  const appA = createTestApp(110, "app-a", "App A", { metadata: "read" });
+  const appRegA: AppRegistration = {
+    app: appA,
+    issuer: { enabled: true, roles: [] },
+    provisioner: { enabled: false },
+  };
+  const appAInstallationA = createTestInstallation(111, appA, accountA, "all");
+  const appAInstallationRegA: InstallationRegistration = {
+    installation: appAInstallationA,
+    repos: [repoA],
+  };
+  const appRegistry = createAppRegistry();
+  appRegistry.registerApp(appRegA);
+  appRegistry.registerInstallation(appAInstallationRegA);
+
+  const appsInput: AppInput[] = [
+    {
+      appId: 110,
+      privateKey: "<private key A>",
+      issuer: { enabled: true, roles: [] },
+      provisioner: { enabled: false },
+    },
+  ];
+  const findIssuerOctokit = createFindIssuerOctokit(
+    octokitFactory,
+    appRegistry,
+    appsInput,
+  );
+
+  __setApps([appA]);
+  __setInstallations([[appAInstallationA, [repoA]]]);
+  const createTokens = createTokenFactory(findIssuerOctokit);
+
+  const emptyPermissionsResult: TokenAuthResult = {
+    type: "ALL_REPOS",
+    request: {
+      consumer: { account: "consumer-a" },
+      tokenDec: {
+        shared: false,
+        as: undefined,
+        account: "account-a",
+        repos: "all",
+        permissions: {},
+      },
+      repos: "all",
+    },
+    maxWant: "read",
+    have: {},
+    isSufficient: false,
+    isMissingRole: false,
+    isAllowed: false,
+    rules: [],
+  };
+
+  // Also applies when all permissions have explicit "none" access levels
+  const allNonePermissionsResult: TokenAuthResult = {
+    type: "ALL_REPOS",
+    request: {
+      consumer: { account: "consumer-b" },
+      tokenDec: {
+        shared: false,
+        as: undefined,
+        account: "account-a",
+        repos: "all",
+        permissions: { contents: "none", metadata: "none" },
+      },
+      repos: "all",
+    },
+    maxWant: "read",
+    have: {},
+    isSufficient: false,
+    isMissingRole: false,
+    isAllowed: false,
+    rules: [],
+  };
+
+  await createTokens([emptyPermissionsResult, allNonePermissionsResult]);
+
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "
+    Token #1:
+
+    ❌ Refused to create token with access to all repos in account-a:
+      ❌ Token not allowed for account consumer-a
+      ➖ Wanted access to all repos in account-a
+      ❌ No permissions requested
+
+    Token #2:
+
+    ❌ Refused to create token with access to all repos in account-a:
+      ❌ Token not allowed for account consumer-b
+      ➖ Wanted access to all repos in account-a
+      ❌ No permissions requested
+
+    "
+  `);
+});
+
+it("fails when no suitable issuer can create the token", async () => {
   const octokitFactory = createOctokitFactory();
   const appRegistry = createAppRegistry();
 
@@ -904,34 +1796,14 @@ it("reuses the same no-issuer outcome for identical requests", async () => {
 
   const createTokens = createTokenFactory(findIssuerOctokit);
 
-  const consumerAResult: TokenAuthResult = {
+  const noIssuerResult: TokenAuthResult = {
     type: "ALL_REPOS",
     request: {
-      consumer: { account: "consumer-a" },
+      consumer: { account: "account-a" },
       tokenDec: {
         shared: false,
         as: undefined,
-        account: "account-a",
-        repos: "all",
-        permissions: { metadata: "read" },
-      },
-      repos: "all",
-    },
-    maxWant: "read",
-    have: { metadata: "read" },
-    isSufficient: true,
-    isMissingRole: false,
-    isAllowed: true,
-    rules: [],
-  };
-  const consumerBResult: TokenAuthResult = {
-    type: "ALL_REPOS",
-    request: {
-      consumer: { account: "consumer-b" },
-      tokenDec: {
-        shared: false,
-        as: undefined,
-        account: "account-a",
+        account: "account-b",
         repos: "all",
         permissions: { metadata: "read" },
       },
@@ -945,138 +1817,16 @@ it("reuses the same no-issuer outcome for identical requests", async () => {
     rules: [],
   };
 
-  await createTokens([consumerAResult, consumerBResult]);
+  await createTokens([noIssuerResult]);
 
   expect(__getOutput()).toMatchInlineSnapshot(`
     "
     Token #1:
 
-    ❌ Failed to create read-only token with access to all repos in account-a:
+    ❌ Failed to create read-only token with access to all repos in account-b:
       ❌ No suitable issuer
       ➖ Wanted read access without a role
-      ➖ Wanted access to all repos in account-a
-      ➖ Wanted 1 permission:
-        ➖ metadata: read
-
-    Token #2:
-
-    ❌ Failed to create read-only token with access to all repos in account-a:
-      ❌ No suitable issuer
-      ➖ Wanted read access without a role
-      ➖ Wanted access to all repos in account-a
-      ➖ Wanted 1 permission:
-        ➖ metadata: read
-
-    "
-  `);
-});
-
-it("reuses the same failure outcome for identical requests", async () => {
-  const octokitFactory = createOctokitFactory();
-
-  const accountA = createTestInstallationAccount(
-    "Organization",
-    100,
-    "account-a",
-  );
-  const repoA = createTestInstallationRepo(accountA, "repo-a");
-  const appA = createTestApp(110, "app-a", "App A", { metadata: "read" });
-  const appRegA: AppRegistration = {
-    app: appA,
-    issuer: { enabled: true, roles: [] },
-    provisioner: { enabled: false },
-  };
-  const appAInstallationA = createTestInstallation(111, appA, accountA, "all");
-  const appAInstallationRegA: InstallationRegistration = {
-    installation: appAInstallationA,
-    repos: [repoA],
-  };
-  const appRegistry = createAppRegistry();
-  appRegistry.registerApp(appRegA);
-  appRegistry.registerInstallation(appAInstallationRegA);
-
-  const appsInput: AppInput[] = [
-    {
-      appId: 110,
-      privateKey: "<private key A>",
-      issuer: { enabled: true, roles: [] },
-      provisioner: { enabled: false },
-    },
-  ];
-  const findIssuerOctokit = createFindIssuerOctokit(
-    octokitFactory,
-    appRegistry,
-    appsInput,
-  );
-
-  __setApps([appA]);
-  __setInstallations([[appAInstallationA, [repoA]]]);
-
-  const createTokens = createTokenFactory(findIssuerOctokit);
-
-  const consumerAResult: TokenAuthResult = {
-    type: "ALL_REPOS",
-    request: {
-      consumer: { account: "consumer-a" },
-      tokenDec: {
-        shared: false,
-        as: undefined,
-        account: "account-a",
-        repos: "all",
-        permissions: { metadata: "read" },
-      },
-      repos: "all",
-    },
-    maxWant: "read",
-    have: { metadata: "read" },
-    isSufficient: true,
-    isMissingRole: false,
-    isAllowed: true,
-    rules: [],
-  };
-  const consumerBResult: TokenAuthResult = {
-    type: "ALL_REPOS",
-    request: {
-      consumer: { account: "consumer-b" },
-      tokenDec: {
-        shared: false,
-        as: undefined,
-        account: "account-a",
-        repos: "all",
-        permissions: { metadata: "read" },
-      },
-      repos: "all",
-    },
-    maxWant: "read",
-    have: { metadata: "read" },
-    isSufficient: true,
-    isMissingRole: false,
-    isAllowed: true,
-    rules: [],
-  };
-
-  await createTokens([consumerAResult, consumerBResult]);
-
-  // FIXME: Shouldn't this output a reference number?
-  expect(__getOutput()).toMatchInlineSnapshot(`
-    "
-    Token #1:
-
-    ❌ Failed to create read-only token with access to all repos in account-a:
-      ❌ 401 - Unauthorized
-    ::debug::      (no response data)
-      ➖ Wanted read access without a role
-      ➖ Wanted access to all repos in account-a
-      ➖ Wanted 1 permission:
-        ➖ metadata: read
-
-    Token #2:
-
-    ❌ Failed to create read-only token with access to all repos in account-a:
-      ❌ 401 - Unauthorized
-    ::debug::      (no response data)
-      ➖ Wanted read access without a role
-      ➖ Wanted access to all repos in account-a
+      ➖ Wanted access to all repos in account-b
       ➖ Wanted 1 permission:
         ➖ metadata: read
 
@@ -1126,11 +1876,12 @@ it("explains failures caused by GitHub API errors", async () => {
   __setInstallations([[appAInstallationA, [repoA]]]);
   __setErrors("apps.createInstallationAccessToken", [
     new TestRequestError(403, { message: "Resource not accessible" }),
+    new TestRequestError(500),
   ]);
 
   const createTokens = createTokenFactory(findIssuerOctokit);
 
-  const authResult: TokenAuthResult = {
+  const allReposAuthResult: TokenAuthResult = {
     type: "ALL_REPOS",
     request: {
       consumer: { account: "consumer-a" },
@@ -1151,7 +1902,30 @@ it("explains failures caused by GitHub API errors", async () => {
     rules: [],
   };
 
-  await createTokens([authResult]);
+  const selectedReposAuthResult: TokenAuthResult = {
+    type: "SELECTED_REPOS",
+    request: {
+      consumer: { account: "consumer-a" },
+      tokenDec: {
+        shared: false,
+        as: undefined,
+        account: "account-a",
+        repos: ["repo-a"],
+        permissions: { metadata: "read" },
+      },
+      repos: ["repo-a"],
+    },
+    maxWant: "read",
+    results: {
+      "repo-a": { rules: [], have: { metadata: "read" }, isSufficient: true },
+    },
+    isMatched: true,
+    isSufficient: true,
+    isMissingRole: false,
+    isAllowed: true,
+  };
+
+  await createTokens([allReposAuthResult, selectedReposAuthResult]);
 
   expect(__getOutput()).toMatchInlineSnapshot(`
     "
@@ -1164,6 +1938,17 @@ it("explains failures caused by GitHub API errors", async () => {
     ::debug::      }
       ➖ Wanted read access without a role
       ➖ Wanted access to all repos in account-a
+      ➖ Wanted 1 permission:
+        ➖ metadata: read
+
+    Token #2:
+
+    ❌ Failed to create read-only token with access to 1 repo in account-a:
+      ❌ 500 - Internal Server Error
+    ::debug::      (no response data)
+      ➖ Wanted read access without a role
+      ➖ Wanted access to 1 repo in account-a:
+        ➖ account-a/repo-a
       ➖ Wanted 1 permission:
         ➖ metadata: read
 
@@ -1253,261 +2038,5 @@ it("explains failures caused by unexpected errors", async () => {
         ➖ metadata: read
 
     "
-  `);
-});
-
-it("summarizes outcomes plainly when every request creates its own token", async () => {
-  const octokitFactory = createOctokitFactory();
-
-  const accountA = createTestInstallationAccount(
-    "Organization",
-    100,
-    "account-a",
-  );
-  const repoA = createTestInstallationRepo(accountA, "repo-a");
-  const appA = createTestApp(110, "app-a", "App A", { metadata: "read" });
-  const appRegA: AppRegistration = {
-    app: appA,
-    issuer: { enabled: true, roles: [] },
-    provisioner: { enabled: false },
-  };
-  const appAInstallationA = createTestInstallation(111, appA, accountA, "all");
-  const appAInstallationRegA: InstallationRegistration = {
-    installation: appAInstallationA,
-    repos: [repoA],
-  };
-  const appRegistry = createAppRegistry();
-  appRegistry.registerApp(appRegA);
-  appRegistry.registerInstallation(appAInstallationRegA);
-
-  const appsInput: AppInput[] = [
-    {
-      appId: 110,
-      privateKey: "<private key A>",
-      issuer: { enabled: true, roles: [] },
-      provisioner: { enabled: false },
-    },
-  ];
-  const findIssuerOctokit = createFindIssuerOctokit(
-    octokitFactory,
-    appRegistry,
-    appsInput,
-  );
-
-  __setApps([appA]);
-  __setInstallations([[appAInstallationA, [repoA]]]);
-  __addInstallationToken(111, "all", { metadata: "read" });
-
-  const createTokens = createTokenFactory(findIssuerOctokit);
-
-  const consumerAResult: TokenAuthResult = {
-    type: "ALL_REPOS",
-    request: {
-      consumer: { account: "consumer-a" },
-      tokenDec: {
-        shared: false,
-        as: undefined,
-        account: "account-a",
-        repos: "all",
-        permissions: { metadata: "read" },
-      },
-      repos: "all",
-    },
-    maxWant: "read",
-    have: { metadata: "read" },
-    isSufficient: true,
-    isMissingRole: false,
-    isAllowed: true,
-    rules: [],
-  };
-
-  await createTokens([consumerAResult]);
-
-  expect(__getOutput()).toMatchInlineSnapshot(`
-    "
-    Token #1:
-
-    ✅ Read-only token created with access to all repos in account-a:
-      ✅ Has read access without a role
-      ✅ Has access to all repos in account-a
-      ✅ Has 1 permission:
-        ✅ metadata: read
-
-    "
-  `);
-});
-
-it("warns when no token requests are provided", async () => {
-  const octokitFactory = createOctokitFactory();
-  const appRegistry = createAppRegistry();
-  const appsInput: AppInput[] = [];
-  const findIssuerOctokit = createFindIssuerOctokit(
-    octokitFactory,
-    appRegistry,
-    appsInput,
-  );
-  const createTokens = createTokenFactory(findIssuerOctokit);
-
-  const results = await createTokens([]);
-
-  expect(Array.from(results.entries())).toEqual([]);
-  expect(__getOutput()).toMatchInlineSnapshot(`
-    "
-    ::warning::⚠️ No tokens were created
-
-    "
-  `);
-});
-
-it("describes admin-level access in human terms", () => {
-  const authResult: TokenAuthResult = {
-    type: "ALL_REPOS",
-    request: {
-      consumer: { account: "consumer-a" },
-      tokenDec: {
-        shared: false,
-        as: "role-a",
-        account: "account-a",
-        repos: "all",
-        permissions: { organization_administration: "admin", metadata: "read" },
-      },
-      repos: "all",
-    },
-    maxWant: "admin",
-    have: { organization_administration: "admin", metadata: "read" },
-    isSufficient: true,
-    isMissingRole: false,
-    isAllowed: true,
-    rules: [],
-  };
-  const creationResult: TokenCreationResult = {
-    type: "CREATED",
-    token: "token" as never,
-  };
-  const results = new Map<TokenAuthResult, TokenCreationResult>([
-    [authResult, creationResult],
-  ]);
-  const explain = createTextTokenCreationExplainer(results);
-
-  expect(explain(authResult, creationResult)).toMatchInlineSnapshot(`
-    "✅ Admin token created with access to all repos in account-a:
-      ✅ Has admin access with role role-a
-      ✅ Has access to all repos in account-a
-      ✅ Has 2 permissions:
-        ✅ metadata: read
-        ✅ organization_administration: admin"
-  `);
-});
-
-it("describes account-only access in human terms", () => {
-  const authResult: TokenAuthResult = {
-    type: "NO_REPOS",
-    request: {
-      consumer: { account: "consumer-a" },
-      tokenDec: {
-        shared: false,
-        as: "role-a",
-        account: "account-a",
-        repos: [],
-        permissions: { organization_administration: "admin" },
-      },
-      repos: [],
-    },
-    maxWant: "admin",
-    have: { organization_administration: "admin" },
-    isSufficient: true,
-    isMissingRole: false,
-    isAllowed: true,
-    rules: [],
-  };
-  const creationResult: TokenCreationResult = {
-    type: "CREATED",
-    token: "token" as never,
-  };
-  const results = new Map<TokenAuthResult, TokenCreationResult>([
-    [authResult, creationResult],
-  ]);
-  const explain = createTextTokenCreationExplainer(results);
-
-  expect(explain(authResult, creationResult)).toMatchInlineSnapshot(`
-    "✅ Admin token created with access to account-a:
-      ✅ Has admin access with role role-a
-      ✅ Has account-only access
-      ✅ Has 1 permission:
-        ✅ organization_administration: admin"
-  `);
-});
-
-it("calls out when no permissions are requested", () => {
-  const authResult: TokenAuthResult = {
-    type: "ALL_REPOS",
-    request: {
-      consumer: { account: "consumer-a" },
-      tokenDec: {
-        shared: false,
-        as: undefined,
-        account: "account-a",
-        repos: "all",
-        permissions: {},
-      },
-      repos: "all",
-    },
-    maxWant: "read",
-    have: {},
-    isSufficient: false,
-    isMissingRole: false,
-    isAllowed: false,
-    rules: [],
-  };
-  const creationResult: TokenCreationResult = { type: "NOT_ALLOWED" };
-  const results = new Map<TokenAuthResult, TokenCreationResult>([
-    [authResult, creationResult],
-  ]);
-  const explain = createTextTokenCreationExplainer(results);
-
-  expect(explain(authResult, creationResult)).toMatchInlineSnapshot(`
-    "❌ Refused to create token with access to all repos in account-a:
-      ❌ Token not allowed
-      ➖ Wanted access to all repos in account-a
-      ❌ No permissions requested"
-  `);
-});
-
-it("ignores none-valued permissions in access descriptions", () => {
-  const authResult: TokenAuthResult = {
-    type: "ALL_REPOS",
-    request: {
-      consumer: { account: "consumer-a" },
-      tokenDec: {
-        shared: false,
-        as: undefined,
-        account: "account-a",
-        repos: "all",
-        permissions: { contents: "none", metadata: "read" },
-      },
-      repos: "all",
-    },
-    maxWant: "read",
-    have: { metadata: "read" },
-    isSufficient: true,
-    isMissingRole: false,
-    isAllowed: true,
-    rules: [],
-  };
-  const creationResult: TokenCreationResult = {
-    type: "CREATED",
-    token: "token" as never,
-  };
-  const results = new Map<TokenAuthResult, TokenCreationResult>([
-    [authResult, creationResult],
-  ]);
-  const explain = createTextTokenCreationExplainer(results);
-
-  expect(explain(authResult, creationResult)).toMatchInlineSnapshot(`
-    "✅ Read-only token created with access to all repos in account-a:
-      ✅ Has read access without a role
-      ✅ Has access to all repos in account-a
-      ✅ Has 1 permission:
-        ✅ metadata: read"
   `);
 });
