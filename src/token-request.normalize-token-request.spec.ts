@@ -1,17 +1,15 @@
 import { expect, it } from "vitest";
+import { createTestTokenDec } from "../test/declaration.js";
 import type { EnvironmentReference } from "./github-reference.js";
 import { normalizeTokenRequest, type TokenRequest } from "./token-request.js";
 
 it("does nothing for already-normalized requests", () => {
   const request: TokenRequest = {
     consumer: { account: "account-x" },
-    tokenDec: {
-      shared: false,
+    tokenDec: createTestTokenDec({
       as: "role-a",
-      account: "account-a",
-      repos: "all",
       permissions: { metadata: "read", contents: "write" },
-    },
+    }),
     repos: "all",
   };
 
@@ -22,13 +20,11 @@ it("sorts repos in selected-repos requests", () => {
   expect(
     normalizeTokenRequest({
       consumer: { account: "account-x" },
-      tokenDec: {
-        shared: false,
+      tokenDec: createTestTokenDec({
         as: "role-a",
-        account: "account-a",
         repos: ["repo-a", "repo-b"],
         permissions: { metadata: "read", contents: "write" },
-      },
+      }),
       repos: ["repo-b", "repo-a"],
     }),
   ).toMatchObject({ repos: ["repo-a", "repo-b"] });
@@ -38,13 +34,10 @@ it("supports all-repos requests", () => {
   expect(
     normalizeTokenRequest({
       consumer: { account: "account-x" },
-      tokenDec: {
-        shared: false,
+      tokenDec: createTestTokenDec({
         as: "role-a",
-        account: "account-a",
-        repos: "all",
         permissions: { metadata: "read", contents: "write" },
-      },
+      }),
       repos: "all",
     }),
   ).toMatchObject({ repos: "all" });
@@ -54,13 +47,10 @@ it("supports account consumer requests", () => {
   expect(
     normalizeTokenRequest({
       consumer: { account: "account-x" },
-      tokenDec: {
-        shared: false,
+      tokenDec: createTestTokenDec({
         as: "role-a",
-        account: "account-a",
-        repos: "all",
         permissions: { metadata: "read", contents: "write" },
-      },
+      }),
       repos: "all",
     }),
   ).toMatchObject({ consumer: { account: "account-x" } });
@@ -70,13 +60,10 @@ it("supports repo consumer requests", () => {
   expect(
     normalizeTokenRequest({
       consumer: { account: "account-x", repo: "repo-x" },
-      tokenDec: {
-        shared: false,
+      tokenDec: createTestTokenDec({
         as: "role-a",
-        account: "account-a",
-        repos: "all",
         permissions: { metadata: "read", contents: "write" },
-      },
+      }),
       repos: "all",
     }),
   ).toMatchObject({ consumer: { account: "account-x", repo: "repo-x" } });
@@ -91,13 +78,10 @@ it("strips environments from environment consumer requests", () => {
 
   const actual = normalizeTokenRequest({
     consumer,
-    tokenDec: {
-      shared: false,
+    tokenDec: createTestTokenDec({
       as: "role-a",
-      account: "account-a",
-      repos: "all",
       permissions: { metadata: "read", contents: "write" },
-    },
+    }),
     repos: "all",
   });
 
@@ -111,13 +95,11 @@ it("normalizes the token declaration", () => {
   expect(
     normalizeTokenRequest({
       consumer: { account: "account-x" },
-      tokenDec: {
-        shared: false,
+      tokenDec: createTestTokenDec({
         as: "role-a",
-        account: "account-a",
         repos: ["repo-b", "repo-a"],
         permissions: { metadata: "read", contents: "write" },
-      },
+      }),
       repos: "all",
     }),
   ).toMatchObject({

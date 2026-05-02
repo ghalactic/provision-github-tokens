@@ -1,22 +1,17 @@
 import { expect, it } from "vitest";
+import { createTestTokenDec } from "../test/declaration.js";
 import { createTokenDeclarationRegistry } from "./token-declaration-registry.js";
-import type { TokenDeclaration } from "./token-declaration.js";
 
 it("finds local token declarations", () => {
-  const declarationA: TokenDeclaration = {
-    shared: false,
-    as: undefined,
+  const declarationA = createTestTokenDec({
     account: "account-x",
     repos: ["repo-x"],
-    permissions: { metadata: "read" },
-  };
-  const declarationB: TokenDeclaration = {
-    shared: false,
-    as: undefined,
+  });
+  const declarationB = createTestTokenDec({
     account: "account-y",
     repos: ["repo-y"],
     permissions: { contents: "write" },
-  };
+  });
 
   const declarationRegistry = createTokenDeclarationRegistry();
   declarationRegistry.registerDeclaration(
@@ -45,20 +40,17 @@ it("finds local token declarations", () => {
 });
 
 it("finds shared token declarations", () => {
-  const declarationA: TokenDeclaration = {
+  const declarationA = createTestTokenDec({
     shared: true,
-    as: undefined,
     account: "account-x",
     repos: ["repo-x"],
-    permissions: { metadata: "read" },
-  };
-  const declarationB: TokenDeclaration = {
+  });
+  const declarationB = createTestTokenDec({
     shared: true,
-    as: undefined,
     account: "account-y",
     repos: ["repo-y"],
     permissions: { contents: "write" },
-  };
+  });
 
   const declarationRegistry = createTokenDeclarationRegistry();
   declarationRegistry.registerDeclaration(
@@ -87,20 +79,15 @@ it("finds shared token declarations", () => {
 });
 
 it("doesn't find unshared tokens in other repos", () => {
-  const declarationA: TokenDeclaration = {
-    shared: false,
-    as: undefined,
+  const declarationA = createTestTokenDec({
     account: "account-x",
     repos: ["repo-x"],
-    permissions: { metadata: "read" },
-  };
-  const declarationB: TokenDeclaration = {
-    shared: false,
-    as: undefined,
+  });
+  const declarationB = createTestTokenDec({
     account: "account-y",
     repos: ["repo-y"],
     permissions: { contents: "write" },
-  };
+  });
 
   const declarationRegistry = createTokenDeclarationRegistry();
   declarationRegistry.registerDeclaration(

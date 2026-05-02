@@ -1,5 +1,6 @@
 import { Octokit } from "@octokit/action";
 import { expect, it } from "vitest";
+import { createTestTokenDec } from "../test/declaration.js";
 import {
   createTestApp,
   createTestInstallation,
@@ -59,13 +60,7 @@ it("can find octokit instances for issuers", () => {
 
   const tokenReq: TokenRequest = {
     consumer: { account: "account-a" },
-    tokenDec: {
-      shared: false,
-      as: undefined,
-      account: "account-a",
-      repos: "all",
-      permissions: { metadata: "read" },
-    },
+    tokenDec: createTestTokenDec(),
     repos: "all",
   };
 
@@ -121,13 +116,7 @@ it("returns undefined if no matching installation is found", () => {
 
   const actualA = findIssuerOctokit({
     consumer: { account: "account-a" },
-    tokenDec: {
-      shared: false,
-      as: undefined,
-      account: "account-b",
-      repos: "all",
-      permissions: { metadata: "read" },
-    },
+    tokenDec: createTestTokenDec({ account: "account-b" }),
     repos: "all",
   });
 

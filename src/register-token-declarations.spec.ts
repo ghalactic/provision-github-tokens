@@ -1,31 +1,27 @@
 import { expect, it } from "vitest";
+import { createTestTokenDec } from "../test/declaration.js";
 import type { DiscoveredRequester } from "./discover-requesters.js";
 import { registerTokenDeclarations } from "./register-token-declarations.js";
 import { createTokenDeclarationRegistry } from "./token-declaration-registry.js";
-import type { TokenDeclaration } from "./token-declaration.js";
 
 it("registers token declarations from discovered requesters", () => {
-  const declarationA: TokenDeclaration = {
-    shared: false,
-    as: undefined,
+  const declarationA = createTestTokenDec({
     account: "account-x",
-    repos: "all",
-    permissions: { metadata: "read" },
-  };
-  const declarationB: TokenDeclaration = {
+  });
+  const declarationB = createTestTokenDec({
     shared: true,
     as: "role-a",
     account: "account-y",
     repos: ["repo-y", "repo-z"],
     permissions: { contents: "write", repository_projects: "admin" },
-  };
-  const declarationC: TokenDeclaration = {
+  });
+  const declarationC = createTestTokenDec({
     shared: true,
     as: "role-b",
     account: "account-z",
     repos: ["repo-a"],
     permissions: { metadata: "read", contents: "read" },
-  };
+  });
 
   const declarationRegistry = createTokenDeclarationRegistry();
   const requesters = new Map<string, DiscoveredRequester>([
