@@ -39,16 +39,16 @@ veto power over every token request.
 
 ## Alternatives considered
 
-- **Requester-declared permissions with no central control**: insecure — any
-  repo could request arbitrary permissions.
-- **Transitive delegation chains**: hard to audit — trust flows through multiple
+- **Requester-declared permissions with no central control**: insecure. Any repo
+  could request arbitrary permissions.
+- **Transitive delegation chains**: hard to audit. Trust flows through multiple
   intermediaries.
-- **Per-token static allowlists**: inflexible — doesn't support pattern-based
+- **Per-token static allowlists**: inflexible. Doesn't support pattern-based
   rules or scale to many requesters.
 
 ## More information
 
-- Related: [ADR-0012] — installation permissions act as an additional hard
+- Related: [ADR-0012]: installation permissions act as an additional hard
   boundary beyond the policy layer defined here
 
 [adr-0012]: 0012-cap-issued-token-permissions-at-installation-boundaries.md

@@ -31,8 +31,8 @@ boundary.
 Each configured GitHub App is explicitly designated as an issuer, a provisioner,
 or both:
 
-- **Issuer** — creates installation access tokens for requesters
-- **Provisioner** — writes secrets to target repos and organizations
+- **Issuer**: creates installation access tokens for requesters
+- **Provisioner**: writes secrets to target repos and organizations
 
 The app registry tracks these designations and resolves which app to use for
 each operation based on where it's installed.
@@ -54,17 +54,17 @@ minimal can split the two across separate apps.
 
 - **One purpose per app**: requires at least two apps in all configurations,
   even when one app could handle both.
-- **Per-installation designation**: too granular — the same app would behave
+- **Per-installation designation**: too granular. The same app would behave
   differently per installation, making configuration hard to reason about.
-- **Implicit designation**: unclear which app does what — no explicit signal of
+- **Implicit designation**: unclear which app does what. No explicit signal of
   intent.
 
 ## More information
 
-- Related: [ADR-0010] — the two authorization layers align with the
+- Related: [ADR-0010]: the two authorization layers align with the
   issuer/provisioner split
-- Related: [ADR-0012] — installation permissions boundary explains why
-  separating issuance and provisioning matters for security
+- Related: [ADR-0012]: installation permissions boundary explains why separating
+  issuance and provisioning matters for security
 
 [adr-0010]: 0010-separate-token-and-provision-authorization.md
 [adr-0012]: 0012-cap-issued-token-permissions-at-installation-boundaries.md

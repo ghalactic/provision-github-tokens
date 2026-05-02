@@ -17,8 +17,8 @@ the requester never asked for.
 
 ## Decision
 
-Patterns resolve against the _requested_ permissions only — the set declared in
-the requester's token declaration. `"*": write` requesting
+Patterns resolve against the _requested_ permissions only (the set declared in
+the requester's token declaration). `"*": write` requesting
 `{contents: write, metadata: read}` resolves to
 `{contents: write, metadata: write}`, not 30+ permissions.
 
@@ -27,7 +27,7 @@ is needed.
 
 ## Consequences
 
-- Good, because new GitHub permissions work automatically — nothing to maintain.
+- Good, because new GitHub permissions work automatically. Nothing to maintain.
 - Good, because authorization results only contain relevant permissions.
 - Bad, because providers can't proactively grant permissions the requester
   didn't ask for.
@@ -41,6 +41,6 @@ is needed.
 
 ## More information
 
-- Related: [ADR-0002] — two-tier resolution for permission name patterns
+- Related: [ADR-0002]: two-tier resolution for permission name patterns
 
 [adr-0002]: 0002-use-two-tier-resolution-for-permission-name-patterns.md

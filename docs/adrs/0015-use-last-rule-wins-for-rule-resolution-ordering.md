@@ -8,7 +8,7 @@ decision-makers: ezzatron
 
 ## Context and problem statement
 
-Both permission rules and provision rules can overlap — a single consumer or
+Both permission rules and provision rules can overlap; a single consumer or
 target might match multiple rules. When this happens, the system needs a
 predictable way to determine which rule takes effect. The resolution strategy
 must be easy to reason about and powerful enough to express both broad defaults
@@ -28,10 +28,10 @@ permissions overwriting what came before.
 
 ## Consequences
 
-- Good, because rule behavior is determined entirely by order — no implicit
+- Good, because rule behavior is determined entirely by order. No implicit
   priority or specificity calculations.
-- Good, because it's trivial to add exceptions — place a more specific rule
-  after a general one.
+- Good, because it's trivial to add exceptions. Place a more specific rule after
+  a general one.
 - Good, because the same semantics apply to both permission rules and provision
   rules, reducing cognitive load.
 - Bad, because accidentally placing a broad rule after a specific one can

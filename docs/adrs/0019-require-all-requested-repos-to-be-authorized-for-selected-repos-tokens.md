@@ -26,8 +26,8 @@ unauthorized repo causes the entire request to be denied.
 
 ## Consequences
 
-- Good, because consumers can rely on getting exactly the repos they declared —
-  there is no silent scope reduction that could cause downstream workflows to
+- Good, because consumers can rely on getting exactly the repos they declared.
+  There is no silent scope reduction that could cause downstream workflows to
   fail in unexpected ways.
 - Good, because authorization failures are surfaced as explicit denials rather
   than silently degraded tokens, making misconfigurations easier to diagnose.
@@ -45,7 +45,7 @@ unauthorized repo causes the entire request to be denied.
 
 ## More information
 
-- Related: [ADR-0017] — the three repository scope categories, of which
+- Related: [ADR-0017]: the three repository scope categories, of which
   selected-repos is one
 
 [adr-0017]:

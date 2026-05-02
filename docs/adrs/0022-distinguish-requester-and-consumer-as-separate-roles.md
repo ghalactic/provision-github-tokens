@@ -17,18 +17,18 @@ different repo entirely.
 
 Use two distinct terms:
 
-- **Requester** — the repo that contains a config file declaring what tokens it
+- **Requester**: the repo that contains a config file declaring what tokens it
   needs and where they should be provisioned as secrets.
-- **Consumer** — the repo or account that actually receives the issued token.
+- **Consumer**: the repo or account that actually receives the issued token.
   This may be the requester itself, or a different repo that the requester has
   nominated as a provisioning target.
 
-The `consumers` field in permission rules is consistent with this terminology —
-it matches against the repos that will consume the token.
+The `consumers` field in permission rules is consistent with this terminology.
+It matches against the repos that will consume the token.
 
 ## Consequences
 
 - Good, because the two sides of a provisioning interaction now have distinct
   names.
-- Bad, because the two terms must be used precisely — casual interchange will
+- Bad, because the two terms must be used precisely. Casual interchange will
   reintroduce the original confusion.

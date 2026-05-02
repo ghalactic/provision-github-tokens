@@ -31,9 +31,9 @@ automatically select a suitable issuer.
 
 - Good, because users are always in control of which app identity is associated
   with write operations.
-- Good, because it prevents accidental attribution — an automated comment or
+- Good, because it prevents accidental attribution. An automated comment or
   commit won't unexpectedly appear under the wrong app's name.
-- Good, because it makes token declarations self-documenting — the role makes it
+- Good, because it makes token declarations self-documenting. The role makes it
   clear which app is intended.
 - Bad, because it adds a mandatory field to write-level token declarations,
   increasing configuration verbosity.

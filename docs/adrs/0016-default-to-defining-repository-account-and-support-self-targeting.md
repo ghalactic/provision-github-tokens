@@ -11,7 +11,7 @@ decision-makers: ezzatron
 The most common provisioning scenario is a repository requesting a token and
 placing it as a secret in its own repo. Without any shortcuts, every token
 declaration would need to explicitly specify the account it belongs to, and
-every provision target would need to spell out the full repo owner and name —
+every provision target would need to spell out the full repo owner and name,
 even when they match the requesting repo. This boilerplate adds noise and
 increases the chance of misconfiguration.
 
@@ -44,8 +44,8 @@ Several defaults and shortcuts reduce configuration for common cases:
 
 ## Alternatives considered
 
-- **No defaults — require explicit values everywhere**: unnecessarily verbose
-  for the most common case and increases risk of copy-paste errors.
+- **No defaults, require explicit values everywhere**: unnecessarily verbose for
+  the most common case and increases risk of copy-paste errors.
 - **Pattern-only targeting**: self-provisioning would depend on writing patterns
   that happen to match the requesting repo, which is fragile and doesn't express
   intent clearly.

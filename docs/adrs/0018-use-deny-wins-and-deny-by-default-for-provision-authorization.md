@@ -9,8 +9,8 @@ decision-makers: ezzatron
 ## Context and problem statement
 
 Provision rules determine whether a secret can be placed at a given target.
-Unlike token permission rules — which use max-wins to determine the highest
-access level ([ADR-0002]) — provision rules need a more conservative resolution
+Unlike token permission rules, which use max-wins to determine the highest
+access level ([ADR-0002]), provision rules need a more conservative resolution
 strategy, because misplacing a secret exposes a token to unintended consumers.
 
 [adr-0002]: 0002-use-two-tier-resolution-for-permission-name-patterns.md
@@ -44,9 +44,9 @@ Provision authorization uses two complementary postures:
 
 ## More information
 
-- Related: [ADR-0010] — provision authorization is one of the two independent
+- Related: [ADR-0010]: provision authorization is one of the two independent
   authorization checks
-- Contrast: [ADR-0002] — token permission patterns use max-wins, the opposite of
+- Contrast: [ADR-0002]: token permission patterns use max-wins, the opposite of
   deny-wins
 
 [adr-0010]: 0010-separate-token-and-provision-authorization.md

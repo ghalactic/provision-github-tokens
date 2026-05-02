@@ -14,7 +14,7 @@ different authorization characteristics.
 
 A critical constraint is that GitHub's permission model does not scope
 permissions to individual repositories. When a token is granted a permission,
-that permission applies at the account level — even when the token is restricted
+that permission applies at the account level, even when the token is restricted
 to selected repositories. The token can only _access_ those selected repos, but
 the permission itself is granted account-wide. This means granting a permission
 to a token has broader implications than it might appear, and the authorization
@@ -25,14 +25,14 @@ system must account for this.
 Token authorization is split into three distinct categories based on the
 requested repository scope:
 
-- **All repos** — the token can access all repositories in the account,
-  including repositories created after the token is issued. Authorization
-  evaluates a single set of permissions against the rules.
-- **Selected repos** — the token can access a fixed set of repositories. New
+- **All repos**: the token can access all repositories in the account, including
+  repositories created after the token is issued. Authorization evaluates a
+  single set of permissions against the rules.
+- **Selected repos**: the token can access a fixed set of repositories. New
   repositories never implicitly expand the access grant. Authorization evaluates
   permissions per-repo, and all requested repos must be independently authorized
   for the token to be issued.
-- **No repos** — the token has no repository access. This category exists for
+- **No repos**: the token has no repository access. This category exists for
   tokens that only need account-level capabilities, such as read-only access to
   public data with a higher rate limit, or managing organization settings
   without any repository access.

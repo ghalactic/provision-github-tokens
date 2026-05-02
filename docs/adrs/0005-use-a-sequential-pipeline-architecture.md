@@ -10,8 +10,8 @@ decision-makers: ezzatron
 
 The action must read configuration, discover apps and requesters, authorize
 requests, create tokens, and provision secrets. These operations have data
-dependencies — for example, authorization needs token declarations that come
-from requester discovery, and token creation needs authorization results.
+dependencies. For example, authorization needs token declarations that come from
+requester discovery, and token creation needs authorization results.
 
 ## Decision
 
@@ -29,7 +29,7 @@ and ensures authorization decisions are made with complete information.
 
 ## Consequences
 
-- Good, because data dependencies are satisfied by construction — no phase runs
+- Good, because data dependencies are satisfied by construction. No phase runs
   before its inputs are ready.
 - Good, because the flow is deterministic and easy to debug from logs.
 - Bad, because all discovery must complete before any authorization begins, even

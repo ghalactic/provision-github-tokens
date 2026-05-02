@@ -11,14 +11,14 @@ decision-makers: ezzatron
 A secret declaration can specify provision targets using patterns that match
 repos. When multiple repo patterns in the declaration match the same physical
 repository, each pattern may specify different environment lists. The system
-must decide how to combine them — should the target repo receive secrets in the
+must decide how to combine them. Should the target repo receive secrets in the
 union of all matched environments, or only those environments that all patterns
 agree on?
 
 ## Decision
 
 When multiple repo patterns match the same target repository, their environment
-lists are intersected — only environments present in every matching pattern's
+lists are intersected. Only environments present in every matching pattern's
 list are included.
 
 This is stricter than the handling of secret types (actions, codespaces,

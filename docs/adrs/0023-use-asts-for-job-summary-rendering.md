@@ -8,9 +8,9 @@ decision-makers: ezzatron
 
 ## Context and problem statement
 
-The job summary contains structured Markdown — GFM tables, headings, and link
-reference definitions. A rendering approach is needed that handles this reliably
-and stays maintainable.
+The job summary contains structured Markdown (GFM tables, headings, and link
+reference definitions). A rendering approach is needed that handles this
+reliably and stays maintainable.
 
 ## Decision
 

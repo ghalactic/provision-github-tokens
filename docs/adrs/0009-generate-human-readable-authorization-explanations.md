@@ -10,7 +10,7 @@ decision-makers: ezzatron
 
 The authorization rule system evaluates layered pattern matching across multiple
 rules. When a token request is denied, the reason is not obvious from the config
-alone — multiple rules may interact, and the final decision depends on which
+alone. Multiple rules may interact, and the final decision depends on which
 patterns matched and what permissions they contributed. Without explanations,
 debugging denied requests requires reading the authorization logic itself.
 
@@ -39,6 +39,6 @@ authorization decisions.
 - **Silent pass/fail**: no way to debug denied requests without reading source
   code.
 - **Raw rule dumps**: show the matching rules but not how they combined to
-  produce the decision — not human-readable.
+  produce the decision. Not human-readable.
 - **Separate audit log system**: unnecessary complexity for an action that
   already runs in CI with built-in logging.
