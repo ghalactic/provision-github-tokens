@@ -29,6 +29,8 @@ import {
 } from "../test/github-api.js";
 import { createTestKeyPair } from "../test/key.js";
 import {
+  createTestProvisionAuthResultAllowed,
+  createTestProvisionAuthResultNotAllowed,
   createTestProvisionAuthTargetResultAllowed,
   createTestProvisionAuthTargetResultNotAllowed,
 } from "../test/result.js";
@@ -240,19 +242,10 @@ it("handles secrets with no targets to provision to", async () => {
     [tokenAuthResultA, tokenCreationResultCreatedA],
   ]);
 
-  const missingTargetsResult: ProvisionAuthResult = {
-    request: {
-      requester: { account: "account-a", repo: "repo-a" },
-      tokenDec: tokenDecA,
-      tokenDecIsRegistered: true,
-      secretDec: secretDecA,
-      name: "SECRET_A",
-      to: [],
-    },
+  const missingTargetsResult = createTestProvisionAuthResultNotAllowed({
     results: [],
     isMissingTargets: true,
-    isAllowed: false,
-  };
+  });
 
   await provisionSecrets(tokenResults, [missingTargetsResult]);
 
@@ -272,24 +265,14 @@ it("doesn't provision secrets when provisioning isn't allowed", async () => {
     [tokenAuthResultA, tokenCreationResultCreatedA],
   ]);
 
-  const notAllowedResult: ProvisionAuthResult = {
-    request: {
-      requester: { account: "account-a", repo: "repo-a" },
-      tokenDec: tokenDecA,
-      tokenDecIsRegistered: true,
-      secretDec: secretDecA,
-      name: "SECRET_A",
-      to: [accountAActionsTarget],
-    },
+  const notAllowedResult = createTestProvisionAuthResultNotAllowed({
     results: [
       createTestProvisionAuthTargetResultNotAllowed({
         target: accountAActionsTarget,
         tokenAuthResult: tokenAuthResultA,
       }),
     ],
-    isMissingTargets: false,
-    isAllowed: false,
-  };
+  });
 
   await provisionSecrets(tokenResults, [notAllowedResult]);
 
@@ -336,19 +319,7 @@ it("doesn't provision secrets when the token wasn't created", async () => {
     [tokenAuthResultError, { type: "ERROR", error: new Error("boom") }],
   ]);
 
-  const allowedResult: ProvisionAuthResult = {
-    request: {
-      requester: { account: "account-a", repo: "repo-a" },
-      tokenDec: tokenDecA,
-      tokenDecIsRegistered: true,
-      secretDec: secretDecA,
-      name: "SECRET_A",
-      to: [
-        accountAActionsTarget,
-        accountARepoAActionsTarget,
-        accountARepoAEnvATarget,
-      ],
-    },
+  const allowedResult = createTestProvisionAuthResultAllowed({
     results: [
       createTestProvisionAuthTargetResultAllowed({
         target: accountAActionsTarget,
@@ -363,9 +334,7 @@ it("doesn't provision secrets when the token wasn't created", async () => {
         tokenAuthResult: tokenAuthResultError,
       }),
     ],
-    isMissingTargets: false,
-    isAllowed: true,
-  };
+  });
 
   await provisionSecrets(tokenResults, [allowedResult]);
 
@@ -387,24 +356,14 @@ it("doesn't provision secrets when no suitable provisioners are found", async ()
     [tokenAuthResultA, tokenCreationResultCreatedA],
   ]);
 
-  const allowedResult: ProvisionAuthResult = {
-    request: {
-      requester: { account: "account-a", repo: "repo-a" },
-      tokenDec: tokenDecA,
-      tokenDecIsRegistered: true,
-      secretDec: secretDecA,
-      name: "SECRET_A",
-      to: [accountXActionsTarget],
-    },
+  const allowedResult = createTestProvisionAuthResultAllowed({
     results: [
       createTestProvisionAuthTargetResultAllowed({
         target: accountXActionsTarget,
         tokenAuthResult: tokenAuthResultA,
       }),
     ],
-    isMissingTargets: false,
-    isAllowed: true,
-  };
+  });
 
   await provisionSecrets(tokenResults, [allowedResult]);
 
@@ -428,24 +387,14 @@ it("doesn't provision secrets when target provisioning fails with a GitHub API e
     [tokenAuthResultA, tokenCreationResultCreatedA],
   ]);
 
-  const allowedResult: ProvisionAuthResult = {
-    request: {
-      requester: { account: "account-a", repo: "repo-a" },
-      tokenDec: tokenDecA,
-      tokenDecIsRegistered: true,
-      secretDec: secretDecA,
-      name: "SECRET_A",
-      to: [accountAActionsTarget],
-    },
+  const allowedResult = createTestProvisionAuthResultAllowed({
     results: [
       createTestProvisionAuthTargetResultAllowed({
         target: accountAActionsTarget,
         tokenAuthResult: tokenAuthResultA,
       }),
     ],
-    isMissingTargets: false,
-    isAllowed: true,
-  };
+  });
 
   await provisionSecrets(tokenResults, [allowedResult]);
 
@@ -472,24 +421,14 @@ it("doesn't provision secrets when target provisioning fails with an unexpected 
     [tokenAuthResultA, tokenCreationResultCreatedA],
   ]);
 
-  const allowedResult: ProvisionAuthResult = {
-    request: {
-      requester: { account: "account-a", repo: "repo-a" },
-      tokenDec: tokenDecA,
-      tokenDecIsRegistered: true,
-      secretDec: secretDecA,
-      name: "SECRET_A",
-      to: [accountAActionsTarget],
-    },
+  const allowedResult = createTestProvisionAuthResultAllowed({
     results: [
       createTestProvisionAuthTargetResultAllowed({
         target: accountAActionsTarget,
         tokenAuthResult: tokenAuthResultA,
       }),
     ],
-    isMissingTargets: false,
-    isAllowed: true,
-  };
+  });
 
   await provisionSecrets(tokenResults, [allowedResult]);
 
@@ -512,24 +451,14 @@ it("doesn't provision secrets when encryption fails with a GitHub API error", as
     [tokenAuthResultA, tokenCreationResultCreatedA],
   ]);
 
-  const allowedResult: ProvisionAuthResult = {
-    request: {
-      requester: { account: "account-a", repo: "repo-a" },
-      tokenDec: tokenDecA,
-      tokenDecIsRegistered: true,
-      secretDec: secretDecA,
-      name: "SECRET_A",
-      to: [accountAActionsTarget],
-    },
+  const allowedResult = createTestProvisionAuthResultAllowed({
     results: [
       createTestProvisionAuthTargetResultAllowed({
         target: accountAActionsTarget,
         tokenAuthResult: tokenAuthResultA,
       }),
     ],
-    isMissingTargets: false,
-    isAllowed: true,
-  };
+  });
 
   await provisionSecrets(tokenResults, [allowedResult]);
 
@@ -554,24 +483,14 @@ it("doesn't provision secrets when encryption fails with an unexpected error", a
     [tokenAuthResultA, tokenCreationResultCreatedA],
   ]);
 
-  const allowedResult: ProvisionAuthResult = {
-    request: {
-      requester: { account: "account-a", repo: "repo-a" },
-      tokenDec: tokenDecA,
-      tokenDecIsRegistered: true,
-      secretDec: secretDecA,
-      name: "SECRET_A",
-      to: [accountAActionsTarget],
-    },
+  const allowedResult = createTestProvisionAuthResultAllowed({
     results: [
       createTestProvisionAuthTargetResultAllowed({
         target: accountAActionsTarget,
         tokenAuthResult: tokenAuthResultA,
       }),
     ],
-    isMissingTargets: false,
-    isAllowed: true,
-  };
+  });
 
   await provisionSecrets(tokenResults, [allowedResult]);
 
@@ -594,19 +513,7 @@ it("can provision multiple secrets of the same type", async () => {
     [tokenAuthResultB, tokenCreationResultCreatedB],
   ]);
 
-  const allowedResultA: ProvisionAuthResult = {
-    request: {
-      requester: { account: "account-a", repo: "repo-a" },
-      tokenDec: tokenDecA,
-      tokenDecIsRegistered: true,
-      secretDec: secretDecA,
-      name: "SECRET_A",
-      to: [
-        accountAActionsTarget,
-        accountARepoAActionsTarget,
-        accountARepoAEnvATarget,
-      ],
-    },
+  const allowedResultA = createTestProvisionAuthResultAllowed({
     results: [
       createTestProvisionAuthTargetResultAllowed({
         target: accountAActionsTarget,
@@ -621,9 +528,7 @@ it("can provision multiple secrets of the same type", async () => {
         tokenAuthResult: tokenAuthResultA,
       }),
     ],
-    isMissingTargets: false,
-    isAllowed: true,
-  };
+  });
   const allowedResultB: ProvisionAuthResult = {
     request: {
       requester: { account: "account-a", repo: "repo-a" },
@@ -696,23 +601,7 @@ it("can provision a secret to multiple targets", async () => {
     [tokenAuthResultA, tokenCreationResultCreatedA],
   ]);
 
-  const allowedResult: ProvisionAuthResult = {
-    request: {
-      requester: { account: "account-a", repo: "repo-a" },
-      tokenDec: tokenDecA,
-      tokenDecIsRegistered: true,
-      secretDec: secretDecA,
-      name: "SECRET_A",
-      to: [
-        accountAActionsTarget,
-        accountACodespacesTarget,
-        accountADependabotTarget,
-        accountARepoAActionsTarget,
-        accountARepoACodespacesTarget,
-        accountARepoADependabotTarget,
-        accountARepoAEnvATarget,
-      ],
-    },
+  const allowedResult = createTestProvisionAuthResultAllowed({
     results: [
       createTestProvisionAuthTargetResultAllowed({
         target: accountAActionsTarget,
@@ -743,9 +632,7 @@ it("can provision a secret to multiple targets", async () => {
         tokenAuthResult: tokenAuthResultA,
       }),
     ],
-    isMissingTargets: false,
-    isAllowed: true,
-  };
+  });
 
   await provisionSecrets(tokenResults, [allowedResult]);
 
@@ -785,24 +672,14 @@ it("doesn't stop provisioning when some targets fail", async () => {
     [tokenAuthResultB, tokenCreationResultNotCreated],
   ]);
 
-  const notAllowedResult: ProvisionAuthResult = {
-    request: {
-      requester: { account: "account-a", repo: "repo-a" },
-      tokenDec: tokenDecA,
-      tokenDecIsRegistered: true,
-      secretDec: secretDecA,
-      name: "SECRET_A",
-      to: [accountAActionsTarget],
-    },
+  const notAllowedResult = createTestProvisionAuthResultNotAllowed({
     results: [
       createTestProvisionAuthTargetResultNotAllowed({
         target: accountAActionsTarget,
         tokenAuthResult: tokenAuthResultA,
       }),
     ],
-    isMissingTargets: false,
-    isAllowed: false,
-  };
+  });
   const allowedResult: ProvisionAuthResult = {
     request: {
       requester: { account: "account-a", repo: "repo-a" },
