@@ -64,6 +64,10 @@ Use **sentence case** for all headings, labels, and prose — never title case.
 The only exception is references to external writing that has its own style
 rules (e.g. a proper noun, a product name, or a title defined elsewhere).
 
+Before writing any documentation, you MUST consult the project's skills
+`technical-writing` and `diataxis` for style and content guidelines. Where the
+skills' guidelines conflict with this file, defer to this file.
+
 ### Markdown
 
 All Markdown should read well in both raw text and rendered HTML.
