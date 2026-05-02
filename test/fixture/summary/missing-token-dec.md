@@ -1,8 +1,8 @@
 ### Provisioned 1 of 2 secrets
 
-|    | Requester                               | Secret     | Targets                   |
-| :- | :-------------------------------------- | :--------- | :------------------------ |
-| ❌  | [account-x/repo-x][gh/account-x/repo-x] | `SECRET_B` | [account-a][gh/account-a] |
+|    | Requester                               | Secret     | Targets                   | Reason                          |
+| :- | :-------------------------------------- | :--------- | :------------------------ | :------------------------------ |
+| ❌  | [account-x/repo-x][gh/account-x/repo-x] | `SECRET_B` | [account-a][gh/account-a] | Token declaration doesn't exist |
 
 |    | Requester                               | Secret     | Targets                   |
 | :- | :-------------------------------------- | :--------- | :------------------------ |

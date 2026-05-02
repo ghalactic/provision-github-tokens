@@ -1,5 +1,6 @@
 import { isSufficientAccess } from "../access-level.js";
 import { accountOrRepoRefToString, isRepoRef } from "../github-reference.js";
+import { icon } from "../icon.js";
 import { permissionAccess } from "../permissions.js";
 import { pluralize } from "../pluralize.js";
 import type { PermissionsRule } from "../type/permissions-rule.js";
@@ -13,9 +14,6 @@ import type {
   TokenAuthResultNoRepos,
   TokenAuthResultSelectedRepos,
 } from "../type/token-auth-result.js";
-
-const ALLOWED_ICON = "✅";
-const DENIED_ICON = "❌";
 
 const ACCESS_LEVELS: Record<PermissionAccess, string> = {
   none: "No",
@@ -39,7 +37,7 @@ export function createTextTokenAuthExplainer(): TokenAuthResultExplainer<string>
     return (
       explainSummary(result) +
       explainMaxAccessAndRole(result, subject) +
-      `\n  ${renderIcon(isSufficient)} ` +
+      `\n  ${icon(isSufficient)} ` +
       `${isSufficient ? "Sufficient" : "Insufficient"} ` +
       `access to ${subject} ` +
       `${explainBasedOnRules(request.tokenDec.permissions, rules)}`
@@ -52,7 +50,7 @@ export function createTextTokenAuthExplainer(): TokenAuthResultExplainer<string>
     return (
       explainSummary(result) +
       explainMaxAccessAndRole(result, request.tokenDec.account) +
-      `\n  ${renderIcon(isSufficient)} ` +
+      `\n  ${icon(isSufficient)} ` +
       `${isSufficient ? "Sufficient" : "Insufficient"} ` +
       `access to ${request.tokenDec.account} ` +
       `${explainBasedOnRules(request.tokenDec.permissions, rules)}`
@@ -89,13 +87,13 @@ export function createTextTokenAuthExplainer(): TokenAuthResultExplainer<string>
 
     if (isRepoRef(request.consumer)) {
       return (
-        `${renderIcon(isAllowed)} Repo ${name} ` +
+        `${icon(isAllowed)} Repo ${name} ` +
         `was ${isAllowed ? "allowed" : "denied"} access to a token:`
       );
     }
 
     return (
-      `${renderIcon(isAllowed)} Account ${name} ` +
+      `${icon(isAllowed)} Account ${name} ` +
       `was ${isAllowed ? "allowed" : "denied"} access to a token:`
     );
   }
@@ -105,7 +103,7 @@ export function createTextTokenAuthExplainer(): TokenAuthResultExplainer<string>
     accessTo: string,
   ): string {
     return (
-      `\n  ${renderIcon(!isMissingRole)} ${ACCESS_LEVELS[maxWant]} ` +
+      `\n  ${icon(!isMissingRole)} ${ACCESS_LEVELS[maxWant]} ` +
       `access to ${accessTo} ` +
       (request.tokenDec.as
         ? `requested with role ${request.tokenDec.as}`
@@ -124,7 +122,7 @@ export function createTextTokenAuthExplainer(): TokenAuthResultExplainer<string>
     );
     const repos = pluralize(request.repos.length, "repo", "repos");
 
-    return `\n  ${renderIcon(isMatched)} ${repoPatterns} matched ${repos}`;
+    return `\n  ${icon(isMatched)} ${repoPatterns} matched ${repos}`;
   }
 
   function explainResourceRepo(
@@ -133,7 +131,7 @@ export function createTextTokenAuthExplainer(): TokenAuthResultExplainer<string>
     { isSufficient, rules }: TokenAuthResourceResult,
   ): string {
     return (
-      `\n  ${renderIcon(isSufficient)} ` +
+      `\n  ${icon(isSufficient)} ` +
       `${isSufficient ? "Sufficient" : "Insufficient"} ` +
       `access to repo ${resource} ${explainBasedOnRules(want, rules)}`
     );
@@ -166,7 +164,7 @@ export function createTextTokenAuthExplainer(): TokenAuthResultExplainer<string>
     { index, rule, have, isSufficient }: TokenAuthResourceResultRuleResult,
   ): string {
     return (
-      `\n    ${renderIcon(isSufficient)} Rule ${renderRule(index, rule)} ` +
+      `\n    ${icon(isSufficient)} Rule ${renderRule(index, rule)} ` +
       `gave ${isSufficient ? "sufficient" : "insufficient"} access:` +
       renderPermissionComparison("      ", have, want)
     );
@@ -202,13 +200,9 @@ export function createTextTokenAuthExplainer(): TokenAuthResultExplainer<string>
     let list = "";
 
     for (const [isAllowed, entry] of items) {
-      list += `\n${indent}${renderIcon(isAllowed)} ${entry}`;
+      list += `\n${indent}${icon(isAllowed)} ${entry}`;
     }
 
     return list;
-  }
-
-  function renderIcon(isAllowed: boolean): string {
-    return isAllowed ? ALLOWED_ICON : DENIED_ICON;
   }
 }

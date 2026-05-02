@@ -3,8 +3,12 @@ import { errorStack } from "../../../src/error.js";
 
 it("returns the error stack when available", () => {
   const error = new Error("foo");
+  error.stack = "Error: foo\n    at bar.ts:1:1";
 
-  expect(errorStack(error)).toContain("Error: foo\n");
+  expect(errorStack(error)).toMatchInlineSnapshot(`
+    "Error: foo
+        at bar.ts:1:1"
+  `);
 });
 
 it("returns the error message if there is no stack", () => {

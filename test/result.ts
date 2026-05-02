@@ -1,9 +1,49 @@
-import type { ProvisioningResult } from "../src/provisioner.js";
 import type {
   ProvisionAuthResult,
   ProvisionAuthTargetResult,
 } from "../src/type/provision-auth-result.js";
-import { createTestTokenDec } from "./declaration.js";
+import type { TokenAuthResultAllRepos } from "../src/type/token-auth-result.js";
+import { createTestSecretDec, createTestTokenDec } from "./declaration.js";
+
+export function createTestTokenAuthResultAllowed(
+  result: Partial<TokenAuthResultAllRepos> = {},
+): TokenAuthResultAllRepos {
+  return {
+    type: "ALL_REPOS",
+    have: { metadata: "read" },
+    isAllowed: true,
+    isMissingRole: false,
+    isSufficient: true,
+    maxWant: "read",
+    request: {
+      consumer: { account: "account-a" },
+      repos: "all",
+      tokenDec: createTestTokenDec({ permissions: { metadata: "read" } }),
+    },
+    rules: [],
+    ...result,
+  };
+}
+
+export function createTestTokenAuthResultNotAllowed(
+  result: Partial<TokenAuthResultAllRepos> = {},
+): TokenAuthResultAllRepos {
+  return {
+    type: "ALL_REPOS",
+    have: {},
+    isAllowed: false,
+    isMissingRole: false,
+    isSufficient: false,
+    maxWant: "read",
+    request: {
+      consumer: { account: "account-a" },
+      repos: "all",
+      tokenDec: createTestTokenDec({ permissions: { metadata: "read" } }),
+    },
+    rules: [],
+    ...result,
+  };
+}
 
 export function createTestProvisionAuthTargetResultAllowed(
   result: Partial<ProvisionAuthTargetResult> = {},
@@ -16,20 +56,7 @@ export function createTestProvisionAuthTargetResultAllowed(
     },
     rules: [],
     have: "allow",
-    tokenAuthResult: {
-      type: "ALL_REPOS",
-      have: { metadata: "read" },
-      isAllowed: true,
-      isMissingRole: false,
-      isSufficient: true,
-      maxWant: "read",
-      request: {
-        consumer: { account: "account-a" },
-        repos: "all",
-        tokenDec: createTestTokenDec({ permissions: { metadata: "read" } }),
-      },
-      rules: [],
-    },
+    tokenAuthResult: createTestTokenAuthResultAllowed(),
     isTokenAllowed: true,
     isProvisionAllowed: true,
     isAllowed: true,
@@ -48,20 +75,7 @@ export function createTestProvisionAuthTargetResultNotAllowed(
     },
     rules: [],
     have: "deny",
-    tokenAuthResult: {
-      type: "ALL_REPOS",
-      have: { metadata: "read" },
-      isAllowed: true,
-      isMissingRole: false,
-      isSufficient: true,
-      maxWant: "read",
-      request: {
-        consumer: { account: "account-a" },
-        repos: "all",
-        tokenDec: createTestTokenDec({ permissions: { metadata: "read" } }),
-      },
-      rules: [],
-    },
+    tokenAuthResult: createTestTokenAuthResultAllowed(),
     isTokenAllowed: true,
     isProvisionAllowed: false,
     isAllowed: false,
@@ -69,20 +83,52 @@ export function createTestProvisionAuthTargetResultNotAllowed(
   };
 }
 
-export function provisionResultsToArray(
-  results: Map<
-    ProvisionAuthResult,
-    Map<ProvisionAuthTargetResult, ProvisioningResult>
-  >,
-): [ProvisionAuthResult, [ProvisionAuthTargetResult, ProvisioningResult][]][] {
-  const array: [
-    ProvisionAuthResult,
-    [ProvisionAuthTargetResult, ProvisioningResult][],
-  ][] = [];
+export function createTestProvisionAuthResultAllowed(
+  result: Partial<ProvisionAuthResult> = {},
+): ProvisionAuthResult {
+  const results = result.results ?? [
+    createTestProvisionAuthTargetResultAllowed(),
+  ];
 
-  for (const [auth, targetResults] of results.entries()) {
-    array.push([auth, Array.from(targetResults.entries())]);
-  }
+  return {
+    request: {
+      requester: { account: "account-a", repo: "repo-a" },
+      tokenDec: createTestTokenDec({ permissions: { metadata: "read" } }),
+      tokenDecIsRegistered: true,
+      secretDec: createTestSecretDec({
+        github: { accounts: { "account-a": { actions: true } } },
+      }),
+      name: "SECRET_A",
+      to: results.map((targetResult) => targetResult.target),
+    },
+    results,
+    isMissingTargets: false,
+    isAllowed: true,
+    ...result,
+  };
+}
 
-  return array;
+export function createTestProvisionAuthResultNotAllowed(
+  result: Partial<ProvisionAuthResult> = {},
+): ProvisionAuthResult {
+  const results = result.results ?? [
+    createTestProvisionAuthTargetResultNotAllowed(),
+  ];
+
+  return {
+    request: {
+      requester: { account: "account-a", repo: "repo-a" },
+      tokenDec: createTestTokenDec({ permissions: { metadata: "read" } }),
+      tokenDecIsRegistered: true,
+      secretDec: createTestSecretDec({
+        github: { accounts: { "account-a": { actions: true } } },
+      }),
+      name: "SECRET_A",
+      to: results.map((targetResult) => targetResult.target),
+    },
+    results,
+    isMissingTargets: false,
+    isAllowed: false,
+    ...result,
+  };
 }

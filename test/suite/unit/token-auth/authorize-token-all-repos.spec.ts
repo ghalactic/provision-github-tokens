@@ -1600,7 +1600,7 @@ it("skips undefined permission values in rules", () => {
   `);
 });
 
-it("does not grant permissions when no patterns match", () => {
+it("doesn't grant permissions when no patterns match", () => {
   const authorizer = createTokenAuthorizer({
     rules: [
       {

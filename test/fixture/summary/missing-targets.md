@@ -1,8 +1,8 @@
 ### Provisioned 1 of 2 secrets
 
-|    | Requester                               | Secret     | Targets |
-| :- | :-------------------------------------- | :--------- | :------ |
-| ❌  | [account-x/repo-x][gh/account-x/repo-x] | `SECRET_B` |         |
+|    | Requester                               | Secret     | Targets  | Reason                     |
+| :- | :-------------------------------------- | :--------- | :------- | :------------------------- |
+| ❌  | [account-x/repo-x][gh/account-x/repo-x] | `SECRET_B` | *(none)* | No targets to provision to |
 
 |    | Requester                               | Secret     | Targets                   |
 | :- | :-------------------------------------- | :--------- | :------------------------ |
