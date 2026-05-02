@@ -8,7 +8,11 @@ import type {
   Installation,
   Repo,
 } from "../../src/type/github-api.js";
-import type { TestApp } from "../../test/github-api.js";
+import type { Permissions } from "../../src/type/permissions.js";
+import {
+  createTestInstallationToken,
+  type TestApp,
+} from "../../test/github-api.js";
 import { decrypt, type TestKeyPair } from "../../test/key.js";
 
 let apps: TestApp[];
@@ -313,13 +317,17 @@ export function Octokit({
                 }
               }
 
-              // FIXME: Should return object type with token and expiration
-              return {
-                data:
-                  `<token ${installation_id}` +
-                  `.${requestedRepos}` +
-                  `.${requestedPermissions}>`,
-              };
+              const key = JSON.stringify({
+                installation_id,
+                requestedRepos,
+                requestedPermissions,
+              });
+
+              return createTestInstallationToken(
+                key,
+                token.repositories,
+                token.permissions as Permissions,
+              );
             }
           }
 

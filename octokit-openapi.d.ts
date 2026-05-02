@@ -30,6 +30,15 @@ declare module "@octokit/openapi" {
               };
             };
           };
+          responses: {
+            "201": {
+              content: {
+                "application/json": {
+                  schema: JSONSchema7;
+                };
+              };
+            };
+          };
         };
       }
     >;

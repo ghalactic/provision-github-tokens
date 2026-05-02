@@ -1,5 +1,5 @@
 import openapi from "@octokit/openapi";
-import { createHash } from "crypto";
+import { createHash } from "node:crypto";
 import openapiSampler from "openapi-sampler";
 import type {
   App,
@@ -7,6 +7,7 @@ import type {
   Installation,
   InstallationAccount,
   InstallationRepo,
+  InstallationToken,
 } from "../src/type/github-api.js";
 import type { Permissions } from "../src/type/permissions.js";
 
@@ -103,7 +104,29 @@ export function createTestInstallationRepo(
   };
 }
 
-// Repo Environment
+// Installation token
+
+const sampleInstallationToken = openapiSampler.sample(
+  openapi.schemas["api.github.com.deref"].paths[
+    "/app/installations/{installation_id}/access_tokens"
+  ].post.responses["201"].content["application/json"].schema,
+) as InstallationToken;
+
+export function createTestInstallationToken(
+  key: string,
+  repos: "all" | string[],
+  permissions: Permissions,
+): InstallationToken {
+  return {
+    ...sampleInstallationToken,
+    token: `ghs_test_${createHash("sha256").update(key).digest("base64").slice(0, 30)}`,
+    expires_at: new Date(Date.now() + 60 * 60 * 1000).toISOString(),
+    permissions: permissions,
+    repository_selection: repos === "all" ? "all" : "selected",
+  };
+}
+
+// Repo environment
 
 const sampleEnvironment = openapiSampler.sample(
   openapi.schemas["api.github.com.deref"].paths[
