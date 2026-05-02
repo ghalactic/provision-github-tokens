@@ -130,7 +130,7 @@ it("supports wildcard repo consumers", () => {
   `);
 });
 
-it("returns the same result for the same request", () => {
+it("re-uses the same result for the same request", () => {
   const authorizer = createTokenAuthorizer({
     rules: [
       {
@@ -165,7 +165,7 @@ it("returns the same result for the same request", () => {
   );
 });
 
-it("returns a different results for different requests", () => {
+it("doesn't re-use results for different requests", () => {
   const authorizer = createTokenAuthorizer({
     rules: [
       {
@@ -211,7 +211,7 @@ it("returns a different results for different requests", () => {
   );
 });
 
-it("throws if the requested permissions are empty", () => {
+it("rejects empty requested permissions", () => {
   const authorizer = createTokenAuthorizer({ rules: [] });
 
   expect(
@@ -276,7 +276,7 @@ it("throws if the requested permissions are empty", () => {
   ).toMatchInlineSnapshot(`"No permissions requested"`);
 });
 
-it('throws if the requested permissions are all "none"', () => {
+it('rejects requests where all permissions are "none"', () => {
   const authorizer = createTokenAuthorizer({ rules: [] });
 
   expect(
