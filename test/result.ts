@@ -10,23 +10,71 @@ import type {
 } from "../src/type/token-auth-result.js";
 import { createTestSecretDec, createTestTokenDec } from "./declaration.js";
 
-type TokenAuthResultOverrides = Partial<
-  Omit<TokenAuthResultNoRepos, "type"> &
-    Omit<TokenAuthResultAllRepos, "type"> &
-    Omit<TokenAuthResultSelectedRepos, "type">
-> & {
-  type?: TokenAuthResult["type"];
-};
-
-export function createTestTokenAuthResultAllowed(
-  result: TokenAuthResultOverrides = {},
+export function createTestTokenAuthResult(): TokenAuthResultAllRepos;
+export function createTestTokenAuthResult(
+  result: Partial<TokenAuthResultAllRepos> & { type: "ALL_REPOS" },
+): TokenAuthResultAllRepos;
+export function createTestTokenAuthResult(
+  result: Partial<TokenAuthResultNoRepos> & { type: "NO_REPOS" },
+): TokenAuthResultNoRepos;
+export function createTestTokenAuthResult(
+  result: Partial<TokenAuthResultSelectedRepos> & { type: "SELECTED_REPOS" },
+): TokenAuthResultSelectedRepos;
+export function createTestTokenAuthResult(
+  result: Partial<TokenAuthResult>,
+): TokenAuthResult;
+export function createTestTokenAuthResult(
+  result: Partial<TokenAuthResult> = { type: "ALL_REPOS" },
 ): TokenAuthResult {
+  const { type = "ALL_REPOS", isAllowed = true, ...overrides } = result;
+
+  if (type === "SELECTED_REPOS") {
+    return {
+      type: "SELECTED_REPOS",
+      ...(isAllowed
+        ? { isAllowed: true, isSufficient: true }
+        : { isAllowed: false, isSufficient: false }),
+      isMissingRole: false,
+      maxWant: "read",
+      request: {
+        consumer: { account: "account-a" },
+        repos: "all",
+        tokenDec: createTestTokenDec({ permissions: { metadata: "read" } }),
+      },
+      results: {
+        "repo-a": { rules: [], have: { metadata: "read" }, isSufficient: true },
+      },
+      isMatched: true,
+      ...overrides,
+    };
+  }
+
+  if (type === "NO_REPOS") {
+    return {
+      type: "NO_REPOS",
+      have: { metadata: "read" },
+      ...(isAllowed
+        ? { isAllowed: true, isSufficient: true }
+        : { isAllowed: false, isSufficient: false }),
+      isMissingRole: false,
+      maxWant: "read",
+      request: {
+        consumer: { account: "account-a" },
+        repos: "all",
+        tokenDec: createTestTokenDec({ permissions: { metadata: "read" } }),
+      },
+      rules: [],
+      ...overrides,
+    };
+  }
+
   return {
     type: "ALL_REPOS",
     have: { metadata: "read" },
-    isAllowed: true,
+    ...(isAllowed
+      ? { isAllowed: true, isSufficient: true }
+      : { isAllowed: false, isSufficient: false }),
     isMissingRole: false,
-    isSufficient: true,
     maxWant: "read",
     request: {
       consumer: { account: "account-a" },
@@ -34,28 +82,8 @@ export function createTestTokenAuthResultAllowed(
       tokenDec: createTestTokenDec({ permissions: { metadata: "read" } }),
     },
     rules: [],
-    ...result,
-  } as TokenAuthResult;
-}
-
-export function createTestTokenAuthResultNotAllowed(
-  result: TokenAuthResultOverrides = {},
-): TokenAuthResult {
-  return {
-    type: "ALL_REPOS",
-    have: {},
-    isAllowed: false,
-    isMissingRole: false,
-    isSufficient: false,
-    maxWant: "read",
-    request: {
-      consumer: { account: "account-a" },
-      repos: "all",
-      tokenDec: createTestTokenDec({ permissions: { metadata: "read" } }),
-    },
-    rules: [],
-    ...result,
-  } as TokenAuthResult;
+    ...overrides,
+  };
 }
 
 export function createTestProvisionAuthTargetResultAllowed(
@@ -69,7 +97,7 @@ export function createTestProvisionAuthTargetResultAllowed(
     },
     rules: [],
     have: "allow",
-    tokenAuthResult: createTestTokenAuthResultAllowed(),
+    tokenAuthResult: createTestTokenAuthResult(),
     isTokenAllowed: true,
     isProvisionAllowed: true,
     isAllowed: true,
@@ -88,7 +116,7 @@ export function createTestProvisionAuthTargetResultNotAllowed(
     },
     rules: [],
     have: "deny",
-    tokenAuthResult: createTestTokenAuthResultAllowed(),
+    tokenAuthResult: createTestTokenAuthResult(),
     isTokenAllowed: true,
     isProvisionAllowed: false,
     isAllowed: false,

@@ -18,10 +18,7 @@ import {
   createTestInstallationAccount,
   createTestInstallationRepo,
 } from "../test/github-api.js";
-import {
-  createTestTokenAuthResultAllowed,
-  createTestTokenAuthResultNotAllowed,
-} from "../test/result.js";
+import { createTestTokenAuthResult } from "../test/result.js";
 import {
   createAppRegistry,
   type AppRegistration,
@@ -105,7 +102,7 @@ it("creates read-only tokens", async () => {
   __addInstallationToken(111, "all", { metadata: "read" });
   const createTokens = createTokenFactory(findIssuerOctokit);
 
-  const createdResult = createTestTokenAuthResultAllowed({
+  const createdResult = createTestTokenAuthResult({
     request: {
       consumer: { account: "account-a" },
       tokenDec: createTestTokenDec(),
@@ -173,7 +170,7 @@ it("creates write tokens", async () => {
 
   const createTokens = createTokenFactory(findIssuerOctokit);
 
-  const authResult = createTestTokenAuthResultAllowed({
+  const authResult = createTestTokenAuthResult({
     request: {
       consumer: { account: "consumer-a" },
       tokenDec: createTestTokenDec({
@@ -251,7 +248,7 @@ it("creates admin tokens", async () => {
   });
   const createTokens = createTokenFactory(findIssuerOctokit);
 
-  const authResult = createTestTokenAuthResultAllowed({
+  const authResult = createTestTokenAuthResult({
     request: {
       consumer: { account: "consumer-a" },
       tokenDec: createTestTokenDec({
@@ -326,7 +323,7 @@ it("creates account-only tokens", async () => {
   __addInstallationToken(111, [], { organization_administration: "admin" });
   const createTokens = createTokenFactory(findIssuerOctokit);
 
-  const authResult = createTestTokenAuthResultAllowed({
+  const authResult = createTestTokenAuthResult({
     type: "NO_REPOS",
     request: {
       consumer: { account: "consumer-a" },
@@ -402,7 +399,7 @@ it("creates all-repos tokens", async () => {
 
   const createTokens = createTokenFactory(findIssuerOctokit);
 
-  const authResult = createTestTokenAuthResultAllowed({
+  const authResult = createTestTokenAuthResult({
     request: {
       consumer: { account: "consumer-a" },
       tokenDec: createTestTokenDec(),
@@ -471,7 +468,7 @@ it("creates selected-repos tokens", async () => {
 
   const createTokens = createTokenFactory(findIssuerOctokit);
 
-  const authResult = createTestTokenAuthResultAllowed({
+  const authResult = createTestTokenAuthResult({
     type: "SELECTED_REPOS",
     request: {
       consumer: { account: "consumer-a" },
@@ -550,7 +547,7 @@ it('ignores permissions with "none" access level', async () => {
   __addInstallationToken(111, "all", { contents: "none", metadata: "read" });
   const createTokens = createTokenFactory(findIssuerOctokit);
 
-  const authResult = createTestTokenAuthResultAllowed({
+  const authResult = createTestTokenAuthResult({
     request: {
       consumer: { account: "consumer-a" },
       tokenDec: createTestTokenDec({
@@ -620,21 +617,21 @@ it("reuses one token for identical requests", async () => {
 
   const createTokens = createTokenFactory(findIssuerOctokit);
 
-  const consumerAResult = createTestTokenAuthResultAllowed({
+  const consumerAResult = createTestTokenAuthResult({
     request: {
       consumer: { account: "consumer-a" },
       tokenDec: createTestTokenDec(),
       repos: "all",
     },
   });
-  const consumerBResult = createTestTokenAuthResultAllowed({
+  const consumerBResult = createTestTokenAuthResult({
     request: {
       consumer: { account: "consumer-b" },
       tokenDec: createTestTokenDec(),
       repos: "all",
     },
   });
-  const consumerCResult = createTestTokenAuthResultAllowed({
+  const consumerCResult = createTestTokenAuthResult({
     request: {
       consumer: { account: "consumer-c" },
       tokenDec: createTestTokenDec(),
@@ -678,14 +675,14 @@ it("reuses the same no-issuer outcome for identical requests", async () => {
   );
   const createTokens = createTokenFactory(findIssuerOctokit);
 
-  const authResultA = createTestTokenAuthResultAllowed({
+  const authResultA = createTestTokenAuthResult({
     request: {
       consumer: { account: "consumer-a" },
       tokenDec: createTestTokenDec(),
       repos: "all",
     },
   });
-  const authResultB = createTestTokenAuthResultAllowed({
+  const authResultB = createTestTokenAuthResult({
     request: {
       consumer: { account: "consumer-b" },
       tokenDec: createTestTokenDec(),
@@ -768,14 +765,14 @@ it("reuses the same failure outcome for identical requests", async () => {
   const createTokens = createTokenFactory(findIssuerOctokit);
 
   // RequestError deduping
-  const authResultA = createTestTokenAuthResultAllowed({
+  const authResultA = createTestTokenAuthResult({
     request: {
       consumer: { account: "consumer-a" },
       tokenDec: createTestTokenDec(),
       repos: "all",
     },
   });
-  const authResultB = createTestTokenAuthResultAllowed({
+  const authResultB = createTestTokenAuthResult({
     request: {
       consumer: { account: "consumer-b" },
       tokenDec: createTestTokenDec(),
@@ -784,7 +781,7 @@ it("reuses the same failure outcome for identical requests", async () => {
   });
 
   // Non-RequestError deduping (different permissions = different cache key)
-  const authResultC = createTestTokenAuthResultAllowed({
+  const authResultC = createTestTokenAuthResult({
     request: {
       consumer: { account: "consumer-a" },
       tokenDec: createTestTokenDec({ permissions: { contents: "read" } }),
@@ -792,7 +789,7 @@ it("reuses the same failure outcome for identical requests", async () => {
     },
     have: { contents: "read" },
   });
-  const authResultD = createTestTokenAuthResultAllowed({
+  const authResultD = createTestTokenAuthResult({
     request: {
       consumer: { account: "consumer-b" },
       tokenDec: createTestTokenDec({ permissions: { contents: "read" } }),
@@ -906,14 +903,14 @@ it("creates separate tokens when the requested account is different", async () =
 
   const createTokens = createTokenFactory(findIssuerOctokit);
 
-  const accountAResult = createTestTokenAuthResultAllowed({
+  const accountAResult = createTestTokenAuthResult({
     request: {
       consumer: { account: "consumer-a" },
       tokenDec: createTestTokenDec(),
       repos: "all",
     },
   });
-  const accountBResult = createTestTokenAuthResultAllowed({
+  const accountBResult = createTestTokenAuthResult({
     request: {
       consumer: { account: "consumer-a" },
       tokenDec: createTestTokenDec({ account: "account-b" }),
@@ -989,7 +986,7 @@ it("creates separate tokens when the requested role is different", async () => {
 
   const createTokens = createTokenFactory(findIssuerOctokit);
 
-  const roleAResult = createTestTokenAuthResultAllowed({
+  const roleAResult = createTestTokenAuthResult({
     request: {
       consumer: { account: "account-a" },
       tokenDec: createTestTokenDec({
@@ -1001,7 +998,7 @@ it("creates separate tokens when the requested role is different", async () => {
     maxWant: "write",
     have: { contents: "write" },
   });
-  const roleBResult = createTestTokenAuthResultAllowed({
+  const roleBResult = createTestTokenAuthResult({
     request: {
       consumer: { account: "account-a" },
       tokenDec: createTestTokenDec({
@@ -1086,8 +1083,8 @@ it("creates separate tokens when requested permissions are different", async () 
 
   const createTokens = createTokenFactory(findIssuerOctokit);
 
-  const metadataResult = createTestTokenAuthResultAllowed();
-  const contentsResult = createTestTokenAuthResultAllowed({
+  const metadataResult = createTestTokenAuthResult();
+  const contentsResult = createTestTokenAuthResult({
     request: {
       consumer: { account: "account-a" },
       tokenDec: createTestTokenDec({ permissions: { contents: "read" } }),
@@ -1165,8 +1162,8 @@ it("creates separate tokens when requested repository access is different", asyn
 
   const createTokens = createTokenFactory(findIssuerOctokit);
 
-  const allReposResult = createTestTokenAuthResultAllowed();
-  const selectedReposResult = createTestTokenAuthResultAllowed({
+  const allReposResult = createTestTokenAuthResult();
+  const selectedReposResult = createTestTokenAuthResult({
     type: "SELECTED_REPOS",
     request: {
       consumer: { account: "account-a" },
@@ -1248,7 +1245,8 @@ it("doesn't create tokens when not allowed", async () => {
   __setInstallations([[appAInstallationA, [repoA]]]);
   const createTokens = createTokenFactory(findIssuerOctokit);
 
-  const notAllowedResult = createTestTokenAuthResultNotAllowed({
+  const notAllowedResult = createTestTokenAuthResult({
+    isAllowed: false,
     maxWant: "write",
     have: { metadata: "read" },
   });
@@ -1312,7 +1310,8 @@ it("shows separate explanations for non-allowed tokens", async () => {
   __setInstallations([[appAInstallationA, [repoA]]]);
   const createTokens = createTokenFactory(findIssuerOctokit);
 
-  const notAllowedResultA = createTestTokenAuthResultNotAllowed({
+  const notAllowedResultA = createTestTokenAuthResult({
+    isAllowed: false,
     request: {
       consumer: { account: "account-x" },
       tokenDec: createTestTokenDec(),
@@ -1321,7 +1320,8 @@ it("shows separate explanations for non-allowed tokens", async () => {
     maxWant: "write",
     have: { metadata: "read" },
   });
-  const notAllowedResultB = createTestTokenAuthResultNotAllowed({
+  const notAllowedResultB = createTestTokenAuthResult({
+    isAllowed: false,
     request: {
       consumer: { account: "account-y", repo: "repo-y" },
       tokenDec: createTestTokenDec(),
@@ -1402,7 +1402,8 @@ it("explains when no permissions were requested", async () => {
   __setInstallations([[appAInstallationA, [repoA]]]);
   const createTokens = createTokenFactory(findIssuerOctokit);
 
-  const emptyPermissionsResult = createTestTokenAuthResultNotAllowed({
+  const emptyPermissionsResult = createTestTokenAuthResult({
+    isAllowed: false,
     request: {
       consumer: { account: "consumer-a" },
       tokenDec: createTestTokenDec({ permissions: {} }),
@@ -1411,7 +1412,8 @@ it("explains when no permissions were requested", async () => {
   });
 
   // Also applies when all permissions have explicit "none" access levels
-  const allNonePermissionsResult = createTestTokenAuthResultNotAllowed({
+  const allNonePermissionsResult = createTestTokenAuthResult({
+    isAllowed: false,
     request: {
       consumer: { account: "consumer-b" },
       tokenDec: createTestTokenDec({
@@ -1456,7 +1458,7 @@ it("fails when no suitable issuer can create the token", async () => {
 
   const createTokens = createTokenFactory(findIssuerOctokit);
 
-  const noIssuerResult = createTestTokenAuthResultAllowed({
+  const noIssuerResult = createTestTokenAuthResult({
     request: {
       consumer: { account: "account-a" },
       tokenDec: createTestTokenDec({ account: "account-b" }),
@@ -1528,7 +1530,7 @@ it("explains failures caused by GitHub API errors", async () => {
 
   const createTokens = createTokenFactory(findIssuerOctokit);
 
-  const allReposAuthResult = createTestTokenAuthResultAllowed({
+  const allReposAuthResult = createTestTokenAuthResult({
     request: {
       consumer: { account: "consumer-a" },
       tokenDec: createTestTokenDec(),
@@ -1536,7 +1538,7 @@ it("explains failures caused by GitHub API errors", async () => {
     },
   });
 
-  const selectedReposAuthResult = createTestTokenAuthResultAllowed({
+  const selectedReposAuthResult = createTestTokenAuthResult({
     type: "SELECTED_REPOS",
     request: {
       consumer: { account: "consumer-a" },
@@ -1628,7 +1630,7 @@ it("explains failures caused by unexpected errors", async () => {
 
   const createTokens = createTokenFactory(findIssuerOctokit);
 
-  const authResult = createTestTokenAuthResultAllowed({
+  const authResult = createTestTokenAuthResult({
     request: {
       consumer: { account: "consumer-a" },
       tokenDec: createTestTokenDec(),

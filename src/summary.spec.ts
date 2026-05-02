@@ -9,8 +9,7 @@ import {
   createTestProvisionAuthResultNotAllowed,
   createTestProvisionAuthTargetResultAllowed,
   createTestProvisionAuthTargetResultNotAllowed,
-  createTestTokenAuthResultAllowed,
-  createTestTokenAuthResultNotAllowed,
+  createTestTokenAuthResult,
 } from "../test/result.js";
 import type { AuthorizeResult } from "./authorizer.js";
 import type { ProvisionRequestTarget } from "./provision-request.js";
@@ -34,7 +33,7 @@ it("renders a summary with all secrets provisioned", async () => {
     target: { account: "account-a" },
   };
 
-  const tokenAuthResultA = createTestTokenAuthResultAllowed({
+  const tokenAuthResultA = createTestTokenAuthResult({
     request: {
       consumer: { account: "account-a" },
       repos: "all",
@@ -44,7 +43,7 @@ it("renders a summary with all secrets provisioned", async () => {
     maxWant: "read",
   });
 
-  const tokenAuthResultB = createTestTokenAuthResultAllowed({
+  const tokenAuthResultB = createTestTokenAuthResult({
     request: {
       consumer: { account: "account-a" },
       repos: "all",
@@ -160,7 +159,7 @@ it("renders a summary with some secrets denied", async () => {
     target: { account: "account-a" },
   };
 
-  const tokenAuthResultA = createTestTokenAuthResultAllowed({
+  const tokenAuthResultA = createTestTokenAuthResult({
     request: {
       consumer: { account: "account-a" },
       repos: "all",
@@ -170,7 +169,7 @@ it("renders a summary with some secrets denied", async () => {
     maxWant: "read",
   });
 
-  const tokenAuthResultB = createTestTokenAuthResultAllowed({
+  const tokenAuthResultB = createTestTokenAuthResult({
     request: {
       consumer: { account: "account-a" },
       repos: "all",
@@ -286,7 +285,8 @@ it("renders a summary with all secrets denied", async () => {
     target: { account: "account-a" },
   };
 
-  const tokenAuthResultA = createTestTokenAuthResultNotAllowed({
+  const tokenAuthResultA = createTestTokenAuthResult({
+    isAllowed: false,
     request: {
       consumer: { account: "account-a" },
       repos: "all",
@@ -390,7 +390,7 @@ it("renders a summary with environment targets", async () => {
     target: { account: "account-a", repo: "repo-a", environment: "env-a" },
   };
 
-  const tokenAuthResultA = createTestTokenAuthResultAllowed({
+  const tokenAuthResultA = createTestTokenAuthResult({
     request: {
       consumer: { account: "account-a", repo: "repo-a" },
       repos: "all",
@@ -469,7 +469,7 @@ it("renders a summary with multiple requesters", async () => {
     target: { account: "account-a" },
   };
 
-  const tokenAuthResultA = createTestTokenAuthResultAllowed({
+  const tokenAuthResultA = createTestTokenAuthResult({
     request: {
       consumer: { account: "account-a" },
       repos: "all",
@@ -479,7 +479,7 @@ it("renders a summary with multiple requesters", async () => {
     maxWant: "read",
   });
 
-  const tokenAuthResultB = createTestTokenAuthResultAllowed({
+  const tokenAuthResultB = createTestTokenAuthResult({
     request: {
       consumer: { account: "account-a" },
       repos: "all",
@@ -595,7 +595,7 @@ it("renders a summary with a missing token declaration", async () => {
     target: { account: "account-a" },
   };
 
-  const tokenAuthResultA = createTestTokenAuthResultAllowed({
+  const tokenAuthResultA = createTestTokenAuthResult({
     request: {
       consumer: { account: "account-a" },
       repos: "all",
@@ -705,7 +705,7 @@ it("renders a summary with an unshared token declaration", async () => {
     target: { account: "account-a" },
   };
 
-  const tokenAuthResultA = createTestTokenAuthResultAllowed({
+  const tokenAuthResultA = createTestTokenAuthResult({
     request: {
       consumer: { account: "account-a" },
       repos: "all",
@@ -815,7 +815,7 @@ it("renders a summary with missing targets", async () => {
     target: { account: "account-a" },
   };
 
-  const tokenAuthResultA = createTestTokenAuthResultAllowed({
+  const tokenAuthResultA = createTestTokenAuthResult({
     request: {
       consumer: { account: "account-a" },
       repos: "all",
@@ -928,7 +928,7 @@ it("renders a summary with multiple distinct targets", async () => {
     target: { account: "account-b" },
   };
 
-  const tokenAuthResultA = createTestTokenAuthResultAllowed({
+  const tokenAuthResultA = createTestTokenAuthResult({
     request: {
       consumer: { account: "account-a" },
       repos: "all",
@@ -1083,7 +1083,8 @@ it("renders a failure reason when tokens aren't allowed", async () => {
     target: { account: "account-a" },
   };
 
-  const tokenAuthResult = createTestTokenAuthResultNotAllowed({
+  const tokenAuthResult = createTestTokenAuthResult({
+    isAllowed: false,
     request: {
       consumer: { account: "account-a" },
       repos: "all",
@@ -1153,7 +1154,7 @@ it("renders a failure reason when no suitable issuer is found", async () => {
     target: { account: "account-a" },
   };
 
-  const tokenAuthResult = createTestTokenAuthResultAllowed({
+  const tokenAuthResult = createTestTokenAuthResult({
     request: {
       consumer: { account: "account-a" },
       repos: "all",
@@ -1225,7 +1226,7 @@ it("renders a failure reason when token issuance fails", async () => {
     target: { account: "account-a" },
   };
 
-  const tokenAuthResult = createTestTokenAuthResultAllowed({
+  const tokenAuthResult = createTestTokenAuthResult({
     request: {
       consumer: { account: "account-a" },
       repos: "all",
@@ -1297,7 +1298,7 @@ it("renders a failure reason when no suitable provisioner is found", async () =>
     target: { account: "account-a" },
   };
 
-  const tokenAuthResult = createTestTokenAuthResultAllowed({
+  const tokenAuthResult = createTestTokenAuthResult({
     request: {
       consumer: { account: "account-a" },
       repos: "all",
@@ -1378,7 +1379,7 @@ it("renders a failure reason when provisioning has no target results", async () 
     target: { account: "account-a" },
   };
 
-  const tokenAuthResult = createTestTokenAuthResultAllowed({
+  const tokenAuthResult = createTestTokenAuthResult({
     request: {
       consumer: { account: "account-a" },
       repos: "all",
@@ -1465,7 +1466,7 @@ it("renders a failure reason when provisioning partially fails across targets", 
     target: { account: "account-b" },
   };
 
-  const tokenAuthResult = createTestTokenAuthResultAllowed({
+  const tokenAuthResult = createTestTokenAuthResult({
     request: {
       consumer: { account: "account-a" },
       repos: "all",
@@ -1553,7 +1554,7 @@ it("renders a failure reason when provisioning fails for all targets", async () 
     target: { account: "account-a" },
   };
 
-  const tokenAuthResult = createTestTokenAuthResultAllowed({
+  const tokenAuthResult = createTestTokenAuthResult({
     request: {
       consumer: { account: "account-a" },
       repos: "all",

@@ -33,7 +33,7 @@ import {
   createTestProvisionAuthResultNotAllowed,
   createTestProvisionAuthTargetResultAllowed,
   createTestProvisionAuthTargetResultNotAllowed,
-  createTestTokenAuthResultAllowed,
+  createTestTokenAuthResult,
 } from "../test/result.js";
 import {
   createAppRegistry,
@@ -105,8 +105,8 @@ const secretDecB = createTestSecretDec({
   github: { repos: { "account-a/repo-a": { codespaces: true } } },
 });
 
-const tokenAuthResultA = createTestTokenAuthResultAllowed();
-const tokenAuthResultB = createTestTokenAuthResultAllowed();
+const tokenAuthResultA = createTestTokenAuthResult();
+const tokenAuthResultB = createTestTokenAuthResult();
 
 const tokenCreationResultCreatedA: TokenCreationResult = {
   type: "CREATED",

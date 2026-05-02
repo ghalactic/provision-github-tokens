@@ -28,7 +28,7 @@ import {
 import { createTestKeyPair } from "../test/key.js";
 import {
   createTestProvisionAuthTargetResultAllowed,
-  createTestTokenAuthResultAllowed,
+  createTestTokenAuthResult,
 } from "../test/result.js";
 import {
   createAppRegistry,
@@ -82,7 +82,7 @@ const secretDecA = createTestSecretDec({
   github: { accounts: { "account-a": { actions: true } } },
 });
 
-const tokenAuthResultA = createTestTokenAuthResultAllowed();
+const tokenAuthResultA = createTestTokenAuthResult();
 
 const tokenCreationResultCreatedA: TokenCreationResult = {
   type: "CREATED",
