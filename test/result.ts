@@ -2,12 +2,25 @@ import type {
   ProvisionAuthResult,
   ProvisionAuthTargetResult,
 } from "../src/type/provision-auth-result.js";
-import type { TokenAuthResultAllRepos } from "../src/type/token-auth-result.js";
+import type {
+  TokenAuthResult,
+  TokenAuthResultAllRepos,
+  TokenAuthResultNoRepos,
+  TokenAuthResultSelectedRepos,
+} from "../src/type/token-auth-result.js";
 import { createTestSecretDec, createTestTokenDec } from "./declaration.js";
 
+type TokenAuthResultOverrides = Partial<
+  Omit<TokenAuthResultNoRepos, "type"> &
+    Omit<TokenAuthResultAllRepos, "type"> &
+    Omit<TokenAuthResultSelectedRepos, "type">
+> & {
+  type?: TokenAuthResult["type"];
+};
+
 export function createTestTokenAuthResultAllowed(
-  result: Partial<TokenAuthResultAllRepos> = {},
-): TokenAuthResultAllRepos {
+  result: TokenAuthResultOverrides = {},
+): TokenAuthResult {
   return {
     type: "ALL_REPOS",
     have: { metadata: "read" },
@@ -22,12 +35,12 @@ export function createTestTokenAuthResultAllowed(
     },
     rules: [],
     ...result,
-  };
+  } as TokenAuthResult;
 }
 
 export function createTestTokenAuthResultNotAllowed(
-  result: Partial<TokenAuthResultAllRepos> = {},
-): TokenAuthResultAllRepos {
+  result: TokenAuthResultOverrides = {},
+): TokenAuthResult {
   return {
     type: "ALL_REPOS",
     have: {},
@@ -42,7 +55,7 @@ export function createTestTokenAuthResultNotAllowed(
     },
     rules: [],
     ...result,
-  };
+  } as TokenAuthResult;
 }
 
 export function createTestProvisionAuthTargetResultAllowed(

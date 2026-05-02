@@ -339,7 +339,7 @@ it("creates account-only tokens", async () => {
     },
     maxWant: "admin",
     have: { organization_administration: "admin" },
-  } as never);
+  });
 
   await createTokens([authResult]);
 
@@ -485,7 +485,7 @@ it("creates selected-repos tokens", async () => {
       "repo-b": { rules: [], have: { metadata: "read" }, isSufficient: true },
     },
     isMatched: true,
-  } as never);
+  });
 
   await createTokens([authResult]);
 
@@ -1179,7 +1179,7 @@ it("creates separate tokens when requested repository access is different", asyn
       "repo-a": { rules: [], have: { metadata: "read" }, isSufficient: true },
     },
     isMatched: true,
-  } as never);
+  });
 
   await createTokens([allReposResult, selectedReposResult]);
 
@@ -1549,7 +1549,7 @@ it("explains failures caused by GitHub API errors", async () => {
       "repo-a": { rules: [], have: { metadata: "read" }, isSufficient: true },
     },
     isMatched: true,
-  } as never);
+  });
 
   await createTokens([allReposAuthResult, selectedReposAuthResult]);
 
