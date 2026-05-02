@@ -1,6 +1,7 @@
 import { expect, it } from "vitest";
+import { createTestTokenDec } from "../test/declaration.js";
+import { createTestTokenRequestFactory } from "../test/token-request.js";
 import { createTokenAuthorizer } from "./token-authorizer.js";
-import type { TokenRequest } from "./token-request.js";
 
 it("can list all processed results", () => {
   const authorizer = createTokenAuthorizer({
@@ -20,28 +21,25 @@ it("can list all processed results", () => {
     ],
   });
 
-  const requestA: TokenRequest = {
-    consumer: { account: "account-x" },
-    tokenDec: {
-      shared: false,
+  const createTokenRequest = createTestTokenRequestFactory();
+  const requestA = createTokenRequest(
+    createTestTokenDec({
       as: "role-a",
       account: "account-a",
       repos: "all",
       permissions: { contents: "write", metadata: "read" },
-    },
-    repos: "all",
-  };
-  const requestB: TokenRequest = {
-    consumer: { account: "account-x" },
-    tokenDec: {
-      shared: false,
+    }),
+    { account: "account-x" },
+  );
+  const requestB = createTokenRequest(
+    createTestTokenDec({
       as: "role-a",
       account: "account-a",
       repos: "all",
       permissions: { metadata: "read", contents: "read" },
-    },
-    repos: "all",
-  };
+    }),
+    { account: "account-x" },
+  );
 
   const resultA = authorizer.authorizeToken(requestA);
   const resultB = authorizer.authorizeToken(requestB);
