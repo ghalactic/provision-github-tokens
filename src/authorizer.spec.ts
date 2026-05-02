@@ -8,6 +8,7 @@ import {
   __setApps,
   __setInstallations,
 } from "../__mocks__/@octokit/action.js";
+import { createTestSecretDec } from "../test/declaration.js";
 import { createTestEnvironmentResolver } from "../test/environment-resolver.js";
 import {
   createTestApp,
@@ -29,7 +30,6 @@ import { createTokenDeclarationRegistry } from "./token-declaration-registry.js"
 import type { TokenDeclaration } from "./token-declaration.js";
 import type { PermissionsRule } from "./type/permissions-rule.js";
 import type { ProvisionSecretsRule } from "./type/provision-rule.js";
-import type { SecretDeclaration } from "./type/secret-declaration.js";
 import type { TokenAuthResult } from "./type/token-auth-result.js";
 
 vi.mock("@actions/core");
@@ -143,26 +143,13 @@ it("authorizes all requests and outputs the results", async () => {
     tokenAuthorizer,
   );
 
-  const secretDecA: SecretDeclaration = {
-    token: "account-a/repo-a.tokenA",
-    github: {
-      account: {},
-      accounts: { "account-a": { actions: true } },
-      repo: { environments: [] },
-      repos: {},
-    },
-  };
-  const secretDecB: SecretDeclaration = {
+  const secretDecA = createTestSecretDec({
+    github: { accounts: { "account-a": { actions: true } } },
+  });
+  const secretDecB = createTestSecretDec({
     token: "account-a/repo-a.tokenB",
-    github: {
-      account: {},
-      accounts: {},
-      repo: { environments: [] },
-      repos: {
-        "account-a/repo-a": { actions: true, environments: [] },
-      },
-    },
-  };
+    github: { repos: { "account-a/repo-a": { actions: true } } },
+  });
 
   const result = await authorizer.authorize([
     {
@@ -399,15 +386,9 @@ it("handles empty token requests", async () => {
     tokenAuthorizer,
   );
 
-  const secretDecA: SecretDeclaration = {
-    token: "account-a/repo-a.tokenA",
-    github: {
-      account: {},
-      accounts: { "account-a": { actions: true } },
-      repo: { environments: [] },
-      repos: {},
-    },
-  };
+  const secretDecA = createTestSecretDec({
+    github: { accounts: { "account-a": { actions: true } } },
+  });
 
   const result = await authorizer.authorize([
     {
