@@ -1,7 +1,6 @@
 import openapi from "@octokit/openapi";
-import { writeFile } from "fs/promises";
-import { join } from "path";
-import { fileURLToPath } from "url";
+import { writeFile } from "node:fs/promises";
+import { resolve } from "node:path";
 
 const { permissions } = openapi.schemas["api.github.com.deref"].paths[
   "/app/installations/{installation_id}/access_tokens"
@@ -57,7 +56,7 @@ async function writeSchema(name: string, schema: object) {
   const $id = `https://ghalactic.github.io/provision-github-tokens/schema/${encodeURIComponent(name)}`;
 
   await writeFile(
-    join(fileURLToPath(new URL("../src/schema", import.meta.url)), name),
+    resolve(import.meta.dirname, "../src/schema", name),
     JSON.stringify({ $id, ...schema }, null, 2) + "\n",
   );
 }

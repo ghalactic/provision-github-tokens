@@ -26,7 +26,7 @@ export default defineConfig({
         extends: true,
         test: {
           name: "unit",
-          include: ["test/suite/unit/**/*.spec.ts"],
+          include: ["src/**/*.spec.ts"],
         },
       });
 

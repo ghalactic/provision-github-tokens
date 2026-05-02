@@ -1,0 +1,265 @@
+import { beforeEach, expect, it, vi, type Mock } from "vitest";
+import {
+  __getOutput,
+  __reset as __resetCore,
+} from "../__mocks__/@actions/core.js";
+import {
+  __getEnvSecrets,
+  __reset as __resetOctokit,
+  __setApps,
+  __setEnvironments,
+  __setErrors,
+  __setInstallations,
+  __setRepoKeys,
+} from "../__mocks__/@octokit/action.js";
+import {
+  createTestSecretDec,
+  createTestTokenDec,
+} from "../test/declaration.js";
+import {
+  createTestApp,
+  createTestInstallation,
+  createTestInstallationAccount,
+  createTestInstallationRepo,
+  createTestRepoEnvironment,
+} from "../test/github-api.js";
+import { createTestKeyPair } from "../test/key.js";
+import { createTestProvisionAuthTargetResultAllowed } from "../test/result.js";
+import {
+  createAppRegistry,
+  type AppRegistration,
+  type InstallationRegistration,
+} from "./app-registry.js";
+import { createEncryptSecret, type EncryptSecret } from "./encrypt-secret.js";
+import { createOctokitFactory } from "./octokit.js";
+import type { ProvisionRequestTarget } from "./provision-request.js";
+import { createFindProvisionerOctokit } from "./provisioner-octokit.js";
+import { createProvisioner, type Provisioner } from "./provisioner.js";
+import type { ProvisionAuthResult } from "./type/provision-auth-result.js";
+import type { TokenAuthResult } from "./type/token-auth-result.js";
+import type { TokenCreationResult } from "./type/token-creation-result.js";
+
+vi.mock("@actions/core");
+vi.mock("@octokit/action");
+
+const accountA = createTestInstallationAccount(
+  "Organization",
+  100,
+  "account-a",
+);
+const repoA = createTestInstallationRepo(accountA, "repo-a");
+const envA = createTestRepoEnvironment("env-a");
+const appA = createTestApp(110, "app-a", "App A");
+const appRegA: AppRegistration = {
+  app: appA,
+  issuer: { enabled: false, roles: [] },
+  provisioner: { enabled: true },
+};
+const appAInstallationA = createTestInstallation(
+  111,
+  appA,
+  accountA,
+  "selected",
+);
+const appAInstallationRegA: InstallationRegistration = {
+  installation: appAInstallationA,
+  repos: [repoA],
+};
+
+const accountARepoAEnvAKey = await createTestKeyPair(
+  "environment.account-a/repo-a/env-a",
+);
+
+const tokenDecA = createTestTokenDec({ permissions: { metadata: "read" } });
+
+const secretDecA = createTestSecretDec({
+  github: { accounts: { "account-a": { actions: true } } },
+});
+
+const tokenAuthResultA: TokenAuthResult = {
+  type: "ALL_REPOS",
+  have: { metadata: "read" },
+  isAllowed: true,
+  isMissingRole: false,
+  isSufficient: true,
+  maxWant: "read",
+  request: {
+    consumer: { account: "account-a" },
+    repos: "all",
+    tokenDec: tokenDecA,
+  },
+  rules: [],
+};
+
+const tokenCreationResultCreatedA: TokenCreationResult = {
+  type: "CREATED",
+  token: { token: "<token-a>", expires_at: "2001-02-03T04:05:06Z" },
+};
+
+const accountARepoAEnvATarget: ProvisionRequestTarget = {
+  platform: "github",
+  type: "environment",
+  target: { account: "account-a", repo: "repo-a", environment: "env-a" },
+};
+
+let encryptSecret: Mock<EncryptSecret>;
+let provisionSecrets: Provisioner;
+
+beforeEach(() => {
+  __resetCore();
+  __resetOctokit();
+
+  __setApps([appA]);
+  __setInstallations([[appAInstallationA, [repoA]]]);
+  __setEnvironments([[repoA, [envA]]]);
+
+  __setRepoKeys("account-a", "repo-a", {
+    environments: { "env-a": accountARepoAEnvAKey },
+  });
+
+  const octokitFactory = createOctokitFactory();
+
+  const appRegistry = createAppRegistry();
+  appRegistry.registerApp(appRegA);
+  appRegistry.registerInstallation(appAInstallationRegA);
+
+  const findProvisionerOctokit = createFindProvisionerOctokit(
+    octokitFactory,
+    appRegistry,
+    [
+      {
+        appId: appA.id,
+        privateKey: appA.privateKey,
+        issuer: appRegA.issuer,
+        provisioner: appRegA.provisioner,
+      },
+    ],
+  );
+
+  encryptSecret = vi.fn(createEncryptSecret(findProvisionerOctokit));
+
+  provisionSecrets = createProvisioner(findProvisionerOctokit, encryptSecret);
+});
+
+it("handles GitHub API errors when provisioning environment secrets", async () => {
+  encryptSecret.mockResolvedValue(["XXXX", "XXXX"]);
+
+  const tokenResults = new Map<TokenAuthResult, TokenCreationResult>([
+    [tokenAuthResultA, tokenCreationResultCreatedA],
+  ]);
+
+  const allowedResult: ProvisionAuthResult = {
+    request: {
+      requester: { account: "account-a", repo: "repo-a" },
+      tokenDec: tokenDecA,
+      tokenDecIsRegistered: true,
+      secretDec: secretDecA,
+      name: "SECRET_A",
+      to: [accountARepoAEnvATarget],
+    },
+    results: [
+      createTestProvisionAuthTargetResultAllowed({
+        target: accountARepoAEnvATarget,
+        tokenAuthResult: tokenAuthResultA,
+      }),
+    ],
+    isMissingTargets: false,
+    isAllowed: true,
+  };
+
+  await provisionSecrets(tokenResults, [allowedResult]);
+
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "
+    Secret #1:
+
+    ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
+      ❌ Failed to provision to GitHub environment env-a secret in account-a/repo-a: 401 - Unauthorized
+    ::debug::      (no response data)
+
+    "
+  `);
+});
+
+it("handles unexpected errors when provisioning environment secrets", async () => {
+  const error = new Error("<message>");
+  error.stack = "Error: <message>\n    at provisioner.ts:1:1";
+  __setErrors("actions.createOrUpdateEnvironmentSecret", [error]);
+
+  const tokenResults = new Map<TokenAuthResult, TokenCreationResult>([
+    [tokenAuthResultA, tokenCreationResultCreatedA],
+  ]);
+
+  const allowedResult: ProvisionAuthResult = {
+    request: {
+      requester: { account: "account-a", repo: "repo-a" },
+      tokenDec: tokenDecA,
+      tokenDecIsRegistered: true,
+      secretDec: secretDecA,
+      name: "SECRET_A",
+      to: [accountARepoAEnvATarget],
+    },
+    results: [
+      createTestProvisionAuthTargetResultAllowed({
+        target: accountARepoAEnvATarget,
+        tokenAuthResult: tokenAuthResultA,
+      }),
+    ],
+    isMissingTargets: false,
+    isAllowed: true,
+  };
+
+  await provisionSecrets(tokenResults, [allowedResult]);
+
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "
+    Secret #1:
+
+    ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
+      ❌ Failed to provision to GitHub environment env-a secret in account-a/repo-a: <message>
+    ::debug::      Error: <message>
+    ::debug::          at provisioner.ts:1:1
+
+    "
+  `);
+});
+
+it("can provision environment secrets", async () => {
+  const tokenResults = new Map<TokenAuthResult, TokenCreationResult>([
+    [tokenAuthResultA, tokenCreationResultCreatedA],
+  ]);
+
+  const allowedResult: ProvisionAuthResult = {
+    request: {
+      requester: { account: "account-a", repo: "repo-a" },
+      tokenDec: tokenDecA,
+      tokenDecIsRegistered: true,
+      secretDec: secretDecA,
+      name: "SECRET_A",
+      to: [accountARepoAEnvATarget],
+    },
+    results: [
+      createTestProvisionAuthTargetResultAllowed({
+        target: accountARepoAEnvATarget,
+        tokenAuthResult: tokenAuthResultA,
+      }),
+    ],
+    isMissingTargets: false,
+    isAllowed: true,
+  };
+
+  await provisionSecrets(tokenResults, [allowedResult]);
+
+  expect(__getEnvSecrets("account-a", "repo-a", "env-a")).toEqual({
+    SECRET_A: "<token-a>",
+  });
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "
+    Secret #1:
+
+    ✅ Secret SECRET_A was provisioned for repo account-a/repo-a:
+      ✅ Provisioned to GitHub environment env-a secret in account-a/repo-a
+
+    "
+  `);
+});

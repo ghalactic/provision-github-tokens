@@ -15,7 +15,7 @@ make test     # Run all Vitest tests
 make coverage # Run tests with coverage reports
 
 # Run a single test file
-npm exec -- vitest --run test/suite/unit/token-factory.spec.ts
+npm exec -- vitest --run src/token-factory.spec.ts
 
 # Run tests matching a name pattern
 npm exec -- vitest --run -t "pattern"
@@ -84,7 +84,7 @@ All Markdown should read well in both raw text and rendered HTML.
 
 - **Vitest** with two projects: `unit` (always runs) and `e2e` (only in GitHub
   Actions)
-- Unit tests live in `test/suite/unit/` mirroring `src/` structure
+- Unit tests are co-located in `src/` as `*.spec.ts` files
 - Test data factories in `test/github-api.ts` — use `openapi-sampler` against
   the actual GitHub OpenAPI spec to create realistic `TestApp`,
   `TestInstallation`, `TestRepo`, `TestEnvironment` objects

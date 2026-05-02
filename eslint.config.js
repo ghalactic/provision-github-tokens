@@ -54,7 +54,7 @@ export default defineConfig(
     },
   },
   {
-    files: ["test/**/*.ts", "__mocks__/**/*.ts"],
+    files: ["__mocks__/**/*.ts", "src/**/*.spec.ts", "test/**/*.ts"],
     rules: {
       // Relax naming convention for test files
       "@typescript-eslint/naming-convention": [
