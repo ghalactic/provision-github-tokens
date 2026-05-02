@@ -10,7 +10,7 @@ import {
   type InstallationRegistration,
 } from "./app-registry.js";
 
-it("returns all of the provisioners", () => {
+it("has all of the provisioners", () => {
   const orgA = createTestInstallationAccount("Organization", 100, "org-a");
   const appA: AppRegistration = {
     app: createTestApp(110, "app-a", "App A"),

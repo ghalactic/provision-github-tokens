@@ -3,25 +3,25 @@ import { createGitHubPattern } from "./github-pattern.js";
 
 it("doesn't allow empty patterns", () => {
   expect(() => createGitHubPattern("")).toThrow(
-    'GitHub pattern "" account part cannot be empty',
+    `GitHub pattern "" account part can't be empty`,
   );
 });
 
 it("doesn't allow patterns with an empty account", () => {
   expect(() => createGitHubPattern("/repo")).toThrow(
-    'GitHub pattern "/repo" account part cannot be empty',
+    `GitHub pattern "/repo" account part can't be empty`,
   );
 });
 
 it("doesn't allow patterns with an empty repo", () => {
   expect(() => createGitHubPattern("account/")).toThrow(
-    'GitHub pattern "account/" repo part cannot be empty',
+    `GitHub pattern "account/" repo part can't be empty`,
   );
 });
 
 it("doesn't allow patterns with more than one slash", () => {
   expect(() => createGitHubPattern("account/repo/extra")).toThrow(
-    'GitHub pattern "account/repo/extra" cannot have more than one slash',
+    `GitHub pattern "account/repo/extra" can't have more than one slash`,
   );
 });
 
@@ -120,18 +120,18 @@ it("is literal for an account/repo pattern without wildcards", () => {
   expect(createGitHubPattern("account-a/repo-a").isLiteral).toBe(true);
 });
 
-it("is not literal when the account part contains a wildcard", () => {
+it("isn't literal when the account part contains a wildcard", () => {
   expect(createGitHubPattern("account-*").isLiteral).toBe(false);
 });
 
-it("is not literal when the repo part contains a wildcard", () => {
+it("isn't literal when the repo part contains a wildcard", () => {
   expect(createGitHubPattern("account-a/*").isLiteral).toBe(false);
 });
 
-it("is not literal when both parts contain wildcards", () => {
+it("isn't literal when both parts contain wildcards", () => {
   expect(createGitHubPattern("*/*").isLiteral).toBe(false);
 });
 
-it("is not literal for a lone wildcard", () => {
+it("isn't literal for a lone wildcard", () => {
   expect(createGitHubPattern("*").isLiteral).toBe(false);
 });

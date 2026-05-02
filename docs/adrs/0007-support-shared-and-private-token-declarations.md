@@ -17,8 +17,8 @@ namespace conflicts and removes isolation between unrelated repos.
 
 Token declarations have a sharing flag:
 
-- **Private** (default) — only the declaring repo can use the declaration
-- **Shared** — any requester repo can reference and use the declaration
+- **Private** (default): only the declaring repo can use the declaration
+- **Shared**: any requester repo can reference and use the declaration
 
 Declarations are identified by `{owner/repo}.{name}`. When a repo references a
 declaration, the registry checks whether it's shared or whether the reference
@@ -31,7 +31,7 @@ where a central repo defines reusable declarations for others.
 
 - Good, because shared declarations eliminate duplication across repos.
 - Good, because private-by-default prevents accidental exposure.
-- Bad, because shared declarations create coupling between repos — changes to a
+- Bad, because shared declarations create coupling between repos. Changes to a
   shared declaration affect all consumers.
 
 ## Alternatives considered

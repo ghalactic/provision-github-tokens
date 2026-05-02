@@ -368,12 +368,12 @@ it("throws when an invalid secret name is defined", async () => {
       ),
     ),
   ).toMatchInlineSnapshot(`
-      "Parsing of requester configuration failed
+    "Parsing of requester configuration failed
 
-      Caused by: Invalid requester configuration:
-        - must only contain alphanumeric characters or underscores, and cannot begin with a number (/provision/secrets)
-        - property name must be valid (/provision/secrets)"
-    `);
+    Caused by: Invalid requester configuration:
+      - must only contain alphanumeric characters or underscores, and can't begin with a number (/provision/secrets)
+      - property name must be valid (/provision/secrets)"
+  `);
 });
 
 it("throws when a secret token reference has an empty account", async () => {

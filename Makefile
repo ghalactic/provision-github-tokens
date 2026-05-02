@@ -11,8 +11,15 @@ JS_TSC_TYPECHECK_SKIP_LIB := true
 
 ################################################################################
 
+.PHONY: vale
+vale: artifacts/vale/sync.touch
+	vale .
+
+.PHONY: lint
+lint:: vale
+
 .PHONY: precommit
-precommit:: verify-generated
+precommit:: vale verify-generated
 
 ################################################################################
 
@@ -21,3 +28,8 @@ src/schema/generated.requester-token-permissions.v1.schema.json src/schema/gener
 
 dist/main.js dist/main.js.map: script/build.ts artifacts/link-dependencies.touch $(JS_SOURCE_FILES)
 	node "$<" "$@"
+
+artifacts/vale/sync.touch: .vale.ini
+	@mkdir -p "$(@D)"
+	vale sync
+	@touch "$@"

@@ -8,7 +8,7 @@ export function normalizeTokenReference(
   definingRepo: RepoReference,
   reference: string,
 ): string {
-  if (!reference) throw new Error("Token reference cannot be empty");
+  if (!reference) throw new Error("Token reference can't be empty");
 
   const dotIdx = reference.lastIndexOf(".");
 
@@ -29,13 +29,13 @@ export function normalizeTokenReference(
   if (!accountPart) {
     throw new Error(
       `Token reference ${JSON.stringify(reference)} ` +
-        "repo account part cannot be empty",
+        "repo account part can't be empty",
     );
   }
   if (!repoPart) {
     throw new Error(
       `Token reference ${JSON.stringify(reference)} ` +
-        "repo name part cannot be empty",
+        "repo name part can't be empty",
     );
   }
 

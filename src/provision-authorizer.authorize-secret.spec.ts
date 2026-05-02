@@ -854,7 +854,7 @@ it("doesn't allow secrets when no targets are specified", () => {
   `);
 });
 
-it("doesn't allow secrets when the token is not allowed for a target", () => {
+it("doesn't allow secrets when the token isn't allowed for a target", () => {
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({});
   const authorizer = createProvisionAuthorizer(

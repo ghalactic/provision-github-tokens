@@ -50,7 +50,7 @@ it.each`
   ${"read"}  | ${"admin"}
   ${"write"} | ${"admin"}
 `(
-  "knows that $have is not sufficient for $want",
+  "knows that $have isn't sufficient for $want",
   ({ have, want }: { have: PermissionAccess; want: PermissionAccess }) => {
     expect(
       isSufficientPermissions(

@@ -9,7 +9,7 @@ decision-makers: ezzatron
 ## Context and problem statement
 
 When a token declaration requests access to a specific set of repositories, some
-repos may be authorized while others are not. The system must decide whether to
+repos may be authorized while others aren't. The system must decide whether to
 issue a token scoped to only the authorized repos, or to refuse the request
 entirely.
 
@@ -17,7 +17,7 @@ entirely.
 
 Selected-repos token authorization uses all-or-nothing semantics: every
 requested repository must be independently authorized, or the entire token
-request fails. There is no partial success where a token is issued for a subset
+request fails. There's no partial success where a token is issued for a subset
 of the requested repos.
 
 Each repo's permissions are evaluated separately against the rules, and the
@@ -26,8 +26,8 @@ unauthorized repo causes the entire request to be denied.
 
 ## Consequences
 
-- Good, because consumers can rely on getting exactly the repos they declared —
-  there is no silent scope reduction that could cause downstream workflows to
+- Good, because consumers can rely on getting exactly the repos they declared.
+  There's no silent scope reduction that could cause downstream workflows to
   fail in unexpected ways.
 - Good, because authorization failures are surfaced as explicit denials rather
   than silently degraded tokens, making misconfigurations easier to diagnose.
@@ -45,7 +45,7 @@ unauthorized repo causes the entire request to be denied.
 
 ## More information
 
-- Related: [ADR-0017] — the three repository scope categories, of which
+- Related: [ADR-0017]: the three repository scope categories, of which
   selected-repos is one
 
 [adr-0017]:

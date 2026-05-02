@@ -21,8 +21,8 @@ Report based on **actual execution outcomes**, not authorization intent:
 - The job summary reflects final provisioning results. Failed secrets include a
   terse failure reason. Success means every target was provisioned.
 - Detailed per-phase diagnostics (token creation and provisioning) are emitted
-  as structured log output using dedicated explainer modules — the same pattern
-  established for authorization explanations.
+  as structured log output using dedicated explainer modules (the same pattern
+  established for authorization explanations).
 - Debug-level log entries include response bodies (pretty-printed JSON) and
   error stacks, with consistent indentation for multi-line content.
 - Failure reasons follow a fixed precedence so that the most actionable cause
@@ -33,8 +33,8 @@ Report based on **actual execution outcomes**, not authorization intent:
 - Good, because failures are diagnosable from logs without reading source code.
 - Good, because the summary accurately reflects what happened, not what was
   planned.
-- Bad, because log volume increases — mitigated by placing verbose detail at
-  debug level.
+- Bad, because log volume increases. This is mitigated by placing verbose detail
+  at debug level.
 
 ## Alternatives considered
 
@@ -44,8 +44,8 @@ Report based on **actual execution outcomes**, not authorization intent:
 
 ## More information
 
-- [ADR 0009][0009] — established the explainer pattern for authorization.
-- [ADR 0024][0024] — summary size constraint that motivates keeping diagnostics
+- [ADR 0009][0009]: established the explainer pattern for authorization.
+- [ADR 0024][0024]: summary size constraint that motivates keeping diagnostics
   in logs.
 
 [0009]: 0009-generate-human-readable-authorization-explanations.md

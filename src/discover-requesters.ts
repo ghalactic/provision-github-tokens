@@ -53,7 +53,7 @@ export async function discoverRequesters(
       } catch (error) {
         handleRequestError(error, {
           404: () => {
-            debug(`Repo ${r.full_name} is not a requester`);
+            debug(`Repo ${r.full_name} isn't a requester`);
           },
         });
 

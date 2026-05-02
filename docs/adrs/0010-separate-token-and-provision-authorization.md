@@ -18,9 +18,9 @@ provisioning rights, or vice versa.
 
 Authorization is split into two independent checks that must both pass:
 
-1. **Token authorization** — can this requester get a token with these
+1. **Token authorization**: can this requester get a token with these
    permissions for these repos?
-2. **Provision authorization** — can this requester place a secret of this type
+2. **Provision authorization**: can this requester place a secret of this type
    (actions, codespaces, dependabot, environment) at this target?
 
 These are orthogonal: a requester might be allowed to obtain a token but not
@@ -28,7 +28,7 @@ provision it to a particular target, or vice versa. Splitting them gives
 providers fine-grained control over both _what tokens exist_ and _where they end
 up_.
 
-This also reflects the architecture — token issuance and secret provisioning may
+This also reflects the architecture. Token issuance and secret provisioning may
 use different GitHub Apps with different capabilities.
 
 ## Consequences
@@ -42,16 +42,16 @@ use different GitHub Apps with different capabilities.
 ## Alternatives considered
 
 - **Single unified authorization**: can't independently control token
-  permissions vs. secret placement — granting a token implicitly allows
+  permissions vs. secret placement. Granting a token implicitly allows
   provisioning it anywhere.
-- **Provision-only authorization**: can't restrict which tokens exist — any
+- **Provision-only authorization**: can't restrict which tokens exist. Any
   declared token would be created regardless of permissions policy.
 
 ## More information
 
-- Related: [ADR-0008] — provider-controlled trust model defines the token
+- Related: [ADR-0008]: provider-controlled trust model defines the token
   authorization rules
-- Related: [ADR-0011] — the issuer/provisioner split aligns with the two
+- Related: [ADR-0011]: the issuer/provisioner split aligns with the two
   authorization layers
 
 [adr-0008]: 0008-use-provider-controlled-trust-for-token-authorization.md

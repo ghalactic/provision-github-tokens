@@ -31,17 +31,16 @@ make precommit
 
 The build bundles `src/main.ts` → `dist/main.js` using esbuild (via
 `script/build.ts`). Because this is a GitHub Action, GitHub runs `dist/main.js`
-directly — it does not build from source at runtime. The bundled output and
-other generated files (schemas, source maps) **must be committed to the
-repository**. The `GENERATED_FILES` variable in `Makefile` is the authoritative
-list.
+directly — it doesn't build from source at runtime. The bundled output and other
+generated files (schemas, source maps) **must be committed to the repository**.
+The `GENERATED_FILES` variable in `Makefile` is the authoritative list.
 
 After modifying source files, follow this workflow **in order** before
 committing:
 
 1. **Regenerate** — Run `make regenerate` to rebuild all generated files.
 2. **Stage** — Run `git status` to see what changed, then stage the regenerated
-   files. Trust that the generators produce correct output — do not read through
+   files. Trust that the generators produce correct output — don't read through
    generated files to verify them.
 3. **Precommit** — Run `make precommit` to lint, test, and verify that all
    generated files are up to date.
@@ -63,6 +62,10 @@ repos.
 Use **sentence case** for all headings, labels, and prose — never title case.
 The only exception is references to external writing that has its own style
 rules (e.g. a proper noun, a product name, or a title defined elsewhere).
+
+Before writing any documentation, you MUST consult the project's skills
+`technical-writing` and `diataxis` for style and content guidelines. Where the
+skills' guidelines conflict with this file, defer to this file.
 
 ### Markdown
 
@@ -146,7 +149,7 @@ and calls `setFailed()`.
 ADRs live in `docs/adrs/`. **Always use the repo-local ADR skill** at
 `.agents/skills/adr-skill/` when writing or updating ADRs — it encodes all
 project conventions (brevity, sentence case, no file paths, etc.) and walks you
-through the full workflow. Do not use globally installed ADR skills.
+through the full workflow. Don't use globally installed ADR skills.
 
 **ADRs tend to come out too verbose on the first pass.** After completing a new
 ADR, immediately re-read it and cut it down as if a reviewer had said "The new
@@ -165,11 +168,11 @@ proposed changes, surface this to the user before proceeding.
 
 Write commit messages for **human readers**, not automated tooling.
 
-- **Do not use conventional commit prefixes** (e.g. `feat:`, `fix:`, `chore:`)
+- **Don't use conventional commit prefixes** (e.g. `feat:`, `fix:`, `chore:`)
 - **Use the imperative mood** — write as if completing "If applied, this commit
   will \_\_\_" (e.g. "Add error handling", not "Added error handling" or "Adds
   error handling")
-- **Capitalize the subject line** and do not end it with a period
+- **Capitalize the subject line** and don't end it with a period
 - **Limit the subject line to 50 characters** (72 is the hard maximum)
 - **Separate subject from body with a blank line** — a subject-only message is
   fine for most changes
@@ -200,7 +203,7 @@ When asked to address PR review feedback, follow this process:
 - Fetch all review threads on the PR (e.g. via `get_review_comments`).
 - **Skip resolved threads** — they have already been addressed.
 - Identify the PR author — treat their comments as likely coming from the user
-  you are chatting with (they are usually the same person).
+  you're chatting with (they are usually the same person).
 - Collect each unresolved thread into a summary: the file, line range, reviewer
   comment, and any follow-up discussion within the thread.
 
@@ -211,7 +214,7 @@ When asked to address PR review feedback, follow this process:
   resolution approach.
 - Work with the user via chat to decide which items to address and how. The user
   may choose to address all feedback, a subset, or propose alternative
-  resolutions. Do not start implementing until the user has confirmed the
+  resolutions. Don't start implementing until the user has confirmed the
   approach.
 
 #### 3. Implement changes
@@ -232,5 +235,5 @@ When asked to address PR review feedback, follow this process:
   - A reference to the commit SHA in which the feedback was resolved (e.g.
     _"Addressed in <short commit SHA>"_).
 - After replying, **resolve the thread** so it no longer appears as outstanding.
-- Do **not** reply to or resolve threads that were not addressed in this round —
+- Do **not** reply to or resolve threads that weren't addressed in this round —
   leave them for future discussion.

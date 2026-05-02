@@ -419,7 +419,7 @@ it("doesn't provision secrets when no suitable provisioners are found", async ()
   `);
 });
 
-it("reports REQUEST_ERROR when target provisioning returns a GitHub API error", async () => {
+it("doesn't provision secrets when target provisioning fails with a GitHub API error", async () => {
   __setErrors("actions.createOrUpdateOrgSecret", [
     new TestRequestError(403, { message: "Resource not accessible" }),
   ]);
@@ -463,7 +463,7 @@ it("reports REQUEST_ERROR when target provisioning returns a GitHub API error", 
   `);
 });
 
-it("reports ERROR when target provisioning returns an unexpected error", async () => {
+it("doesn't provision secrets when target provisioning fails with an unexpected error", async () => {
   const error = new Error("<message>");
   error.stack = "Error: <message>\\n    at provisioner.ts:1:1";
   __setErrors("actions.createOrUpdateOrgSecret", [error]);

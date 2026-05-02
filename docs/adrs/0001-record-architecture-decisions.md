@@ -21,7 +21,7 @@ article [Documenting Architecture Decisions].
 
 ### Consequences
 
-See Michael Nygard's article, linked above. For a lightweight ADR toolset, see
-[adrs].
+See Michael Nygard's article, linked in the preceding section. For a lightweight
+ADR toolset, see [adrs].
 
 [adrs]: https://joshrotenberg.com/adrs

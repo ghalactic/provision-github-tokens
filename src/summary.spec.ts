@@ -1076,7 +1076,7 @@ it("truncates rows beyond the limit and shows a notice", async () => {
   ).toMatchFileSnapshot(join(fixturesPath, "row-limit.md"));
 });
 
-it("renders a failure reason when tokens are not allowed", async () => {
+it("renders a failure reason when tokens aren't allowed", async () => {
   const accountAActionsTarget: ProvisionRequestTarget = {
     platform: "github",
     type: "actions",

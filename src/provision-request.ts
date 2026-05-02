@@ -130,7 +130,7 @@ export function createProvisionRequestFactory(
         } else {
           // The environments are the intersection of all matching patterns. In
           // other words, if one pattern has an environment and another doesn't,
-          // the environment is not included.
+          // the environment isn't included.
           types.environments = types.environments.filter((env) =>
             envs.includes(env),
           );

@@ -8,11 +8,11 @@ decision-makers: ezzatron
 
 ## Context and problem statement
 
-Provider permission rules support glob-style patterns as permission keys (e.g.,
-`"*": write`, `"secret_*": write`). When a rule mixes pattern and literal keys,
-the result for a permission that matches both is ambiguous. We need a resolution
-strategy that supports both broad granting and targeted de-escalation within a
-single rule:
+Provider permission rules support glob-style patterns as permission keys (for
+example `"*": write` or `"secret_*": write`). When a rule mixes pattern and
+literal keys, the result for a permission that matches both is ambiguous. We
+need a resolution strategy that supports both broad granting and targeted
+de-escalation within a single rule:
 
 ```yaml
 permissions:
@@ -24,8 +24,8 @@ permissions:
 
 Two-tier resolution within each rule:
 
-1. **Pattern keys** (containing `*`): max-wins — the highest access level among
-   all matching patterns applies.
+1. **Pattern keys** (containing `*`): The highest access level among all
+   matching patterns applies.
 2. **Literal keys** (no `*`): unconditionally override whatever patterns
    computed.
 
@@ -36,12 +36,12 @@ Inter-rule semantics are unchanged (last rule overrides via `Object.assign`).
 
 - Good, because broad grants (`"*": write`) and targeted restrictions
   (`contents: none`) work in the same rule.
-- Bad, because among patterns, only the most permissive match wins — no
+- Bad, because among patterns, only the most permissive match wins. No
   "narrowest pattern wins" option.
 
 ## Alternatives considered
 
-- **Flat max-wins** (no tiers): can't de-escalate — `contents: none` loses to
+- **Flat max-wins** (no tiers): can't de-escalate; `contents: none` loses to
   `"*": write`.
 - **Separate `permissionsMatch` key**: splits one concept across two fields; the
   existing schema already accepts arbitrary keys.
@@ -50,7 +50,7 @@ Inter-rule semantics are unchanged (last rule overrides via `Object.assign`).
 
 ## More information
 
-- Related: [ADR-0003] — patterns resolve against requested permissions only
+- Related: [ADR-0003]: patterns resolve against requested permissions only
 
 [adr-0003]:
   0003-resolve-permission-patterns-against-requested-permissions-only.md

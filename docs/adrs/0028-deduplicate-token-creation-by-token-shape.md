@@ -20,7 +20,7 @@ permissions, and resolved repos. Consumer identity is excluded because it does
 not affect the issued token.
 
 Including role in the cache key gives users control over deduplication
-boundaries — tokens with different roles are never shared, even if they would
+boundaries. Tokens with different roles are never shared, even if they would
 produce the same API call.
 
 All result types are cached except authorization failures, which depend on the
@@ -35,8 +35,8 @@ consumer rather than the token shape.
 
 ## More information
 
-- [ADR 0025][0025] — authorization-level deduplication counterpart.
-- [ADR 0013][0013] — role requirement that makes role-based cache isolation
+- [ADR 0025][0025]: authorization-level deduplication counterpart.
+- [ADR 0013][0013]: role requirement that makes role-based cache isolation
   meaningful.
 
 [0025]: 0025-deduplicate-token-requests-to-avoid-redundant-authorization.md

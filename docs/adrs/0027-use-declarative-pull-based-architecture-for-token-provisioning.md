@@ -16,8 +16,8 @@ structure and CODEOWNERS rules that grow in complexity with scale.
 
 Requesters declare what tokens they need in config files within their own repos.
 The action discovers requesters, authorizes against provider policy, and
-provisions tokens in a single run. Onboarding a new requester is just adding a
-config file — ownership maps to existing repo boundaries.
+provisions tokens in a single run. Onboarding a new requester is adding a config
+file. Ownership maps to existing repo boundaries.
 
 ## Consequences
 
@@ -35,12 +35,12 @@ config file — ownership maps to existing repo boundaries.
 
 ## More information
 
-- Related: [ADR-0004] — the provider/requester config split that enables this
+- Related: [ADR-0004]: the provider/requester config split that enables this
   architecture
-- Related: [ADR-0006] — the discovery mechanism that finds requesters
+- Related: [ADR-0006]: the discovery mechanism that finds requesters
   automatically
-- Related: [ADR-0008] — the trust model that authorizes requests against
-  provider policy
+- Related: [ADR-0008]: the trust model that authorizes requests against provider
+  policy
 
 [adr-0004]: 0004-separate-provider-and-requester-configuration.md
 [adr-0006]: 0006-discover-requesters-via-app-installations.md

@@ -10,7 +10,7 @@ it("doesn't allow empty references", () => {
         "",
       ),
     ),
-  ).toMatchInlineSnapshot(`"Token reference cannot be empty"`);
+  ).toMatchInlineSnapshot(`"Token reference can't be empty"`);
 });
 
 it("doesn't allow references with a dot but no slash", () => {
@@ -35,7 +35,7 @@ it("doesn't allow references with an empty repo account part", () => {
       ),
     ),
   ).toMatchInlineSnapshot(
-    `"Token reference "/repo.tokenA" repo account part cannot be empty"`,
+    `"Token reference "/repo.tokenA" repo account part can't be empty"`,
   );
 });
 
@@ -48,7 +48,7 @@ it("doesn't allow references with an empty repo name part", () => {
       ),
     ),
   ).toMatchInlineSnapshot(
-    `"Token reference "account/.tokenA" repo name part cannot be empty"`,
+    `"Token reference "account/.tokenA" repo name part can't be empty"`,
   );
 });
 
