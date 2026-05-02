@@ -10,17 +10,18 @@ decision-makers: ezzatron
 
 When a requester declares a token, the action needs to know which GitHub App
 should issue it. For read-only tokens this is mostly a technical detail, but for
-tokens with write or above access it becomes a user-facing concern: when a token
-is used to perform write operations (creating comments, pushing commits, merging
-pull requests, etc.), GitHub attributes those actions to the app that created
-the token. The app's name and avatar appear as the author in the GitHub UI.
+tokens with write or higher access it becomes a user-facing concern: when a
+token is used to perform write operations (creating comments, pushing commits,
+merging pull requests, etc.), GitHub attributes those actions to the app that
+created the token. The app's name and avatar appear as the author in the GitHub
+UI.
 
 If the action silently picks an app, users lose control over which identity
 appears alongside their automated actions.
 
 ## Decision
 
-Token declarations that request write-level access or above must include an
+Token declarations that request write-level access or higher must include an
 explicit role specifying which app should issue the token. The action refuses to
 create a write-level token without a role.
 

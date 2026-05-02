@@ -18,7 +18,7 @@ results.
 Token requests are normalized and cached by their full shape: consumer,
 declaration (including role), and resolved repos. When multiple provision
 requests produce the same normalized request, they share a single token request
-object that is authorized and issued once.
+object that's authorized and issued once.
 
 ## Consequences
 
