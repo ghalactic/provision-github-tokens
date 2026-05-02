@@ -52,5 +52,5 @@ function normalizeRequesterConfig(
     secret.github.repos = repos;
   }
 
-  return config as RequesterConfig;
+  return config;
 }
