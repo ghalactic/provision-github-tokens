@@ -273,7 +273,7 @@ it("handles secrets with no targets to provision to", async () => {
   `);
 });
 
-it("doesn't provision secrets when provisioning is not allowed", async () => {
+it("doesn't provision secrets when provisioning isn't allowed", async () => {
   const tokenResults = new Map<TokenAuthResult, TokenCreationResult>([
     [tokenAuthResultA, tokenCreationResultCreatedA],
   ]);
@@ -311,43 +311,6 @@ it("doesn't provision secrets when provisioning is not allowed", async () => {
 });
 
 it("doesn't provision secrets when the token wasn't created", async () => {
-  const tokenResults = new Map<TokenAuthResult, TokenCreationResult>([
-    [tokenAuthResultB, tokenCreationResultNotCreated],
-  ]);
-
-  const allowedResult: ProvisionAuthResult = {
-    request: {
-      requester: { account: "account-a", repo: "repo-a" },
-      tokenDec: tokenDecA,
-      tokenDecIsRegistered: true,
-      secretDec: secretDecA,
-      name: "SECRET_A",
-      to: [accountAActionsTarget],
-    },
-    results: [
-      createTestProvisionAuthTargetResultAllowed({
-        target: accountAActionsTarget,
-        tokenAuthResult: tokenAuthResultB,
-      }),
-    ],
-    isMissingTargets: false,
-    isAllowed: true,
-  };
-
-  await provisionSecrets(tokenResults, [allowedResult]);
-
-  expect(__getOutput()).toMatchInlineSnapshot(`
-    "
-    Secret #1:
-
-    ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
-      ❌ Token wasn't created for GitHub Actions secret in account-a
-
-    "
-  `);
-});
-
-it("returns NO_TOKEN for all non-created token outcomes", async () => {
   const tokenAuthResultNotAllowed: TokenAuthResult = {
     ...tokenAuthResultA,
     request: {
