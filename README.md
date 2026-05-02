@@ -13,6 +13,11 @@ This action uses specific terminology to distinguish roles and concepts. These
 terms are used consistently throughout the documentation, configuration files,
 and source code.
 
+### General
+
+- **Account** — a GitHub org or user. Used throughout this project to refer to
+  the owner of repos, apps, and installations.
+
 ### Roles
 
 - **Provider** — the repo that runs this action and defines the central
@@ -29,8 +34,8 @@ and source code.
   access tokens on behalf of requesters. The issuer's own permissions act as a
   hard boundary on what tokens it can create, analogous to an [AWS IAM
   permissions boundary].
-- **Provisioner** — a [GitHub App] installation designated to write secrets to
-  target repos and organizations. A single app can serve as both issuer and
+- **Provisioner** — a [GitHub App] installation designated to create secrets in
+  target accounts and repos. A single app can serve as both issuer and
   provisioner, or the two can be split across separate apps to keep the issuer's
   permissions boundary minimal.
 
@@ -41,6 +46,12 @@ and source code.
 
 ### Configuration
 
+> [!TIP]
+>
+> Don't confuse the term _declaration_ with _definition_. This project uses
+> _declarative_ configuration. If you see the term "definition", it's probably a
+> typo.
+
 - **Provider config** — the YAML config file that lives in the provider repo. It
   defines permission rules (what tokens are allowed) and provision rules (where
   secrets can go). The provider config is the sole policy authority.
@@ -48,7 +59,7 @@ and source code.
   repo. It declares what tokens the repo needs and where to provision them as
   secrets. Requester config expresses _desire_; provider config expresses
   _permission_.
-- **Token declaration** — a named, reusable definition in a requester config
+- **Token declaration** — a named, reusable declaration in a requester config
   that specifies an account, a set of repos, and the permissions needed. Token
   declarations can be _shared_ (any requester can reference them) or _private_
   (only the declaring repo can use them).
@@ -56,6 +67,9 @@ and source code.
   qualified form is `{owner/repo}.{name}`, which can refer to any shared
   declaration. The short form is just `{name}`, which refers to a declaration in
   the same requester config.
+- **Secret declaration** — a named entry in a requester config's `secrets` map
+  that pairs a token reference with a set of provision targets (accounts, repos,
+  environments, and types of secrets to be created).
 
 ### Authorization
 
@@ -87,7 +101,7 @@ and source code.
   installation access token after authorization. A token may be successfully
   created, or the attempt may fail because it was not authorized, no issuer was
   found, or an error occurred.
-- **Provisioning result** — the outcome of attempting to write a secret to a
+- **Provisioning result** — the outcome of attempting to create a secret in a
   provision target. A secret may be successfully provisioned, or the attempt may
   fail because it was not authorized, no token was available, no provisioner was
   found, or an error occurred.
@@ -95,4 +109,4 @@ and source code.
   account, repo, or environment where a secret is placed.
 - **Secret type** — the kind of GitHub secret location within a provision
   target: `actions`, `codespaces`, `dependabot`, or `environment`. Determines
-  which GitHub API is used to write the secret.
+  which GitHub API is used to create the secret.
