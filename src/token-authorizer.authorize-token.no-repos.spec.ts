@@ -1,4 +1,5 @@
 import { expect, it } from "vitest";
+import { createTestTokenDec } from "../test/declaration.js";
 import { createTextTokenAuthExplainer } from "./token-auth-explainer/text.js";
 import { createTokenAuthorizer } from "./token-authorizer.js";
 
@@ -26,13 +27,11 @@ it("allows tokens that should be allowed", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        tokenDec: {
-          shared: false,
+        tokenDec: createTestTokenDec({
           as: "role-a",
-          account: "account-a",
           repos: [],
           permissions: { members: "write" },
-        },
+        }),
         repos: [],
       }),
     ),
@@ -47,13 +46,11 @@ it("allows tokens that should be allowed", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        tokenDec: {
-          shared: false,
+        tokenDec: createTestTokenDec({
           as: "role-a",
-          account: "account-a",
           repos: [],
           permissions: { members: "write", metadata: "read" },
-        },
+        }),
         repos: [],
       }),
     ),
@@ -69,13 +66,11 @@ it("allows tokens that should be allowed", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
-        tokenDec: {
-          shared: false,
+        tokenDec: createTestTokenDec({
           as: "role-a",
-          account: "account-a",
           repos: [],
           permissions: { members: "write" },
-        },
+        }),
         repos: [],
       }),
     ),
@@ -90,13 +85,11 @@ it("allows tokens that should be allowed", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
-        tokenDec: {
-          shared: false,
+        tokenDec: createTestTokenDec({
           as: "role-a",
-          account: "account-a",
           repos: [],
           permissions: { members: "write", metadata: "read" },
-        },
+        }),
         repos: [],
       }),
     ),
@@ -132,13 +125,11 @@ it("allows tokens when the actual access level is higher than requested", () => 
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        tokenDec: {
-          shared: false,
+        tokenDec: createTestTokenDec({
           as: "role-a",
-          account: "account-a",
           repos: [],
           permissions: { metadata: "read", repository_projects: "write" },
-        },
+        }),
         repos: [],
       }),
     ),
@@ -154,13 +145,11 @@ it("allows tokens when the actual access level is higher than requested", () => 
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
-        tokenDec: {
-          shared: false,
+        tokenDec: createTestTokenDec({
           as: "role-a",
-          account: "account-a",
           repos: [],
           permissions: { metadata: "read", repository_projects: "write" },
-        },
+        }),
         repos: [],
       }),
     ),
@@ -208,13 +197,11 @@ it("allows tokens when a later rule allows access that a previous rule denied", 
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        tokenDec: {
-          shared: false,
+        tokenDec: createTestTokenDec({
           as: "role-a",
-          account: "account-a",
           repos: [],
           permissions: { contents: "write", metadata: "read" },
-        },
+        }),
         repos: [],
       }),
     ),
@@ -233,13 +220,11 @@ it("allows tokens when a later rule allows access that a previous rule denied", 
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
-        tokenDec: {
-          shared: false,
+        tokenDec: createTestTokenDec({
           as: "role-a",
-          account: "account-a",
           repos: [],
           permissions: { contents: "write", metadata: "read" },
-        },
+        }),
         repos: [],
       }),
     ),
@@ -302,13 +287,11 @@ it("allows tokens when a later unrelated rule denies access to the requested per
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        tokenDec: {
-          shared: false,
+        tokenDec: createTestTokenDec({
           as: "role-a",
-          account: "account-a",
           repos: [],
           permissions: { contents: "write", metadata: "read" },
-        },
+        }),
         repos: [],
       }),
     ),
@@ -324,13 +307,11 @@ it("allows tokens when a later unrelated rule denies access to the requested per
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
-        tokenDec: {
-          shared: false,
+        tokenDec: createTestTokenDec({
           as: "role-a",
-          account: "account-a",
           repos: [],
           permissions: { contents: "write", metadata: "read" },
-        },
+        }),
         repos: [],
       }),
     ),
@@ -366,13 +347,10 @@ it("allows read-only tokens without a role", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        tokenDec: {
-          shared: false,
-          as: undefined,
-          account: "account-a",
+        tokenDec: createTestTokenDec({
           repos: [],
           permissions: { contents: "read", metadata: "read" },
-        },
+        }),
         repos: [],
       }),
     ),
@@ -388,13 +366,10 @@ it("allows read-only tokens without a role", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
-        tokenDec: {
-          shared: false,
-          as: undefined,
-          account: "account-a",
+        tokenDec: createTestTokenDec({
           repos: [],
           permissions: { contents: "read", metadata: "read" },
-        },
+        }),
         repos: [],
       }),
     ),
@@ -431,13 +406,7 @@ it("supports rule descriptions", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        tokenDec: {
-          shared: false,
-          as: "role-a",
-          account: "account-a",
-          repos: [],
-          permissions: { metadata: "read" },
-        },
+        tokenDec: createTestTokenDec({ as: "role-a", repos: [] }),
         repos: [],
       }),
     ),
@@ -452,13 +421,7 @@ it("supports rule descriptions", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
-        tokenDec: {
-          shared: false,
-          as: "role-a",
-          account: "account-a",
-          repos: [],
-          permissions: { metadata: "read" },
-        },
+        tokenDec: createTestTokenDec({ as: "role-a", repos: [] }),
         repos: [],
       }),
     ),
@@ -493,13 +456,11 @@ it("sorts permissions in the explanation", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        tokenDec: {
-          shared: false,
+        tokenDec: createTestTokenDec({
           as: "role-a",
-          account: "account-a",
           repos: [],
           permissions: { metadata: "read", contents: "write" },
-        },
+        }),
         repos: [],
       }),
     ),
@@ -515,13 +476,11 @@ it("sorts permissions in the explanation", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
-        tokenDec: {
-          shared: false,
+        tokenDec: createTestTokenDec({
           as: "role-a",
-          account: "account-a",
           repos: [],
           permissions: { metadata: "read", contents: "write" },
-        },
+        }),
         repos: [],
       }),
     ),
@@ -557,13 +516,7 @@ it("doesn't allow tokens for unauthorized consumers", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-y" },
-        tokenDec: {
-          shared: false,
-          as: "role-a",
-          account: "account-a",
-          repos: [],
-          permissions: { metadata: "read" },
-        },
+        tokenDec: createTestTokenDec({ as: "role-a", repos: [] }),
         repos: [],
       }),
     ),
@@ -576,13 +529,7 @@ it("doesn't allow tokens for unauthorized consumers", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-y", repo: "repo-x" },
-        tokenDec: {
-          shared: false,
-          as: "role-a",
-          account: "account-a",
-          repos: [],
-          permissions: { metadata: "read" },
-        },
+        tokenDec: createTestTokenDec({ as: "role-a", repos: [] }),
         repos: [],
       }),
     ),
@@ -595,13 +542,7 @@ it("doesn't allow tokens for unauthorized consumers", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-y" },
-        tokenDec: {
-          shared: false,
-          as: "role-a",
-          account: "account-a",
-          repos: [],
-          permissions: { metadata: "read" },
-        },
+        tokenDec: createTestTokenDec({ as: "role-a", repos: [] }),
         repos: [],
       }),
     ),
@@ -614,13 +555,7 @@ it("doesn't allow tokens for unauthorized consumers", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-y", repo: "repo-y" },
-        tokenDec: {
-          shared: false,
-          as: "role-a",
-          account: "account-a",
-          repos: [],
-          permissions: { metadata: "read" },
-        },
+        tokenDec: createTestTokenDec({ as: "role-a", repos: [] }),
         repos: [],
       }),
     ),
@@ -653,13 +588,11 @@ it("doesn't allow tokens for unauthorized resource repos", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        tokenDec: {
-          shared: false,
+        tokenDec: createTestTokenDec({
           as: "role-a",
-          account: "account-a",
           repos: ["repo-y"],
           permissions: { contents: "write" },
-        },
+        }),
         repos: ["repo-y"],
       }),
     ),
@@ -673,13 +606,12 @@ it("doesn't allow tokens for unauthorized resource repos", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        tokenDec: {
-          shared: false,
+        tokenDec: createTestTokenDec({
           as: "role-a",
           account: "account-y",
           repos: [],
           permissions: { contents: "write" },
-        },
+        }),
         repos: [],
       }),
     ),
@@ -692,13 +624,11 @@ it("doesn't allow tokens for unauthorized resource repos", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
-        tokenDec: {
-          shared: false,
+        tokenDec: createTestTokenDec({
           as: "role-a",
-          account: "account-a",
           repos: ["repo-y"],
           permissions: { contents: "write" },
-        },
+        }),
         repos: ["repo-y"],
       }),
     ),
@@ -712,13 +642,12 @@ it("doesn't allow tokens for unauthorized resource repos", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
-        tokenDec: {
-          shared: false,
+        tokenDec: createTestTokenDec({
           as: "role-a",
           account: "account-y",
           repos: [],
           permissions: { contents: "write" },
-        },
+        }),
         repos: [],
       }),
     ),
@@ -751,13 +680,11 @@ it("doesn't allow tokens for unauthorized permissions", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        tokenDec: {
-          shared: false,
+        tokenDec: createTestTokenDec({
           as: "role-a",
-          account: "account-a",
           repos: [],
           permissions: { contents: "read" },
-        },
+        }),
         repos: [],
       }),
     ),
@@ -772,13 +699,11 @@ it("doesn't allow tokens for unauthorized permissions", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
-        tokenDec: {
-          shared: false,
+        tokenDec: createTestTokenDec({
           as: "role-a",
-          account: "account-a",
           repos: [],
           permissions: { contents: "read" },
-        },
+        }),
         repos: [],
       }),
     ),
@@ -813,13 +738,11 @@ it("doesn't allow tokens where only some of the permissions are authorized", () 
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        tokenDec: {
-          shared: false,
+        tokenDec: createTestTokenDec({
           as: "role-a",
-          account: "account-a",
           repos: [],
           permissions: { contents: "read", metadata: "read" },
-        },
+        }),
         repos: [],
       }),
     ),
@@ -835,13 +758,11 @@ it("doesn't allow tokens where only some of the permissions are authorized", () 
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
-        tokenDec: {
-          shared: false,
+        tokenDec: createTestTokenDec({
           as: "role-a",
-          account: "account-a",
           repos: [],
           permissions: { contents: "read", metadata: "read" },
-        },
+        }),
         repos: [],
       }),
     ),
@@ -889,13 +810,7 @@ it("doesn't allow tokens that are denied by a wildcard rule", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        tokenDec: {
-          shared: false,
-          as: "role-a",
-          account: "account-a",
-          repos: [],
-          permissions: { metadata: "read" },
-        },
+        tokenDec: createTestTokenDec({ as: "role-a", repos: [] }),
         repos: [],
       }),
     ),
@@ -912,13 +827,7 @@ it("doesn't allow tokens that are denied by a wildcard rule", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
-        tokenDec: {
-          shared: false,
-          as: "role-a",
-          account: "account-a",
-          repos: [],
-          permissions: { metadata: "read" },
-        },
+        tokenDec: createTestTokenDec({ as: "role-a", repos: [] }),
         repos: [],
       }),
     ),
@@ -955,13 +864,11 @@ it("doesn't allow tokens when the actual access level is lower than requested", 
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        tokenDec: {
-          shared: false,
+        tokenDec: createTestTokenDec({
           as: "role-a",
-          account: "account-a",
           repos: [],
           permissions: { repository_projects: "admin" },
-        },
+        }),
         repos: [],
       }),
     ),
@@ -976,13 +883,11 @@ it("doesn't allow tokens when the actual access level is lower than requested", 
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
-        tokenDec: {
-          shared: false,
+        tokenDec: createTestTokenDec({
           as: "role-a",
-          account: "account-a",
           repos: [],
           permissions: { repository_projects: "admin" },
-        },
+        }),
         repos: [],
       }),
     ),
@@ -1029,13 +934,11 @@ it("doesn't allow tokens for no repos in an account unless a resource rule expli
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        tokenDec: {
-          shared: false,
+        tokenDec: createTestTokenDec({
           as: "role-a",
-          account: "account-a",
           repos: [],
           permissions: { contents: "read" },
-        },
+        }),
         repos: [],
       }),
     ),
@@ -1048,13 +951,11 @@ it("doesn't allow tokens for no repos in an account unless a resource rule expli
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
-        tokenDec: {
-          shared: false,
+        tokenDec: createTestTokenDec({
           as: "role-a",
-          account: "account-a",
           repos: [],
           permissions: { contents: "read" },
-        },
+        }),
         repos: [],
       }),
     ),
@@ -1099,13 +1000,11 @@ it("doesn't allow tokens when a later rule denies access that a previous rule al
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        tokenDec: {
-          shared: false,
+        tokenDec: createTestTokenDec({
           as: "role-a",
-          account: "account-a",
           repos: [],
           permissions: { contents: "write" },
-        },
+        }),
         repos: [],
       }),
     ),
@@ -1122,13 +1021,11 @@ it("doesn't allow tokens when a later rule denies access that a previous rule al
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
-        tokenDec: {
-          shared: false,
+        tokenDec: createTestTokenDec({
           as: "role-a",
-          account: "account-a",
           repos: [],
           permissions: { contents: "write" },
-        },
+        }),
         repos: [],
       }),
     ),
@@ -1177,13 +1074,11 @@ it("doesn't allow tokens when a later rule removes access that a previous rule a
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        tokenDec: {
-          shared: false,
+        tokenDec: createTestTokenDec({
           as: "role-a",
-          account: "account-a",
           repos: [],
           permissions: { contents: "write" },
-        },
+        }),
         repos: [],
       }),
     ),
@@ -1200,13 +1095,11 @@ it("doesn't allow tokens when a later rule removes access that a previous rule a
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
-        tokenDec: {
-          shared: false,
+        tokenDec: createTestTokenDec({
           as: "role-a",
-          account: "account-a",
           repos: [],
           permissions: { contents: "write" },
-        },
+        }),
         repos: [],
       }),
     ),
@@ -1246,16 +1139,13 @@ it("doesn't allow write tokens if no role is specified", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        tokenDec: {
-          shared: false,
-          as: undefined,
-          account: "account-a",
+        tokenDec: createTestTokenDec({
           repos: [],
           permissions: {
             repository_hooks: "read",
             repository_projects: "write",
           },
-        },
+        }),
         repos: [],
       }),
     ),
@@ -1271,16 +1161,13 @@ it("doesn't allow write tokens if no role is specified", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        tokenDec: {
-          shared: false,
-          as: undefined,
-          account: "account-a",
+        tokenDec: createTestTokenDec({
           repos: [],
           permissions: {
             repository_hooks: "write",
             repository_projects: "admin",
           },
-        },
+        }),
         repos: [],
       }),
     ),
@@ -1296,16 +1183,13 @@ it("doesn't allow write tokens if no role is specified", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
-        tokenDec: {
-          shared: false,
-          as: undefined,
-          account: "account-a",
+        tokenDec: createTestTokenDec({
           repos: [],
           permissions: {
             repository_hooks: "read",
             repository_projects: "write",
           },
-        },
+        }),
         repos: [],
       }),
     ),
@@ -1321,16 +1205,13 @@ it("doesn't allow write tokens if no role is specified", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
-        tokenDec: {
-          shared: false,
-          as: undefined,
-          account: "account-a",
+        tokenDec: createTestTokenDec({
           repos: [],
           permissions: {
             repository_hooks: "write",
             repository_projects: "admin",
           },
-        },
+        }),
         repos: [],
       }),
     ),

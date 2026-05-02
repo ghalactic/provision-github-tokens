@@ -1,4 +1,5 @@
 import { expect, it } from "vitest";
+import { createTestTokenDec } from "../test/declaration.js";
 import { throws } from "../test/error.js";
 import { createTextTokenAuthExplainer } from "./token-auth-explainer/text.js";
 import { createTokenAuthorizer } from "./token-authorizer.js";
@@ -28,13 +29,7 @@ it("supports wildcard account consumers", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        tokenDec: {
-          shared: false,
-          as: undefined,
-          account: "account-a",
-          repos: "all",
-          permissions: { metadata: "read" },
-        },
+        tokenDec: createTestTokenDec(),
         repos: "all",
       }),
     ),
@@ -49,13 +44,7 @@ it("supports wildcard account consumers", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-y" },
-        tokenDec: {
-          shared: false,
-          as: undefined,
-          account: "account-a",
-          repos: "all",
-          permissions: { metadata: "read" },
-        },
+        tokenDec: createTestTokenDec(),
         repos: "all",
       }),
     ),
@@ -90,13 +79,7 @@ it("supports wildcard repo consumers", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
-        tokenDec: {
-          shared: false,
-          as: undefined,
-          account: "account-a",
-          repos: "all",
-          permissions: { metadata: "read" },
-        },
+        tokenDec: createTestTokenDec(),
         repos: "all",
       }),
     ),
@@ -111,13 +94,7 @@ it("supports wildcard repo consumers", () => {
     explain(
       authorizer.authorizeToken({
         consumer: { account: "account-y", repo: "repo-y" },
-        tokenDec: {
-          shared: false,
-          as: undefined,
-          account: "account-a",
-          repos: "all",
-          permissions: { metadata: "read" },
-        },
+        tokenDec: createTestTokenDec(),
         repos: "all",
       }),
     ),
@@ -150,13 +127,11 @@ it("re-uses the same result for the same request", () => {
 
   const request: TokenRequest = {
     consumer: { account: "account-x" },
-    tokenDec: {
-      shared: false,
+    tokenDec: createTestTokenDec({
       as: "role-a",
-      account: "account-a",
       repos: ["repo-a", "repo-b"],
       permissions: { contents: "write", metadata: "read" },
-    },
+    }),
     repos: ["repo-a", "repo-b"],
   };
 
@@ -185,24 +160,18 @@ it("doesn't re-use results for different requests", () => {
 
   const requestA: TokenRequest = {
     consumer: { account: "account-x" },
-    tokenDec: {
-      shared: false,
+    tokenDec: createTestTokenDec({
       as: "role-a",
-      account: "account-a",
-      repos: "all",
       permissions: { contents: "write", metadata: "read" },
-    },
+    }),
     repos: "all",
   };
   const requestB: TokenRequest = {
     consumer: { account: "account-x" },
-    tokenDec: {
-      shared: false,
+    tokenDec: createTestTokenDec({
       as: "role-a",
-      account: "account-a",
-      repos: "all",
       permissions: { contents: "write", metadata: "read" },
-    },
+    }),
     repos: "all",
   };
 
@@ -218,13 +187,10 @@ it("rejects empty requested permissions", () => {
     throws(() =>
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        tokenDec: {
-          shared: false,
-          as: undefined,
-          account: "account-a",
+        tokenDec: createTestTokenDec({
           repos: ["repo-a"],
           permissions: {},
-        },
+        }),
         repos: ["repo-a"],
       }),
     ),
@@ -233,13 +199,10 @@ it("rejects empty requested permissions", () => {
     throws(() =>
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        tokenDec: {
-          shared: false,
-          as: undefined,
-          account: "account-a",
+        tokenDec: createTestTokenDec({
           repos: ["repo-a"],
           permissions: { contents: undefined, metadata: "none" },
-        },
+        }),
         repos: ["repo-a"],
       }),
     ),
@@ -248,13 +211,10 @@ it("rejects empty requested permissions", () => {
     throws(() =>
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
-        tokenDec: {
-          shared: false,
-          as: undefined,
-          account: "account-a",
+        tokenDec: createTestTokenDec({
           repos: ["repo-a"],
           permissions: {},
-        },
+        }),
         repos: ["repo-a"],
       }),
     ),
@@ -263,13 +223,10 @@ it("rejects empty requested permissions", () => {
     throws(() =>
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
-        tokenDec: {
-          shared: false,
-          as: undefined,
-          account: "account-a",
+        tokenDec: createTestTokenDec({
           repos: ["repo-a"],
           permissions: { contents: undefined, metadata: "none" },
-        },
+        }),
         repos: ["repo-a"],
       }),
     ),
@@ -283,13 +240,10 @@ it('rejects requests where all permissions are "none"', () => {
     throws(() =>
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
-        tokenDec: {
-          shared: false,
-          as: undefined,
-          account: "account-a",
+        tokenDec: createTestTokenDec({
           repos: ["repo-a"],
           permissions: { contents: "none", metadata: "none" },
-        },
+        }),
         repos: ["repo-a"],
       }),
     ),
@@ -298,13 +252,10 @@ it('rejects requests where all permissions are "none"', () => {
     throws(() =>
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
-        tokenDec: {
-          shared: false,
-          as: undefined,
-          account: "account-a",
+        tokenDec: createTestTokenDec({
           repos: ["repo-a"],
           permissions: { contents: "none", metadata: "none" },
-        },
+        }),
         repos: ["repo-a"],
       }),
     ),
