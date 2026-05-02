@@ -33,6 +33,7 @@ import {
   createTestProvisionAuthResultNotAllowed,
   createTestProvisionAuthTargetResultAllowed,
   createTestProvisionAuthTargetResultNotAllowed,
+  createTestTokenAuthResultAllowed,
 } from "../test/result.js";
 import {
   createAppRegistry,
@@ -104,34 +105,8 @@ const secretDecB = createTestSecretDec({
   github: { repos: { "account-a/repo-a": { codespaces: true } } },
 });
 
-const tokenAuthResultA: TokenAuthResult = {
-  type: "ALL_REPOS",
-  have: { metadata: "read" },
-  isAllowed: true,
-  isMissingRole: false,
-  isSufficient: true,
-  maxWant: "read",
-  request: {
-    consumer: { account: "account-a" },
-    repos: "all",
-    tokenDec: tokenDecA,
-  },
-  rules: [],
-};
-const tokenAuthResultB: TokenAuthResult = {
-  type: "ALL_REPOS",
-  have: { metadata: "read" },
-  isAllowed: true,
-  isMissingRole: false,
-  isSufficient: true,
-  maxWant: "read",
-  request: {
-    consumer: { account: "account-a" },
-    repos: "all",
-    tokenDec: tokenDecA,
-  },
-  rules: [],
-};
+const tokenAuthResultA = createTestTokenAuthResultAllowed();
+const tokenAuthResultB = createTestTokenAuthResultAllowed();
 
 const tokenCreationResultCreatedA: TokenCreationResult = {
   type: "CREATED",

@@ -26,7 +26,10 @@ import {
   createTestRepoEnvironment,
 } from "../test/github-api.js";
 import { createTestKeyPair } from "../test/key.js";
-import { createTestProvisionAuthTargetResultAllowed } from "../test/result.js";
+import {
+  createTestProvisionAuthTargetResultAllowed,
+  createTestTokenAuthResultAllowed,
+} from "../test/result.js";
 import {
   createAppRegistry,
   type AppRegistration,
@@ -79,20 +82,7 @@ const secretDecA = createTestSecretDec({
   github: { accounts: { "account-a": { actions: true } } },
 });
 
-const tokenAuthResultA: TokenAuthResult = {
-  type: "ALL_REPOS",
-  have: { metadata: "read" },
-  isAllowed: true,
-  isMissingRole: false,
-  isSufficient: true,
-  maxWant: "read",
-  request: {
-    consumer: { account: "account-a" },
-    repos: "all",
-    tokenDec: tokenDecA,
-  },
-  rules: [],
-};
+const tokenAuthResultA = createTestTokenAuthResultAllowed();
 
 const tokenCreationResultCreatedA: TokenCreationResult = {
   type: "CREATED",

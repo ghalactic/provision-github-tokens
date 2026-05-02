@@ -11,12 +11,17 @@ import {
   __setErrors,
   __setInstallations,
 } from "../__mocks__/@octokit/action.js";
+import { createTestTokenDec } from "../test/declaration.js";
 import {
   createTestApp,
   createTestInstallation,
   createTestInstallationAccount,
   createTestInstallationRepo,
 } from "../test/github-api.js";
+import {
+  createTestTokenAuthResultAllowed,
+  createTestTokenAuthResultNotAllowed,
+} from "../test/result.js";
 import {
   createAppRegistry,
   type AppRegistration,
@@ -26,7 +31,6 @@ import { createFindIssuerOctokit } from "./issuer-octokit.js";
 import { createOctokitFactory } from "./octokit.js";
 import { createTokenFactory } from "./token-factory.js";
 import type { AppInput } from "./type/input.js";
-import type { TokenAuthResult } from "./type/token-auth-result.js";
 
 vi.mock("@actions/core");
 vi.mock("@octokit/action");
@@ -101,26 +105,13 @@ it("creates read-only tokens", async () => {
   __addInstallationToken(111, "all", { metadata: "read" });
   const createTokens = createTokenFactory(findIssuerOctokit);
 
-  const createdResult: TokenAuthResult = {
-    type: "ALL_REPOS",
+  const createdResult = createTestTokenAuthResultAllowed({
     request: {
       consumer: { account: "account-a" },
-      tokenDec: {
-        shared: false,
-        as: undefined,
-        account: "account-a",
-        repos: "all",
-        permissions: { metadata: "read" },
-      },
+      tokenDec: createTestTokenDec(),
       repos: "all",
     },
-    maxWant: "read",
-    have: { metadata: "read" },
-    isSufficient: true,
-    isMissingRole: false,
-    isAllowed: true,
-    rules: [],
-  };
+  });
 
   await createTokens([createdResult]);
 
@@ -182,26 +173,18 @@ it("creates write tokens", async () => {
 
   const createTokens = createTokenFactory(findIssuerOctokit);
 
-  const authResult: TokenAuthResult = {
-    type: "ALL_REPOS",
+  const authResult = createTestTokenAuthResultAllowed({
     request: {
       consumer: { account: "consumer-a" },
-      tokenDec: {
-        shared: false,
+      tokenDec: createTestTokenDec({
         as: "role-a",
-        account: "account-a",
-        repos: "all",
         permissions: { contents: "write" },
-      },
+      }),
       repos: "all",
     },
     maxWant: "write",
     have: { contents: "write" },
-    isSufficient: true,
-    isMissingRole: false,
-    isAllowed: true,
-    rules: [],
-  };
+  });
 
   await createTokens([authResult]);
 
@@ -268,26 +251,18 @@ it("creates admin tokens", async () => {
   });
   const createTokens = createTokenFactory(findIssuerOctokit);
 
-  const authResult: TokenAuthResult = {
-    type: "ALL_REPOS",
+  const authResult = createTestTokenAuthResultAllowed({
     request: {
       consumer: { account: "consumer-a" },
-      tokenDec: {
-        shared: false,
+      tokenDec: createTestTokenDec({
         as: "role-a",
-        account: "account-a",
-        repos: "all",
         permissions: { organization_administration: "admin", metadata: "read" },
-      },
+      }),
       repos: "all",
     },
     maxWant: "admin",
     have: { organization_administration: "admin", metadata: "read" },
-    isSufficient: true,
-    isMissingRole: false,
-    isAllowed: true,
-    rules: [],
-  };
+  });
 
   await createTokens([authResult]);
 
@@ -351,26 +326,20 @@ it("creates account-only tokens", async () => {
   __addInstallationToken(111, [], { organization_administration: "admin" });
   const createTokens = createTokenFactory(findIssuerOctokit);
 
-  const authResult: TokenAuthResult = {
+  const authResult = createTestTokenAuthResultAllowed({
     type: "NO_REPOS",
     request: {
       consumer: { account: "consumer-a" },
-      tokenDec: {
-        shared: false,
+      tokenDec: createTestTokenDec({
         as: "role-a",
-        account: "account-a",
         repos: [],
         permissions: { organization_administration: "admin" },
-      },
+      }),
       repos: [],
     },
     maxWant: "admin",
     have: { organization_administration: "admin" },
-    isSufficient: true,
-    isMissingRole: false,
-    isAllowed: true,
-    rules: [],
-  };
+  } as never);
 
   await createTokens([authResult]);
 
@@ -433,26 +402,13 @@ it("creates all-repos tokens", async () => {
 
   const createTokens = createTokenFactory(findIssuerOctokit);
 
-  const authResult: TokenAuthResult = {
-    type: "ALL_REPOS",
+  const authResult = createTestTokenAuthResultAllowed({
     request: {
       consumer: { account: "consumer-a" },
-      tokenDec: {
-        shared: false,
-        as: undefined,
-        account: "account-a",
-        repos: "all",
-        permissions: { metadata: "read" },
-      },
+      tokenDec: createTestTokenDec(),
       repos: "all",
     },
-    maxWant: "read",
-    have: { metadata: "read" },
-    isSufficient: true,
-    isMissingRole: false,
-    isAllowed: true,
-    rules: [],
-  };
+  });
 
   await createTokens([authResult]);
 
@@ -515,29 +471,21 @@ it("creates selected-repos tokens", async () => {
 
   const createTokens = createTokenFactory(findIssuerOctokit);
 
-  const authResult: TokenAuthResult = {
+  const authResult = createTestTokenAuthResultAllowed({
     type: "SELECTED_REPOS",
     request: {
       consumer: { account: "consumer-a" },
-      tokenDec: {
-        shared: false,
-        as: undefined,
-        account: "account-a",
+      tokenDec: createTestTokenDec({
         repos: ["repo-a", "repo-b"],
-        permissions: { metadata: "read" },
-      },
+      }),
       repos: ["repo-a", "repo-b"],
     },
-    maxWant: "read",
     results: {
       "repo-a": { rules: [], have: { metadata: "read" }, isSufficient: true },
       "repo-b": { rules: [], have: { metadata: "read" }, isSufficient: true },
     },
     isMatched: true,
-    isSufficient: true,
-    isMissingRole: false,
-    isAllowed: true,
-  };
+  } as never);
 
   await createTokens([authResult]);
 
@@ -602,26 +550,15 @@ it('ignores permissions with "none" access level', async () => {
   __addInstallationToken(111, "all", { contents: "none", metadata: "read" });
   const createTokens = createTokenFactory(findIssuerOctokit);
 
-  const authResult: TokenAuthResult = {
-    type: "ALL_REPOS",
+  const authResult = createTestTokenAuthResultAllowed({
     request: {
       consumer: { account: "consumer-a" },
-      tokenDec: {
-        shared: false,
-        as: undefined,
-        account: "account-a",
-        repos: "all",
+      tokenDec: createTestTokenDec({
         permissions: { contents: "none", metadata: "read" },
-      },
+      }),
       repos: "all",
     },
-    maxWant: "read",
-    have: { metadata: "read" },
-    isSufficient: true,
-    isMissingRole: false,
-    isAllowed: true,
-    rules: [],
-  };
+  });
 
   await createTokens([authResult]);
 
@@ -683,66 +620,27 @@ it("reuses one token for identical requests", async () => {
 
   const createTokens = createTokenFactory(findIssuerOctokit);
 
-  const consumerAResult: TokenAuthResult = {
-    type: "ALL_REPOS",
+  const consumerAResult = createTestTokenAuthResultAllowed({
     request: {
       consumer: { account: "consumer-a" },
-      tokenDec: {
-        shared: false,
-        as: undefined,
-        account: "account-a",
-        repos: "all",
-        permissions: { metadata: "read" },
-      },
+      tokenDec: createTestTokenDec(),
       repos: "all",
     },
-    maxWant: "read",
-    have: { metadata: "read" },
-    isSufficient: true,
-    isMissingRole: false,
-    isAllowed: true,
-    rules: [],
-  };
-  const consumerBResult: TokenAuthResult = {
-    type: "ALL_REPOS",
+  });
+  const consumerBResult = createTestTokenAuthResultAllowed({
     request: {
       consumer: { account: "consumer-b" },
-      tokenDec: {
-        shared: false,
-        as: undefined,
-        account: "account-a",
-        repos: "all",
-        permissions: { metadata: "read" },
-      },
+      tokenDec: createTestTokenDec(),
       repos: "all",
     },
-    maxWant: "read",
-    have: { metadata: "read" },
-    isSufficient: true,
-    isMissingRole: false,
-    isAllowed: true,
-    rules: [],
-  };
-  const consumerCResult: TokenAuthResult = {
-    type: "ALL_REPOS",
+  });
+  const consumerCResult = createTestTokenAuthResultAllowed({
     request: {
       consumer: { account: "consumer-c" },
-      tokenDec: {
-        shared: false,
-        as: undefined,
-        account: "account-a",
-        repos: "all",
-        permissions: { metadata: "read" },
-      },
+      tokenDec: createTestTokenDec(),
       repos: "all",
     },
-    maxWant: "read",
-    have: { metadata: "read" },
-    isSufficient: true,
-    isMissingRole: false,
-    isAllowed: true,
-    rules: [],
-  };
+  });
 
   await createTokens([consumerAResult, consumerBResult, consumerCResult]);
 
@@ -780,46 +678,20 @@ it("reuses the same no-issuer outcome for identical requests", async () => {
   );
   const createTokens = createTokenFactory(findIssuerOctokit);
 
-  const authResultA: TokenAuthResult = {
-    type: "ALL_REPOS",
+  const authResultA = createTestTokenAuthResultAllowed({
     request: {
       consumer: { account: "consumer-a" },
-      tokenDec: {
-        shared: false,
-        as: undefined,
-        account: "account-a",
-        repos: "all",
-        permissions: { metadata: "read" },
-      },
+      tokenDec: createTestTokenDec(),
       repos: "all",
     },
-    maxWant: "read",
-    have: { metadata: "read" },
-    isSufficient: true,
-    isMissingRole: false,
-    isAllowed: true,
-    rules: [],
-  };
-  const authResultB: TokenAuthResult = {
-    type: "ALL_REPOS",
+  });
+  const authResultB = createTestTokenAuthResultAllowed({
     request: {
       consumer: { account: "consumer-b" },
-      tokenDec: {
-        shared: false,
-        as: undefined,
-        account: "account-a",
-        repos: "all",
-        permissions: { metadata: "read" },
-      },
+      tokenDec: createTestTokenDec(),
       repos: "all",
     },
-    maxWant: "read",
-    have: { metadata: "read" },
-    isSufficient: true,
-    isMissingRole: false,
-    isAllowed: true,
-    rules: [],
-  };
+  });
 
   await createTokens([authResultA, authResultB]);
 
@@ -896,88 +768,38 @@ it("reuses the same failure outcome for identical requests", async () => {
   const createTokens = createTokenFactory(findIssuerOctokit);
 
   // RequestError deduping
-  const authResultA: TokenAuthResult = {
-    type: "ALL_REPOS",
+  const authResultA = createTestTokenAuthResultAllowed({
     request: {
       consumer: { account: "consumer-a" },
-      tokenDec: {
-        shared: false,
-        as: undefined,
-        account: "account-a",
-        repos: "all",
-        permissions: { metadata: "read" },
-      },
+      tokenDec: createTestTokenDec(),
       repos: "all",
     },
-    maxWant: "read",
-    have: { metadata: "read" },
-    isSufficient: true,
-    isMissingRole: false,
-    isAllowed: true,
-    rules: [],
-  };
-  const authResultB: TokenAuthResult = {
-    type: "ALL_REPOS",
+  });
+  const authResultB = createTestTokenAuthResultAllowed({
     request: {
       consumer: { account: "consumer-b" },
-      tokenDec: {
-        shared: false,
-        as: undefined,
-        account: "account-a",
-        repos: "all",
-        permissions: { metadata: "read" },
-      },
+      tokenDec: createTestTokenDec(),
       repos: "all",
     },
-    maxWant: "read",
-    have: { metadata: "read" },
-    isSufficient: true,
-    isMissingRole: false,
-    isAllowed: true,
-    rules: [],
-  };
+  });
 
   // Non-RequestError deduping (different permissions = different cache key)
-  const authResultC: TokenAuthResult = {
-    type: "ALL_REPOS",
+  const authResultC = createTestTokenAuthResultAllowed({
     request: {
       consumer: { account: "consumer-a" },
-      tokenDec: {
-        shared: false,
-        as: undefined,
-        account: "account-a",
-        repos: "all",
-        permissions: { contents: "read" },
-      },
+      tokenDec: createTestTokenDec({ permissions: { contents: "read" } }),
       repos: "all",
     },
-    maxWant: "read",
     have: { contents: "read" },
-    isSufficient: true,
-    isMissingRole: false,
-    isAllowed: true,
-    rules: [],
-  };
-  const authResultD: TokenAuthResult = {
-    type: "ALL_REPOS",
+  });
+  const authResultD = createTestTokenAuthResultAllowed({
     request: {
       consumer: { account: "consumer-b" },
-      tokenDec: {
-        shared: false,
-        as: undefined,
-        account: "account-a",
-        repos: "all",
-        permissions: { contents: "read" },
-      },
+      tokenDec: createTestTokenDec({ permissions: { contents: "read" } }),
       repos: "all",
     },
-    maxWant: "read",
     have: { contents: "read" },
-    isSufficient: true,
-    isMissingRole: false,
-    isAllowed: true,
-    rules: [],
-  };
+  });
 
   const results = await createTokens([
     authResultA,
@@ -1084,46 +906,20 @@ it("creates separate tokens when the requested account is different", async () =
 
   const createTokens = createTokenFactory(findIssuerOctokit);
 
-  const accountAResult: TokenAuthResult = {
-    type: "ALL_REPOS",
+  const accountAResult = createTestTokenAuthResultAllowed({
     request: {
       consumer: { account: "consumer-a" },
-      tokenDec: {
-        shared: false,
-        as: undefined,
-        account: "account-a",
-        repos: "all",
-        permissions: { metadata: "read" },
-      },
+      tokenDec: createTestTokenDec(),
       repos: "all",
     },
-    maxWant: "read",
-    have: { metadata: "read" },
-    isSufficient: true,
-    isMissingRole: false,
-    isAllowed: true,
-    rules: [],
-  };
-  const accountBResult: TokenAuthResult = {
-    type: "ALL_REPOS",
+  });
+  const accountBResult = createTestTokenAuthResultAllowed({
     request: {
       consumer: { account: "consumer-a" },
-      tokenDec: {
-        shared: false,
-        as: undefined,
-        account: "account-b",
-        repos: "all",
-        permissions: { metadata: "read" },
-      },
+      tokenDec: createTestTokenDec({ account: "account-b" }),
       repos: "all",
     },
-    maxWant: "read",
-    have: { metadata: "read" },
-    isSufficient: true,
-    isMissingRole: false,
-    isAllowed: true,
-    rules: [],
-  };
+  });
 
   await createTokens([accountAResult, accountBResult]);
 
@@ -1193,46 +989,30 @@ it("creates separate tokens when the requested role is different", async () => {
 
   const createTokens = createTokenFactory(findIssuerOctokit);
 
-  const roleAResult: TokenAuthResult = {
-    type: "ALL_REPOS",
+  const roleAResult = createTestTokenAuthResultAllowed({
     request: {
       consumer: { account: "account-a" },
-      tokenDec: {
-        shared: false,
+      tokenDec: createTestTokenDec({
         as: "role-a",
-        account: "account-a",
-        repos: "all",
         permissions: { contents: "write" },
-      },
+      }),
       repos: "all",
     },
     maxWant: "write",
     have: { contents: "write" },
-    isSufficient: true,
-    isMissingRole: false,
-    isAllowed: true,
-    rules: [],
-  };
-  const roleBResult: TokenAuthResult = {
-    type: "ALL_REPOS",
+  });
+  const roleBResult = createTestTokenAuthResultAllowed({
     request: {
       consumer: { account: "account-a" },
-      tokenDec: {
-        shared: false,
+      tokenDec: createTestTokenDec({
         as: "role-b",
-        account: "account-a",
-        repos: "all",
         permissions: { contents: "write" },
-      },
+      }),
       repos: "all",
     },
     maxWant: "write",
     have: { contents: "write" },
-    isSufficient: true,
-    isMissingRole: false,
-    isAllowed: true,
-    rules: [],
-  };
+  });
 
   await createTokens([roleAResult, roleBResult]);
 
@@ -1306,46 +1086,15 @@ it("creates separate tokens when requested permissions are different", async () 
 
   const createTokens = createTokenFactory(findIssuerOctokit);
 
-  const metadataResult: TokenAuthResult = {
-    type: "ALL_REPOS",
+  const metadataResult = createTestTokenAuthResultAllowed();
+  const contentsResult = createTestTokenAuthResultAllowed({
     request: {
       consumer: { account: "account-a" },
-      tokenDec: {
-        shared: false,
-        as: undefined,
-        account: "account-a",
-        repos: "all",
-        permissions: { metadata: "read" },
-      },
+      tokenDec: createTestTokenDec({ permissions: { contents: "read" } }),
       repos: "all",
     },
-    maxWant: "read",
-    have: { metadata: "read" },
-    isSufficient: true,
-    isMissingRole: false,
-    isAllowed: true,
-    rules: [],
-  };
-  const contentsResult: TokenAuthResult = {
-    type: "ALL_REPOS",
-    request: {
-      consumer: { account: "account-a" },
-      tokenDec: {
-        shared: false,
-        as: undefined,
-        account: "account-a",
-        repos: "all",
-        permissions: { contents: "read" },
-      },
-      repos: "all",
-    },
-    maxWant: "read",
     have: { contents: "read" },
-    isSufficient: true,
-    isMissingRole: false,
-    isAllowed: true,
-    rules: [],
-  };
+  });
 
   await createTokens([metadataResult, contentsResult]);
 
@@ -1416,48 +1165,21 @@ it("creates separate tokens when requested repository access is different", asyn
 
   const createTokens = createTokenFactory(findIssuerOctokit);
 
-  const allReposResult: TokenAuthResult = {
-    type: "ALL_REPOS",
-    request: {
-      consumer: { account: "account-a" },
-      tokenDec: {
-        shared: false,
-        as: undefined,
-        account: "account-a",
-        repos: "all",
-        permissions: { metadata: "read" },
-      },
-      repos: "all",
-    },
-    maxWant: "read",
-    have: { metadata: "read" },
-    isSufficient: true,
-    isMissingRole: false,
-    isAllowed: true,
-    rules: [],
-  };
-  const selectedReposResult: TokenAuthResult = {
+  const allReposResult = createTestTokenAuthResultAllowed();
+  const selectedReposResult = createTestTokenAuthResultAllowed({
     type: "SELECTED_REPOS",
     request: {
       consumer: { account: "account-a" },
-      tokenDec: {
-        shared: false,
-        as: undefined,
-        account: "account-a",
+      tokenDec: createTestTokenDec({
         repos: ["repo-a"],
-        permissions: { metadata: "read" },
-      },
+      }),
       repos: ["repo-a"],
     },
-    maxWant: "read",
     results: {
       "repo-a": { rules: [], have: { metadata: "read" }, isSufficient: true },
     },
     isMatched: true,
-    isSufficient: true,
-    isMissingRole: false,
-    isAllowed: true,
-  };
+  } as never);
 
   await createTokens([allReposResult, selectedReposResult]);
 
@@ -1526,26 +1248,10 @@ it("doesn't create tokens when not allowed", async () => {
   __setInstallations([[appAInstallationA, [repoA]]]);
   const createTokens = createTokenFactory(findIssuerOctokit);
 
-  const notAllowedResult: TokenAuthResult = {
-    type: "ALL_REPOS",
-    request: {
-      consumer: { account: "account-a" },
-      tokenDec: {
-        shared: false,
-        as: undefined,
-        account: "account-a",
-        repos: "all",
-        permissions: { metadata: "read" },
-      },
-      repos: "all",
-    },
+  const notAllowedResult = createTestTokenAuthResultNotAllowed({
     maxWant: "write",
     have: { metadata: "read" },
-    isSufficient: false,
-    isMissingRole: false,
-    isAllowed: false,
-    rules: [],
-  };
+  });
 
   await createTokens([notAllowedResult]);
 
@@ -1606,46 +1312,24 @@ it("shows separate explanations for non-allowed tokens", async () => {
   __setInstallations([[appAInstallationA, [repoA]]]);
   const createTokens = createTokenFactory(findIssuerOctokit);
 
-  const notAllowedResultA: TokenAuthResult = {
-    type: "ALL_REPOS",
+  const notAllowedResultA = createTestTokenAuthResultNotAllowed({
     request: {
       consumer: { account: "account-x" },
-      tokenDec: {
-        shared: false,
-        as: undefined,
-        account: "account-a",
-        repos: "all",
-        permissions: { metadata: "read" },
-      },
+      tokenDec: createTestTokenDec(),
       repos: "all",
     },
     maxWant: "write",
     have: { metadata: "read" },
-    isSufficient: false,
-    isMissingRole: false,
-    isAllowed: false,
-    rules: [],
-  };
-  const notAllowedResultB: TokenAuthResult = {
-    type: "ALL_REPOS",
+  });
+  const notAllowedResultB = createTestTokenAuthResultNotAllowed({
     request: {
       consumer: { account: "account-y", repo: "repo-y" },
-      tokenDec: {
-        shared: false,
-        as: undefined,
-        account: "account-a",
-        repos: "all",
-        permissions: { metadata: "read" },
-      },
+      tokenDec: createTestTokenDec(),
       repos: "all",
     },
     maxWant: "write",
     have: { metadata: "read" },
-    isSufficient: false,
-    isMissingRole: false,
-    isAllowed: false,
-    rules: [],
-  };
+  });
 
   const results = await createTokens([notAllowedResultA, notAllowedResultB]);
 
@@ -1718,48 +1402,24 @@ it("explains when no permissions were requested", async () => {
   __setInstallations([[appAInstallationA, [repoA]]]);
   const createTokens = createTokenFactory(findIssuerOctokit);
 
-  const emptyPermissionsResult: TokenAuthResult = {
-    type: "ALL_REPOS",
+  const emptyPermissionsResult = createTestTokenAuthResultNotAllowed({
     request: {
       consumer: { account: "consumer-a" },
-      tokenDec: {
-        shared: false,
-        as: undefined,
-        account: "account-a",
-        repos: "all",
-        permissions: {},
-      },
+      tokenDec: createTestTokenDec({ permissions: {} }),
       repos: "all",
     },
-    maxWant: "read",
-    have: {},
-    isSufficient: false,
-    isMissingRole: false,
-    isAllowed: false,
-    rules: [],
-  };
+  });
 
   // Also applies when all permissions have explicit "none" access levels
-  const allNonePermissionsResult: TokenAuthResult = {
-    type: "ALL_REPOS",
+  const allNonePermissionsResult = createTestTokenAuthResultNotAllowed({
     request: {
       consumer: { account: "consumer-b" },
-      tokenDec: {
-        shared: false,
-        as: undefined,
-        account: "account-a",
-        repos: "all",
+      tokenDec: createTestTokenDec({
         permissions: { contents: "none", metadata: "none" },
-      },
+      }),
       repos: "all",
     },
-    maxWant: "read",
-    have: {},
-    isSufficient: false,
-    isMissingRole: false,
-    isAllowed: false,
-    rules: [],
-  };
+  });
 
   await createTokens([emptyPermissionsResult, allNonePermissionsResult]);
 
@@ -1796,26 +1456,13 @@ it("fails when no suitable issuer can create the token", async () => {
 
   const createTokens = createTokenFactory(findIssuerOctokit);
 
-  const noIssuerResult: TokenAuthResult = {
-    type: "ALL_REPOS",
+  const noIssuerResult = createTestTokenAuthResultAllowed({
     request: {
       consumer: { account: "account-a" },
-      tokenDec: {
-        shared: false,
-        as: undefined,
-        account: "account-b",
-        repos: "all",
-        permissions: { metadata: "read" },
-      },
+      tokenDec: createTestTokenDec({ account: "account-b" }),
       repos: "all",
     },
-    maxWant: "read",
-    have: { metadata: "read" },
-    isSufficient: true,
-    isMissingRole: false,
-    isAllowed: true,
-    rules: [],
-  };
+  });
 
   await createTokens([noIssuerResult]);
 
@@ -1881,49 +1528,28 @@ it("explains failures caused by GitHub API errors", async () => {
 
   const createTokens = createTokenFactory(findIssuerOctokit);
 
-  const allReposAuthResult: TokenAuthResult = {
-    type: "ALL_REPOS",
+  const allReposAuthResult = createTestTokenAuthResultAllowed({
     request: {
       consumer: { account: "consumer-a" },
-      tokenDec: {
-        shared: false,
-        as: undefined,
-        account: "account-a",
-        repos: "all",
-        permissions: { metadata: "read" },
-      },
+      tokenDec: createTestTokenDec(),
       repos: "all",
     },
-    maxWant: "read",
-    have: { metadata: "read" },
-    isSufficient: true,
-    isMissingRole: false,
-    isAllowed: true,
-    rules: [],
-  };
+  });
 
-  const selectedReposAuthResult: TokenAuthResult = {
+  const selectedReposAuthResult = createTestTokenAuthResultAllowed({
     type: "SELECTED_REPOS",
     request: {
       consumer: { account: "consumer-a" },
-      tokenDec: {
-        shared: false,
-        as: undefined,
-        account: "account-a",
+      tokenDec: createTestTokenDec({
         repos: ["repo-a"],
-        permissions: { metadata: "read" },
-      },
+      }),
       repos: ["repo-a"],
     },
-    maxWant: "read",
     results: {
       "repo-a": { rules: [], have: { metadata: "read" }, isSufficient: true },
     },
     isMatched: true,
-    isSufficient: true,
-    isMissingRole: false,
-    isAllowed: true,
-  };
+  } as never);
 
   await createTokens([allReposAuthResult, selectedReposAuthResult]);
 
@@ -2002,26 +1628,13 @@ it("explains failures caused by unexpected errors", async () => {
 
   const createTokens = createTokenFactory(findIssuerOctokit);
 
-  const authResult: TokenAuthResult = {
-    type: "ALL_REPOS",
+  const authResult = createTestTokenAuthResultAllowed({
     request: {
       consumer: { account: "consumer-a" },
-      tokenDec: {
-        shared: false,
-        as: undefined,
-        account: "account-a",
-        repos: "all",
-        permissions: { metadata: "read" },
-      },
+      tokenDec: createTestTokenDec(),
       repos: "all",
     },
-    maxWant: "read",
-    have: { metadata: "read" },
-    isSufficient: true,
-    isMissingRole: false,
-    isAllowed: true,
-    rules: [],
-  };
+  });
 
   await createTokens([authResult]);
 
