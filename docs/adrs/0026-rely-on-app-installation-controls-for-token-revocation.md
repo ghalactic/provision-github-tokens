@@ -18,7 +18,7 @@ of exposure.
 
 The only supported revocation mechanism is at the app installation level. By
 revoking permissions from the installation, or disabling/deleting the
-installation or app. The action does not implement per-token revocation.
+installation or app. The action doesn't implement per-token revocation.
 
 ## Consequences
 

@@ -11,7 +11,7 @@ it("returns the error stack when available", () => {
   `);
 });
 
-it("returns the error message if there is no stack", () => {
+it("returns the error message if there's no stack", () => {
   const error = new Error("foo");
   delete error.stack;
 

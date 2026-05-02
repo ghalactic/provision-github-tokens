@@ -736,11 +736,11 @@ it("throws when an invalid pattern is used in /permissions/rules/<n>/resources/<
       parseProviderConfig({ account: "account-self", repo: "repo-self" }, yaml),
     ),
   ).toMatchInlineSnapshot(`
-      "Parsing of provider configuration failed
+    "Parsing of provider configuration failed
 
-      Caused by: Invalid provider configuration:
-        - must be a single period, or only contain alphanumeric characters, hyphens, or asterisks, and cannot begin or end with a hyphen (/permissions/rules/0/resources/0/accounts/0)"
-    `);
+    Caused by: Invalid provider configuration:
+      - must be a single period, or only contain alphanumeric characters, hyphens, or asterisks, and can't begin or end with a hyphen (/permissions/rules/0/resources/0/accounts/0)"
+  `);
 });
 
 it("throws when an invalid pattern is used in /permissions/rules/<n>/consumers/<n>", async () => {

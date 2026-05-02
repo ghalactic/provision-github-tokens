@@ -4,19 +4,19 @@ import { normalizeGitHubPattern } from "./github-pattern.js";
 it("doesn't allow empty patterns", () => {
   expect(() =>
     normalizeGitHubPattern({ account: "defining-account" }, ""),
-  ).toThrow('GitHub pattern "" account part cannot be empty');
+  ).toThrow(`GitHub pattern "" account part can't be empty`);
 });
 
 it("doesn't allow patterns with an empty account", () => {
   expect(() =>
     normalizeGitHubPattern({ account: "defining-account" }, "/repo"),
-  ).toThrow('GitHub pattern "/repo" account part cannot be empty');
+  ).toThrow(`GitHub pattern "/repo" account part can't be empty`);
 });
 
 it("doesn't allow patterns with an empty repo", () => {
   expect(() =>
     normalizeGitHubPattern({ account: "defining-account" }, "account/"),
-  ).toThrow('GitHub pattern "account/" repo part cannot be empty');
+  ).toThrow(`GitHub pattern "account/" repo part can't be empty`);
 });
 
 it("doesn't allow patterns with more than one slash", () => {
@@ -26,7 +26,7 @@ it("doesn't allow patterns with more than one slash", () => {
       "account/repo/extra",
     ),
   ).toThrow(
-    'GitHub pattern "account/repo/extra" cannot have more than one slash',
+    `GitHub pattern "account/repo/extra" can't have more than one slash`,
   );
 });
 

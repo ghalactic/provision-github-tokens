@@ -123,7 +123,7 @@ it("discovers requesters in a single account", async () => {
     "::debug::Discovered requester org-a/repo-a
     ::debug::Requester org-a/repo-a has 1 token declaration ["tokenA"]
     ::debug::Requester org-a/repo-a has 1 secret declaration ["SECRET_A"]
-    ::debug::Repo org-a/repo-b is not a requester
+    ::debug::Repo org-a/repo-b isn't a requester
     ::debug::Discovered requester org-a/repo-c
     ::debug::Requester org-a/repo-c has 2 token declarations ["tokenB","tokenC"]
     ::debug::Requester org-a/repo-c has 2 secret declarations ["SECRET_B","SECRET_C"]
@@ -259,11 +259,11 @@ it("discovers requesters in multiple account", async () => {
     "::debug::Discovered requester org-a/repo-a
     ::debug::Requester org-a/repo-a has 1 token declaration ["tokenA"]
     ::debug::Requester org-a/repo-a has 1 secret declaration ["SECRET_A"]
-    ::debug::Repo org-a/repo-b is not a requester
+    ::debug::Repo org-a/repo-b isn't a requester
     ::debug::Discovered requester user-b/repo-c
     ::debug::Requester user-b/repo-c has 1 token declaration ["tokenA"]
     ::debug::Requester user-b/repo-c has 1 secret declaration ["SECRET_A"]
-    ::debug::Repo user-b/repo-d is not a requester
+    ::debug::Repo user-b/repo-d isn't a requester
     Discovered 2 requesters
     "
   `);

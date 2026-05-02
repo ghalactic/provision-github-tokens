@@ -23,7 +23,7 @@ object that is authorized and issued once.
 ## Consequences
 
 - Good, because each unique token request is authorized exactly once.
-- Bad, because the deduplication is implicit; there is no configuration surface
+- Bad, because the deduplication is implicit; there's no configuration surface
   for controlling which requests merge.
 
 ## Alternatives considered

@@ -25,7 +25,7 @@ This design assumes that the provider repository has stricter write access than
 the requesting repositories. In a typical setup, a platform or security team
 maintains the provider repository while development teams maintain their own
 requesting repositories. The requesting teams control their own token
-declarations (what they _want_), but cannot unilaterally change what they're
+declarations (what they _want_), but can't unilaterally change what they're
 _allowed_.
 
 Development teams can still self-serve by submitting pull requests against the

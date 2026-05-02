@@ -4,13 +4,13 @@ import { createNamePattern } from "./name-pattern.js";
 
 it("doesn't allow empty patterns", () => {
   expect(throws(() => createNamePattern(""))).toMatchInlineSnapshot(
-    `"Pattern cannot be empty"`,
+    `"Pattern can't be empty"`,
   );
 });
 
 it("doesn't allow patterns with slashes", () => {
   expect(throws(() => createNamePattern("/"))).toMatchInlineSnapshot(
-    `"Pattern "/" cannot contain /"`,
+    `"Pattern "/" can't contain /"`,
   );
 });
 
@@ -51,14 +51,14 @@ it("is literal when the pattern has no wildcards and contains dots", () => {
   expect(createNamePattern("name.a").isLiteral).toBe(true);
 });
 
-it("is not literal when the pattern contains a wildcard", () => {
+it("isn't literal when the pattern contains a wildcard", () => {
   expect(createNamePattern("secret_*").isLiteral).toBe(false);
 });
 
-it("is not literal when the pattern is a lone wildcard", () => {
+it("isn't literal when the pattern is a lone wildcard", () => {
   expect(createNamePattern("*").isLiteral).toBe(false);
 });
 
-it("is not literal when the pattern contains multiple wildcards", () => {
+it("isn't literal when the pattern contains multiple wildcards", () => {
   expect(createNamePattern("*-name-*").isLiteral).toBe(false);
 });

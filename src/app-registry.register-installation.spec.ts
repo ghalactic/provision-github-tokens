@@ -10,7 +10,7 @@ import {
   type InstallationRegistration,
 } from "./app-registry.js";
 
-it("doesn't allow registering an installation of an app that is not registered", () => {
+it("doesn't allow registering an installation of an app that isn't registered", () => {
   const accountA = createTestInstallationAccount("Organization", 100, "org-a");
   const appA: AppRegistration = {
     app: createTestApp(110, "app-a", "App A"),

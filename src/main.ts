@@ -31,17 +31,17 @@ try {
   const githubServerUrl = process.env.GITHUB_SERVER_URL;
   /* istanbul ignore next - @preserve */
   if (!githubRef) {
-    throw new Error("Invariant violation: GITHUB_REF is not set");
+    throw new Error("Invariant violation: GITHUB_REF isn't set");
   }
 
   /* istanbul ignore next - @preserve */
   if (!githubRepository) {
-    throw new Error("Invariant violation: GITHUB_REPOSITORY is not set");
+    throw new Error("Invariant violation: GITHUB_REPOSITORY isn't set");
   }
 
   /* istanbul ignore next - @preserve */
   if (!githubServerUrl) {
-    throw new Error("Invariant violation: GITHUB_SERVER_URL is not set");
+    throw new Error("Invariant violation: GITHUB_SERVER_URL isn't set");
   }
 
   const githubActionRepository =

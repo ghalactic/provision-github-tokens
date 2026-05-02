@@ -1,10 +1,10 @@
 import type { Pattern } from "./pattern.js";
 
 export function createNamePattern(pattern: string): Pattern {
-  if (!pattern) throw new Error("Pattern cannot be empty");
+  if (!pattern) throw new Error("Pattern can't be empty");
 
   if (pattern.includes("/")) {
-    throw new Error(`Pattern ${JSON.stringify(pattern)} cannot contain /`);
+    throw new Error(`Pattern ${JSON.stringify(pattern)} can't contain /`);
   }
 
   const literals = pattern.split("*");

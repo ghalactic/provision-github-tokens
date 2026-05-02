@@ -9,10 +9,10 @@ it("knows that write is write access", () => {
   expect(isWriteAccess("write")).toBe(true);
 });
 
-it("knows that read is not write access", () => {
+it("knows that read isn't write access", () => {
   expect(isWriteAccess("read")).toBe(false);
 });
 
-it("knows that none is not write access", () => {
+it("knows that none isn't write access", () => {
   expect(isWriteAccess("none")).toBe(false);
 });

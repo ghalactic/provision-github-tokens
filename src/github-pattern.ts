@@ -46,7 +46,7 @@ function splitGitHubPattern(pattern: string): [string, string | undefined] {
   if (parts.length > 2) {
     throw new Error(
       `GitHub pattern ${JSON.stringify(pattern)} ` +
-        `cannot have more than one slash`,
+        `can't have more than one slash`,
     );
   }
 
@@ -54,12 +54,12 @@ function splitGitHubPattern(pattern: string): [string, string | undefined] {
 
   if (!accountPart) {
     throw new Error(
-      `GitHub pattern ${JSON.stringify(pattern)} account part cannot be empty`,
+      `GitHub pattern ${JSON.stringify(pattern)} account part can't be empty`,
     );
   }
   if (repoPart === "") {
     throw new Error(
-      `GitHub pattern ${JSON.stringify(pattern)} repo part cannot be empty`,
+      `GitHub pattern ${JSON.stringify(pattern)} repo part can't be empty`,
     );
   }
 

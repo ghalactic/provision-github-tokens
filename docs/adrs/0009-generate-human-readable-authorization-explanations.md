@@ -9,7 +9,7 @@ decision-makers: ezzatron
 ## Context and problem statement
 
 The authorization rule system evaluates layered pattern matching across multiple
-rules. When a token request is denied, the reason is not obvious from the config
+rules. When a token request is denied, the reason isn't obvious from the config
 alone. Multiple rules may interact, and the final decision depends on which
 patterns matched and what permissions they contributed. Without explanations,
 debugging denied requests requires reading the authorization logic itself.

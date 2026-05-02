@@ -283,7 +283,7 @@ export function createAppRegistry(): AppRegistry {
       throw new Error(
         "Invariant violation: " +
           `Installation ${installation.id} ` +
-          "is not associated with a named account",
+          "isn't associated with a named account",
       );
     }
 

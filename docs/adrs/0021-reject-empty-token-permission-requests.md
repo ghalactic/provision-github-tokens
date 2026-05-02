@@ -25,7 +25,7 @@ validation happens before any authorization rules are evaluated.
 - Good, because config mistakes that result in empty permissions are caught as
   errors rather than producing unexpectedly powerful tokens.
 - Good, because token scope is always explicit and auditable.
-- Bad, because there is no way to intentionally request all of an installation's
+- Bad, because there's no way to intentionally request all of an installation's
   permissions; the request must always enumerate them.
 
 ## Alternatives considered

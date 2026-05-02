@@ -18,8 +18,7 @@ Provider-controlled rules (see [ADR-0008]) define _policy_ (what requesters are
 allowed to request). But policy alone isn't sufficient. An issuer installation's
 own permissions represent a hard technical boundary on what tokens it can
 create, analogous to an [AWS IAM permissions boundary]. Even if provider rules
-would allow a token request, the issuer cannot grant permissions it doesn't
-have.
+would allow a token request, the issuer can't grant permissions it doesn't have.
 
 [adr-0008]: 0008-use-provider-controlled-trust-for-token-authorization.md
 [aws iam permissions boundary]:
@@ -38,7 +37,7 @@ _and_ the issuer must have the requested permissions.
 ## Consequences
 
 - Good, because the issuer installation's permissions provide a clear, immutable
-  security boundary that cannot be overridden by configuration.
+  security boundary that can't be overridden by configuration.
 - Good, because revoking a permission from an installation immediately prevents
   any token from including it.
 - Bad, because a mismatch between provider rules and installation permissions
@@ -48,7 +47,7 @@ _and_ the issuer must have the requested permissions.
 ## Alternatives considered
 
 - **Ignore installation permissions, rely only on provider rules**: not
-  technically possible. GitHub's API enforces that installation tokens cannot
+  technically possible. GitHub's API enforces that installation tokens can't
   exceed the installation's permissions. Making this an explicit design decision
   rather than a hidden API constraint improves clarity.
 - **Automatically downgrade tokens to the installation's permissions**: would

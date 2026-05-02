@@ -22,11 +22,11 @@ and source code.
 
 - **Provider**: the repo that runs this action and defines the central
   authorization policy. The provider controls what tokens requesters are allowed
-  to have and where secrets can be provisioned. It is the sole authority on
-  token policy.
+  to have and where secrets can be provisioned. It's the sole authority on token
+  policy.
 - **Requester**: a repo that declares what tokens it needs and where they should
   be provisioned as secrets. Requesters declare what they _want_; the provider
-  decides what they're _allowed_. A requester cannot self-authorize.
+  decides what they're _allowed_. A requester can't self-authorize.
 - **Consumer**: the repo or account that actually receives an issued token. The
   consumer may be the requester itself, or a different repo that the requester
   has nominated as a provisioning target.
@@ -89,7 +89,7 @@ and source code.
   authorization. Both checks must pass for a secret to be provisioned.
 - **Permissions boundary**: the hard ceiling on token permissions imposed by the
   issuer installation's own granted permissions. Even if provider rules allow a
-  request, the issuer cannot grant permissions it doesn't have. Analogous to an
+  request, the issuer can't grant permissions it doesn't have. Analogous to an
   [AWS IAM permissions boundary].
 - **Access level**: the level of access granted by a token for a specific
   permission, ranked as: `none` < `read` < `write` < `admin`.
@@ -98,11 +98,11 @@ and source code.
 
 - **Token creation result**: the outcome of attempting to create an installation
   access token after authorization. A token may be successfully created, or the
-  attempt may fail because it was not authorized, no issuer was found, or an
+  attempt may fail because it wasn't authorized, no issuer was found, or an
   error occurred.
 - **Provisioning result**: the outcome of attempting to create a secret in a
   provision target. A secret may be successfully provisioned, or the attempt may
-  fail because it was not authorized, no token was available, no provisioner was
+  fail because it wasn't authorized, no token was available, no provisioner was
   found, or an error occurred.
 - **Provision target**: the combination of a secret type and a destination
   account, repo, or environment where a secret is placed.

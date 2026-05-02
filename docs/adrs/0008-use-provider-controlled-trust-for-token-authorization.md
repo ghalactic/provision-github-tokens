@@ -25,8 +25,8 @@ Provider permission rules specify:
 - For which target resources (all repos, specific repos, or no repos)
 - With what permission levels
 
-Requesters cannot escalate beyond what the provider allows. The provider has
-veto power over every token request.
+Requesters can't escalate beyond what the provider allows. The provider has veto
+power over every token request.
 
 ## Consequences
 

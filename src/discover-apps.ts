@@ -214,7 +214,7 @@ async function discoverInstallation(
     debug(
       `Skipping discovery of app ${appInput.appId} ` +
         `installation ${installation.id} ` +
-        `because it is not associated with a named account`,
+        `because it isn't associated with a named account`,
     );
 
     return;

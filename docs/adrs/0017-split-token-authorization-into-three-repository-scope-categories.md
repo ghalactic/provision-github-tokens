@@ -12,7 +12,7 @@ GitHub installation access tokens can be scoped to all repositories, a selected
 set of repositories, or no repositories at all. These scopes have fundamentally
 different authorization characteristics.
 
-A critical constraint is that GitHub's permission model does not scope
+A critical constraint is that GitHub's permission model doesn't scope
 permissions to individual repositories. When a token is granted a permission,
 that permission applies at the account level, even when the token is restricted
 to selected repositories. The token can only _access_ those selected repos, but
