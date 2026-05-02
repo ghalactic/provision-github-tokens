@@ -23,14 +23,14 @@ config file.
 
 This creates a natural security boundary: only repos accessible to a provisioner
 app installation can participate. Apps are typically installed at the org level,
-so adding a new requester is just adding a config file — no changes to the
-provider or app installation are needed.
+so adding a new requester is adding a config file — no changes to the provider
+or app installation are needed.
 
 ## Consequences
 
 - Good, because the security boundary is enforced by GitHub's app installation
   model — no custom access control needed.
-- Good, because onboarding a new requester is just adding a config file.
+- Good, because onboarding a new requester is adding a config file.
 - Bad, because discovery requires enumerating all installations and their repos,
   which scales with the number of installations.
 

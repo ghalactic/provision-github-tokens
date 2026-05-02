@@ -65,8 +65,8 @@ and source code.
   (only the declaring repo can use them).
 - **Token reference** — a string that points to a token declaration. The
   qualified form is `{owner/repo}.{name}`, which can refer to any shared
-  declaration. The short form is just `{name}`, which refers to a declaration in
-  the same requester config.
+  declaration. The short form is `{name}` alone, which refers to a declaration
+  in the same requester config.
 - **Secret declaration** — a named entry in a requester config's `secrets` map
   that pairs a token reference with a set of provision targets (accounts, repos,
   environments, and types of secrets to be created).
