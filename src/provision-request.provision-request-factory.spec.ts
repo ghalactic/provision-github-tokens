@@ -6,10 +6,8 @@ import {
 } from "../test/declaration.js";
 import { createTestEnvironmentResolver } from "../test/environment-resolver.js";
 import {
-  createTestApp,
-  createTestInstallation,
-  createTestInstallationAccount,
-  createTestInstallationRepo,
+  createTestApps,
+  createTestInstallationAccounts,
 } from "../test/github-api.js";
 import {
   createTestProvisionRequest,
@@ -78,36 +76,21 @@ it("supports provisioning to multiple targets", async () => {
   const tokenDecA = createTestTokenDec({ shared: true });
   declarationRegistry.registerDeclaration(repoAARef, "token-a", tokenDecA);
 
-  const accountA = createTestInstallationAccount(
-    "Organization",
-    100,
-    "account-a",
-  );
-  const repoAA = createTestInstallationRepo(accountA, "repo-a");
-  const repoAB = createTestInstallationRepo(accountA, "repo-b");
-
-  const accountB = createTestInstallationAccount(
-    "Organization",
-    200,
-    "account-b",
-  );
-  const repoBA = createTestInstallationRepo(accountB, "repo-a");
-
-  const appA = createTestApp(110, "app-a", "App A");
-
-  const appAInstallationA = createTestInstallation(
-    111,
-    appA,
-    accountA,
-    "selected",
-  );
-
-  const appAInstallationB = createTestInstallation(
-    112,
-    appA,
-    accountB,
-    "selected",
-  );
+  const [[accountA, [repoAA, repoAB]], [accountB, [repoBA]]] =
+    createTestInstallationAccounts(
+      ["Organization", 100, "account-a", ["repo-a", "repo-b"]],
+      ["Organization", 200, "account-b", ["repo-a"]],
+    );
+  const [[appA, [appAInstallationA, appAInstallationB]]] = createTestApps([
+    110,
+    "app-a",
+    "App A",
+    {},
+    [
+      [111, accountA, "selected"],
+      [112, accountB, "selected"],
+    ],
+  ]);
 
   const appRegistry = createTestAppRegistry({
     app: appA,

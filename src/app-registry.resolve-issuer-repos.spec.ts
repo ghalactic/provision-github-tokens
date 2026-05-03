@@ -2,8 +2,7 @@ import { expect, it } from "vitest";
 import {
   createTestApp,
   createTestInstallation,
-  createTestInstallationAccount,
-  createTestInstallationRepo,
+  createTestInstallationAccounts,
 } from "../test/github-api.js";
 import {
   createAppRegistry,
@@ -13,12 +12,11 @@ import {
 import { createGitHubPattern } from "./github-pattern.js";
 
 it("resolves a list of repo patterns into a list of issuer-accessible repos", () => {
-  const accountA = createTestInstallationAccount("Organization", 100, "org-a");
-  const repoA = createTestInstallationRepo(accountA, "repo-a");
-  const repoB = createTestInstallationRepo(accountA, "repo-b");
-  const accountB = createTestInstallationAccount("User", 200, "user-b");
-  const repoC = createTestInstallationRepo(accountB, "repo-c");
-  const repoD = createTestInstallationRepo(accountB, "repo-d");
+  const [[accountA, [repoA, repoB]], [accountB, [repoC, repoD]]] =
+    createTestInstallationAccounts(
+      ["Organization", 100, "org-a", ["repo-a", "repo-b"]],
+      ["User", 200, "user-b", ["repo-c", "repo-d"]],
+    );
   const appA: AppRegistration = {
     app: createTestApp(110, "app-a", "App A"),
     issuer: { enabled: true, roles: [] },
@@ -58,10 +56,11 @@ it("resolves a list of repo patterns into a list of issuer-accessible repos", ()
 });
 
 it("doesn't resolve repos accessible only to non-issuer apps", () => {
-  const accountA = createTestInstallationAccount("Organization", 100, "org-a");
-  const repoA = createTestInstallationRepo(accountA, "repo-a");
-  const accountB = createTestInstallationAccount("Organization", 200, "org-b");
-  const repoB = createTestInstallationRepo(accountB, "repo-b");
+  const [[accountA, [repoA]], [accountB, [repoB]]] =
+    createTestInstallationAccounts(
+      ["Organization", 100, "org-a", ["repo-a"]],
+      ["Organization", 200, "org-b", ["repo-b"]],
+    );
   const appA: AppRegistration = {
     app: createTestApp(110, "app-a", "App A"),
     issuer: { enabled: false, roles: [] },

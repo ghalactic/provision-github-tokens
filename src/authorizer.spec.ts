@@ -8,10 +8,8 @@ import { createTestAppRegistry } from "../test/app-registry.js";
 import { createTestSecretDec } from "../test/declaration.js";
 import { createTestEnvironmentResolver } from "../test/environment-resolver.js";
 import {
-  createTestApp,
-  createTestInstallation,
-  createTestInstallationAccount,
-  createTestInstallationRepo,
+  createTestApps,
+  createTestInstallationAccounts,
 } from "../test/github-api.js";
 import {
   createTestProvisionRequest,
@@ -37,17 +35,19 @@ beforeEach(() => {
 });
 
 it("authorizes all requests and outputs the results", async () => {
-  const accountA = createTestInstallationAccount(
+  const [[accountA, [repoA]]] = createTestInstallationAccounts([
     "Organization",
     100,
     "account-a",
-  );
-  const repoA = createTestInstallationRepo(accountA, "repo-a");
-  const appA = createTestApp(110, "app-a", "App A", {
-    contents: "read",
-    metadata: "read",
-  });
-  const appAInstallationA = createTestInstallation(111, appA, accountA, "all");
+    ["repo-a"],
+  ]);
+  const [[appA, [appAInstallationA]]] = createTestApps([
+    110,
+    "app-a",
+    "App A",
+    { contents: "read", metadata: "read" },
+    [[111, accountA]],
+  ]);
 
   const declarationRegistry = createTokenDeclarationRegistry();
 
@@ -289,17 +289,19 @@ it("authorizes all requests and outputs the results", async () => {
 });
 
 it("handles empty token requests", async () => {
-  const accountA = createTestInstallationAccount(
+  const [[accountA, [repoA]]] = createTestInstallationAccounts([
     "Organization",
     100,
     "account-a",
-  );
-  const repoA = createTestInstallationRepo(accountA, "repo-a");
-  const appA = createTestApp(110, "app-a", "App A", {
-    contents: "read",
-    metadata: "read",
-  });
-  const appAInstallationA = createTestInstallation(111, appA, accountA, "all");
+    ["repo-a"],
+  ]);
+  const [[appA, [appAInstallationA]]] = createTestApps([
+    110,
+    "app-a",
+    "App A",
+    { contents: "read", metadata: "read" },
+    [[111, accountA]],
+  ]);
 
   const declarationRegistry = createTokenDeclarationRegistry();
 

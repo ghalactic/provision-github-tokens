@@ -2,8 +2,7 @@ import { expect, it } from "vitest";
 import {
   createTestApp,
   createTestInstallation,
-  createTestInstallationAccount,
-  createTestInstallationRepo,
+  createTestInstallationAccounts,
 } from "../test/github-api.js";
 import {
   createAppRegistry,
@@ -12,7 +11,11 @@ import {
 } from "./app-registry.js";
 
 it("finds issuers for all repos in an account with one permission", () => {
-  const orgA = createTestInstallationAccount("Organization", 100, "org-a");
+  const [[orgA]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "org-a",
+  ]);
   const appA: AppRegistration = {
     app: createTestApp(110, "app-a", "App A", { contents: "write" }),
     issuer: { enabled: true, roles: ["role-a"] },
@@ -43,8 +46,12 @@ it("finds issuers for all repos in an account with one permission", () => {
 });
 
 it("finds issuers for one selected repo with one permission", () => {
-  const orgA = createTestInstallationAccount("Organization", 100, "org-a");
-  const repoA = createTestInstallationRepo(orgA, "repo-a");
+  const [[orgA, [repoA]]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "org-a",
+    ["repo-a"],
+  ]);
   const appA: AppRegistration = {
     app: createTestApp(110, "app-a", "App A", { contents: "write" }),
     issuer: { enabled: true, roles: ["role-a"] },
@@ -75,9 +82,12 @@ it("finds issuers for one selected repo with one permission", () => {
 });
 
 it("finds issuers for multiple selected repos with multiple permissions", () => {
-  const orgA = createTestInstallationAccount("Organization", 100, "org-a");
-  const repoA = createTestInstallationRepo(orgA, "repo-a");
-  const repoB = createTestInstallationRepo(orgA, "repo-b");
+  const [[orgA, [repoA, repoB]]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "org-a",
+    ["repo-a", "repo-b"],
+  ]);
   const appA: AppRegistration = {
     app: createTestApp(110, "app-a", "App A", {
       contents: "write",
@@ -111,7 +121,11 @@ it("finds issuers for multiple selected repos with multiple permissions", () => 
 });
 
 it("finds issuers for no repos", () => {
-  const orgA = createTestInstallationAccount("Organization", 100, "org-a");
+  const [[orgA]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "org-a",
+  ]);
   const appA: AppRegistration = {
     app: createTestApp(110, "app-a", "App A", { metadata: "read" }),
     issuer: { enabled: true, roles: ["role-a"] },
@@ -148,8 +162,12 @@ it.each([
 ] as const)(
   "finds issuers when it has higher access (want %s, have %s)",
   (want, have) => {
-    const orgA = createTestInstallationAccount("Organization", 100, "org-a");
-    const repoA = createTestInstallationRepo(orgA, "repo-a");
+    const [[orgA, [repoA]]] = createTestInstallationAccounts([
+      "Organization",
+      100,
+      "org-a",
+      ["repo-a"],
+    ]);
     const appA: AppRegistration = {
       app: createTestApp(110, "app-a", "App A", { repository_projects: have }),
       issuer: { enabled: true, roles: ["role-a"] },
@@ -181,8 +199,10 @@ it.each([
 );
 
 it("finds issuers for the correct account when there are multiple installations", () => {
-  const orgA = createTestInstallationAccount("Organization", 100, "org-a");
-  const orgB = createTestInstallationAccount("Organization", 200, "org-b");
+  const [[orgA], [orgB]] = createTestInstallationAccounts(
+    ["Organization", 100, "org-a"],
+    ["Organization", 200, "org-b"],
+  );
   const appA: AppRegistration = {
     app: createTestApp(110, "app-a", "App A", { metadata: "read" }),
     issuer: { enabled: true, roles: [] },
@@ -257,11 +277,9 @@ it("finds issuers for the correct account when there are multiple installations"
 });
 
 it("finds issuers by role", () => {
-  const orgA = createTestInstallationAccount("Organization", 100, "org-a");
-  const repoA = createTestInstallationRepo(orgA, "repo-a");
-  const repoB = createTestInstallationRepo(orgA, "repo-b");
-  const repoC = createTestInstallationRepo(orgA, "repo-c");
-  const repoD = createTestInstallationRepo(orgA, "repo-d");
+  const [[orgA, [repoA, repoB, repoC, repoD]]] = createTestInstallationAccounts(
+    ["Organization", 100, "org-a", ["repo-a", "repo-b", "repo-c", "repo-d"]],
+  );
   const appA: AppRegistration = {
     app: createTestApp(110, "app-a", "App A", { contents: "write" }),
     issuer: { enabled: true, roles: [] },
@@ -377,7 +395,11 @@ it("finds issuers by role", () => {
 });
 
 it("finds issuers for read access when the role is undefined", () => {
-  const orgA = createTestInstallationAccount("Organization", 100, "org-a");
+  const [[orgA]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "org-a",
+  ]);
   const appA: AppRegistration = {
     app: createTestApp(110, "app-a", "App A", { contents: "write" }),
     issuer: { enabled: true, roles: [] },
@@ -435,7 +457,11 @@ it("finds issuers for read access when the role is undefined", () => {
 });
 
 it("doesn't find issuers for write or admin access when the role is undefined", () => {
-  const orgA = createTestInstallationAccount("Organization", 100, "org-a");
+  const [[orgA]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "org-a",
+  ]);
   const appA: AppRegistration = {
     app: createTestApp(110, "app-a", "App A", {
       contents: "write",
@@ -482,8 +508,12 @@ it("doesn't find issuers for write or admin access when the role is undefined", 
 });
 
 it("doesn't find issuers when it can't access all repos in an account", () => {
-  const orgA = createTestInstallationAccount("Organization", 100, "org-a");
-  const repoA = createTestInstallationRepo(orgA, "repo-a");
+  const [[orgA, [repoA]]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "org-a",
+    ["repo-a"],
+  ]);
   const appA: AppRegistration = {
     app: createTestApp(110, "app-a", "App A", { contents: "write" }),
     issuer: { enabled: true, roles: ["role-a"] },
@@ -514,8 +544,12 @@ it("doesn't find issuers when it can't access all repos in an account", () => {
 });
 
 it("doesn't find issuers for an unknown account", () => {
-  const orgA = createTestInstallationAccount("Organization", 100, "org-a");
-  const repoA = createTestInstallationRepo(orgA, "repo-a");
+  const [[orgA, [repoA]]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "org-a",
+    ["repo-a"],
+  ]);
   const appA: AppRegistration = {
     app: createTestApp(110, "app-a", "App A", { contents: "write" }),
     issuer: { enabled: true, roles: ["role-a"] },
@@ -546,8 +580,12 @@ it("doesn't find issuers for an unknown account", () => {
 });
 
 it("doesn't find issuers for an unknown repo", () => {
-  const orgA = createTestInstallationAccount("Organization", 100, "org-a");
-  const repoA = createTestInstallationRepo(orgA, "repo-a");
+  const [[orgA, [repoA]]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "org-a",
+    ["repo-a"],
+  ]);
   const appA: AppRegistration = {
     app: createTestApp(110, "app-a", "App A", { contents: "write" }),
     issuer: { enabled: true, roles: ["role-a"] },
@@ -578,8 +616,12 @@ it("doesn't find issuers for an unknown repo", () => {
 });
 
 it("doesn't find issuers that can't access all requested repos", () => {
-  const orgA = createTestInstallationAccount("Organization", 100, "org-a");
-  const repoA = createTestInstallationRepo(orgA, "repo-a");
+  const [[orgA, [repoA]]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "org-a",
+    ["repo-a"],
+  ]);
   const appA: AppRegistration = {
     app: createTestApp(110, "app-a", "App A", { contents: "write" }),
     issuer: { enabled: true, roles: ["role-a"] },
@@ -610,7 +652,11 @@ it("doesn't find issuers that can't access all requested repos", () => {
 });
 
 it("doesn't find issuers that don't have all permissions", () => {
-  const orgA = createTestInstallationAccount("Organization", 100, "org-a");
+  const [[orgA]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "org-a",
+  ]);
   const appA: AppRegistration = {
     app: createTestApp(110, "app-a", "App A", { contents: "write" }),
     issuer: { enabled: true, roles: ["role-a"] },
@@ -647,7 +693,11 @@ it.each([
 ] as const)(
   "doesn't find issuers when it has lower access (want %s, have %s)",
   (want, have) => {
-    const orgA = createTestInstallationAccount("Organization", 100, "org-a");
+    const [[orgA]] = createTestInstallationAccounts([
+      "Organization",
+      100,
+      "org-a",
+    ]);
     const appA: AppRegistration = {
       app: createTestApp(110, "app-a", "App A", { repository_projects: have }),
       issuer: { enabled: true, roles: ["role-a"] },
@@ -679,7 +729,11 @@ it.each([
 );
 
 it("doesn't find issuers for no permissions", () => {
-  const orgA = createTestInstallationAccount("Organization", 100, "org-a");
+  const [[orgA]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "org-a",
+  ]);
   const appA: AppRegistration = {
     app: createTestApp(110, "app-a", "App A"),
     issuer: { enabled: true, roles: ["role-a"] },
@@ -710,7 +764,11 @@ it("doesn't find issuers for no permissions", () => {
 });
 
 it("doesn't find issuers from non-issuer apps", () => {
-  const orgA = createTestInstallationAccount("Organization", 100, "org-a");
+  const [[orgA]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "org-a",
+  ]);
   const appA: AppRegistration = {
     app: createTestApp(110, "app-a", "App A", { contents: "write" }),
     issuer: { enabled: false, roles: ["role-a"] },

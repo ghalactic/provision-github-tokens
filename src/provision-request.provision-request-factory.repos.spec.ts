@@ -6,10 +6,8 @@ import {
 } from "../test/declaration.js";
 import { createTestEnvironmentResolver } from "../test/environment-resolver.js";
 import {
-  createTestApp,
-  createTestInstallation,
-  createTestInstallationAccount,
-  createTestInstallationRepo,
+  createTestApps,
+  createTestInstallationAccounts,
 } from "../test/github-api.js";
 import { createTestProvisionRequestTarget } from "../test/provision-request.js";
 import { type RepoReference } from "./github-reference.js";
@@ -93,22 +91,19 @@ it("supports pattern-matched repo targets", async () => {
   const tokenDecA = createTestTokenDec({ shared: true });
   declarationRegistry.registerDeclaration(repoARef, "token-a", tokenDecA);
 
-  const accountA = createTestInstallationAccount(
+  const [[accountA, [repoA1, repoA2, repoB]]] = createTestInstallationAccounts([
     "Organization",
     100,
     "account-a",
-  );
-  const repoA1 = createTestInstallationRepo(accountA, "repo-a-1");
-  const repoA2 = createTestInstallationRepo(accountA, "repo-a-2");
-  const repoB = createTestInstallationRepo(accountA, "repo-b");
-
-  const appA = createTestApp(110, "app-a", "App A");
-  const appAInstallationA = createTestInstallation(
-    111,
-    appA,
-    accountA,
-    "selected",
-  );
+    ["repo-a-1", "repo-a-2", "repo-b"],
+  ]);
+  const [[appA, [appAInstallationA]]] = createTestApps([
+    110,
+    "app-a",
+    "App A",
+    {},
+    [[111, accountA, "selected"]],
+  ]);
 
   const appRegistry = createTestAppRegistry({
     app: appA,
@@ -180,21 +175,19 @@ it("doesn't match the same repo twice", async () => {
   const tokenDecA = createTestTokenDec({ shared: true });
   declarationRegistry.registerDeclaration(repoARef, "token-a", tokenDecA);
 
-  const accountA = createTestInstallationAccount(
+  const [[accountA, [repoA, repoB]]] = createTestInstallationAccounts([
     "Organization",
     100,
     "account-a",
-  );
-  const repoA = createTestInstallationRepo(accountA, "repo-a");
-  const repoB = createTestInstallationRepo(accountA, "repo-b");
-
-  const appA = createTestApp(110, "app-a", "App A");
-  const appAInstallationA = createTestInstallation(
-    111,
-    appA,
-    accountA,
-    "selected",
-  );
+    ["repo-a", "repo-b"],
+  ]);
+  const [[appA, [appAInstallationA]]] = createTestApps([
+    110,
+    "app-a",
+    "App A",
+    {},
+    [[111, accountA, "selected"]],
+  ]);
 
   const appRegistry = createTestAppRegistry({
     app: appA,
@@ -239,21 +232,19 @@ it("doesn't enable a target for a repo if any matching patterns disable the targ
   const tokenDecA = createTestTokenDec({ shared: true });
   declarationRegistry.registerDeclaration(repoARef, "token-a", tokenDecA);
 
-  const accountA = createTestInstallationAccount(
+  const [[accountA, [repoA, repoB]]] = createTestInstallationAccounts([
     "Organization",
     100,
     "account-a",
-  );
-  const repoA = createTestInstallationRepo(accountA, "repo-a");
-  const repoB = createTestInstallationRepo(accountA, "repo-b");
-
-  const appA = createTestApp(110, "app-a", "App A");
-  const appAInstallationA = createTestInstallation(
-    111,
-    appA,
-    accountA,
-    "selected",
-  );
+    ["repo-a", "repo-b"],
+  ]);
+  const [[appA, [appAInstallationA]]] = createTestApps([
+    110,
+    "app-a",
+    "App A",
+    {},
+    [[111, accountA, "selected"]],
+  ]);
 
   const appRegistry = createTestAppRegistry({
     app: appA,
@@ -298,21 +289,19 @@ it("allows self-repo targets to override pattern-matched repo targets", async ()
   const tokenDecA = createTestTokenDec({ shared: true });
   declarationRegistry.registerDeclaration(repoARef, "token-a", tokenDecA);
 
-  const accountA = createTestInstallationAccount(
+  const [[accountA, [repoA, repoB]]] = createTestInstallationAccounts([
     "Organization",
     100,
     "account-a",
-  );
-  const repoA = createTestInstallationRepo(accountA, "repo-a");
-  const repoB = createTestInstallationRepo(accountA, "repo-b");
-
-  const appA = createTestApp(110, "app-a", "App A");
-  const appAInstallationA = createTestInstallation(
-    111,
-    appA,
-    accountA,
-    "selected",
-  );
+    ["repo-a", "repo-b"],
+  ]);
+  const [[appA, [appAInstallationA]]] = createTestApps([
+    110,
+    "app-a",
+    "App A",
+    {},
+    [[111, accountA, "selected"]],
+  ]);
 
   const appRegistry = createTestAppRegistry({
     app: appA,

@@ -7,18 +7,15 @@ import {
 } from "../../__mocks__/@actions/core.js";
 import {
   __reset as __resetOctokit,
-  __setApps,
   __setFiles,
-  __setInstallations,
 } from "../../__mocks__/@octokit/action.js";
+import { createTestAppRegistry } from "../../test/app-registry.js";
 import { throws } from "../../test/error.js";
 import {
-  createTestApp,
-  createTestInstallation,
-  createTestInstallationAccount,
-  createTestInstallationRepo,
+  createTestApps,
+  createTestInstallationAccounts,
 } from "../../test/github-api.js";
-import { createOctokitFactory } from "../octokit.js";
+import { createTestOctokitFactory } from "../../test/octokit-factory.js";
 import providerSchema from "../schema/provider.v1.schema.json" with { type: "json" };
 import type { ProviderConfig } from "../type/provider-config.js";
 import { parseProviderConfig, readProviderConfig } from "./provider-config.js";
@@ -38,24 +35,26 @@ it("reads comprehensive provider config", async () => {
 
   const fixturePath = join(fixturesPath, "comprehensive.yml");
   const yaml = await readFile(fixturePath, "utf-8");
-  const octokitFactory = createOctokitFactory();
 
-  const accountA = createTestInstallationAccount(
+  const [[accountA, [repoA]]] = createTestInstallationAccounts([
     "Organization",
     100,
     "account-self",
-  );
-  const repoA = createTestInstallationRepo(accountA, "repo-self");
-  const appA = createTestApp(110, "app-a", "App A");
-  const appAInstallationA = createTestInstallation(
-    111,
-    appA,
-    accountA,
-    "selected",
-  );
+    ["repo-self"],
+  ]);
+  const [[appA, [appAInstallationA]]] = createTestApps([
+    110,
+    "app-a",
+    "App A",
+    {},
+    [[111, accountA, "selected"]],
+  ]);
+  const appRegistry = createTestAppRegistry({
+    app: appA,
+    installations: [[appAInstallationA, [repoA]]],
+  });
+  const { octokitFactory } = createTestOctokitFactory(appRegistry);
 
-  __setApps([appA]);
-  __setInstallations([[appAInstallationA, [repoA]]]);
   __setFiles([[repoA, { "path/to/provider-config.yml": yaml }]]);
 
   expect(

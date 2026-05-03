@@ -2,7 +2,7 @@ import { expect, it } from "vitest";
 import {
   createTestApp,
   createTestInstallation,
-  createTestInstallationAccount,
+  createTestInstallationAccounts,
 } from "../test/github-api.js";
 import {
   createAppRegistry,
@@ -12,9 +12,11 @@ import {
 import { createNamePattern } from "./name-pattern.js";
 
 it("resolves a list of account patterns into a list of provisioner-accessible accounts", () => {
-  const accountA = createTestInstallationAccount("Organization", 100, "org-a");
-  const accountB = createTestInstallationAccount("User", 200, "user-b");
-  const accountC = createTestInstallationAccount("Organization", 300, "org-c");
+  const [[accountA], [accountB], [accountC]] = createTestInstallationAccounts(
+    ["Organization", 100, "org-a"],
+    ["User", 200, "user-b"],
+    ["Organization", 300, "org-c"],
+  );
   const appA: AppRegistration = {
     app: createTestApp(110, "app-a", "App A"),
     issuer: { enabled: false, roles: [] },
@@ -59,8 +61,10 @@ it("resolves a list of account patterns into a list of provisioner-accessible ac
 });
 
 it("doesn't resolve accounts accessible only to non-provisioner apps", () => {
-  const accountA = createTestInstallationAccount("Organization", 100, "org-a");
-  const accountB = createTestInstallationAccount("Organization", 200, "org-b");
+  const [[accountA], [accountB]] = createTestInstallationAccounts(
+    ["Organization", 100, "org-a"],
+    ["Organization", 200, "org-b"],
+  );
   const appA: AppRegistration = {
     app: createTestApp(110, "app-a", "App A"),
     issuer: { enabled: true, roles: [] },

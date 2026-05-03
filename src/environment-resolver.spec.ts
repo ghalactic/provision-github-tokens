@@ -9,10 +9,8 @@ import {
 } from "../__mocks__/@octokit/action.js";
 import { createTestAppRegistry } from "../test/app-registry.js";
 import {
-  createTestApp,
-  createTestInstallation,
-  createTestInstallationAccount,
-  createTestInstallationRepo,
+  createTestApps,
+  createTestInstallationAccounts,
   createTestRepoEnvironment,
 } from "../test/github-api.js";
 import { createEnvironmentResolver } from "./environment-resolver.js";
@@ -29,19 +27,23 @@ beforeEach(() => {
 });
 
 it("resolves environment names for a repo", async () => {
-  const accountA = createTestInstallationAccount("Organization", 100, "org-a");
-  const repoA = createTestInstallationRepo(accountA, "repo-a");
+  const [[accountA, [repoA]]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "org-a",
+    ["repo-a"],
+  ]);
   const envA1 = createTestRepoEnvironment("env-a1");
   const envA2 = createTestRepoEnvironment("env-a2");
   const envB1 = createTestRepoEnvironment("env-b1");
   const envB2 = createTestRepoEnvironment("env-b2");
-  const appA = createTestApp(110, "app-a", "App A");
-  const appAInstallationA = createTestInstallation(
-    111,
-    appA,
-    accountA,
-    "selected",
-  );
+  const [[appA, [appAInstallationA]]] = createTestApps([
+    110,
+    "app-a",
+    "App A",
+    {},
+    [[111, accountA, "selected"]],
+  ]);
 
   const appRegistry = createTestAppRegistry({
     app: appA,
@@ -103,15 +105,19 @@ it("resolves environment names for a repo", async () => {
 });
 
 it("throws if no provisioner is found", async () => {
-  const accountA = createTestInstallationAccount("Organization", 100, "org-a");
-  const repoA = createTestInstallationRepo(accountA, "repo-a");
-  const appA = createTestApp(110, "app-a", "App A");
-  const appAInstallationA = createTestInstallation(
-    111,
-    appA,
-    accountA,
-    "selected",
-  );
+  const [[accountA, [repoA]]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "org-a",
+    ["repo-a"],
+  ]);
+  const [[appA, [appAInstallationA]]] = createTestApps([
+    110,
+    "app-a",
+    "App A",
+    {},
+    [[111, accountA, "selected"]],
+  ]);
 
   const appRegistry = createTestAppRegistry({
     app: appA,

@@ -2,10 +2,8 @@ import { expect, it, vi } from "vitest";
 import { createTestAppRegistry } from "../test/app-registry.js";
 import { createTestTokenDec } from "../test/declaration.js";
 import {
-  createTestApp,
-  createTestInstallation,
-  createTestInstallationAccount,
-  createTestInstallationRepo,
+  createTestApps,
+  createTestInstallationAccounts,
 } from "../test/github-api.js";
 import type {
   AccountReference,
@@ -36,17 +34,20 @@ it("creates token requests from provision targets with token declarations for al
 });
 
 it("creates token requests from provision targets with token declarations for selected repos", () => {
-  const accountA = createTestInstallationAccount(
-    "Organization",
-    100,
-    "account-a",
-  );
-  const repoA1 = createTestInstallationRepo(accountA, "repo-a-1");
-  const repoA2 = createTestInstallationRepo(accountA, "repo-a-2");
-  const repoB = createTestInstallationRepo(accountA, "repo-b");
-  const repoC = createTestInstallationRepo(accountA, "repo-c");
-  const appA = createTestApp(110, "app-a", "App A");
-  const appAInstallationA = createTestInstallation(111, appA, accountA, "all");
+  const [[accountA, [repoA1, repoA2, repoB, repoC]]] =
+    createTestInstallationAccounts([
+      "Organization",
+      100,
+      "account-a",
+      ["repo-a-1", "repo-a-2", "repo-b", "repo-c"],
+    ]);
+  const [[appA, [appAInstallationA]]] = createTestApps([
+    110,
+    "app-a",
+    "App A",
+    {},
+    [[111, accountA]],
+  ]);
 
   const appRegistry = createTestAppRegistry({
     app: appA,
@@ -72,17 +73,20 @@ it("creates token requests from provision targets with token declarations for se
 });
 
 it("creates normalized token requests", () => {
-  const accountA = createTestInstallationAccount(
-    "Organization",
-    100,
-    "account-a",
-  );
-  const repoA1 = createTestInstallationRepo(accountA, "repo-a-1");
-  const repoA2 = createTestInstallationRepo(accountA, "repo-a-2");
-  const repoB = createTestInstallationRepo(accountA, "repo-b");
-  const repoC = createTestInstallationRepo(accountA, "repo-c");
-  const appA = createTestApp(110, "app-a", "App A");
-  const appAInstallationA = createTestInstallation(111, appA, accountA, "all");
+  const [[accountA, [repoA1, repoA2, repoB, repoC]]] =
+    createTestInstallationAccounts([
+      "Organization",
+      100,
+      "account-a",
+      ["repo-a-1", "repo-a-2", "repo-b", "repo-c"],
+    ]);
+  const [[appA, [appAInstallationA]]] = createTestApps([
+    110,
+    "app-a",
+    "App A",
+    {},
+    [[111, accountA]],
+  ]);
 
   const appRegistry = createTestAppRegistry({
     app: appA,

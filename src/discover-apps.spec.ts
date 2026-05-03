@@ -12,9 +12,8 @@ import {
 } from "../__mocks__/@octokit/action.js";
 import {
   createTestApp,
-  createTestInstallation,
-  createTestInstallationAccount,
-  createTestInstallationRepo,
+  createTestApps,
+  createTestInstallationAccounts,
 } from "../test/github-api.js";
 import { createAppRegistry } from "./app-registry.js";
 import { discoverApps } from "./discover-apps.js";
@@ -29,11 +28,19 @@ beforeEach(() => {
 });
 
 it("discovers installations with access to all repos", async () => {
-  const orgA = createTestInstallationAccount("Organization", 100, "org-a");
-  const repoA = createTestInstallationRepo(orgA, "repo-a");
-  const repoB = createTestInstallationRepo(orgA, "repo-b");
-  const appA = createTestApp(110, "app-a", "App A", { contents: "read" });
-  const appAInstallationA = createTestInstallation(111, appA, orgA, "all");
+  const [[orgA, [repoA, repoB]]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "org-a",
+    ["repo-a", "repo-b"],
+  ]);
+  const [[appA, [appAInstallationA]]] = createTestApps([
+    110,
+    "app-a",
+    "App A",
+    { contents: "read" },
+    [[111, orgA]],
+  ]);
 
   __setApps([appA]);
   __setInstallations([[appAInstallationA, [repoA, repoB]]]);
@@ -76,11 +83,19 @@ it("discovers installations with access to all repos", async () => {
 });
 
 it("discovers installations with access to selected repos", async () => {
-  const orgA = createTestInstallationAccount("Organization", 100, "org-a");
-  const repoA = createTestInstallationRepo(orgA, "repo-a");
-  const repoB = createTestInstallationRepo(orgA, "repo-b");
-  const appA = createTestApp(110, "app-a", "App A", { contents: "read" });
-  const appAInstallationA = createTestInstallation(111, appA, orgA, "selected");
+  const [[orgA, [repoA, repoB]]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "org-a",
+    ["repo-a", "repo-b"],
+  ]);
+  const [[appA, [appAInstallationA]]] = createTestApps([
+    110,
+    "app-a",
+    "App A",
+    { contents: "read" },
+    [[111, orgA, "selected"]],
+  ]);
 
   __setApps([appA]);
   __setInstallations([[appAInstallationA, [repoA, repoB]]]);
@@ -123,9 +138,18 @@ it("discovers installations with access to selected repos", async () => {
 });
 
 it("discovers installations with access to no repos", async () => {
-  const orgA = createTestInstallationAccount("Organization", 100, "org-a");
-  const appA = createTestApp(110, "app-a", "App A", { members: "read" });
-  const appAInstallationA = createTestInstallation(111, appA, orgA, "selected");
+  const [[orgA]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "org-a",
+  ]);
+  const [[appA, [appAInstallationA]]] = createTestApps([
+    110,
+    "app-a",
+    "App A",
+    { members: "read" },
+    [[111, orgA, "selected"]],
+  ]);
 
   __setApps([appA]);
   __setInstallations([[appAInstallationA, []]]);
@@ -168,11 +192,19 @@ it("discovers installations with access to no repos", async () => {
 });
 
 it("discovers installations with no permissions", async () => {
-  const orgA = createTestInstallationAccount("Organization", 100, "org-a");
-  const repoA = createTestInstallationRepo(orgA, "repo-a");
-  const repoB = createTestInstallationRepo(orgA, "repo-b");
-  const appA = createTestApp(110, "app-a", "App A");
-  const appAInstallationA = createTestInstallation(111, appA, orgA, "all");
+  const [[orgA, [repoA, repoB]]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "org-a",
+    ["repo-a", "repo-b"],
+  ]);
+  const [[appA, [appAInstallationA]]] = createTestApps([
+    110,
+    "app-a",
+    "App A",
+    {},
+    [[111, orgA]],
+  ]);
 
   __setApps([appA]);
   __setInstallations([[appAInstallationA, [repoA, repoB]]]);
@@ -215,13 +247,17 @@ it("discovers installations with no permissions", async () => {
 });
 
 it("discovers installations with roles", async () => {
-  const orgA = createTestInstallationAccount("Organization", 100, "org-a");
-  const repoA = createTestInstallationRepo(orgA, "repo-a");
-  const repoB = createTestInstallationRepo(orgA, "repo-b");
-  const appA = createTestApp(110, "app-a", "App A", { contents: "write" });
-  const appB = createTestApp(120, "app-b", "App B", { contents: "write" });
-  const appAInstallationA = createTestInstallation(111, appA, orgA, "all");
-  const appBInstallationA = createTestInstallation(121, appB, orgA, "all");
+  const [[orgA, [repoA, repoB]]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "org-a",
+    ["repo-a", "repo-b"],
+  ]);
+  const [[appA, [appAInstallationA]], [appB, [appBInstallationA]]] =
+    createTestApps(
+      [110, "app-a", "App A", { contents: "write" }, [[111, orgA]]],
+      [120, "app-b", "App B", { contents: "write" }, [[121, orgA]]],
+    );
 
   __setApps([appA, appB]);
   __setInstallations([
@@ -293,11 +329,19 @@ it("discovers installations with roles", async () => {
 });
 
 it("discovers provisioner-only installations", async () => {
-  const orgA = createTestInstallationAccount("Organization", 100, "org-a");
-  const repoA = createTestInstallationRepo(orgA, "repo-a");
-  const repoB = createTestInstallationRepo(orgA, "repo-b");
-  const appA = createTestApp(110, "app-a", "App A");
-  const appAInstallationA = createTestInstallation(111, appA, orgA, "all");
+  const [[orgA, [repoA, repoB]]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "org-a",
+    ["repo-a", "repo-b"],
+  ]);
+  const [[appA, [appAInstallationA]]] = createTestApps([
+    110,
+    "app-a",
+    "App A",
+    {},
+    [[111, orgA]],
+  ]);
 
   __setApps([appA]);
   __setInstallations([[appAInstallationA, [repoA, repoB]]]);
@@ -340,13 +384,20 @@ it("discovers provisioner-only installations", async () => {
 });
 
 it("discovers multiple installations of an app", async () => {
-  const orgA = createTestInstallationAccount("Organization", 1000, "org-a");
-  const repoA = createTestInstallationRepo(orgA, "repo-a");
-  const orgB = createTestInstallationAccount("Organization", 2000, "org-b");
-  const repoB = createTestInstallationRepo(orgB, "repo-b");
-  const appA = createTestApp(100, "app-a", "App A", { contents: "read" });
-  const appAInstallationA = createTestInstallation(101, appA, orgA, "all");
-  const appAInstallationB = createTestInstallation(102, appA, orgB, "all");
+  const [[orgA, [repoA]], [orgB, [repoB]]] = createTestInstallationAccounts(
+    ["Organization", 1000, "org-a", ["repo-a"]],
+    ["Organization", 2000, "org-b", ["repo-b"]],
+  );
+  const [[appA, [appAInstallationA, appAInstallationB]]] = createTestApps([
+    100,
+    "app-a",
+    "App A",
+    { contents: "read" },
+    [
+      [101, orgA],
+      [102, orgB],
+    ],
+  ]);
 
   __setApps([appA]);
   __setInstallations([
@@ -399,13 +450,17 @@ it("discovers multiple installations of an app", async () => {
 });
 
 it("discovers multiple apps", async () => {
-  const orgA = createTestInstallationAccount("Organization", 100, "org-a");
-  const repoA = createTestInstallationRepo(orgA, "repo-a");
-  const repoB = createTestInstallationRepo(orgA, "repo-b");
-  const appA = createTestApp(110, "app-a", "App A", { contents: "read" });
-  const appB = createTestApp(120, "app-b", "App B", { actions: "read" });
-  const appAInstallationA = createTestInstallation(111, appA, orgA, "all");
-  const appBInstallationA = createTestInstallation(121, appB, orgA, "all");
+  const [[orgA, [repoA, repoB]]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "org-a",
+    ["repo-a", "repo-b"],
+  ]);
+  const [[appA, [appAInstallationA]], [appB, [appBInstallationA]]] =
+    createTestApps(
+      [110, "app-a", "App A", { contents: "read" }, [[111, orgA]]],
+      [120, "app-b", "App B", { actions: "read" }, [[121, orgA]]],
+    );
 
   __setApps([appA, appB]);
   __setInstallations([
@@ -479,13 +534,17 @@ it("discovers multiple apps", async () => {
 });
 
 it("skips apps with incorrect credentials", async () => {
-  const orgA = createTestInstallationAccount("Organization", 100, "org-a");
-  const repoA = createTestInstallationRepo(orgA, "repo-a");
-  const repoB = createTestInstallationRepo(orgA, "repo-b");
-  const appA = createTestApp(110, "app-a", "App A", { contents: "read" });
-  const appB = createTestApp(120, "app-b", "App B", { contents: "read" });
-  const appAInstallationA = createTestInstallation(101, appA, orgA, "all");
-  const appBInstallationA = createTestInstallation(102, appB, orgA, "all");
+  const [[orgA, [repoA, repoB]]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "org-a",
+    ["repo-a", "repo-b"],
+  ]);
+  const [[appA, [appAInstallationA]], [appB, [appBInstallationA]]] =
+    createTestApps(
+      [110, "app-a", "App A", { contents: "read" }, [[101, orgA]]],
+      [120, "app-b", "App B", { contents: "read" }, [[102, orgA]]],
+    );
 
   __setApps([appA, appB]);
   __setInstallations([
@@ -545,12 +604,20 @@ it("skips apps with incorrect credentials", async () => {
 });
 
 it("skips non-existent apps", async () => {
-  const orgA = createTestInstallationAccount("Organization", 100, "org-a");
-  const repoA = createTestInstallationRepo(orgA, "repo-a");
-  const repoB = createTestInstallationRepo(orgA, "repo-b");
+  const [[orgA, [repoA, repoB]]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "org-a",
+    ["repo-a", "repo-b"],
+  ]);
   const appX = createTestApp(999, "app-x", "App X");
-  const appA = createTestApp(110, "app-a", "App A", { contents: "read" });
-  const appAInstallationA = createTestInstallation(101, appA, orgA, "all");
+  const [[appA, [appAInstallationA]]] = createTestApps([
+    110,
+    "app-a",
+    "App A",
+    { contents: "read" },
+    [[101, orgA]],
+  ]);
 
   __setApps([appA]);
   __setInstallations([[appAInstallationA, [repoA, repoB]]]);
@@ -607,15 +674,21 @@ it("skips non-existent apps", async () => {
 });
 
 it("reports unexpected HTTP statuses", async () => {
-  const orgA = createTestInstallationAccount("Organization", 100, "org-a");
-  const repoA = createTestInstallationRepo(orgA, "repo-a");
-  const repoB = createTestInstallationRepo(orgA, "repo-b");
-  const appA = createTestApp(110, "app-a", "App A", { contents: "read" });
-  const appB = createTestApp(120, "app-b", "App B", { contents: "read" });
-  const appC = createTestApp(130, "app-c", "App C", { actions: "read" });
-  const appAInstallationA = createTestInstallation(111, appA, orgA, "all");
-  const appBInstallationA = createTestInstallation(121, appB, orgA, "all");
-  const appCInstallationA = createTestInstallation(131, appC, orgA, "all");
+  const [[orgA, [repoA, repoB]]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "org-a",
+    ["repo-a", "repo-b"],
+  ]);
+  const [
+    [appA, [appAInstallationA]],
+    [appB, [appBInstallationA]],
+    [appC, [appCInstallationA]],
+  ] = createTestApps(
+    [110, "app-a", "App A", { contents: "read" }, [[111, orgA]]],
+    [120, "app-b", "App B", { contents: "read" }, [[121, orgA]]],
+    [130, "app-c", "App C", { actions: "read" }, [[131, orgA]]],
+  );
 
   __setApps([appA, appB, appC]);
   __setInstallations([
@@ -708,15 +781,21 @@ it("reports unexpected HTTP statuses", async () => {
 });
 
 it("skips apps when discovery throws", async () => {
-  const orgA = createTestInstallationAccount("Organization", 100, "org-a");
-  const repoA = createTestInstallationRepo(orgA, "repo-a");
-  const repoB = createTestInstallationRepo(orgA, "repo-b");
-  const appA = createTestApp(110, "app-a", "App A", { contents: "read" });
-  const appB = createTestApp(120, "app-b", "App B", { contents: "read" });
-  const appC = createTestApp(130, "app-c", "App C", { actions: "read" });
-  const appAInstallationA = createTestInstallation(111, appA, orgA, "all");
-  const appBInstallationA = createTestInstallation(121, appB, orgA, "all");
-  const appCInstallationA = createTestInstallation(131, appC, orgA, "all");
+  const [[orgA, [repoA, repoB]]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "org-a",
+    ["repo-a", "repo-b"],
+  ]);
+  const [
+    [appA, [appAInstallationA]],
+    [appB, [appBInstallationA]],
+    [appC, [appCInstallationA]],
+  ] = createTestApps(
+    [110, "app-a", "App A", { contents: "read" }, [[111, orgA]]],
+    [120, "app-b", "App B", { contents: "read" }, [[121, orgA]]],
+    [130, "app-c", "App C", { actions: "read" }, [[131, orgA]]],
+  );
 
   __setApps([appA, appB, appC]);
   __setInstallations([
@@ -804,16 +883,24 @@ it("skips apps when discovery throws", async () => {
 });
 
 it("skips installations when discovery throws", async () => {
-  const orgA = createTestInstallationAccount("Organization", 100, "org-a");
-  const repoA = createTestInstallationRepo(orgA, "repo-a");
-  const orgB = createTestInstallationAccount("Organization", 200, "org-b");
-  const repoB = createTestInstallationRepo(orgB, "repo-b");
-  const orgC = createTestInstallationAccount("Organization", 300, "org-c");
-  const repoC = createTestInstallationRepo(orgC, "repo-c");
-  const appA = createTestApp(110, "app-a", "App A", { contents: "read" });
-  const appAInstallationA = createTestInstallation(111, appA, orgA, "selected");
-  const appAInstallationB = createTestInstallation(112, appA, orgB, "selected");
-  const appAInstallationC = createTestInstallation(113, appA, orgC, "selected");
+  const [[orgA, [repoA]], [orgB, [repoB]], [orgC, [repoC]]] =
+    createTestInstallationAccounts(
+      ["Organization", 100, "org-a", ["repo-a"]],
+      ["Organization", 200, "org-b", ["repo-b"]],
+      ["Organization", 300, "org-c", ["repo-c"]],
+    );
+  const [[appA, [appAInstallationA, appAInstallationB, appAInstallationC]]] =
+    createTestApps([
+      110,
+      "app-a",
+      "App A",
+      { contents: "read" },
+      [
+        [111, orgA, "selected"],
+        [112, orgB, "selected"],
+        [113, orgC, "selected"],
+      ],
+    ]);
 
   __setApps([appA]);
   __setInstallations([
@@ -875,15 +962,21 @@ it("skips installations when discovery throws", async () => {
 });
 
 it("skips apps when they're fully disabled", async () => {
-  const orgA = createTestInstallationAccount("Organization", 100, "org-a");
-  const repoA = createTestInstallationRepo(orgA, "repo-a");
-  const repoB = createTestInstallationRepo(orgA, "repo-b");
-  const appA = createTestApp(110, "app-a", "App A", { contents: "read" });
-  const appB = createTestApp(120, "app-b", "App B", { contents: "read" });
-  const appC = createTestApp(130, "app-c", "App C", { actions: "read" });
-  const appAInstallationA = createTestInstallation(111, appA, orgA, "all");
-  const appBInstallationA = createTestInstallation(121, appB, orgA, "all");
-  const appCInstallationA = createTestInstallation(131, appC, orgA, "all");
+  const [[orgA, [repoA, repoB]]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "org-a",
+    ["repo-a", "repo-b"],
+  ]);
+  const [
+    [appA, [appAInstallationA]],
+    [appB, [appBInstallationA]],
+    [appC, [appCInstallationA]],
+  ] = createTestApps(
+    [110, "app-a", "App A", { contents: "read" }, [[111, orgA]]],
+    [120, "app-b", "App B", { contents: "read" }, [[121, orgA]]],
+    [130, "app-c", "App C", { actions: "read" }, [[131, orgA]]],
+  );
 
   __setApps([appA, appB, appC]);
   __setInstallations([

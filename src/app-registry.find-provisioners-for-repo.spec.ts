@@ -2,8 +2,7 @@ import { expect, it } from "vitest";
 import {
   createTestApp,
   createTestInstallation,
-  createTestInstallationAccount,
-  createTestInstallationRepo,
+  createTestInstallationAccounts,
 } from "../test/github-api.js";
 import {
   createAppRegistry,
@@ -12,10 +11,12 @@ import {
 } from "./app-registry.js";
 
 it("finds provisioners for repos", () => {
-  const orgA = createTestInstallationAccount("Organization", 100, "org-a");
-  const repoA = createTestInstallationRepo(orgA, "repo-a");
-  const repoB = createTestInstallationRepo(orgA, "repo-b");
-  const repoC = createTestInstallationRepo(orgA, "repo-c");
+  const [[orgA, [repoA, repoB, repoC]]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "org-a",
+    ["repo-a", "repo-b", "repo-c"],
+  ]);
   const appA: AppRegistration = {
     app: createTestApp(110, "app-a", "App A"),
     issuer: { enabled: false, roles: [] },
@@ -61,8 +62,12 @@ it("finds provisioners for repos", () => {
 });
 
 it("doesn't find provisioners from non-provisioner apps", () => {
-  const orgA = createTestInstallationAccount("Organization", 100, "org-a");
-  const repoA = createTestInstallationRepo(orgA, "repo-a");
+  const [[orgA, [repoA]]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "org-a",
+    ["repo-a"],
+  ]);
   const appA: AppRegistration = {
     app: createTestApp(110, "app-a", "App A"),
     issuer: { enabled: true, roles: [] },

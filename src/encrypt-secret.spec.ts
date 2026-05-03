@@ -7,17 +7,13 @@ import {
 } from "../__mocks__/@octokit/action.js";
 import { createTestAppRegistry } from "../test/app-registry.js";
 import {
-  createTestApp,
-  createTestInstallation,
-  createTestInstallationAccount,
-  createTestInstallationRepo,
+  createTestApps,
+  createTestInstallationAccounts,
 } from "../test/github-api.js";
 import { createTestKeyPair, decrypt } from "../test/key.js";
+import { createTestOctokitFactory } from "../test/octokit-factory.js";
 import { createTestProvisionRequestTarget } from "../test/provision-request.js";
 import { createEncryptSecret } from "./encrypt-secret.js";
-import { createOctokitFactory } from "./octokit.js";
-import { createFindProvisionerOctokit } from "./provisioner-octokit.js";
-import type { AppInput } from "./type/input.js";
 
 vi.mock("@actions/core");
 vi.mock("@octokit/action");
@@ -28,31 +24,25 @@ beforeEach(() => {
 });
 
 it("can encrypt secrets for all secret types", async () => {
-  const octokitFactory = createOctokitFactory();
-
-  const accountA = createTestInstallationAccount("Organization", 100, "org-a");
-  const repoA = createTestInstallationRepo(accountA, "repo-a");
-  const appA = createTestApp(110, "app-a", "App A", { metadata: "read" });
-  const appAInstallationA = createTestInstallation(111, appA, accountA, "all");
+  const [[accountA, [repoA]]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "org-a",
+    ["repo-a"],
+  ]);
+  const [[appA, [appAInstallationA]]] = createTestApps([
+    110,
+    "app-a",
+    "App A",
+    { metadata: "read" },
+    [[111, accountA]],
+  ]);
   const appRegistry = createTestAppRegistry({
     app: appA,
     provisioner: true,
     installations: [[appAInstallationA, [repoA]]],
   });
-
-  const appsInput: AppInput[] = [
-    {
-      appId: 110,
-      privateKey: "<private key A>",
-      issuer: { enabled: false, roles: [] },
-      provisioner: { enabled: true },
-    },
-  ];
-  const findProvisionerOctokit = createFindProvisionerOctokit(
-    octokitFactory,
-    appRegistry,
-    appsInput,
-  );
+  const { findProvisionerOctokit } = createTestOctokitFactory(appRegistry);
 
   const orgAActionsKey = await createTestKeyPair("1111");
   const orgACodespacesKey = await createTestKeyPair("2222");
@@ -156,13 +146,9 @@ it("can encrypt secrets for all secret types", async () => {
 });
 
 it("throws if no provisioners are found for the target", async () => {
-  const encryptSecret = createEncryptSecret(
-    createFindProvisionerOctokit(
-      createOctokitFactory(),
-      createTestAppRegistry(),
-      [],
-    ),
-  );
+  const emptyRegistry = createTestAppRegistry();
+  const { findProvisionerOctokit } = createTestOctokitFactory(emptyRegistry);
+  const encryptSecret = createEncryptSecret(findProvisionerOctokit);
 
   await expect(
     encryptSecret(

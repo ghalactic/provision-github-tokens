@@ -2,7 +2,7 @@ import { expect, it } from "vitest";
 import {
   createTestApp,
   createTestInstallation,
-  createTestInstallationAccount,
+  createTestInstallationAccounts,
 } from "../test/github-api.js";
 import {
   createAppRegistry,
@@ -11,8 +11,10 @@ import {
 } from "./app-registry.js";
 
 it("finds provisioners for accounts", () => {
-  const orgA = createTestInstallationAccount("Organization", 100, "org-a");
-  const orgB = createTestInstallationAccount("Organization", 200, "org-b");
+  const [[orgA], [orgB]] = createTestInstallationAccounts(
+    ["Organization", 100, "org-a"],
+    ["Organization", 200, "org-b"],
+  );
   const appA: AppRegistration = {
     app: createTestApp(110, "app-a", "App A"),
     issuer: { enabled: false, roles: [] },
@@ -56,8 +58,10 @@ it("finds provisioners for accounts", () => {
 });
 
 it("finds provisioners for the correct account when there are multiple installations", () => {
-  const orgA = createTestInstallationAccount("Organization", 100, "org-a");
-  const orgB = createTestInstallationAccount("Organization", 200, "org-b");
+  const [[orgA], [orgB]] = createTestInstallationAccounts(
+    ["Organization", 100, "org-a"],
+    ["Organization", 200, "org-b"],
+  );
   const appA: AppRegistration = {
     app: createTestApp(110, "app-a", "App A"),
     issuer: { enabled: false, roles: [] },
@@ -86,7 +90,11 @@ it("finds provisioners for the correct account when there are multiple installat
 });
 
 it("doesn't find provisioners for an unknown account", () => {
-  const orgA = createTestInstallationAccount("Organization", 100, "org-a");
+  const [[orgA]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "org-a",
+  ]);
   const appA: AppRegistration = {
     app: createTestApp(110, "app-a", "App A"),
     issuer: { enabled: true, roles: ["role-a"] },
@@ -107,7 +115,11 @@ it("doesn't find provisioners for an unknown account", () => {
 });
 
 it("doesn't find provisioners from non-provisioner apps", () => {
-  const orgA = createTestInstallationAccount("Organization", 100, "org-a");
+  const [[orgA]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "org-a",
+  ]);
   const appA: AppRegistration = {
     app: createTestApp(110, "app-a", "App A"),
     issuer: { enabled: true, roles: [] },

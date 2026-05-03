@@ -16,10 +16,8 @@ import {
 import { createTestAppRegistry } from "../test/app-registry.js";
 import { createTestSecretDec } from "../test/declaration.js";
 import {
-  createTestApp,
-  createTestInstallation,
-  createTestInstallationAccount,
-  createTestInstallationRepo,
+  createTestApps,
+  createTestInstallationAccounts,
   createTestRepoEnvironment,
 } from "../test/github-api.js";
 import { createTestKeyPair } from "../test/key.js";
@@ -43,20 +41,20 @@ import type { TokenCreationResult } from "./type/token-creation-result.js";
 vi.mock("@actions/core");
 vi.mock("@octokit/action");
 
-const accountA = createTestInstallationAccount(
+const [[accountA, [repoA]]] = createTestInstallationAccounts([
   "Organization",
   100,
   "account-a",
-);
-const repoA = createTestInstallationRepo(accountA, "repo-a");
+  ["repo-a"],
+]);
 const envA = createTestRepoEnvironment("env-a");
-const appA = createTestApp(110, "app-a", "App A");
-const appAInstallationA = createTestInstallation(
-  111,
-  appA,
-  accountA,
-  "selected",
-);
+const [[appA, [appAInstallationA]]] = createTestApps([
+  110,
+  "app-a",
+  "App A",
+  {},
+  [[111, accountA, "selected"]],
+]);
 
 const accountAActionsKey = await createTestKeyPair("actions.account-a");
 const accountARepoAActionsKey = await createTestKeyPair(

@@ -38,6 +38,30 @@ export function createTestApp(
   };
 }
 
+export function createTestApps(
+  ...specs: [
+    id: number,
+    slug: string,
+    name: string,
+    permissions?: Permissions,
+    installations?: [
+      id: number,
+      account: InstallationAccount,
+      repoSelection?: "all" | "selected",
+    ][],
+  ][]
+): [TestApp, Installation[]][] {
+  return specs.map(([id, slug, name, permissions, installations]) => {
+    const app = createTestApp(id, slug, name, permissions);
+    const insts = (installations ?? []).map(
+      ([instId, account, repoSelection]) =>
+        createTestInstallation(instId, app, account, repoSelection ?? "all"),
+    );
+
+    return [app, insts];
+  });
+}
+
 // Installation
 
 const sampleInstallation = (
@@ -70,17 +94,27 @@ export function createTestInstallation(
 
 // Installation account
 
-export function createTestInstallationAccount(
-  type: "Organization" | "User",
-  id: number,
-  login: string,
-): InstallationAccount {
-  return {
-    ...(sampleInstallation.account as InstallationAccount),
-    type,
-    login,
-    id,
-  };
+export function createTestInstallationAccounts(
+  ...specs: [
+    type: "Organization" | "User",
+    id: number,
+    login: string,
+    repos?: string[],
+  ][]
+): [InstallationAccount, InstallationRepo[]][] {
+  return specs.map(([type, id, login, repoNames]) => {
+    const account: InstallationAccount = {
+      ...(sampleInstallation.account as InstallationAccount),
+      type,
+      login,
+      id,
+    };
+
+    return [
+      account,
+      createTestInstallationRepos(account, ...(repoNames ?? [])),
+    ];
+  });
 }
 
 // Installation repo
@@ -92,16 +126,16 @@ const sampleInstallationRepo = (
   ) as { repositories: InstallationRepo[] }
 ).repositories[0];
 
-export function createTestInstallationRepo(
+export function createTestInstallationRepos(
   account: InstallationAccount,
-  name: string,
-): InstallationRepo {
-  return {
+  ...names: string[]
+): InstallationRepo[] {
+  return names.map((name) => ({
     ...sampleInstallationRepo,
     name,
     full_name: `${account.login}/${name}`,
     owner: { ...sampleInstallationRepo.owner, login: account.login },
-  };
+  }));
 }
 
 // Installation token

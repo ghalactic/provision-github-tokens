@@ -6,10 +6,8 @@ import {
 } from "../test/declaration.js";
 import { createTestEnvironmentResolver } from "../test/environment-resolver.js";
 import {
-  createTestApp,
-  createTestInstallation,
-  createTestInstallationAccount,
-  createTestInstallationRepo,
+  createTestApps,
+  createTestInstallationAccounts,
 } from "../test/github-api.js";
 import { createTestProvisionRequestTarget } from "../test/provision-request.js";
 import { type RepoReference } from "./github-reference.js";
@@ -131,20 +129,19 @@ it("supports pattern-matched repo environment targets", async () => {
   const tokenDecA = createTestTokenDec({ shared: true });
   declarationRegistry.registerDeclaration(repoARef, "token-a", tokenDecA);
 
-  const accountA = createTestInstallationAccount(
+  const [[accountA, [repoA]]] = createTestInstallationAccounts([
     "Organization",
     100,
     "account-a",
-  );
-  const repoA = createTestInstallationRepo(accountA, "repo-a");
-
-  const appA = createTestApp(110, "app-a", "App A");
-  const appAInstallationA = createTestInstallation(
-    111,
-    appA,
-    accountA,
-    "selected",
-  );
+    ["repo-a"],
+  ]);
+  const [[appA, [appAInstallationA]]] = createTestApps([
+    110,
+    "app-a",
+    "App A",
+    {},
+    [[111, accountA, "selected"]],
+  ]);
 
   const appRegistry = createTestAppRegistry({
     app: appA,
@@ -211,20 +208,19 @@ it("doesn't match the same environment twice for pattern-matched repos", async (
   const tokenDecA = createTestTokenDec({ shared: true });
   declarationRegistry.registerDeclaration(repoARef, "token-a", tokenDecA);
 
-  const accountA = createTestInstallationAccount(
+  const [[accountA, [repoA]]] = createTestInstallationAccounts([
     "Organization",
     100,
     "account-a",
-  );
-  const repoA = createTestInstallationRepo(accountA, "repo-a");
-
-  const appA = createTestApp(110, "app-a", "App A");
-  const appAInstallationA = createTestInstallation(
-    111,
-    appA,
-    accountA,
-    "selected",
-  );
+    ["repo-a"],
+  ]);
+  const [[appA, [appAInstallationA]]] = createTestApps([
+    110,
+    "app-a",
+    "App A",
+    {},
+    [[111, accountA, "selected"]],
+  ]);
 
   const appRegistry = createTestAppRegistry({
     app: appA,
@@ -281,20 +277,19 @@ it("doesn't enable an environment target for a repo unless all matching repo pat
   const tokenDecA = createTestTokenDec({ shared: true });
   declarationRegistry.registerDeclaration(repoARef, "token-a", tokenDecA);
 
-  const accountA = createTestInstallationAccount(
+  const [[accountA, [repoA]]] = createTestInstallationAccounts([
     "Organization",
     100,
     "account-a",
-  );
-  const repoA = createTestInstallationRepo(accountA, "repo-a");
-
-  const appA = createTestApp(110, "app-a", "App A");
-  const appAInstallationA = createTestInstallation(
-    111,
-    appA,
-    accountA,
-    "selected",
-  );
+    ["repo-a"],
+  ]);
+  const [[appA, [appAInstallationA]]] = createTestApps([
+    110,
+    "app-a",
+    "App A",
+    {},
+    [[111, accountA, "selected"]],
+  ]);
 
   const appRegistry = createTestAppRegistry({
     app: appA,
@@ -357,21 +352,19 @@ it("combines self-repo environment targets with pattern-matched repo environment
   const tokenDecA = createTestTokenDec({ shared: true });
   declarationRegistry.registerDeclaration(repoARef, "token-a", tokenDecA);
 
-  const accountA = createTestInstallationAccount(
+  const [[accountA, [repoA, repoB]]] = createTestInstallationAccounts([
     "Organization",
     100,
     "account-a",
-  );
-  const repoA = createTestInstallationRepo(accountA, "repo-a");
-  const repoB = createTestInstallationRepo(accountA, "repo-b");
-
-  const appA = createTestApp(110, "app-a", "App A");
-  const appAInstallationA = createTestInstallation(
-    111,
-    appA,
-    accountA,
-    "selected",
-  );
+    ["repo-a", "repo-b"],
+  ]);
+  const [[appA, [appAInstallationA]]] = createTestApps([
+    110,
+    "app-a",
+    "App A",
+    {},
+    [[111, accountA, "selected"]],
+  ]);
 
   const appRegistry = createTestAppRegistry({
     app: appA,

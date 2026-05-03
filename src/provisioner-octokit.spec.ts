@@ -1,10 +1,8 @@
 import { Octokit } from "@octokit/action";
 import { expect, it } from "vitest";
 import {
-  createTestApp,
-  createTestInstallation,
-  createTestInstallationAccount,
-  createTestInstallationRepo,
+  createTestApps,
+  createTestInstallationAccounts,
 } from "../test/github-api.js";
 import {
   createAppRegistry,
@@ -18,22 +16,24 @@ import type { AppInput } from "./type/input.js";
 it("can find octokit instances for provisioners", () => {
   const octokitFactory = createOctokitFactory();
 
-  const accountA = createTestInstallationAccount(
+  const [[accountA, [repoA]]] = createTestInstallationAccounts([
     "Organization",
     100,
     "account-a",
-  );
-  const repoA = createTestInstallationRepo(accountA, "repo-a");
-  const appA = createTestApp(110, "app-a", "App A", {
-    contents: "read",
-    metadata: "read",
-  });
+    ["repo-a"],
+  ]);
+  const [[appA, [appAInstallationA]]] = createTestApps([
+    110,
+    "app-a",
+    "App A",
+    { contents: "read", metadata: "read" },
+    [[111, accountA]],
+  ]);
   const appRegA: AppRegistration = {
     app: appA,
     issuer: { enabled: false, roles: [] },
     provisioner: { enabled: true },
   };
-  const appAInstallationA = createTestInstallation(111, appA, accountA, "all");
   const appAInstallationRegA: InstallationRegistration = {
     installation: appAInstallationA,
     repos: [repoA],
@@ -44,8 +44,8 @@ it("can find octokit instances for provisioners", () => {
 
   const appsInput: AppInput[] = [
     {
-      appId: 110,
-      privateKey: "<private key A>",
+      appId: appA.id,
+      privateKey: appA.privateKey,
       issuer: { enabled: false, roles: [] },
       provisioner: { enabled: true },
     },
@@ -68,22 +68,24 @@ it("can find octokit instances for provisioners", () => {
 it("returns undefined if no matching installation is found", () => {
   const octokitFactory = createOctokitFactory();
 
-  const accountA = createTestInstallationAccount(
+  const [[accountA, [repoA]]] = createTestInstallationAccounts([
     "Organization",
     100,
     "account-a",
-  );
-  const repoA = createTestInstallationRepo(accountA, "repo-a");
-  const appA = createTestApp(110, "app-a", "App A", {
-    contents: "read",
-    metadata: "read",
-  });
+    ["repo-a"],
+  ]);
+  const [[appA, [appAInstallationA]]] = createTestApps([
+    110,
+    "app-a",
+    "App A",
+    { contents: "read", metadata: "read" },
+    [[111, accountA]],
+  ]);
   const appRegA: AppRegistration = {
     app: appA,
     issuer: { enabled: false, roles: [] },
     provisioner: { enabled: true },
   };
-  const appAInstallationA = createTestInstallation(111, appA, accountA, "all");
   const appAInstallationRegA: InstallationRegistration = {
     installation: appAInstallationA,
     repos: [repoA],
@@ -94,8 +96,8 @@ it("returns undefined if no matching installation is found", () => {
 
   const appsInput: AppInput[] = [
     {
-      appId: 110,
-      privateKey: "<private key A>",
+      appId: appA.id,
+      privateKey: appA.privateKey,
       issuer: { enabled: false, roles: [] },
       provisioner: { enabled: true },
     },

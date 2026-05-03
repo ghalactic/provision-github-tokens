@@ -9,10 +9,8 @@ import {
 } from "../__mocks__/@octokit/action.js";
 import { createTestAppRegistry } from "../test/app-registry.js";
 import {
-  createTestApp,
-  createTestInstallation,
-  createTestInstallationAccount,
-  createTestInstallationRepo,
+  createTestApps,
+  createTestInstallationAccounts,
 } from "../test/github-api.js";
 import {
   discoverRequesters,
@@ -30,17 +28,19 @@ beforeEach(() => {
 });
 
 it("discovers requesters in a single account", async () => {
-  const accountA = createTestInstallationAccount("Organization", 100, "org-a");
-  const repoA = createTestInstallationRepo(accountA, "repo-a");
-  const repoB = createTestInstallationRepo(accountA, "repo-b");
-  const repoC = createTestInstallationRepo(accountA, "repo-c");
-  const appA = createTestApp(110, "app-a", "App A");
-  const appAInstallationA = createTestInstallation(
-    111,
-    appA,
-    accountA,
-    "selected",
-  );
+  const [[accountA, [repoA, repoB, repoC]]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "org-a",
+    ["repo-a", "repo-b", "repo-c"],
+  ]);
+  const [[appA, [appAInstallationA]]] = createTestApps([
+    110,
+    "app-a",
+    "App A",
+    {},
+    [[111, accountA, "selected"]],
+  ]);
 
   const appRegistry = createTestAppRegistry({
     app: appA,
@@ -136,26 +136,16 @@ it("discovers requesters in a single account", async () => {
 });
 
 it("discovers requesters in multiple account", async () => {
-  const accountA = createTestInstallationAccount("Organization", 100, "org-a");
-  const accountB = createTestInstallationAccount("User", 200, "user-b");
-  const repoA = createTestInstallationRepo(accountA, "repo-a");
-  const repoB = createTestInstallationRepo(accountA, "repo-b");
-  const repoC = createTestInstallationRepo(accountB, "repo-c");
-  const repoD = createTestInstallationRepo(accountB, "repo-d");
-  const appA = createTestApp(110, "app-a", "App A");
-  const appAInstallationA = createTestInstallation(
-    111,
-    appA,
-    accountA,
-    "selected",
-  );
-  const appB = createTestApp(210, "app-b", "App B");
-  const appBInstallationA = createTestInstallation(
-    211,
-    appB,
-    accountB,
-    "selected",
-  );
+  const [[accountA, [repoA, repoB]], [accountB, [repoC, repoD]]] =
+    createTestInstallationAccounts(
+      ["Organization", 100, "org-a", ["repo-a", "repo-b"]],
+      ["User", 200, "user-b", ["repo-c", "repo-d"]],
+    );
+  const [[appA, [appAInstallationA]], [appB, [appBInstallationA]]] =
+    createTestApps(
+      [110, "app-a", "App A", {}, [[111, accountA, "selected"]]],
+      [210, "app-b", "App B", {}, [[211, accountB, "selected"]]],
+    );
 
   const appRegistry = createTestAppRegistry(
     {
@@ -257,24 +247,17 @@ it("discovers requesters in multiple account", async () => {
 });
 
 it("only discovers requesters once when multiple providers can access them", async () => {
-  const accountA = createTestInstallationAccount("Organization", 100, "org-a");
-  const repoA = createTestInstallationRepo(accountA, "repo-a");
-  const repoB = createTestInstallationRepo(accountA, "repo-b");
-  const repoC = createTestInstallationRepo(accountA, "repo-c");
-  const appA = createTestApp(110, "app-a", "App A");
-  const appAInstallationA = createTestInstallation(
-    111,
-    appA,
-    accountA,
-    "selected",
-  );
-  const appB = createTestApp(120, "app-b", "App B");
-  const appBInstallationA = createTestInstallation(
-    121,
-    appB,
-    accountA,
-    "selected",
-  );
+  const [[accountA, [repoA, repoB, repoC]]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "org-a",
+    ["repo-a", "repo-b", "repo-c"],
+  ]);
+  const [[appA, [appAInstallationA]], [appB, [appBInstallationA]]] =
+    createTestApps(
+      [110, "app-a", "App A", {}, [[111, accountA, "selected"]]],
+      [120, "app-b", "App B", {}, [[121, accountA, "selected"]]],
+    );
 
   const appRegistry = createTestAppRegistry(
     {
@@ -380,12 +363,19 @@ it("only discovers requesters once when multiple providers can access them", asy
 });
 
 it("skips requesters with invalid configuration", async () => {
-  const orgA = createTestInstallationAccount("Organization", 100, "org-a");
-  const repoA = createTestInstallationRepo(orgA, "repo-a");
-  const repoB = createTestInstallationRepo(orgA, "repo-b");
-  const repoC = createTestInstallationRepo(orgA, "repo-c");
-  const appA = createTestApp(110, "app-a", "App A");
-  const appAInstallationA = createTestInstallation(111, appA, orgA, "selected");
+  const [[orgA, [repoA, repoB, repoC]]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "org-a",
+    ["repo-a", "repo-b", "repo-c"],
+  ]);
+  const [[appA, [appAInstallationA]]] = createTestApps([
+    110,
+    "app-a",
+    "App A",
+    {},
+    [[111, orgA, "selected"]],
+  ]);
 
   const appRegistry = createTestAppRegistry({
     app: appA,
