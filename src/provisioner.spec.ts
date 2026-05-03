@@ -28,7 +28,10 @@ import {
   createTestRepoEnvironment,
 } from "../test/github-api.js";
 import { createTestKeyPair } from "../test/key.js";
-import { createTestProvisionRequestTarget } from "../test/provision-request.js";
+import {
+  createTestProvisionRequest,
+  createTestProvisionRequestTarget,
+} from "../test/provision-request.js";
 import {
   createTestProvisionAuthResult,
   createTestProvisionAuthTargetResult,
@@ -94,7 +97,6 @@ const accountARepoAEnvAKey = await createTestKeyPair(
   "environment.account-a/repo-a/env-a",
 );
 
-const tokenDecA = createTestTokenDec({ permissions: { metadata: "read" } });
 const tokenDecB = createTestTokenDec({ permissions: { contents: "write" } });
 
 const secretDecA = createTestSecretDec({
@@ -488,10 +490,8 @@ it("can provision multiple secrets of the same type", async () => {
     ],
   });
   const allowedResultB: ProvisionAuthResult = {
-    request: {
-      requester: { account: "account-a", repo: "repo-a" },
+    request: createTestProvisionRequest({
       tokenDec: tokenDecB,
-      tokenDecIsRegistered: true,
       secretDec: secretDecB,
       name: "SECRET_B",
       to: [
@@ -499,7 +499,7 @@ it("can provision multiple secrets of the same type", async () => {
         accountARepoAActionsTarget,
         accountARepoAEnvATarget,
       ],
-    },
+    }),
     results: [
       createTestProvisionAuthTargetResult({
         target: accountAActionsTarget,
@@ -641,14 +641,7 @@ it("doesn't stop provisioning when some targets fail", async () => {
     ],
   });
   const allowedResult: ProvisionAuthResult = {
-    request: {
-      requester: { account: "account-a", repo: "repo-a" },
-      tokenDec: tokenDecA,
-      tokenDecIsRegistered: true,
-      secretDec: secretDecA,
-      name: "SECRET_A",
-      to: [accountAActionsTarget],
-    },
+    request: createTestProvisionRequest({ secretDec: secretDecA }),
     results: [
       createTestProvisionAuthTargetResult({
         target: accountAActionsTarget,

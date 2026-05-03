@@ -16,7 +16,10 @@ import {
   createTestInstallationAccount,
   createTestInstallationRepo,
 } from "../test/github-api.js";
-import { createTestProvisionRequestTarget } from "../test/provision-request.js";
+import {
+  createTestProvisionRequest,
+  createTestProvisionRequestTarget,
+} from "../test/provision-request.js";
 import { createTestTokenRequestFactory } from "../test/token-request.js";
 import {
   createAppRegistry,
@@ -216,14 +219,10 @@ it("authorizes all requests and outputs the results", async () => {
       {
         isAllowed: true,
         isMissingTargets: false,
-        request: {
-          name: "SECRET_A",
-          requester: { account: "account-a", repo: "repo-a" },
-          secretDec: secretDecA,
-          to: [createTestProvisionRequestTarget("actions")],
+        request: createTestProvisionRequest({
           tokenDec: tokenDecA,
-          tokenDecIsRegistered: true,
-        },
+          secretDec: secretDecA,
+        }),
         results: [
           {
             target: createTestProvisionRequestTarget("actions"),
@@ -239,16 +238,14 @@ it("authorizes all requests and outputs the results", async () => {
       {
         isAllowed: true,
         isMissingTargets: false,
-        request: {
+        request: createTestProvisionRequest({
           name: "SECRET_B",
-          requester: { account: "account-a", repo: "repo-a" },
           secretDec: secretDecB,
           to: [
             createTestProvisionRequestTarget("actions", "account-a", "repo-a"),
           ],
           tokenDec: tokenDecB,
-          tokenDecIsRegistered: true,
-        },
+        }),
         results: [
           {
             target: createTestProvisionRequestTarget(
@@ -397,14 +394,11 @@ it("handles empty token requests", async () => {
       {
         isAllowed: false,
         isMissingTargets: false,
-        request: {
-          name: "SECRET_A",
-          requester: { account: "account-a", repo: "repo-a" },
+        request: createTestProvisionRequest({
           secretDec: secretDecA,
-          to: [createTestProvisionRequestTarget("actions")],
           tokenDec: undefined,
           tokenDecIsRegistered: false,
-        },
+        }),
         results: [
           {
             target: createTestProvisionRequestTarget("actions"),

@@ -1,13 +1,8 @@
 import { expect, it } from "vitest";
-import {
-  createTestSecretDec,
-  createTestTokenDec,
-} from "../test/declaration.js";
-import { createTestProvisionRequestTarget } from "../test/provision-request.js";
+import { createTestProvisionRequest } from "../test/provision-request.js";
 import { createTestTokenAuthorizer } from "../test/token-authorizer.js";
 import { createTestTokenRequestFactory } from "../test/token-request.js";
 import { createProvisionAuthorizer } from "./provision-authorizer.js";
-import type { ProvisionRequest } from "./provision-request.js";
 
 it("can list all processed requests and their results", () => {
   const createTokenRequest = createTestTokenRequestFactory();
@@ -40,14 +35,9 @@ it("can list all processed requests and their results", () => {
     },
   );
 
-  const requestA: ProvisionRequest = {
+  const requestA = createTestProvisionRequest({
     requester: { account: "account-x", repo: "repo-x" },
-    tokenDec: createTestTokenDec(),
-    tokenDecIsRegistered: true,
-    secretDec: createTestSecretDec(),
-    name: "SECRET_A",
-    to: [createTestProvisionRequestTarget("actions")],
-  };
+  });
   const requestB = structuredClone(requestA);
 
   const resultA = authorizer.authorizeSecret(requestA);

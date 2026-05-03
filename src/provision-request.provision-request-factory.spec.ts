@@ -10,7 +10,10 @@ import {
   createTestInstallationAccount,
   createTestInstallationRepo,
 } from "../test/github-api.js";
-import { createTestProvisionRequestTarget } from "../test/provision-request.js";
+import {
+  createTestProvisionRequest,
+  createTestProvisionRequestTarget,
+} from "../test/provision-request.js";
 import {
   createAppRegistry,
   type AppRegistration,
@@ -19,7 +22,6 @@ import {
 import { type RepoReference } from "./github-reference.js";
 import {
   createProvisionRequestFactory,
-  type ProvisionRequest,
   type ProvisionRequestTarget,
 } from "./provision-request.js";
 import { createTokenDeclarationRegistry } from "./token-declaration-registry.js";
@@ -49,24 +51,24 @@ it("creates provision requests from secret declarations", async () => {
 
   expect(
     await createProvisionRequest(repoA, "SECRET_A", secretDecA),
-  ).toStrictEqual({
-    requester: repoA,
-    name: "SECRET_A",
-    secretDec: secretDecA,
-    tokenDec: tokenDecA,
-    tokenDecIsRegistered: true,
-    to: [],
-  } satisfies ProvisionRequest);
+  ).toStrictEqual(
+    createTestProvisionRequest({
+      tokenDec: tokenDecA,
+      secretDec: secretDecA,
+      to: [],
+    }),
+  );
   expect(
     await createProvisionRequest(repoX, "SECRET_X", secretDecA),
-  ).toStrictEqual({
-    requester: repoX,
-    name: "SECRET_X",
-    secretDec: secretDecA,
-    tokenDec: tokenDecA,
-    tokenDecIsRegistered: true,
-    to: [],
-  } satisfies ProvisionRequest);
+  ).toStrictEqual(
+    createTestProvisionRequest({
+      requester: repoX,
+      name: "SECRET_X",
+      tokenDec: tokenDecA,
+      secretDec: secretDecA,
+      to: [],
+    }),
+  );
 });
 
 it("supports provisioning to multiple targets", async () => {
@@ -232,14 +234,15 @@ it("supports unshared token declarations", async () => {
 
   expect(
     await createProvisionRequest(repoX, "SECRET_X", secretDecA),
-  ).toStrictEqual({
-    requester: repoX,
-    name: "SECRET_X",
-    secretDec: secretDecA,
-    tokenDec: undefined,
-    tokenDecIsRegistered: true,
-    to: [],
-  } satisfies ProvisionRequest);
+  ).toStrictEqual(
+    createTestProvisionRequest({
+      requester: repoX,
+      name: "SECRET_X",
+      secretDec: secretDecA,
+      tokenDec: undefined,
+      to: [],
+    }),
+  );
 });
 
 it("supports undefined token declarations", async () => {
@@ -261,12 +264,14 @@ it("supports undefined token declarations", async () => {
 
   expect(
     await createProvisionRequest(repoX, "SECRET_X", secretDecA),
-  ).toStrictEqual({
-    requester: repoX,
-    name: "SECRET_X",
-    secretDec: secretDecA,
-    tokenDec: undefined,
-    tokenDecIsRegistered: false,
-    to: [],
-  } satisfies ProvisionRequest);
+  ).toStrictEqual(
+    createTestProvisionRequest({
+      requester: repoX,
+      name: "SECRET_X",
+      secretDec: secretDecA,
+      tokenDec: undefined,
+      tokenDecIsRegistered: false,
+      to: [],
+    }),
+  );
 });

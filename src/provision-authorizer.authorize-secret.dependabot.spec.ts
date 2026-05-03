@@ -1,9 +1,8 @@
 import { expect, it } from "vitest";
 import {
-  createTestSecretDec,
-  createTestTokenDec,
-} from "../test/declaration.js";
-import { createTestProvisionRequestTarget } from "../test/provision-request.js";
+  createTestProvisionRequest,
+  createTestProvisionRequestTarget,
+} from "../test/provision-request.js";
 import { createTestTokenAuthorizer } from "../test/token-authorizer.js";
 import { createTestTokenRequestFactory } from "../test/token-request.js";
 import { compareTokenRequest } from "./compare-token-request.js";
@@ -43,22 +42,18 @@ it("allows GitHub Dependabot account secrets that should be allowed", () => {
     },
   );
 
-  const resultA = authorizer.authorizeSecret({
-    requester: { account: "account-x", repo: "repo-x" },
-    tokenDec: createTestTokenDec(),
-    tokenDecIsRegistered: true,
-    secretDec: createTestSecretDec(),
-    name: "SECRET_A",
-    to: [createTestProvisionRequestTarget("dependabot")],
-  });
-  const resultB = authorizer.authorizeSecret({
-    requester: { account: "account-y-1", repo: "repo-y-1" },
-    tokenDec: createTestTokenDec(),
-    tokenDecIsRegistered: true,
-    secretDec: createTestSecretDec(),
-    name: "SECRET_A",
-    to: [createTestProvisionRequestTarget("dependabot", "account-b-1")],
-  });
+  const resultA = authorizer.authorizeSecret(
+    createTestProvisionRequest({
+      requester: { account: "account-x", repo: "repo-x" },
+      to: [createTestProvisionRequestTarget("dependabot")],
+    }),
+  );
+  const resultB = authorizer.authorizeSecret(
+    createTestProvisionRequest({
+      requester: { account: "account-y-1", repo: "repo-y-1" },
+      to: [createTestProvisionRequestTarget("dependabot", "account-b-1")],
+    }),
+  );
 
   const explain = createTextProvisionAuthExplainer(
     tokenAuthorizer
@@ -112,22 +107,17 @@ it("allows GitHub Dependabot account secrets that should be allowed within the r
     },
   );
 
-  const resultA = authorizer.authorizeSecret({
-    requester: { account: "account-a", repo: "repo-a" },
-    tokenDec: createTestTokenDec(),
-    tokenDecIsRegistered: true,
-    secretDec: createTestSecretDec(),
-    name: "SECRET_A",
-    to: [createTestProvisionRequestTarget("dependabot")],
-  });
-  const resultB = authorizer.authorizeSecret({
-    requester: { account: "account-b-1", repo: "repo-b-1" },
-    tokenDec: createTestTokenDec(),
-    tokenDecIsRegistered: true,
-    secretDec: createTestSecretDec(),
-    name: "SECRET_A",
-    to: [createTestProvisionRequestTarget("dependabot", "account-b-1")],
-  });
+  const resultA = authorizer.authorizeSecret(
+    createTestProvisionRequest({
+      to: [createTestProvisionRequestTarget("dependabot")],
+    }),
+  );
+  const resultB = authorizer.authorizeSecret(
+    createTestProvisionRequest({
+      requester: { account: "account-b-1", repo: "repo-b-1" },
+      to: [createTestProvisionRequestTarget("dependabot", "account-b-1")],
+    }),
+  );
 
   const explain = createTextProvisionAuthExplainer(
     tokenAuthorizer
@@ -185,14 +175,11 @@ it("allows GitHub Dependabot account secrets that should be allowed within the r
     },
   );
 
-  const resultA = authorizer.authorizeSecret({
-    requester: { account: "account-a", repo: "repo-a" },
-    tokenDec: createTestTokenDec(),
-    tokenDecIsRegistered: true,
-    secretDec: createTestSecretDec(),
-    name: "SECRET_A",
-    to: [createTestProvisionRequestTarget("dependabot")],
-  });
+  const resultA = authorizer.authorizeSecret(
+    createTestProvisionRequest({
+      to: [createTestProvisionRequestTarget("dependabot")],
+    }),
+  );
 
   const explain = createTextProvisionAuthExplainer(
     tokenAuthorizer
@@ -245,24 +232,26 @@ it("allows GitHub Dependabot repo secrets that should be allowed", () => {
     },
   );
 
-  const resultA = authorizer.authorizeSecret({
-    requester: { account: "account-x", repo: "repo-x" },
-    tokenDec: createTestTokenDec(),
-    tokenDecIsRegistered: true,
-    secretDec: createTestSecretDec(),
-    name: "SECRET_A",
-    to: [createTestProvisionRequestTarget("dependabot", "account-a", "repo-a")],
-  });
-  const resultB = authorizer.authorizeSecret({
-    requester: { account: "account-y-1", repo: "repo-y-1" },
-    tokenDec: createTestTokenDec(),
-    tokenDecIsRegistered: true,
-    secretDec: createTestSecretDec(),
-    name: "SECRET_A",
-    to: [
-      createTestProvisionRequestTarget("dependabot", "account-b-1", "repo-b-1"),
-    ],
-  });
+  const resultA = authorizer.authorizeSecret(
+    createTestProvisionRequest({
+      requester: { account: "account-x", repo: "repo-x" },
+      to: [
+        createTestProvisionRequestTarget("dependabot", "account-a", "repo-a"),
+      ],
+    }),
+  );
+  const resultB = authorizer.authorizeSecret(
+    createTestProvisionRequest({
+      requester: { account: "account-y-1", repo: "repo-y-1" },
+      to: [
+        createTestProvisionRequestTarget(
+          "dependabot",
+          "account-b-1",
+          "repo-b-1",
+        ),
+      ],
+    }),
+  );
 
   const explain = createTextProvisionAuthExplainer(
     tokenAuthorizer
@@ -317,24 +306,25 @@ it("allows GitHub Dependabot repo secrets that should be allowed within the requ
     },
   );
 
-  const resultA = authorizer.authorizeSecret({
-    requester: { account: "account-a", repo: "repo-a" },
-    tokenDec: createTestTokenDec(),
-    tokenDecIsRegistered: true,
-    secretDec: createTestSecretDec(),
-    name: "SECRET_A",
-    to: [createTestProvisionRequestTarget("dependabot", "account-a", "repo-a")],
-  });
-  const resultB = authorizer.authorizeSecret({
-    requester: { account: "account-b-1", repo: "repo-b-1" },
-    tokenDec: createTestTokenDec(),
-    tokenDecIsRegistered: true,
-    secretDec: createTestSecretDec(),
-    name: "SECRET_A",
-    to: [
-      createTestProvisionRequestTarget("dependabot", "account-b-1", "repo-b-1"),
-    ],
-  });
+  const resultA = authorizer.authorizeSecret(
+    createTestProvisionRequest({
+      to: [
+        createTestProvisionRequestTarget("dependabot", "account-a", "repo-a"),
+      ],
+    }),
+  );
+  const resultB = authorizer.authorizeSecret(
+    createTestProvisionRequest({
+      requester: { account: "account-b-1", repo: "repo-b-1" },
+      to: [
+        createTestProvisionRequestTarget(
+          "dependabot",
+          "account-b-1",
+          "repo-b-1",
+        ),
+      ],
+    }),
+  );
 
   const explain = createTextProvisionAuthExplainer(
     tokenAuthorizer
@@ -394,24 +384,25 @@ it("allows GitHub Dependabot repo secrets that should be allowed within the requ
     },
   );
 
-  const resultA = authorizer.authorizeSecret({
-    requester: { account: "account-a", repo: "repo-a" },
-    tokenDec: createTestTokenDec(),
-    tokenDecIsRegistered: true,
-    secretDec: createTestSecretDec(),
-    name: "SECRET_A",
-    to: [createTestProvisionRequestTarget("dependabot", "account-a", "repo-a")],
-  });
-  const resultB = authorizer.authorizeSecret({
-    requester: { account: "account-b-1", repo: "repo-b-1" },
-    tokenDec: createTestTokenDec(),
-    tokenDecIsRegistered: true,
-    secretDec: createTestSecretDec(),
-    name: "SECRET_A",
-    to: [
-      createTestProvisionRequestTarget("dependabot", "account-b-1", "repo-b-1"),
-    ],
-  });
+  const resultA = authorizer.authorizeSecret(
+    createTestProvisionRequest({
+      to: [
+        createTestProvisionRequestTarget("dependabot", "account-a", "repo-a"),
+      ],
+    }),
+  );
+  const resultB = authorizer.authorizeSecret(
+    createTestProvisionRequest({
+      requester: { account: "account-b-1", repo: "repo-b-1" },
+      to: [
+        createTestProvisionRequestTarget(
+          "dependabot",
+          "account-b-1",
+          "repo-b-1",
+        ),
+      ],
+    }),
+  );
 
   const explain = createTextProvisionAuthExplainer(
     tokenAuthorizer
@@ -467,14 +458,12 @@ it("doesn't allow GitHub Dependabot account secrets for unauthorized requesters"
     },
   );
 
-  const resultA = authorizer.authorizeSecret({
-    requester: { account: "account-y", repo: "repo-y" },
-    tokenDec: createTestTokenDec(),
-    tokenDecIsRegistered: true,
-    secretDec: createTestSecretDec(),
-    name: "SECRET_A",
-    to: [createTestProvisionRequestTarget("dependabot")],
-  });
+  const resultA = authorizer.authorizeSecret(
+    createTestProvisionRequest({
+      requester: { account: "account-y", repo: "repo-y" },
+      to: [createTestProvisionRequestTarget("dependabot")],
+    }),
+  );
 
   const explain = createTextProvisionAuthExplainer(
     tokenAuthorizer
@@ -519,30 +508,24 @@ it("doesn't allow GitHub Dependabot account secrets within the requesting accoun
     },
   );
 
-  const resultA = authorizer.authorizeSecret({
-    requester: { account: "account-y", repo: "repo-y" },
-    tokenDec: createTestTokenDec(),
-    tokenDecIsRegistered: true,
-    secretDec: createTestSecretDec(),
-    name: "SECRET_A",
-    to: [createTestProvisionRequestTarget("dependabot", "account-x")],
-  });
-  const resultB = authorizer.authorizeSecret({
-    requester: { account: "account-x", repo: "repo-y" },
-    tokenDec: createTestTokenDec(),
-    tokenDecIsRegistered: true,
-    secretDec: createTestSecretDec(),
-    name: "SECRET_A",
-    to: [createTestProvisionRequestTarget("dependabot", "account-x")],
-  });
-  const resultC = authorizer.authorizeSecret({
-    requester: { account: "account-x", repo: "repo-x" },
-    tokenDec: createTestTokenDec(),
-    tokenDecIsRegistered: true,
-    secretDec: createTestSecretDec(),
-    name: "SECRET_A",
-    to: [createTestProvisionRequestTarget("dependabot", "account-y")],
-  });
+  const resultA = authorizer.authorizeSecret(
+    createTestProvisionRequest({
+      requester: { account: "account-y", repo: "repo-y" },
+      to: [createTestProvisionRequestTarget("dependabot", "account-x")],
+    }),
+  );
+  const resultB = authorizer.authorizeSecret(
+    createTestProvisionRequest({
+      requester: { account: "account-x", repo: "repo-y" },
+      to: [createTestProvisionRequestTarget("dependabot", "account-x")],
+    }),
+  );
+  const resultC = authorizer.authorizeSecret(
+    createTestProvisionRequest({
+      requester: { account: "account-x", repo: "repo-x" },
+      to: [createTestProvisionRequestTarget("dependabot", "account-y")],
+    }),
+  );
 
   const explain = createTextProvisionAuthExplainer(
     tokenAuthorizer
@@ -605,14 +588,11 @@ it("doesn't allow GitHub Dependabot account secrets within the requesting accoun
     },
   );
 
-  const resultA = authorizer.authorizeSecret({
-    requester: { account: "account-a", repo: "repo-a" },
-    tokenDec: createTestTokenDec(),
-    tokenDecIsRegistered: true,
-    secretDec: createTestSecretDec(),
-    name: "SECRET_A",
-    to: [createTestProvisionRequestTarget("dependabot")],
-  });
+  const resultA = authorizer.authorizeSecret(
+    createTestProvisionRequest({
+      to: [createTestProvisionRequestTarget("dependabot")],
+    }),
+  );
 
   const explain = createTextProvisionAuthExplainer(
     tokenAuthorizer
@@ -661,14 +641,14 @@ it("doesn't allow GitHub Dependabot repo secrets for unauthorized requesters", (
     },
   );
 
-  const resultA = authorizer.authorizeSecret({
-    requester: { account: "account-y", repo: "repo-y" },
-    tokenDec: createTestTokenDec(),
-    tokenDecIsRegistered: true,
-    secretDec: createTestSecretDec(),
-    name: "SECRET_A",
-    to: [createTestProvisionRequestTarget("dependabot", "account-a", "repo-a")],
-  });
+  const resultA = authorizer.authorizeSecret(
+    createTestProvisionRequest({
+      requester: { account: "account-y", repo: "repo-y" },
+      to: [
+        createTestProvisionRequestTarget("dependabot", "account-a", "repo-a"),
+      ],
+    }),
+  );
 
   const explain = createTextProvisionAuthExplainer(
     tokenAuthorizer
@@ -714,30 +694,30 @@ it("doesn't allow GitHub Dependabot repo secrets within the requesting repo for 
     },
   );
 
-  const resultA = authorizer.authorizeSecret({
-    requester: { account: "account-y", repo: "repo-y" },
-    tokenDec: createTestTokenDec(),
-    tokenDecIsRegistered: true,
-    secretDec: createTestSecretDec(),
-    name: "SECRET_A",
-    to: [createTestProvisionRequestTarget("dependabot", "account-x", "repo-x")],
-  });
-  const resultB = authorizer.authorizeSecret({
-    requester: { account: "account-x", repo: "repo-y" },
-    tokenDec: createTestTokenDec(),
-    tokenDecIsRegistered: true,
-    secretDec: createTestSecretDec(),
-    name: "SECRET_A",
-    to: [createTestProvisionRequestTarget("dependabot", "account-x", "repo-x")],
-  });
-  const resultC = authorizer.authorizeSecret({
-    requester: { account: "account-x", repo: "repo-x" },
-    tokenDec: createTestTokenDec(),
-    tokenDecIsRegistered: true,
-    secretDec: createTestSecretDec(),
-    name: "SECRET_A",
-    to: [createTestProvisionRequestTarget("dependabot", "account-x", "repo-y")],
-  });
+  const resultA = authorizer.authorizeSecret(
+    createTestProvisionRequest({
+      requester: { account: "account-y", repo: "repo-y" },
+      to: [
+        createTestProvisionRequestTarget("dependabot", "account-x", "repo-x"),
+      ],
+    }),
+  );
+  const resultB = authorizer.authorizeSecret(
+    createTestProvisionRequest({
+      requester: { account: "account-x", repo: "repo-y" },
+      to: [
+        createTestProvisionRequestTarget("dependabot", "account-x", "repo-x"),
+      ],
+    }),
+  );
+  const resultC = authorizer.authorizeSecret(
+    createTestProvisionRequest({
+      requester: { account: "account-x", repo: "repo-x" },
+      to: [
+        createTestProvisionRequestTarget("dependabot", "account-x", "repo-y"),
+      ],
+    }),
+  );
 
   const explain = createTextProvisionAuthExplainer(
     tokenAuthorizer
@@ -802,14 +782,13 @@ it("doesn't allow GitHub Dependabot repo secrets within the requesting repo when
     },
   );
 
-  const resultA = authorizer.authorizeSecret({
-    requester: { account: "account-a", repo: "repo-a" },
-    tokenDec: createTestTokenDec(),
-    tokenDecIsRegistered: true,
-    secretDec: createTestSecretDec(),
-    name: "SECRET_A",
-    to: [createTestProvisionRequestTarget("dependabot", "account-a", "repo-a")],
-  });
+  const resultA = authorizer.authorizeSecret(
+    createTestProvisionRequest({
+      to: [
+        createTestProvisionRequestTarget("dependabot", "account-a", "repo-a"),
+      ],
+    }),
+  );
 
   const explain = createTextProvisionAuthExplainer(
     tokenAuthorizer

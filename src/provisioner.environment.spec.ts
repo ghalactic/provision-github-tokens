@@ -12,10 +12,7 @@ import {
   __setInstallations,
   __setRepoKeys,
 } from "../__mocks__/@octokit/action.js";
-import {
-  createTestSecretDec,
-  createTestTokenDec,
-} from "../test/declaration.js";
+import { createTestSecretDec } from "../test/declaration.js";
 import {
   createTestApp,
   createTestInstallation,
@@ -24,7 +21,10 @@ import {
   createTestRepoEnvironment,
 } from "../test/github-api.js";
 import { createTestKeyPair } from "../test/key.js";
-import { createTestProvisionRequestTarget } from "../test/provision-request.js";
+import {
+  createTestProvisionRequest,
+  createTestProvisionRequestTarget,
+} from "../test/provision-request.js";
 import {
   createTestProvisionAuthTargetResult,
   createTestTokenAuthResult,
@@ -73,8 +73,6 @@ const appAInstallationRegA: InstallationRegistration = {
 const accountARepoAEnvAKey = await createTestKeyPair(
   "environment.account-a/repo-a/env-a",
 );
-
-const tokenDecA = createTestTokenDec({ permissions: { metadata: "read" } });
 
 const secretDecA = createTestSecretDec({
   github: { accounts: { "account-a": { actions: true } } },
@@ -142,14 +140,10 @@ it("handles GitHub API errors when provisioning environment secrets", async () =
   ]);
 
   const allowedResult: ProvisionAuthResult = {
-    request: {
-      requester: { account: "account-a", repo: "repo-a" },
-      tokenDec: tokenDecA,
-      tokenDecIsRegistered: true,
+    request: createTestProvisionRequest({
       secretDec: secretDecA,
-      name: "SECRET_A",
       to: [accountARepoAEnvATarget],
-    },
+    }),
     results: [
       createTestProvisionAuthTargetResult({
         target: accountARepoAEnvATarget,
@@ -184,14 +178,10 @@ it("handles unexpected errors when provisioning environment secrets", async () =
   ]);
 
   const allowedResult: ProvisionAuthResult = {
-    request: {
-      requester: { account: "account-a", repo: "repo-a" },
-      tokenDec: tokenDecA,
-      tokenDecIsRegistered: true,
+    request: createTestProvisionRequest({
       secretDec: secretDecA,
-      name: "SECRET_A",
       to: [accountARepoAEnvATarget],
-    },
+    }),
     results: [
       createTestProvisionAuthTargetResult({
         target: accountARepoAEnvATarget,
@@ -223,14 +213,10 @@ it("can provision environment secrets", async () => {
   ]);
 
   const allowedResult: ProvisionAuthResult = {
-    request: {
-      requester: { account: "account-a", repo: "repo-a" },
-      tokenDec: tokenDecA,
-      tokenDecIsRegistered: true,
+    request: createTestProvisionRequest({
       secretDec: secretDecA,
-      name: "SECRET_A",
       to: [accountARepoAEnvATarget],
-    },
+    }),
     results: [
       createTestProvisionAuthTargetResult({
         target: accountARepoAEnvATarget,

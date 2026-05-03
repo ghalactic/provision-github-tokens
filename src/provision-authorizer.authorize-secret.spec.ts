@@ -3,7 +3,10 @@ import {
   createTestSecretDec,
   createTestTokenDec,
 } from "../test/declaration.js";
-import { createTestProvisionRequestTarget } from "../test/provision-request.js";
+import {
+  createTestProvisionRequest,
+  createTestProvisionRequestTarget,
+} from "../test/provision-request.js";
 import { createTestTokenAuthorizer } from "../test/token-authorizer.js";
 import { createTestTokenRequestFactory } from "../test/token-request.js";
 import { compareTokenRequest } from "./compare-token-request.js";
@@ -40,22 +43,19 @@ it("supports multiple secrets per rule", () => {
     },
   );
 
-  const resultA = authorizer.authorizeSecret({
-    requester: { account: "account-x", repo: "repo-x" },
-    tokenDec: createTestTokenDec(),
-    tokenDecIsRegistered: true,
-    secretDec: createTestSecretDec({ token: "account-y/repo-y.token-y" }),
-    name: "SECRET_A",
-    to: [createTestProvisionRequestTarget("actions")],
-  });
-  const resultB = authorizer.authorizeSecret({
-    requester: { account: "account-x", repo: "repo-x" },
-    tokenDec: createTestTokenDec(),
-    tokenDecIsRegistered: true,
-    secretDec: createTestSecretDec({ token: "account-y/repo-y.token-y" }),
-    name: "SECRET_B",
-    to: [createTestProvisionRequestTarget("actions")],
-  });
+  const resultA = authorizer.authorizeSecret(
+    createTestProvisionRequest({
+      requester: { account: "account-x", repo: "repo-x" },
+      secretDec: createTestSecretDec({ token: "account-y/repo-y.token-y" }),
+    }),
+  );
+  const resultB = authorizer.authorizeSecret(
+    createTestProvisionRequest({
+      requester: { account: "account-x", repo: "repo-x" },
+      secretDec: createTestSecretDec({ token: "account-y/repo-y.token-y" }),
+      name: "SECRET_B",
+    }),
+  );
 
   const explain = createTextProvisionAuthExplainer(
     tokenAuthorizer
@@ -112,17 +112,16 @@ it("supports multiple targets in requests", () => {
     },
   );
 
-  const resultA = authorizer.authorizeSecret({
-    requester: { account: "account-x", repo: "repo-x" },
-    tokenDec: createTestTokenDec(),
-    tokenDecIsRegistered: true,
-    secretDec: createTestSecretDec({ token: "account-y/repo-y.token-y" }),
-    name: "SECRET_A",
-    to: [
-      createTestProvisionRequestTarget("actions"),
-      createTestProvisionRequestTarget("codespaces"),
-    ],
-  });
+  const resultA = authorizer.authorizeSecret(
+    createTestProvisionRequest({
+      requester: { account: "account-x", repo: "repo-x" },
+      secretDec: createTestSecretDec({ token: "account-y/repo-y.token-y" }),
+      to: [
+        createTestProvisionRequestTarget("actions"),
+        createTestProvisionRequestTarget("codespaces"),
+      ],
+    }),
+  );
 
   const explain = createTextProvisionAuthExplainer(
     tokenAuthorizer
@@ -174,22 +173,19 @@ it("supports wildcards in secret names", () => {
     },
   );
 
-  const resultA = authorizer.authorizeSecret({
-    requester: { account: "account-x", repo: "repo-x" },
-    tokenDec: createTestTokenDec(),
-    tokenDecIsRegistered: true,
-    secretDec: createTestSecretDec({ token: "account-y/repo-y.token-y" }),
-    name: "SECRET_A",
-    to: [createTestProvisionRequestTarget("actions")],
-  });
-  const resultB = authorizer.authorizeSecret({
-    requester: { account: "account-x", repo: "repo-x" },
-    tokenDec: createTestTokenDec(),
-    tokenDecIsRegistered: true,
-    secretDec: createTestSecretDec({ token: "account-y/repo-y.token-y" }),
-    name: "SECRET_B",
-    to: [createTestProvisionRequestTarget("actions")],
-  });
+  const resultA = authorizer.authorizeSecret(
+    createTestProvisionRequest({
+      requester: { account: "account-x", repo: "repo-x" },
+      secretDec: createTestSecretDec({ token: "account-y/repo-y.token-y" }),
+    }),
+  );
+  const resultB = authorizer.authorizeSecret(
+    createTestProvisionRequest({
+      requester: { account: "account-x", repo: "repo-x" },
+      secretDec: createTestSecretDec({ token: "account-y/repo-y.token-y" }),
+      name: "SECRET_B",
+    }),
+  );
 
   const explain = createTextProvisionAuthExplainer(
     tokenAuthorizer
@@ -246,14 +242,12 @@ it("supports rule descriptions", () => {
     },
   );
 
-  const resultA = authorizer.authorizeSecret({
-    requester: { account: "account-x", repo: "repo-x" },
-    tokenDec: createTestTokenDec(),
-    tokenDecIsRegistered: true,
-    secretDec: createTestSecretDec({ token: "account-y/repo-y.token-y" }),
-    name: "SECRET_A",
-    to: [createTestProvisionRequestTarget("actions")],
-  });
+  const resultA = authorizer.authorizeSecret(
+    createTestProvisionRequest({
+      requester: { account: "account-x", repo: "repo-x" },
+      secretDec: createTestSecretDec({ token: "account-y/repo-y.token-y" }),
+    }),
+  );
 
   const explain = createTextProvisionAuthExplainer(
     tokenAuthorizer
@@ -327,22 +321,19 @@ it("allows secrets when a later rule allows access that a previous rule denied",
     },
   );
 
-  const resultA = authorizer.authorizeSecret({
-    requester: { account: "account-x", repo: "repo-x" },
-    tokenDec: createTestTokenDec(),
-    tokenDecIsRegistered: true,
-    secretDec: createTestSecretDec({ token: "account-y/repo-y.token-y" }),
-    name: "SECRET_A",
-    to: [createTestProvisionRequestTarget("actions")],
-  });
-  const resultB = authorizer.authorizeSecret({
-    requester: { account: "account-x", repo: "repo-x" },
-    tokenDec: createTestTokenDec(),
-    tokenDecIsRegistered: true,
-    secretDec: createTestSecretDec({ token: "account-y/repo-y.token-y" }),
-    name: "SECRET_A",
-    to: [createTestProvisionRequestTarget("actions", "account-a", "repo-a")],
-  });
+  const resultA = authorizer.authorizeSecret(
+    createTestProvisionRequest({
+      requester: { account: "account-x", repo: "repo-x" },
+      secretDec: createTestSecretDec({ token: "account-y/repo-y.token-y" }),
+    }),
+  );
+  const resultB = authorizer.authorizeSecret(
+    createTestProvisionRequest({
+      requester: { account: "account-x", repo: "repo-x" },
+      secretDec: createTestSecretDec({ token: "account-y/repo-y.token-y" }),
+      to: [createTestProvisionRequestTarget("actions", "account-a", "repo-a")],
+    }),
+  );
 
   const explain = createTextProvisionAuthExplainer(
     tokenAuthorizer
@@ -426,22 +417,19 @@ it("doesn't allow secrets when a later rule denies access that a previous rule a
     },
   );
 
-  const resultA = authorizer.authorizeSecret({
-    requester: { account: "account-x", repo: "repo-x" },
-    tokenDec: createTestTokenDec(),
-    tokenDecIsRegistered: true,
-    secretDec: createTestSecretDec({ token: "account-y/repo-y.token-y" }),
-    name: "SECRET_A",
-    to: [createTestProvisionRequestTarget("actions")],
-  });
-  const resultB = authorizer.authorizeSecret({
-    requester: { account: "account-x", repo: "repo-x" },
-    tokenDec: createTestTokenDec(),
-    tokenDecIsRegistered: true,
-    secretDec: createTestSecretDec({ token: "account-y/repo-y.token-y" }),
-    name: "SECRET_A",
-    to: [createTestProvisionRequestTarget("actions", "account-a", "repo-a")],
-  });
+  const resultA = authorizer.authorizeSecret(
+    createTestProvisionRequest({
+      requester: { account: "account-x", repo: "repo-x" },
+      secretDec: createTestSecretDec({ token: "account-y/repo-y.token-y" }),
+    }),
+  );
+  const resultB = authorizer.authorizeSecret(
+    createTestProvisionRequest({
+      requester: { account: "account-x", repo: "repo-x" },
+      secretDec: createTestSecretDec({ token: "account-y/repo-y.token-y" }),
+      to: [createTestProvisionRequestTarget("actions", "account-a", "repo-a")],
+    }),
+  );
 
   const explain = createTextProvisionAuthExplainer(
     tokenAuthorizer
@@ -504,14 +492,13 @@ it("doesn't allow secrets when no rule matches the secret name", () => {
     },
   );
 
-  const resultA = authorizer.authorizeSecret({
-    requester: { account: "account-x", repo: "repo-x" },
-    tokenDec: createTestTokenDec(),
-    tokenDecIsRegistered: true,
-    secretDec: createTestSecretDec({ token: "account-y/repo-y.token-y" }),
-    name: "SECRET_X",
-    to: [createTestProvisionRequestTarget("actions")],
-  });
+  const resultA = authorizer.authorizeSecret(
+    createTestProvisionRequest({
+      requester: { account: "account-x", repo: "repo-x" },
+      secretDec: createTestSecretDec({ token: "account-y/repo-y.token-y" }),
+      name: "SECRET_X",
+    }),
+  );
 
   const explain = createTextProvisionAuthExplainer(
     tokenAuthorizer
@@ -561,14 +548,12 @@ it("doesn't allow secrets when two account patterns match but one allows and one
     },
   );
 
-  const resultA = authorizer.authorizeSecret({
-    requester: { account: "account-x", repo: "repo-x" },
-    tokenDec: createTestTokenDec(),
-    tokenDecIsRegistered: true,
-    secretDec: createTestSecretDec({ token: "account-y/repo-y.token-y" }),
-    name: "SECRET_A",
-    to: [createTestProvisionRequestTarget("actions")],
-  });
+  const resultA = authorizer.authorizeSecret(
+    createTestProvisionRequest({
+      requester: { account: "account-x", repo: "repo-x" },
+      secretDec: createTestSecretDec({ token: "account-y/repo-y.token-y" }),
+    }),
+  );
 
   const explain = createTextProvisionAuthExplainer(
     tokenAuthorizer
@@ -621,14 +606,13 @@ it("doesn't allow secrets when two repo patterns match but one allows and one de
     },
   );
 
-  const resultA = authorizer.authorizeSecret({
-    requester: { account: "account-x", repo: "repo-x" },
-    tokenDec: createTestTokenDec(),
-    tokenDecIsRegistered: true,
-    secretDec: createTestSecretDec({ token: "account-y/repo-y.token-y" }),
-    name: "SECRET_A",
-    to: [createTestProvisionRequestTarget("actions", "account-a", "repo-a")],
-  });
+  const resultA = authorizer.authorizeSecret(
+    createTestProvisionRequest({
+      requester: { account: "account-x", repo: "repo-x" },
+      secretDec: createTestSecretDec({ token: "account-y/repo-y.token-y" }),
+      to: [createTestProvisionRequestTarget("actions", "account-a", "repo-a")],
+    }),
+  );
 
   const explain = createTextProvisionAuthExplainer(
     tokenAuthorizer
@@ -678,18 +662,17 @@ it("doesn't allow secrets when some targets aren't allowed", () => {
     },
   );
 
-  const resultA = authorizer.authorizeSecret({
-    requester: { account: "account-x", repo: "repo-x" },
-    tokenDec: createTestTokenDec(),
-    tokenDecIsRegistered: true,
-    secretDec: createTestSecretDec({ token: "account-y/repo-y.token-y" }),
-    name: "SECRET_A",
-    to: [
-      createTestProvisionRequestTarget("actions"),
-      createTestProvisionRequestTarget("codespaces"),
-      createTestProvisionRequestTarget("dependabot"),
-    ],
-  });
+  const resultA = authorizer.authorizeSecret(
+    createTestProvisionRequest({
+      requester: { account: "account-x", repo: "repo-x" },
+      secretDec: createTestSecretDec({ token: "account-y/repo-y.token-y" }),
+      to: [
+        createTestProvisionRequestTarget("actions"),
+        createTestProvisionRequestTarget("codespaces"),
+        createTestProvisionRequestTarget("dependabot"),
+      ],
+    }),
+  );
 
   const explain = createTextProvisionAuthExplainer(
     tokenAuthorizer
@@ -741,14 +724,13 @@ it("doesn't allow secrets when no targets are specified", () => {
     },
   );
 
-  const resultA = authorizer.authorizeSecret({
-    requester: { account: "account-x", repo: "repo-x" },
-    tokenDec: createTestTokenDec(),
-    tokenDecIsRegistered: true,
-    secretDec: createTestSecretDec({ token: "account-y/repo-y.token-y" }),
-    name: "SECRET_A",
-    to: [],
-  });
+  const resultA = authorizer.authorizeSecret(
+    createTestProvisionRequest({
+      requester: { account: "account-x", repo: "repo-x" },
+      secretDec: createTestSecretDec({ token: "account-y/repo-y.token-y" }),
+      to: [],
+    }),
+  );
 
   const explain = createTextProvisionAuthExplainer(
     tokenAuthorizer
@@ -789,17 +771,17 @@ it("doesn't allow secrets when the token isn't allowed for a target", () => {
     },
   );
 
-  const resultA = authorizer.authorizeSecret({
-    requester: { account: "account-x", repo: "repo-x" },
-    tokenDec: createTestTokenDec({ permissions: { contents: "write" } }),
-    tokenDecIsRegistered: true,
-    secretDec: createTestSecretDec({ token: "account-y/repo-y.token-y" }),
-    name: "SECRET_A",
-    to: [
-      createTestProvisionRequestTarget("actions"),
-      createTestProvisionRequestTarget("actions", "account-a", "repo-a"),
-    ],
-  });
+  const resultA = authorizer.authorizeSecret(
+    createTestProvisionRequest({
+      requester: { account: "account-x", repo: "repo-x" },
+      tokenDec: createTestTokenDec({ permissions: { contents: "write" } }),
+      secretDec: createTestSecretDec({ token: "account-y/repo-y.token-y" }),
+      to: [
+        createTestProvisionRequestTarget("actions"),
+        createTestProvisionRequestTarget("actions", "account-a", "repo-a"),
+      ],
+    }),
+  );
 
   const explain = createTextProvisionAuthExplainer(
     tokenAuthorizer
@@ -851,14 +833,14 @@ it("doesn't allow secrets for unshared token declarations", () => {
     },
   );
 
-  const resultA = authorizer.authorizeSecret({
-    requester: { account: "account-x", repo: "repo-x" },
-    tokenDec: undefined,
-    tokenDecIsRegistered: true,
-    secretDec: createTestSecretDec({ token: "account-y/repo-y.token-y" }),
-    name: "SECRET_A",
-    to: [createTestProvisionRequestTarget("actions")],
-  });
+  const resultA = authorizer.authorizeSecret(
+    createTestProvisionRequest({
+      requester: { account: "account-x", repo: "repo-x" },
+      tokenDec: undefined,
+      tokenDecIsRegistered: true,
+      secretDec: createTestSecretDec({ token: "account-y/repo-y.token-y" }),
+    }),
+  );
 
   const explain = createTextProvisionAuthExplainer(
     tokenAuthorizer
@@ -906,14 +888,14 @@ it("doesn't allow secrets for undefined token declarations", () => {
     },
   );
 
-  const resultA = authorizer.authorizeSecret({
-    requester: { account: "account-x", repo: "repo-x" },
-    tokenDec: undefined,
-    tokenDecIsRegistered: false,
-    secretDec: createTestSecretDec({ token: "account-y/repo-y.token-y" }),
-    name: "SECRET_A",
-    to: [createTestProvisionRequestTarget("actions")],
-  });
+  const resultA = authorizer.authorizeSecret(
+    createTestProvisionRequest({
+      requester: { account: "account-x", repo: "repo-x" },
+      tokenDec: undefined,
+      tokenDecIsRegistered: false,
+      secretDec: createTestSecretDec({ token: "account-y/repo-y.token-y" }),
+    }),
+  );
 
   const explain = createTextProvisionAuthExplainer(
     tokenAuthorizer
@@ -961,14 +943,12 @@ it("doesn't allow secrets when the account matches but the secret type isn't all
     },
   );
 
-  const resultA = authorizer.authorizeSecret({
-    requester: { account: "account-x", repo: "repo-x" },
-    tokenDec: createTestTokenDec(),
-    tokenDecIsRegistered: true,
-    secretDec: createTestSecretDec({ token: "account-y/repo-y.token-y" }),
-    name: "SECRET_A",
-    to: [createTestProvisionRequestTarget("actions")],
-  });
+  const resultA = authorizer.authorizeSecret(
+    createTestProvisionRequest({
+      requester: { account: "account-x", repo: "repo-x" },
+      secretDec: createTestSecretDec({ token: "account-y/repo-y.token-y" }),
+    }),
+  );
 
   const explain = createTextProvisionAuthExplainer(
     tokenAuthorizer

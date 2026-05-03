@@ -4,7 +4,10 @@ import {
   createTestSecretDec,
   createTestTokenDec,
 } from "../test/declaration.js";
-import { createTestProvisionRequestTarget } from "../test/provision-request.js";
+import {
+  createTestProvisionRequest,
+  createTestProvisionRequestTarget,
+} from "../test/provision-request.js";
 import {
   createTestProvisionAuthResult,
   createTestProvisionAuthTargetResult,
@@ -58,10 +61,9 @@ it("renders a summary with all secrets provisioned", async () => {
   });
 
   const provisionAuthResultA = createTestProvisionAuthResult({
-    request: {
+    request: createTestProvisionRequest({
       requester: { account: "account-x", repo: "repo-x" },
       tokenDec: tokenAuthResultA.request.tokenDec,
-      tokenDecIsRegistered: true,
       secretDec: createTestSecretDec({
         token: "account-a/repo-a.token-a",
         github: {
@@ -70,17 +72,15 @@ it("renders a summary with all secrets provisioned", async () => {
           },
         },
       }),
-      name: "SECRET_A",
       to: [accountAActionsTarget],
-    },
+    }),
     results: [targetResultA],
   });
 
   const provisionAuthResultB = createTestProvisionAuthResult({
-    request: {
+    request: createTestProvisionRequest({
       requester: { account: "account-x", repo: "repo-x" },
       tokenDec: tokenAuthResultB.request.tokenDec,
-      tokenDecIsRegistered: true,
       secretDec: createTestSecretDec({
         token: "account-a/repo-a.token-b",
         github: {
@@ -91,7 +91,7 @@ it("renders a summary with all secrets provisioned", async () => {
       }),
       name: "SECRET_B",
       to: [accountAActionsTarget],
-    },
+    }),
     results: [targetResultB],
   });
 
@@ -181,10 +181,9 @@ it("renders a summary with some secrets denied", async () => {
   });
 
   const provisionAuthResultA = createTestProvisionAuthResult({
-    request: {
+    request: createTestProvisionRequest({
       requester: { account: "account-x", repo: "repo-x" },
       tokenDec: tokenAuthResultA.request.tokenDec,
-      tokenDecIsRegistered: true,
       secretDec: createTestSecretDec({
         token: "account-a/repo-a.token-a",
         github: {
@@ -193,18 +192,16 @@ it("renders a summary with some secrets denied", async () => {
           },
         },
       }),
-      name: "SECRET_A",
       to: [accountAActionsTarget],
-    },
+    }),
     results: [targetResultA],
   });
 
   const provisionAuthResultB = createTestProvisionAuthResult({
     isAllowed: false,
-    request: {
+    request: createTestProvisionRequest({
       requester: { account: "account-x", repo: "repo-x" },
       tokenDec: tokenAuthResultB.request.tokenDec,
-      tokenDecIsRegistered: true,
       secretDec: createTestSecretDec({
         token: "account-a/repo-a.token-b",
         github: {
@@ -215,7 +212,7 @@ it("renders a summary with some secrets denied", async () => {
       }),
       name: "SECRET_B",
       to: [accountAActionsTarget],
-    },
+    }),
     results: [targetResultB],
   });
 
@@ -293,10 +290,9 @@ it("renders a summary with all secrets denied", async () => {
 
   const provisionAuthResultA = createTestProvisionAuthResult({
     isAllowed: false,
-    request: {
+    request: createTestProvisionRequest({
       requester: { account: "account-x", repo: "repo-x" },
       tokenDec: tokenAuthResultA.request.tokenDec,
-      tokenDecIsRegistered: true,
       secretDec: createTestSecretDec({
         token: "account-a/repo-a.token-a",
         github: {
@@ -305,9 +301,8 @@ it("renders a summary with all secrets denied", async () => {
           },
         },
       }),
-      name: "SECRET_A",
       to: [accountAActionsTarget],
-    },
+    }),
     results: [targetResultA],
   });
 
@@ -397,10 +392,9 @@ it("renders a summary with environment targets", async () => {
   });
 
   const provisionAuthResultA = createTestProvisionAuthResult({
-    request: {
+    request: createTestProvisionRequest({
       requester: { account: "account-x", repo: "repo-x" },
       tokenDec: tokenAuthResultA.request.tokenDec,
-      tokenDecIsRegistered: true,
       secretDec: createTestSecretDec({
         token: "account-a/repo-a.token-a",
         github: {
@@ -409,9 +403,8 @@ it("renders a summary with environment targets", async () => {
           },
         },
       }),
-      name: "SECRET_A",
       to: [accountARepoAEnvironmentTarget],
-    },
+    }),
     results: [targetResultA],
   });
 
@@ -487,10 +480,9 @@ it("renders a summary with multiple requesters", async () => {
   });
 
   const provisionAuthResultA = createTestProvisionAuthResult({
-    request: {
+    request: createTestProvisionRequest({
       requester: { account: "account-x", repo: "repo-x" },
       tokenDec: tokenAuthResultA.request.tokenDec,
-      tokenDecIsRegistered: true,
       secretDec: createTestSecretDec({
         token: "account-a/repo-a.token-a",
         github: {
@@ -499,17 +491,15 @@ it("renders a summary with multiple requesters", async () => {
           },
         },
       }),
-      name: "SECRET_A",
       to: [accountAActionsTarget],
-    },
+    }),
     results: [targetResultA],
   });
 
   const provisionAuthResultB = createTestProvisionAuthResult({
-    request: {
+    request: createTestProvisionRequest({
       requester: { account: "account-y", repo: "repo-y" },
       tokenDec: tokenAuthResultB.request.tokenDec,
-      tokenDecIsRegistered: true,
       secretDec: createTestSecretDec({
         token: "account-a/repo-a.token-b",
         github: {
@@ -520,7 +510,7 @@ it("renders a summary with multiple requesters", async () => {
       }),
       name: "SECRET_B",
       to: [accountAActionsTarget],
-    },
+    }),
     results: [targetResultB],
   });
 
@@ -601,10 +591,9 @@ it("renders a summary with a missing token declaration", async () => {
   });
 
   const provisionAuthResultA = createTestProvisionAuthResult({
-    request: {
+    request: createTestProvisionRequest({
       requester: { account: "account-x", repo: "repo-x" },
       tokenDec: tokenAuthResultA.request.tokenDec,
-      tokenDecIsRegistered: true,
       secretDec: createTestSecretDec({
         token: "account-a/repo-a.token-a",
         github: {
@@ -613,15 +602,14 @@ it("renders a summary with a missing token declaration", async () => {
           },
         },
       }),
-      name: "SECRET_A",
       to: [accountAActionsTarget],
-    },
+    }),
     results: [targetResultA],
   });
 
   const provisionAuthResultB = createTestProvisionAuthResult({
     isAllowed: false,
-    request: {
+    request: createTestProvisionRequest({
       requester: { account: "account-x", repo: "repo-x" },
       tokenDec: undefined,
       tokenDecIsRegistered: false,
@@ -635,7 +623,7 @@ it("renders a summary with a missing token declaration", async () => {
       }),
       name: "SECRET_B",
       to: [accountAActionsTarget],
-    },
+    }),
     results: [targetResultB],
   });
 
@@ -709,10 +697,9 @@ it("renders a summary with an unshared token declaration", async () => {
   });
 
   const provisionAuthResultA = createTestProvisionAuthResult({
-    request: {
+    request: createTestProvisionRequest({
       requester: { account: "account-x", repo: "repo-x" },
       tokenDec: tokenAuthResultA.request.tokenDec,
-      tokenDecIsRegistered: true,
       secretDec: createTestSecretDec({
         token: "account-a/repo-a.token-a",
         github: {
@@ -721,18 +708,16 @@ it("renders a summary with an unshared token declaration", async () => {
           },
         },
       }),
-      name: "SECRET_A",
       to: [accountAActionsTarget],
-    },
+    }),
     results: [targetResultA],
   });
 
   const provisionAuthResultB = createTestProvisionAuthResult({
     isAllowed: false,
-    request: {
+    request: createTestProvisionRequest({
       requester: { account: "account-x", repo: "repo-x" },
       tokenDec: undefined,
-      tokenDecIsRegistered: true,
       secretDec: createTestSecretDec({
         token: "account-a/repo-a.unshared-token",
         github: {
@@ -743,7 +728,7 @@ it("renders a summary with an unshared token declaration", async () => {
       }),
       name: "SECRET_B",
       to: [accountAActionsTarget],
-    },
+    }),
     results: [targetResultB],
   });
 
@@ -810,10 +795,9 @@ it("renders a summary with missing targets", async () => {
   });
 
   const provisionAuthResultA = createTestProvisionAuthResult({
-    request: {
+    request: createTestProvisionRequest({
       requester: { account: "account-x", repo: "repo-x" },
       tokenDec: tokenAuthResultA.request.tokenDec,
-      tokenDecIsRegistered: true,
       secretDec: createTestSecretDec({
         token: "account-a/repo-a.token-a",
         github: {
@@ -822,18 +806,16 @@ it("renders a summary with missing targets", async () => {
           },
         },
       }),
-      name: "SECRET_A",
       to: [accountAActionsTarget],
-    },
+    }),
     results: [targetResultA],
   });
 
   const provisionAuthResultB = createTestProvisionAuthResult({
     isAllowed: false,
-    request: {
+    request: createTestProvisionRequest({
       requester: { account: "account-x", repo: "repo-x" },
       tokenDec: createTestTokenDec({ permissions: { contents: "write" } }),
-      tokenDecIsRegistered: true,
       secretDec: createTestSecretDec({
         token: "account-a/repo-a.token-b",
         github: {
@@ -842,7 +824,7 @@ it("renders a summary with missing targets", async () => {
       }),
       name: "SECRET_B",
       to: [],
-    },
+    }),
     results: [],
     isMissingTargets: true,
   });
@@ -926,10 +908,9 @@ it("renders a summary with multiple distinct targets", async () => {
   });
 
   const provisionAuthResultA = createTestProvisionAuthResult({
-    request: {
+    request: createTestProvisionRequest({
       requester: { account: "account-x", repo: "repo-x" },
       tokenDec: tokenAuthResultA.request.tokenDec,
-      tokenDecIsRegistered: true,
       secretDec: createTestSecretDec({
         token: "account-a/repo-a.token-a",
         github: {
@@ -939,13 +920,12 @@ it("renders a summary with multiple distinct targets", async () => {
           },
         },
       }),
-      name: "SECRET_A",
       to: [
         accountAActionsTarget,
         accountACodespacesTarget,
         accountBActionsTarget,
       ],
-    },
+    }),
     results: [targetResultA, targetResultA2, targetResultB],
   });
 
@@ -1001,10 +981,9 @@ it("truncates rows beyond the limit and shows a notice", async () => {
   for (let i = 0; i < 1002; ++i) {
     const provisionAuthResult = createTestProvisionAuthResult({
       isAllowed: false,
-      request: {
+      request: createTestProvisionRequest({
         requester: { account: "account-x", repo: "repo-x" },
         tokenDec: createTestTokenDec({ permissions: { metadata: "read" } }),
-        tokenDecIsRegistered: true,
         secretDec: createTestSecretDec({
           token: "account-a/repo-a.token-a",
           github: {
@@ -1015,7 +994,7 @@ it("truncates rows beyond the limit and shows a notice", async () => {
         }),
         name: `SECRET_${i.toString().padStart(4, "0")}`,
         to: [accountAActionsTarget],
-      },
+      }),
       results: [],
       isMissingTargets: true,
     });
@@ -1066,10 +1045,9 @@ it("renders a failure reason when tokens aren't allowed", async () => {
 
   const provisionAuthResult = createTestProvisionAuthResult({
     isAllowed: false,
-    request: {
+    request: createTestProvisionRequest({
       requester: { account: "account-x", repo: "repo-x" },
       tokenDec: tokenAuthResult.request.tokenDec,
-      tokenDecIsRegistered: true,
       secretDec: createTestSecretDec({
         token: "account-a/repo-a.token-not-allowed",
         github: {
@@ -1080,7 +1058,7 @@ it("renders a failure reason when tokens aren't allowed", async () => {
       }),
       name: "SECRET_TOKEN_NOT_ALLOWED",
       to: [accountAActionsTarget],
-    },
+    }),
     results: [targetResult],
   });
 
@@ -1131,10 +1109,9 @@ it("renders a failure reason when no suitable issuer is found", async () => {
   });
 
   const provisionAuthResult = createTestProvisionAuthResult({
-    request: {
+    request: createTestProvisionRequest({
       requester: { account: "account-x", repo: "repo-x" },
       tokenDec: tokenAuthResult.request.tokenDec,
-      tokenDecIsRegistered: true,
       secretDec: createTestSecretDec({
         token: "account-a/repo-a.no-issuer",
         github: {
@@ -1145,7 +1122,7 @@ it("renders a failure reason when no suitable issuer is found", async () => {
       }),
       name: "SECRET_NO_ISSUER",
       to: [accountAActionsTarget],
-    },
+    }),
     results: [targetResult],
     isAllowed: true,
   });
@@ -1199,10 +1176,9 @@ it("renders a failure reason when token issuance fails", async () => {
   });
 
   const provisionAuthResult = createTestProvisionAuthResult({
-    request: {
+    request: createTestProvisionRequest({
       requester: { account: "account-x", repo: "repo-x" },
       tokenDec: tokenAuthResult.request.tokenDec,
-      tokenDecIsRegistered: true,
       secretDec: createTestSecretDec({
         token: "account-a/repo-a.issue-error",
         github: {
@@ -1213,7 +1189,7 @@ it("renders a failure reason when token issuance fails", async () => {
       }),
       name: "SECRET_ISSUE_ERROR",
       to: [accountAActionsTarget],
-    },
+    }),
     results: [targetResult],
     isAllowed: true,
   });
@@ -1267,10 +1243,9 @@ it("renders a failure reason when no suitable provisioner is found", async () =>
   });
 
   const provisionAuthResult = createTestProvisionAuthResult({
-    request: {
+    request: createTestProvisionRequest({
       requester: { account: "account-x", repo: "repo-x" },
       tokenDec: tokenAuthResult.request.tokenDec,
-      tokenDecIsRegistered: true,
       secretDec: createTestSecretDec({
         token: "account-a/repo-a.no-provisioner",
         github: {
@@ -1281,7 +1256,7 @@ it("renders a failure reason when no suitable provisioner is found", async () =>
       }),
       name: "SECRET_NO_PROVISIONER",
       to: [accountAActionsTarget],
-    },
+    }),
     results: [targetResult],
     isAllowed: true,
   });
@@ -1344,10 +1319,9 @@ it("renders a failure reason when provisioning has no target results", async () 
   });
 
   const provisionAuthResult = createTestProvisionAuthResult({
-    request: {
+    request: createTestProvisionRequest({
       requester: { account: "account-x", repo: "repo-x" },
       tokenDec: tokenAuthResult.request.tokenDec,
-      tokenDecIsRegistered: true,
       secretDec: createTestSecretDec({
         token: "account-a/repo-a.failed-provision-empty",
         github: {
@@ -1358,7 +1332,7 @@ it("renders a failure reason when provisioning has no target results", async () 
       }),
       name: "SECRET_FAILED_PROVISION_EMPTY",
       to: [accountAActionsTarget],
-    },
+    }),
     results: [targetResult],
     isAllowed: true,
   });
@@ -1431,10 +1405,9 @@ it("renders a failure reason when provisioning partially fails across targets", 
   });
 
   const provisionAuthResult = createTestProvisionAuthResult({
-    request: {
+    request: createTestProvisionRequest({
       requester: { account: "account-x", repo: "repo-x" },
       tokenDec: tokenAuthResult.request.tokenDec,
-      tokenDecIsRegistered: true,
       secretDec: createTestSecretDec({
         token: "account-a/repo-a.partial-failure",
         github: {
@@ -1446,7 +1419,7 @@ it("renders a failure reason when provisioning partially fails across targets", 
       }),
       name: "SECRET_PARTIAL_FAILURE",
       to: [accountAActionsTarget, accountBActionsTarget],
-    },
+    }),
     results: [targetResultA, targetResultB],
     isAllowed: true,
   });
@@ -1510,10 +1483,9 @@ it("renders a failure reason when provisioning fails for all targets", async () 
   });
 
   const provisionAuthResult = createTestProvisionAuthResult({
-    request: {
+    request: createTestProvisionRequest({
       requester: { account: "account-x", repo: "repo-x" },
       tokenDec: tokenAuthResult.request.tokenDec,
-      tokenDecIsRegistered: true,
       secretDec: createTestSecretDec({
         token: "account-a/repo-a.failed-provision",
         github: {
@@ -1524,7 +1496,7 @@ it("renders a failure reason when provisioning fails for all targets", async () 
       }),
       name: "SECRET_FAILED_PROVISION",
       to: [accountAActionsTarget],
-    },
+    }),
     results: [targetResult],
     isAllowed: true,
   });

@@ -1,9 +1,8 @@
 import { expect, it } from "vitest";
 import {
-  createTestSecretDec,
-  createTestTokenDec,
-} from "../test/declaration.js";
-import { createTestProvisionRequestTarget } from "../test/provision-request.js";
+  createTestProvisionRequest,
+  createTestProvisionRequestTarget,
+} from "../test/provision-request.js";
 import { createTestTokenAuthorizer } from "../test/token-authorizer.js";
 import { createTestTokenRequestFactory } from "../test/token-request.js";
 import { compareTokenRequest } from "./compare-token-request.js";
@@ -47,36 +46,32 @@ it("allows GitHub environment secrets that should be allowed", () => {
     },
   );
 
-  const resultA = authorizer.authorizeSecret({
-    requester: { account: "account-x", repo: "repo-x" },
-    tokenDec: createTestTokenDec(),
-    tokenDecIsRegistered: true,
-    secretDec: createTestSecretDec(),
-    name: "SECRET_A",
-    to: [
-      createTestProvisionRequestTarget(
-        "environment",
-        "account-a",
-        "repo-a",
-        "env-a",
-      ),
-    ],
-  });
-  const resultB = authorizer.authorizeSecret({
-    requester: { account: "account-y-1", repo: "repo-y-1" },
-    tokenDec: createTestTokenDec(),
-    tokenDecIsRegistered: true,
-    secretDec: createTestSecretDec(),
-    name: "SECRET_A",
-    to: [
-      createTestProvisionRequestTarget(
-        "environment",
-        "account-b-1",
-        "repo-b-1",
-        "env-b-1",
-      ),
-    ],
-  });
+  const resultA = authorizer.authorizeSecret(
+    createTestProvisionRequest({
+      requester: { account: "account-x", repo: "repo-x" },
+      to: [
+        createTestProvisionRequestTarget(
+          "environment",
+          "account-a",
+          "repo-a",
+          "env-a",
+        ),
+      ],
+    }),
+  );
+  const resultB = authorizer.authorizeSecret(
+    createTestProvisionRequest({
+      requester: { account: "account-y-1", repo: "repo-y-1" },
+      to: [
+        createTestProvisionRequestTarget(
+          "environment",
+          "account-b-1",
+          "repo-b-1",
+          "env-b-1",
+        ),
+      ],
+    }),
+  );
 
   const explain = createTextProvisionAuthExplainer(
     tokenAuthorizer
@@ -133,36 +128,31 @@ it("allows GitHub environment secrets that should be allowed within the requesti
     },
   );
 
-  const resultA = authorizer.authorizeSecret({
-    requester: { account: "account-a", repo: "repo-a" },
-    tokenDec: createTestTokenDec(),
-    tokenDecIsRegistered: true,
-    secretDec: createTestSecretDec(),
-    name: "SECRET_A",
-    to: [
-      createTestProvisionRequestTarget(
-        "environment",
-        "account-a",
-        "repo-a",
-        "env-a",
-      ),
-    ],
-  });
-  const resultB = authorizer.authorizeSecret({
-    requester: { account: "account-b-1", repo: "repo-b-1" },
-    tokenDec: createTestTokenDec(),
-    tokenDecIsRegistered: true,
-    secretDec: createTestSecretDec(),
-    name: "SECRET_A",
-    to: [
-      createTestProvisionRequestTarget(
-        "environment",
-        "account-b-1",
-        "repo-b-1",
-        "env-b-1",
-      ),
-    ],
-  });
+  const resultA = authorizer.authorizeSecret(
+    createTestProvisionRequest({
+      to: [
+        createTestProvisionRequestTarget(
+          "environment",
+          "account-a",
+          "repo-a",
+          "env-a",
+        ),
+      ],
+    }),
+  );
+  const resultB = authorizer.authorizeSecret(
+    createTestProvisionRequest({
+      requester: { account: "account-b-1", repo: "repo-b-1" },
+      to: [
+        createTestProvisionRequestTarget(
+          "environment",
+          "account-b-1",
+          "repo-b-1",
+          "env-b-1",
+        ),
+      ],
+    }),
+  );
 
   const explain = createTextProvisionAuthExplainer(
     tokenAuthorizer
@@ -225,36 +215,31 @@ it("allows GitHub environment secrets that should be allowed within the requesti
     },
   );
 
-  const resultA = authorizer.authorizeSecret({
-    requester: { account: "account-a", repo: "repo-a" },
-    tokenDec: createTestTokenDec(),
-    tokenDecIsRegistered: true,
-    secretDec: createTestSecretDec(),
-    name: "SECRET_A",
-    to: [
-      createTestProvisionRequestTarget(
-        "environment",
-        "account-a",
-        "repo-a",
-        "env-a",
-      ),
-    ],
-  });
-  const resultB = authorizer.authorizeSecret({
-    requester: { account: "account-b-1", repo: "repo-b-1" },
-    tokenDec: createTestTokenDec(),
-    tokenDecIsRegistered: true,
-    secretDec: createTestSecretDec(),
-    name: "SECRET_A",
-    to: [
-      createTestProvisionRequestTarget(
-        "environment",
-        "account-b-1",
-        "repo-b-1",
-        "env-b-1",
-      ),
-    ],
-  });
+  const resultA = authorizer.authorizeSecret(
+    createTestProvisionRequest({
+      to: [
+        createTestProvisionRequestTarget(
+          "environment",
+          "account-a",
+          "repo-a",
+          "env-a",
+        ),
+      ],
+    }),
+  );
+  const resultB = authorizer.authorizeSecret(
+    createTestProvisionRequest({
+      requester: { account: "account-b-1", repo: "repo-b-1" },
+      to: [
+        createTestProvisionRequestTarget(
+          "environment",
+          "account-b-1",
+          "repo-b-1",
+          "env-b-1",
+        ),
+      ],
+    }),
+  );
 
   const explain = createTextProvisionAuthExplainer(
     tokenAuthorizer
@@ -312,21 +297,19 @@ it("doesn't allow GitHub environment secrets for unauthorized requesters", () =>
     },
   );
 
-  const resultA = authorizer.authorizeSecret({
-    requester: { account: "account-y", repo: "repo-y" },
-    tokenDec: createTestTokenDec(),
-    tokenDecIsRegistered: true,
-    secretDec: createTestSecretDec(),
-    name: "SECRET_A",
-    to: [
-      createTestProvisionRequestTarget(
-        "environment",
-        "account-a",
-        "repo-a",
-        "env-a",
-      ),
-    ],
-  });
+  const resultA = authorizer.authorizeSecret(
+    createTestProvisionRequest({
+      requester: { account: "account-y", repo: "repo-y" },
+      to: [
+        createTestProvisionRequestTarget(
+          "environment",
+          "account-a",
+          "repo-a",
+          "env-a",
+        ),
+      ],
+    }),
+  );
 
   const explain = createTextProvisionAuthExplainer(
     tokenAuthorizer
@@ -373,66 +356,58 @@ it("doesn't allow GitHub environment secrets within the requesting repo for unau
     },
   );
 
-  const resultA = authorizer.authorizeSecret({
-    requester: { account: "account-y", repo: "repo-y" },
-    tokenDec: createTestTokenDec(),
-    tokenDecIsRegistered: true,
-    secretDec: createTestSecretDec(),
-    name: "SECRET_A",
-    to: [
-      createTestProvisionRequestTarget(
-        "environment",
-        "account-x",
-        "repo-x",
-        "env-x",
-      ),
-    ],
-  });
-  const resultB = authorizer.authorizeSecret({
-    requester: { account: "account-x", repo: "repo-y" },
-    tokenDec: createTestTokenDec(),
-    tokenDecIsRegistered: true,
-    secretDec: createTestSecretDec(),
-    name: "SECRET_A",
-    to: [
-      createTestProvisionRequestTarget(
-        "environment",
-        "account-x",
-        "repo-x",
-        "env-x",
-      ),
-    ],
-  });
-  const resultC = authorizer.authorizeSecret({
-    requester: { account: "account-x", repo: "repo-x" },
-    tokenDec: createTestTokenDec(),
-    tokenDecIsRegistered: true,
-    secretDec: createTestSecretDec(),
-    name: "SECRET_A",
-    to: [
-      createTestProvisionRequestTarget(
-        "environment",
-        "account-x",
-        "repo-y",
-        "env-x",
-      ),
-    ],
-  });
-  const resultD = authorizer.authorizeSecret({
-    requester: { account: "account-x", repo: "repo-x" },
-    tokenDec: createTestTokenDec(),
-    tokenDecIsRegistered: true,
-    secretDec: createTestSecretDec(),
-    name: "SECRET_A",
-    to: [
-      createTestProvisionRequestTarget(
-        "environment",
-        "account-x",
-        "repo-x",
-        "env-y",
-      ),
-    ],
-  });
+  const resultA = authorizer.authorizeSecret(
+    createTestProvisionRequest({
+      requester: { account: "account-y", repo: "repo-y" },
+      to: [
+        createTestProvisionRequestTarget(
+          "environment",
+          "account-x",
+          "repo-x",
+          "env-x",
+        ),
+      ],
+    }),
+  );
+  const resultB = authorizer.authorizeSecret(
+    createTestProvisionRequest({
+      requester: { account: "account-x", repo: "repo-y" },
+      to: [
+        createTestProvisionRequestTarget(
+          "environment",
+          "account-x",
+          "repo-x",
+          "env-x",
+        ),
+      ],
+    }),
+  );
+  const resultC = authorizer.authorizeSecret(
+    createTestProvisionRequest({
+      requester: { account: "account-x", repo: "repo-x" },
+      to: [
+        createTestProvisionRequestTarget(
+          "environment",
+          "account-x",
+          "repo-y",
+          "env-x",
+        ),
+      ],
+    }),
+  );
+  const resultD = authorizer.authorizeSecret(
+    createTestProvisionRequest({
+      requester: { account: "account-x", repo: "repo-x" },
+      to: [
+        createTestProvisionRequestTarget(
+          "environment",
+          "account-x",
+          "repo-x",
+          "env-y",
+        ),
+      ],
+    }),
+  );
 
   const explain = createTextProvisionAuthExplainer(
     tokenAuthorizer
@@ -506,21 +481,18 @@ it("doesn't allow GitHub environment secrets within the requesting repo when den
     },
   );
 
-  const resultA = authorizer.authorizeSecret({
-    requester: { account: "account-a", repo: "repo-a" },
-    tokenDec: createTestTokenDec(),
-    tokenDecIsRegistered: true,
-    secretDec: createTestSecretDec(),
-    name: "SECRET_A",
-    to: [
-      createTestProvisionRequestTarget(
-        "environment",
-        "account-a",
-        "repo-a",
-        "env-a",
-      ),
-    ],
-  });
+  const resultA = authorizer.authorizeSecret(
+    createTestProvisionRequest({
+      to: [
+        createTestProvisionRequestTarget(
+          "environment",
+          "account-a",
+          "repo-a",
+          "env-a",
+        ),
+      ],
+    }),
+  );
 
   const explain = createTextProvisionAuthExplainer(
     tokenAuthorizer
@@ -571,21 +543,19 @@ it("doesn't allow GitHub environment secrets when two environment patterns match
     },
   );
 
-  const resultA = authorizer.authorizeSecret({
-    requester: { account: "account-x", repo: "repo-x" },
-    tokenDec: createTestTokenDec(),
-    tokenDecIsRegistered: true,
-    secretDec: createTestSecretDec(),
-    name: "SECRET_A",
-    to: [
-      createTestProvisionRequestTarget(
-        "environment",
-        "account-a",
-        "repo-a",
-        "env-a",
-      ),
-    ],
-  });
+  const resultA = authorizer.authorizeSecret(
+    createTestProvisionRequest({
+      requester: { account: "account-x", repo: "repo-x" },
+      to: [
+        createTestProvisionRequestTarget(
+          "environment",
+          "account-a",
+          "repo-a",
+          "env-a",
+        ),
+      ],
+    }),
+  );
 
   const explain = createTextProvisionAuthExplainer(
     tokenAuthorizer

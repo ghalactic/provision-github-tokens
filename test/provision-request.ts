@@ -3,8 +3,24 @@ import type {
   GitHubCodespacesProvisionRequestTarget,
   GitHubDependabotProvisionRequestTarget,
   GitHubEnvironmentProvisionRequestTarget,
+  ProvisionRequest,
   ProvisionRequestTarget,
 } from "../src/provision-request.js";
+import { createTestSecretDec, createTestTokenDec } from "./declaration.js";
+
+export function createTestProvisionRequest(
+  result: Partial<ProvisionRequest> = {},
+): ProvisionRequest {
+  return {
+    requester: { account: "account-a", repo: "repo-a" },
+    tokenDec: createTestTokenDec(),
+    tokenDecIsRegistered: true,
+    secretDec: createTestSecretDec(),
+    name: "SECRET_A",
+    to: [createTestProvisionRequestTarget("actions")],
+    ...result,
+  };
+}
 
 export function createTestProvisionRequestTarget(
   type: "actions",
