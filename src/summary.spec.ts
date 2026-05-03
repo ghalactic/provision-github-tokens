@@ -5,8 +5,7 @@ import {
   createTestTokenDec,
 } from "../test/declaration.js";
 import {
-  createTestProvisionAuthResultAllowed,
-  createTestProvisionAuthResultNotAllowed,
+  createTestProvisionAuthResult,
   createTestProvisionAuthTargetResult,
   createTestTokenAuthResult,
 } from "../test/result.js";
@@ -62,7 +61,7 @@ it("renders a summary with all secrets provisioned", async () => {
     tokenAuthResult: tokenAuthResultB,
   });
 
-  const provisionAuthResultA = createTestProvisionAuthResultAllowed({
+  const provisionAuthResultA = createTestProvisionAuthResult({
     request: {
       requester: { account: "account-x", repo: "repo-x" },
       tokenDec: tokenAuthResultA.request.tokenDec,
@@ -81,7 +80,7 @@ it("renders a summary with all secrets provisioned", async () => {
     results: [targetResultA],
   });
 
-  const provisionAuthResultB = createTestProvisionAuthResultAllowed({
+  const provisionAuthResultB = createTestProvisionAuthResult({
     request: {
       requester: { account: "account-x", repo: "repo-x" },
       tokenDec: tokenAuthResultB.request.tokenDec,
@@ -189,7 +188,7 @@ it("renders a summary with some secrets denied", async () => {
     tokenAuthResult: tokenAuthResultB,
   });
 
-  const provisionAuthResultA = createTestProvisionAuthResultAllowed({
+  const provisionAuthResultA = createTestProvisionAuthResult({
     request: {
       requester: { account: "account-x", repo: "repo-x" },
       tokenDec: tokenAuthResultA.request.tokenDec,
@@ -208,7 +207,8 @@ it("renders a summary with some secrets denied", async () => {
     results: [targetResultA],
   });
 
-  const provisionAuthResultB = createTestProvisionAuthResultNotAllowed({
+  const provisionAuthResultB = createTestProvisionAuthResult({
+    isAllowed: false,
     request: {
       requester: { account: "account-x", repo: "repo-x" },
       tokenDec: tokenAuthResultB.request.tokenDec,
@@ -303,7 +303,8 @@ it("renders a summary with all secrets denied", async () => {
     isTokenAllowed: false,
   });
 
-  const provisionAuthResultA = createTestProvisionAuthResultNotAllowed({
+  const provisionAuthResultA = createTestProvisionAuthResult({
+    isAllowed: false,
     request: {
       requester: { account: "account-x", repo: "repo-x" },
       tokenDec: tokenAuthResultA.request.tokenDec,
@@ -406,7 +407,7 @@ it("renders a summary with environment targets", async () => {
     tokenAuthResult: tokenAuthResultA,
   });
 
-  const provisionAuthResultA = createTestProvisionAuthResultAllowed({
+  const provisionAuthResultA = createTestProvisionAuthResult({
     request: {
       requester: { account: "account-x", repo: "repo-x" },
       tokenDec: tokenAuthResultA.request.tokenDec,
@@ -500,7 +501,7 @@ it("renders a summary with multiple requesters", async () => {
     tokenAuthResult: tokenAuthResultB,
   });
 
-  const provisionAuthResultA = createTestProvisionAuthResultAllowed({
+  const provisionAuthResultA = createTestProvisionAuthResult({
     request: {
       requester: { account: "account-x", repo: "repo-x" },
       tokenDec: tokenAuthResultA.request.tokenDec,
@@ -519,7 +520,7 @@ it("renders a summary with multiple requesters", async () => {
     results: [targetResultA],
   });
 
-  const provisionAuthResultB = createTestProvisionAuthResultAllowed({
+  const provisionAuthResultB = createTestProvisionAuthResult({
     request: {
       requester: { account: "account-y", repo: "repo-y" },
       tokenDec: tokenAuthResultB.request.tokenDec,
@@ -618,7 +619,7 @@ it("renders a summary with a missing token declaration", async () => {
     isTokenAllowed: false,
   });
 
-  const provisionAuthResultA = createTestProvisionAuthResultAllowed({
+  const provisionAuthResultA = createTestProvisionAuthResult({
     request: {
       requester: { account: "account-x", repo: "repo-x" },
       tokenDec: tokenAuthResultA.request.tokenDec,
@@ -637,7 +638,8 @@ it("renders a summary with a missing token declaration", async () => {
     results: [targetResultA],
   });
 
-  const provisionAuthResultB = createTestProvisionAuthResultNotAllowed({
+  const provisionAuthResultB = createTestProvisionAuthResult({
+    isAllowed: false,
     request: {
       requester: { account: "account-x", repo: "repo-x" },
       tokenDec: undefined,
@@ -729,7 +731,7 @@ it("renders a summary with an unshared token declaration", async () => {
     isTokenAllowed: false,
   });
 
-  const provisionAuthResultA = createTestProvisionAuthResultAllowed({
+  const provisionAuthResultA = createTestProvisionAuthResult({
     request: {
       requester: { account: "account-x", repo: "repo-x" },
       tokenDec: tokenAuthResultA.request.tokenDec,
@@ -748,7 +750,8 @@ it("renders a summary with an unshared token declaration", async () => {
     results: [targetResultA],
   });
 
-  const provisionAuthResultB = createTestProvisionAuthResultNotAllowed({
+  const provisionAuthResultB = createTestProvisionAuthResult({
+    isAllowed: false,
     request: {
       requester: { account: "account-x", repo: "repo-x" },
       tokenDec: undefined,
@@ -833,7 +836,7 @@ it("renders a summary with missing targets", async () => {
     tokenAuthResult: tokenAuthResultA,
   });
 
-  const provisionAuthResultA = createTestProvisionAuthResultAllowed({
+  const provisionAuthResultA = createTestProvisionAuthResult({
     request: {
       requester: { account: "account-x", repo: "repo-x" },
       tokenDec: tokenAuthResultA.request.tokenDec,
@@ -852,7 +855,8 @@ it("renders a summary with missing targets", async () => {
     results: [targetResultA],
   });
 
-  const provisionAuthResultB = createTestProvisionAuthResultNotAllowed({
+  const provisionAuthResultB = createTestProvisionAuthResult({
+    isAllowed: false,
     request: {
       requester: { account: "account-x", repo: "repo-x" },
       tokenDec: createTestTokenDec({ permissions: { contents: "write" } }),
@@ -956,7 +960,7 @@ it("renders a summary with multiple distinct targets", async () => {
     tokenAuthResult: tokenAuthResultA,
   });
 
-  const provisionAuthResultA = createTestProvisionAuthResultAllowed({
+  const provisionAuthResultA = createTestProvisionAuthResult({
     request: {
       requester: { account: "account-x", repo: "repo-x" },
       tokenDec: tokenAuthResultA.request.tokenDec,
@@ -1034,7 +1038,8 @@ it("truncates rows beyond the limit and shows a notice", async () => {
   >();
 
   for (let i = 0; i < 1002; ++i) {
-    const provisionAuthResult = createTestProvisionAuthResultNotAllowed({
+    const provisionAuthResult = createTestProvisionAuthResult({
+      isAllowed: false,
       request: {
         requester: { account: "account-x", repo: "repo-x" },
         tokenDec: createTestTokenDec({ permissions: { metadata: "read" } }),
@@ -1102,7 +1107,8 @@ it("renders a failure reason when tokens aren't allowed", async () => {
     isTokenAllowed: false,
   });
 
-  const provisionAuthResult = createTestProvisionAuthResultNotAllowed({
+  const provisionAuthResult = createTestProvisionAuthResult({
+    isAllowed: false,
     request: {
       requester: { account: "account-x", repo: "repo-x" },
       tokenDec: tokenAuthResult.request.tokenDec,
@@ -1171,7 +1177,7 @@ it("renders a failure reason when no suitable issuer is found", async () => {
     tokenAuthResult,
   });
 
-  const provisionAuthResult = createTestProvisionAuthResultNotAllowed({
+  const provisionAuthResult = createTestProvisionAuthResult({
     request: {
       requester: { account: "account-x", repo: "repo-x" },
       tokenDec: tokenAuthResult.request.tokenDec,
@@ -1243,7 +1249,7 @@ it("renders a failure reason when token issuance fails", async () => {
     tokenAuthResult,
   });
 
-  const provisionAuthResult = createTestProvisionAuthResultNotAllowed({
+  const provisionAuthResult = createTestProvisionAuthResult({
     request: {
       requester: { account: "account-x", repo: "repo-x" },
       tokenDec: tokenAuthResult.request.tokenDec,
@@ -1315,7 +1321,7 @@ it("renders a failure reason when no suitable provisioner is found", async () =>
     tokenAuthResult,
   });
 
-  const provisionAuthResult = createTestProvisionAuthResultNotAllowed({
+  const provisionAuthResult = createTestProvisionAuthResult({
     request: {
       requester: { account: "account-x", repo: "repo-x" },
       tokenDec: tokenAuthResult.request.tokenDec,
@@ -1396,7 +1402,7 @@ it("renders a failure reason when provisioning has no target results", async () 
     tokenAuthResult,
   });
 
-  const provisionAuthResult = createTestProvisionAuthResultNotAllowed({
+  const provisionAuthResult = createTestProvisionAuthResult({
     request: {
       requester: { account: "account-x", repo: "repo-x" },
       tokenDec: tokenAuthResult.request.tokenDec,
@@ -1488,7 +1494,7 @@ it("renders a failure reason when provisioning partially fails across targets", 
     tokenAuthResult,
   });
 
-  const provisionAuthResult = createTestProvisionAuthResultNotAllowed({
+  const provisionAuthResult = createTestProvisionAuthResult({
     request: {
       requester: { account: "account-x", repo: "repo-x" },
       tokenDec: tokenAuthResult.request.tokenDec,
@@ -1571,7 +1577,7 @@ it("renders a failure reason when provisioning fails for all targets", async () 
     tokenAuthResult,
   });
 
-  const provisionAuthResult = createTestProvisionAuthResultNotAllowed({
+  const provisionAuthResult = createTestProvisionAuthResult({
     request: {
       requester: { account: "account-x", repo: "repo-x" },
       tokenDec: tokenAuthResult.request.tokenDec,

@@ -29,8 +29,7 @@ import {
 } from "../test/github-api.js";
 import { createTestKeyPair } from "../test/key.js";
 import {
-  createTestProvisionAuthResultAllowed,
-  createTestProvisionAuthResultNotAllowed,
+  createTestProvisionAuthResult,
   createTestProvisionAuthTargetResult,
   createTestTokenAuthResult,
 } from "../test/result.js";
@@ -216,7 +215,8 @@ it("handles secrets with no targets to provision to", async () => {
     [tokenAuthResultA, tokenCreationResultCreatedA],
   ]);
 
-  const missingTargetsResult = createTestProvisionAuthResultNotAllowed({
+  const missingTargetsResult = createTestProvisionAuthResult({
+    isAllowed: false,
     results: [],
     isMissingTargets: true,
   });
@@ -239,7 +239,8 @@ it("doesn't provision secrets when provisioning isn't allowed", async () => {
     [tokenAuthResultA, tokenCreationResultCreatedA],
   ]);
 
-  const notAllowedResult = createTestProvisionAuthResultNotAllowed({
+  const notAllowedResult = createTestProvisionAuthResult({
+    isAllowed: false,
     results: [
       createTestProvisionAuthTargetResult({
         isAllowed: false,
@@ -294,7 +295,7 @@ it("doesn't provision secrets when the token wasn't created", async () => {
     [tokenAuthResultError, { type: "ERROR", error: new Error("boom") }],
   ]);
 
-  const allowedResult = createTestProvisionAuthResultAllowed({
+  const allowedResult = createTestProvisionAuthResult({
     results: [
       createTestProvisionAuthTargetResult({
         target: accountAActionsTarget,
@@ -331,7 +332,7 @@ it("doesn't provision secrets when no suitable provisioners are found", async ()
     [tokenAuthResultA, tokenCreationResultCreatedA],
   ]);
 
-  const allowedResult = createTestProvisionAuthResultAllowed({
+  const allowedResult = createTestProvisionAuthResult({
     results: [
       createTestProvisionAuthTargetResult({
         target: accountXActionsTarget,
@@ -362,7 +363,7 @@ it("doesn't provision secrets when target provisioning fails with a GitHub API e
     [tokenAuthResultA, tokenCreationResultCreatedA],
   ]);
 
-  const allowedResult = createTestProvisionAuthResultAllowed({
+  const allowedResult = createTestProvisionAuthResult({
     results: [
       createTestProvisionAuthTargetResult({
         target: accountAActionsTarget,
@@ -396,7 +397,7 @@ it("doesn't provision secrets when target provisioning fails with an unexpected 
     [tokenAuthResultA, tokenCreationResultCreatedA],
   ]);
 
-  const allowedResult = createTestProvisionAuthResultAllowed({
+  const allowedResult = createTestProvisionAuthResult({
     results: [
       createTestProvisionAuthTargetResult({
         target: accountAActionsTarget,
@@ -426,7 +427,7 @@ it("doesn't provision secrets when encryption fails with a GitHub API error", as
     [tokenAuthResultA, tokenCreationResultCreatedA],
   ]);
 
-  const allowedResult = createTestProvisionAuthResultAllowed({
+  const allowedResult = createTestProvisionAuthResult({
     results: [
       createTestProvisionAuthTargetResult({
         target: accountAActionsTarget,
@@ -458,7 +459,7 @@ it("doesn't provision secrets when encryption fails with an unexpected error", a
     [tokenAuthResultA, tokenCreationResultCreatedA],
   ]);
 
-  const allowedResult = createTestProvisionAuthResultAllowed({
+  const allowedResult = createTestProvisionAuthResult({
     results: [
       createTestProvisionAuthTargetResult({
         target: accountAActionsTarget,
@@ -488,7 +489,7 @@ it("can provision multiple secrets of the same type", async () => {
     [tokenAuthResultB, tokenCreationResultCreatedB],
   ]);
 
-  const allowedResultA = createTestProvisionAuthResultAllowed({
+  const allowedResultA = createTestProvisionAuthResult({
     results: [
       createTestProvisionAuthTargetResult({
         target: accountAActionsTarget,
@@ -576,7 +577,7 @@ it("can provision a secret to multiple targets", async () => {
     [tokenAuthResultA, tokenCreationResultCreatedA],
   ]);
 
-  const allowedResult = createTestProvisionAuthResultAllowed({
+  const allowedResult = createTestProvisionAuthResult({
     results: [
       createTestProvisionAuthTargetResult({
         target: accountAActionsTarget,
@@ -647,7 +648,8 @@ it("doesn't stop provisioning when some targets fail", async () => {
     [tokenAuthResultB, tokenCreationResultNotCreated],
   ]);
 
-  const notAllowedResult = createTestProvisionAuthResultNotAllowed({
+  const notAllowedResult = createTestProvisionAuthResult({
+    isAllowed: false,
     results: [
       createTestProvisionAuthTargetResult({
         isAllowed: false,

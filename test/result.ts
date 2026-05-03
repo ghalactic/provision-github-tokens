@@ -107,10 +107,14 @@ export function createTestProvisionAuthTargetResult(
   };
 }
 
-export function createTestProvisionAuthResultAllowed(
+export function createTestProvisionAuthResult(
   result: Partial<ProvisionAuthResult> = {},
 ): ProvisionAuthResult {
-  const { results = [createTestProvisionAuthTargetResult()] } = result;
+  const { isAllowed = true, ...overrides } = result;
+
+  const results = overrides.results ?? [
+    createTestProvisionAuthTargetResult({ isAllowed }),
+  ];
 
   return {
     request: {
@@ -125,32 +129,7 @@ export function createTestProvisionAuthResultAllowed(
     },
     results,
     isMissingTargets: false,
-    isAllowed: true,
-    ...result,
-  };
-}
-
-export function createTestProvisionAuthResultNotAllowed(
-  result: Partial<ProvisionAuthResult> = {},
-): ProvisionAuthResult {
-  const {
-    results = [createTestProvisionAuthTargetResult({ isAllowed: false })],
-  } = result;
-
-  return {
-    request: {
-      requester: { account: "account-a", repo: "repo-a" },
-      tokenDec: createTestTokenDec({ permissions: { metadata: "read" } }),
-      tokenDecIsRegistered: true,
-      secretDec: createTestSecretDec({
-        github: { accounts: { "account-a": { actions: true } } },
-      }),
-      name: "SECRET_A",
-      to: results.map((targetResult) => targetResult.target),
-    },
-    results,
-    isMissingTargets: false,
-    isAllowed: false,
-    ...result,
+    isAllowed,
+    ...overrides,
   };
 }
