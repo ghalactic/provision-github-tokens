@@ -27,7 +27,7 @@ import {
 } from "../test/github-api.js";
 import { createTestKeyPair } from "../test/key.js";
 import {
-  createTestProvisionAuthTargetResultAllowed,
+  createTestProvisionAuthTargetResult,
   createTestTokenAuthResult,
 } from "../test/result.js";
 import {
@@ -159,7 +159,7 @@ it("handles GitHub API errors when provisioning org-level Dependabot secrets", a
       to: [accountADependabotTarget],
     },
     results: [
-      createTestProvisionAuthTargetResultAllowed({
+      createTestProvisionAuthTargetResult({
         target: accountADependabotTarget,
         tokenAuthResult: tokenAuthResultA,
       }),
@@ -201,7 +201,7 @@ it("handles unexpected errors when provisioning org-level Dependabot secrets", a
       to: [accountADependabotTarget],
     },
     results: [
-      createTestProvisionAuthTargetResultAllowed({
+      createTestProvisionAuthTargetResult({
         target: accountADependabotTarget,
         tokenAuthResult: tokenAuthResultA,
       }),
@@ -240,7 +240,7 @@ it("can provision org-level Dependabot secrets", async () => {
       to: [accountADependabotTarget],
     },
     results: [
-      createTestProvisionAuthTargetResultAllowed({
+      createTestProvisionAuthTargetResult({
         target: accountADependabotTarget,
         tokenAuthResult: tokenAuthResultA,
       }),
@@ -284,7 +284,7 @@ it("handles GitHub API errors when provisioning repo-level Dependabot secrets", 
       to: [accountARepoADependabotTarget],
     },
     results: [
-      createTestProvisionAuthTargetResultAllowed({
+      createTestProvisionAuthTargetResult({
         target: accountARepoADependabotTarget,
         tokenAuthResult: tokenAuthResultA,
       }),
@@ -326,7 +326,7 @@ it("handles unexpected errors when provisioning repo-level Dependabot secrets", 
       to: [accountARepoADependabotTarget],
     },
     results: [
-      createTestProvisionAuthTargetResultAllowed({
+      createTestProvisionAuthTargetResult({
         target: accountARepoADependabotTarget,
         tokenAuthResult: tokenAuthResultA,
       }),
@@ -365,7 +365,7 @@ it("can provision repo-level Dependabot secrets", async () => {
       to: [accountARepoADependabotTarget],
     },
     results: [
-      createTestProvisionAuthTargetResultAllowed({
+      createTestProvisionAuthTargetResult({
         target: accountARepoADependabotTarget,
         tokenAuthResult: tokenAuthResultA,
       }),

@@ -27,7 +27,7 @@ import {
 } from "../test/github-api.js";
 import { createTestKeyPair } from "../test/key.js";
 import {
-  createTestProvisionAuthTargetResultAllowed,
+  createTestProvisionAuthTargetResult,
   createTestTokenAuthResult,
 } from "../test/result.js";
 import {
@@ -159,7 +159,7 @@ it("handles GitHub API errors when provisioning org-level Codespaces secrets", a
       to: [accountACodespacesTarget],
     },
     results: [
-      createTestProvisionAuthTargetResultAllowed({
+      createTestProvisionAuthTargetResult({
         target: accountACodespacesTarget,
         tokenAuthResult: tokenAuthResultA,
       }),
@@ -201,7 +201,7 @@ it("handles unexpected errors when provisioning org-level Codespaces secrets", a
       to: [accountACodespacesTarget],
     },
     results: [
-      createTestProvisionAuthTargetResultAllowed({
+      createTestProvisionAuthTargetResult({
         target: accountACodespacesTarget,
         tokenAuthResult: tokenAuthResultA,
       }),
@@ -240,7 +240,7 @@ it("can provision org-level Codespaces secrets", async () => {
       to: [accountACodespacesTarget],
     },
     results: [
-      createTestProvisionAuthTargetResultAllowed({
+      createTestProvisionAuthTargetResult({
         target: accountACodespacesTarget,
         tokenAuthResult: tokenAuthResultA,
       }),
@@ -284,7 +284,7 @@ it("handles GitHub API errors when provisioning repo-level Codespaces secrets", 
       to: [accountARepoACodespacesTarget],
     },
     results: [
-      createTestProvisionAuthTargetResultAllowed({
+      createTestProvisionAuthTargetResult({
         target: accountARepoACodespacesTarget,
         tokenAuthResult: tokenAuthResultA,
       }),
@@ -326,7 +326,7 @@ it("handles unexpected errors when provisioning repo-level Codespaces secrets", 
       to: [accountARepoACodespacesTarget],
     },
     results: [
-      createTestProvisionAuthTargetResultAllowed({
+      createTestProvisionAuthTargetResult({
         target: accountARepoACodespacesTarget,
         tokenAuthResult: tokenAuthResultA,
       }),
@@ -365,7 +365,7 @@ it("can provision repo-level Codespaces secrets", async () => {
       to: [accountARepoACodespacesTarget],
     },
     results: [
-      createTestProvisionAuthTargetResultAllowed({
+      createTestProvisionAuthTargetResult({
         target: accountARepoACodespacesTarget,
         tokenAuthResult: tokenAuthResultA,
       }),

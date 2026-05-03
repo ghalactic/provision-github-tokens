@@ -7,8 +7,7 @@ import {
 import {
   createTestProvisionAuthResultAllowed,
   createTestProvisionAuthResultNotAllowed,
-  createTestProvisionAuthTargetResultAllowed,
-  createTestProvisionAuthTargetResultNotAllowed,
+  createTestProvisionAuthTargetResult,
   createTestTokenAuthResult,
 } from "../test/result.js";
 import type { AuthorizeResult } from "./authorizer.js";
@@ -53,12 +52,12 @@ it("renders a summary with all secrets provisioned", async () => {
     maxWant: "write",
   });
 
-  const targetResultA = createTestProvisionAuthTargetResultAllowed({
+  const targetResultA = createTestProvisionAuthTargetResult({
     target: accountAActionsTarget,
     tokenAuthResult: tokenAuthResultA,
   });
 
-  const targetResultB = createTestProvisionAuthTargetResultAllowed({
+  const targetResultB = createTestProvisionAuthTargetResult({
     target: accountAActionsTarget,
     tokenAuthResult: tokenAuthResultB,
   });
@@ -179,12 +178,13 @@ it("renders a summary with some secrets denied", async () => {
     maxWant: "write",
   });
 
-  const targetResultA = createTestProvisionAuthTargetResultAllowed({
+  const targetResultA = createTestProvisionAuthTargetResult({
     target: accountAActionsTarget,
     tokenAuthResult: tokenAuthResultA,
   });
 
-  const targetResultB = createTestProvisionAuthTargetResultNotAllowed({
+  const targetResultB = createTestProvisionAuthTargetResult({
+    isAllowed: false,
     target: accountAActionsTarget,
     tokenAuthResult: tokenAuthResultB,
   });
@@ -296,7 +296,8 @@ it("renders a summary with all secrets denied", async () => {
     maxWant: "read",
   });
 
-  const targetResultA = createTestProvisionAuthTargetResultNotAllowed({
+  const targetResultA = createTestProvisionAuthTargetResult({
+    isAllowed: false,
     target: accountAActionsTarget,
     tokenAuthResult: tokenAuthResultA,
     isTokenAllowed: false,
@@ -400,7 +401,7 @@ it("renders a summary with environment targets", async () => {
     maxWant: "read",
   });
 
-  const targetResultA = createTestProvisionAuthTargetResultAllowed({
+  const targetResultA = createTestProvisionAuthTargetResult({
     target: accountARepoAEnvironmentTarget,
     tokenAuthResult: tokenAuthResultA,
   });
@@ -489,12 +490,12 @@ it("renders a summary with multiple requesters", async () => {
     maxWant: "write",
   });
 
-  const targetResultA = createTestProvisionAuthTargetResultAllowed({
+  const targetResultA = createTestProvisionAuthTargetResult({
     target: accountAActionsTarget,
     tokenAuthResult: tokenAuthResultA,
   });
 
-  const targetResultB = createTestProvisionAuthTargetResultAllowed({
+  const targetResultB = createTestProvisionAuthTargetResult({
     target: accountAActionsTarget,
     tokenAuthResult: tokenAuthResultB,
   });
@@ -605,13 +606,14 @@ it("renders a summary with a missing token declaration", async () => {
     maxWant: "read",
   });
 
-  const targetResultA = createTestProvisionAuthTargetResultAllowed({
+  const targetResultA = createTestProvisionAuthTargetResult({
     target: accountAActionsTarget,
     tokenAuthResult: tokenAuthResultA,
   });
 
-  const targetResultB = createTestProvisionAuthTargetResultNotAllowed({
+  const targetResultB = createTestProvisionAuthTargetResult({
     target: accountAActionsTarget,
+    isAllowed: false,
     tokenAuthResult: undefined,
     isTokenAllowed: false,
   });
@@ -715,13 +717,14 @@ it("renders a summary with an unshared token declaration", async () => {
     maxWant: "read",
   });
 
-  const targetResultA = createTestProvisionAuthTargetResultAllowed({
+  const targetResultA = createTestProvisionAuthTargetResult({
     target: accountAActionsTarget,
     tokenAuthResult: tokenAuthResultA,
   });
 
-  const targetResultB = createTestProvisionAuthTargetResultNotAllowed({
+  const targetResultB = createTestProvisionAuthTargetResult({
     target: accountAActionsTarget,
+    isAllowed: false,
     tokenAuthResult: undefined,
     isTokenAllowed: false,
   });
@@ -825,7 +828,7 @@ it("renders a summary with missing targets", async () => {
     maxWant: "read",
   });
 
-  const targetResultA = createTestProvisionAuthTargetResultAllowed({
+  const targetResultA = createTestProvisionAuthTargetResult({
     target: accountAActionsTarget,
     tokenAuthResult: tokenAuthResultA,
   });
@@ -938,17 +941,17 @@ it("renders a summary with multiple distinct targets", async () => {
     maxWant: "read",
   });
 
-  const targetResultA = createTestProvisionAuthTargetResultAllowed({
+  const targetResultA = createTestProvisionAuthTargetResult({
     target: accountAActionsTarget,
     tokenAuthResult: tokenAuthResultA,
   });
 
-  const targetResultB = createTestProvisionAuthTargetResultAllowed({
+  const targetResultB = createTestProvisionAuthTargetResult({
     target: accountBActionsTarget,
     tokenAuthResult: tokenAuthResultA,
   });
 
-  const targetResultA2 = createTestProvisionAuthTargetResultAllowed({
+  const targetResultA2 = createTestProvisionAuthTargetResult({
     target: accountACodespacesTarget,
     tokenAuthResult: tokenAuthResultA,
   });
@@ -1092,7 +1095,8 @@ it("renders a failure reason when tokens aren't allowed", async () => {
     },
   });
 
-  const targetResult = createTestProvisionAuthTargetResultNotAllowed({
+  const targetResult = createTestProvisionAuthTargetResult({
+    isAllowed: false,
     target: accountAActionsTarget,
     tokenAuthResult: tokenAuthResult,
     isTokenAllowed: false,
@@ -1162,7 +1166,7 @@ it("renders a failure reason when no suitable issuer is found", async () => {
     },
   });
 
-  const targetResult = createTestProvisionAuthTargetResultAllowed({
+  const targetResult = createTestProvisionAuthTargetResult({
     target: accountAActionsTarget,
     tokenAuthResult,
   });
@@ -1234,7 +1238,7 @@ it("renders a failure reason when token issuance fails", async () => {
     },
   });
 
-  const targetResult = createTestProvisionAuthTargetResultAllowed({
+  const targetResult = createTestProvisionAuthTargetResult({
     target: accountAActionsTarget,
     tokenAuthResult,
   });
@@ -1306,7 +1310,7 @@ it("renders a failure reason when no suitable provisioner is found", async () =>
     },
   });
 
-  const targetResult = createTestProvisionAuthTargetResultAllowed({
+  const targetResult = createTestProvisionAuthTargetResult({
     target: accountAActionsTarget,
     tokenAuthResult,
   });
@@ -1387,7 +1391,7 @@ it("renders a failure reason when provisioning has no target results", async () 
     },
   });
 
-  const targetResult = createTestProvisionAuthTargetResultAllowed({
+  const targetResult = createTestProvisionAuthTargetResult({
     target: accountAActionsTarget,
     tokenAuthResult,
   });
@@ -1474,12 +1478,12 @@ it("renders a failure reason when provisioning partially fails across targets", 
     },
   });
 
-  const targetResultA = createTestProvisionAuthTargetResultAllowed({
+  const targetResultA = createTestProvisionAuthTargetResult({
     target: accountAActionsTarget,
     tokenAuthResult,
   });
 
-  const targetResultB = createTestProvisionAuthTargetResultAllowed({
+  const targetResultB = createTestProvisionAuthTargetResult({
     target: accountBActionsTarget,
     tokenAuthResult,
   });
@@ -1562,7 +1566,7 @@ it("renders a failure reason when provisioning fails for all targets", async () 
     },
   });
 
-  const targetResult = createTestProvisionAuthTargetResultAllowed({
+  const targetResult = createTestProvisionAuthTargetResult({
     target: accountAActionsTarget,
     tokenAuthResult,
   });

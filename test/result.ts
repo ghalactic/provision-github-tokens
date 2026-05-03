@@ -86,28 +86,11 @@ export function createTestTokenAuthResult(
   };
 }
 
-export function createTestProvisionAuthTargetResultAllowed(
+export function createTestProvisionAuthTargetResult(
   result: Partial<ProvisionAuthTargetResult> = {},
 ): ProvisionAuthTargetResult {
-  return {
-    target: {
-      platform: "github",
-      type: "actions",
-      target: { account: "account-a" },
-    },
-    rules: [],
-    have: "allow",
-    tokenAuthResult: createTestTokenAuthResult(),
-    isTokenAllowed: true,
-    isProvisionAllowed: true,
-    isAllowed: true,
-    ...result,
-  };
-}
+  const { isAllowed = true, ...overrides } = result;
 
-export function createTestProvisionAuthTargetResultNotAllowed(
-  result: Partial<ProvisionAuthTargetResult> = {},
-): ProvisionAuthTargetResult {
   return {
     target: {
       platform: "github",
@@ -115,21 +98,19 @@ export function createTestProvisionAuthTargetResultNotAllowed(
       target: { account: "account-a" },
     },
     rules: [],
-    have: "deny",
+    have: isAllowed ? "allow" : "deny",
     tokenAuthResult: createTestTokenAuthResult(),
     isTokenAllowed: true,
-    isProvisionAllowed: false,
-    isAllowed: false,
-    ...result,
+    isProvisionAllowed: isAllowed,
+    isAllowed,
+    ...overrides,
   };
 }
 
 export function createTestProvisionAuthResultAllowed(
   result: Partial<ProvisionAuthResult> = {},
 ): ProvisionAuthResult {
-  const results = result.results ?? [
-    createTestProvisionAuthTargetResultAllowed(),
-  ];
+  const { results = [createTestProvisionAuthTargetResult()] } = result;
 
   return {
     request: {
@@ -152,9 +133,9 @@ export function createTestProvisionAuthResultAllowed(
 export function createTestProvisionAuthResultNotAllowed(
   result: Partial<ProvisionAuthResult> = {},
 ): ProvisionAuthResult {
-  const results = result.results ?? [
-    createTestProvisionAuthTargetResultNotAllowed(),
-  ];
+  const {
+    results = [createTestProvisionAuthTargetResult({ isAllowed: false })],
+  } = result;
 
   return {
     request: {

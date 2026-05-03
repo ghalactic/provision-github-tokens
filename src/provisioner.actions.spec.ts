@@ -28,7 +28,7 @@ import {
 } from "../test/github-api.js";
 import { createTestKeyPair } from "../test/key.js";
 import {
-  createTestProvisionAuthTargetResultAllowed,
+  createTestProvisionAuthTargetResult,
   createTestTokenAuthResult,
 } from "../test/result.js";
 import {
@@ -163,7 +163,7 @@ it("handles GitHub API errors when provisioning org-level Actions secrets", asyn
       to: [accountAActionsTarget],
     },
     results: [
-      createTestProvisionAuthTargetResultAllowed({
+      createTestProvisionAuthTargetResult({
         target: accountAActionsTarget,
         tokenAuthResult: tokenAuthResultA,
       }),
@@ -207,7 +207,7 @@ it("handles unexpected errors when provisioning org-level Actions secrets", asyn
       to: [accountAActionsTarget],
     },
     results: [
-      createTestProvisionAuthTargetResultAllowed({
+      createTestProvisionAuthTargetResult({
         target: accountAActionsTarget,
         tokenAuthResult: tokenAuthResultA,
       }),
@@ -246,7 +246,7 @@ it("can provision org-level Actions secrets", async () => {
       to: [accountAActionsTarget],
     },
     results: [
-      createTestProvisionAuthTargetResultAllowed({
+      createTestProvisionAuthTargetResult({
         target: accountAActionsTarget,
         tokenAuthResult: tokenAuthResultA,
       }),
@@ -290,7 +290,7 @@ it("handles GitHub API errors when provisioning repo-level Actions secrets", asy
       to: [accountARepoAActionsTarget],
     },
     results: [
-      createTestProvisionAuthTargetResultAllowed({
+      createTestProvisionAuthTargetResult({
         target: accountARepoAActionsTarget,
         tokenAuthResult: tokenAuthResultA,
       }),
@@ -332,7 +332,7 @@ it("handles unexpected errors when provisioning repo-level Actions secrets", asy
       to: [accountARepoAActionsTarget],
     },
     results: [
-      createTestProvisionAuthTargetResultAllowed({
+      createTestProvisionAuthTargetResult({
         target: accountARepoAActionsTarget,
         tokenAuthResult: tokenAuthResultA,
       }),
@@ -371,7 +371,7 @@ it("can provision repo-level Actions secrets", async () => {
       to: [accountARepoAActionsTarget],
     },
     results: [
-      createTestProvisionAuthTargetResultAllowed({
+      createTestProvisionAuthTargetResult({
         target: accountARepoAActionsTarget,
         tokenAuthResult: tokenAuthResultA,
       }),

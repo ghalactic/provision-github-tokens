@@ -31,8 +31,7 @@ import { createTestKeyPair } from "../test/key.js";
 import {
   createTestProvisionAuthResultAllowed,
   createTestProvisionAuthResultNotAllowed,
-  createTestProvisionAuthTargetResultAllowed,
-  createTestProvisionAuthTargetResultNotAllowed,
+  createTestProvisionAuthTargetResult,
   createTestTokenAuthResult,
 } from "../test/result.js";
 import {
@@ -242,7 +241,8 @@ it("doesn't provision secrets when provisioning isn't allowed", async () => {
 
   const notAllowedResult = createTestProvisionAuthResultNotAllowed({
     results: [
-      createTestProvisionAuthTargetResultNotAllowed({
+      createTestProvisionAuthTargetResult({
+        isAllowed: false,
         target: accountAActionsTarget,
         tokenAuthResult: tokenAuthResultA,
       }),
@@ -296,15 +296,15 @@ it("doesn't provision secrets when the token wasn't created", async () => {
 
   const allowedResult = createTestProvisionAuthResultAllowed({
     results: [
-      createTestProvisionAuthTargetResultAllowed({
+      createTestProvisionAuthTargetResult({
         target: accountAActionsTarget,
         tokenAuthResult: tokenAuthResultNotAllowed,
       }),
-      createTestProvisionAuthTargetResultAllowed({
+      createTestProvisionAuthTargetResult({
         target: accountARepoAActionsTarget,
         tokenAuthResult: tokenAuthResultRequestError,
       }),
-      createTestProvisionAuthTargetResultAllowed({
+      createTestProvisionAuthTargetResult({
         target: accountARepoAEnvATarget,
         tokenAuthResult: tokenAuthResultError,
       }),
@@ -333,7 +333,7 @@ it("doesn't provision secrets when no suitable provisioners are found", async ()
 
   const allowedResult = createTestProvisionAuthResultAllowed({
     results: [
-      createTestProvisionAuthTargetResultAllowed({
+      createTestProvisionAuthTargetResult({
         target: accountXActionsTarget,
         tokenAuthResult: tokenAuthResultA,
       }),
@@ -364,7 +364,7 @@ it("doesn't provision secrets when target provisioning fails with a GitHub API e
 
   const allowedResult = createTestProvisionAuthResultAllowed({
     results: [
-      createTestProvisionAuthTargetResultAllowed({
+      createTestProvisionAuthTargetResult({
         target: accountAActionsTarget,
         tokenAuthResult: tokenAuthResultA,
       }),
@@ -398,7 +398,7 @@ it("doesn't provision secrets when target provisioning fails with an unexpected 
 
   const allowedResult = createTestProvisionAuthResultAllowed({
     results: [
-      createTestProvisionAuthTargetResultAllowed({
+      createTestProvisionAuthTargetResult({
         target: accountAActionsTarget,
         tokenAuthResult: tokenAuthResultA,
       }),
@@ -428,7 +428,7 @@ it("doesn't provision secrets when encryption fails with a GitHub API error", as
 
   const allowedResult = createTestProvisionAuthResultAllowed({
     results: [
-      createTestProvisionAuthTargetResultAllowed({
+      createTestProvisionAuthTargetResult({
         target: accountAActionsTarget,
         tokenAuthResult: tokenAuthResultA,
       }),
@@ -460,7 +460,7 @@ it("doesn't provision secrets when encryption fails with an unexpected error", a
 
   const allowedResult = createTestProvisionAuthResultAllowed({
     results: [
-      createTestProvisionAuthTargetResultAllowed({
+      createTestProvisionAuthTargetResult({
         target: accountAActionsTarget,
         tokenAuthResult: tokenAuthResultA,
       }),
@@ -490,15 +490,15 @@ it("can provision multiple secrets of the same type", async () => {
 
   const allowedResultA = createTestProvisionAuthResultAllowed({
     results: [
-      createTestProvisionAuthTargetResultAllowed({
+      createTestProvisionAuthTargetResult({
         target: accountAActionsTarget,
         tokenAuthResult: tokenAuthResultA,
       }),
-      createTestProvisionAuthTargetResultAllowed({
+      createTestProvisionAuthTargetResult({
         target: accountARepoAActionsTarget,
         tokenAuthResult: tokenAuthResultA,
       }),
-      createTestProvisionAuthTargetResultAllowed({
+      createTestProvisionAuthTargetResult({
         target: accountARepoAEnvATarget,
         tokenAuthResult: tokenAuthResultA,
       }),
@@ -518,15 +518,15 @@ it("can provision multiple secrets of the same type", async () => {
       ],
     },
     results: [
-      createTestProvisionAuthTargetResultAllowed({
+      createTestProvisionAuthTargetResult({
         target: accountAActionsTarget,
         tokenAuthResult: tokenAuthResultB,
       }),
-      createTestProvisionAuthTargetResultAllowed({
+      createTestProvisionAuthTargetResult({
         target: accountARepoAActionsTarget,
         tokenAuthResult: tokenAuthResultB,
       }),
-      createTestProvisionAuthTargetResultAllowed({
+      createTestProvisionAuthTargetResult({
         target: accountARepoAEnvATarget,
         tokenAuthResult: tokenAuthResultB,
       }),
@@ -578,31 +578,31 @@ it("can provision a secret to multiple targets", async () => {
 
   const allowedResult = createTestProvisionAuthResultAllowed({
     results: [
-      createTestProvisionAuthTargetResultAllowed({
+      createTestProvisionAuthTargetResult({
         target: accountAActionsTarget,
         tokenAuthResult: tokenAuthResultA,
       }),
-      createTestProvisionAuthTargetResultAllowed({
+      createTestProvisionAuthTargetResult({
         target: accountACodespacesTarget,
         tokenAuthResult: tokenAuthResultA,
       }),
-      createTestProvisionAuthTargetResultAllowed({
+      createTestProvisionAuthTargetResult({
         target: accountADependabotTarget,
         tokenAuthResult: tokenAuthResultA,
       }),
-      createTestProvisionAuthTargetResultAllowed({
+      createTestProvisionAuthTargetResult({
         target: accountARepoAActionsTarget,
         tokenAuthResult: tokenAuthResultA,
       }),
-      createTestProvisionAuthTargetResultAllowed({
+      createTestProvisionAuthTargetResult({
         target: accountARepoACodespacesTarget,
         tokenAuthResult: tokenAuthResultA,
       }),
-      createTestProvisionAuthTargetResultAllowed({
+      createTestProvisionAuthTargetResult({
         target: accountARepoADependabotTarget,
         tokenAuthResult: tokenAuthResultA,
       }),
-      createTestProvisionAuthTargetResultAllowed({
+      createTestProvisionAuthTargetResult({
         target: accountARepoAEnvATarget,
         tokenAuthResult: tokenAuthResultA,
       }),
@@ -649,7 +649,8 @@ it("doesn't stop provisioning when some targets fail", async () => {
 
   const notAllowedResult = createTestProvisionAuthResultNotAllowed({
     results: [
-      createTestProvisionAuthTargetResultNotAllowed({
+      createTestProvisionAuthTargetResult({
+        isAllowed: false,
         target: accountAActionsTarget,
         tokenAuthResult: tokenAuthResultA,
       }),
@@ -665,15 +666,15 @@ it("doesn't stop provisioning when some targets fail", async () => {
       to: [accountAActionsTarget],
     },
     results: [
-      createTestProvisionAuthTargetResultAllowed({
+      createTestProvisionAuthTargetResult({
         target: accountAActionsTarget,
         tokenAuthResult: tokenAuthResultB,
       }),
-      createTestProvisionAuthTargetResultAllowed({
+      createTestProvisionAuthTargetResult({
         target: accountXActionsTarget,
         tokenAuthResult: tokenAuthResultA,
       }),
-      createTestProvisionAuthTargetResultAllowed({
+      createTestProvisionAuthTargetResult({
         target: accountAActionsTarget,
         tokenAuthResult: tokenAuthResultA,
       }),

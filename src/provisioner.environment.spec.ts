@@ -25,7 +25,7 @@ import {
 } from "../test/github-api.js";
 import { createTestKeyPair } from "../test/key.js";
 import {
-  createTestProvisionAuthTargetResultAllowed,
+  createTestProvisionAuthTargetResult,
   createTestTokenAuthResult,
 } from "../test/result.js";
 import {
@@ -148,7 +148,7 @@ it("handles GitHub API errors when provisioning environment secrets", async () =
       to: [accountARepoAEnvATarget],
     },
     results: [
-      createTestProvisionAuthTargetResultAllowed({
+      createTestProvisionAuthTargetResult({
         target: accountARepoAEnvATarget,
         tokenAuthResult: tokenAuthResultA,
       }),
@@ -190,7 +190,7 @@ it("handles unexpected errors when provisioning environment secrets", async () =
       to: [accountARepoAEnvATarget],
     },
     results: [
-      createTestProvisionAuthTargetResultAllowed({
+      createTestProvisionAuthTargetResult({
         target: accountARepoAEnvATarget,
         tokenAuthResult: tokenAuthResultA,
       }),
@@ -229,7 +229,7 @@ it("can provision environment secrets", async () => {
       to: [accountARepoAEnvATarget],
     },
     results: [
-      createTestProvisionAuthTargetResultAllowed({
+      createTestProvisionAuthTargetResult({
         target: accountARepoAEnvATarget,
         tokenAuthResult: tokenAuthResultA,
       }),
