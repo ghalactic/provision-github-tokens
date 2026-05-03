@@ -3,11 +3,8 @@ import {
   __getOutput,
   __reset as __resetCore,
 } from "../__mocks__/@actions/core.js";
-import {
-  __reset as __resetOctokit,
-  __setApps,
-  __setInstallations,
-} from "../__mocks__/@octokit/action.js";
+import { __reset as __resetOctokit } from "../__mocks__/@octokit/action.js";
+import { createTestAppRegistry } from "../test/app-registry.js";
 import { createTestSecretDec } from "../test/declaration.js";
 import { createTestEnvironmentResolver } from "../test/environment-resolver.js";
 import {
@@ -21,11 +18,6 @@ import {
   createTestProvisionRequestTarget,
 } from "../test/provision-request.js";
 import { createTestTokenRequestFactory } from "../test/token-request.js";
-import {
-  createAppRegistry,
-  type AppRegistration,
-  type InstallationRegistration,
-} from "./app-registry.js";
 import { createAuthorizer, type AuthorizeResult } from "./authorizer.js";
 import { createProvisionAuthorizer } from "./provision-authorizer.js";
 import { createProvisionRequestFactory } from "./provision-request.js";
@@ -55,19 +47,7 @@ it("authorizes all requests and outputs the results", async () => {
     contents: "read",
     metadata: "read",
   });
-  const appRegA: AppRegistration = {
-    app: appA,
-    issuer: { enabled: true, roles: [] },
-    provisioner: { enabled: true },
-  };
   const appAInstallationA = createTestInstallation(111, appA, accountA, "all");
-  const appAInstallationRegA: InstallationRegistration = {
-    installation: appAInstallationA,
-    repos: [repoA],
-  };
-
-  __setApps([appA]);
-  __setInstallations([[appAInstallationA, [repoA]]]);
 
   const declarationRegistry = createTokenDeclarationRegistry();
 
@@ -97,9 +77,12 @@ it("authorizes all requests and outputs the results", async () => {
     tokenDecB,
   );
 
-  const appRegistry = createAppRegistry();
-  appRegistry.registerApp(appRegA);
-  appRegistry.registerInstallation(appAInstallationRegA);
+  const appRegistry = createTestAppRegistry({
+    app: appA,
+    issuer: [],
+    provisioner: true,
+    installations: [[appAInstallationA, [repoA]]],
+  });
 
   const environmentResolver = createTestEnvironmentResolver();
   const createProvisionRequest = createProvisionRequestFactory(
@@ -316,25 +299,16 @@ it("handles empty token requests", async () => {
     contents: "read",
     metadata: "read",
   });
-  const appRegA: AppRegistration = {
-    app: appA,
-    issuer: { enabled: true, roles: [] },
-    provisioner: { enabled: true },
-  };
   const appAInstallationA = createTestInstallation(111, appA, accountA, "all");
-  const appAInstallationRegA: InstallationRegistration = {
-    installation: appAInstallationA,
-    repos: [repoA],
-  };
-
-  __setApps([appA]);
-  __setInstallations([[appAInstallationA, [repoA]]]);
 
   const declarationRegistry = createTokenDeclarationRegistry();
 
-  const appRegistry = createAppRegistry();
-  appRegistry.registerApp(appRegA);
-  appRegistry.registerInstallation(appAInstallationRegA);
+  const appRegistry = createTestAppRegistry({
+    app: appA,
+    issuer: [],
+    provisioner: true,
+    installations: [[appAInstallationA, [repoA]]],
+  });
 
   const environmentResolver = createTestEnvironmentResolver();
   const createProvisionRequest = createProvisionRequestFactory(
@@ -433,7 +407,7 @@ it("handles empty token requests", async () => {
 
 it("handles empty provision requests", async () => {
   const declarationRegistry = createTokenDeclarationRegistry();
-  const appRegistry = createAppRegistry();
+  const appRegistry = createTestAppRegistry();
   const environmentResolver = createTestEnvironmentResolver();
   const createProvisionRequest = createProvisionRequestFactory(
     declarationRegistry,

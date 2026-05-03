@@ -2,11 +2,10 @@ import { beforeEach, expect, it, vi } from "vitest";
 import { __reset as __resetCore } from "../__mocks__/@actions/core.js";
 import {
   __reset as __resetOctokit,
-  __setApps,
-  __setInstallations,
   __setOrgKeys,
   __setRepoKeys,
 } from "../__mocks__/@octokit/action.js";
+import { createTestAppRegistry } from "../test/app-registry.js";
 import {
   createTestApp,
   createTestInstallation,
@@ -15,11 +14,6 @@ import {
 } from "../test/github-api.js";
 import { createTestKeyPair, decrypt } from "../test/key.js";
 import { createTestProvisionRequestTarget } from "../test/provision-request.js";
-import {
-  createAppRegistry,
-  type AppRegistration,
-  type InstallationRegistration,
-} from "./app-registry.js";
 import { createEncryptSecret } from "./encrypt-secret.js";
 import { createOctokitFactory } from "./octokit.js";
 import { createFindProvisionerOctokit } from "./provisioner-octokit.js";
@@ -39,19 +33,12 @@ it("can encrypt secrets for all secret types", async () => {
   const accountA = createTestInstallationAccount("Organization", 100, "org-a");
   const repoA = createTestInstallationRepo(accountA, "repo-a");
   const appA = createTestApp(110, "app-a", "App A", { metadata: "read" });
-  const appRegA: AppRegistration = {
-    app: appA,
-    issuer: { enabled: false, roles: [] },
-    provisioner: { enabled: true },
-  };
   const appAInstallationA = createTestInstallation(111, appA, accountA, "all");
-  const appAInstallationRegA: InstallationRegistration = {
-    installation: appAInstallationA,
-    repos: [repoA],
-  };
-  const appRegistry = createAppRegistry();
-  appRegistry.registerApp(appRegA);
-  appRegistry.registerInstallation(appAInstallationRegA);
+  const appRegistry = createTestAppRegistry({
+    app: appA,
+    provisioner: true,
+    installations: [[appAInstallationA, [repoA]]],
+  });
 
   const appsInput: AppInput[] = [
     {
@@ -66,9 +53,6 @@ it("can encrypt secrets for all secret types", async () => {
     appRegistry,
     appsInput,
   );
-
-  __setApps([appA]);
-  __setInstallations([[appAInstallationA, [repoA]]]);
 
   const orgAActionsKey = await createTestKeyPair("1111");
   const orgACodespacesKey = await createTestKeyPair("2222");
@@ -175,7 +159,7 @@ it("throws if no provisioners are found for the target", async () => {
   const encryptSecret = createEncryptSecret(
     createFindProvisionerOctokit(
       createOctokitFactory(),
-      createAppRegistry(),
+      createTestAppRegistry(),
       [],
     ),
   );

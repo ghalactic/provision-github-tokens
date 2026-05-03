@@ -1,4 +1,5 @@
 import { expect, it, vi } from "vitest";
+import { createTestAppRegistry } from "../test/app-registry.js";
 import {
   createTestSecretDec,
   createTestTokenDec,
@@ -14,11 +15,6 @@ import {
   createTestProvisionRequest,
   createTestProvisionRequestTarget,
 } from "../test/provision-request.js";
-import {
-  createAppRegistry,
-  type AppRegistration,
-  type InstallationRegistration,
-} from "./app-registry.js";
 import { type RepoReference } from "./github-reference.js";
 import {
   createProvisionRequestFactory,
@@ -28,13 +24,14 @@ import { createTokenDeclarationRegistry } from "./token-declaration-registry.js"
 import { normalizeTokenReference } from "./token-reference.js";
 
 vi.mock("@actions/core");
+vi.mock("@octokit/action");
 
 it("creates provision requests from secret declarations", async () => {
   const repoA: RepoReference = { account: "account-a", repo: "repo-a" };
   const repoX: RepoReference = { account: "account-x", repo: "repo-x" };
 
   const declarationRegistry = createTokenDeclarationRegistry();
-  const appRegistry = createAppRegistry();
+  const appRegistry = createTestAppRegistry();
   const environmentResolver = createTestEnvironmentResolver();
   const createProvisionRequest = createProvisionRequestFactory(
     declarationRegistry,
@@ -76,13 +73,7 @@ it("supports provisioning to multiple targets", async () => {
   const repoABRef: RepoReference = { account: "account-a", repo: "repo-b" };
 
   const declarationRegistry = createTokenDeclarationRegistry();
-  const appRegistry = createAppRegistry();
   const environmentResolver = createTestEnvironmentResolver();
-  const createProvisionRequest = createProvisionRequestFactory(
-    declarationRegistry,
-    appRegistry,
-    environmentResolver,
-  );
 
   const tokenDecA = createTestTokenDec({ shared: true });
   declarationRegistry.registerDeclaration(repoAARef, "token-a", tokenDecA);
@@ -103,12 +94,6 @@ it("supports provisioning to multiple targets", async () => {
   const repoBA = createTestInstallationRepo(accountB, "repo-a");
 
   const appA = createTestApp(110, "app-a", "App A");
-  const appRegA: AppRegistration = {
-    app: appA,
-    issuer: { enabled: false, roles: [] },
-    provisioner: { enabled: true },
-  };
-  appRegistry.registerApp(appRegA);
 
   const appAInstallationA = createTestInstallation(
     111,
@@ -116,11 +101,6 @@ it("supports provisioning to multiple targets", async () => {
     accountA,
     "selected",
   );
-  const appAInstallationRegA: InstallationRegistration = {
-    installation: appAInstallationA,
-    repos: [repoAA, repoAB],
-  };
-  appRegistry.registerInstallation(appAInstallationRegA);
 
   const appAInstallationB = createTestInstallation(
     112,
@@ -128,11 +108,21 @@ it("supports provisioning to multiple targets", async () => {
     accountB,
     "selected",
   );
-  const appAInstallationRegB: InstallationRegistration = {
-    installation: appAInstallationB,
-    repos: [repoBA],
-  };
-  appRegistry.registerInstallation(appAInstallationRegB);
+
+  const appRegistry = createTestAppRegistry({
+    app: appA,
+    provisioner: true,
+    installations: [
+      [appAInstallationA, [repoAA, repoAB]],
+      [appAInstallationB, [repoBA]],
+    ],
+  });
+
+  const createProvisionRequest = createProvisionRequestFactory(
+    declarationRegistry,
+    appRegistry,
+    environmentResolver,
+  );
 
   environmentResolver.registerEnvironments(repoAARef, ["env-a", "env-b"]);
   environmentResolver.registerEnvironments(repoABRef, ["env-a"]);
@@ -217,7 +207,7 @@ it("supports unshared token declarations", async () => {
   const repoX: RepoReference = { account: "account-x", repo: "repo-x" };
 
   const declarationRegistry = createTokenDeclarationRegistry();
-  const appRegistry = createAppRegistry();
+  const appRegistry = createTestAppRegistry();
   const environmentResolver = createTestEnvironmentResolver();
   const createProvisionRequest = createProvisionRequestFactory(
     declarationRegistry,
@@ -250,7 +240,7 @@ it("supports undefined token declarations", async () => {
   const repoX: RepoReference = { account: "account-x", repo: "repo-x" };
 
   const declarationRegistry = createTokenDeclarationRegistry();
-  const appRegistry = createAppRegistry();
+  const appRegistry = createTestAppRegistry();
   const environmentResolver = createTestEnvironmentResolver();
   const createProvisionRequest = createProvisionRequestFactory(
     declarationRegistry,

@@ -5,21 +5,15 @@ import {
 } from "../__mocks__/@actions/core.js";
 import {
   __reset as __resetOctokit,
-  __setApps,
   __setFiles,
-  __setInstallations,
 } from "../__mocks__/@octokit/action.js";
+import { createTestAppRegistry } from "../test/app-registry.js";
 import {
   createTestApp,
   createTestInstallation,
   createTestInstallationAccount,
   createTestInstallationRepo,
 } from "../test/github-api.js";
-import {
-  createAppRegistry,
-  type AppRegistration,
-  type InstallationRegistration,
-} from "./app-registry.js";
 import {
   discoverRequesters,
   type DiscoveredRequester,
@@ -41,24 +35,19 @@ it("discovers requesters in a single account", async () => {
   const repoB = createTestInstallationRepo(accountA, "repo-b");
   const repoC = createTestInstallationRepo(accountA, "repo-c");
   const appA = createTestApp(110, "app-a", "App A");
-  const appRegA: AppRegistration = {
-    app: appA,
-    issuer: { enabled: false, roles: [] },
-    provisioner: { enabled: true },
-  };
   const appAInstallationA = createTestInstallation(
     111,
     appA,
     accountA,
     "selected",
   );
-  const appAInstallationRegA: InstallationRegistration = {
-    installation: appAInstallationA,
-    repos: [repoA, repoB, repoC],
-  };
 
-  __setApps([appA]);
-  __setInstallations([[appAInstallationA, [repoA, repoB, repoC]]]);
+  const appRegistry = createTestAppRegistry({
+    app: appA,
+    provisioner: true,
+    installations: [[appAInstallationA, [repoA, repoB, repoC]]],
+  });
+
   __setFiles([
     [
       repoA,
@@ -106,16 +95,12 @@ it("discovers requesters in a single account", async () => {
 
   const octokitFactory = createOctokitFactory();
 
-  const appRegistry = createAppRegistry();
-  appRegistry.registerApp(appRegA);
-  appRegistry.registerInstallation(appAInstallationRegA);
-
   const discovered = await discoverRequesters(octokitFactory, appRegistry, [
     {
       appId: appA.id,
       privateKey: appA.privateKey,
-      issuer: appRegA.issuer,
-      provisioner: appRegA.provisioner,
+      issuer: { enabled: false, roles: [] },
+      provisioner: { enabled: true },
     },
   ]);
 
@@ -158,43 +143,33 @@ it("discovers requesters in multiple account", async () => {
   const repoC = createTestInstallationRepo(accountB, "repo-c");
   const repoD = createTestInstallationRepo(accountB, "repo-d");
   const appA = createTestApp(110, "app-a", "App A");
-  const appRegA: AppRegistration = {
-    app: appA,
-    issuer: { enabled: false, roles: [] },
-    provisioner: { enabled: true },
-  };
   const appAInstallationA = createTestInstallation(
     111,
     appA,
     accountA,
     "selected",
   );
-  const appAInstallationRegA: InstallationRegistration = {
-    installation: appAInstallationA,
-    repos: [repoA, repoB],
-  };
   const appB = createTestApp(210, "app-b", "App B");
-  const appRegB: AppRegistration = {
-    app: appB,
-    issuer: { enabled: false, roles: [] },
-    provisioner: { enabled: true },
-  };
   const appBInstallationA = createTestInstallation(
     211,
     appB,
     accountB,
     "selected",
   );
-  const appBInstallationRegA: InstallationRegistration = {
-    installation: appBInstallationA,
-    repos: [repoC, repoD],
-  };
 
-  __setApps([appA, appB]);
-  __setInstallations([
-    [appAInstallationA, [repoA, repoB]],
-    [appBInstallationA, [repoC, repoD]],
-  ]);
+  const appRegistry = createTestAppRegistry(
+    {
+      app: appA,
+      provisioner: true,
+      installations: [[appAInstallationA, [repoA, repoB]]],
+    },
+    {
+      app: appB,
+      provisioner: true,
+      installations: [[appBInstallationA, [repoC, repoD]]],
+    },
+  );
+
   __setFiles([
     [
       repoA,
@@ -234,24 +209,18 @@ it("discovers requesters in multiple account", async () => {
 
   const octokitFactory = createOctokitFactory();
 
-  const appRegistry = createAppRegistry();
-  appRegistry.registerApp(appRegA);
-  appRegistry.registerInstallation(appAInstallationRegA);
-  appRegistry.registerApp(appRegB);
-  appRegistry.registerInstallation(appBInstallationRegA);
-
   const discovered = await discoverRequesters(octokitFactory, appRegistry, [
     {
       appId: appA.id,
       privateKey: appA.privateKey,
-      issuer: appRegA.issuer,
-      provisioner: appRegA.provisioner,
+      issuer: { enabled: false, roles: [] },
+      provisioner: { enabled: true },
     },
     {
       appId: appB.id,
       privateKey: appB.privateKey,
-      issuer: appRegB.issuer,
-      provisioner: appRegB.provisioner,
+      issuer: { enabled: false, roles: [] },
+      provisioner: { enabled: true },
     },
   ]);
 
@@ -293,43 +262,33 @@ it("only discovers requesters once when multiple providers can access them", asy
   const repoB = createTestInstallationRepo(accountA, "repo-b");
   const repoC = createTestInstallationRepo(accountA, "repo-c");
   const appA = createTestApp(110, "app-a", "App A");
-  const appRegA: AppRegistration = {
-    app: appA,
-    issuer: { enabled: false, roles: [] },
-    provisioner: { enabled: true },
-  };
   const appAInstallationA = createTestInstallation(
     111,
     appA,
     accountA,
     "selected",
   );
-  const appAInstallationRegA: InstallationRegistration = {
-    installation: appAInstallationA,
-    repos: [repoA, repoB],
-  };
   const appB = createTestApp(120, "app-b", "App B");
-  const appRegB: AppRegistration = {
-    app: appB,
-    issuer: { enabled: false, roles: [] },
-    provisioner: { enabled: true },
-  };
   const appBInstallationA = createTestInstallation(
     121,
     appB,
     accountA,
     "selected",
   );
-  const appBInstallationRegA: InstallationRegistration = {
-    installation: appBInstallationA,
-    repos: [repoB, repoC],
-  };
 
-  __setApps([appA, appB]);
-  __setInstallations([
-    [appAInstallationA, [repoA, repoB]],
-    [appBInstallationA, [repoB, repoC]],
-  ]);
+  const appRegistry = createTestAppRegistry(
+    {
+      app: appA,
+      provisioner: true,
+      installations: [[appAInstallationA, [repoA, repoB]]],
+    },
+    {
+      app: appB,
+      provisioner: true,
+      installations: [[appBInstallationA, [repoB, repoC]]],
+    },
+  );
+
   __setFiles([
     [
       repoA,
@@ -365,24 +324,18 @@ it("only discovers requesters once when multiple providers can access them", asy
 
   const octokitFactory = createOctokitFactory();
 
-  const appRegistry = createAppRegistry();
-  appRegistry.registerApp(appRegA);
-  appRegistry.registerInstallation(appAInstallationRegA);
-  appRegistry.registerApp(appRegB);
-  appRegistry.registerInstallation(appBInstallationRegA);
-
   const discovered = await discoverRequesters(octokitFactory, appRegistry, [
     {
       appId: appA.id,
       privateKey: appA.privateKey,
-      issuer: appRegA.issuer,
-      provisioner: appRegA.provisioner,
+      issuer: { enabled: false, roles: [] },
+      provisioner: { enabled: true },
     },
     {
       appId: appB.id,
       privateKey: appB.privateKey,
-      issuer: appRegB.issuer,
-      provisioner: appRegB.provisioner,
+      issuer: { enabled: false, roles: [] },
+      provisioner: { enabled: true },
     },
   ]);
 
@@ -432,19 +385,14 @@ it("skips requesters with invalid configuration", async () => {
   const repoB = createTestInstallationRepo(orgA, "repo-b");
   const repoC = createTestInstallationRepo(orgA, "repo-c");
   const appA = createTestApp(110, "app-a", "App A");
-  const appRegA: AppRegistration = {
-    app: appA,
-    issuer: { enabled: false, roles: [] },
-    provisioner: { enabled: true },
-  };
   const appAInstallationA = createTestInstallation(111, appA, orgA, "selected");
-  const appAInstallationRegA: InstallationRegistration = {
-    installation: appAInstallationA,
-    repos: [repoA, repoB, repoC],
-  };
 
-  __setApps([appA]);
-  __setInstallations([[appAInstallationA, [repoA, repoB, repoC]]]);
+  const appRegistry = createTestAppRegistry({
+    app: appA,
+    provisioner: true,
+    installations: [[appAInstallationA, [repoA, repoB, repoC]]],
+  });
+
   __setFiles([
     [
       repoA,
@@ -495,16 +443,12 @@ it("skips requesters with invalid configuration", async () => {
 
   const octokitFactory = createOctokitFactory();
 
-  const appRegistry = createAppRegistry();
-  appRegistry.registerApp(appRegA);
-  appRegistry.registerInstallation(appAInstallationRegA);
-
   const discovered = await discoverRequesters(octokitFactory, appRegistry, [
     {
       appId: appA.id,
       privateKey: appA.privateKey,
-      issuer: appRegA.issuer,
-      provisioner: appRegA.provisioner,
+      issuer: { enabled: false, roles: [] },
+      provisioner: { enabled: true },
     },
   ]);
 

@@ -1,4 +1,5 @@
 import { expect, it, vi } from "vitest";
+import { createTestAppRegistry } from "../test/app-registry.js";
 import {
   createTestSecretDec,
   createTestTokenDec,
@@ -11,11 +12,6 @@ import {
   createTestInstallationRepo,
 } from "../test/github-api.js";
 import { createTestProvisionRequestTarget } from "../test/provision-request.js";
-import {
-  createAppRegistry,
-  type AppRegistration,
-  type InstallationRegistration,
-} from "./app-registry.js";
 import { type RepoReference } from "./github-reference.js";
 import {
   createProvisionRequestFactory,
@@ -25,12 +21,13 @@ import { createTokenDeclarationRegistry } from "./token-declaration-registry.js"
 import { normalizeTokenReference } from "./token-reference.js";
 
 vi.mock("@actions/core");
+vi.mock("@octokit/action");
 
 it("supports self-repo targets", async () => {
   const repoA: RepoReference = { account: "account-a", repo: "repo-a" };
 
   const declarationRegistry = createTokenDeclarationRegistry();
-  const appRegistry = createAppRegistry();
+  const appRegistry = createTestAppRegistry();
   const environmentResolver = createTestEnvironmentResolver();
   const createProvisionRequest = createProvisionRequestFactory(
     declarationRegistry,
@@ -91,13 +88,7 @@ it("supports pattern-matched repo targets", async () => {
   const repoARef: RepoReference = { account: "account-a", repo: "repo-a" };
 
   const declarationRegistry = createTokenDeclarationRegistry();
-  const appRegistry = createAppRegistry();
   const environmentResolver = createTestEnvironmentResolver();
-  const createProvisionRequest = createProvisionRequestFactory(
-    declarationRegistry,
-    appRegistry,
-    environmentResolver,
-  );
 
   const tokenDecA = createTestTokenDec({ shared: true });
   declarationRegistry.registerDeclaration(repoARef, "token-a", tokenDecA);
@@ -112,24 +103,24 @@ it("supports pattern-matched repo targets", async () => {
   const repoB = createTestInstallationRepo(accountA, "repo-b");
 
   const appA = createTestApp(110, "app-a", "App A");
-  const appRegA: AppRegistration = {
-    app: appA,
-    issuer: { enabled: false, roles: [] },
-    provisioner: { enabled: true },
-  };
-  appRegistry.registerApp(appRegA);
-
   const appAInstallationA = createTestInstallation(
     111,
     appA,
     accountA,
     "selected",
   );
-  const appAInstallationRegA: InstallationRegistration = {
-    installation: appAInstallationA,
-    repos: [repoA1, repoA2, repoB],
-  };
-  appRegistry.registerInstallation(appAInstallationRegA);
+
+  const appRegistry = createTestAppRegistry({
+    app: appA,
+    provisioner: true,
+    installations: [[appAInstallationA, [repoA1, repoA2, repoB]]],
+  });
+
+  const createProvisionRequest = createProvisionRequestFactory(
+    declarationRegistry,
+    appRegistry,
+    environmentResolver,
+  );
 
   expect(
     (
@@ -184,13 +175,7 @@ it("doesn't match the same repo twice", async () => {
   const repoARef: RepoReference = { account: "account-a", repo: "repo-a" };
 
   const declarationRegistry = createTokenDeclarationRegistry();
-  const appRegistry = createAppRegistry();
   const environmentResolver = createTestEnvironmentResolver();
-  const createProvisionRequest = createProvisionRequestFactory(
-    declarationRegistry,
-    appRegistry,
-    environmentResolver,
-  );
 
   const tokenDecA = createTestTokenDec({ shared: true });
   declarationRegistry.registerDeclaration(repoARef, "token-a", tokenDecA);
@@ -204,24 +189,24 @@ it("doesn't match the same repo twice", async () => {
   const repoB = createTestInstallationRepo(accountA, "repo-b");
 
   const appA = createTestApp(110, "app-a", "App A");
-  const appRegA: AppRegistration = {
-    app: appA,
-    issuer: { enabled: false, roles: [] },
-    provisioner: { enabled: true },
-  };
-  appRegistry.registerApp(appRegA);
-
   const appAInstallationA = createTestInstallation(
     111,
     appA,
     accountA,
     "selected",
   );
-  const appAInstallationRegA: InstallationRegistration = {
-    installation: appAInstallationA,
-    repos: [repoA, repoB],
-  };
-  appRegistry.registerInstallation(appAInstallationRegA);
+
+  const appRegistry = createTestAppRegistry({
+    app: appA,
+    provisioner: true,
+    installations: [[appAInstallationA, [repoA, repoB]]],
+  });
+
+  const createProvisionRequest = createProvisionRequestFactory(
+    declarationRegistry,
+    appRegistry,
+    environmentResolver,
+  );
 
   expect(
     (
@@ -249,13 +234,7 @@ it("doesn't enable a target for a repo if any matching patterns disable the targ
   const repoARef: RepoReference = { account: "account-a", repo: "repo-a" };
 
   const declarationRegistry = createTokenDeclarationRegistry();
-  const appRegistry = createAppRegistry();
   const environmentResolver = createTestEnvironmentResolver();
-  const createProvisionRequest = createProvisionRequestFactory(
-    declarationRegistry,
-    appRegistry,
-    environmentResolver,
-  );
 
   const tokenDecA = createTestTokenDec({ shared: true });
   declarationRegistry.registerDeclaration(repoARef, "token-a", tokenDecA);
@@ -269,24 +248,24 @@ it("doesn't enable a target for a repo if any matching patterns disable the targ
   const repoB = createTestInstallationRepo(accountA, "repo-b");
 
   const appA = createTestApp(110, "app-a", "App A");
-  const appRegA: AppRegistration = {
-    app: appA,
-    issuer: { enabled: false, roles: [] },
-    provisioner: { enabled: true },
-  };
-  appRegistry.registerApp(appRegA);
-
   const appAInstallationA = createTestInstallation(
     111,
     appA,
     accountA,
     "selected",
   );
-  const appAInstallationRegA: InstallationRegistration = {
-    installation: appAInstallationA,
-    repos: [repoA, repoB],
-  };
-  appRegistry.registerInstallation(appAInstallationRegA);
+
+  const appRegistry = createTestAppRegistry({
+    app: appA,
+    provisioner: true,
+    installations: [[appAInstallationA, [repoA, repoB]]],
+  });
+
+  const createProvisionRequest = createProvisionRequestFactory(
+    declarationRegistry,
+    appRegistry,
+    environmentResolver,
+  );
 
   expect(
     (
@@ -314,13 +293,7 @@ it("allows self-repo targets to override pattern-matched repo targets", async ()
   const repoARef: RepoReference = { account: "account-a", repo: "repo-a" };
 
   const declarationRegistry = createTokenDeclarationRegistry();
-  const appRegistry = createAppRegistry();
   const environmentResolver = createTestEnvironmentResolver();
-  const createProvisionRequest = createProvisionRequestFactory(
-    declarationRegistry,
-    appRegistry,
-    environmentResolver,
-  );
 
   const tokenDecA = createTestTokenDec({ shared: true });
   declarationRegistry.registerDeclaration(repoARef, "token-a", tokenDecA);
@@ -334,24 +307,24 @@ it("allows self-repo targets to override pattern-matched repo targets", async ()
   const repoB = createTestInstallationRepo(accountA, "repo-b");
 
   const appA = createTestApp(110, "app-a", "App A");
-  const appRegA: AppRegistration = {
-    app: appA,
-    issuer: { enabled: false, roles: [] },
-    provisioner: { enabled: true },
-  };
-  appRegistry.registerApp(appRegA);
-
   const appAInstallationA = createTestInstallation(
     111,
     appA,
     accountA,
     "selected",
   );
-  const appAInstallationRegA: InstallationRegistration = {
-    installation: appAInstallationA,
-    repos: [repoA, repoB],
-  };
-  appRegistry.registerInstallation(appAInstallationRegA);
+
+  const appRegistry = createTestAppRegistry({
+    app: appA,
+    provisioner: true,
+    installations: [[appAInstallationA, [repoA, repoB]]],
+  });
+
+  const createProvisionRequest = createProvisionRequestFactory(
+    declarationRegistry,
+    appRegistry,
+    environmentResolver,
+  );
 
   expect(
     (

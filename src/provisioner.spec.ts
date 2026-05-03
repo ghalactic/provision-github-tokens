@@ -8,14 +8,13 @@ import {
   __getOrgSecrets,
   __getRepoSecrets,
   __reset as __resetOctokit,
-  __setApps,
   __setEnvironments,
   __setErrors,
-  __setInstallations,
   __setOrgKeys,
   __setRepoKeys,
   TestRequestError,
 } from "../__mocks__/@octokit/action.js";
+import { createTestAppRegistry } from "../test/app-registry.js";
 import {
   createTestSecretDec,
   createTestTokenDec,
@@ -37,11 +36,6 @@ import {
   createTestProvisionAuthTargetResult,
   createTestTokenAuthResult,
 } from "../test/result.js";
-import {
-  createAppRegistry,
-  type AppRegistration,
-  type InstallationRegistration,
-} from "./app-registry.js";
 import { createEncryptSecret, type EncryptSecret } from "./encrypt-secret.js";
 import { createOctokitFactory } from "./octokit.js";
 import type { ProvisionRequestTarget } from "./provision-request.js";
@@ -62,21 +56,12 @@ const accountA = createTestInstallationAccount(
 const repoA = createTestInstallationRepo(accountA, "repo-a");
 const envA = createTestRepoEnvironment("env-a");
 const appA = createTestApp(110, "app-a", "App A");
-const appRegA: AppRegistration = {
-  app: appA,
-  issuer: { enabled: false, roles: [] },
-  provisioner: { enabled: true },
-};
 const appAInstallationA = createTestInstallation(
   111,
   appA,
   accountA,
   "selected",
 );
-const appAInstallationRegA: InstallationRegistration = {
-  installation: appAInstallationA,
-  repos: [repoA],
-};
 
 const accountAActionsKey = await createTestKeyPair("actions.account-a");
 const accountARepoAActionsKey = await createTestKeyPair(
@@ -154,8 +139,6 @@ beforeEach(() => {
   __resetCore();
   __resetOctokit();
 
-  __setApps([appA]);
-  __setInstallations([[appAInstallationA, [repoA]]]);
   __setEnvironments([[repoA, [envA]]]);
 
   __setOrgKeys("account-a", {
@@ -172,9 +155,11 @@ beforeEach(() => {
 
   const octokitFactory = createOctokitFactory();
 
-  const appRegistry = createAppRegistry();
-  appRegistry.registerApp(appRegA);
-  appRegistry.registerInstallation(appAInstallationRegA);
+  const appRegistry = createTestAppRegistry({
+    app: appA,
+    provisioner: true,
+    installations: [[appAInstallationA, [repoA]]],
+  });
 
   const findProvisionerOctokit = createFindProvisionerOctokit(
     octokitFactory,
@@ -183,8 +168,8 @@ beforeEach(() => {
       {
         appId: appA.id,
         privateKey: appA.privateKey,
-        issuer: appRegA.issuer,
-        provisioner: appRegA.provisioner,
+        issuer: { enabled: false, roles: [] },
+        provisioner: { enabled: true },
       },
     ],
   );

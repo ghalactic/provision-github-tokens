@@ -1,4 +1,5 @@
-import { expect, it } from "vitest";
+import { expect, it, vi } from "vitest";
+import { createTestAppRegistry } from "../test/app-registry.js";
 import { createTestTokenDec } from "../test/declaration.js";
 import {
   createTestApp,
@@ -6,11 +7,6 @@ import {
   createTestInstallationAccount,
   createTestInstallationRepo,
 } from "../test/github-api.js";
-import {
-  createAppRegistry,
-  type AppRegistration,
-  type InstallationRegistration,
-} from "./app-registry.js";
 import type {
   AccountReference,
   EnvironmentReference,
@@ -18,8 +14,10 @@ import type {
 } from "./github-reference.js";
 import { createTokenRequestFactory } from "./token-request.js";
 
+vi.mock("@octokit/action");
+
 it("creates token requests from provision targets with token declarations for all repos", () => {
-  const appRegistry = createAppRegistry();
+  const appRegistry = createTestAppRegistry();
   const createTokenRequest = createTokenRequestFactory(appRegistry);
   const tokenDec = createTestTokenDec({ repos: "all" });
 
@@ -48,20 +46,13 @@ it("creates token requests from provision targets with token declarations for se
   const repoB = createTestInstallationRepo(accountA, "repo-b");
   const repoC = createTestInstallationRepo(accountA, "repo-c");
   const appA = createTestApp(110, "app-a", "App A");
-  const appRegA: AppRegistration = {
-    app: appA,
-    issuer: { enabled: true, roles: [] },
-    provisioner: { enabled: false },
-  };
   const appAInstallationA = createTestInstallation(111, appA, accountA, "all");
-  const appAInstallationRegA: InstallationRegistration = {
-    installation: appAInstallationA,
-    repos: [repoA1, repoA2, repoB, repoC],
-  };
 
-  const appRegistry = createAppRegistry();
-  appRegistry.registerApp(appRegA);
-  appRegistry.registerInstallation(appAInstallationRegA);
+  const appRegistry = createTestAppRegistry({
+    app: appA,
+    issuer: [],
+    installations: [[appAInstallationA, [repoA1, repoA2, repoB, repoC]]],
+  });
 
   const createTokenRequest = createTokenRequestFactory(appRegistry);
   const tokenDec = createTestTokenDec({ repos: ["repo-a-*", "repo-b"] });
@@ -91,20 +82,13 @@ it("creates normalized token requests", () => {
   const repoB = createTestInstallationRepo(accountA, "repo-b");
   const repoC = createTestInstallationRepo(accountA, "repo-c");
   const appA = createTestApp(110, "app-a", "App A");
-  const appRegA: AppRegistration = {
-    app: appA,
-    issuer: { enabled: true, roles: [] },
-    provisioner: { enabled: false },
-  };
   const appAInstallationA = createTestInstallation(111, appA, accountA, "all");
-  const appAInstallationRegA: InstallationRegistration = {
-    installation: appAInstallationA,
-    repos: [repoC, repoB, repoA2, repoA1],
-  };
 
-  const appRegistry = createAppRegistry();
-  appRegistry.registerApp(appRegA);
-  appRegistry.registerInstallation(appAInstallationRegA);
+  const appRegistry = createTestAppRegistry({
+    app: appA,
+    issuer: [],
+    installations: [[appAInstallationA, [repoC, repoB, repoA2, repoA1]]],
+  });
 
   const createTokenRequest = createTokenRequestFactory(appRegistry);
   const tokenDec = createTestTokenDec({ repos: ["repo-b", "repo-a-*"] });
@@ -138,7 +122,7 @@ it("creates normalized token requests", () => {
 });
 
 it("de-duplicates equivalent token requests", () => {
-  const appRegistry = createAppRegistry();
+  const appRegistry = createTestAppRegistry();
   const createTokenRequest = createTokenRequestFactory(appRegistry);
   const tokenDec = createTestTokenDec({ repos: "all" });
 

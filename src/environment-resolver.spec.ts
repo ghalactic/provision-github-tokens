@@ -5,10 +5,9 @@ import {
 } from "../__mocks__/@actions/core.js";
 import {
   __reset as __resetOctokit,
-  __setApps,
   __setEnvironments,
-  __setInstallations,
 } from "../__mocks__/@octokit/action.js";
+import { createTestAppRegistry } from "../test/app-registry.js";
 import {
   createTestApp,
   createTestInstallation,
@@ -16,11 +15,6 @@ import {
   createTestInstallationRepo,
   createTestRepoEnvironment,
 } from "../test/github-api.js";
-import {
-  createAppRegistry,
-  type AppRegistration,
-  type InstallationRegistration,
-} from "./app-registry.js";
 import { createEnvironmentResolver } from "./environment-resolver.js";
 import { createNamePattern } from "./name-pattern.js";
 import { createOctokitFactory } from "./octokit.js";
@@ -42,31 +36,22 @@ it("resolves environment names for a repo", async () => {
   const envB1 = createTestRepoEnvironment("env-b1");
   const envB2 = createTestRepoEnvironment("env-b2");
   const appA = createTestApp(110, "app-a", "App A");
-  const appRegA: AppRegistration = {
-    app: appA,
-    issuer: { enabled: false, roles: [] },
-    provisioner: { enabled: true },
-  };
   const appAInstallationA = createTestInstallation(
     111,
     appA,
     accountA,
     "selected",
   );
-  const appAInstallationRegA: InstallationRegistration = {
-    installation: appAInstallationA,
-    repos: [repoA],
-  };
 
-  __setApps([appA]);
-  __setInstallations([[appAInstallationA, [repoA]]]);
+  const appRegistry = createTestAppRegistry({
+    app: appA,
+    provisioner: true,
+    installations: [[appAInstallationA, [repoA]]],
+  });
+
   __setEnvironments([[repoA, [envA1, envA2, envB1, envB2]]]);
 
   const octokitFactory = createOctokitFactory();
-
-  const appRegistry = createAppRegistry();
-  appRegistry.registerApp(appRegA);
-  appRegistry.registerInstallation(appAInstallationRegA);
 
   const findProvisionerOctokit = createFindProvisionerOctokit(
     octokitFactory,
@@ -75,8 +60,8 @@ it("resolves environment names for a repo", async () => {
       {
         appId: appA.id,
         privateKey: appA.privateKey,
-        issuer: appRegA.issuer,
-        provisioner: appRegA.provisioner,
+        issuer: { enabled: false, roles: [] },
+        provisioner: { enabled: true },
       },
     ],
   );
@@ -121,30 +106,20 @@ it("throws if no provisioner is found", async () => {
   const accountA = createTestInstallationAccount("Organization", 100, "org-a");
   const repoA = createTestInstallationRepo(accountA, "repo-a");
   const appA = createTestApp(110, "app-a", "App A");
-  const appRegA: AppRegistration = {
-    app: appA,
-    issuer: { enabled: true, roles: [] },
-    provisioner: { enabled: false },
-  };
   const appAInstallationA = createTestInstallation(
     111,
     appA,
     accountA,
     "selected",
   );
-  const appAInstallationRegA: InstallationRegistration = {
-    installation: appAInstallationA,
-    repos: [repoA],
-  };
 
-  __setApps([appA]);
-  __setInstallations([[appAInstallationA, [repoA]]]);
+  const appRegistry = createTestAppRegistry({
+    app: appA,
+    issuer: [],
+    installations: [[appAInstallationA, [repoA]]],
+  });
 
   const octokitFactory = createOctokitFactory();
-
-  const appRegistry = createAppRegistry();
-  appRegistry.registerApp(appRegA);
-  appRegistry.registerInstallation(appAInstallationRegA);
 
   const findProvisionerOctokit = createFindProvisionerOctokit(
     octokitFactory,
@@ -153,8 +128,8 @@ it("throws if no provisioner is found", async () => {
       {
         appId: appA.id,
         privateKey: appA.privateKey,
-        issuer: appRegA.issuer,
-        provisioner: appRegA.provisioner,
+        issuer: { enabled: true, roles: [] },
+        provisioner: { enabled: false },
       },
     ],
   );
