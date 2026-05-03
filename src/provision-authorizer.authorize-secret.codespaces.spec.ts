@@ -3,6 +3,7 @@ import {
   createTestSecretDec,
   createTestTokenDec,
 } from "../test/declaration.js";
+import { createTestProvisionRequestTarget } from "../test/provision-request.js";
 import { createTestTokenAuthorizer } from "../test/token-authorizer.js";
 import { createTestTokenRequestFactory } from "../test/token-request.js";
 import { compareTokenRequest } from "./compare-token-request.js";
@@ -48,13 +49,7 @@ it("allows GitHub Codespaces account secrets that should be allowed", () => {
     tokenDecIsRegistered: true,
     secretDec: createTestSecretDec(),
     name: "SECRET_A",
-    to: [
-      {
-        platform: "github",
-        type: "codespaces",
-        target: { account: "account-a" },
-      },
-    ],
+    to: [createTestProvisionRequestTarget("codespaces")],
   });
   const resultB = authorizer.authorizeSecret({
     requester: { account: "account-y-1", repo: "repo-y-1" },
@@ -62,13 +57,7 @@ it("allows GitHub Codespaces account secrets that should be allowed", () => {
     tokenDecIsRegistered: true,
     secretDec: createTestSecretDec(),
     name: "SECRET_A",
-    to: [
-      {
-        platform: "github",
-        type: "codespaces",
-        target: { account: "account-b-1" },
-      },
-    ],
+    to: [createTestProvisionRequestTarget("codespaces", "account-b-1")],
   });
 
   const explain = createTextProvisionAuthExplainer(
@@ -129,13 +118,7 @@ it("allows GitHub Codespaces account secrets that should be allowed within the r
     tokenDecIsRegistered: true,
     secretDec: createTestSecretDec(),
     name: "SECRET_A",
-    to: [
-      {
-        platform: "github",
-        type: "codespaces",
-        target: { account: "account-a" },
-      },
-    ],
+    to: [createTestProvisionRequestTarget("codespaces")],
   });
   const resultB = authorizer.authorizeSecret({
     requester: { account: "account-b-1", repo: "repo-b-1" },
@@ -143,13 +126,7 @@ it("allows GitHub Codespaces account secrets that should be allowed within the r
     tokenDecIsRegistered: true,
     secretDec: createTestSecretDec(),
     name: "SECRET_A",
-    to: [
-      {
-        platform: "github",
-        type: "codespaces",
-        target: { account: "account-b-1" },
-      },
-    ],
+    to: [createTestProvisionRequestTarget("codespaces", "account-b-1")],
   });
 
   const explain = createTextProvisionAuthExplainer(
@@ -214,13 +191,7 @@ it("allows GitHub Codespaces account secrets that should be allowed within the r
     tokenDecIsRegistered: true,
     secretDec: createTestSecretDec(),
     name: "SECRET_A",
-    to: [
-      {
-        platform: "github",
-        type: "codespaces",
-        target: { account: "account-a" },
-      },
-    ],
+    to: [createTestProvisionRequestTarget("codespaces")],
   });
 
   const explain = createTextProvisionAuthExplainer(
@@ -280,13 +251,7 @@ it("allows GitHub Codespaces repo secrets that should be allowed", () => {
     tokenDecIsRegistered: true,
     secretDec: createTestSecretDec(),
     name: "SECRET_A",
-    to: [
-      {
-        platform: "github",
-        type: "codespaces",
-        target: { account: "account-a", repo: "repo-a" },
-      },
-    ],
+    to: [createTestProvisionRequestTarget("codespaces", "account-a", "repo-a")],
   });
   const resultB = authorizer.authorizeSecret({
     requester: { account: "account-y-1", repo: "repo-y-1" },
@@ -295,11 +260,7 @@ it("allows GitHub Codespaces repo secrets that should be allowed", () => {
     secretDec: createTestSecretDec(),
     name: "SECRET_A",
     to: [
-      {
-        platform: "github",
-        type: "codespaces",
-        target: { account: "account-b-1", repo: "repo-b-1" },
-      },
+      createTestProvisionRequestTarget("codespaces", "account-b-1", "repo-b-1"),
     ],
   });
 
@@ -362,13 +323,7 @@ it("allows GitHub Codespaces repo secrets that should be allowed within the requ
     tokenDecIsRegistered: true,
     secretDec: createTestSecretDec(),
     name: "SECRET_A",
-    to: [
-      {
-        platform: "github",
-        type: "codespaces",
-        target: { account: "account-a", repo: "repo-a" },
-      },
-    ],
+    to: [createTestProvisionRequestTarget("codespaces", "account-a", "repo-a")],
   });
   const resultB = authorizer.authorizeSecret({
     requester: { account: "account-b-1", repo: "repo-b-1" },
@@ -377,11 +332,7 @@ it("allows GitHub Codespaces repo secrets that should be allowed within the requ
     secretDec: createTestSecretDec(),
     name: "SECRET_A",
     to: [
-      {
-        platform: "github",
-        type: "codespaces",
-        target: { account: "account-b-1", repo: "repo-b-1" },
-      },
+      createTestProvisionRequestTarget("codespaces", "account-b-1", "repo-b-1"),
     ],
   });
 
@@ -449,13 +400,7 @@ it("allows GitHub Codespaces repo secrets that should be allowed within the requ
     tokenDecIsRegistered: true,
     secretDec: createTestSecretDec(),
     name: "SECRET_A",
-    to: [
-      {
-        platform: "github",
-        type: "codespaces",
-        target: { account: "account-a", repo: "repo-a" },
-      },
-    ],
+    to: [createTestProvisionRequestTarget("codespaces", "account-a", "repo-a")],
   });
   const resultB = authorizer.authorizeSecret({
     requester: { account: "account-b-1", repo: "repo-b-1" },
@@ -464,11 +409,7 @@ it("allows GitHub Codespaces repo secrets that should be allowed within the requ
     secretDec: createTestSecretDec(),
     name: "SECRET_A",
     to: [
-      {
-        platform: "github",
-        type: "codespaces",
-        target: { account: "account-b-1", repo: "repo-b-1" },
-      },
+      createTestProvisionRequestTarget("codespaces", "account-b-1", "repo-b-1"),
     ],
   });
 
@@ -532,13 +473,7 @@ it("doesn't allow GitHub Codespaces account secrets for unauthorized requesters"
     tokenDecIsRegistered: true,
     secretDec: createTestSecretDec(),
     name: "SECRET_A",
-    to: [
-      {
-        platform: "github",
-        type: "codespaces",
-        target: { account: "account-a" },
-      },
-    ],
+    to: [createTestProvisionRequestTarget("codespaces")],
   });
 
   const explain = createTextProvisionAuthExplainer(
@@ -590,13 +525,7 @@ it("doesn't allow GitHub Codespaces account secrets within the requesting accoun
     tokenDecIsRegistered: true,
     secretDec: createTestSecretDec(),
     name: "SECRET_A",
-    to: [
-      {
-        platform: "github",
-        type: "codespaces",
-        target: { account: "account-x" },
-      },
-    ],
+    to: [createTestProvisionRequestTarget("codespaces", "account-x")],
   });
   const resultB = authorizer.authorizeSecret({
     requester: { account: "account-x", repo: "repo-y" },
@@ -604,13 +533,7 @@ it("doesn't allow GitHub Codespaces account secrets within the requesting accoun
     tokenDecIsRegistered: true,
     secretDec: createTestSecretDec(),
     name: "SECRET_A",
-    to: [
-      {
-        platform: "github",
-        type: "codespaces",
-        target: { account: "account-x" },
-      },
-    ],
+    to: [createTestProvisionRequestTarget("codespaces", "account-x")],
   });
   const resultC = authorizer.authorizeSecret({
     requester: { account: "account-x", repo: "repo-x" },
@@ -618,13 +541,7 @@ it("doesn't allow GitHub Codespaces account secrets within the requesting accoun
     tokenDecIsRegistered: true,
     secretDec: createTestSecretDec(),
     name: "SECRET_A",
-    to: [
-      {
-        platform: "github",
-        type: "codespaces",
-        target: { account: "account-y" },
-      },
-    ],
+    to: [createTestProvisionRequestTarget("codespaces", "account-y")],
   });
 
   const explain = createTextProvisionAuthExplainer(
@@ -694,13 +611,7 @@ it("doesn't allow GitHub Codespaces account secrets within the requesting accoun
     tokenDecIsRegistered: true,
     secretDec: createTestSecretDec(),
     name: "SECRET_A",
-    to: [
-      {
-        platform: "github",
-        type: "codespaces",
-        target: { account: "account-a" },
-      },
-    ],
+    to: [createTestProvisionRequestTarget("codespaces")],
   });
 
   const explain = createTextProvisionAuthExplainer(
@@ -756,13 +667,7 @@ it("doesn't allow GitHub Codespaces repo secrets for unauthorized requesters", (
     tokenDecIsRegistered: true,
     secretDec: createTestSecretDec(),
     name: "SECRET_A",
-    to: [
-      {
-        platform: "github",
-        type: "codespaces",
-        target: { account: "account-a", repo: "repo-a" },
-      },
-    ],
+    to: [createTestProvisionRequestTarget("codespaces", "account-a", "repo-a")],
   });
 
   const explain = createTextProvisionAuthExplainer(
@@ -815,13 +720,7 @@ it("doesn't allow GitHub Codespaces repo secrets within the requesting repo for 
     tokenDecIsRegistered: true,
     secretDec: createTestSecretDec(),
     name: "SECRET_A",
-    to: [
-      {
-        platform: "github",
-        type: "codespaces",
-        target: { account: "account-x", repo: "repo-x" },
-      },
-    ],
+    to: [createTestProvisionRequestTarget("codespaces", "account-x", "repo-x")],
   });
   const resultB = authorizer.authorizeSecret({
     requester: { account: "account-x", repo: "repo-y" },
@@ -829,13 +728,7 @@ it("doesn't allow GitHub Codespaces repo secrets within the requesting repo for 
     tokenDecIsRegistered: true,
     secretDec: createTestSecretDec(),
     name: "SECRET_A",
-    to: [
-      {
-        platform: "github",
-        type: "codespaces",
-        target: { account: "account-x", repo: "repo-x" },
-      },
-    ],
+    to: [createTestProvisionRequestTarget("codespaces", "account-x", "repo-x")],
   });
   const resultC = authorizer.authorizeSecret({
     requester: { account: "account-x", repo: "repo-x" },
@@ -843,13 +736,7 @@ it("doesn't allow GitHub Codespaces repo secrets within the requesting repo for 
     tokenDecIsRegistered: true,
     secretDec: createTestSecretDec(),
     name: "SECRET_A",
-    to: [
-      {
-        platform: "github",
-        type: "codespaces",
-        target: { account: "account-x", repo: "repo-y" },
-      },
-    ],
+    to: [createTestProvisionRequestTarget("codespaces", "account-x", "repo-y")],
   });
 
   const explain = createTextProvisionAuthExplainer(
@@ -921,13 +808,7 @@ it("doesn't allow GitHub Codespaces repo secrets within the requesting repo when
     tokenDecIsRegistered: true,
     secretDec: createTestSecretDec(),
     name: "SECRET_A",
-    to: [
-      {
-        platform: "github",
-        type: "codespaces",
-        target: { account: "account-a", repo: "repo-a" },
-      },
-    ],
+    to: [createTestProvisionRequestTarget("codespaces", "account-a", "repo-a")],
   });
 
   const explain = createTextProvisionAuthExplainer(

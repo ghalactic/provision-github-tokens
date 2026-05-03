@@ -9,15 +9,13 @@ import {
   createTestInstallation,
   createTestInstallationAccount,
 } from "../test/github-api.js";
+import { createTestProvisionRequestTarget } from "../test/provision-request.js";
 import {
   createAppRegistry,
   type AppRegistration,
   type InstallationRegistration,
 } from "./app-registry.js";
-import {
-  type AccountReference,
-  type RepoReference,
-} from "./github-reference.js";
+import { type RepoReference } from "./github-reference.js";
 import {
   createProvisionRequestFactory,
   type ProvisionRequestTarget,
@@ -28,7 +26,6 @@ import { normalizeTokenReference } from "./token-reference.js";
 vi.mock("@actions/core");
 
 it("supports self-account targets", async () => {
-  const accountA: AccountReference = { account: "account-a" };
   const repoA: RepoReference = { account: "account-a", repo: "repo-a" };
 
   const declarationRegistry = createTokenDeclarationRegistry();
@@ -55,7 +52,7 @@ it("supports self-account targets", async () => {
       )
     )?.to,
   ).toStrictEqual([
-    { platform: "github", type: "actions", target: accountA },
+    createTestProvisionRequestTarget("actions"),
   ] satisfies ProvisionRequestTarget[]);
 
   expect(
@@ -70,7 +67,7 @@ it("supports self-account targets", async () => {
       )
     )?.to,
   ).toStrictEqual([
-    { platform: "github", type: "codespaces", target: accountA },
+    createTestProvisionRequestTarget("codespaces"),
   ] satisfies ProvisionRequestTarget[]);
 
   expect(
@@ -85,7 +82,7 @@ it("supports self-account targets", async () => {
       )
     )?.to,
   ).toStrictEqual([
-    { platform: "github", type: "dependabot", target: accountA },
+    createTestProvisionRequestTarget("dependabot"),
   ] satisfies ProvisionRequestTarget[]);
 });
 
@@ -176,8 +173,8 @@ it("supports pattern-matched account targets", async () => {
       )
     )?.to,
   ).toStrictEqual([
-    { platform: "github", type: "actions", target: { account: "account-a-1" } },
-    { platform: "github", type: "actions", target: { account: "account-a-2" } },
+    createTestProvisionRequestTarget("actions", "account-a-1"),
+    createTestProvisionRequestTarget("actions", "account-a-2"),
   ] satisfies ProvisionRequestTarget[]);
 
   expect(
@@ -192,16 +189,8 @@ it("supports pattern-matched account targets", async () => {
       )
     )?.to,
   ).toStrictEqual([
-    {
-      platform: "github",
-      type: "codespaces",
-      target: { account: "account-a-1" },
-    },
-    {
-      platform: "github",
-      type: "codespaces",
-      target: { account: "account-a-2" },
-    },
+    createTestProvisionRequestTarget("codespaces", "account-a-1"),
+    createTestProvisionRequestTarget("codespaces", "account-a-2"),
   ] satisfies ProvisionRequestTarget[]);
 
   expect(
@@ -216,16 +205,8 @@ it("supports pattern-matched account targets", async () => {
       )
     )?.to,
   ).toStrictEqual([
-    {
-      platform: "github",
-      type: "dependabot",
-      target: { account: "account-a-1" },
-    },
-    {
-      platform: "github",
-      type: "dependabot",
-      target: { account: "account-a-2" },
-    },
+    createTestProvisionRequestTarget("dependabot", "account-a-1"),
+    createTestProvisionRequestTarget("dependabot", "account-a-2"),
   ] satisfies ProvisionRequestTarget[]);
 });
 
@@ -304,8 +285,8 @@ it("doesn't match the same account twice", async () => {
       )
     )?.to,
   ).toStrictEqual([
-    { platform: "github", type: "actions", target: { account: "account-a" } },
-    { platform: "github", type: "actions", target: { account: "account-b" } },
+    createTestProvisionRequestTarget("actions"),
+    createTestProvisionRequestTarget("actions", "account-b"),
   ] satisfies ProvisionRequestTarget[]);
 });
 
@@ -385,7 +366,7 @@ it("doesn't enable a target for an account if any matching patterns disable the 
       )
     )?.to,
   ).toStrictEqual([
-    { platform: "github", type: "actions", target: { account: "account-a" } },
+    createTestProvisionRequestTarget("actions"),
   ] satisfies ProvisionRequestTarget[]);
 });
 
@@ -464,12 +445,8 @@ it("allows self-account targets to override pattern-matched account targets", as
       )
     )?.to,
   ).toStrictEqual([
-    { platform: "github", type: "actions", target: { account: "account-a" } },
-    {
-      platform: "github",
-      type: "codespaces",
-      target: { account: "account-a" },
-    },
-    { platform: "github", type: "actions", target: { account: "account-b" } },
+    createTestProvisionRequestTarget("actions"),
+    createTestProvisionRequestTarget("codespaces"),
+    createTestProvisionRequestTarget("actions", "account-b"),
   ] satisfies ProvisionRequestTarget[]);
 });

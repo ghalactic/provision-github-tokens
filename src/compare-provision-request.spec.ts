@@ -1,5 +1,6 @@
 import { expect, it } from "vitest";
 import { createTestSecretDec } from "../test/declaration.js";
+import { createTestProvisionRequestTarget } from "../test/provision-request.js";
 import { compareProvisionRequest } from "./compare-provision-request.js";
 import type { RepoReference } from "./github-reference.js";
 import type { ProvisionRequest } from "./provision-request.js";
@@ -82,24 +83,22 @@ it("sorts requests by targets", () => {
   const requestA: ProvisionRequest = {
     ...common,
     to: [
-      { platform: "github", type: "actions", target: { account: "account-b" } },
-      { platform: "github", type: "actions", target: { account: "account-c" } },
-      { platform: "github", type: "actions", target: { account: "account-a" } },
+      createTestProvisionRequestTarget("actions", "account-b"),
+      createTestProvisionRequestTarget("actions", "account-c"),
+      createTestProvisionRequestTarget("actions"),
     ],
   };
   const requestB: ProvisionRequest = {
     ...common,
     to: [
-      { platform: "github", type: "actions", target: { account: "account-d" } },
-      { platform: "github", type: "actions", target: { account: "account-b" } },
-      { platform: "github", type: "actions", target: { account: "account-c" } },
+      createTestProvisionRequestTarget("actions", "account-d"),
+      createTestProvisionRequestTarget("actions", "account-b"),
+      createTestProvisionRequestTarget("actions", "account-c"),
     ],
   };
   const requestC: ProvisionRequest = {
     ...common,
-    to: [
-      { platform: "github", type: "actions", target: { account: "account-b" } },
-    ],
+    to: [createTestProvisionRequestTarget("actions", "account-b")],
   };
 
   const requests: ProvisionRequest[] = [

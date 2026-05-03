@@ -3,6 +3,7 @@ import {
   createTestSecretDec,
   createTestTokenDec,
 } from "../test/declaration.js";
+import { createTestProvisionRequestTarget } from "../test/provision-request.js";
 import { createTestTokenAuthorizer } from "../test/token-authorizer.js";
 import { createTestTokenRequestFactory } from "../test/token-request.js";
 import { compareTokenRequest } from "./compare-token-request.js";
@@ -48,13 +49,7 @@ it("allows GitHub Actions account secrets that should be allowed", () => {
     tokenDecIsRegistered: true,
     secretDec: createTestSecretDec(),
     name: "SECRET_A",
-    to: [
-      {
-        platform: "github",
-        type: "actions",
-        target: { account: "account-a" },
-      },
-    ],
+    to: [createTestProvisionRequestTarget("actions")],
   });
   const resultB = authorizer.authorizeSecret({
     requester: { account: "account-y-1", repo: "repo-y-1" },
@@ -62,13 +57,7 @@ it("allows GitHub Actions account secrets that should be allowed", () => {
     tokenDecIsRegistered: true,
     secretDec: createTestSecretDec(),
     name: "SECRET_A",
-    to: [
-      {
-        platform: "github",
-        type: "actions",
-        target: { account: "account-b-1" },
-      },
-    ],
+    to: [createTestProvisionRequestTarget("actions", "account-b-1")],
   });
 
   const explain = createTextProvisionAuthExplainer(
@@ -129,13 +118,7 @@ it("allows GitHub Actions account secrets that should be allowed within the requ
     tokenDecIsRegistered: true,
     secretDec: createTestSecretDec(),
     name: "SECRET_A",
-    to: [
-      {
-        platform: "github",
-        type: "actions",
-        target: { account: "account-a" },
-      },
-    ],
+    to: [createTestProvisionRequestTarget("actions")],
   });
   const resultB = authorizer.authorizeSecret({
     requester: { account: "account-b-1", repo: "repo-b-1" },
@@ -143,13 +126,7 @@ it("allows GitHub Actions account secrets that should be allowed within the requ
     tokenDecIsRegistered: true,
     secretDec: createTestSecretDec(),
     name: "SECRET_A",
-    to: [
-      {
-        platform: "github",
-        type: "actions",
-        target: { account: "account-b-1" },
-      },
-    ],
+    to: [createTestProvisionRequestTarget("actions", "account-b-1")],
   });
 
   const explain = createTextProvisionAuthExplainer(
@@ -214,13 +191,7 @@ it("allows GitHub Actions account secrets that should be allowed within the requ
     tokenDecIsRegistered: true,
     secretDec: createTestSecretDec(),
     name: "SECRET_A",
-    to: [
-      {
-        platform: "github",
-        type: "actions",
-        target: { account: "account-a" },
-      },
-    ],
+    to: [createTestProvisionRequestTarget("actions")],
   });
 
   const explain = createTextProvisionAuthExplainer(
@@ -280,13 +251,7 @@ it("allows GitHub Actions repo secrets that should be allowed", () => {
     tokenDecIsRegistered: true,
     secretDec: createTestSecretDec(),
     name: "SECRET_A",
-    to: [
-      {
-        platform: "github",
-        type: "actions",
-        target: { account: "account-a", repo: "repo-a" },
-      },
-    ],
+    to: [createTestProvisionRequestTarget("actions", "account-a", "repo-a")],
   });
   const resultB = authorizer.authorizeSecret({
     requester: { account: "account-y-1", repo: "repo-y-1" },
@@ -295,11 +260,7 @@ it("allows GitHub Actions repo secrets that should be allowed", () => {
     secretDec: createTestSecretDec(),
     name: "SECRET_A",
     to: [
-      {
-        platform: "github",
-        type: "actions",
-        target: { account: "account-b-1", repo: "repo-b-1" },
-      },
+      createTestProvisionRequestTarget("actions", "account-b-1", "repo-b-1"),
     ],
   });
 
@@ -362,13 +323,7 @@ it("allows GitHub Actions repo secrets that should be allowed within the request
     tokenDecIsRegistered: true,
     secretDec: createTestSecretDec(),
     name: "SECRET_A",
-    to: [
-      {
-        platform: "github",
-        type: "actions",
-        target: { account: "account-a", repo: "repo-a" },
-      },
-    ],
+    to: [createTestProvisionRequestTarget("actions", "account-a", "repo-a")],
   });
   const resultB = authorizer.authorizeSecret({
     requester: { account: "account-b-1", repo: "repo-b-1" },
@@ -377,11 +332,7 @@ it("allows GitHub Actions repo secrets that should be allowed within the request
     secretDec: createTestSecretDec(),
     name: "SECRET_A",
     to: [
-      {
-        platform: "github",
-        type: "actions",
-        target: { account: "account-b-1", repo: "repo-b-1" },
-      },
+      createTestProvisionRequestTarget("actions", "account-b-1", "repo-b-1"),
     ],
   });
 
@@ -449,13 +400,7 @@ it("allows GitHub Actions repo secrets that should be allowed within the request
     tokenDecIsRegistered: true,
     secretDec: createTestSecretDec(),
     name: "SECRET_A",
-    to: [
-      {
-        platform: "github",
-        type: "actions",
-        target: { account: "account-a", repo: "repo-a" },
-      },
-    ],
+    to: [createTestProvisionRequestTarget("actions", "account-a", "repo-a")],
   });
   const resultB = authorizer.authorizeSecret({
     requester: { account: "account-b-1", repo: "repo-b-1" },
@@ -464,11 +409,7 @@ it("allows GitHub Actions repo secrets that should be allowed within the request
     secretDec: createTestSecretDec(),
     name: "SECRET_A",
     to: [
-      {
-        platform: "github",
-        type: "actions",
-        target: { account: "account-b-1", repo: "repo-b-1" },
-      },
+      createTestProvisionRequestTarget("actions", "account-b-1", "repo-b-1"),
     ],
   });
 
@@ -532,13 +473,7 @@ it("doesn't allow GitHub Actions account secrets for unauthorized requesters", (
     tokenDecIsRegistered: true,
     secretDec: createTestSecretDec(),
     name: "SECRET_A",
-    to: [
-      {
-        platform: "github",
-        type: "actions",
-        target: { account: "account-a" },
-      },
-    ],
+    to: [createTestProvisionRequestTarget("actions")],
   });
 
   const explain = createTextProvisionAuthExplainer(
@@ -590,13 +525,7 @@ it("doesn't allow GitHub Actions account secrets within the requesting account f
     tokenDecIsRegistered: true,
     secretDec: createTestSecretDec(),
     name: "SECRET_A",
-    to: [
-      {
-        platform: "github",
-        type: "actions",
-        target: { account: "account-x" },
-      },
-    ],
+    to: [createTestProvisionRequestTarget("actions", "account-x")],
   });
   const resultB = authorizer.authorizeSecret({
     requester: { account: "account-x", repo: "repo-y" },
@@ -604,13 +533,7 @@ it("doesn't allow GitHub Actions account secrets within the requesting account f
     tokenDecIsRegistered: true,
     secretDec: createTestSecretDec(),
     name: "SECRET_A",
-    to: [
-      {
-        platform: "github",
-        type: "actions",
-        target: { account: "account-x" },
-      },
-    ],
+    to: [createTestProvisionRequestTarget("actions", "account-x")],
   });
   const resultC = authorizer.authorizeSecret({
     requester: { account: "account-x", repo: "repo-x" },
@@ -618,13 +541,7 @@ it("doesn't allow GitHub Actions account secrets within the requesting account f
     tokenDecIsRegistered: true,
     secretDec: createTestSecretDec(),
     name: "SECRET_A",
-    to: [
-      {
-        platform: "github",
-        type: "actions",
-        target: { account: "account-y" },
-      },
-    ],
+    to: [createTestProvisionRequestTarget("actions", "account-y")],
   });
 
   const explain = createTextProvisionAuthExplainer(
@@ -694,13 +611,7 @@ it("doesn't allow GitHub Actions account secrets within the requesting account w
     tokenDecIsRegistered: true,
     secretDec: createTestSecretDec(),
     name: "SECRET_A",
-    to: [
-      {
-        platform: "github",
-        type: "actions",
-        target: { account: "account-a" },
-      },
-    ],
+    to: [createTestProvisionRequestTarget("actions")],
   });
 
   const explain = createTextProvisionAuthExplainer(
@@ -756,13 +667,7 @@ it("doesn't allow GitHub Actions repo secrets for unauthorized requesters", () =
     tokenDecIsRegistered: true,
     secretDec: createTestSecretDec(),
     name: "SECRET_A",
-    to: [
-      {
-        platform: "github",
-        type: "actions",
-        target: { account: "account-a", repo: "repo-a" },
-      },
-    ],
+    to: [createTestProvisionRequestTarget("actions", "account-a", "repo-a")],
   });
 
   const explain = createTextProvisionAuthExplainer(
@@ -815,13 +720,7 @@ it("doesn't allow GitHub Actions repo secrets within the requesting repo for una
     tokenDecIsRegistered: true,
     secretDec: createTestSecretDec(),
     name: "SECRET_A",
-    to: [
-      {
-        platform: "github",
-        type: "actions",
-        target: { account: "account-x", repo: "repo-x" },
-      },
-    ],
+    to: [createTestProvisionRequestTarget("actions", "account-x", "repo-x")],
   });
   const resultB = authorizer.authorizeSecret({
     requester: { account: "account-x", repo: "repo-y" },
@@ -829,13 +728,7 @@ it("doesn't allow GitHub Actions repo secrets within the requesting repo for una
     tokenDecIsRegistered: true,
     secretDec: createTestSecretDec(),
     name: "SECRET_A",
-    to: [
-      {
-        platform: "github",
-        type: "actions",
-        target: { account: "account-x", repo: "repo-x" },
-      },
-    ],
+    to: [createTestProvisionRequestTarget("actions", "account-x", "repo-x")],
   });
   const resultC = authorizer.authorizeSecret({
     requester: { account: "account-x", repo: "repo-x" },
@@ -843,13 +736,7 @@ it("doesn't allow GitHub Actions repo secrets within the requesting repo for una
     tokenDecIsRegistered: true,
     secretDec: createTestSecretDec(),
     name: "SECRET_A",
-    to: [
-      {
-        platform: "github",
-        type: "actions",
-        target: { account: "account-x", repo: "repo-y" },
-      },
-    ],
+    to: [createTestProvisionRequestTarget("actions", "account-x", "repo-y")],
   });
 
   const explain = createTextProvisionAuthExplainer(
@@ -921,13 +808,7 @@ it("doesn't allow GitHub Actions repo secrets within the requesting repo when de
     tokenDecIsRegistered: true,
     secretDec: createTestSecretDec(),
     name: "SECRET_A",
-    to: [
-      {
-        platform: "github",
-        type: "actions",
-        target: { account: "account-a", repo: "repo-a" },
-      },
-    ],
+    to: [createTestProvisionRequestTarget("actions", "account-a", "repo-a")],
   });
 
   const explain = createTextProvisionAuthExplainer(

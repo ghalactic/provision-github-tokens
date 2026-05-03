@@ -28,6 +28,7 @@ import {
   createTestRepoEnvironment,
 } from "../test/github-api.js";
 import { createTestKeyPair } from "../test/key.js";
+import { createTestProvisionRequestTarget } from "../test/provision-request.js";
 import {
   createTestProvisionAuthResult,
   createTestProvisionAuthTargetResult,
@@ -118,50 +119,31 @@ const tokenCreationResultNotCreated: TokenCreationResult = {
   type: "NO_ISSUER",
 };
 
-const accountAActionsTarget: ProvisionRequestTarget = {
-  platform: "github",
-  type: "actions",
-  target: { account: "account-a" },
-};
-const accountARepoAActionsTarget: ProvisionRequestTarget = {
-  platform: "github",
-  type: "actions",
-  target: { account: "account-a", repo: "repo-a" },
-};
+const accountAActionsTarget: ProvisionRequestTarget =
+  createTestProvisionRequestTarget("actions");
+const accountARepoAActionsTarget: ProvisionRequestTarget =
+  createTestProvisionRequestTarget("actions", "account-a", "repo-a");
 
-const accountACodespacesTarget: ProvisionRequestTarget = {
-  platform: "github",
-  type: "codespaces",
-  target: { account: "account-a" },
-};
-const accountARepoACodespacesTarget: ProvisionRequestTarget = {
-  platform: "github",
-  type: "codespaces",
-  target: { account: "account-a", repo: "repo-a" },
-};
+const accountACodespacesTarget: ProvisionRequestTarget =
+  createTestProvisionRequestTarget("codespaces");
+const accountARepoACodespacesTarget: ProvisionRequestTarget =
+  createTestProvisionRequestTarget("codespaces", "account-a", "repo-a");
 
-const accountADependabotTarget: ProvisionRequestTarget = {
-  platform: "github",
-  type: "dependabot",
-  target: { account: "account-a" },
-};
-const accountARepoADependabotTarget: ProvisionRequestTarget = {
-  platform: "github",
-  type: "dependabot",
-  target: { account: "account-a", repo: "repo-a" },
-};
+const accountADependabotTarget: ProvisionRequestTarget =
+  createTestProvisionRequestTarget("dependabot");
+const accountARepoADependabotTarget: ProvisionRequestTarget =
+  createTestProvisionRequestTarget("dependabot", "account-a", "repo-a");
 
-const accountARepoAEnvATarget: ProvisionRequestTarget = {
-  platform: "github",
-  type: "environment",
-  target: { account: "account-a", repo: "repo-a", environment: "env-a" },
-};
+const accountARepoAEnvATarget: ProvisionRequestTarget =
+  createTestProvisionRequestTarget(
+    "environment",
+    "account-a",
+    "repo-a",
+    "env-a",
+  );
 
-const accountXActionsTarget: ProvisionRequestTarget = {
-  platform: "github",
-  type: "actions",
-  target: { account: "account-x" },
-};
+const accountXActionsTarget: ProvisionRequestTarget =
+  createTestProvisionRequestTarget("actions", "account-x");
 
 let encryptSecret: Mock<EncryptSecret>;
 let provisionSecrets: Provisioner;

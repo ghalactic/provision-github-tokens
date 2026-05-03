@@ -26,6 +26,7 @@ import {
   createTestRepoEnvironment,
 } from "../test/github-api.js";
 import { createTestKeyPair } from "../test/key.js";
+import { createTestProvisionRequestTarget } from "../test/provision-request.js";
 import {
   createTestProvisionAuthTargetResult,
   createTestTokenAuthResult,
@@ -89,16 +90,10 @@ const tokenCreationResultCreatedA: TokenCreationResult = {
   token: { token: "<token-a>", expires_at: "2001-02-03T04:05:06Z" },
 };
 
-const accountADependabotTarget: ProvisionRequestTarget = {
-  platform: "github",
-  type: "dependabot",
-  target: { account: "account-a" },
-};
-const accountARepoADependabotTarget: ProvisionRequestTarget = {
-  platform: "github",
-  type: "dependabot",
-  target: { account: "account-a", repo: "repo-a" },
-};
+const accountADependabotTarget: ProvisionRequestTarget =
+  createTestProvisionRequestTarget("dependabot");
+const accountARepoADependabotTarget: ProvisionRequestTarget =
+  createTestProvisionRequestTarget("dependabot", "account-a", "repo-a");
 
 let encryptSecret: Mock<EncryptSecret>;
 let provisionSecrets: Provisioner;

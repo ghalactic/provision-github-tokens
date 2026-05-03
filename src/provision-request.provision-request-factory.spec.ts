@@ -10,6 +10,7 @@ import {
   createTestInstallationAccount,
   createTestInstallationRepo,
 } from "../test/github-api.js";
+import { createTestProvisionRequestTarget } from "../test/provision-request.js";
 import {
   createAppRegistry,
   type AppRegistration,
@@ -173,88 +174,39 @@ it("supports provisioning to multiple targets", async () => {
       )
     )?.to,
   ).toStrictEqual([
-    { platform: "github", type: "actions", target: { account: "account-a" } },
-    {
-      platform: "github",
-      type: "codespaces",
-      target: { account: "account-a" },
-    },
-    {
-      platform: "github",
-      type: "dependabot",
-      target: { account: "account-a" },
-    },
-    { platform: "github", type: "actions", target: { account: "account-b" } },
-    {
-      platform: "github",
-      type: "codespaces",
-      target: { account: "account-b" },
-    },
-    {
-      platform: "github",
-      type: "dependabot",
-      target: { account: "account-b" },
-    },
-    {
-      platform: "github",
-      type: "actions",
-      target: { account: "account-a", repo: "repo-a" },
-    },
-    {
-      platform: "github",
-      type: "codespaces",
-      target: { account: "account-a", repo: "repo-a" },
-    },
-    {
-      platform: "github",
-      type: "dependabot",
-      target: { account: "account-a", repo: "repo-a" },
-    },
-    {
-      platform: "github",
-      type: "environment",
-      target: { account: "account-a", repo: "repo-a", environment: "env-a" },
-    },
-    {
-      platform: "github",
-      type: "environment",
-      target: { account: "account-a", repo: "repo-a", environment: "env-b" },
-    },
-    {
-      platform: "github",
-      type: "actions",
-      target: { account: "account-a", repo: "repo-b" },
-    },
-    {
-      platform: "github",
-      type: "codespaces",
-      target: { account: "account-a", repo: "repo-b" },
-    },
-    {
-      platform: "github",
-      type: "dependabot",
-      target: { account: "account-a", repo: "repo-b" },
-    },
-    {
-      platform: "github",
-      type: "environment",
-      target: { account: "account-a", repo: "repo-b", environment: "env-a" },
-    },
-    {
-      platform: "github",
-      type: "actions",
-      target: { account: "account-b", repo: "repo-a" },
-    },
-    {
-      platform: "github",
-      type: "codespaces",
-      target: { account: "account-b", repo: "repo-a" },
-    },
-    {
-      platform: "github",
-      type: "dependabot",
-      target: { account: "account-b", repo: "repo-a" },
-    },
+    createTestProvisionRequestTarget("actions"),
+    createTestProvisionRequestTarget("codespaces"),
+    createTestProvisionRequestTarget("dependabot"),
+    createTestProvisionRequestTarget("actions", "account-b"),
+    createTestProvisionRequestTarget("codespaces", "account-b"),
+    createTestProvisionRequestTarget("dependabot", "account-b"),
+    createTestProvisionRequestTarget("actions", "account-a", "repo-a"),
+    createTestProvisionRequestTarget("codespaces", "account-a", "repo-a"),
+    createTestProvisionRequestTarget("dependabot", "account-a", "repo-a"),
+    createTestProvisionRequestTarget(
+      "environment",
+      "account-a",
+      "repo-a",
+      "env-a",
+    ),
+    createTestProvisionRequestTarget(
+      "environment",
+      "account-a",
+      "repo-a",
+      "env-b",
+    ),
+    createTestProvisionRequestTarget("actions", "account-a", "repo-b"),
+    createTestProvisionRequestTarget("codespaces", "account-a", "repo-b"),
+    createTestProvisionRequestTarget("dependabot", "account-a", "repo-b"),
+    createTestProvisionRequestTarget(
+      "environment",
+      "account-a",
+      "repo-b",
+      "env-a",
+    ),
+    createTestProvisionRequestTarget("actions", "account-b", "repo-a"),
+    createTestProvisionRequestTarget("codespaces", "account-b", "repo-a"),
+    createTestProvisionRequestTarget("dependabot", "account-b", "repo-a"),
   ] satisfies ProvisionRequestTarget[]);
 });
 

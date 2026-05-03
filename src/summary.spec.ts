@@ -4,13 +4,13 @@ import {
   createTestSecretDec,
   createTestTokenDec,
 } from "../test/declaration.js";
+import { createTestProvisionRequestTarget } from "../test/provision-request.js";
 import {
   createTestProvisionAuthResult,
   createTestProvisionAuthTargetResult,
   createTestTokenAuthResult,
 } from "../test/result.js";
 import type { AuthorizeResult } from "./authorizer.js";
-import type { ProvisionRequestTarget } from "./provision-request.js";
 import { renderSummary } from "./summary.js";
 import type {
   ProvisionAuthResult,
@@ -25,11 +25,7 @@ const githubServerUrl = "https://github.example.com";
 const actionUrl = "https://github.example.com/test/action";
 
 it("renders a summary with all secrets provisioned", async () => {
-  const accountAActionsTarget: ProvisionRequestTarget = {
-    platform: "github",
-    type: "actions",
-    target: { account: "account-a" },
-  };
+  const accountAActionsTarget = createTestProvisionRequestTarget("actions");
 
   const tokenAuthResultA = createTestTokenAuthResult({
     request: {
@@ -151,11 +147,7 @@ it("renders a summary with all secrets provisioned", async () => {
 });
 
 it("renders a summary with some secrets denied", async () => {
-  const accountAActionsTarget: ProvisionRequestTarget = {
-    platform: "github",
-    type: "actions",
-    target: { account: "account-a" },
-  };
+  const accountAActionsTarget = createTestProvisionRequestTarget("actions");
 
   const tokenAuthResultA = createTestTokenAuthResult({
     request: {
@@ -279,11 +271,7 @@ it("renders a summary with some secrets denied", async () => {
 });
 
 it("renders a summary with all secrets denied", async () => {
-  const accountAActionsTarget: ProvisionRequestTarget = {
-    platform: "github",
-    type: "actions",
-    target: { account: "account-a" },
-  };
+  const accountAActionsTarget = createTestProvisionRequestTarget("actions");
 
   const tokenAuthResultA = createTestTokenAuthResult({
     isAllowed: false,
@@ -386,11 +374,12 @@ it("renders a summary with no secrets requested", async () => {
 });
 
 it("renders a summary with environment targets", async () => {
-  const accountARepoAEnvironmentTarget: ProvisionRequestTarget = {
-    platform: "github",
-    type: "environment",
-    target: { account: "account-a", repo: "repo-a", environment: "env-a" },
-  };
+  const accountARepoAEnvironmentTarget = createTestProvisionRequestTarget(
+    "environment",
+    "account-a",
+    "repo-a",
+    "env-a",
+  );
 
   const tokenAuthResultA = createTestTokenAuthResult({
     request: {
@@ -465,11 +454,7 @@ it("renders a summary with environment targets", async () => {
 });
 
 it("renders a summary with multiple requesters", async () => {
-  const accountAActionsTarget: ProvisionRequestTarget = {
-    platform: "github",
-    type: "actions",
-    target: { account: "account-a" },
-  };
+  const accountAActionsTarget = createTestProvisionRequestTarget("actions");
 
   const tokenAuthResultA = createTestTokenAuthResult({
     request: {
@@ -591,11 +576,7 @@ it("renders a summary with multiple requesters", async () => {
 });
 
 it("renders a summary with a missing token declaration", async () => {
-  const accountAActionsTarget: ProvisionRequestTarget = {
-    platform: "github",
-    type: "actions",
-    target: { account: "account-a" },
-  };
+  const accountAActionsTarget = createTestProvisionRequestTarget("actions");
 
   const tokenAuthResultA = createTestTokenAuthResult({
     request: {
@@ -703,11 +684,7 @@ it("renders a summary with a missing token declaration", async () => {
 });
 
 it("renders a summary with an unshared token declaration", async () => {
-  const accountAActionsTarget: ProvisionRequestTarget = {
-    platform: "github",
-    type: "actions",
-    target: { account: "account-a" },
-  };
+  const accountAActionsTarget = createTestProvisionRequestTarget("actions");
 
   const tokenAuthResultA = createTestTokenAuthResult({
     request: {
@@ -815,11 +792,7 @@ it("renders a summary with an unshared token declaration", async () => {
 });
 
 it("renders a summary with missing targets", async () => {
-  const accountAActionsTarget: ProvisionRequestTarget = {
-    platform: "github",
-    type: "actions",
-    target: { account: "account-a" },
-  };
+  const accountAActionsTarget = createTestProvisionRequestTarget("actions");
 
   const tokenAuthResultA = createTestTokenAuthResult({
     request: {
@@ -917,23 +890,15 @@ it("renders a summary with missing targets", async () => {
 });
 
 it("renders a summary with multiple distinct targets", async () => {
-  const accountAActionsTarget: ProvisionRequestTarget = {
-    platform: "github",
-    type: "actions",
-    target: { account: "account-a" },
-  };
+  const accountAActionsTarget = createTestProvisionRequestTarget("actions");
 
-  const accountACodespacesTarget: ProvisionRequestTarget = {
-    platform: "github",
-    type: "codespaces",
-    target: { account: "account-a" },
-  };
+  const accountACodespacesTarget =
+    createTestProvisionRequestTarget("codespaces");
 
-  const accountBActionsTarget: ProvisionRequestTarget = {
-    platform: "github",
-    type: "actions",
-    target: { account: "account-b" },
-  };
+  const accountBActionsTarget = createTestProvisionRequestTarget(
+    "actions",
+    "account-b",
+  );
 
   const tokenAuthResultA = createTestTokenAuthResult({
     request: {
@@ -1025,11 +990,7 @@ it("renders a summary with multiple distinct targets", async () => {
 });
 
 it("truncates rows beyond the limit and shows a notice", async () => {
-  const accountAActionsTarget: ProvisionRequestTarget = {
-    platform: "github",
-    type: "actions",
-    target: { account: "account-a" },
-  };
+  const accountAActionsTarget = createTestProvisionRequestTarget("actions");
 
   const provisionAuthResults: ProvisionAuthResult[] = [];
   const provisionResults = new Map<
@@ -1085,11 +1046,7 @@ it("truncates rows beyond the limit and shows a notice", async () => {
 });
 
 it("renders a failure reason when tokens aren't allowed", async () => {
-  const accountAActionsTarget: ProvisionRequestTarget = {
-    platform: "github",
-    type: "actions",
-    target: { account: "account-a" },
-  };
+  const accountAActionsTarget = createTestProvisionRequestTarget("actions");
 
   const tokenAuthResult = createTestTokenAuthResult({
     isAllowed: false,
@@ -1158,11 +1115,7 @@ it("renders a failure reason when tokens aren't allowed", async () => {
 });
 
 it("renders a failure reason when no suitable issuer is found", async () => {
-  const accountAActionsTarget: ProvisionRequestTarget = {
-    platform: "github",
-    type: "actions",
-    target: { account: "account-a" },
-  };
+  const accountAActionsTarget = createTestProvisionRequestTarget("actions");
 
   const tokenAuthResult = createTestTokenAuthResult({
     request: {
@@ -1230,11 +1183,7 @@ it("renders a failure reason when no suitable issuer is found", async () => {
 });
 
 it("renders a failure reason when token issuance fails", async () => {
-  const accountAActionsTarget: ProvisionRequestTarget = {
-    platform: "github",
-    type: "actions",
-    target: { account: "account-a" },
-  };
+  const accountAActionsTarget = createTestProvisionRequestTarget("actions");
 
   const tokenAuthResult = createTestTokenAuthResult({
     request: {
@@ -1302,11 +1251,7 @@ it("renders a failure reason when token issuance fails", async () => {
 });
 
 it("renders a failure reason when no suitable provisioner is found", async () => {
-  const accountAActionsTarget: ProvisionRequestTarget = {
-    platform: "github",
-    type: "actions",
-    target: { account: "account-a" },
-  };
+  const accountAActionsTarget = createTestProvisionRequestTarget("actions");
 
   const tokenAuthResult = createTestTokenAuthResult({
     request: {
@@ -1383,11 +1328,7 @@ it("renders a failure reason when no suitable provisioner is found", async () =>
 });
 
 it("renders a failure reason when provisioning has no target results", async () => {
-  const accountAActionsTarget: ProvisionRequestTarget = {
-    platform: "github",
-    type: "actions",
-    target: { account: "account-a" },
-  };
+  const accountAActionsTarget = createTestProvisionRequestTarget("actions");
 
   const tokenAuthResult = createTestTokenAuthResult({
     request: {
@@ -1464,17 +1405,12 @@ it("renders a failure reason when provisioning has no target results", async () 
 });
 
 it("renders a failure reason when provisioning partially fails across targets", async () => {
-  const accountAActionsTarget: ProvisionRequestTarget = {
-    platform: "github",
-    type: "actions",
-    target: { account: "account-a" },
-  };
+  const accountAActionsTarget = createTestProvisionRequestTarget("actions");
 
-  const accountBActionsTarget: ProvisionRequestTarget = {
-    platform: "github",
-    type: "actions",
-    target: { account: "account-b" },
-  };
+  const accountBActionsTarget = createTestProvisionRequestTarget(
+    "actions",
+    "account-b",
+  );
 
   const tokenAuthResult = createTestTokenAuthResult({
     request: {
@@ -1558,11 +1494,7 @@ it("renders a failure reason when provisioning partially fails across targets", 
 });
 
 it("renders a failure reason when provisioning fails for all targets", async () => {
-  const accountAActionsTarget: ProvisionRequestTarget = {
-    platform: "github",
-    type: "actions",
-    target: { account: "account-a" },
-  };
+  const accountAActionsTarget = createTestProvisionRequestTarget("actions");
 
   const tokenAuthResult = createTestTokenAuthResult({
     request: {

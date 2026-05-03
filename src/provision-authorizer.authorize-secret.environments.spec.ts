@@ -3,6 +3,7 @@ import {
   createTestSecretDec,
   createTestTokenDec,
 } from "../test/declaration.js";
+import { createTestProvisionRequestTarget } from "../test/provision-request.js";
 import { createTestTokenAuthorizer } from "../test/token-authorizer.js";
 import { createTestTokenRequestFactory } from "../test/token-request.js";
 import { compareTokenRequest } from "./compare-token-request.js";
@@ -53,15 +54,12 @@ it("allows GitHub environment secrets that should be allowed", () => {
     secretDec: createTestSecretDec(),
     name: "SECRET_A",
     to: [
-      {
-        platform: "github",
-        type: "environment",
-        target: {
-          account: "account-a",
-          repo: "repo-a",
-          environment: "env-a",
-        },
-      },
+      createTestProvisionRequestTarget(
+        "environment",
+        "account-a",
+        "repo-a",
+        "env-a",
+      ),
     ],
   });
   const resultB = authorizer.authorizeSecret({
@@ -71,15 +69,12 @@ it("allows GitHub environment secrets that should be allowed", () => {
     secretDec: createTestSecretDec(),
     name: "SECRET_A",
     to: [
-      {
-        platform: "github",
-        type: "environment",
-        target: {
-          account: "account-b-1",
-          repo: "repo-b-1",
-          environment: "env-b-1",
-        },
-      },
+      createTestProvisionRequestTarget(
+        "environment",
+        "account-b-1",
+        "repo-b-1",
+        "env-b-1",
+      ),
     ],
   });
 
@@ -145,15 +140,12 @@ it("allows GitHub environment secrets that should be allowed within the requesti
     secretDec: createTestSecretDec(),
     name: "SECRET_A",
     to: [
-      {
-        platform: "github",
-        type: "environment",
-        target: {
-          account: "account-a",
-          repo: "repo-a",
-          environment: "env-a",
-        },
-      },
+      createTestProvisionRequestTarget(
+        "environment",
+        "account-a",
+        "repo-a",
+        "env-a",
+      ),
     ],
   });
   const resultB = authorizer.authorizeSecret({
@@ -163,15 +155,12 @@ it("allows GitHub environment secrets that should be allowed within the requesti
     secretDec: createTestSecretDec(),
     name: "SECRET_A",
     to: [
-      {
-        platform: "github",
-        type: "environment",
-        target: {
-          account: "account-b-1",
-          repo: "repo-b-1",
-          environment: "env-b-1",
-        },
-      },
+      createTestProvisionRequestTarget(
+        "environment",
+        "account-b-1",
+        "repo-b-1",
+        "env-b-1",
+      ),
     ],
   });
 
@@ -243,15 +232,12 @@ it("allows GitHub environment secrets that should be allowed within the requesti
     secretDec: createTestSecretDec(),
     name: "SECRET_A",
     to: [
-      {
-        platform: "github",
-        type: "environment",
-        target: {
-          account: "account-a",
-          repo: "repo-a",
-          environment: "env-a",
-        },
-      },
+      createTestProvisionRequestTarget(
+        "environment",
+        "account-a",
+        "repo-a",
+        "env-a",
+      ),
     ],
   });
   const resultB = authorizer.authorizeSecret({
@@ -261,15 +247,12 @@ it("allows GitHub environment secrets that should be allowed within the requesti
     secretDec: createTestSecretDec(),
     name: "SECRET_A",
     to: [
-      {
-        platform: "github",
-        type: "environment",
-        target: {
-          account: "account-b-1",
-          repo: "repo-b-1",
-          environment: "env-b-1",
-        },
-      },
+      createTestProvisionRequestTarget(
+        "environment",
+        "account-b-1",
+        "repo-b-1",
+        "env-b-1",
+      ),
     ],
   });
 
@@ -336,15 +319,12 @@ it("doesn't allow GitHub environment secrets for unauthorized requesters", () =>
     secretDec: createTestSecretDec(),
     name: "SECRET_A",
     to: [
-      {
-        platform: "github",
-        type: "environment",
-        target: {
-          account: "account-a",
-          repo: "repo-a",
-          environment: "env-a",
-        },
-      },
+      createTestProvisionRequestTarget(
+        "environment",
+        "account-a",
+        "repo-a",
+        "env-a",
+      ),
     ],
   });
 
@@ -400,15 +380,12 @@ it("doesn't allow GitHub environment secrets within the requesting repo for unau
     secretDec: createTestSecretDec(),
     name: "SECRET_A",
     to: [
-      {
-        platform: "github",
-        type: "environment",
-        target: {
-          account: "account-x",
-          repo: "repo-x",
-          environment: "env-x",
-        },
-      },
+      createTestProvisionRequestTarget(
+        "environment",
+        "account-x",
+        "repo-x",
+        "env-x",
+      ),
     ],
   });
   const resultB = authorizer.authorizeSecret({
@@ -418,15 +395,12 @@ it("doesn't allow GitHub environment secrets within the requesting repo for unau
     secretDec: createTestSecretDec(),
     name: "SECRET_A",
     to: [
-      {
-        platform: "github",
-        type: "environment",
-        target: {
-          account: "account-x",
-          repo: "repo-x",
-          environment: "env-x",
-        },
-      },
+      createTestProvisionRequestTarget(
+        "environment",
+        "account-x",
+        "repo-x",
+        "env-x",
+      ),
     ],
   });
   const resultC = authorizer.authorizeSecret({
@@ -436,15 +410,12 @@ it("doesn't allow GitHub environment secrets within the requesting repo for unau
     secretDec: createTestSecretDec(),
     name: "SECRET_A",
     to: [
-      {
-        platform: "github",
-        type: "environment",
-        target: {
-          account: "account-x",
-          repo: "repo-y",
-          environment: "env-x",
-        },
-      },
+      createTestProvisionRequestTarget(
+        "environment",
+        "account-x",
+        "repo-y",
+        "env-x",
+      ),
     ],
   });
   const resultD = authorizer.authorizeSecret({
@@ -454,15 +425,12 @@ it("doesn't allow GitHub environment secrets within the requesting repo for unau
     secretDec: createTestSecretDec(),
     name: "SECRET_A",
     to: [
-      {
-        platform: "github",
-        type: "environment",
-        target: {
-          account: "account-x",
-          repo: "repo-x",
-          environment: "env-y",
-        },
-      },
+      createTestProvisionRequestTarget(
+        "environment",
+        "account-x",
+        "repo-x",
+        "env-y",
+      ),
     ],
   });
 
@@ -545,15 +513,12 @@ it("doesn't allow GitHub environment secrets within the requesting repo when den
     secretDec: createTestSecretDec(),
     name: "SECRET_A",
     to: [
-      {
-        platform: "github",
-        type: "environment",
-        target: {
-          account: "account-a",
-          repo: "repo-a",
-          environment: "env-a",
-        },
-      },
+      createTestProvisionRequestTarget(
+        "environment",
+        "account-a",
+        "repo-a",
+        "env-a",
+      ),
     ],
   });
 
@@ -613,15 +578,12 @@ it("doesn't allow GitHub environment secrets when two environment patterns match
     secretDec: createTestSecretDec(),
     name: "SECRET_A",
     to: [
-      {
-        platform: "github",
-        type: "environment",
-        target: {
-          account: "account-a",
-          repo: "repo-a",
-          environment: "env-a",
-        },
-      },
+      createTestProvisionRequestTarget(
+        "environment",
+        "account-a",
+        "repo-a",
+        "env-a",
+      ),
     ],
   });
 

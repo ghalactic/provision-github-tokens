@@ -14,6 +14,7 @@ import {
   createTestInstallationRepo,
 } from "../test/github-api.js";
 import { createTestKeyPair, decrypt } from "../test/key.js";
+import { createTestProvisionRequestTarget } from "../test/provision-request.js";
 import {
   createAppRegistry,
   type AppRegistration,
@@ -96,7 +97,7 @@ it("can encrypt secrets for all secret types", async () => {
   const encryptSecret = createEncryptSecret(findProvisionerOctokit);
 
   const forOrgAActions = await encryptSecret(
-    { platform: "github", type: "actions", target: { account: "org-a" } },
+    createTestProvisionRequestTarget("actions", "org-a"),
     "<plaintext>",
   );
 
@@ -104,7 +105,7 @@ it("can encrypt secrets for all secret types", async () => {
   expect(forOrgAActions[1]).toBe("1111");
 
   const forOrgACodespaces = await encryptSecret(
-    { platform: "github", type: "codespaces", target: { account: "org-a" } },
+    createTestProvisionRequestTarget("codespaces", "org-a"),
     "<plaintext>",
   );
 
@@ -114,7 +115,7 @@ it("can encrypt secrets for all secret types", async () => {
   expect(forOrgACodespaces[1]).toBe("2222");
 
   const forOrgADependabot = await encryptSecret(
-    { platform: "github", type: "dependabot", target: { account: "org-a" } },
+    createTestProvisionRequestTarget("dependabot", "org-a"),
     "<plaintext>",
   );
 
@@ -124,11 +125,7 @@ it("can encrypt secrets for all secret types", async () => {
   expect(forOrgADependabot[1]).toBe("3333");
 
   const forRepoAActions = await encryptSecret(
-    {
-      platform: "github",
-      type: "actions",
-      target: { account: "org-a", repo: "repo-a" },
-    },
+    createTestProvisionRequestTarget("actions", "org-a", "repo-a"),
     "<plaintext>",
   );
 
@@ -138,11 +135,7 @@ it("can encrypt secrets for all secret types", async () => {
   expect(forRepoAActions[1]).toBe("4444");
 
   const forRepoACodespaces = await encryptSecret(
-    {
-      platform: "github",
-      type: "codespaces",
-      target: { account: "org-a", repo: "repo-a" },
-    },
+    createTestProvisionRequestTarget("codespaces", "org-a", "repo-a"),
     "<plaintext>",
   );
 
@@ -152,11 +145,7 @@ it("can encrypt secrets for all secret types", async () => {
   expect(forRepoACodespaces[1]).toBe("5555");
 
   const forRepoADependabot = await encryptSecret(
-    {
-      platform: "github",
-      type: "dependabot",
-      target: { account: "org-a", repo: "repo-a" },
-    },
+    createTestProvisionRequestTarget("dependabot", "org-a", "repo-a"),
     "<plaintext>",
   );
 
@@ -166,11 +155,7 @@ it("can encrypt secrets for all secret types", async () => {
   expect(forRepoADependabot[1]).toBe("6666");
 
   const forEnvA = await encryptSecret(
-    {
-      platform: "github",
-      type: "environment",
-      target: { account: "org-a", repo: "repo-a", environment: "env-a" },
-    },
+    createTestProvisionRequestTarget("environment", "org-a", "repo-a", "env-a"),
     "<plaintext>",
   );
 
@@ -178,11 +163,7 @@ it("can encrypt secrets for all secret types", async () => {
   expect(forEnvA[1]).toBe("7777");
 
   const forEnvB = await encryptSecret(
-    {
-      platform: "github",
-      type: "environment",
-      target: { account: "org-a", repo: "repo-a", environment: "env-b" },
-    },
+    createTestProvisionRequestTarget("environment", "org-a", "repo-a", "env-b"),
     "<plaintext>",
   );
 
@@ -201,7 +182,7 @@ it("throws if no provisioners are found for the target", async () => {
 
   await expect(
     encryptSecret(
-      { platform: "github", type: "actions", target: { account: "org-a" } },
+      createTestProvisionRequestTarget("actions", "org-a"),
       "<plaintext>",
     ),
   ).rejects.toThrow("No provisioners found for target org-a");

@@ -10,6 +10,7 @@ import {
   createTestInstallationAccount,
   createTestInstallationRepo,
 } from "../test/github-api.js";
+import { createTestProvisionRequestTarget } from "../test/provision-request.js";
 import {
   createAppRegistry,
   type AppRegistration,
@@ -52,7 +53,7 @@ it("supports self-repo targets", async () => {
       )
     )?.to,
   ).toStrictEqual([
-    { platform: "github", type: "actions", target: repoA },
+    createTestProvisionRequestTarget("actions", "account-a", "repo-a"),
   ] satisfies ProvisionRequestTarget[]);
 
   expect(
@@ -67,7 +68,7 @@ it("supports self-repo targets", async () => {
       )
     )?.to,
   ).toStrictEqual([
-    { platform: "github", type: "codespaces", target: repoA },
+    createTestProvisionRequestTarget("codespaces", "account-a", "repo-a"),
   ] satisfies ProvisionRequestTarget[]);
 
   expect(
@@ -82,7 +83,7 @@ it("supports self-repo targets", async () => {
       )
     )?.to,
   ).toStrictEqual([
-    { platform: "github", type: "dependabot", target: repoA },
+    createTestProvisionRequestTarget("dependabot", "account-a", "repo-a"),
   ] satisfies ProvisionRequestTarget[]);
 });
 
@@ -142,16 +143,8 @@ it("supports pattern-matched repo targets", async () => {
       )
     )?.to,
   ).toStrictEqual([
-    {
-      platform: "github",
-      type: "actions",
-      target: { account: "account-a", repo: "repo-a-1" },
-    },
-    {
-      platform: "github",
-      type: "actions",
-      target: { account: "account-a", repo: "repo-a-2" },
-    },
+    createTestProvisionRequestTarget("actions", "account-a", "repo-a-1"),
+    createTestProvisionRequestTarget("actions", "account-a", "repo-a-2"),
   ] satisfies ProvisionRequestTarget[]);
 
   expect(
@@ -166,16 +159,8 @@ it("supports pattern-matched repo targets", async () => {
       )
     )?.to,
   ).toStrictEqual([
-    {
-      platform: "github",
-      type: "codespaces",
-      target: { account: "account-a", repo: "repo-a-1" },
-    },
-    {
-      platform: "github",
-      type: "codespaces",
-      target: { account: "account-a", repo: "repo-a-2" },
-    },
+    createTestProvisionRequestTarget("codespaces", "account-a", "repo-a-1"),
+    createTestProvisionRequestTarget("codespaces", "account-a", "repo-a-2"),
   ] satisfies ProvisionRequestTarget[]);
 
   expect(
@@ -190,16 +175,8 @@ it("supports pattern-matched repo targets", async () => {
       )
     )?.to,
   ).toStrictEqual([
-    {
-      platform: "github",
-      type: "dependabot",
-      target: { account: "account-a", repo: "repo-a-1" },
-    },
-    {
-      platform: "github",
-      type: "dependabot",
-      target: { account: "account-a", repo: "repo-a-2" },
-    },
+    createTestProvisionRequestTarget("dependabot", "account-a", "repo-a-1"),
+    createTestProvisionRequestTarget("dependabot", "account-a", "repo-a-2"),
   ] satisfies ProvisionRequestTarget[]);
 });
 
@@ -263,16 +240,8 @@ it("doesn't match the same repo twice", async () => {
       )
     )?.to,
   ).toStrictEqual([
-    {
-      platform: "github",
-      type: "actions",
-      target: { account: "account-a", repo: "repo-a" },
-    },
-    {
-      platform: "github",
-      type: "actions",
-      target: { account: "account-a", repo: "repo-b" },
-    },
+    createTestProvisionRequestTarget("actions", "account-a", "repo-a"),
+    createTestProvisionRequestTarget("actions", "account-a", "repo-b"),
   ] satisfies ProvisionRequestTarget[]);
 });
 
@@ -337,11 +306,7 @@ it("doesn't enable a target for a repo if any matching patterns disable the targ
       )
     )?.to,
   ).toStrictEqual([
-    {
-      platform: "github",
-      type: "actions",
-      target: { account: "account-a", repo: "repo-a" },
-    },
+    createTestProvisionRequestTarget("actions", "account-a", "repo-a"),
   ] satisfies ProvisionRequestTarget[]);
 });
 
@@ -405,20 +370,8 @@ it("allows self-repo targets to override pattern-matched repo targets", async ()
       )
     )?.to,
   ).toStrictEqual([
-    {
-      platform: "github",
-      type: "actions",
-      target: { account: "account-a", repo: "repo-a" },
-    },
-    {
-      platform: "github",
-      type: "codespaces",
-      target: { account: "account-a", repo: "repo-a" },
-    },
-    {
-      platform: "github",
-      type: "actions",
-      target: { account: "account-a", repo: "repo-b" },
-    },
+    createTestProvisionRequestTarget("actions", "account-a", "repo-a"),
+    createTestProvisionRequestTarget("codespaces", "account-a", "repo-a"),
+    createTestProvisionRequestTarget("actions", "account-a", "repo-b"),
   ] satisfies ProvisionRequestTarget[]);
 });

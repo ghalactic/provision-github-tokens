@@ -16,6 +16,7 @@ import {
   createTestInstallationAccount,
   createTestInstallationRepo,
 } from "../test/github-api.js";
+import { createTestProvisionRequestTarget } from "../test/provision-request.js";
 import { createTestTokenRequestFactory } from "../test/token-request.js";
 import {
   createAppRegistry,
@@ -219,23 +220,13 @@ it("authorizes all requests and outputs the results", async () => {
           name: "SECRET_A",
           requester: { account: "account-a", repo: "repo-a" },
           secretDec: secretDecA,
-          to: [
-            {
-              platform: "github",
-              type: "actions",
-              target: { account: "account-a" },
-            },
-          ],
+          to: [createTestProvisionRequestTarget("actions")],
           tokenDec: tokenDecA,
           tokenDecIsRegistered: true,
         },
         results: [
           {
-            target: {
-              platform: "github",
-              type: "actions",
-              target: { account: "account-a" },
-            },
+            target: createTestProvisionRequestTarget("actions"),
             have: "allow",
             isAllowed: true,
             isProvisionAllowed: true,
@@ -253,22 +244,18 @@ it("authorizes all requests and outputs the results", async () => {
           requester: { account: "account-a", repo: "repo-a" },
           secretDec: secretDecB,
           to: [
-            {
-              platform: "github",
-              type: "actions",
-              target: { account: "account-a", repo: "repo-a" },
-            },
+            createTestProvisionRequestTarget("actions", "account-a", "repo-a"),
           ],
           tokenDec: tokenDecB,
           tokenDecIsRegistered: true,
         },
         results: [
           {
-            target: {
-              platform: "github",
-              type: "actions",
-              target: { account: "account-a", repo: "repo-a" },
-            },
+            target: createTestProvisionRequestTarget(
+              "actions",
+              "account-a",
+              "repo-a",
+            ),
             have: "allow",
             isAllowed: true,
             isProvisionAllowed: true,
@@ -414,23 +401,13 @@ it("handles empty token requests", async () => {
           name: "SECRET_A",
           requester: { account: "account-a", repo: "repo-a" },
           secretDec: secretDecA,
-          to: [
-            {
-              platform: "github",
-              type: "actions",
-              target: { account: "account-a" },
-            },
-          ],
+          to: [createTestProvisionRequestTarget("actions")],
           tokenDec: undefined,
           tokenDecIsRegistered: false,
         },
         results: [
           {
-            target: {
-              platform: "github",
-              type: "actions",
-              target: { account: "account-a" },
-            },
+            target: createTestProvisionRequestTarget("actions"),
             have: "allow",
             isAllowed: false,
             isProvisionAllowed: true,

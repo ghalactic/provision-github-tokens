@@ -10,12 +10,13 @@ import {
   createTestInstallationAccount,
   createTestInstallationRepo,
 } from "../test/github-api.js";
+import { createTestProvisionRequestTarget } from "../test/provision-request.js";
 import {
   createAppRegistry,
   type AppRegistration,
   type InstallationRegistration,
 } from "./app-registry.js";
-import { createEnvRef, type RepoReference } from "./github-reference.js";
+import { type RepoReference } from "./github-reference.js";
 import {
   createProvisionRequestFactory,
   type ProvisionRequestTarget,
@@ -59,21 +60,24 @@ it("supports self-repo environment targets", async () => {
       )
     )?.to,
   ).toStrictEqual([
-    {
-      platform: "github",
-      type: "environment",
-      target: createEnvRef("account-a", "repo-a", "env-a-1"),
-    },
-    {
-      platform: "github",
-      type: "environment",
-      target: createEnvRef("account-a", "repo-a", "env-a-2"),
-    },
-    {
-      platform: "github",
-      type: "environment",
-      target: createEnvRef("account-a", "repo-a", "env-b"),
-    },
+    createTestProvisionRequestTarget(
+      "environment",
+      "account-a",
+      "repo-a",
+      "env-a-1",
+    ),
+    createTestProvisionRequestTarget(
+      "environment",
+      "account-a",
+      "repo-a",
+      "env-a-2",
+    ),
+    createTestProvisionRequestTarget(
+      "environment",
+      "account-a",
+      "repo-a",
+      "env-b",
+    ),
   ] satisfies ProvisionRequestTarget[]);
 });
 
@@ -106,16 +110,18 @@ it("doesn't match the same environment twice for self-repos", async () => {
       )
     )?.to,
   ).toStrictEqual([
-    {
-      platform: "github",
-      type: "environment",
-      target: createEnvRef("account-a", "repo-a", "env-a"),
-    },
-    {
-      platform: "github",
-      type: "environment",
-      target: createEnvRef("account-a", "repo-a", "env-b"),
-    },
+    createTestProvisionRequestTarget(
+      "environment",
+      "account-a",
+      "repo-a",
+      "env-a",
+    ),
+    createTestProvisionRequestTarget(
+      "environment",
+      "account-a",
+      "repo-a",
+      "env-b",
+    ),
   ] satisfies ProvisionRequestTarget[]);
 });
 
@@ -184,21 +190,24 @@ it("supports pattern-matched repo environment targets", async () => {
       )
     )?.to,
   ).toStrictEqual([
-    {
-      platform: "github",
-      type: "environment",
-      target: { account: "account-a", repo: "repo-a", environment: "env-a-1" },
-    },
-    {
-      platform: "github",
-      type: "environment",
-      target: { account: "account-a", repo: "repo-a", environment: "env-a-2" },
-    },
-    {
-      platform: "github",
-      type: "environment",
-      target: { account: "account-a", repo: "repo-a", environment: "env-b" },
-    },
+    createTestProvisionRequestTarget(
+      "environment",
+      "account-a",
+      "repo-a",
+      "env-a-1",
+    ),
+    createTestProvisionRequestTarget(
+      "environment",
+      "account-a",
+      "repo-a",
+      "env-a-2",
+    ),
+    createTestProvisionRequestTarget(
+      "environment",
+      "account-a",
+      "repo-a",
+      "env-b",
+    ),
   ] satisfies ProvisionRequestTarget[]);
 });
 
@@ -263,16 +272,18 @@ it("doesn't match the same environment twice for pattern-matched repos", async (
       )
     )?.to,
   ).toStrictEqual([
-    {
-      platform: "github",
-      type: "environment",
-      target: { account: "account-a", repo: "repo-a", environment: "env-a" },
-    },
-    {
-      platform: "github",
-      type: "environment",
-      target: { account: "account-a", repo: "repo-a", environment: "env-b" },
-    },
+    createTestProvisionRequestTarget(
+      "environment",
+      "account-a",
+      "repo-a",
+      "env-a",
+    ),
+    createTestProvisionRequestTarget(
+      "environment",
+      "account-a",
+      "repo-a",
+      "env-b",
+    ),
   ] satisfies ProvisionRequestTarget[]);
 });
 
@@ -342,16 +353,18 @@ it("doesn't enable an environment target for a repo unless all matching repo pat
       )
     )?.to,
   ).toStrictEqual([
-    {
-      platform: "github",
-      type: "environment",
-      target: { account: "account-a", repo: "repo-a", environment: "env-b" },
-    },
-    {
-      platform: "github",
-      type: "environment",
-      target: { account: "account-a", repo: "repo-a", environment: "env-c" },
-    },
+    createTestProvisionRequestTarget(
+      "environment",
+      "account-a",
+      "repo-a",
+      "env-b",
+    ),
+    createTestProvisionRequestTarget(
+      "environment",
+      "account-a",
+      "repo-a",
+      "env-c",
+    ),
   ] satisfies ProvisionRequestTarget[]);
 });
 
@@ -427,30 +440,35 @@ it("combines self-repo environment targets with pattern-matched repo environment
       )
     )?.to,
   ).toStrictEqual([
-    {
-      platform: "github",
-      type: "environment",
-      target: { account: "account-a", repo: "repo-a", environment: "env-b" },
-    },
-    {
-      platform: "github",
-      type: "environment",
-      target: { account: "account-a", repo: "repo-a", environment: "env-c" },
-    },
-    {
-      platform: "github",
-      type: "environment",
-      target: { account: "account-a", repo: "repo-a", environment: "env-a" },
-    },
-    {
-      platform: "github",
-      type: "environment",
-      target: { account: "account-a", repo: "repo-b", environment: "env-b" },
-    },
-    {
-      platform: "github",
-      type: "environment",
-      target: { account: "account-a", repo: "repo-b", environment: "env-c" },
-    },
+    createTestProvisionRequestTarget(
+      "environment",
+      "account-a",
+      "repo-a",
+      "env-b",
+    ),
+    createTestProvisionRequestTarget(
+      "environment",
+      "account-a",
+      "repo-a",
+      "env-c",
+    ),
+    createTestProvisionRequestTarget(
+      "environment",
+      "account-a",
+      "repo-a",
+      "env-a",
+    ),
+    createTestProvisionRequestTarget(
+      "environment",
+      "account-a",
+      "repo-b",
+      "env-b",
+    ),
+    createTestProvisionRequestTarget(
+      "environment",
+      "account-a",
+      "repo-b",
+      "env-c",
+    ),
   ] satisfies ProvisionRequestTarget[]);
 });

@@ -26,6 +26,7 @@ import {
   createTestRepoEnvironment,
 } from "../test/github-api.js";
 import { createTestKeyPair } from "../test/key.js";
+import { createTestProvisionRequestTarget } from "../test/provision-request.js";
 import {
   createTestProvisionAuthTargetResult,
   createTestTokenAuthResult,
@@ -89,16 +90,10 @@ const tokenCreationResultCreatedA: TokenCreationResult = {
   token: { token: "<token-a>", expires_at: "2001-02-03T04:05:06Z" },
 };
 
-const accountACodespacesTarget: ProvisionRequestTarget = {
-  platform: "github",
-  type: "codespaces",
-  target: { account: "account-a" },
-};
-const accountARepoACodespacesTarget: ProvisionRequestTarget = {
-  platform: "github",
-  type: "codespaces",
-  target: { account: "account-a", repo: "repo-a" },
-};
+const accountACodespacesTarget: ProvisionRequestTarget =
+  createTestProvisionRequestTarget("codespaces");
+const accountARepoACodespacesTarget: ProvisionRequestTarget =
+  createTestProvisionRequestTarget("codespaces", "account-a", "repo-a");
 
 let encryptSecret: Mock<EncryptSecret>;
 let provisionSecrets: Provisioner;

@@ -3,6 +3,7 @@ import {
   createTestSecretDec,
   createTestTokenDec,
 } from "../test/declaration.js";
+import { createTestProvisionRequestTarget } from "../test/provision-request.js";
 import { createTestTokenAuthorizer } from "../test/token-authorizer.js";
 import { createTestTokenRequestFactory } from "../test/token-request.js";
 import { createProvisionAuthorizer } from "./provision-authorizer.js";
@@ -45,13 +46,7 @@ it("can list all processed requests and their results", () => {
     tokenDecIsRegistered: true,
     secretDec: createTestSecretDec(),
     name: "SECRET_A",
-    to: [
-      {
-        platform: "github",
-        type: "actions",
-        target: { account: "account-a" },
-      },
-    ],
+    to: [createTestProvisionRequestTarget("actions")],
   };
   const requestB = structuredClone(requestA);
 
