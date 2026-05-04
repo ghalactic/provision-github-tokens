@@ -1,6 +1,2 @@
-admin
-AWS
-GitHub
-IAM
 Provision GitHub Tokens
-TIP
+repo

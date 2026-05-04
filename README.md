@@ -1,7 +1,7 @@
 # Provision GitHub Tokens
 
-A [GitHub Action] that creates and rotates [GitHub tokens] declaratively across
-your repos.
+A [GitHub Action] that creates and rotates [GitHub tokens] that you declare
+across your repositories.
 
 [github action]: https://docs.github.com/actions
 [github tokens]:
@@ -21,24 +21,27 @@ your repos.
 <dl>
   <dt>Provider</dt>
   <dd>
-    The repo that runs this action and defines the central authorization policy.
+    The repo that runs this action. It sets the auth policy.
   </dd>
+
   <dt>Requester</dt>
   <dd>
     A repo that declares what tokens it needs and where to provision them as
     secrets.
   </dd>
+
   <dt>Consumer</dt>
-  <dd>The repo or account that actually receives an issued token.</dd>
+  <dd>The repo or account that receives an issued token.</dd>
+
   <dt>Issuer</dt>
   <dd>
-    A GitHub App installation designated to create installation access tokens on
-    behalf of requesters.
+    A GitHub App installation that creates access tokens for requesters.
   </dd>
+
   <dt>Provisioner</dt>
   <dd>
-    A GitHub App installation designated to create secrets in target accounts
-    and repos.
+    A GitHub App installation that creates secrets in target accounts and
+    repositories.
   </dd>
 </dl>
 
@@ -46,32 +49,35 @@ your repos.
 
 > [!TIP]
 >
-> Don't confuse the term _declaration_ with _definition_. This project uses
-> _declarative_ configuration. If you see the term "definition", it's probably a
-> typo.
+> Don't confuse _declaration_ with _definition_. This project uses _declarative_
+> config. If you see "definition", it's likely a typo.
 
 <dl>
   <dt>Provider config</dt>
   <dd>
-    The YAML config file that lives in the provider repo that defines permission
-    rules and provision rules.
+    A YAML file in the provider repo. It sets permission rules and
+    provision rules.
   </dd>
+
   <dt>Requester config</dt>
   <dd>
-    The YAML config file that lives in each requesting repo that declares what
-    tokens the repo needs and where to provision them.
+    A YAML file in a requesting repo. It declares what tokens that repo
+    needs and where to provision them.
   </dd>
+
   <dt>Token declaration</dt>
   <dd>
-    A reusable declaration in a requester config that specifies an account, a
-    set of repos, and the permissions needed.
+    An entry in a requester config that names an account, repositories, and
+    permissions.
   </dd>
+
   <dt>Token reference</dt>
-  <dd>A string identifier that points to a token declaration.</dd>
+  <dd>An ID that points to a token declaration.</dd>
+
   <dt>Secret declaration</dt>
   <dd>
-    A declaration in a requester config that pairs a token reference with a set
-    of provision targets.
+    An entry in a requester config that links a token reference to provision
+    targets.
   </dd>
 </dl>
 
@@ -80,57 +86,67 @@ your repos.
 <dl>
   <dt>Permission rule</dt>
   <dd>
-    A rule in the provider config that controls what tokens consumers can
+    A rule in the provider config. It controls what tokens consumers can
     request.
   </dd>
+
   <dt>Provision rule</dt>
   <dd>
-    A rule in the provider config that controls where requesters can provision
+    A rule in the provider config. It controls where requesters can provision
     secrets.
   </dd>
+
   <dt>Token authorization</dt>
   <dd>
-    The check that determines whether a requester can obtain a token with
-    specific permissions for specific repos.
+    The check that decides if a requester can get a token with certain
+    permissions and repositories.
   </dd>
+
   <dt>Provision authorization</dt>
   <dd>
-    The check that determines whether a requester can place a secret of a given
-    type at a given target.
+    The check that decides if a requester can place a secret at a given
+    target.
   </dd>
+
   <dt>Permissions boundary</dt>
   <dd>
-    The hard ceiling on token permissions imposed by the issuer installation's
-    own granted permissions.
+    The cap on token permissions. Set by the issuer installation's own grants.
   </dd>
+
   <dt>Access level</dt>
   <dd>
-    The level of access granted by a token for a specific permission, ranked as:
+    The access a token grants for a given permission, ranked as:
     <code>none</code> &lt; <code>read</code> &lt; <code>write</code> &lt;
     <code>admin</code>.
   </dd>
 </dl>
 
+<!-- vale Ghalactic.HeadingGerund = NO -->
+
 ### Provisioning
+
+<!-- vale Ghalactic.HeadingGerund = YES -->
 
 <dl>
   <dt>Token creation result</dt>
   <dd>
-    The outcome of attempting to create an installation access token after
-    authorization.
+    The result of trying to create an access token after auth checks pass.
   </dd>
+
   <dt>Provisioning result</dt>
   <dd>
-    The outcome of attempting to create a secret in a provision target.
+    The result of trying to create a secret in a provision target.
   </dd>
+
   <dt>Provision target</dt>
   <dd>
-    The combination of a secret type and a destination account, repo, or
-    environment where the action places a secret.
+    A secret type plus the account, repo, or environment where the action
+    places that secret.
   </dd>
+
   <dt>Secret type</dt>
   <dd>
-    The kind of GitHub secret location within a provision target:
+    The kind of GitHub secret within a provision target:
     <code>actions</code>, <code>codespaces</code>,
     <code>dependabot</code>, or <code>environment</code>.
   </dd>
