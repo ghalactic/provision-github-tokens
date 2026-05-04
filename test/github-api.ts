@@ -149,12 +149,7 @@ export function createTestInstallationAccounts(
           : repoNameOrSpec;
 
       repoNames.push(repoName);
-
-      if (envNames.length > 0) {
-        envsByRepo.push(
-          envNames.map((name) => ({ ...sampleEnvironment, name })),
-        );
-      }
+      envsByRepo.push(envNames.map((name) => ({ ...sampleEnvironment, name })));
     }
 
     return [

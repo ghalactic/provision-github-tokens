@@ -117,7 +117,7 @@ export function createTestProvisionAuthTargetResult(
     tokenAuthResult,
     isTokenAllowed,
     isProvisionAllowed,
-    isAllowed,
+    isAllowed: isTokenAllowed && isProvisionAllowed,
     ...overrides,
   };
 }
