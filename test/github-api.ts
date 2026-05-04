@@ -170,11 +170,8 @@ const sampleEnvironment = openapiSampler.sample(
   ].get.responses["200"].content["application/json"].schema,
 ) as Environment;
 
-export function createTestRepoEnvironment(name: string): Environment {
-  return {
-    ...sampleEnvironment,
-    name,
-  };
+export function createTestRepoEnvironments(...names: string[]): Environment[] {
+  return names.map((name) => ({ ...sampleEnvironment, name }));
 }
 
 // Helpers

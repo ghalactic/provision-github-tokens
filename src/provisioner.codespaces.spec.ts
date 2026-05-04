@@ -17,7 +17,7 @@ import { createTestSecretDec } from "../test/declaration.js";
 import {
   createTestApps,
   createTestInstallationAccounts,
-  createTestRepoEnvironment,
+  createTestRepoEnvironments,
 } from "../test/github-api.js";
 import { createTestKeyPair } from "../test/key.js";
 import {
@@ -46,7 +46,7 @@ const [[accountA, [repoA]]] = createTestInstallationAccounts([
   "account-a",
   ["repo-a"],
 ]);
-const envA = createTestRepoEnvironment("env-a");
+const [envA] = createTestRepoEnvironments("env-a");
 const [[appA, [appAInstallationA]]] = createTestApps([
   "App A",
   {},
