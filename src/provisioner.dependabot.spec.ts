@@ -19,6 +19,7 @@ import {
   createTestInstallationAccounts,
 } from "../test/github-api.js";
 import { createTestKeyPair } from "../test/key.js";
+import { createTestOctokitFactory } from "../test/octokit-factory.js";
 import {
   createTestProvisionRequest,
   createTestProvisionRequestTarget,
@@ -28,9 +29,7 @@ import {
   createTestTokenAuthResult,
 } from "../test/result.js";
 import { createEncryptSecret, type EncryptSecret } from "./encrypt-secret.js";
-import { createOctokitFactory } from "./octokit.js";
 import type { ProvisionRequestTarget } from "./provision-request.js";
-import { createFindProvisionerOctokit } from "./provisioner-octokit.js";
 import { createProvisioner, type Provisioner } from "./provisioner.js";
 import type { ProvisionAuthResult } from "./type/provision-auth-result.js";
 import type { TokenAuthResult } from "./type/token-auth-result.js";
@@ -88,26 +87,13 @@ beforeEach(() => {
     dependabot: accountARepoADependabotKey,
   });
 
-  const octokitFactory = createOctokitFactory();
-
   const appRegistry = createTestAppRegistry({
     app: appA,
     provisioner: true,
     installations: [[appAInstallationA, [repoA]]],
   });
 
-  const findProvisionerOctokit = createFindProvisionerOctokit(
-    octokitFactory,
-    appRegistry,
-    [
-      {
-        appId: appA.id,
-        privateKey: appA.privateKey,
-        issuer: { enabled: false, roles: [] },
-        provisioner: { enabled: true },
-      },
-    ],
-  );
+  const { findProvisionerOctokit } = createTestOctokitFactory(appRegistry);
 
   encryptSecret = vi.fn(createEncryptSecret(findProvisionerOctokit));
 

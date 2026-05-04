@@ -12,10 +12,9 @@ import {
   createTestApps,
   createTestInstallationAccounts,
 } from "../test/github-api.js";
+import { createTestOctokitFactory } from "../test/octokit-factory.js";
 import { createEnvironmentResolver } from "./environment-resolver.js";
 import { createNamePattern } from "./name-pattern.js";
-import { createOctokitFactory } from "./octokit.js";
-import { createFindProvisionerOctokit } from "./provisioner-octokit.js";
 
 vi.mock("@actions/core");
 vi.mock("@octokit/action");
@@ -47,20 +46,7 @@ it("resolves environment names for a repo", async () => {
 
   __setEnvironments([[repoA, [envA1, envA2, envB1, envB2]]]);
 
-  const octokitFactory = createOctokitFactory();
-
-  const findProvisionerOctokit = createFindProvisionerOctokit(
-    octokitFactory,
-    appRegistry,
-    [
-      {
-        appId: appA.id,
-        privateKey: appA.privateKey,
-        issuer: { enabled: false, roles: [] },
-        provisioner: { enabled: true },
-      },
-    ],
-  );
+  const { findProvisionerOctokit } = createTestOctokitFactory(appRegistry);
 
   const environmentResolver = createEnvironmentResolver(findProvisionerOctokit);
 
@@ -117,20 +103,7 @@ it("throws if no provisioner is found", async () => {
     installations: [[appAInstallationA, [repoA]]],
   });
 
-  const octokitFactory = createOctokitFactory();
-
-  const findProvisionerOctokit = createFindProvisionerOctokit(
-    octokitFactory,
-    appRegistry,
-    [
-      {
-        appId: appA.id,
-        privateKey: appA.privateKey,
-        issuer: { enabled: true, roles: [] },
-        provisioner: { enabled: false },
-      },
-    ],
-  );
+  const { findProvisionerOctokit } = createTestOctokitFactory(appRegistry);
 
   const environmentResolver = createEnvironmentResolver(findProvisionerOctokit);
 
