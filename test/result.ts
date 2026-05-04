@@ -1,3 +1,5 @@
+import { maxAccess } from "../src/access-level.js";
+import type { Permissions } from "../src/type/permissions.js";
 import type {
   ProvisionAuthResult,
   ProvisionAuthTargetResult,
@@ -28,6 +30,12 @@ export function createTestTokenAuthResult(
 ): TokenAuthResult {
   const { type = "ALL_REPOS", isAllowed = true, ...overrides } = result;
 
+  const permissions: Permissions = overrides.request?.tokenDec?.permissions ?? {
+    metadata: "read",
+  };
+  const derivedMaxWant = maxAccess(permissions);
+  const derivedHave = permissions;
+
   if (type === "SELECTED_REPOS") {
     return {
       type: "SELECTED_REPOS",
@@ -35,7 +43,7 @@ export function createTestTokenAuthResult(
         ? { isAllowed: true, isSufficient: true }
         : { isAllowed: false, isSufficient: false }),
       isMissingRole: false,
-      maxWant: "read",
+      maxWant: derivedMaxWant,
       request: {
         consumer: { account: "account-a" },
         repos: ["repo-a"],
@@ -47,7 +55,7 @@ export function createTestTokenAuthResult(
       results: {
         "account-a/repo-a": {
           rules: [],
-          have: { metadata: "read" },
+          have: derivedHave,
           isSufficient: isAllowed,
         },
       },
@@ -59,12 +67,12 @@ export function createTestTokenAuthResult(
   if (type === "NO_REPOS") {
     return {
       type: "NO_REPOS",
-      have: { metadata: "read" },
+      have: derivedHave,
       ...(isAllowed
         ? { isAllowed: true, isSufficient: true }
         : { isAllowed: false, isSufficient: false }),
       isMissingRole: false,
-      maxWant: "read",
+      maxWant: derivedMaxWant,
       request: {
         consumer: { account: "account-a" },
         repos: [],
@@ -80,12 +88,12 @@ export function createTestTokenAuthResult(
 
   return {
     type: "ALL_REPOS",
-    have: { metadata: "read" },
+    have: derivedHave,
     ...(isAllowed
       ? { isAllowed: true, isSufficient: true }
       : { isAllowed: false, isSufficient: false }),
     isMissingRole: false,
-    maxWant: "read",
+    maxWant: derivedMaxWant,
     request: {
       consumer: { account: "account-a" },
       repos: "all",
@@ -131,6 +139,10 @@ export function createTestProvisionAuthResult(
     createTestProvisionAuthTargetResult({ isAllowed }),
   ];
 
+  const isMissingTargets = overrides.isMissingTargets ?? false;
+  const derivedIsAllowed =
+    !isMissingTargets && results.every((r) => r.isAllowed);
+
   return {
     request: {
       requester: { account: "account-a", repo: "repo-a" },
@@ -143,8 +155,8 @@ export function createTestProvisionAuthResult(
       to: results.map((targetResult) => targetResult.target),
     },
     results,
-    isMissingTargets: false,
-    isAllowed,
+    isMissingTargets,
+    isAllowed: derivedIsAllowed,
     ...overrides,
   };
 }
