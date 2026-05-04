@@ -38,11 +38,15 @@ export function createTestTokenAuthResult(
       maxWant: "read",
       request: {
         consumer: { account: "account-a" },
-        repos: "all",
+        repos: ["account-a/repo-a"],
         tokenDec: createTestTokenDec({ permissions: { metadata: "read" } }),
       },
       results: {
-        "repo-a": { rules: [], have: { metadata: "read" }, isSufficient: true },
+        "account-a/repo-a": {
+          rules: [],
+          have: { metadata: "read" },
+          isSufficient: true,
+        },
       },
       isMatched: true,
       ...overrides,
@@ -60,7 +64,7 @@ export function createTestTokenAuthResult(
       maxWant: "read",
       request: {
         consumer: { account: "account-a" },
-        repos: "all",
+        repos: [],
         tokenDec: createTestTokenDec({ permissions: { metadata: "read" } }),
       },
       rules: [],
