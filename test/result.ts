@@ -38,14 +38,14 @@ export function createTestTokenAuthResult(
       maxWant: "read",
       request: {
         consumer: { account: "account-a" },
-        repos: ["account-a/repo-a"],
+        repos: ["repo-a"],
         tokenDec: createTestTokenDec({ permissions: { metadata: "read" } }),
       },
       results: {
         "account-a/repo-a": {
           rules: [],
           have: { metadata: "read" },
-          isSufficient: true,
+          isSufficient: isAllowed,
         },
       },
       isMatched: true,
