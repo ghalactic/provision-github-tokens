@@ -39,7 +39,10 @@ export function createTestTokenAuthResult(
       request: {
         consumer: { account: "account-a" },
         repos: ["repo-a"],
-        tokenDec: createTestTokenDec({ permissions: { metadata: "read" } }),
+        tokenDec: createTestTokenDec({
+          permissions: { metadata: "read" },
+          repos: ["repo-a"],
+        }),
       },
       results: {
         "account-a/repo-a": {
@@ -65,7 +68,10 @@ export function createTestTokenAuthResult(
       request: {
         consumer: { account: "account-a" },
         repos: [],
-        tokenDec: createTestTokenDec({ permissions: { metadata: "read" } }),
+        tokenDec: createTestTokenDec({
+          permissions: { metadata: "read" },
+          repos: [],
+        }),
       },
       rules: [],
       ...overrides,
@@ -95,6 +101,11 @@ export function createTestProvisionAuthTargetResult(
 ): ProvisionAuthTargetResult {
   const { isAllowed = true, ...overrides } = result;
 
+  const tokenAuthResult =
+    overrides.tokenAuthResult ?? createTestTokenAuthResult();
+  const isTokenAllowed = overrides.isTokenAllowed ?? tokenAuthResult.isAllowed;
+  const isProvisionAllowed = overrides.isProvisionAllowed ?? isAllowed;
+
   return {
     target: {
       platform: "github",
@@ -102,10 +113,10 @@ export function createTestProvisionAuthTargetResult(
       target: { account: "account-a" },
     },
     rules: [],
-    have: isAllowed ? "allow" : "deny",
-    tokenAuthResult: createTestTokenAuthResult(),
-    isTokenAllowed: true,
-    isProvisionAllowed: isAllowed,
+    have: isProvisionAllowed ? "allow" : "deny",
+    tokenAuthResult,
+    isTokenAllowed,
+    isProvisionAllowed,
     isAllowed,
     ...overrides,
   };

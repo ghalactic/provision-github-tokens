@@ -159,7 +159,9 @@ export function createTestInstallationAccounts(
 
     return [
       account,
-      repoNames ? createTestInstallationRepos(account, ...repoNames) : [],
+      repoNames.length > 0
+        ? createTestInstallationRepos(account, ...repoNames)
+        : [],
       envsByRepo,
     ];
   });
