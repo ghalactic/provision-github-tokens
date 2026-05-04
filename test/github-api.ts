@@ -114,7 +114,7 @@ export function createTestInstallationAccounts(
 
     return [
       account,
-      createTestInstallationRepos(account, ...(repoNames ?? [])),
+      repoNames ? createTestInstallationRepos(account, ...repoNames) : [],
     ];
   });
 }
