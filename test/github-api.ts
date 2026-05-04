@@ -11,12 +11,36 @@ import type {
 } from "../src/type/github-api.js";
 import type { Permissions } from "../src/type/permissions.js";
 
-// App
-
 const sampleApp = openapiSampler.sample(
   openapi.schemas["api.github.com.deref"].paths["/app"].get.responses["200"]
     .content["application/json"].schema,
 ) as App;
+
+const sampleInstallation = (
+  openapiSampler.sample(
+    openapi.schemas["api.github.com.deref"].paths["/app/installations"].get
+      .responses["200"].content["application/json"].schema,
+  ) as Installation[]
+)[0];
+
+const sampleInstallationToken = openapiSampler.sample(
+  openapi.schemas["api.github.com.deref"].paths[
+    "/app/installations/{installation_id}/access_tokens"
+  ].post.responses["201"].content["application/json"].schema,
+) as InstallationToken;
+
+const sampleInstallationRepo = (
+  openapiSampler.sample(
+    openapi.schemas["api.github.com.deref"].paths["/installation/repositories"]
+      .get.responses["200"].content["application/json"].schema,
+  ) as { repositories: InstallationRepo[] }
+).repositories[0];
+
+const sampleEnvironment = openapiSampler.sample(
+  openapi.schemas["api.github.com.deref"].paths[
+    "/repos/{owner}/{repo}/environments/{environment_name}"
+  ].get.responses["200"].content["application/json"].schema,
+) as Environment;
 
 export type TestApp = App & {
   privateKey: string;
@@ -64,15 +88,6 @@ export function createTestApps(
   });
 }
 
-// Installation
-
-const sampleInstallation = (
-  openapiSampler.sample(
-    openapi.schemas["api.github.com.deref"].paths["/app/installations"].get
-      .responses["200"].content["application/json"].schema,
-  ) as Installation[]
-)[0];
-
 export function createTestInstallation(
   id: number,
   app: App,
@@ -94,60 +109,6 @@ export function createTestInstallation(
   };
 }
 
-// Installation account
-
-export function createTestInstallationAccounts(
-  ...specs: [
-    type: "Organization" | "User",
-    id: number,
-    login: string,
-    repos?: string[],
-  ][]
-): [InstallationAccount, InstallationRepo[]][] {
-  return specs.map(([type, id, login, repoNames]) => {
-    const account: InstallationAccount = {
-      ...(sampleInstallation.account as InstallationAccount),
-      type,
-      login,
-      id,
-    };
-
-    return [
-      account,
-      repoNames ? createTestInstallationRepos(account, ...repoNames) : [],
-    ];
-  });
-}
-
-// Installation repo
-
-const sampleInstallationRepo = (
-  openapiSampler.sample(
-    openapi.schemas["api.github.com.deref"].paths["/installation/repositories"]
-      .get.responses["200"].content["application/json"].schema,
-  ) as { repositories: InstallationRepo[] }
-).repositories[0];
-
-export function createTestInstallationRepos(
-  account: InstallationAccount,
-  ...names: string[]
-): InstallationRepo[] {
-  return names.map((name) => ({
-    ...sampleInstallationRepo,
-    name,
-    full_name: `${account.login}/${name}`,
-    owner: { ...sampleInstallationRepo.owner, login: account.login },
-  }));
-}
-
-// Installation token
-
-const sampleInstallationToken = openapiSampler.sample(
-  openapi.schemas["api.github.com.deref"].paths[
-    "/app/installations/{installation_id}/access_tokens"
-  ].post.responses["201"].content["application/json"].schema,
-) as InstallationToken;
-
 export function createTestInstallationToken(
   key: string,
   repos: "all" | string[],
@@ -162,19 +123,59 @@ export function createTestInstallationToken(
   };
 }
 
-// Repo environment
+export function createTestInstallationAccounts(
+  ...specs: [
+    type: "Organization" | "User",
+    id: number,
+    login: string,
+    repos?: (string | [name: string, environments: string[]])[],
+  ][]
+): [InstallationAccount, InstallationRepo[], Environment[][]][] {
+  return specs.map(([type, id, login, repoSpecs = []]) => {
+    const account: InstallationAccount = {
+      ...(sampleInstallation.account as InstallationAccount),
+      type,
+      login,
+      id,
+    };
 
-const sampleEnvironment = openapiSampler.sample(
-  openapi.schemas["api.github.com.deref"].paths[
-    "/repos/{owner}/{repo}/environments/{environment_name}"
-  ].get.responses["200"].content["application/json"].schema,
-) as Environment;
+    const repoNames: string[] = [];
+    const envsByRepo: Environment[][] = [];
 
-export function createTestRepoEnvironments(...names: string[]): Environment[] {
-  return names.map((name) => ({ ...sampleEnvironment, name }));
+    for (const repoNameOrSpec of repoSpecs) {
+      const [repoName, envNames] =
+        typeof repoNameOrSpec === "string"
+          ? [repoNameOrSpec, []]
+          : repoNameOrSpec;
+
+      repoNames.push(repoName);
+
+      if (envNames.length > 0) {
+        envsByRepo.push(
+          envNames.map((name) => ({ ...sampleEnvironment, name })),
+        );
+      }
+    }
+
+    return [
+      account,
+      repoNames ? createTestInstallationRepos(account, ...repoNames) : [],
+      envsByRepo,
+    ];
+  });
 }
 
-// Helpers
+export function createTestInstallationRepos(
+  account: InstallationAccount,
+  ...names: string[]
+): InstallationRepo[] {
+  return names.map((name) => ({
+    ...sampleInstallationRepo,
+    name,
+    full_name: `${account.login}/${name}`,
+    owner: { ...sampleInstallationRepo.owner, login: account.login },
+  }));
+}
 
 function stableId(...parts: string[]): number {
   const hash = createHash("sha256").update(parts.join("\0")).digest();

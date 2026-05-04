@@ -11,7 +11,6 @@ import { createTestAppRegistry } from "../test/app-registry.js";
 import {
   createTestApps,
   createTestInstallationAccounts,
-  createTestRepoEnvironments,
 } from "../test/github-api.js";
 import { createEnvironmentResolver } from "./environment-resolver.js";
 import { createNamePattern } from "./name-pattern.js";
@@ -27,18 +26,13 @@ beforeEach(() => {
 });
 
 it("resolves environment names for a repo", async () => {
-  const [[accountA, [repoA]]] = createTestInstallationAccounts([
-    "Organization",
-    100,
-    "org-a",
-    ["repo-a"],
-  ]);
-  const [envA1, envA2, envB1, envB2] = createTestRepoEnvironments(
-    "env-a1",
-    "env-a2",
-    "env-b1",
-    "env-b2",
-  );
+  const [[accountA, [repoA], [[envA1, envA2, envB1, envB2]]]] =
+    createTestInstallationAccounts([
+      "Organization",
+      100,
+      "org-a",
+      [["repo-a", ["env-a1", "env-a2", "env-b1", "env-b2"]]],
+    ]);
   const [[appA, [appAInstallationA]]] = createTestApps([
     "App A",
     {},
