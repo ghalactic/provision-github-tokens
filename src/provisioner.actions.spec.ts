@@ -1,4 +1,4 @@
-import { beforeEach, expect, it, vi, type Mock } from "vitest";
+import { beforeEach, expect, it, vi } from "vitest";
 import {
   __getOutput,
   __reset as __resetCore,
@@ -29,64 +29,36 @@ import {
   createTestProvisionAuthTargetResult,
   createTestTokenAuthResult,
 } from "../test/result.js";
-import { createEncryptSecret, type EncryptSecret } from "./encrypt-secret.js";
-import type { ProvisionRequestTarget } from "./provision-request.js";
-import { createProvisioner, type Provisioner } from "./provisioner.js";
-import type { ProvisionAuthResult } from "./type/provision-auth-result.js";
-import type { TokenAuthResult } from "./type/token-auth-result.js";
-import type { TokenCreationResult } from "./type/token-creation-result.js";
+import { createEncryptSecret } from "./encrypt-secret.js";
+import { createProvisioner } from "./provisioner.js";
 
 vi.mock("@actions/core");
 vi.mock("@octokit/action");
 
-const [[accountA, [repoA], [[envA]]]] = createTestInstallationAccounts([
-  "Organization",
-  100,
-  "account-a",
-  [["repo-a", ["env-a"]]],
-]);
-const [[appA, [appAInstallationA]]] = createTestApps([
-  "App A",
-  {},
-  [[accountA, "selected"]],
-]);
-
-const accountAActionsKey = await createTestKeyPair("actions.account-a");
-const accountARepoAActionsKey = await createTestKeyPair(
-  "actions.account-a/repo-a",
-);
-
-const secretDecA = createTestSecretDec({
-  github: { accounts: { "account-a": { actions: true } } },
-});
-
-const tokenAuthResultA = createTestTokenAuthResult();
-
-const tokenCreationResultCreatedA: TokenCreationResult = {
-  type: "CREATED",
-  token: { token: "<token-a>", expires_at: "2001-02-03T04:05:06Z" },
-};
-
-const accountAActionsTarget: ProvisionRequestTarget =
-  createTestProvisionRequestTarget("actions");
-const accountARepoAActionsTarget: ProvisionRequestTarget =
-  createTestProvisionRequestTarget("actions", "account-a", "repo-a");
-
-let encryptSecret: Mock<EncryptSecret>;
-let provisionSecrets: Provisioner;
-
 beforeEach(() => {
   __resetCore();
   __resetOctokit();
+});
+
+it("handles GitHub API errors when provisioning org-level Actions secrets", async () => {
+  const [[accountA, [repoA], [[envA]]]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "account-a",
+    [["repo-a", ["env-a"]]],
+  ]);
+  const [[appA, [appAInstallationA]]] = createTestApps([
+    "App A",
+    {},
+    [[accountA, "selected"]],
+  ]);
+  const accountAActionsKey = await createTestKeyPair("actions.account-a");
 
   __setEnvironments([[repoA, [envA]]]);
-
-  __setOrgKeys("account-a", {
-    actions: accountAActionsKey,
-  });
-  __setRepoKeys("account-a", "repo-a", {
-    actions: accountARepoAActionsKey,
-  });
+  __setOrgKeys("account-a", { actions: accountAActionsKey });
+  __setErrors("actions.createOrUpdateOrgSecret", [
+    new TestRequestError(403, { message: "Resource not accessible" }),
+  ]);
 
   const appRegistry = createTestAppRegistry({
     app: appA,
@@ -95,35 +67,42 @@ beforeEach(() => {
   });
 
   const { findProvisionerOctokit } = createTestOctokitFactory(appRegistry);
-
-  encryptSecret = vi.fn(createEncryptSecret(findProvisionerOctokit));
-
-  provisionSecrets = createProvisioner(findProvisionerOctokit, encryptSecret);
-});
-
-it("handles GitHub API errors when provisioning org-level Actions secrets", async () => {
-  __setErrors("actions.createOrUpdateOrgSecret", [
-    new TestRequestError(403, { message: "Resource not accessible" }),
-  ]);
+  const encryptSecret = vi.fn(createEncryptSecret(findProvisionerOctokit));
   encryptSecret.mockResolvedValue(["XXXX", "XXXX"]);
 
-  const tokenResults = new Map<TokenAuthResult, TokenCreationResult>([
-    [tokenAuthResultA, tokenCreationResultCreatedA],
+  const provisionSecrets = createProvisioner(
+    findProvisionerOctokit,
+    encryptSecret,
+  );
+
+  const tokenAuthResult = createTestTokenAuthResult();
+  const tokenResults = new Map([
+    [
+      tokenAuthResult,
+      {
+        type: "CREATED" as const,
+        token: { token: "<token-a>", expires_at: "2001-02-03T04:05:06Z" },
+      },
+    ],
   ]);
 
-  const allowedResult: ProvisionAuthResult = {
-    request: createTestProvisionRequest({ secretDec: secretDecA }),
-    results: [
-      createTestProvisionAuthTargetResult({
-        target: accountAActionsTarget,
-        tokenAuthResult: tokenAuthResultA,
+  await provisionSecrets(tokenResults, [
+    {
+      request: createTestProvisionRequest({
+        secretDec: createTestSecretDec({
+          github: { accounts: { "account-a": { actions: true } } },
+        }),
       }),
-    ],
-    isMissingTargets: false,
-    isAllowed: true,
-  };
-
-  await provisionSecrets(tokenResults, [allowedResult]);
+      results: [
+        createTestProvisionAuthTargetResult({
+          target: createTestProvisionRequestTarget("actions"),
+          tokenAuthResult,
+        }),
+      ],
+      isMissingTargets: false,
+      isAllowed: true,
+    },
+  ]);
 
   expect(__getOutput()).toMatchInlineSnapshot(`
     "
@@ -140,27 +119,68 @@ it("handles GitHub API errors when provisioning org-level Actions secrets", asyn
 });
 
 it("handles unexpected errors when provisioning org-level Actions secrets", async () => {
+  const [[accountA, [repoA], [[envA]]]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "account-a",
+    [["repo-a", ["env-a"]]],
+  ]);
+  const [[appA, [appAInstallationA]]] = createTestApps([
+    "App A",
+    {},
+    [[accountA, "selected"]],
+  ]);
+  const accountAActionsKey = await createTestKeyPair("actions.account-a");
+
+  __setEnvironments([[repoA, [envA]]]);
+  __setOrgKeys("account-a", { actions: accountAActionsKey });
+
   const error = new Error("<message>");
   error.stack = "Error: <message>\n    at provisioner.ts:1:1";
   __setErrors("actions.createOrUpdateOrgSecret", [error]);
 
-  const tokenResults = new Map<TokenAuthResult, TokenCreationResult>([
-    [tokenAuthResultA, tokenCreationResultCreatedA],
+  const appRegistry = createTestAppRegistry({
+    app: appA,
+    provisioner: true,
+    installations: [[appAInstallationA, [repoA]]],
+  });
+
+  const { findProvisionerOctokit } = createTestOctokitFactory(appRegistry);
+  const encryptSecret = vi.fn(createEncryptSecret(findProvisionerOctokit));
+
+  const provisionSecrets = createProvisioner(
+    findProvisionerOctokit,
+    encryptSecret,
+  );
+
+  const tokenAuthResult = createTestTokenAuthResult();
+  const tokenResults = new Map([
+    [
+      tokenAuthResult,
+      {
+        type: "CREATED" as const,
+        token: { token: "<token-a>", expires_at: "2001-02-03T04:05:06Z" },
+      },
+    ],
   ]);
 
-  const allowedResult: ProvisionAuthResult = {
-    request: createTestProvisionRequest({ secretDec: secretDecA }),
-    results: [
-      createTestProvisionAuthTargetResult({
-        target: accountAActionsTarget,
-        tokenAuthResult: tokenAuthResultA,
+  await provisionSecrets(tokenResults, [
+    {
+      request: createTestProvisionRequest({
+        secretDec: createTestSecretDec({
+          github: { accounts: { "account-a": { actions: true } } },
+        }),
       }),
-    ],
-    isMissingTargets: false,
-    isAllowed: true,
-  };
-
-  await provisionSecrets(tokenResults, [allowedResult]);
+      results: [
+        createTestProvisionAuthTargetResult({
+          target: createTestProvisionRequestTarget("actions"),
+          tokenAuthResult,
+        }),
+      ],
+      isMissingTargets: false,
+      isAllowed: true,
+    },
+  ]);
 
   expect(__getOutput()).toMatchInlineSnapshot(`
     "
@@ -176,23 +196,64 @@ it("handles unexpected errors when provisioning org-level Actions secrets", asyn
 });
 
 it("can provision org-level Actions secrets", async () => {
-  const tokenResults = new Map<TokenAuthResult, TokenCreationResult>([
-    [tokenAuthResultA, tokenCreationResultCreatedA],
+  const [[accountA, [repoA], [[envA]]]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "account-a",
+    [["repo-a", ["env-a"]]],
+  ]);
+  const [[appA, [appAInstallationA]]] = createTestApps([
+    "App A",
+    {},
+    [[accountA, "selected"]],
+  ]);
+  const accountAActionsKey = await createTestKeyPair("actions.account-a");
+
+  __setEnvironments([[repoA, [envA]]]);
+  __setOrgKeys("account-a", { actions: accountAActionsKey });
+
+  const appRegistry = createTestAppRegistry({
+    app: appA,
+    provisioner: true,
+    installations: [[appAInstallationA, [repoA]]],
+  });
+
+  const { findProvisionerOctokit } = createTestOctokitFactory(appRegistry);
+  const encryptSecret = vi.fn(createEncryptSecret(findProvisionerOctokit));
+
+  const provisionSecrets = createProvisioner(
+    findProvisionerOctokit,
+    encryptSecret,
+  );
+
+  const tokenAuthResult = createTestTokenAuthResult();
+  const tokenResults = new Map([
+    [
+      tokenAuthResult,
+      {
+        type: "CREATED" as const,
+        token: { token: "<token-a>", expires_at: "2001-02-03T04:05:06Z" },
+      },
+    ],
   ]);
 
-  const allowedResult: ProvisionAuthResult = {
-    request: createTestProvisionRequest({ secretDec: secretDecA }),
-    results: [
-      createTestProvisionAuthTargetResult({
-        target: accountAActionsTarget,
-        tokenAuthResult: tokenAuthResultA,
+  await provisionSecrets(tokenResults, [
+    {
+      request: createTestProvisionRequest({
+        secretDec: createTestSecretDec({
+          github: { accounts: { "account-a": { actions: true } } },
+        }),
       }),
-    ],
-    isMissingTargets: false,
-    isAllowed: true,
-  };
-
-  await provisionSecrets(tokenResults, [allowedResult]);
+      results: [
+        createTestProvisionAuthTargetResult({
+          target: createTestProvisionRequestTarget("actions"),
+          tokenAuthResult,
+        }),
+      ],
+      isMissingTargets: false,
+      isAllowed: true,
+    },
+  ]);
 
   expect(__getOrgSecrets("account-a")).toEqual({
     actions: { SECRET_A: "<token-a>" },
@@ -211,28 +272,74 @@ it("can provision org-level Actions secrets", async () => {
 });
 
 it("handles GitHub API errors when provisioning repo-level Actions secrets", async () => {
+  const [[accountA, [repoA], [[envA]]]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "account-a",
+    [["repo-a", ["env-a"]]],
+  ]);
+  const [[appA, [appAInstallationA]]] = createTestApps([
+    "App A",
+    {},
+    [[accountA, "selected"]],
+  ]);
+  const accountARepoAActionsKey = await createTestKeyPair(
+    "actions.account-a/repo-a",
+  );
+
+  __setEnvironments([[repoA, [envA]]]);
+  __setRepoKeys("account-a", "repo-a", { actions: accountARepoAActionsKey });
+
+  const appRegistry = createTestAppRegistry({
+    app: appA,
+    provisioner: true,
+    installations: [[appAInstallationA, [repoA]]],
+  });
+
+  const { findProvisionerOctokit } = createTestOctokitFactory(appRegistry);
+  const encryptSecret = vi.fn(createEncryptSecret(findProvisionerOctokit));
   encryptSecret.mockResolvedValue(["XXXX", "XXXX"]);
 
-  const tokenResults = new Map<TokenAuthResult, TokenCreationResult>([
-    [tokenAuthResultA, tokenCreationResultCreatedA],
+  const provisionSecrets = createProvisioner(
+    findProvisionerOctokit,
+    encryptSecret,
+  );
+
+  const tokenAuthResult = createTestTokenAuthResult();
+  const tokenResults = new Map([
+    [
+      tokenAuthResult,
+      {
+        type: "CREATED" as const,
+        token: { token: "<token-a>", expires_at: "2001-02-03T04:05:06Z" },
+      },
+    ],
   ]);
 
-  const allowedResult: ProvisionAuthResult = {
-    request: createTestProvisionRequest({
-      secretDec: secretDecA,
-      to: [accountARepoAActionsTarget],
-    }),
-    results: [
-      createTestProvisionAuthTargetResult({
-        target: accountARepoAActionsTarget,
-        tokenAuthResult: tokenAuthResultA,
+  await provisionSecrets(tokenResults, [
+    {
+      request: createTestProvisionRequest({
+        secretDec: createTestSecretDec({
+          github: { accounts: { "account-a": { actions: true } } },
+        }),
+        to: [
+          createTestProvisionRequestTarget("actions", "account-a", "repo-a"),
+        ],
       }),
-    ],
-    isMissingTargets: false,
-    isAllowed: true,
-  };
-
-  await provisionSecrets(tokenResults, [allowedResult]);
+      results: [
+        createTestProvisionAuthTargetResult({
+          target: createTestProvisionRequestTarget(
+            "actions",
+            "account-a",
+            "repo-a",
+          ),
+          tokenAuthResult,
+        }),
+      ],
+      isMissingTargets: false,
+      isAllowed: true,
+    },
+  ]);
 
   expect(__getOutput()).toMatchInlineSnapshot(`
     "
@@ -247,30 +354,77 @@ it("handles GitHub API errors when provisioning repo-level Actions secrets", asy
 });
 
 it("handles unexpected errors when provisioning repo-level Actions secrets", async () => {
+  const [[accountA, [repoA], [[envA]]]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "account-a",
+    [["repo-a", ["env-a"]]],
+  ]);
+  const [[appA, [appAInstallationA]]] = createTestApps([
+    "App A",
+    {},
+    [[accountA, "selected"]],
+  ]);
+  const accountARepoAActionsKey = await createTestKeyPair(
+    "actions.account-a/repo-a",
+  );
+
+  __setEnvironments([[repoA, [envA]]]);
+  __setRepoKeys("account-a", "repo-a", { actions: accountARepoAActionsKey });
+
   const error = new Error("<message>");
   error.stack = "Error: <message>\n    at provisioner.ts:1:1";
   __setErrors("actions.createOrUpdateRepoSecret", [error]);
 
-  const tokenResults = new Map<TokenAuthResult, TokenCreationResult>([
-    [tokenAuthResultA, tokenCreationResultCreatedA],
+  const appRegistry = createTestAppRegistry({
+    app: appA,
+    provisioner: true,
+    installations: [[appAInstallationA, [repoA]]],
+  });
+
+  const { findProvisionerOctokit } = createTestOctokitFactory(appRegistry);
+  const encryptSecret = vi.fn(createEncryptSecret(findProvisionerOctokit));
+
+  const provisionSecrets = createProvisioner(
+    findProvisionerOctokit,
+    encryptSecret,
+  );
+
+  const tokenAuthResult = createTestTokenAuthResult();
+  const tokenResults = new Map([
+    [
+      tokenAuthResult,
+      {
+        type: "CREATED" as const,
+        token: { token: "<token-a>", expires_at: "2001-02-03T04:05:06Z" },
+      },
+    ],
   ]);
 
-  const allowedResult: ProvisionAuthResult = {
-    request: createTestProvisionRequest({
-      secretDec: secretDecA,
-      to: [accountARepoAActionsTarget],
-    }),
-    results: [
-      createTestProvisionAuthTargetResult({
-        target: accountARepoAActionsTarget,
-        tokenAuthResult: tokenAuthResultA,
+  await provisionSecrets(tokenResults, [
+    {
+      request: createTestProvisionRequest({
+        secretDec: createTestSecretDec({
+          github: { accounts: { "account-a": { actions: true } } },
+        }),
+        to: [
+          createTestProvisionRequestTarget("actions", "account-a", "repo-a"),
+        ],
       }),
-    ],
-    isMissingTargets: false,
-    isAllowed: true,
-  };
-
-  await provisionSecrets(tokenResults, [allowedResult]);
+      results: [
+        createTestProvisionAuthTargetResult({
+          target: createTestProvisionRequestTarget(
+            "actions",
+            "account-a",
+            "repo-a",
+          ),
+          tokenAuthResult,
+        }),
+      ],
+      isMissingTargets: false,
+      isAllowed: true,
+    },
+  ]);
 
   expect(__getOutput()).toMatchInlineSnapshot(`
     "
@@ -286,26 +440,73 @@ it("handles unexpected errors when provisioning repo-level Actions secrets", asy
 });
 
 it("can provision repo-level Actions secrets", async () => {
-  const tokenResults = new Map<TokenAuthResult, TokenCreationResult>([
-    [tokenAuthResultA, tokenCreationResultCreatedA],
+  const [[accountA, [repoA], [[envA]]]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "account-a",
+    [["repo-a", ["env-a"]]],
+  ]);
+  const [[appA, [appAInstallationA]]] = createTestApps([
+    "App A",
+    {},
+    [[accountA, "selected"]],
+  ]);
+  const accountARepoAActionsKey = await createTestKeyPair(
+    "actions.account-a/repo-a",
+  );
+
+  __setEnvironments([[repoA, [envA]]]);
+  __setRepoKeys("account-a", "repo-a", { actions: accountARepoAActionsKey });
+
+  const appRegistry = createTestAppRegistry({
+    app: appA,
+    provisioner: true,
+    installations: [[appAInstallationA, [repoA]]],
+  });
+
+  const { findProvisionerOctokit } = createTestOctokitFactory(appRegistry);
+  const encryptSecret = vi.fn(createEncryptSecret(findProvisionerOctokit));
+
+  const provisionSecrets = createProvisioner(
+    findProvisionerOctokit,
+    encryptSecret,
+  );
+
+  const tokenAuthResult = createTestTokenAuthResult();
+  const tokenResults = new Map([
+    [
+      tokenAuthResult,
+      {
+        type: "CREATED" as const,
+        token: { token: "<token-a>", expires_at: "2001-02-03T04:05:06Z" },
+      },
+    ],
   ]);
 
-  const allowedResult: ProvisionAuthResult = {
-    request: createTestProvisionRequest({
-      secretDec: secretDecA,
-      to: [accountARepoAActionsTarget],
-    }),
-    results: [
-      createTestProvisionAuthTargetResult({
-        target: accountARepoAActionsTarget,
-        tokenAuthResult: tokenAuthResultA,
+  await provisionSecrets(tokenResults, [
+    {
+      request: createTestProvisionRequest({
+        secretDec: createTestSecretDec({
+          github: { accounts: { "account-a": { actions: true } } },
+        }),
+        to: [
+          createTestProvisionRequestTarget("actions", "account-a", "repo-a"),
+        ],
       }),
-    ],
-    isMissingTargets: false,
-    isAllowed: true,
-  };
-
-  await provisionSecrets(tokenResults, [allowedResult]);
+      results: [
+        createTestProvisionAuthTargetResult({
+          target: createTestProvisionRequestTarget(
+            "actions",
+            "account-a",
+            "repo-a",
+          ),
+          tokenAuthResult,
+        }),
+      ],
+      isMissingTargets: false,
+      isAllowed: true,
+    },
+  ]);
 
   expect(__getRepoSecrets("account-a", "repo-a")).toEqual({
     actions: { SECRET_A: "<token-a>" },
