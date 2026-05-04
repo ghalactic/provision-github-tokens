@@ -38,11 +38,9 @@ it("resolves environment names for a repo", async () => {
   const envB1 = createTestRepoEnvironment("env-b1");
   const envB2 = createTestRepoEnvironment("env-b2");
   const [[appA, [appAInstallationA]]] = createTestApps([
-    110,
-    "app-a",
     "App A",
     {},
-    [[111, accountA, "selected"]],
+    [[accountA, "selected"]],
   ]);
 
   const appRegistry = createTestAppRegistry({
@@ -112,11 +110,9 @@ it("throws if no provisioner is found", async () => {
     ["repo-a"],
   ]);
   const [[appA, [appAInstallationA]]] = createTestApps([
-    110,
-    "app-a",
     "App A",
     {},
-    [[111, accountA, "selected"]],
+    [[accountA, "selected"]],
   ]);
 
   const appRegistry = createTestAppRegistry({

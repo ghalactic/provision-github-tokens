@@ -82,13 +82,11 @@ it("supports provisioning to multiple targets", async () => {
       ["Organization", 200, "account-b", ["repo-a"]],
     );
   const [[appA, [appAInstallationA, appAInstallationB]]] = createTestApps([
-    110,
-    "app-a",
     "App A",
     {},
     [
-      [111, accountA, "selected"],
-      [112, accountB, "selected"],
+      [accountA, "selected"],
+      [accountB, "selected"],
     ],
   ]);
 

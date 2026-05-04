@@ -11,12 +11,10 @@ it("doesn't allow registering an installation of an app that isn't registered", 
     100,
     "org-a",
   ]);
-  const [[, [appAInstallationA]]] = createTestApps([
-    110,
-    "app-a",
+  const [[appA, [appAInstallationA]]] = createTestApps([
     "App A",
     {},
-    [[111, accountA, "selected"]],
+    [[accountA, "selected"]],
   ]);
 
   const appRegistry = createAppRegistry();
@@ -26,5 +24,5 @@ it("doesn't allow registering an installation of an app that isn't registered", 
       installation: appAInstallationA,
       repos: [],
     });
-  }).toThrow("App 110 not registered");
+  }).toThrow(`App ${appA.id} not registered`);
 });

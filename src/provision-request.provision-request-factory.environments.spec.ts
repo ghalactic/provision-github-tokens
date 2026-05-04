@@ -136,11 +136,9 @@ it("supports pattern-matched repo environment targets", async () => {
     ["repo-a"],
   ]);
   const [[appA, [appAInstallationA]]] = createTestApps([
-    110,
-    "app-a",
     "App A",
     {},
-    [[111, accountA, "selected"]],
+    [[accountA, "selected"]],
   ]);
 
   const appRegistry = createTestAppRegistry({
@@ -215,11 +213,9 @@ it("doesn't match the same environment twice for pattern-matched repos", async (
     ["repo-a"],
   ]);
   const [[appA, [appAInstallationA]]] = createTestApps([
-    110,
-    "app-a",
     "App A",
     {},
-    [[111, accountA, "selected"]],
+    [[accountA, "selected"]],
   ]);
 
   const appRegistry = createTestAppRegistry({
@@ -284,11 +280,9 @@ it("doesn't enable an environment target for a repo unless all matching repo pat
     ["repo-a"],
   ]);
   const [[appA, [appAInstallationA]]] = createTestApps([
-    110,
-    "app-a",
     "App A",
     {},
-    [[111, accountA, "selected"]],
+    [[accountA, "selected"]],
   ]);
 
   const appRegistry = createTestAppRegistry({
@@ -359,11 +353,9 @@ it("combines self-repo environment targets with pattern-matched repo environment
     ["repo-a", "repo-b"],
   ]);
   const [[appA, [appAInstallationA]]] = createTestApps([
-    110,
-    "app-a",
     "App A",
     {},
-    [[111, accountA, "selected"]],
+    [[accountA, "selected"]],
   ]);
 
   const appRegistry = createTestAppRegistry({

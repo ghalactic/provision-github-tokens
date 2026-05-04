@@ -16,7 +16,7 @@ it("finds provisioners for accounts", () => {
     ["Organization", 200, "org-b"],
   );
   const appA: AppRegistration = {
-    app: createTestApp(110, "app-a", "App A"),
+    app: createTestApp("App A"),
     issuer: { enabled: false, roles: [] },
     provisioner: { enabled: true },
   };
@@ -25,7 +25,7 @@ it("finds provisioners for accounts", () => {
     repos: [],
   };
   const appB: AppRegistration = {
-    app: createTestApp(120, "app-b", "App B"),
+    app: createTestApp("App B"),
     issuer: { enabled: false, roles: [] },
     provisioner: { enabled: true },
   };
@@ -34,7 +34,7 @@ it("finds provisioners for accounts", () => {
     repos: [],
   };
   const appC: AppRegistration = {
-    app: createTestApp(210, "app-c", "App C"),
+    app: createTestApp("App C"),
     issuer: { enabled: false, roles: [] },
     provisioner: { enabled: true },
   };
@@ -64,7 +64,7 @@ it("finds provisioners for repos", () => {
     ["repo-a", "repo-b", "repo-c"],
   ]);
   const appA: AppRegistration = {
-    app: createTestApp(110, "app-a", "App A"),
+    app: createTestApp("App A"),
     issuer: { enabled: false, roles: [] },
     provisioner: { enabled: true },
   };
@@ -73,7 +73,7 @@ it("finds provisioners for repos", () => {
     repos: [repoA],
   };
   const appB: AppRegistration = {
-    app: createTestApp(120, "app-b", "App B"),
+    app: createTestApp("App B"),
     issuer: { enabled: false, roles: [] },
     provisioner: { enabled: true },
   };
@@ -82,7 +82,7 @@ it("finds provisioners for repos", () => {
     repos: [repoB],
   };
   const appC: AppRegistration = {
-    app: createTestApp(130, "app-c", "App C"),
+    app: createTestApp("App C"),
     issuer: { enabled: false, roles: [] },
     provisioner: { enabled: true },
   };
@@ -119,7 +119,7 @@ it("finds provisioners for the correct account when there are multiple installat
     ["Organization", 200, "org-b"],
   );
   const appA: AppRegistration = {
-    app: createTestApp(110, "app-a", "App A"),
+    app: createTestApp("App A"),
     issuer: { enabled: false, roles: [] },
     provisioner: { enabled: true },
   };
@@ -152,7 +152,7 @@ it("doesn't find provisioners for an unknown account", () => {
     "org-a",
   ]);
   const appA: AppRegistration = {
-    app: createTestApp(110, "app-a", "App A"),
+    app: createTestApp("App A"),
     issuer: { enabled: true, roles: ["role-a"] },
     provisioner: { enabled: false },
   };
@@ -177,7 +177,7 @@ it("doesn't find provisioners from non-provisioner apps", () => {
     "org-a",
   ]);
   const appA: AppRegistration = {
-    app: createTestApp(110, "app-a", "App A"),
+    app: createTestApp("App A"),
     issuer: { enabled: true, roles: [] },
     provisioner: { enabled: false },
   };

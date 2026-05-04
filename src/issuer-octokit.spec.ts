@@ -25,11 +25,9 @@ it("can find octokit instances for issuers", () => {
     ["repo-a"],
   ]);
   const [[appA, [appAInstallationA]]] = createTestApps([
-    110,
-    "app-a",
     "App A",
     { contents: "read", metadata: "read" },
-    [[111, accountA]],
+    [[accountA]],
   ]);
   const appRegA: AppRegistration = {
     app: appA,
@@ -83,11 +81,9 @@ it("returns undefined if no matching installation is found", () => {
     ["repo-a"],
   ]);
   const [[appA, [appAInstallationA]]] = createTestApps([
-    110,
-    "app-a",
     "App A",
     { contents: "read", metadata: "read" },
-    [[111, accountA]],
+    [[accountA]],
   ]);
   const appRegA: AppRegistration = {
     app: appA,

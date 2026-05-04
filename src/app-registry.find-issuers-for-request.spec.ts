@@ -17,7 +17,7 @@ it("finds issuers for all repos in an account with one permission", () => {
     "org-a",
   ]);
   const appA: AppRegistration = {
-    app: createTestApp(110, "app-a", "App A", { contents: "write" }),
+    app: createTestApp("App A", { contents: "write" }),
     issuer: { enabled: true, roles: ["role-a"] },
     provisioner: { enabled: false },
   };
@@ -53,7 +53,7 @@ it("finds issuers for one selected repo with one permission", () => {
     ["repo-a"],
   ]);
   const appA: AppRegistration = {
-    app: createTestApp(110, "app-a", "App A", { contents: "write" }),
+    app: createTestApp("App A", { contents: "write" }),
     issuer: { enabled: true, roles: ["role-a"] },
     provisioner: { enabled: false },
   };
@@ -89,7 +89,7 @@ it("finds issuers for multiple selected repos with multiple permissions", () => 
     ["repo-a", "repo-b"],
   ]);
   const appA: AppRegistration = {
-    app: createTestApp(110, "app-a", "App A", {
+    app: createTestApp("App A", {
       contents: "write",
       metadata: "read",
     }),
@@ -127,7 +127,7 @@ it("finds issuers for no repos", () => {
     "org-a",
   ]);
   const appA: AppRegistration = {
-    app: createTestApp(110, "app-a", "App A", { metadata: "read" }),
+    app: createTestApp("App A", { metadata: "read" }),
     issuer: { enabled: true, roles: ["role-a"] },
     provisioner: { enabled: false },
   };
@@ -169,7 +169,7 @@ it.each([
       ["repo-a"],
     ]);
     const appA: AppRegistration = {
-      app: createTestApp(110, "app-a", "App A", { repository_projects: have }),
+      app: createTestApp("App A", { repository_projects: have }),
       issuer: { enabled: true, roles: ["role-a"] },
       provisioner: { enabled: false },
     };
@@ -204,7 +204,7 @@ it("finds issuers for the correct account when there are multiple installations"
     ["Organization", 200, "org-b"],
   );
   const appA: AppRegistration = {
-    app: createTestApp(110, "app-a", "App A", { metadata: "read" }),
+    app: createTestApp("App A", { metadata: "read" }),
     issuer: { enabled: true, roles: [] },
     provisioner: { enabled: false },
   };
@@ -281,7 +281,7 @@ it("finds issuers by role", () => {
     ["Organization", 100, "org-a", ["repo-a", "repo-b", "repo-c", "repo-d"]],
   );
   const appA: AppRegistration = {
-    app: createTestApp(110, "app-a", "App A", { contents: "write" }),
+    app: createTestApp("App A", { contents: "write" }),
     issuer: { enabled: true, roles: [] },
     provisioner: { enabled: false },
   };
@@ -290,7 +290,7 @@ it("finds issuers by role", () => {
     repos: [],
   };
   const appB: AppRegistration = {
-    app: createTestApp(120, "app-b", "App B", { contents: "write" }),
+    app: createTestApp("App B", { contents: "write" }),
     issuer: { enabled: true, roles: ["role-a"] },
     provisioner: { enabled: false },
   };
@@ -299,7 +299,7 @@ it("finds issuers by role", () => {
     repos: [repoA, repoB],
   };
   const appC: AppRegistration = {
-    app: createTestApp(130, "app-c", "App C", { contents: "write" }),
+    app: createTestApp("App C", { contents: "write" }),
     issuer: { enabled: true, roles: ["role-b"] },
     provisioner: { enabled: false },
   };
@@ -308,7 +308,7 @@ it("finds issuers by role", () => {
     repos: [repoA, repoB, repoC],
   };
   const appD: AppRegistration = {
-    app: createTestApp(140, "app-d", "App D", { contents: "write" }),
+    app: createTestApp("App D", { contents: "write" }),
     issuer: { enabled: true, roles: ["role-a", "role-b"] },
     provisioner: { enabled: false },
   };
@@ -401,7 +401,7 @@ it("finds issuers for read access when the role is undefined", () => {
     "org-a",
   ]);
   const appA: AppRegistration = {
-    app: createTestApp(110, "app-a", "App A", { contents: "write" }),
+    app: createTestApp("App A", { contents: "write" }),
     issuer: { enabled: true, roles: [] },
     provisioner: { enabled: false },
   };
@@ -410,7 +410,7 @@ it("finds issuers for read access when the role is undefined", () => {
     repos: [],
   };
   const appB: AppRegistration = {
-    app: createTestApp(120, "app-b", "App B", {
+    app: createTestApp("App B", {
       contents: "write",
       repository_projects: "admin",
     }),
@@ -463,7 +463,7 @@ it("doesn't find issuers for write or admin access when the role is undefined", 
     "org-a",
   ]);
   const appA: AppRegistration = {
-    app: createTestApp(110, "app-a", "App A", {
+    app: createTestApp("App A", {
       contents: "write",
       repository_projects: "admin",
     }),
@@ -515,7 +515,7 @@ it("doesn't find issuers when it can't access all repos in an account", () => {
     ["repo-a"],
   ]);
   const appA: AppRegistration = {
-    app: createTestApp(110, "app-a", "App A", { contents: "write" }),
+    app: createTestApp("App A", { contents: "write" }),
     issuer: { enabled: true, roles: ["role-a"] },
     provisioner: { enabled: false },
   };
@@ -551,7 +551,7 @@ it("doesn't find issuers for an unknown account", () => {
     ["repo-a"],
   ]);
   const appA: AppRegistration = {
-    app: createTestApp(110, "app-a", "App A", { contents: "write" }),
+    app: createTestApp("App A", { contents: "write" }),
     issuer: { enabled: true, roles: ["role-a"] },
     provisioner: { enabled: false },
   };
@@ -587,7 +587,7 @@ it("doesn't find issuers for an unknown repo", () => {
     ["repo-a"],
   ]);
   const appA: AppRegistration = {
-    app: createTestApp(110, "app-a", "App A", { contents: "write" }),
+    app: createTestApp("App A", { contents: "write" }),
     issuer: { enabled: true, roles: ["role-a"] },
     provisioner: { enabled: false },
   };
@@ -623,7 +623,7 @@ it("doesn't find issuers that can't access all requested repos", () => {
     ["repo-a"],
   ]);
   const appA: AppRegistration = {
-    app: createTestApp(110, "app-a", "App A", { contents: "write" }),
+    app: createTestApp("App A", { contents: "write" }),
     issuer: { enabled: true, roles: ["role-a"] },
     provisioner: { enabled: false },
   };
@@ -658,7 +658,7 @@ it("doesn't find issuers that don't have all permissions", () => {
     "org-a",
   ]);
   const appA: AppRegistration = {
-    app: createTestApp(110, "app-a", "App A", { contents: "write" }),
+    app: createTestApp("App A", { contents: "write" }),
     issuer: { enabled: true, roles: ["role-a"] },
     provisioner: { enabled: false },
   };
@@ -699,7 +699,7 @@ it.each([
       "org-a",
     ]);
     const appA: AppRegistration = {
-      app: createTestApp(110, "app-a", "App A", { repository_projects: have }),
+      app: createTestApp("App A", { repository_projects: have }),
       issuer: { enabled: true, roles: ["role-a"] },
       provisioner: { enabled: false },
     };
@@ -735,7 +735,7 @@ it("doesn't find issuers for no permissions", () => {
     "org-a",
   ]);
   const appA: AppRegistration = {
-    app: createTestApp(110, "app-a", "App A"),
+    app: createTestApp("App A"),
     issuer: { enabled: true, roles: ["role-a"] },
     provisioner: { enabled: false },
   };
@@ -770,7 +770,7 @@ it("doesn't find issuers from non-issuer apps", () => {
     "org-a",
   ]);
   const appA: AppRegistration = {
-    app: createTestApp(110, "app-a", "App A", { contents: "write" }),
+    app: createTestApp("App A", { contents: "write" }),
     issuer: { enabled: false, roles: ["role-a"] },
     provisioner: { enabled: true },
   };

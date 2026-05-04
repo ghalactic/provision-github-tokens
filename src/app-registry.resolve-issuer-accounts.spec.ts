@@ -18,7 +18,7 @@ it("resolves a list of account patterns into a list of issuer-accessible account
     ["Organization", 300, "org-c"],
   );
   const appA: AppRegistration = {
-    app: createTestApp(110, "app-a", "App A"),
+    app: createTestApp("App A"),
     issuer: { enabled: true, roles: [] },
     provisioner: { enabled: false },
   };
@@ -66,7 +66,7 @@ it("doesn't resolve accounts accessible only to non-issuer apps", () => {
     ["Organization", 200, "org-b"],
   );
   const appA: AppRegistration = {
-    app: createTestApp(110, "app-a", "App A"),
+    app: createTestApp("App A"),
     issuer: { enabled: false, roles: [] },
     provisioner: { enabled: true },
   };
@@ -75,7 +75,7 @@ it("doesn't resolve accounts accessible only to non-issuer apps", () => {
     repos: [],
   };
   const appB: AppRegistration = {
-    app: createTestApp(120, "app-b", "App B"),
+    app: createTestApp("App B"),
     issuer: { enabled: true, roles: [] },
     provisioner: { enabled: false },
   };

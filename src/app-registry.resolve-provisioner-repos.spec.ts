@@ -18,7 +18,7 @@ it("resolves a list of repo patterns into a list of provisioner-accessible repos
       ["User", 200, "user-b", ["repo-c", "repo-d"]],
     );
   const appA: AppRegistration = {
-    app: createTestApp(110, "app-a", "App A"),
+    app: createTestApp("App A"),
     issuer: { enabled: false, roles: [] },
     provisioner: { enabled: true },
   };
@@ -66,7 +66,7 @@ it("doesn't resolve repos accessible only to non-provisioner apps", () => {
       ["Organization", 200, "org-b", ["repo-b"]],
     );
   const appA: AppRegistration = {
-    app: createTestApp(110, "app-a", "App A"),
+    app: createTestApp("App A"),
     issuer: { enabled: true, roles: [] },
     provisioner: { enabled: false },
   };
@@ -75,7 +75,7 @@ it("doesn't resolve repos accessible only to non-provisioner apps", () => {
     repos: [repoA],
   };
   const appB: AppRegistration = {
-    app: createTestApp(120, "app-b", "App B"),
+    app: createTestApp("App B"),
     issuer: { enabled: false, roles: [] },
     provisioner: { enabled: true },
   };

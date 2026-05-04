@@ -49,11 +49,9 @@ const [[accountA, [repoA]]] = createTestInstallationAccounts([
 ]);
 const envA = createTestRepoEnvironment("env-a");
 const [[appA, [appAInstallationA]]] = createTestApps([
-  110,
-  "app-a",
   "App A",
   {},
-  [[111, accountA, "selected"]],
+  [[accountA, "selected"]],
 ]);
 
 const accountAActionsKey = await createTestKeyPair("actions.account-a");

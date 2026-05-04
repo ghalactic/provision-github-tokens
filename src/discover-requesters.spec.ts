@@ -35,11 +35,9 @@ it("discovers requesters in a single account", async () => {
     ["repo-a", "repo-b", "repo-c"],
   ]);
   const [[appA, [appAInstallationA]]] = createTestApps([
-    110,
-    "app-a",
     "App A",
     {},
-    [[111, accountA, "selected"]],
+    [[accountA, "selected"]],
   ]);
 
   const appRegistry = createTestAppRegistry({
@@ -143,8 +141,8 @@ it("discovers requesters in multiple account", async () => {
     );
   const [[appA, [appAInstallationA]], [appB, [appBInstallationA]]] =
     createTestApps(
-      [110, "app-a", "App A", {}, [[111, accountA, "selected"]]],
-      [210, "app-b", "App B", {}, [[211, accountB, "selected"]]],
+      ["App A", {}, [[accountA, "selected"]]],
+      ["App B", {}, [[accountB, "selected"]]],
     );
 
   const appRegistry = createTestAppRegistry(
@@ -255,8 +253,8 @@ it("only discovers requesters once when multiple providers can access them", asy
   ]);
   const [[appA, [appAInstallationA]], [appB, [appBInstallationA]]] =
     createTestApps(
-      [110, "app-a", "App A", {}, [[111, accountA, "selected"]]],
-      [120, "app-b", "App B", {}, [[121, accountA, "selected"]]],
+      ["App A", {}, [[accountA, "selected"]]],
+      ["App B", {}, [[accountA, "selected"]]],
     );
 
   const appRegistry = createTestAppRegistry(
@@ -370,11 +368,9 @@ it("skips requesters with invalid configuration", async () => {
     ["repo-a", "repo-b", "repo-c"],
   ]);
   const [[appA, [appAInstallationA]]] = createTestApps([
-    110,
-    "app-a",
     "App A",
     {},
-    [[111, orgA, "selected"]],
+    [[orgA, "selected"]],
   ]);
 
   const appRegistry = createTestAppRegistry({

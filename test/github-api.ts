@@ -23,11 +23,12 @@ export type TestApp = App & {
 };
 
 export function createTestApp(
-  id: number,
-  slug: string,
   name: string,
   permissions: Permissions = {},
 ): TestApp {
+  const id = stableId(name);
+  const slug = slugify(name);
+
   return {
     ...sampleApp,
     id,
@@ -40,22 +41,23 @@ export function createTestApp(
 
 export function createTestApps(
   ...specs: [
-    id: number,
-    slug: string,
     name: string,
     permissions?: Permissions,
     installations?: [
-      id: number,
       account: InstallationAccount,
       repoSelection?: "all" | "selected",
     ][],
   ][]
 ): [TestApp, Installation[]][] {
-  return specs.map(([id, slug, name, permissions, installations]) => {
-    const app = createTestApp(id, slug, name, permissions);
-    const insts = (installations ?? []).map(
-      ([instId, account, repoSelection]) =>
-        createTestInstallation(instId, app, account, repoSelection ?? "all"),
+  return specs.map(([name, permissions, installations]) => {
+    const app = createTestApp(name, permissions);
+    const insts = (installations ?? []).map(([account, repoSelection]) =>
+      createTestInstallation(
+        stableId(account.login, name),
+        app,
+        account,
+        repoSelection ?? "all",
+      ),
     );
 
     return [app, insts];
@@ -173,4 +175,16 @@ export function createTestRepoEnvironment(name: string): Environment {
     ...sampleEnvironment,
     name,
   };
+}
+
+// Helpers
+
+function stableId(...parts: string[]): number {
+  const hash = createHash("sha256").update(parts.join("\0")).digest();
+
+  return hash.readUInt32BE(0);
+}
+
+function slugify(name: string): string {
+  return name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
 }

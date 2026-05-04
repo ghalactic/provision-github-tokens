@@ -43,11 +43,9 @@ it("reads comprehensive provider config", async () => {
     ["repo-self"],
   ]);
   const [[appA, [appAInstallationA]]] = createTestApps([
-    110,
-    "app-a",
     "App A",
     {},
-    [[111, accountA, "selected"]],
+    [[accountA, "selected"]],
   ]);
   const appRegistry = createTestAppRegistry({
     app: appA,

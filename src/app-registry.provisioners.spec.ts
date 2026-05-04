@@ -17,7 +17,7 @@ it("has all of the provisioners", () => {
     "org-a",
   ]);
   const appA: AppRegistration = {
-    app: createTestApp(110, "app-a", "App A"),
+    app: createTestApp("App A"),
     issuer: { enabled: false, roles: [] },
     provisioner: { enabled: true },
   };
@@ -26,7 +26,7 @@ it("has all of the provisioners", () => {
     repos: [],
   };
   const appB: AppRegistration = {
-    app: createTestApp(120, "app-b", "App B"),
+    app: createTestApp("App B"),
     issuer: { enabled: true, roles: [] },
     provisioner: { enabled: false },
   };
@@ -35,7 +35,7 @@ it("has all of the provisioners", () => {
     repos: [],
   };
   const appC: AppRegistration = {
-    app: createTestApp(130, "app-c", "App C"),
+    app: createTestApp("App C"),
     issuer: { enabled: true, roles: [] },
     provisioner: { enabled: true },
   };

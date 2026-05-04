@@ -35,11 +35,9 @@ it("discovers installations with access to all repos", async () => {
     ["repo-a", "repo-b"],
   ]);
   const [[appA, [appAInstallationA]]] = createTestApps([
-    110,
-    "app-a",
     "App A",
     { contents: "read" },
-    [[111, orgA]],
+    [[orgA]],
   ]);
 
   __setApps([appA]);
@@ -62,11 +60,11 @@ it("discovers installations with access to all repos", async () => {
   ]);
 
   expect(__getOutput()).toMatchInlineSnapshot(`
-    "::debug::Discovered app "App A" (app-a / 110)
-    ::debug::App 110 is a token issuer with no roles
-    ::debug::Discovered app 110 installation 111 for account org-a
-    ::debug::Installation 111 has permissions {"contents":"read"}
-    ::debug::Installation 111 has access to all repos ["org-a/repo-a","org-a/repo-b"]
+    "::debug::Discovered app "App A" (app-a / 947161494)
+    ::debug::App 947161494 is a token issuer with no roles
+    ::debug::Discovered app 947161494 installation 4101978852 for account org-a
+    ::debug::Installation 4101978852 has permissions {"contents":"read"}
+    ::debug::Installation 4101978852 has access to all repos ["org-a/repo-a","org-a/repo-b"]
     ::debug::Discovered 1 installation of "App A"
     Discovered 1 installation of 1 app
     "
@@ -90,11 +88,9 @@ it("discovers installations with access to selected repos", async () => {
     ["repo-a", "repo-b"],
   ]);
   const [[appA, [appAInstallationA]]] = createTestApps([
-    110,
-    "app-a",
     "App A",
     { contents: "read" },
-    [[111, orgA, "selected"]],
+    [[orgA, "selected"]],
   ]);
 
   __setApps([appA]);
@@ -117,11 +113,11 @@ it("discovers installations with access to selected repos", async () => {
   ]);
 
   expect(__getOutput()).toMatchInlineSnapshot(`
-    "::debug::Discovered app "App A" (app-a / 110)
-    ::debug::App 110 is a token issuer with no roles
-    ::debug::Discovered app 110 installation 111 for account org-a
-    ::debug::Installation 111 has permissions {"contents":"read"}
-    ::debug::Installation 111 has access to selected repos ["org-a/repo-a","org-a/repo-b"]
+    "::debug::Discovered app "App A" (app-a / 947161494)
+    ::debug::App 947161494 is a token issuer with no roles
+    ::debug::Discovered app 947161494 installation 4101978852 for account org-a
+    ::debug::Installation 4101978852 has permissions {"contents":"read"}
+    ::debug::Installation 4101978852 has access to selected repos ["org-a/repo-a","org-a/repo-b"]
     ::debug::Discovered 1 installation of "App A"
     Discovered 1 installation of 1 app
     "
@@ -144,11 +140,9 @@ it("discovers installations with access to no repos", async () => {
     "org-a",
   ]);
   const [[appA, [appAInstallationA]]] = createTestApps([
-    110,
-    "app-a",
     "App A",
     { members: "read" },
-    [[111, orgA, "selected"]],
+    [[orgA, "selected"]],
   ]);
 
   __setApps([appA]);
@@ -171,11 +165,11 @@ it("discovers installations with access to no repos", async () => {
   ]);
 
   expect(__getOutput()).toMatchInlineSnapshot(`
-    "::debug::Discovered app "App A" (app-a / 110)
-    ::debug::App 110 is a token issuer with no roles
-    ::debug::Discovered app 110 installation 111 for account org-a
-    ::debug::Installation 111 has permissions {"members":"read"}
-    ::debug::Installation 111 has access to no repos
+    "::debug::Discovered app "App A" (app-a / 947161494)
+    ::debug::App 947161494 is a token issuer with no roles
+    ::debug::Discovered app 947161494 installation 4101978852 for account org-a
+    ::debug::Installation 4101978852 has permissions {"members":"read"}
+    ::debug::Installation 4101978852 has access to no repos
     ::debug::Discovered 1 installation of "App A"
     Discovered 1 installation of 1 app
     "
@@ -198,13 +192,7 @@ it("discovers installations with no permissions", async () => {
     "org-a",
     ["repo-a", "repo-b"],
   ]);
-  const [[appA, [appAInstallationA]]] = createTestApps([
-    110,
-    "app-a",
-    "App A",
-    {},
-    [[111, orgA]],
-  ]);
+  const [[appA, [appAInstallationA]]] = createTestApps(["App A", {}, [[orgA]]]);
 
   __setApps([appA]);
   __setInstallations([[appAInstallationA, [repoA, repoB]]]);
@@ -226,11 +214,11 @@ it("discovers installations with no permissions", async () => {
   ]);
 
   expect(__getOutput()).toMatchInlineSnapshot(`
-    "::debug::Discovered app "App A" (app-a / 110)
-    ::debug::App 110 is a token issuer with no roles
-    ::debug::Discovered app 110 installation 111 for account org-a
-    ::debug::Installation 111 has no permissions
-    ::debug::Installation 111 has access to all repos ["org-a/repo-a","org-a/repo-b"]
+    "::debug::Discovered app "App A" (app-a / 947161494)
+    ::debug::App 947161494 is a token issuer with no roles
+    ::debug::Discovered app 947161494 installation 4101978852 for account org-a
+    ::debug::Installation 4101978852 has no permissions
+    ::debug::Installation 4101978852 has access to all repos ["org-a/repo-a","org-a/repo-b"]
     ::debug::Discovered 1 installation of "App A"
     Discovered 1 installation of 1 app
     "
@@ -255,8 +243,8 @@ it("discovers installations with roles", async () => {
   ]);
   const [[appA, [appAInstallationA]], [appB, [appBInstallationA]]] =
     createTestApps(
-      [110, "app-a", "App A", { contents: "write" }, [[111, orgA]]],
-      [120, "app-b", "App B", { contents: "write" }, [[121, orgA]]],
+      ["App A", { contents: "write" }, [[orgA]]],
+      ["App B", { contents: "write" }, [[orgA]]],
     );
 
   __setApps([appA, appB]);
@@ -293,17 +281,17 @@ it("discovers installations with roles", async () => {
   ]);
 
   expect(__getOutput()).toMatchInlineSnapshot(`
-    "::debug::Discovered app "App A" (app-a / 110)
-    ::debug::App 110 is a token issuer with roles ["role-a"]
-    ::debug::Discovered app 110 installation 111 for account org-a
-    ::debug::Installation 111 has permissions {"contents":"write"}
-    ::debug::Installation 111 has access to all repos ["org-a/repo-a","org-a/repo-b"]
+    "::debug::Discovered app "App A" (app-a / 947161494)
+    ::debug::App 947161494 is a token issuer with roles ["role-a"]
+    ::debug::Discovered app 947161494 installation 4101978852 for account org-a
+    ::debug::Installation 4101978852 has permissions {"contents":"write"}
+    ::debug::Installation 4101978852 has access to all repos ["org-a/repo-a","org-a/repo-b"]
     ::debug::Discovered 1 installation of "App A"
-    ::debug::Discovered app "App B" (app-b / 120)
-    ::debug::App 120 is a token issuer with roles ["role-b","role-c"]
-    ::debug::Discovered app 120 installation 121 for account org-a
-    ::debug::Installation 121 has permissions {"contents":"write"}
-    ::debug::Installation 121 has access to all repos ["org-a/repo-a","org-a/repo-b"]
+    ::debug::Discovered app "App B" (app-b / 571481606)
+    ::debug::App 571481606 is a token issuer with roles ["role-b","role-c"]
+    ::debug::Discovered app 571481606 installation 3349170939 for account org-a
+    ::debug::Installation 3349170939 has permissions {"contents":"write"}
+    ::debug::Installation 3349170939 has access to all repos ["org-a/repo-a","org-a/repo-b"]
     ::debug::Discovered 1 installation of "App B"
     Discovered 2 installations of 2 apps
     "
@@ -335,13 +323,7 @@ it("discovers provisioner-only installations", async () => {
     "org-a",
     ["repo-a", "repo-b"],
   ]);
-  const [[appA, [appAInstallationA]]] = createTestApps([
-    110,
-    "app-a",
-    "App A",
-    {},
-    [[111, orgA]],
-  ]);
+  const [[appA, [appAInstallationA]]] = createTestApps(["App A", {}, [[orgA]]]);
 
   __setApps([appA]);
   __setInstallations([[appAInstallationA, [repoA, repoB]]]);
@@ -363,11 +345,11 @@ it("discovers provisioner-only installations", async () => {
   ]);
 
   expect(__getOutput()).toMatchInlineSnapshot(`
-    "::debug::Discovered app "App A" (app-a / 110)
-    ::debug::App 110 is a token provisioner
-    ::debug::Discovered app 110 installation 111 for account org-a
-    ::debug::Installation 111 has no permissions
-    ::debug::Installation 111 has access to all repos ["org-a/repo-a","org-a/repo-b"]
+    "::debug::Discovered app "App A" (app-a / 947161494)
+    ::debug::App 947161494 is a token provisioner
+    ::debug::Discovered app 947161494 installation 4101978852 for account org-a
+    ::debug::Installation 4101978852 has no permissions
+    ::debug::Installation 4101978852 has access to all repos ["org-a/repo-a","org-a/repo-b"]
     ::debug::Discovered 1 installation of "App A"
     Discovered 1 installation of 1 app
     "
@@ -389,14 +371,9 @@ it("discovers multiple installations of an app", async () => {
     ["Organization", 2000, "org-b", ["repo-b"]],
   );
   const [[appA, [appAInstallationA, appAInstallationB]]] = createTestApps([
-    100,
-    "app-a",
     "App A",
     { contents: "read" },
-    [
-      [101, orgA],
-      [102, orgB],
-    ],
+    [[orgA], [orgB]],
   ]);
 
   __setApps([appA]);
@@ -422,14 +399,14 @@ it("discovers multiple installations of an app", async () => {
   ]);
 
   expect(__getOutput()).toMatchInlineSnapshot(`
-    "::debug::Discovered app "App A" (app-a / 100)
-    ::debug::App 100 is a token issuer with no roles
-    ::debug::Discovered app 100 installation 101 for account org-a
-    ::debug::Installation 101 has permissions {"contents":"read"}
-    ::debug::Installation 101 has access to all repos ["org-a/repo-a"]
-    ::debug::Discovered app 100 installation 102 for account org-b
-    ::debug::Installation 102 has permissions {"contents":"read"}
-    ::debug::Installation 102 has access to all repos ["org-b/repo-b"]
+    "::debug::Discovered app "App A" (app-a / 947161494)
+    ::debug::App 947161494 is a token issuer with no roles
+    ::debug::Discovered app 947161494 installation 4101978852 for account org-a
+    ::debug::Installation 4101978852 has permissions {"contents":"read"}
+    ::debug::Installation 4101978852 has access to all repos ["org-a/repo-a"]
+    ::debug::Discovered app 947161494 installation 2178626359 for account org-b
+    ::debug::Installation 2178626359 has permissions {"contents":"read"}
+    ::debug::Installation 2178626359 has access to all repos ["org-b/repo-b"]
     ::debug::Discovered 2 installations of "App A"
     Discovered 2 installations of 1 app
     "
@@ -458,8 +435,8 @@ it("discovers multiple apps", async () => {
   ]);
   const [[appA, [appAInstallationA]], [appB, [appBInstallationA]]] =
     createTestApps(
-      [110, "app-a", "App A", { contents: "read" }, [[111, orgA]]],
-      [120, "app-b", "App B", { actions: "read" }, [[121, orgA]]],
+      ["App A", { contents: "read" }, [[orgA]]],
+      ["App B", { actions: "read" }, [[orgA]]],
     );
 
   __setApps([appA, appB]);
@@ -496,19 +473,19 @@ it("discovers multiple apps", async () => {
   ]);
 
   expect(__getOutput()).toMatchInlineSnapshot(`
-    "::debug::Discovered app "App A" (app-a / 110)
-    ::debug::App 110 is a token issuer with no roles
-    ::debug::App 110 is a token provisioner
-    ::debug::Discovered app 110 installation 111 for account org-a
-    ::debug::Installation 111 has permissions {"contents":"read"}
-    ::debug::Installation 111 has access to all repos ["org-a/repo-a","org-a/repo-b"]
+    "::debug::Discovered app "App A" (app-a / 947161494)
+    ::debug::App 947161494 is a token issuer with no roles
+    ::debug::App 947161494 is a token provisioner
+    ::debug::Discovered app 947161494 installation 4101978852 for account org-a
+    ::debug::Installation 4101978852 has permissions {"contents":"read"}
+    ::debug::Installation 4101978852 has access to all repos ["org-a/repo-a","org-a/repo-b"]
     ::debug::Discovered 1 installation of "App A"
-    ::debug::Discovered app "App B" (app-b / 120)
-    ::debug::App 120 is a token issuer with no roles
-    ::debug::App 120 is a token provisioner
-    ::debug::Discovered app 120 installation 121 for account org-a
-    ::debug::Installation 121 has permissions {"actions":"read"}
-    ::debug::Installation 121 has access to all repos ["org-a/repo-a","org-a/repo-b"]
+    ::debug::Discovered app "App B" (app-b / 571481606)
+    ::debug::App 571481606 is a token issuer with no roles
+    ::debug::App 571481606 is a token provisioner
+    ::debug::Discovered app 571481606 installation 3349170939 for account org-a
+    ::debug::Installation 3349170939 has permissions {"actions":"read"}
+    ::debug::Installation 3349170939 has access to all repos ["org-a/repo-a","org-a/repo-b"]
     ::debug::Discovered 1 installation of "App B"
     Discovered 2 installations of 2 apps
     "
@@ -542,8 +519,8 @@ it("skips apps with incorrect credentials", async () => {
   ]);
   const [[appA, [appAInstallationA]], [appB, [appBInstallationA]]] =
     createTestApps(
-      [110, "app-a", "App A", { contents: "read" }, [[101, orgA]]],
-      [120, "app-b", "App B", { contents: "read" }, [[102, orgA]]],
+      ["App A", { contents: "read" }, [[orgA]]],
+      ["App B", { contents: "read" }, [[orgA]]],
     );
 
   __setApps([appA, appB]);
@@ -580,13 +557,13 @@ it("skips apps with incorrect credentials", async () => {
   ]);
 
   expect(__getOutput()).toMatchInlineSnapshot(`
-    "::debug::App 110 has incorrect credentials - skipping
+    "::debug::App 947161494 has incorrect credentials - skipping
     ::warning::App at index 0 has incorrect credentials - skipping
-    ::debug::Discovered app "App B" (app-b / 120)
-    ::debug::App 120 is a token issuer with no roles
-    ::debug::Discovered app 120 installation 102 for account org-a
-    ::debug::Installation 102 has permissions {"contents":"read"}
-    ::debug::Installation 102 has access to all repos ["org-a/repo-a","org-a/repo-b"]
+    ::debug::Discovered app "App B" (app-b / 571481606)
+    ::debug::App 571481606 is a token issuer with no roles
+    ::debug::Discovered app 571481606 installation 3349170939 for account org-a
+    ::debug::Installation 3349170939 has permissions {"contents":"read"}
+    ::debug::Installation 3349170939 has access to all repos ["org-a/repo-a","org-a/repo-b"]
     ::debug::Discovered 1 installation of "App B"
     Discovered 1 installation of 2 apps
     "
@@ -610,13 +587,11 @@ it("skips non-existent apps", async () => {
     "org-a",
     ["repo-a", "repo-b"],
   ]);
-  const appX = createTestApp(999, "app-x", "App X");
+  const appX = createTestApp("App X");
   const [[appA, [appAInstallationA]]] = createTestApps([
-    110,
-    "app-a",
     "App A",
     { contents: "read" },
-    [[101, orgA]],
+    [[orgA]],
   ]);
 
   __setApps([appA]);
@@ -650,13 +625,13 @@ it("skips non-existent apps", async () => {
   ]);
 
   expect(__getOutput()).toMatchInlineSnapshot(`
-    "::debug::App 999 not found - skipping
+    "::debug::App 804008253 not found - skipping
     ::warning::App at index 0 not found - skipping
-    ::debug::Discovered app "App A" (app-a / 110)
-    ::debug::App 110 is a token issuer with no roles
-    ::debug::Discovered app 110 installation 101 for account org-a
-    ::debug::Installation 101 has permissions {"contents":"read"}
-    ::debug::Installation 101 has access to all repos ["org-a/repo-a","org-a/repo-b"]
+    ::debug::Discovered app "App A" (app-a / 947161494)
+    ::debug::App 947161494 is a token issuer with no roles
+    ::debug::Discovered app 947161494 installation 4101978852 for account org-a
+    ::debug::Installation 4101978852 has permissions {"contents":"read"}
+    ::debug::Installation 4101978852 has access to all repos ["org-a/repo-a","org-a/repo-b"]
     ::debug::Discovered 1 installation of "App A"
     Discovered 1 installation of 2 apps
     "
@@ -685,9 +660,9 @@ it("reports unexpected HTTP statuses", async () => {
     [appB, [appBInstallationA]],
     [appC, [appCInstallationA]],
   ] = createTestApps(
-    [110, "app-a", "App A", { contents: "read" }, [[111, orgA]]],
-    [120, "app-b", "App B", { contents: "read" }, [[121, orgA]]],
-    [130, "app-c", "App C", { actions: "read" }, [[131, orgA]]],
+    ["App A", { contents: "read" }, [[orgA]]],
+    ["App B", { contents: "read" }, [[orgA]]],
+    ["App C", { actions: "read" }, [[orgA]]],
   );
 
   __setApps([appA, appB, appC]);
@@ -742,19 +717,19 @@ it("reports unexpected HTTP statuses", async () => {
   ]);
 
   expect(__getOutput()).toMatchInlineSnapshot(`
-    "::debug::Discovered app "App A" (app-a / 110)
-    ::debug::App 110 is a token issuer with no roles
-    ::debug::Discovered app 110 installation 111 for account org-a
-    ::debug::Installation 111 has permissions {"contents":"read"}
-    ::debug::Installation 111 has access to all repos ["org-a/repo-a","org-a/repo-b"]
+    "::debug::Discovered app "App A" (app-a / 947161494)
+    ::debug::App 947161494 is a token issuer with no roles
+    ::debug::Discovered app 947161494 installation 4101978852 for account org-a
+    ::debug::Installation 4101978852 has permissions {"contents":"read"}
+    ::debug::Installation 4101978852 has access to all repos ["org-a/repo-a","org-a/repo-b"]
     ::debug::Discovered 1 installation of "App A"
-    ::debug::Failed to discover app 120: Unexpected HTTP status 999 from GitHub API: <ERROR>
+    ::debug::Failed to discover app 571481606: Unexpected HTTP status 999 from GitHub API: <ERROR>
     ::error::Failed to discover app at index 2
-    ::debug::Discovered app "App C" (app-c / 130)
-    ::debug::App 130 is a token issuer with no roles
-    ::debug::Discovered app 130 installation 131 for account org-a
-    ::debug::Installation 131 has permissions {"actions":"read"}
-    ::debug::Installation 131 has access to all repos ["org-a/repo-a","org-a/repo-b"]
+    ::debug::Discovered app "App C" (app-c / 2072240708)
+    ::debug::App 2072240708 is a token issuer with no roles
+    ::debug::Discovered app 2072240708 installation 3463932654 for account org-a
+    ::debug::Installation 3463932654 has permissions {"actions":"read"}
+    ::debug::Installation 3463932654 has access to all repos ["org-a/repo-a","org-a/repo-b"]
     ::debug::Discovered 1 installation of "App C"
     Discovered 2 installations of 2 apps
     "
@@ -792,9 +767,9 @@ it("skips apps when discovery throws", async () => {
     [appB, [appBInstallationA]],
     [appC, [appCInstallationA]],
   ] = createTestApps(
-    [110, "app-a", "App A", { contents: "read" }, [[111, orgA]]],
-    [120, "app-b", "App B", { contents: "read" }, [[121, orgA]]],
-    [130, "app-c", "App C", { actions: "read" }, [[131, orgA]]],
+    ["App A", { contents: "read" }, [[orgA]]],
+    ["App B", { contents: "read" }, [[orgA]]],
+    ["App C", { actions: "read" }, [[orgA]]],
   );
 
   __setApps([appA, appB, appC]);
@@ -844,19 +819,19 @@ it("skips apps when discovery throws", async () => {
   ]);
 
   expect(__getOutput()).toMatchInlineSnapshot(`
-    "::debug::Discovered app "App A" (app-a / 110)
-    ::debug::App 110 is a token issuer with no roles
-    ::debug::Discovered app 110 installation 111 for account org-a
-    ::debug::Installation 111 has permissions {"contents":"read"}
-    ::debug::Installation 111 has access to all repos ["org-a/repo-a","org-a/repo-b"]
+    "::debug::Discovered app "App A" (app-a / 947161494)
+    ::debug::App 947161494 is a token issuer with no roles
+    ::debug::Discovered app 947161494 installation 4101978852 for account org-a
+    ::debug::Installation 4101978852 has permissions {"contents":"read"}
+    ::debug::Installation 4101978852 has access to all repos ["org-a/repo-a","org-a/repo-b"]
     ::debug::Discovered 1 installation of "App A"
-    ::debug::Failed to discover app 120: <ERROR>
+    ::debug::Failed to discover app 571481606: <ERROR>
     ::error::Failed to discover app at index 2
-    ::debug::Discovered app "App C" (app-c / 130)
-    ::debug::App 130 is a token issuer with no roles
-    ::debug::Discovered app 130 installation 131 for account org-a
-    ::debug::Installation 131 has permissions {"actions":"read"}
-    ::debug::Installation 131 has access to all repos ["org-a/repo-a","org-a/repo-b"]
+    ::debug::Discovered app "App C" (app-c / 2072240708)
+    ::debug::App 2072240708 is a token issuer with no roles
+    ::debug::Discovered app 2072240708 installation 3463932654 for account org-a
+    ::debug::Installation 3463932654 has permissions {"actions":"read"}
+    ::debug::Installation 3463932654 has access to all repos ["org-a/repo-a","org-a/repo-b"]
     ::debug::Discovered 1 installation of "App C"
     Discovered 2 installations of 2 apps
     "
@@ -891,14 +866,12 @@ it("skips installations when discovery throws", async () => {
     );
   const [[appA, [appAInstallationA, appAInstallationB, appAInstallationC]]] =
     createTestApps([
-      110,
-      "app-a",
       "App A",
       { contents: "read" },
       [
-        [111, orgA, "selected"],
-        [112, orgB, "selected"],
-        [113, orgC, "selected"],
+        [orgA, "selected"],
+        [orgB, "selected"],
+        [orgC, "selected"],
       ],
     ]);
 
@@ -930,16 +903,16 @@ it("skips installations when discovery throws", async () => {
   ]);
 
   expect(__getOutput()).toMatchInlineSnapshot(`
-    "::debug::Discovered app "App A" (app-a / 110)
-    ::debug::App 110 is a token issuer with no roles
-    ::debug::Discovered app 110 installation 111 for account org-a
-    ::debug::Installation 111 has permissions {"contents":"read"}
-    ::debug::Installation 111 has access to selected repos ["org-a/repo-a"]
-    ::debug::Failed to discover installation 112 for app 110: <ERROR>
+    "::debug::Discovered app "App A" (app-a / 947161494)
+    ::debug::App 947161494 is a token issuer with no roles
+    ::debug::Discovered app 947161494 installation 4101978852 for account org-a
+    ::debug::Installation 4101978852 has permissions {"contents":"read"}
+    ::debug::Installation 4101978852 has access to selected repos ["org-a/repo-a"]
+    ::debug::Failed to discover installation 2178626359 for app 947161494: <ERROR>
     ::error::Failed to discover installation for app at index 0
-    ::debug::Discovered app 110 installation 113 for account org-c
-    ::debug::Installation 113 has permissions {"contents":"read"}
-    ::debug::Installation 113 has access to selected repos ["org-c/repo-c"]
+    ::debug::Discovered app 947161494 installation 1647940866 for account org-c
+    ::debug::Installation 1647940866 has permissions {"contents":"read"}
+    ::debug::Installation 1647940866 has access to selected repos ["org-c/repo-c"]
     ::debug::Discovered 2 installations of "App A"
     ::debug::Failed to discover 1 installation of "App A"
     Discovered 2 installations of 1 app
@@ -973,9 +946,9 @@ it("skips apps when they're fully disabled", async () => {
     [appB, [appBInstallationA]],
     [appC, [appCInstallationA]],
   ] = createTestApps(
-    [110, "app-a", "App A", { contents: "read" }, [[111, orgA]]],
-    [120, "app-b", "App B", { contents: "read" }, [[121, orgA]]],
-    [130, "app-c", "App C", { actions: "read" }, [[131, orgA]]],
+    ["App A", { contents: "read" }, [[orgA]]],
+    ["App B", { contents: "read" }, [[orgA]]],
+    ["App C", { actions: "read" }, [[orgA]]],
   );
 
   __setApps([appA, appB, appC]);
@@ -1024,18 +997,18 @@ it("skips apps when they're fully disabled", async () => {
   ]);
 
   expect(__getOutput()).toMatchInlineSnapshot(`
-    "::debug::Discovered app "App A" (app-a / 110)
-    ::debug::App 110 is a token issuer with no roles
-    ::debug::Discovered app 110 installation 111 for account org-a
-    ::debug::Installation 111 has permissions {"contents":"read"}
-    ::debug::Installation 111 has access to all repos ["org-a/repo-a","org-a/repo-b"]
+    "::debug::Discovered app "App A" (app-a / 947161494)
+    ::debug::App 947161494 is a token issuer with no roles
+    ::debug::Discovered app 947161494 installation 4101978852 for account org-a
+    ::debug::Installation 4101978852 has permissions {"contents":"read"}
+    ::debug::Installation 4101978852 has access to all repos ["org-a/repo-a","org-a/repo-b"]
     ::debug::Discovered 1 installation of "App A"
-    ::debug::Skipping discovery of disabled app 120
-    ::debug::Discovered app "App C" (app-c / 130)
-    ::debug::App 130 is a token issuer with no roles
-    ::debug::Discovered app 130 installation 131 for account org-a
-    ::debug::Installation 131 has permissions {"actions":"read"}
-    ::debug::Installation 131 has access to all repos ["org-a/repo-a","org-a/repo-b"]
+    ::debug::Skipping discovery of disabled app 571481606
+    ::debug::Discovered app "App C" (app-c / 2072240708)
+    ::debug::App 2072240708 is a token issuer with no roles
+    ::debug::Discovered app 2072240708 installation 3463932654 for account org-a
+    ::debug::Installation 3463932654 has permissions {"actions":"read"}
+    ::debug::Installation 3463932654 has access to all repos ["org-a/repo-a","org-a/repo-b"]
     ::debug::Discovered 1 installation of "App C"
     Discovered 2 installations of 3 apps
     "

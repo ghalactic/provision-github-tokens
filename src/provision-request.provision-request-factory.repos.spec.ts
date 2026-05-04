@@ -98,11 +98,9 @@ it("supports pattern-matched repo targets", async () => {
     ["repo-a-1", "repo-a-2", "repo-b"],
   ]);
   const [[appA, [appAInstallationA]]] = createTestApps([
-    110,
-    "app-a",
     "App A",
     {},
-    [[111, accountA, "selected"]],
+    [[accountA, "selected"]],
   ]);
 
   const appRegistry = createTestAppRegistry({
@@ -182,11 +180,9 @@ it("doesn't match the same repo twice", async () => {
     ["repo-a", "repo-b"],
   ]);
   const [[appA, [appAInstallationA]]] = createTestApps([
-    110,
-    "app-a",
     "App A",
     {},
-    [[111, accountA, "selected"]],
+    [[accountA, "selected"]],
   ]);
 
   const appRegistry = createTestAppRegistry({
@@ -239,11 +235,9 @@ it("doesn't enable a target for a repo if any matching patterns disable the targ
     ["repo-a", "repo-b"],
   ]);
   const [[appA, [appAInstallationA]]] = createTestApps([
-    110,
-    "app-a",
     "App A",
     {},
-    [[111, accountA, "selected"]],
+    [[accountA, "selected"]],
   ]);
 
   const appRegistry = createTestAppRegistry({
@@ -296,11 +290,9 @@ it("allows self-repo targets to override pattern-matched repo targets", async ()
     ["repo-a", "repo-b"],
   ]);
   const [[appA, [appAInstallationA]]] = createTestApps([
-    110,
-    "app-a",
     "App A",
     {},
-    [[111, accountA, "selected"]],
+    [[accountA, "selected"]],
   ]);
 
   const appRegistry = createTestAppRegistry({

@@ -51,11 +51,9 @@ it("creates read-only tokens", async () => {
     ["repo-a"],
   ]);
   const [[appA, [appAInstallationA]]] = createTestApps([
-    110,
-    "app-a",
     "App A",
     { metadata: "read" },
-    [[111, accountA]],
+    [[accountA]],
   ]);
   const appRegistry = createTestAppRegistry({
     app: appA,
@@ -65,7 +63,7 @@ it("creates read-only tokens", async () => {
 
   const { findIssuerOctokit } = createTestOctokitFactory(appRegistry);
 
-  __addInstallationToken(111, "all", { metadata: "read" });
+  __addInstallationToken(appAInstallationA.id, "all", { metadata: "read" });
   const createTokens = createTokenFactory(findIssuerOctokit);
 
   const createdResult = createTestTokenAuthResult({
@@ -100,11 +98,9 @@ it("creates write tokens", async () => {
     ["repo-a"],
   ]);
   const [[appA, [appAInstallationA]]] = createTestApps([
-    110,
-    "app-a",
     "App A",
     { contents: "write" },
-    [[111, accountA]],
+    [[accountA]],
   ]);
   const appRegistry = createTestAppRegistry({
     app: appA,
@@ -114,7 +110,7 @@ it("creates write tokens", async () => {
 
   const { findIssuerOctokit } = createTestOctokitFactory(appRegistry);
 
-  __addInstallationToken(111, "all", { contents: "write" });
+  __addInstallationToken(appAInstallationA.id, "all", { contents: "write" });
 
   const createTokens = createTokenFactory(findIssuerOctokit);
 
@@ -155,11 +151,9 @@ it("creates admin tokens", async () => {
     ["repo-a"],
   ]);
   const [[appA, [appAInstallationA]]] = createTestApps([
-    110,
-    "app-a",
     "App A",
     { organization_administration: "admin", metadata: "read" },
-    [[111, accountA]],
+    [[accountA]],
   ]);
   const appRegistry = createTestAppRegistry({
     app: appA,
@@ -169,7 +163,7 @@ it("creates admin tokens", async () => {
 
   const { findIssuerOctokit } = createTestOctokitFactory(appRegistry);
 
-  __addInstallationToken(111, "all", {
+  __addInstallationToken(appAInstallationA.id, "all", {
     organization_administration: "admin",
     metadata: "read",
   });
@@ -213,11 +207,9 @@ it("creates account-only tokens", async () => {
     ["repo-a"],
   ]);
   const [[appA, [appAInstallationA]]] = createTestApps([
-    110,
-    "app-a",
     "App A",
     { organization_administration: "admin" },
-    [[111, accountA]],
+    [[accountA]],
   ]);
   const appRegistry = createTestAppRegistry({
     app: appA,
@@ -227,7 +219,9 @@ it("creates account-only tokens", async () => {
 
   const { findIssuerOctokit } = createTestOctokitFactory(appRegistry);
 
-  __addInstallationToken(111, [], { organization_administration: "admin" });
+  __addInstallationToken(appAInstallationA.id, [], {
+    organization_administration: "admin",
+  });
   const createTokens = createTokenFactory(findIssuerOctokit);
 
   const authResult = createTestTokenAuthResult({
@@ -269,11 +263,9 @@ it("creates all-repos tokens", async () => {
     ["repo-a", "repo-b"],
   ]);
   const [[appA, [appAInstallationA]]] = createTestApps([
-    110,
-    "app-a",
     "App A",
     { metadata: "read" },
-    [[111, accountA]],
+    [[accountA]],
   ]);
   const appRegistry = createTestAppRegistry({
     app: appA,
@@ -283,7 +275,7 @@ it("creates all-repos tokens", async () => {
 
   const { findIssuerOctokit } = createTestOctokitFactory(appRegistry);
 
-  __addInstallationToken(111, "all", { metadata: "read" });
+  __addInstallationToken(appAInstallationA.id, "all", { metadata: "read" });
 
   const createTokens = createTokenFactory(findIssuerOctokit);
 
@@ -319,11 +311,9 @@ it("creates selected-repos tokens", async () => {
     ["repo-a", "repo-b"],
   ]);
   const [[appA, [appAInstallationA]]] = createTestApps([
-    110,
-    "app-a",
     "App A",
     { metadata: "read" },
-    [[111, accountA]],
+    [[accountA]],
   ]);
   const appRegistry = createTestAppRegistry({
     app: appA,
@@ -333,7 +323,9 @@ it("creates selected-repos tokens", async () => {
 
   const { findIssuerOctokit } = createTestOctokitFactory(appRegistry);
 
-  __addInstallationToken(111, ["repo-a", "repo-b"], { metadata: "read" });
+  __addInstallationToken(appAInstallationA.id, ["repo-a", "repo-b"], {
+    metadata: "read",
+  });
 
   const createTokens = createTokenFactory(findIssuerOctokit);
 
@@ -379,11 +371,9 @@ it('ignores permissions with "none" access level', async () => {
     ["repo-a"],
   ]);
   const [[appA, [appAInstallationA]]] = createTestApps([
-    110,
-    "app-a",
     "App A",
     { metadata: "read" },
-    [[111, accountA]],
+    [[accountA]],
   ]);
   const appRegistry = createTestAppRegistry({
     app: appA,
@@ -393,7 +383,10 @@ it('ignores permissions with "none" access level', async () => {
 
   const { findIssuerOctokit } = createTestOctokitFactory(appRegistry);
 
-  __addInstallationToken(111, "all", { contents: "none", metadata: "read" });
+  __addInstallationToken(appAInstallationA.id, "all", {
+    contents: "none",
+    metadata: "read",
+  });
   const createTokens = createTokenFactory(findIssuerOctokit);
 
   const authResult = createTestTokenAuthResult({
@@ -430,11 +423,9 @@ it("reuses one token for identical requests", async () => {
     ["repo-a"],
   ]);
   const [[appA, [appAInstallationA]]] = createTestApps([
-    110,
-    "app-a",
     "App A",
     { metadata: "read" },
-    [[111, accountA]],
+    [[accountA]],
   ]);
   const appRegistry = createTestAppRegistry({
     app: appA,
@@ -444,7 +435,7 @@ it("reuses one token for identical requests", async () => {
 
   const { findIssuerOctokit } = createTestOctokitFactory(appRegistry);
 
-  __addInstallationToken(111, "all", { metadata: "read" });
+  __addInstallationToken(appAInstallationA.id, "all", { metadata: "read" });
 
   const createTokens = createTokenFactory(findIssuerOctokit);
 
@@ -544,11 +535,9 @@ it("reuses the same failure outcome for identical requests", async () => {
     ["repo-a"],
   ]);
   const [[appA, [appAInstallationA]]] = createTestApps([
-    110,
-    "app-a",
     "App A",
     { metadata: "read", contents: "read" },
-    [[111, accountA]],
+    [[accountA]],
   ]);
   const appRegistry = createTestAppRegistry({
     app: appA,
@@ -564,7 +553,7 @@ it("reuses the same failure outcome for identical requests", async () => {
     new TestRequestError(403, { message: "Resource not accessible" }),
     unexpectedError,
   ]);
-  __addInstallationToken(111, "all", { metadata: "read" });
+  __addInstallationToken(appAInstallationA.id, "all", { metadata: "read" });
 
   const createTokens = createTokenFactory(findIssuerOctokit);
 
@@ -654,14 +643,9 @@ it("creates separate tokens when the requested account is different", async () =
       ["Organization", 200, "account-b", ["repo-b"]],
     );
   const [[appA, [appAInstallationA, appAInstallationB]]] = createTestApps([
-    110,
-    "app-a",
     "App A",
     { metadata: "read" },
-    [
-      [111, accountA],
-      [112, accountB],
-    ],
+    [[accountA], [accountB]],
   ]);
   const appRegistry = createTestAppRegistry({
     app: appA,
@@ -674,8 +658,8 @@ it("creates separate tokens when the requested account is different", async () =
 
   const { findIssuerOctokit } = createTestOctokitFactory(appRegistry);
 
-  __addInstallationToken(111, "all", { metadata: "read" });
-  __addInstallationToken(112, "all", { metadata: "read" });
+  __addInstallationToken(appAInstallationA.id, "all", { metadata: "read" });
+  __addInstallationToken(appAInstallationB.id, "all", { metadata: "read" });
 
   const createTokens = createTokenFactory(findIssuerOctokit);
 
@@ -726,11 +710,9 @@ it("creates separate tokens when the requested role is different", async () => {
     ["repo-a"],
   ]);
   const [[appA, [appAInstallationA]]] = createTestApps([
-    110,
-    "app-a",
     "App A",
     { contents: "write" },
-    [[111, accountA]],
+    [[accountA]],
   ]);
   const appRegistry = createTestAppRegistry({
     app: appA,
@@ -740,7 +722,7 @@ it("creates separate tokens when the requested role is different", async () => {
 
   const { findIssuerOctokit } = createTestOctokitFactory(appRegistry);
 
-  __addInstallationToken(111, "all", { contents: "write" });
+  __addInstallationToken(appAInstallationA.id, "all", { contents: "write" });
 
   const createTokens = createTokenFactory(findIssuerOctokit);
 
@@ -801,11 +783,9 @@ it("creates separate tokens when requested permissions are different", async () 
     ["repo-a"],
   ]);
   const [[appA, [appAInstallationA]]] = createTestApps([
-    110,
-    "app-a",
     "App A",
     { metadata: "read", contents: "read" },
-    [[111, accountA]],
+    [[accountA]],
   ]);
   const appRegistry = createTestAppRegistry({
     app: appA,
@@ -815,8 +795,8 @@ it("creates separate tokens when requested permissions are different", async () 
 
   const { findIssuerOctokit } = createTestOctokitFactory(appRegistry);
 
-  __addInstallationToken(111, "all", { metadata: "read" });
-  __addInstallationToken(111, "all", { contents: "read" });
+  __addInstallationToken(appAInstallationA.id, "all", { metadata: "read" });
+  __addInstallationToken(appAInstallationA.id, "all", { contents: "read" });
 
   const createTokens = createTokenFactory(findIssuerOctokit);
 
@@ -862,11 +842,9 @@ it("creates separate tokens when requested repository access is different", asyn
     ["repo-a"],
   ]);
   const [[appA, [appAInstallationA]]] = createTestApps([
-    110,
-    "app-a",
     "App A",
     { metadata: "read" },
-    [[111, accountA]],
+    [[accountA]],
   ]);
   const appRegistry = createTestAppRegistry({
     app: appA,
@@ -876,8 +854,10 @@ it("creates separate tokens when requested repository access is different", asyn
 
   const { findIssuerOctokit } = createTestOctokitFactory(appRegistry);
 
-  __addInstallationToken(111, "all", { metadata: "read" });
-  __addInstallationToken(111, ["repo-a"], { metadata: "read" });
+  __addInstallationToken(appAInstallationA.id, "all", { metadata: "read" });
+  __addInstallationToken(appAInstallationA.id, ["repo-a"], {
+    metadata: "read",
+  });
 
   const createTokens = createTokenFactory(findIssuerOctokit);
 
@@ -930,11 +910,9 @@ it("doesn't create tokens when not allowed", async () => {
     ["repo-a"],
   ]);
   const [[appA, [appAInstallationA]]] = createTestApps([
-    110,
-    "app-a",
     "App A",
     { metadata: "read" },
-    [[111, accountA]],
+    [[accountA]],
   ]);
   const appRegistry = createTestAppRegistry({
     app: appA,
@@ -977,11 +955,9 @@ it("shows separate explanations for non-allowed tokens", async () => {
     ["repo-a"],
   ]);
   const [[appA, [appAInstallationA]]] = createTestApps([
-    110,
-    "app-a",
     "App A",
     { metadata: "read" },
-    [[111, accountA]],
+    [[accountA]],
   ]);
   const appRegistry = createTestAppRegistry({
     app: appA,
@@ -1051,11 +1027,9 @@ it("explains when no permissions were requested", async () => {
     ["repo-a"],
   ]);
   const [[appA, [appAInstallationA]]] = createTestApps([
-    110,
-    "app-a",
     "App A",
     { metadata: "read" },
-    [[111, accountA]],
+    [[accountA]],
   ]);
   const appRegistry = createTestAppRegistry({
     app: appA,
@@ -1150,11 +1124,9 @@ it("explains failures caused by GitHub API errors", async () => {
     ["repo-a"],
   ]);
   const [[appA, [appAInstallationA]]] = createTestApps([
-    110,
-    "app-a",
     "App A",
     { metadata: "read" },
-    [[111, accountA]],
+    [[accountA]],
   ]);
   const appRegistry = createTestAppRegistry({
     app: appA,
@@ -1233,11 +1205,9 @@ it("explains failures caused by unexpected errors", async () => {
     ["repo-a"],
   ]);
   const [[appA, [appAInstallationA]]] = createTestApps([
-    110,
-    "app-a",
     "App A",
     { metadata: "read" },
-    [[111, accountA]],
+    [[accountA]],
   ]);
   const appRegistry = createTestAppRegistry({
     app: appA,

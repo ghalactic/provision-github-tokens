@@ -31,11 +31,9 @@ it("can encrypt secrets for all secret types", async () => {
     ["repo-a"],
   ]);
   const [[appA, [appAInstallationA]]] = createTestApps([
-    110,
-    "app-a",
     "App A",
     { metadata: "read" },
-    [[111, accountA]],
+    [[accountA]],
   ]);
   const appRegistry = createTestAppRegistry({
     app: appA,

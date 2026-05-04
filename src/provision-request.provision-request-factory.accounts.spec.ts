@@ -99,14 +99,12 @@ it("supports pattern-matched account targets", async () => {
 
   const [[appA, [appAInstallationA1, appAInstallationA2, appAInstallationB]]] =
     createTestApps([
-      110,
-      "app-a",
       "App A",
       {},
       [
-        [111, accountA1, "selected"],
-        [112, accountA2, "selected"],
-        [113, accountB, "selected"],
+        [accountA1, "selected"],
+        [accountA2, "selected"],
+        [accountB, "selected"],
       ],
     ]);
 
@@ -190,13 +188,11 @@ it("doesn't match the same account twice", async () => {
   );
 
   const [[appA, [appAInstallationA, appAInstallationB]]] = createTestApps([
-    110,
-    "app-a",
     "App A",
     {},
     [
-      [111, accountA, "selected"],
-      [112, accountB, "selected"],
+      [accountA, "selected"],
+      [accountB, "selected"],
     ],
   ]);
 
@@ -252,13 +248,11 @@ it("doesn't enable a target for an account if any matching patterns disable the 
   );
 
   const [[appA, [appAInstallationA, appAInstallationB]]] = createTestApps([
-    110,
-    "app-a",
     "App A",
     {},
     [
-      [111, accountA, "selected"],
-      [112, accountB, "selected"],
+      [accountA, "selected"],
+      [accountB, "selected"],
     ],
   ]);
 
@@ -314,13 +308,11 @@ it("allows self-account targets to override pattern-matched account targets", as
   );
 
   const [[appA, [appAInstallationA, appAInstallationB]]] = createTestApps([
-    110,
-    "app-a",
     "App A",
     {},
     [
-      [111, accountA, "selected"],
-      [112, accountB, "selected"],
+      [accountA, "selected"],
+      [accountB, "selected"],
     ],
   ]);
 

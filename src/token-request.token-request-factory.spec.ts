@@ -42,11 +42,9 @@ it("creates token requests from provision targets with token declarations for se
       ["repo-a-1", "repo-a-2", "repo-b", "repo-c"],
     ]);
   const [[appA, [appAInstallationA]]] = createTestApps([
-    110,
-    "app-a",
     "App A",
     {},
-    [[111, accountA]],
+    [[accountA]],
   ]);
 
   const appRegistry = createTestAppRegistry({
@@ -81,11 +79,9 @@ it("creates normalized token requests", () => {
       ["repo-a-1", "repo-a-2", "repo-b", "repo-c"],
     ]);
   const [[appA, [appAInstallationA]]] = createTestApps([
-    110,
-    "app-a",
     "App A",
     {},
-    [[111, accountA]],
+    [[accountA]],
   ]);
 
   const appRegistry = createTestAppRegistry({

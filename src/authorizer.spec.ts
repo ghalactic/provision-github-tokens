@@ -42,11 +42,9 @@ it("authorizes all requests and outputs the results", async () => {
     ["repo-a"],
   ]);
   const [[appA, [appAInstallationA]]] = createTestApps([
-    110,
-    "app-a",
     "App A",
     { contents: "read", metadata: "read" },
-    [[111, accountA]],
+    [[accountA]],
   ]);
 
   const declarationRegistry = createTokenDeclarationRegistry();
@@ -296,11 +294,9 @@ it("handles empty token requests", async () => {
     ["repo-a"],
   ]);
   const [[appA, [appAInstallationA]]] = createTestApps([
-    110,
-    "app-a",
     "App A",
     { contents: "read", metadata: "read" },
-    [[111, accountA]],
+    [[accountA]],
   ]);
 
   const declarationRegistry = createTokenDeclarationRegistry();

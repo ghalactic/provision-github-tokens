@@ -18,7 +18,7 @@ it("finds provisioners for repos", () => {
     ["repo-a", "repo-b", "repo-c"],
   ]);
   const appA: AppRegistration = {
-    app: createTestApp(110, "app-a", "App A"),
+    app: createTestApp("App A"),
     issuer: { enabled: false, roles: [] },
     provisioner: { enabled: true },
   };
@@ -27,7 +27,7 @@ it("finds provisioners for repos", () => {
     repos: [repoA],
   };
   const appB: AppRegistration = {
-    app: createTestApp(120, "app-b", "App B"),
+    app: createTestApp("App B"),
     issuer: { enabled: false, roles: [] },
     provisioner: { enabled: true },
   };
@@ -36,7 +36,7 @@ it("finds provisioners for repos", () => {
     repos: [repoB],
   };
   const appC: AppRegistration = {
-    app: createTestApp(130, "app-c", "App C"),
+    app: createTestApp("App C"),
     issuer: { enabled: false, roles: [] },
     provisioner: { enabled: true },
   };
@@ -69,7 +69,7 @@ it("doesn't find provisioners from non-provisioner apps", () => {
     ["repo-a"],
   ]);
   const appA: AppRegistration = {
-    app: createTestApp(110, "app-a", "App A"),
+    app: createTestApp("App A"),
     issuer: { enabled: true, roles: [] },
     provisioner: { enabled: false },
   };
