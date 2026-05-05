@@ -11,6 +11,16 @@ permissions:
       consumers: ["*", "*/*"]
       permissions:
         metadata: read
+    - description: Consumer fixture can read actions on itself
+      resources:
+        - accounts:
+            - ghalactic-fixtures
+          selectedRepos:
+            - provision-github-tokens-ci-consumer
+      consumers:
+        - ghalactic-fixtures/provision-github-tokens-ci-consumer
+      permissions:
+        actions: read
 
 provision:
   rules:
