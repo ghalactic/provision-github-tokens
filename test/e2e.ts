@@ -1,4 +1,5 @@
 /* eslint-disable no-console */
+import { vi } from "vitest";
 import { sleep } from "./async.js";
 import type { GitHubActionsContext } from "./gha.js";
 import type { Reference, WorkflowRun } from "./octokit.js";
@@ -116,48 +117,15 @@ async function waitFor<T>(
   description: string,
   fn: () => Promise<T>,
 ): Promise<T> {
-  const signal = AbortSignal.timeout(WAIT_TIMEOUT);
-  let cause: unknown;
+  await sleep(WAIT_INTERVAL);
 
   try {
-    return await Promise.race([
-      (async () => {
-        while (true) {
-          await sleep(WAIT_INTERVAL);
-          signal.throwIfAborted();
-
-          try {
-            return await fn();
-          } catch (error) {
-            cause = error;
-          }
-        }
-      })(),
-      new Promise<never>((_, reject) => {
-        if (signal.aborted) {
-          // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
-          reject(signal.reason);
-
-          return;
-        }
-
-        signal.addEventListener(
-          "abort",
-          () => {
-            // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
-            reject(signal.reason);
-          },
-          { once: true },
-        );
-      }),
-    ]);
-  } catch (error) {
-    if (error instanceof DOMException && error.name === "TimeoutError") {
-      // eslint-disable-next-line preserve-caught-error
-      throw new Error(`Timed out waiting for ${description}`, { cause });
-    }
-
-    throw error;
+    return await vi.waitFor(fn, {
+      timeout: WAIT_TIMEOUT,
+      interval: WAIT_INTERVAL,
+    });
+  } catch (cause) {
+    throw new Error(`Timed out waiting for ${description}`, { cause });
   }
 }
 
