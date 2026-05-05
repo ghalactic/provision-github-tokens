@@ -1,5 +1,5 @@
 /* istanbul ignore file - TODO: remove coverage ignore - @preserve */
-import { group, setFailed, summary } from "@actions/core";
+import { group, setFailed, setOutput, summary } from "@actions/core";
 import { install as installSourceMapSupport } from "source-map-support";
 import { createAppRegistry } from "./app-registry.js";
 import { createAuthorizer } from "./authorizer.js";
@@ -126,17 +126,16 @@ try {
     );
   });
 
-  await summary
-    .addRaw(
-      renderSummary(
-        githubServerUrl,
-        actionUrl,
-        authorizeResult,
-        tokenCreationResults,
-        provisionResults,
-      ),
-    )
-    .write();
+  const summaryMarkdown = renderSummary(
+    githubServerUrl,
+    actionUrl,
+    authorizeResult,
+    tokenCreationResults,
+    provisionResults,
+  );
+
+  await summary.addRaw(summaryMarkdown).write();
+  setOutput("summary", summaryMarkdown);
 } catch (error) {
   setFailed(errorStack(error));
 }

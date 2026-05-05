@@ -18,6 +18,10 @@ inputs:
       Path to the provider config file, relative to the root of the repository.
     required: false
     default: .github/ghalactic/provision-github-tokens.provider.yml
+outputs:
+  summary:
+    description: >-
+      The Markdown content of the job summary produced by the action.
 branding:
   icon: key
   color: blue
