@@ -11,7 +11,7 @@ permissions:
       consumers: ["*", "*/*"]
       permissions:
         metadata: read
-    - description: Consumer fixture can read actions on itself
+    - description: Consumer fixture can read secrets on itself
       resources:
         - accounts:
             - ghalactic-fixtures
@@ -20,7 +20,7 @@ permissions:
       consumers:
         - ghalactic-fixtures/provision-github-tokens-ci-consumer
       permissions:
-        actions: read
+        secrets: read
 
 provision:
   rules:
