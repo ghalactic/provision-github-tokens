@@ -13,6 +13,8 @@ jobs:
         uses: actions/checkout@v6
 
       - name: Run action
+        id: action
+        continue-on-error: true
         uses: ./
         with:
           apps: |
@@ -45,3 +47,14 @@ jobs:
               privateKey: ${{ toJSON(secrets.PROVISIONER_APP_C_PK) }}
               provisioner:
                 enabled: true
+
+      - name: Write summary
+        env:
+          SUMMARY: ${{ steps.action.outputs.summary }}
+        run: printf '%s' "$SUMMARY" > summary.md
+
+      - name: Upload summary
+        uses: actions/upload-artifact@v7
+        with:
+          path: summary.md
+          archive: false
