@@ -41,9 +41,9 @@ it.sequential(
     // the action itself may fail from unauthorized consumer requests
     expect(conclusion).toBe("success");
 
-    await expect(await downloadArtifact(run, "summary.md")).toMatchFileSnapshot(
-      join(fixturesPath, "summary.md"),
-    );
+    await expect(
+      (await downloadArtifact(run, "summary.md")).toString("utf-8"),
+    ).toMatchFileSnapshot(join(fixturesPath, "summary.md"));
   },
   E2E_TIMEOUT,
 );
