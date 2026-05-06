@@ -1,21 +1,14 @@
-import { Octokit } from "@octokit/action";
-import { retry } from "@octokit/plugin-retry";
-import { Octokit as OctokitRest } from "@octokit/rest";
 import type { Endpoints } from "@octokit/types";
+import { Octokit } from "octokit";
 
-// eslint-disable-next-line @typescript-eslint/naming-convention -- class constructor
-const CustomOctokit = Octokit.plugin(retry);
-// eslint-disable-next-line @typescript-eslint/naming-convention -- class constructor
-const CustomOctokitRest = OctokitRest.plugin(retry);
-
-export type TestOctokit = InstanceType<typeof CustomOctokit>;
+export type TestOctokit = InstanceType<typeof Octokit>;
 
 export function createTestOctokit(): TestOctokit {
-  return new CustomOctokit();
+  return new Octokit({ auth: process.env.GITHUB_TOKEN });
 }
 
 export function createTestOctokitWithToken(token: string): TestOctokit {
-  return new CustomOctokitRest({ auth: token });
+  return new Octokit({ auth: token });
 }
 
 export type Reference =
