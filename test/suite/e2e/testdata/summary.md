@@ -7,8 +7,8 @@
 
 |    | Requester                                                                                                           | Secret                | Targets                                                                                                             |
 | :- | :------------------------------------------------------------------------------------------------------------------ | :-------------------- | :------------------------------------------------------------------------------------------------------------------ |
-| ✅  | [ghalactic-fixtures/provision-github-tokens-ci-consumer][gh/ghalactic-fixtures/provision-github-tokens-ci-consumer] | `READ_ACTIONS_TOKEN`  | [ghalactic-fixtures/provision-github-tokens-ci-consumer][gh/ghalactic-fixtures/provision-github-tokens-ci-consumer] |
 | ✅  | [ghalactic-fixtures/provision-github-tokens-ci-consumer][gh/ghalactic-fixtures/provision-github-tokens-ci-consumer] | `READ_METADATA_TOKEN` | [ghalactic-fixtures/provision-github-tokens-ci-consumer][gh/ghalactic-fixtures/provision-github-tokens-ci-consumer] |
+| ✅  | [ghalactic-fixtures/provision-github-tokens-ci-consumer][gh/ghalactic-fixtures/provision-github-tokens-ci-consumer] | `READ_SECRETS_TOKEN`  | [ghalactic-fixtures/provision-github-tokens-ci-consumer][gh/ghalactic-fixtures/provision-github-tokens-ci-consumer] |
 
 [gh/ghalactic-fixtures/provision-github-tokens-ci-consumer]: https://github.com/ghalactic-fixtures/provision-github-tokens-ci-consumer
 
