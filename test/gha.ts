@@ -1,10 +1,13 @@
+import { createDownloadArtifact } from "./e2e.js";
 import {
   createTestOctokit,
   createTestOctokitWithToken,
   type TestOctokit,
+  type WorkflowRun,
 } from "./octokit.js";
 
 export type GitHubActionsContext = {
+  downloadArtifact: DownloadArtifact;
   eventName: string;
   fixturesOctokit: TestOctokit;
   headRef: string;
@@ -16,8 +19,12 @@ export type GitHubActionsContext = {
   runAttempt: string;
   runId: string;
   sha: string;
-  token: string;
 };
+
+export type DownloadArtifact = (
+  run: WorkflowRun,
+  artifactName: string,
+) => Promise<Buffer>;
 
 export function getGhaContext(): GitHubActionsContext {
   const {
@@ -36,8 +43,10 @@ export function getGhaContext(): GitHubActionsContext {
   const [owner, repo] = slug.split("/");
   const octokit = createTestOctokit();
   const fixturesOctokit = createTestOctokitWithToken(fixturesToken);
+  const downloadArtifact = createDownloadArtifact(owner, repo, token);
 
   return {
+    downloadArtifact,
     eventName,
     fixturesOctokit,
     headRef,
@@ -49,6 +58,5 @@ export function getGhaContext(): GitHubActionsContext {
     runAttempt,
     runId,
     sha,
-    token,
   };
 }

@@ -92,34 +92,34 @@ export async function getDefaultBranchSha(
   return ref.object.sha;
 }
 
-export async function downloadArtifact(
-  context: GitHubActionsContext,
-  run: WorkflowRun,
-  artifactName: string,
-): Promise<string> {
-  const { owner, repo, token } = context;
+export function createDownloadArtifact(
+  owner: string,
+  repo: string,
+  token: string,
+) {
+  return async (run: WorkflowRun, artifactName: string): Promise<Buffer> => {
+    const { artifact } = await artifactClient.getArtifact(artifactName, {
+      findBy: {
+        token,
+        workflowRunId: run.id,
+        repositoryName: repo,
+        repositoryOwner: owner,
+      },
+    });
 
-  const { artifact } = await artifactClient.getArtifact(artifactName, {
-    findBy: {
-      token,
-      workflowRunId: run.id,
-      repositoryName: repo,
-      repositoryOwner: owner,
-    },
-  });
+    const downloadDir = join(ARTIFACTS_DIR, String(run.id));
+    await artifactClient.downloadArtifact(artifact.id, {
+      path: downloadDir,
+      findBy: {
+        token,
+        workflowRunId: run.id,
+        repositoryName: repo,
+        repositoryOwner: owner,
+      },
+    });
 
-  const downloadDir = join(ARTIFACTS_DIR, String(run.id));
-  await artifactClient.downloadArtifact(artifact.id, {
-    path: downloadDir,
-    findBy: {
-      token,
-      workflowRunId: run.id,
-      repositoryName: repo,
-      repositoryOwner: owner,
-    },
-  });
-
-  return readFile(join(downloadDir, artifactName), "utf-8");
+    return readFile(join(downloadDir, artifactName));
+  };
 }
 
 function buildRunLabel(context: GitHubActionsContext): string {

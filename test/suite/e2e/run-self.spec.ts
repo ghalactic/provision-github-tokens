@@ -2,7 +2,6 @@ import { join } from "node:path";
 import { expect, it } from "vitest";
 import {
   createWorkflowRun,
-  downloadArtifact,
   E2E_TIMEOUT,
   getDefaultBranchSha,
   waitForWorkflowRunToComplete,
@@ -21,7 +20,7 @@ const fixturesPath = join(import.meta.dirname, "testdata");
 it.sequential(
   "provider workflow produces expected summary",
   async ({ onTestFinished }) => {
-    const { owner, repo, sha } = ghaContext;
+    const { owner, repo, sha, downloadArtifact } = ghaContext;
 
     const run = await createWorkflowRun(onTestFinished, ghaContext, {
       octokit: ghaContext.octokit,
@@ -42,13 +41,7 @@ it.sequential(
     // the action itself may fail from unauthorized consumer requests
     expect(conclusion).toBe("success");
 
-    const summaryContent = await downloadArtifact(
-      ghaContext,
-      run,
-      "summary.md",
-    );
-
-    await expect(summaryContent).toMatchFileSnapshot(
+    await expect(await downloadArtifact(run, "summary.md")).toMatchFileSnapshot(
       join(fixturesPath, "summary.md"),
     );
   },
