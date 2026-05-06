@@ -99,8 +99,7 @@ export async function downloadArtifact(
   run: WorkflowRun,
   artifactName: string,
 ): Promise<string> {
-  const { owner, repo } = context;
-  const token = process.env.GITHUB_TOKEN!;
+  const { owner, repo, token } = context;
 
   const { artifact } = await artifactClient.getArtifact(artifactName, {
     findBy: {

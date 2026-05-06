@@ -16,6 +16,7 @@ export type GitHubActionsContext = {
   runAttempt: string;
   runId: string;
   sha: string;
+  token: string;
 };
 
 export function getGhaContext(): GitHubActionsContext {
@@ -29,6 +30,7 @@ export function getGhaContext(): GitHubActionsContext {
     GITHUB_RUN_ID: runId = "",
     GITHUB_SHA: sha = "",
     GITHUB_RUN_ATTEMPT: runAttempt = "",
+    GITHUB_TOKEN: token = "",
   } = process.env;
 
   const [owner, repo] = slug.split("/");
@@ -47,5 +49,6 @@ export function getGhaContext(): GitHubActionsContext {
     runAttempt,
     runId,
     sha,
+    token,
   };
 }
