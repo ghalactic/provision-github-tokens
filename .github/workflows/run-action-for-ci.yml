@@ -1,4 +1,5 @@
 name: Run action for CI
+run-name: Run action for CI (${{ github.ref_name }})
 
 on:
   workflow_dispatch:
