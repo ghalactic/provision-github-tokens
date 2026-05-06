@@ -11,6 +11,10 @@ export function createTestOctokit(): TestOctokit {
   return new CustomOctokit();
 }
 
+export function createTestOctokitWithToken(token: string): TestOctokit {
+  return new CustomOctokit({ auth: token });
+}
+
 export type Reference =
   Endpoints["GET /repos/{owner}/{repo}/git/ref/{ref}"]["response"]["data"];
 

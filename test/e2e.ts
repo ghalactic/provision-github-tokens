@@ -2,41 +2,52 @@
 import { vi } from "vitest";
 import { sleep } from "./async.js";
 import type { GitHubActionsContext } from "./gha.js";
-import type { Reference, WorkflowRun } from "./octokit.js";
+import type { Reference, TestOctokit, WorkflowRun } from "./octokit.js";
 
 export const E2E_TIMEOUT = 3 * 60 * 1000; // 3 minutes
 const WAIT_INTERVAL = 15 * 1000; // 15 seconds
 const WAIT_TIMEOUT = 5 * 60 * 1000; // 5 minutes
-const SELF_WORKFLOW_ID = "run-action-for-ci.yml";
 
-export async function createSelfRunWorkflow(
+export type WorkflowDispatchOptions = {
+  octokit: TestOctokit;
+  owner: string;
+  repo: string;
+  sha: string;
+  workflowId: string;
+  label: string;
+};
+
+export async function createWorkflowRun(
   cleanup: Cleanup,
   context: GitHubActionsContext,
-  label: string,
+  options: WorkflowDispatchOptions,
 ): Promise<WorkflowRun> {
-  const selfRunRef = await createSelfRunRef(cleanup, context, label);
-  const existingRun = await findSelfRun(context, selfRunRef);
+  const { octokit, owner, repo, sha, workflowId, label } = options;
+  const runRef = await createRunRef(cleanup, octokit, owner, repo, context, sha, label);
+  const existingRun = await findRun(octokit, owner, repo, workflowId, runRef);
 
   if (existingRun) {
     throw new Error(
-      `Self run ${selfRunRef.ref} already exists: ${existingRun.html_url}`,
+      `Run ${runRef.ref} already exists: ${existingRun.html_url}`,
     );
   }
 
-  await dispatchSelfRun(context, selfRunRef);
+  await dispatchRun(octokit, owner, repo, workflowId, runRef);
 
-  return waitFor("self run", async () => {
-    const run = await findSelfRun(context, selfRunRef);
-    if (!run) throw new Error(`Self run ${selfRunRef.ref} not found`);
+  return waitFor(`${workflowId} run`, async () => {
+    const run = await findRun(octokit, owner, repo, workflowId, runRef);
+    if (!run) throw new Error(`Run ${runRef.ref} not found`);
     return run;
   });
 }
 
-export async function waitForWorkflowRunToSucceed(
-  { octokit, owner, repo }: GitHubActionsContext,
+export async function waitForWorkflowRunToComplete(
+  octokit: TestOctokit,
+  owner: string,
+  repo: string,
   run: WorkflowRun,
-): Promise<void> {
-  const conclusion = await waitFor("workflow run to complete", async () => {
+): Promise<string | null> {
+  return waitFor("workflow run to complete", async () => {
     const {
       data: { status, conclusion },
     } = await octokit.rest.actions.getWorkflowRun({
@@ -51,17 +62,30 @@ export async function waitForWorkflowRunToSucceed(
 
     return conclusion;
   });
-
-  if (conclusion === "success") return;
-  throw new Error(`Workflow run ${run.html_url} concluded with ${conclusion}`);
 }
 
-/**
- * Create a branch with the same SHA as the current workflow run.
- */
-async function createSelfRunRef(
+export async function getDefaultBranchSha(
+  octokit: TestOctokit,
+  owner: string,
+  repo: string,
+): Promise<string> {
+  const { data } = await octokit.rest.repos.get({ owner, repo });
+  const { data: ref } = await octokit.rest.git.getRef({
+    owner,
+    repo,
+    ref: `heads/${data.default_branch}`,
+  });
+
+  return ref.object.sha;
+}
+
+async function createRunRef(
   cleanup: Cleanup,
-  { octokit, owner, repo, sha, runId, runAttempt }: GitHubActionsContext,
+  octokit: TestOctokit,
+  owner: string,
+  repo: string,
+  { runId, runAttempt }: GitHubActionsContext,
+  sha: string,
   label: string,
 ): Promise<Reference> {
   const refName = `heads/ci-${runId}-${runAttempt}-${label}`;
@@ -80,9 +104,12 @@ async function createSelfRunRef(
   return data;
 }
 
-async function findSelfRun(
-  { octokit, owner, repo, sha }: GitHubActionsContext,
-  selfRunRef: Reference,
+async function findRun(
+  octokit: TestOctokit,
+  owner: string,
+  repo: string,
+  workflowId: string,
+  runRef: Reference,
 ): Promise<WorkflowRun | undefined> {
   const {
     data: {
@@ -92,24 +119,26 @@ async function findSelfRun(
     owner,
     repo,
     event: "workflow_dispatch",
-    workflow_id: SELF_WORKFLOW_ID,
-    branch: selfRunRef.ref.replace(/^refs\/heads\//, ""),
-    head_sha: sha,
+    workflow_id: workflowId,
+    branch: runRef.ref.replace(/^refs\/heads\//, ""),
     per_page: 1,
   });
 
   return run;
 }
 
-async function dispatchSelfRun(
-  { octokit, owner, repo }: GitHubActionsContext,
-  selfRunRef: Reference,
+async function dispatchRun(
+  octokit: TestOctokit,
+  owner: string,
+  repo: string,
+  workflowId: string,
+  runRef: Reference,
 ): Promise<void> {
   await octokit.rest.actions.createWorkflowDispatch({
     owner,
     repo,
-    workflow_id: SELF_WORKFLOW_ID,
-    ref: selfRunRef.ref,
+    workflow_id: workflowId,
+    ref: runRef.ref,
   });
 }
 
@@ -129,8 +158,4 @@ async function waitFor<T>(
   }
 }
 
-/**
- * A function (afterAll/afterEach/onTestFinished) that can be used to register
- * cleanup callbacks.
- */
 type Cleanup = (fn: () => Promise<void>) => void;
