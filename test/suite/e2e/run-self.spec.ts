@@ -1,7 +1,6 @@
 import { join } from "node:path";
 import { expect, it } from "vitest";
 import {
-  buildBranchSuffix,
   buildRunLabel,
   createWorkflowRun,
   E2E_TIMEOUT,
@@ -23,7 +22,6 @@ const fixturesPath = join(import.meta.dirname, "testdata");
 it.sequential(
   "provider workflow produces expected summary",
   async ({ onTestFinished }) => {
-    const branchSuffix = buildBranchSuffix(ghaContext);
     const { octokit, owner, repo, sha } = ghaContext;
 
     const options: WorkflowDispatchOptions = {
@@ -32,7 +30,7 @@ it.sequential(
       repo,
       sha,
       workflowId: PROVIDER_WORKFLOW_ID,
-      branchSuffix: `provider-${branchSuffix}`,
+      branchPrefix: "provider",
       inputs: { label: buildRunLabel(ghaContext) },
     };
 
@@ -79,7 +77,6 @@ it.sequential(
 it.sequential(
   "consumer can use provisioned token",
   async ({ onTestFinished }) => {
-    const branchSuffix = buildBranchSuffix(ghaContext);
     const { fixturesOctokit } = ghaContext;
 
     const sha = await getDefaultBranchSha(
@@ -94,7 +91,7 @@ it.sequential(
       repo: CONSUMER_REPO,
       sha,
       workflowId: CONSUMER_WORKFLOW_ID,
-      branchSuffix: `consumer-${branchSuffix}`,
+      branchPrefix: "consumer",
       inputs: { label: buildRunLabel(ghaContext) },
     };
 

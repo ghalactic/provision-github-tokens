@@ -14,7 +14,7 @@ export type WorkflowDispatchOptions = {
   repo: string;
   sha: string;
   workflowId: string;
-  branchSuffix: string;
+  branchPrefix: string;
   inputs?: Record<string, string>;
 };
 
@@ -30,7 +30,7 @@ export function buildRunLabel(context: GitHubActionsContext): string {
   return refName;
 }
 
-export function buildBranchSuffix(context: GitHubActionsContext): string {
+function buildBranchSuffix(context: GitHubActionsContext): string {
   const { headRef, refName, eventName } = context;
   const [prNumber] = refName.split("/");
 
@@ -51,8 +51,9 @@ export async function createWorkflowRun(
   context: GitHubActionsContext,
   options: WorkflowDispatchOptions,
 ): Promise<WorkflowRun> {
-  const { octokit, owner, repo, sha, workflowId, branchSuffix, inputs } =
+  const { octokit, owner, repo, sha, workflowId, branchPrefix, inputs } =
     options;
+  const branchSuffix = buildBranchSuffix(context);
   const runRef = await createRunRef(
     cleanup,
     octokit,
@@ -60,7 +61,7 @@ export async function createWorkflowRun(
     repo,
     context,
     sha,
-    branchSuffix,
+    `${branchPrefix}-${branchSuffix}`,
   );
   const existingRun = await findRun(octokit, owner, repo, workflowId, runRef);
 
