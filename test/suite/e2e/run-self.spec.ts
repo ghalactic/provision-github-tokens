@@ -18,6 +18,18 @@ const PROVIDER_WORKFLOW_ID = "run-action-for-ci.yml";
 
 const fixturesPath = join(import.meta.dirname, "testdata");
 
+function buildRunName(): string {
+  const { headRef, refName, eventName } = ghaContext;
+
+  if (eventName === "pull_request") {
+    const [prNumber] = refName.split("/");
+    if (prNumber.match(/^[1-9][0-9]*$/)) return `PR #${prNumber}`;
+    return headRef || refName;
+  }
+
+  return refName;
+}
+
 function buildLabel(): string {
   const { headRef, refName, eventName } = ghaContext;
   const [prNumber] = refName.split("/");
@@ -47,6 +59,7 @@ it.sequential(
       sha,
       workflowId: PROVIDER_WORKFLOW_ID,
       label: `provider-${label}`,
+      inputs: { label: buildRunName() },
     };
 
     const run = await createWorkflowRun(onTestFinished, ghaContext, options);

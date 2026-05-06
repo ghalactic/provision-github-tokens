@@ -1,8 +1,12 @@
 name: Run action for CI
-run-name: Run action for CI (${{ github.ref_name }})
+run-name: "Run action for CI: ${{ inputs.label }}"
 
 on:
   workflow_dispatch:
+    inputs:
+      label:
+        description: Human-readable label for this run
+        type: string
 
 jobs:
   run:

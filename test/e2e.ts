@@ -15,6 +15,7 @@ export type WorkflowDispatchOptions = {
   sha: string;
   workflowId: string;
   label: string;
+  inputs?: Record<string, string>;
 };
 
 export async function createWorkflowRun(
@@ -22,7 +23,7 @@ export async function createWorkflowRun(
   context: GitHubActionsContext,
   options: WorkflowDispatchOptions,
 ): Promise<WorkflowRun> {
-  const { octokit, owner, repo, sha, workflowId, label } = options;
+  const { octokit, owner, repo, sha, workflowId, label, inputs } = options;
   const runRef = await createRunRef(
     cleanup,
     octokit,
@@ -40,7 +41,7 @@ export async function createWorkflowRun(
     );
   }
 
-  await dispatchRun(octokit, owner, repo, workflowId, runRef);
+  await dispatchRun(octokit, owner, repo, workflowId, runRef, inputs);
 
   return waitFor(`${workflowId} run`, async () => {
     const run = await findRun(octokit, owner, repo, workflowId, runRef);
@@ -141,12 +142,14 @@ async function dispatchRun(
   repo: string,
   workflowId: string,
   runRef: Reference,
+  inputs?: Record<string, string>,
 ): Promise<void> {
   await octokit.rest.actions.createWorkflowDispatch({
     owner,
     repo,
     workflow_id: workflowId,
     ref: runRef.ref,
+    inputs,
   });
 }
 
