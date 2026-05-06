@@ -17,34 +17,6 @@ export type WorkflowDispatchOptions = {
   branchPrefix: string;
 };
 
-function buildRunLabel(context: GitHubActionsContext): string {
-  const { headRef, refName, eventName } = context;
-
-  if (eventName === "pull_request") {
-    const [prNumber] = refName.split("/");
-    if (prNumber.match(/^[1-9][0-9]*$/)) return `PR #${prNumber}`;
-    return headRef || refName;
-  }
-
-  return refName;
-}
-
-function buildBranchSuffix(context: GitHubActionsContext): string {
-  const { headRef, refName, eventName } = context;
-  const [prNumber] = refName.split("/");
-
-  const event = (() => {
-    if (eventName === "pull_request") return "pr";
-    return eventName.replace(/[^a-z]+/g, "-");
-  })();
-
-  if (!headRef) return `${event}-${refName.replace(/\//g, "-")}`;
-  if (!prNumber.match(/^[1-9][0-9]*$/)) {
-    return `${event}-${headRef.replace(/\//g, "-")}`;
-  }
-  return `${event}-${prNumber}-${headRef.replace(/\//g, "-")}`;
-}
-
 export async function createWorkflowRun(
   cleanup: Cleanup,
   context: GitHubActionsContext,
@@ -115,6 +87,34 @@ export async function getDefaultBranchSha(
   });
 
   return ref.object.sha;
+}
+
+function buildRunLabel(context: GitHubActionsContext): string {
+  const { headRef, refName, eventName } = context;
+
+  if (eventName === "pull_request") {
+    const [prNumber] = refName.split("/");
+    if (prNumber.match(/^[1-9][0-9]*$/)) return `PR #${prNumber}`;
+    return headRef || refName;
+  }
+
+  return refName;
+}
+
+function buildBranchSuffix(context: GitHubActionsContext): string {
+  const { headRef, refName, eventName } = context;
+  const [prNumber] = refName.split("/");
+
+  const event = (() => {
+    if (eventName === "pull_request") return "pr";
+    return eventName.replace(/[^a-z]+/g, "-");
+  })();
+
+  if (!headRef) return `${event}-${refName.replace(/\//g, "-")}`;
+  if (!prNumber.match(/^[1-9][0-9]*$/)) {
+    return `${event}-${headRef.replace(/\//g, "-")}`;
+  }
+  return `${event}-${prNumber}-${headRef.replace(/\//g, "-")}`;
 }
 
 async function createRunRef(
