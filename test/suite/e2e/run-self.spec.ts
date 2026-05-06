@@ -1,6 +1,8 @@
 import { join } from "node:path";
 import { expect, it } from "vitest";
 import {
+  buildBranchSuffix,
+  buildRunLabel,
   createWorkflowRun,
   E2E_TIMEOUT,
   getDefaultBranchSha,
@@ -21,7 +23,7 @@ const fixturesPath = join(import.meta.dirname, "testdata");
 it.sequential(
   "provider workflow produces expected summary",
   async ({ onTestFinished }) => {
-    const label = buildLabel();
+    const branchSuffix = buildBranchSuffix(ghaContext);
     const { octokit, owner, repo, sha } = ghaContext;
 
     const options: WorkflowDispatchOptions = {
@@ -30,8 +32,8 @@ it.sequential(
       repo,
       sha,
       workflowId: PROVIDER_WORKFLOW_ID,
-      label: `provider-${label}`,
-      inputs: { label: buildRunName() },
+      branchSuffix: `provider-${branchSuffix}`,
+      inputs: { label: buildRunLabel(ghaContext) },
     };
 
     const run = await createWorkflowRun(onTestFinished, ghaContext, options);
@@ -77,7 +79,7 @@ it.sequential(
 it.sequential(
   "consumer can use provisioned token",
   async ({ onTestFinished }) => {
-    const label = buildLabel();
+    const branchSuffix = buildBranchSuffix(ghaContext);
     const { fixturesOctokit } = ghaContext;
 
     const sha = await getDefaultBranchSha(
@@ -92,8 +94,8 @@ it.sequential(
       repo: CONSUMER_REPO,
       sha,
       workflowId: CONSUMER_WORKFLOW_ID,
-      label: `consumer-${label}`,
-      inputs: { label: buildRunName() },
+      branchSuffix: `consumer-${branchSuffix}`,
+      inputs: { label: buildRunLabel(ghaContext) },
     };
 
     const run = await createWorkflowRun(onTestFinished, ghaContext, options);
@@ -108,31 +110,3 @@ it.sequential(
   },
   E2E_TIMEOUT,
 );
-
-function buildRunName(): string {
-  const { headRef, refName, eventName } = ghaContext;
-
-  if (eventName === "pull_request") {
-    const [prNumber] = refName.split("/");
-    if (prNumber.match(/^[1-9][0-9]*$/)) return `PR #${prNumber}`;
-    return headRef || refName;
-  }
-
-  return refName;
-}
-
-function buildLabel(): string {
-  const { headRef, refName, eventName } = ghaContext;
-  const [prNumber] = refName.split("/");
-
-  const event = (() => {
-    if (eventName === "pull_request") return "pr";
-    return eventName.replace(/[^a-z]+/g, "-");
-  })();
-
-  if (!headRef) return `${event}-${refName.replace(/\//g, "-")}`;
-  if (!prNumber.match(/^[1-9][0-9]*$/)) {
-    return `${event}-${headRef.replace(/\//g, "-")}`;
-  }
-  return `${event}-${prNumber}-${headRef.replace(/\//g, "-")}`;
-}

@@ -14,16 +14,45 @@ export type WorkflowDispatchOptions = {
   repo: string;
   sha: string;
   workflowId: string;
-  label: string;
+  branchSuffix: string;
   inputs?: Record<string, string>;
 };
+
+export function buildRunLabel(context: GitHubActionsContext): string {
+  const { headRef, refName, eventName } = context;
+
+  if (eventName === "pull_request") {
+    const [prNumber] = refName.split("/");
+    if (prNumber.match(/^[1-9][0-9]*$/)) return `PR #${prNumber}`;
+    return headRef || refName;
+  }
+
+  return refName;
+}
+
+export function buildBranchSuffix(context: GitHubActionsContext): string {
+  const { headRef, refName, eventName } = context;
+  const [prNumber] = refName.split("/");
+
+  const event = (() => {
+    if (eventName === "pull_request") return "pr";
+    return eventName.replace(/[^a-z]+/g, "-");
+  })();
+
+  if (!headRef) return `${event}-${refName.replace(/\//g, "-")}`;
+  if (!prNumber.match(/^[1-9][0-9]*$/)) {
+    return `${event}-${headRef.replace(/\//g, "-")}`;
+  }
+  return `${event}-${prNumber}-${headRef.replace(/\//g, "-")}`;
+}
 
 export async function createWorkflowRun(
   cleanup: Cleanup,
   context: GitHubActionsContext,
   options: WorkflowDispatchOptions,
 ): Promise<WorkflowRun> {
-  const { octokit, owner, repo, sha, workflowId, label, inputs } = options;
+  const { octokit, owner, repo, sha, workflowId, branchSuffix, inputs } =
+    options;
   const runRef = await createRunRef(
     cleanup,
     octokit,
@@ -31,7 +60,7 @@ export async function createWorkflowRun(
     repo,
     context,
     sha,
-    label,
+    branchSuffix,
   );
   const existingRun = await findRun(octokit, owner, repo, workflowId, runRef);
 
@@ -95,9 +124,9 @@ async function createRunRef(
   repo: string,
   { runId, runAttempt }: GitHubActionsContext,
   sha: string,
-  label: string,
+  branchSuffix: string,
 ): Promise<Reference> {
-  const refName = `heads/ci-${runId}-${runAttempt}-${label}`;
+  const refName = `heads/ci-${runId}-${runAttempt}-${branchSuffix}`;
   const ref = `refs/${refName}`;
 
   cleanup(async () => {
