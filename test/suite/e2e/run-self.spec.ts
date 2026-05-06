@@ -1,45 +1,125 @@
+import { join } from "node:path";
 import { expect, it } from "vitest";
 import {
   createWorkflowRun,
   E2E_TIMEOUT,
+  getDefaultBranchSha,
   waitForWorkflowRunToComplete,
+  type WorkflowDispatchOptions,
 } from "../../e2e.js";
 import { getGhaContext } from "../../gha.js";
 
 const ghaContext = getGhaContext();
 
-it(
-  "can run itself via workflow_dispatch",
+const CONSUMER_OWNER = "ghalactic-fixtures";
+const CONSUMER_REPO = "provision-github-tokens-ci-consumer";
+const CONSUMER_WORKFLOW_ID = "verify-tokens.yml";
+const PROVIDER_WORKFLOW_ID = "run-action-for-ci.yml";
+
+const fixturesPath = join(import.meta.dirname, "testdata");
+
+function buildLabel(): string {
+  const { headRef, refName, eventName } = ghaContext;
+  const [prNumber] = refName.split("/");
+
+  const event = (() => {
+    if (eventName === "pull_request") return "pr";
+    return eventName.replace(/[^a-z]+/g, "-");
+  })();
+
+  if (!headRef) return `${event}-${refName.replace(/\//g, "-")}`;
+  if (!prNumber.match(/^[1-9][0-9]*$/)) {
+    return `${event}-${headRef.replace(/\//g, "-")}`;
+  }
+  return `${event}-${prNumber}-${headRef.replace(/\//g, "-")}`;
+}
+
+it.sequential(
+  "provider workflow produces expected summary",
   async ({ onTestFinished }) => {
-    const { headRef, refName, octokit, owner, repo, sha } = ghaContext;
-    const [prNumber] = refName.split("/");
+    const label = buildLabel();
+    const { octokit, owner, repo, sha } = ghaContext;
 
-    const eventName = (() => {
-      if (ghaContext.eventName === "pull_request") return "pr";
-      return ghaContext.eventName.replace(/[^a-z]+/g, "-");
-    })();
-
-    const label = (() => {
-      if (!headRef) return `${eventName}-${refName.replace(/\//g, "-")}`;
-      if (!prNumber.match(/^[1-9][0-9]*$/)) {
-        return `${eventName}-${headRef.replace(/\//g, "-")}`;
-      }
-      return `${eventName}-${prNumber}-${headRef.replace(/\//g, "-")}`;
-    })();
-
-    const run = await createWorkflowRun(onTestFinished, ghaContext, {
+    const options: WorkflowDispatchOptions = {
       octokit,
       owner,
       repo,
       sha,
-      workflowId: "run-action-for-ci.yml",
-      label,
-    });
+      workflowId: PROVIDER_WORKFLOW_ID,
+      label: `provider-${label}`,
+    };
 
+    const run = await createWorkflowRun(onTestFinished, ghaContext, options);
     const conclusion = await waitForWorkflowRunToComplete(
       octokit,
       owner,
       repo,
+      run,
+    );
+
+    // The workflow succeeds due to continue-on-error: true even though
+    // the action itself may fail from unauthorized consumer requests
+    expect(conclusion).toBe("success");
+
+    // Download the summary artifact
+    const {
+      data: { artifacts },
+    } = await octokit.rest.actions.listWorkflowRunArtifacts({
+      owner,
+      repo,
+      run_id: run.id,
+    });
+
+    const summaryArtifact = artifacts.find((a) => a.name === "summary.md");
+    expect(summaryArtifact).toBeDefined();
+
+    const { data } = await octokit.rest.actions.downloadArtifact({
+      owner,
+      repo,
+      artifact_id: summaryArtifact!.id,
+      archive_format: "zip",
+    });
+
+    // The download API always returns a zip, even for unarchived uploads
+    // eslint-disable-next-line @typescript-eslint/naming-convention -- class constructor
+    const { default: AdmZip } = await import("adm-zip");
+    const zip = new AdmZip(Buffer.from(data as ArrayBuffer));
+    const entry = zip.getEntries()[0];
+    const summaryContent = entry.getData().toString("utf-8");
+
+    await expect(summaryContent).toMatchFileSnapshot(
+      join(fixturesPath, "summary.md"),
+    );
+  },
+  E2E_TIMEOUT,
+);
+
+it.sequential(
+  "consumer can use provisioned token",
+  async ({ onTestFinished }) => {
+    const label = buildLabel();
+    const { fixturesOctokit } = ghaContext;
+
+    const sha = await getDefaultBranchSha(
+      fixturesOctokit,
+      CONSUMER_OWNER,
+      CONSUMER_REPO,
+    );
+
+    const options: WorkflowDispatchOptions = {
+      octokit: fixturesOctokit,
+      owner: CONSUMER_OWNER,
+      repo: CONSUMER_REPO,
+      sha,
+      workflowId: CONSUMER_WORKFLOW_ID,
+      label: `consumer-${label}`,
+    };
+
+    const run = await createWorkflowRun(onTestFinished, ghaContext, options);
+    const conclusion = await waitForWorkflowRunToComplete(
+      fixturesOctokit,
+      CONSUMER_OWNER,
+      CONSUMER_REPO,
       run,
     );
 

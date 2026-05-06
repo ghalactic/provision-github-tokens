@@ -1,4 +1,8 @@
-import { createTestOctokit, createTestOctokitWithToken, type TestOctokit } from "./octokit.js";
+import {
+  createTestOctokit,
+  createTestOctokitWithToken,
+  type TestOctokit,
+} from "./octokit.js";
 
 export type GitHubActionsContext = {
   eventName: string;

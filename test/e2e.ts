@@ -23,7 +23,15 @@ export async function createWorkflowRun(
   options: WorkflowDispatchOptions,
 ): Promise<WorkflowRun> {
   const { octokit, owner, repo, sha, workflowId, label } = options;
-  const runRef = await createRunRef(cleanup, octokit, owner, repo, context, sha, label);
+  const runRef = await createRunRef(
+    cleanup,
+    octokit,
+    owner,
+    repo,
+    context,
+    sha,
+    label,
+  );
   const existingRun = await findRun(octokit, owner, repo, workflowId, runRef);
 
   if (existingRun) {
