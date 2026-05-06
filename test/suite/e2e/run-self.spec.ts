@@ -80,12 +80,7 @@ it.sequential(
       archive_format: "zip",
     });
 
-    // The download API always returns a zip, even for unarchived uploads
-    // eslint-disable-next-line @typescript-eslint/naming-convention -- class constructor
-    const { default: AdmZip } = await import("adm-zip");
-    const zip = new AdmZip(Buffer.from(data as ArrayBuffer));
-    const entry = zip.getEntries()[0];
-    const summaryContent = entry.getData().toString("utf-8");
+    const summaryContent = Buffer.from(data as ArrayBuffer).toString("utf-8");
 
     await expect(summaryContent).toMatchFileSnapshot(
       join(fixturesPath, "summary.md"),
