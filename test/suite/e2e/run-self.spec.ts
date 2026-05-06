@@ -6,7 +6,6 @@ import {
   E2E_TIMEOUT,
   getDefaultBranchSha,
   waitForWorkflowRunToComplete,
-  type WorkflowDispatchOptions,
 } from "../../e2e.js";
 import { getGhaContext } from "../../gha.js";
 
@@ -24,16 +23,14 @@ it.sequential(
   async ({ onTestFinished }) => {
     const { owner, repo, sha } = ghaContext;
 
-    const options: WorkflowDispatchOptions = {
+    const run = await createWorkflowRun(onTestFinished, ghaContext, {
       octokit: ghaContext.octokit,
       owner,
       repo,
       sha,
       workflowId: PROVIDER_WORKFLOW_ID,
       branchPrefix: "provider",
-    };
-
-    const run = await createWorkflowRun(onTestFinished, ghaContext, options);
+    });
     const conclusion = await waitForWorkflowRunToComplete(
       ghaContext.octokit,
       owner,
@@ -69,16 +66,14 @@ it.sequential(
       CONSUMER_REPO,
     );
 
-    const options: WorkflowDispatchOptions = {
+    const run = await createWorkflowRun(onTestFinished, ghaContext, {
       octokit: fixturesOctokit,
       owner: CONSUMER_OWNER,
       repo: CONSUMER_REPO,
       sha,
       workflowId: CONSUMER_WORKFLOW_ID,
       branchPrefix: "consumer",
-    };
-
-    const run = await createWorkflowRun(onTestFinished, ghaContext, options);
+    });
     const conclusion = await waitForWorkflowRunToComplete(
       fixturesOctokit,
       CONSUMER_OWNER,

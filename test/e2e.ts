@@ -7,25 +7,23 @@ import { sleep } from "./async.js";
 import type { GitHubActionsContext } from "./gha.js";
 import type { Reference, TestOctokit, WorkflowRun } from "./octokit.js";
 
-const ARTIFACTS_DIR = join(import.meta.dirname, "..", "artifacts");
-
 export const E2E_TIMEOUT = 3 * 60 * 1000; // 3 minutes
 const WAIT_INTERVAL = 15 * 1000; // 15 seconds
 const WAIT_TIMEOUT = 5 * 60 * 1000; // 5 minutes
 
-export type WorkflowDispatchOptions = {
-  octokit: TestOctokit;
-  owner: string;
-  repo: string;
-  sha: string;
-  workflowId: string;
-  branchPrefix: string;
-};
+const ARTIFACTS_DIR = join(import.meta.dirname, "..", "artifacts");
 
 export async function createWorkflowRun(
   cleanup: Cleanup,
   context: GitHubActionsContext,
-  options: WorkflowDispatchOptions,
+  options: {
+    octokit: TestOctokit;
+    owner: string;
+    repo: string;
+    sha: string;
+    workflowId: string;
+    branchPrefix: string;
+  },
 ): Promise<WorkflowRun> {
   const { octokit, owner, repo, sha, workflowId, branchPrefix } = options;
   const branchSuffix = buildBranchSuffix(context);
