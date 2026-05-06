@@ -1,4 +1,8 @@
+import { readFile } from "node:fs/promises";
 import { join } from "node:path";
+import { tmpdir } from "node:os";
+import { mkdtemp } from "node:fs/promises";
+import artifactClient from "@actions/artifact";
 import { expect, it } from "vitest";
 import {
   createWorkflowRun,
@@ -21,10 +25,10 @@ const fixturesPath = join(import.meta.dirname, "testdata");
 it.sequential(
   "provider workflow produces expected summary",
   async ({ onTestFinished }) => {
-    const { octokit, owner, repo, sha } = ghaContext;
+    const { owner, repo, sha } = ghaContext;
 
     const options: WorkflowDispatchOptions = {
-      octokit,
+      octokit: ghaContext.octokit,
       owner,
       repo,
       sha,
@@ -34,7 +38,7 @@ it.sequential(
 
     const run = await createWorkflowRun(onTestFinished, ghaContext, options);
     const conclusion = await waitForWorkflowRunToComplete(
-      octokit,
+      ghaContext.octokit,
       owner,
       repo,
       run,
@@ -45,25 +49,30 @@ it.sequential(
     expect(conclusion).toBe("success");
 
     // Download the summary artifact
-    const {
-      data: { artifacts },
-    } = await octokit.rest.actions.listWorkflowRunArtifacts({
-      owner,
-      repo,
-      run_id: run.id,
+    const { artifact } = await artifactClient.getArtifact("summary.md", {
+      findBy: {
+        token: process.env.GITHUB_TOKEN!,
+        workflowRunId: run.id,
+        repositoryName: repo,
+        repositoryOwner: owner,
+      },
     });
 
-    const summaryArtifact = artifacts.find((a) => a.name === "summary.md");
-    expect(summaryArtifact).toBeDefined();
-
-    const { data } = await octokit.rest.actions.downloadArtifact({
-      owner,
-      repo,
-      artifact_id: summaryArtifact!.id,
-      archive_format: "zip",
+    const downloadDir = await mkdtemp(join(tmpdir(), "e2e-summary-"));
+    await artifactClient.downloadArtifact(artifact.id, {
+      path: downloadDir,
+      findBy: {
+        token: process.env.GITHUB_TOKEN!,
+        workflowRunId: run.id,
+        repositoryName: repo,
+        repositoryOwner: owner,
+      },
     });
 
-    const summaryContent = Buffer.from(data as ArrayBuffer).toString("utf-8");
+    const summaryContent = await readFile(
+      join(downloadDir, "summary.md"),
+      "utf-8",
+    );
 
     await expect(summaryContent).toMatchFileSnapshot(
       join(fixturesPath, "summary.md"),
