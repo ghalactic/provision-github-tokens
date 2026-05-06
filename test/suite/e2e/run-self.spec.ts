@@ -1,7 +1,6 @@
 import { join } from "node:path";
 import { expect, it } from "vitest";
 import {
-  buildRunLabel,
   createWorkflowRun,
   E2E_TIMEOUT,
   getDefaultBranchSha,
@@ -31,7 +30,6 @@ it.sequential(
       sha,
       workflowId: PROVIDER_WORKFLOW_ID,
       branchPrefix: "provider",
-      inputs: { label: buildRunLabel(ghaContext) },
     };
 
     const run = await createWorkflowRun(onTestFinished, ghaContext, options);
@@ -92,7 +90,6 @@ it.sequential(
       sha,
       workflowId: CONSUMER_WORKFLOW_ID,
       branchPrefix: "consumer",
-      inputs: { label: buildRunLabel(ghaContext) },
     };
 
     const run = await createWorkflowRun(onTestFinished, ghaContext, options);

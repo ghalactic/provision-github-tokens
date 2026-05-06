@@ -15,10 +15,9 @@ export type WorkflowDispatchOptions = {
   sha: string;
   workflowId: string;
   branchPrefix: string;
-  inputs?: Record<string, string>;
 };
 
-export function buildRunLabel(context: GitHubActionsContext): string {
+function buildRunLabel(context: GitHubActionsContext): string {
   const { headRef, refName, eventName } = context;
 
   if (eventName === "pull_request") {
@@ -51,9 +50,9 @@ export async function createWorkflowRun(
   context: GitHubActionsContext,
   options: WorkflowDispatchOptions,
 ): Promise<WorkflowRun> {
-  const { octokit, owner, repo, sha, workflowId, branchPrefix, inputs } =
-    options;
+  const { octokit, owner, repo, sha, workflowId, branchPrefix } = options;
   const branchSuffix = buildBranchSuffix(context);
+  const inputs = { label: buildRunLabel(context) };
   const runRef = await createRunRef(
     cleanup,
     octokit,
@@ -172,7 +171,7 @@ async function dispatchRun(
   repo: string,
   workflowId: string,
   runRef: Reference,
-  inputs?: Record<string, string>,
+  inputs: Record<string, string>,
 ): Promise<void> {
   await octokit.rest.actions.createWorkflowDispatch({
     owner,
