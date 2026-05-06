@@ -93,6 +93,7 @@ it.sequential(
       sha,
       workflowId: CONSUMER_WORKFLOW_ID,
       label: `consumer-${label}`,
+      inputs: { label: buildRunName() },
     };
 
     const run = await createWorkflowRun(onTestFinished, ghaContext, options);
