@@ -1,5 +1,5 @@
 name: Run action for CI
-run-name: "Run action for CI: ${{ inputs.label }}"
+run-name: Run action for CI (${{ inputs.label }})
 
 on:
   workflow_dispatch:
