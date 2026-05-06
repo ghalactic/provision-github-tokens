@@ -1,8 +1,13 @@
 /* eslint-disable no-console */
+import artifactClient from "@actions/artifact";
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
 import { vi } from "vitest";
 import { sleep } from "./async.js";
 import type { GitHubActionsContext } from "./gha.js";
 import type { Reference, TestOctokit, WorkflowRun } from "./octokit.js";
+
+const ARTIFACTS_DIR = join(import.meta.dirname, "..", "artifacts");
 
 export const E2E_TIMEOUT = 3 * 60 * 1000; // 3 minutes
 const WAIT_INTERVAL = 15 * 1000; // 15 seconds
@@ -87,6 +92,37 @@ export async function getDefaultBranchSha(
   });
 
   return ref.object.sha;
+}
+
+export async function downloadArtifact(
+  context: GitHubActionsContext,
+  run: WorkflowRun,
+  artifactName: string,
+): Promise<string> {
+  const { owner, repo } = context;
+  const token = process.env.GITHUB_TOKEN!;
+
+  const { artifact } = await artifactClient.getArtifact(artifactName, {
+    findBy: {
+      token,
+      workflowRunId: run.id,
+      repositoryName: repo,
+      repositoryOwner: owner,
+    },
+  });
+
+  const downloadDir = join(ARTIFACTS_DIR, String(run.id));
+  await artifactClient.downloadArtifact(artifact.id, {
+    path: downloadDir,
+    findBy: {
+      token,
+      workflowRunId: run.id,
+      repositoryName: repo,
+      repositoryOwner: owner,
+    },
+  });
+
+  return readFile(join(downloadDir, artifactName), "utf-8");
 }
 
 function buildRunLabel(context: GitHubActionsContext): string {

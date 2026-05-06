@@ -1,11 +1,8 @@
-import { readFile } from "node:fs/promises";
 import { join } from "node:path";
-import { tmpdir } from "node:os";
-import { mkdtemp } from "node:fs/promises";
-import artifactClient from "@actions/artifact";
 import { expect, it } from "vitest";
 import {
   createWorkflowRun,
+  downloadArtifact,
   E2E_TIMEOUT,
   getDefaultBranchSha,
   waitForWorkflowRunToComplete,
@@ -48,30 +45,10 @@ it.sequential(
     // the action itself may fail from unauthorized consumer requests
     expect(conclusion).toBe("success");
 
-    // Download the summary artifact
-    const { artifact } = await artifactClient.getArtifact("summary.md", {
-      findBy: {
-        token: process.env.GITHUB_TOKEN!,
-        workflowRunId: run.id,
-        repositoryName: repo,
-        repositoryOwner: owner,
-      },
-    });
-
-    const downloadDir = await mkdtemp(join(tmpdir(), "e2e-summary-"));
-    await artifactClient.downloadArtifact(artifact.id, {
-      path: downloadDir,
-      findBy: {
-        token: process.env.GITHUB_TOKEN!,
-        workflowRunId: run.id,
-        repositoryName: repo,
-        repositoryOwner: owner,
-      },
-    });
-
-    const summaryContent = await readFile(
-      join(downloadDir, "summary.md"),
-      "utf-8",
+    const summaryContent = await downloadArtifact(
+      ghaContext,
+      run,
+      "summary.md",
     );
 
     await expect(summaryContent).toMatchFileSnapshot(
