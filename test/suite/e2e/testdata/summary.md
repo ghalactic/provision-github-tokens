@@ -1,7 +1,8 @@
-### Provisioned 2 of 4 secrets
+### Provisioned 2 of 5 secrets
 
 |    | Requester                                                                                                           | Secret                           | Targets                                                                                                                                                                                        | Reason             |
 | :- | :------------------------------------------------------------------------------------------------------------------ | :------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | :----------------- |
+| ❌  | [ghalactic/provision-github-tokens][gh/ghalactic/provision-github-tokens]                                           | `FIXTURES_GITHUB_TOKEN`          | [ghalactic/provision-github-tokens][gh/ghalactic/provision-github-tokens]                                                                                                                      | Token not allowed  |
 | ❌  | [ghalactic-fixtures/provision-github-tokens-ci-consumer][gh/ghalactic-fixtures/provision-github-tokens-ci-consumer] | `PARTIALLY_AUTHORIZED_PROVISION` | [ghalactic-fixtures/provision-github-tokens-ci-consumer][gh/ghalactic-fixtures/provision-github-tokens-ci-consumer], [ghalactic/provision-github-tokens][gh/ghalactic/provision-github-tokens] | Secret not allowed |
 | ❌  | [ghalactic-fixtures/provision-github-tokens-ci-consumer][gh/ghalactic-fixtures/provision-github-tokens-ci-consumer] | `UNAUTHORIZED_PROVISION`         | [ghalactic/provision-github-tokens][gh/ghalactic/provision-github-tokens]                                                                                                                      | Secret not allowed |
 
