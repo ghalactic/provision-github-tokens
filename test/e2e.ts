@@ -13,6 +13,9 @@ const WAIT_TIMEOUT = 5 * 60 * 1000; // 5 minutes
 
 const ARTIFACTS_DIR = join(import.meta.dirname, "..", "artifacts");
 
+/**
+ * Dispatch a workflow and wait for the resulting run to appear.
+ */
 export async function createWorkflowRun(
   cleanup: Cleanup,
   context: GitHubActionsContext,
@@ -54,6 +57,9 @@ export async function createWorkflowRun(
   });
 }
 
+/**
+ * Poll a workflow run until it reaches "completed" status.
+ */
 export async function waitForWorkflowRunToComplete(
   octokit: TestOctokit,
   owner: string,
@@ -77,6 +83,9 @@ export async function waitForWorkflowRunToComplete(
   });
 }
 
+/**
+ * Resolve the HEAD SHA of a repository's default branch.
+ */
 export async function getDefaultBranchSha(
   octokit: TestOctokit,
   owner: string,
@@ -92,6 +101,10 @@ export async function getDefaultBranchSha(
   return ref.object.sha;
 }
 
+/**
+ * Create a function that downloads a named artifact from a workflow run into the
+ * local artifacts/ directory.
+ */
 export function createDownloadArtifact(
   owner: string,
   repo: string,
@@ -150,6 +163,9 @@ function buildBranchSuffix(context: GitHubActionsContext): string {
   return `${event}-${prNumber}-${headRef.replace(/\//g, "-")}`;
 }
 
+/**
+ * Create a temporary branch at the given SHA for dispatching a workflow run.
+ */
 async function createRunRef(
   cleanup: Cleanup,
   octokit: TestOctokit,
@@ -231,4 +247,8 @@ async function waitFor<T>(
   }
 }
 
+/**
+ * A function (afterAll/afterEach/onTestFinished) that registers cleanup
+ * callbacks.
+ */
 type Cleanup = (fn: () => Promise<void>) => void;
