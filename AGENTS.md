@@ -3,7 +3,7 @@
 ## Build, test, and lint
 
 This project uses a Make-based build system (via [makefiles.dev]) with
-`npm exec` under the hood. Run `make` with no arguments to execute the default
+`pnpm exec` under the hood. Run `make` with no arguments to execute the default
 target (test).
 
 [makefiles.dev]: https://makefiles.dev
@@ -15,10 +15,10 @@ make test     # Run all Vitest tests
 make coverage # Run tests with coverage reports
 
 # Run a single test file
-npm exec -- vitest --run src/token-factory.spec.ts
+pnpm exec vitest --run src/token-factory.spec.ts
 
 # Run tests matching a name pattern
-npm exec -- vitest --run -t "pattern"
+pnpm exec vitest --run -t "pattern"
 
 # Regenerate all generated files (schemas, dist bundle, etc.)
 make regenerate
