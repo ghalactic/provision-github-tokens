@@ -2,5 +2,6 @@
 /artifacts/
 /dist/
 /src/schema/generated.*
+/pnpm-lock.yaml
 
 testdata/
