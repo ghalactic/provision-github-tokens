@@ -74,7 +74,7 @@ importers:
         version: 4.0.4
       '@types/node':
         specifier: ^24.12.2
-        version: 24.12.2
+        version: 24.12.3
       '@types/source-map-support':
         specifier: ^0.5.10
         version: 0.5.10
@@ -113,7 +113,7 @@ importers:
         version: 8.59.2(eslint@10.2.1)(typescript@6.0.3)
       vitest:
         specifier: ^4.1.5
-        version: 4.1.5(@types/node@24.12.2)(@vitest/coverage-v8@4.1.5)(vite@8.0.10(@types/node@24.12.2)(esbuild@0.28.0))
+        version: 4.1.5(@types/node@24.12.3)(@vitest/coverage-v8@4.1.5)(vite@8.0.10(@types/node@24.12.3)(esbuild@0.28.0))
 
 packages:
 
@@ -743,8 +743,8 @@ packages:
   '@types/ms@2.1.0':
     resolution: {integrity: sha512-GsCCIZDE/p3i96vtEqx+7dBUGXrc7zeSK3wwPHIaRThS+9OhWIXRqzs4d6k1SVU8g91DrNRWxWUGhp5KXQb2VA==}
 
-  '@types/node@24.12.2':
-    resolution: {integrity: sha512-A1sre26ke7HDIuY/M23nd9gfB+nrmhtYyMINbjI1zHJxYteKR6qSMX56FsmjMcDb3SMcjJg5BiRRgOCC/yBD0g==}
+  '@types/node@24.12.3':
+    resolution: {integrity: sha512-8oljBDGun9cIsZRJR6fkihn0TSXJI0UDOOhncYaERq6M0JMDoPLxyscwruJcb4GKS6dvK/d8xebYBg27h/duaQ==}
 
   '@types/source-map-support@0.5.10':
     resolution: {integrity: sha512-tgVP2H469x9zq34Z0m/fgPewGhg/MLClalNOiPIzQlXrSS2YrKu/xCdSCKnEDwkFha51VKEKB6A9wW26/ZNwzA==}
@@ -2702,7 +2702,7 @@ snapshots:
 
   '@types/ms@2.1.0': {}
 
-  '@types/node@24.12.2':
+  '@types/node@24.12.3':
     dependencies:
       undici-types: 7.16.0
 
@@ -2881,7 +2881,7 @@ snapshots:
       obug: 2.1.1
       std-env: 4.0.0
       tinyrainbow: 3.1.0
-      vitest: 4.1.5(@types/node@24.12.2)(@vitest/coverage-v8@4.1.5)(vite@8.0.10(@types/node@24.12.2)(esbuild@0.28.0))
+      vitest: 4.1.5(@types/node@24.12.3)(@vitest/coverage-v8@4.1.5)(vite@8.0.10(@types/node@24.12.3)(esbuild@0.28.0))
 
   '@vitest/eslint-plugin@1.6.16(@typescript-eslint/eslint-plugin@8.59.2(@typescript-eslint/parser@8.59.2(eslint@10.2.1)(typescript@6.0.3))(eslint@10.2.1)(typescript@6.0.3))(eslint@10.2.1)(typescript@6.0.3)(vitest@4.1.5)':
     dependencies:
@@ -2891,7 +2891,7 @@ snapshots:
     optionalDependencies:
       '@typescript-eslint/eslint-plugin': 8.59.2(@typescript-eslint/parser@8.59.2(eslint@10.2.1)(typescript@6.0.3))(eslint@10.2.1)(typescript@6.0.3)
       typescript: 6.0.3
-      vitest: 4.1.5(@types/node@24.12.2)(@vitest/coverage-v8@4.1.5)(vite@8.0.10(@types/node@24.12.2)(esbuild@0.28.0))
+      vitest: 4.1.5(@types/node@24.12.3)(@vitest/coverage-v8@4.1.5)(vite@8.0.10(@types/node@24.12.3)(esbuild@0.28.0))
     transitivePeerDependencies:
       - supports-color
 
@@ -2904,13 +2904,13 @@ snapshots:
       chai: 6.2.2
       tinyrainbow: 3.1.0
 
-  '@vitest/mocker@4.1.5(vite@8.0.10(@types/node@24.12.2)(esbuild@0.28.0))':
+  '@vitest/mocker@4.1.5(vite@8.0.10(@types/node@24.12.3)(esbuild@0.28.0))':
     dependencies:
       '@vitest/spy': 4.1.5
       estree-walker: 3.0.3
       magic-string: 0.30.21
     optionalDependencies:
-      vite: 8.0.10(@types/node@24.12.2)(esbuild@0.28.0)
+      vite: 8.0.10(@types/node@24.12.3)(esbuild@0.28.0)
 
   '@vitest/pretty-format@4.1.5':
     dependencies:
@@ -4086,7 +4086,7 @@ snapshots:
 
   util-deprecate@1.0.2: {}
 
-  vite@8.0.10(@types/node@24.12.2)(esbuild@0.28.0):
+  vite@8.0.10(@types/node@24.12.3)(esbuild@0.28.0):
     dependencies:
       lightningcss: 1.32.0
       picomatch: 4.0.4
@@ -4094,14 +4094,14 @@ snapshots:
       rolldown: 1.0.0-rc.17
       tinyglobby: 0.2.16
     optionalDependencies:
-      '@types/node': 24.12.2
+      '@types/node': 24.12.3
       esbuild: 0.28.0
       fsevents: 2.3.3
 
-  vitest@4.1.5(@types/node@24.12.2)(@vitest/coverage-v8@4.1.5)(vite@8.0.10(@types/node@24.12.2)(esbuild@0.28.0)):
+  vitest@4.1.5(@types/node@24.12.3)(@vitest/coverage-v8@4.1.5)(vite@8.0.10(@types/node@24.12.3)(esbuild@0.28.0)):
     dependencies:
       '@vitest/expect': 4.1.5
-      '@vitest/mocker': 4.1.5(vite@8.0.10(@types/node@24.12.2)(esbuild@0.28.0))
+      '@vitest/mocker': 4.1.5(vite@8.0.10(@types/node@24.12.3)(esbuild@0.28.0))
       '@vitest/pretty-format': 4.1.5
       '@vitest/runner': 4.1.5
       '@vitest/snapshot': 4.1.5
@@ -4118,10 +4118,10 @@ snapshots:
       tinyexec: 1.0.2
       tinyglobby: 0.2.16
       tinyrainbow: 3.1.0
-      vite: 8.0.10(@types/node@24.12.2)(esbuild@0.28.0)
+      vite: 8.0.10(@types/node@24.12.3)(esbuild@0.28.0)
       why-is-node-running: 2.3.0
     optionalDependencies:
-      '@types/node': 24.12.2
+      '@types/node': 24.12.3
       '@vitest/coverage-v8': 4.1.5(vitest@4.1.5)
     transitivePeerDependencies:
       - msw
