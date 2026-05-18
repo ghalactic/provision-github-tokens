@@ -1,0 +1,13 @@
+name = "provision-github-tokens-scheduler"
+main = "dist/index.js"
+compatibility_date = "2024-01-01"
+
+[triggers]
+crons = ["*/30 * * * *"]
+
+[vars]
+GITHUB_APP_ID = ""
+GITHUB_REPO = ""
+GITHUB_WORKFLOW = ""
+
+# GITHUB_APP_PK must be set via: wrangler secret put GITHUB_APP_PK

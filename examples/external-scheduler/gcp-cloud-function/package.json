@@ -1,0 +1,6 @@
+{
+  "name": "provision-github-tokens-scheduler",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.mjs"
+}

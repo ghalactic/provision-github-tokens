@@ -1,0 +1,40 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: External scheduler for provision-github-tokens
+
+Parameters:
+  GitHubAppId:
+    Type: String
+    Description: GitHub App numeric ID
+  GitHubAppPk:
+    Type: String
+    NoEcho: true
+    Description: GitHub App PEM-encoded private key
+  GitHubRepo:
+    Type: String
+    Description: "owner/repo of the token-provider workflow"
+  GitHubWorkflow:
+    Type: String
+    Description: Workflow filename or numeric ID
+    Default: provision-tokens.yml
+
+Resources:
+  SchedulerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: dist/index.handler
+      Runtime: nodejs20.x
+      Timeout: 30
+      Environment:
+        Variables:
+          GITHUB_APP_ID: !Ref GitHubAppId
+          GITHUB_APP_PK: !Ref GitHubAppPk
+          GITHUB_REPO: !Ref GitHubRepo
+          GITHUB_WORKFLOW: !Ref GitHubWorkflow
+      Events:
+        Schedule:
+          Type: Schedule
+          Properties:
+            Schedule: rate(30 minutes)
+            RetryPolicy:
+              MaximumRetryAttempts: 3
