@@ -24,7 +24,12 @@ const namingBase = [
 ];
 
 export default defineConfig(
-  globalIgnores([".makefiles", "artifacts", "dist"]),
+  globalIgnores([
+    ".makefiles",
+    "artifacts",
+    "dist",
+    "examples/external-scheduler/**/dist",
+  ]),
   js.configs.recommended,
   tseslint.configs.recommendedTypeChecked,
   vitest.configs.recommended,
