@@ -18,17 +18,17 @@ buttons let users deploy directly from subdirectories.
 
 ## Core dispatch logic
 
-A shared TypeScript module that:
+A shared TypeScript module that uses the batteries-included `octokit` package
+(already a dependency of this project) with GitHub App authentication:
 
-1. Creates a JWT from the GitHub App's ID and private key
-2. Calls `GET /repos/{owner}/{repo}/installation` to discover the installation
-   ID
-3. Exchanges the JWT for an installation token
+1. Creates an `App` instance with the configured app ID and private key
+2. Discovers the installation for the target repo
+3. Gets an installation-scoped Octokit client
 4. Calls `POST /repos/{owner}/{repo}/actions/workflows/{workflow_id}/dispatches`
-5. Throws on transient failure (5xx, network error) — does not retry internally
 
-The function is pure and stateless. It throws on failure so that the calling
-entrypoint (or platform) can decide whether to retry.
+The `octokit` package handles JWT creation, installation token exchange, request
+retries (via `@octokit/plugin-retry`), and rate limit throttling transparently.
+No manual JWT or retry logic is needed.
 
 ## Configuration
 
@@ -61,19 +61,23 @@ standard config format.
 
 ## Retry strategy
 
-- **Platforms with native retry** (AWS EventBridge, GCP Cloud Scheduler): the
-  function throws on failure; the platform retries automatically per its
-  configured retry policy.
-- **Platforms without native retry** (Cloudflare Cron Triggers, Azure Timer
-  trigger): the entrypoint wraps the dispatch call in a retry loop (3 attempts,
-  exponential backoff) before reporting failure.
+The `octokit` package includes `@octokit/plugin-retry` which automatically
+retries failed requests on 5xx and network errors. No additional retry logic is
+needed in the scheduler code itself.
+
+For platforms with native invocation retry (AWS EventBridge, GCP Cloud
+Scheduler), the function throws on unrecoverable failure and the platform
+retries the entire invocation. For platforms without native retry (Cloudflare
+Cron Triggers, Azure Timer trigger), Octokit's built-in retry is sufficient — if
+the request still fails after Octokit's retries, the function throws and the
+next scheduled invocation (30 minutes later) will try again.
 
 ## Schedule
 
 Recommend **30 minutes** as the default interval. With 2 invocations per hour
-and per-invocation retry (where needed), this provides high confidence of at
-least one successful dispatch per hour. Users can tighten to 15–20 minutes if
-they want extra margin, but it is unnecessary with reliable cloud schedulers.
+and Octokit's built-in retry on each invocation, this provides high confidence
+of at least one successful dispatch per hour. Users can tighten to 15–20 minutes
+if they want extra margin, but it is unnecessary with reliable cloud schedulers.
 
 ## Platform examples
 
@@ -109,8 +113,7 @@ deployed.
 ```
 src/
   external-scheduler/
-    dispatch.ts             # Core dispatch logic (throws on failure)
-    retry.ts               # Retry wrapper for platforms without native retry
+    dispatch.ts             # Core dispatch logic using octokit App client
     cloudflare/
       index.ts             # Cloudflare Worker entrypoint
     aws/
