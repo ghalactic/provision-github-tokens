@@ -1,6 +1,7 @@
 /.makefiles/
 /artifacts/
 /dist/
+/examples/**/dist/
 /src/schema/generated.*
 /pnpm-lock.yaml
 
