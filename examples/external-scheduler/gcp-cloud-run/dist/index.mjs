@@ -1439,6 +1439,9 @@ var require_light = __commonJS({
   }
 });
 
+// src/external-scheduler/gcp/index.ts
+import { createServer } from "node:http";
+
 // node_modules/.pnpm/universal-user-agent@7.0.3/node_modules/universal-user-agent/index.js
 function getUserAgent() {
   if (typeof navigator === "object" && "userAgent" in navigator) {
@@ -8191,9 +8194,7 @@ async function dispatch(config) {
 function splitRepo(repo) {
   const parts = repo.split("/");
   if (parts.length !== 2 || !parts[0] || !parts[1]) {
-    throw new Error(
-      `Invalid repo format: "${repo}". Expected "owner/repo".`
-    );
+    throw new Error(`Invalid repo format: "${repo}". Expected "owner/repo".`);
   }
   return [parts[0], parts[1]];
 }
@@ -8202,19 +8203,25 @@ function hasStatus(error, status) {
 }
 
 // src/external-scheduler/gcp/index.ts
-async function handleSchedule() {
+var port = Number(process.env.PORT) || 8080;
+var server = createServer(async (_req, res) => {
   const appId = process.env.GITHUB_APP_ID;
   const privateKey = process.env.GITHUB_APP_PK;
   const repo = process.env.GITHUB_REPO;
   const workflow = process.env.GITHUB_WORKFLOW;
   if (!appId || !privateKey || !repo || !workflow) {
-    throw new Error("Missing required environment variables");
+    res.writeHead(500).end("Missing required environment variables");
+    return;
   }
-  await dispatch({ appId, privateKey, repo, workflow });
-}
-export {
-  handleSchedule
-};
+  try {
+    await dispatch({ appId, privateKey, repo, workflow });
+    res.writeHead(200).end();
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    res.writeHead(500).end(message);
+  }
+});
+server.listen(port);
 /*! Bundled license information:
 
 @octokit/request-error/dist-src/index.js:

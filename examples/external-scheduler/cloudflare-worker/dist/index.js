@@ -8213,9 +8213,7 @@ async function dispatch(config) {
 function splitRepo(repo) {
   const parts = repo.split("/");
   if (parts.length !== 2 || !parts[0] || !parts[1]) {
-    throw new Error(
-      `Invalid repo format: "${repo}". Expected "owner/repo".`
-    );
+    throw new Error(`Invalid repo format: "${repo}". Expected "owner/repo".`);
   }
   return [parts[0], parts[1]];
 }

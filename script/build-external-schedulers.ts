@@ -20,7 +20,7 @@ const platforms = [
   },
   {
     entryPoint: "src/external-scheduler/gcp/index.ts",
-    outfile: "examples/external-scheduler/gcp-cloud-function/dist/index.mjs",
+    outfile: "examples/external-scheduler/gcp-cloud-run/dist/index.mjs",
     format: "esm" as const,
     platform: "node" as const,
     target: "node20",

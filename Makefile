@@ -1,5 +1,5 @@
 GENERATED_FILES += src/schema/generated.requester-token-permissions.v1.schema.json src/schema/generated.provider-rule-permissions.v1.schema.json dist/main.js dist/main.js.map
-GENERATED_FILES += examples/external-scheduler/cloudflare-worker/dist/index.js examples/external-scheduler/cloudflare-worker/dist/index.js.map examples/external-scheduler/aws-lambda/dist/index.mjs examples/external-scheduler/aws-lambda/dist/index.mjs.map examples/external-scheduler/gcp-cloud-function/dist/index.mjs examples/external-scheduler/gcp-cloud-function/dist/index.mjs.map examples/external-scheduler/azure-function/dist/index.mjs examples/external-scheduler/azure-function/dist/index.mjs.map
+GENERATED_FILES += examples/external-scheduler/cloudflare-worker/dist/index.js examples/external-scheduler/cloudflare-worker/dist/index.js.map examples/external-scheduler/aws-lambda/dist/index.mjs examples/external-scheduler/aws-lambda/dist/index.mjs.map examples/external-scheduler/gcp-cloud-run/dist/index.mjs examples/external-scheduler/gcp-cloud-run/dist/index.mjs.map examples/external-scheduler/azure-function/dist/index.mjs examples/external-scheduler/azure-function/dist/index.mjs.map
 JS_TSC_TYPECHECK_SKIP_LIB := true
 
 -include .makefiles/Makefile
