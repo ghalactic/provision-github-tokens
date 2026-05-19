@@ -20,12 +20,15 @@ waiting long for the next dispatch.
 
 ## Configuration
 
-| Variable          | Required | Sensitive | Description                                           |
-| ----------------- | -------- | --------- | ----------------------------------------------------- |
-| `GITHUB_APP_ID`   | Yes      | No        | Numeric GitHub App ID.                                |
-| `GITHUB_APP_PK`   | Yes      | Yes       | PEM-encoded GitHub App private key.                   |
-| `GITHUB_REPO`     | Yes      | No        | Provider repository in `owner/repo` form.             |
-| `GITHUB_WORKFLOW` | Yes      | No        | Workflow filename or numeric workflow ID to dispatch. |
+| Variable          | Required | Sensitive | Description                                            |
+| ----------------- | -------- | --------- | ------------------------------------------------------ |
+| `GITHUB_APP_ID`   | Yes      | No        | Numeric GitHub App ID.                                 |
+| `GITHUB_APP_PK`   | Yes      | Yes       | PEM-encoded GitHub App private key (via secret store). |
+| `GITHUB_REPO`     | Yes      | No        | Provider repository in `owner/repo` form.              |
+| `GITHUB_WORKFLOW` | Yes      | No        | Workflow filename or numeric workflow ID to dispatch.  |
+
+Each platform stores the private key in its native secret manager. See the
+individual platform guide for details.
 
 ## Platform guides
 

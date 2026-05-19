@@ -18,10 +18,6 @@ Parameters:
   GitHubAppId:
     Type: String
     Description: GitHub App numeric ID
-  GitHubAppPk:
-    Type: String
-    NoEcho: true
-    Description: GitHub App PEM-encoded private key
   GitHubRepo:
     Type: String
     Description: "owner/repo of the token-provider workflow"
@@ -31,6 +27,12 @@ Parameters:
     Default: provision-tokens.yml
 
 Resources:
+  GitHubAppPkSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: !Sub "${AWS::StackName}/github-app-pk"
+      Description: GitHub App PEM-encoded private key
+
   SchedulerFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -40,9 +42,12 @@ Resources:
       Environment:
         Variables:
           GITHUB_APP_ID: !Ref GitHubAppId
-          GITHUB_APP_PK: !Ref GitHubAppPk
+          GITHUB_APP_PK_SECRET_ARN: !Ref GitHubAppPkSecret
           GITHUB_REPO: !Ref GitHubRepo
           GITHUB_WORKFLOW: !Ref GitHubWorkflow
+      Policies:
+        - AWSSecretsManagerGetSecretValuePolicy:
+            SecretArn: !Ref GitHubAppPkSecret
       Events:
         Schedule:
           Type: Schedule
@@ -50,3 +55,8 @@ Resources:
             Schedule: rate(30 minutes)
             RetryPolicy:
               MaximumRetryAttempts: 3
+
+Outputs:
+  SecretArn:
+    Description: ARN of the secret — populate it with your GitHub App private key
+    Value: !Ref GitHubAppPkSecret

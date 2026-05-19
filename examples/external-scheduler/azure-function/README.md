@@ -12,37 +12,32 @@ an interval.
 
 ## Configure
 
-Use app settings for `GITHUB_APP_ID`, `GITHUB_REPO`, and `GITHUB_WORKFLOW`.
-Store `GITHUB_APP_PK` in Key Vault and reference it from the Function App.
-
-## Deploy
-
-Create a Function App and Key Vault first. The manual path below also uses the
-[Azure CLI][azure-cli].
-
-Store the private key in Key Vault:
+The ARM template creates a Key Vault with an empty `github-app-pk` secret. After
+deploying, update the secret with your PEM key:
 
 ```sh
 az keyvault secret set \
-  --vault-name <key-vault> \
+  --vault-name <keyVaultName from deployment outputs> \
   --name github-app-pk \
   --file github-app.pem
 ```
 
-Set the application settings, using a Key Vault reference for the private key:
+The Function App uses a system-assigned managed identity with the Key Vault
+Secrets User role, so the Key Vault reference resolves automatically.
+
+## Deploy
+
+Click the button above, or deploy from the CLI:
 
 ```sh
-az functionapp config appsettings set \
-  --name <function-app> \
+az deployment group create \
   --resource-group <resource-group> \
-  --settings \
-  "GITHUB_APP_ID=<app-id>" \
-  "GITHUB_REPO=<owner/repo>" \
-  "GITHUB_WORKFLOW=<workflow>" \
-  "GITHUB_APP_PK=@Microsoft.KeyVault(SecretUri=https://<key-vault>.vault.azure.net/secrets/github-app-pk/)"
+  --template-file azuredeploy.json \
+  --parameters functionAppName=<name> gitHubAppId=<app-id> gitHubRepo=<owner/repo>
 ```
 
-Publish from this directory:
+After deployment, update the Key Vault secret as described above, then publish
+the function code:
 
 ```sh
 func azure functionapp publish <function-app>
@@ -55,4 +50,3 @@ The 30-minute timer schedule is already configured in `function.json`.
   https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fghalactic%2Fprovision-github-tokens%2Fmain%2Fexamples%2Fexternal-scheduler%2Fazure-function%2Fazuredeploy.json
 [functions-core-tools]:
   https://learn.microsoft.com/azure/azure-functions/functions-run-local
-[azure-cli]: https://learn.microsoft.com/cli/azure/install-azure-cli

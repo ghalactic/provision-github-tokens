@@ -12,11 +12,17 @@ schedule.
 
 ## Configure
 
-`sam deploy --guided` prompts for `GitHubAppId`, `GitHubAppPk`, `GitHubRepo`,
-and `GitHubWorkflow`.
+The template creates an AWS Secrets Manager secret for the private key. After
+deploying, populate the secret with your PEM file:
 
-`GitHubAppPk` uses `NoEcho: true`, so CloudFormation does not echo the private
-key in command output or stack events.
+```sh
+aws secretsmanager put-secret-value \
+  --secret-id <SecretArn from stack outputs> \
+  --secret-string file://github-app.pem
+```
+
+`GitHubAppId`, `GitHubRepo`, and `GitHubWorkflow` are passed as plain
+CloudFormation parameters.
 
 ## Deploy
 
