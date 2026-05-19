@@ -5,7 +5,7 @@ vi.mock("../dispatch.js", () => ({
   dispatch: vi.fn().mockResolvedValue(undefined),
 }));
 
-const mockListen = vi.fn();
+const mockListen = vi.hoisted(() => vi.fn());
 
 vi.mock("node:http", () => ({
   createServer: vi.fn(() => ({ listen: mockListen })),
@@ -56,12 +56,23 @@ it("defaults to port 8080 when PORT is not set", async () => {
   expect(mockListen).toHaveBeenCalledWith(8080);
 });
 
+it("returns 405 for non-POST requests", async () => {
+  await import("./index.js");
+  const handler = getHandler();
+  const res = makeRes();
+
+  handler({ method: "GET" } as IncomingMessage, res);
+
+  expect(res.writeHead).toHaveBeenCalledWith(405);
+  expect(res.end).toHaveBeenCalledWith("Method not allowed");
+});
+
 it("calls dispatch and returns 200 on success", async () => {
   await import("./index.js");
   const handler = getHandler();
   const res = makeRes();
 
-  handler({} as IncomingMessage, res);
+  handler({ method: "POST" } as IncomingMessage, res);
   await vi.waitFor(() => expect(res.writeHead).toHaveBeenCalled());
 
   expect(dispatch).toHaveBeenCalledWith({
@@ -79,7 +90,7 @@ it("returns 500 when env vars are missing", async () => {
   const handler = getHandler();
   const res = makeRes();
 
-  handler({} as IncomingMessage, res);
+  handler({ method: "POST" } as IncomingMessage, res);
 
   expect(res.writeHead).toHaveBeenCalledWith(500);
   expect(res.end).toHaveBeenCalledWith(
@@ -93,9 +104,22 @@ it("returns 500 with error message on dispatch failure", async () => {
   const handler = getHandler();
   const res = makeRes();
 
-  handler({} as IncomingMessage, res);
+  handler({ method: "POST" } as IncomingMessage, res);
   await vi.waitFor(() => expect(res.writeHead).toHaveBeenCalled());
 
   expect(res.writeHead).toHaveBeenCalledWith(500);
   expect(res.end).toHaveBeenCalledWith("dispatch failed");
+});
+
+it("stringifies non-Error rejection values", async () => {
+  await import("./index.js");
+  vi.mocked(dispatch).mockRejectedValue("string-error");
+  const handler = getHandler();
+  const res = makeRes();
+
+  handler({ method: "POST" } as IncomingMessage, res);
+  await vi.waitFor(() => expect(res.writeHead).toHaveBeenCalled());
+
+  expect(res.writeHead).toHaveBeenCalledWith(500);
+  expect(res.end).toHaveBeenCalledWith("string-error");
 });

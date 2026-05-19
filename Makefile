@@ -30,7 +30,7 @@ src/schema/generated.requester-token-permissions.v1.schema.json src/schema/gener
 dist/main.js dist/main.js.map: script/build.ts artifacts/link-dependencies.touch $(JS_SOURCE_FILES)
 	node "$<" "$@"
 
-examples/external-scheduler/cloudflare-worker/dist/index.js examples/external-scheduler/cloudflare-worker/dist/index.js.map examples/external-scheduler/aws-lambda/dist/index.mjs examples/external-scheduler/aws-lambda/dist/index.mjs.map examples/external-scheduler/gcp-cloud-function/dist/index.mjs examples/external-scheduler/gcp-cloud-function/dist/index.mjs.map examples/external-scheduler/azure-function/dist/index.mjs examples/external-scheduler/azure-function/dist/index.mjs.map: script/build-external-schedulers.ts artifacts/link-dependencies.touch $(JS_SOURCE_FILES)
+examples/external-scheduler/cloudflare-worker/dist/index.js examples/external-scheduler/cloudflare-worker/dist/index.js.map examples/external-scheduler/aws-lambda/dist/index.mjs examples/external-scheduler/aws-lambda/dist/index.mjs.map examples/external-scheduler/gcp-cloud-run/dist/index.mjs examples/external-scheduler/gcp-cloud-run/dist/index.mjs.map examples/external-scheduler/azure-function/dist/index.mjs examples/external-scheduler/azure-function/dist/index.mjs.map: script/build-external-schedulers.ts artifacts/link-dependencies.touch $(JS_SOURCE_FILES)
 	node "$<"
 
 artifacts/vale/sync.touch: .vale.ini
