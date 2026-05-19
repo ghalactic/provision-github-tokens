@@ -31,10 +31,10 @@ waiting long for the next dispatch.
 
 - [Cloudflare Worker scheduler][cloudflare-worker]
 - [AWS Lambda scheduler][aws-lambda]
-- [Google Cloud Function scheduler][gcp-cloud-function]
+- [Google Cloud Run scheduler][gcp-cloud-run]
 - [Azure Function scheduler][azure-function]
 
 [cloudflare-worker]: ./cloudflare-worker/README.md
 [aws-lambda]: ./aws-lambda/README.md
-[gcp-cloud-function]: ./gcp-cloud-function/README.md
+[gcp-cloud-run]: ./gcp-cloud-run/README.md
 [azure-function]: ./azure-function/README.md

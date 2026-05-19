@@ -15,19 +15,20 @@ import { createServer } from "node:http";
 import { dispatch } from "../dispatch.js";
 
 function makeRes() {
-  const res = {
-    writeHead: vi.fn().mockReturnThis(),
-    end: vi.fn(),
-  };
+  const end = vi.fn();
+  const writeHead = vi.fn().mockReturnValue({ end });
 
-  return res as unknown as ServerResponse;
+  return { writeHead, end } as unknown as ServerResponse & {
+    writeHead: ReturnType<typeof vi.fn>;
+    end: ReturnType<typeof vi.fn>;
+  };
 }
 
 function getHandler() {
   return vi.mocked(createServer).mock.calls[0][0] as (
     req: IncomingMessage,
     res: ServerResponse,
-  ) => Promise<void>;
+  ) => void;
 }
 
 beforeEach(() => {
@@ -60,7 +61,8 @@ it("calls dispatch and returns 200 on success", async () => {
   const handler = getHandler();
   const res = makeRes();
 
-  await handler({} as IncomingMessage, res);
+  handler({} as IncomingMessage, res);
+  await vi.waitFor(() => expect(res.writeHead).toHaveBeenCalled());
 
   expect(dispatch).toHaveBeenCalledWith({
     appId: "12345",
@@ -77,7 +79,7 @@ it("returns 500 when env vars are missing", async () => {
   const handler = getHandler();
   const res = makeRes();
 
-  await handler({} as IncomingMessage, res);
+  handler({} as IncomingMessage, res);
 
   expect(res.writeHead).toHaveBeenCalledWith(500);
   expect(res.end).toHaveBeenCalledWith(
@@ -91,7 +93,8 @@ it("returns 500 with error message on dispatch failure", async () => {
   const handler = getHandler();
   const res = makeRes();
 
-  await handler({} as IncomingMessage, res);
+  handler({} as IncomingMessage, res);
+  await vi.waitFor(() => expect(res.writeHead).toHaveBeenCalled());
 
   expect(res.writeHead).toHaveBeenCalledWith(500);
   expect(res.end).toHaveBeenCalledWith("dispatch failed");

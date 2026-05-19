@@ -8204,7 +8204,7 @@ function hasStatus(error, status) {
 
 // src/external-scheduler/gcp/index.ts
 var port = Number(process.env.PORT) || 8080;
-var server = createServer(async (_req, res) => {
+var server = createServer((_req, res) => {
   const appId = process.env.GITHUB_APP_ID;
   const privateKey = process.env.GITHUB_APP_PK;
   const repo = process.env.GITHUB_REPO;
@@ -8213,13 +8213,15 @@ var server = createServer(async (_req, res) => {
     res.writeHead(500).end("Missing required environment variables");
     return;
   }
-  try {
-    await dispatch({ appId, privateKey, repo, workflow });
-    res.writeHead(200).end();
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    res.writeHead(500).end(message);
-  }
+  dispatch({ appId, privateKey, repo, workflow }).then(
+    () => {
+      res.writeHead(200).end();
+    },
+    (error) => {
+      const message = error instanceof Error ? error.message : String(error);
+      res.writeHead(500).end(message);
+    }
+  );
 });
 server.listen(port);
 /*! Bundled license information:
