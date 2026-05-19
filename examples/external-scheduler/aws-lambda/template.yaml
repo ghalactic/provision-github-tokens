@@ -2,6 +2,18 @@ AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 Description: External scheduler for provision-github-tokens
 
+Metadata:
+  AWS::ServerlessRepo::Application:
+    Name: provision-github-tokens-scheduler
+    Description: >-
+      External scheduler that triggers a GitHub Actions workflow via
+      workflow_dispatch every 30 minutes using GitHub App auth.
+    Author: ghalactic
+    SpdxLicenseId: MIT
+    HomePageUrl: https://github.com/ghalactic/provision-github-tokens
+    SourceCodeUrl: https://github.com/ghalactic/provision-github-tokens
+    SemanticVersion: 1.0.0
+
 Parameters:
   GitHubAppId:
     Type: String

@@ -29,9 +29,21 @@ sam deploy --guided
 The template already runs every 30 minutes. EventBridge retries failed
 invocations up to 3 times.
 
+## Publish to SAR
+
+To make the deploy button work for others, publish the application to the AWS
+Serverless Application Repository:
+
+```sh
+sam publish --template template.yaml --region <region>
+```
+
+After publishing, the deploy button links to the SAR console page where users
+can deploy with one click.
+
 [deploy-badge]:
-  https://s3.amazonaws.com/cloudformation-examples/cloudformation-launch-stack.png
+  https://img.shields.io/badge/Deploy-AWS%20Serverless%20App%20Repository-orange?logo=amazonaws
 [deploy-url]:
-  https://console.aws.amazon.com/cloudformation/home#/stacks/new?stackName=provision-github-tokens-scheduler&templateURL=https://raw.githubusercontent.com/ghalactic/provision-github-tokens/main/examples/external-scheduler/aws-lambda/template.yaml
+  https://serverlessrepo.aws.amazon.com/applications/provision-github-tokens-scheduler
 [sam-cli]:
   https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/install-sam-cli.html
