@@ -8194,19 +8194,30 @@ async function dispatch(config) {
     throw error;
   }
   const octokit = await app.getInstallationOctokit(installationId);
+  const {
+    data: { default_branch: ref }
+  } = await octokit.request("GET /repos/{owner}/{repo}", {
+    owner,
+    repo: repoName
+  });
   await octokit.request(
     "POST /repos/{owner}/{repo}/actions/workflows/{workflow_id}/dispatches",
     {
       owner,
       repo: repoName,
       workflow_id: workflow,
-      ref: "main"
+      ref
     }
   );
 }
 function splitRepo(repo) {
-  const [owner, repoName] = repo.split("/");
-  return [owner, repoName];
+  const parts = repo.split("/");
+  if (parts.length !== 2 || !parts[0] || !parts[1]) {
+    throw new Error(
+      `Invalid repo format: "${repo}". Expected "owner/repo".`
+    );
+  }
+  return [parts[0], parts[1]];
 }
 function hasStatus(error, status) {
   return error instanceof Error && "status" in error && error.status === status;

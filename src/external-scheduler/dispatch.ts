@@ -36,21 +36,32 @@ export async function dispatch(config: DispatchConfig): Promise<void> {
 
   const octokit = await app.getInstallationOctokit(installationId);
 
+  const {
+    data: { default_branch: ref },
+  } = await octokit.request("GET /repos/{owner}/{repo}", {
+    owner,
+    repo: repoName,
+  });
+
   await octokit.request(
     "POST /repos/{owner}/{repo}/actions/workflows/{workflow_id}/dispatches",
     {
       owner,
       repo: repoName,
       workflow_id: workflow,
-      ref: "main",
+      ref,
     },
   );
 }
 
 function splitRepo(repo: string): [owner: string, repo: string] {
-  const [owner, repoName] = repo.split("/");
+  const parts = repo.split("/");
 
-  return [owner, repoName];
+  if (parts.length !== 2 || !parts[0] || !parts[1]) {
+    throw new Error(`Invalid repo format: "${repo}". Expected "owner/repo".`);
+  }
+
+  return [parts[0], parts[1]];
 }
 
 function hasStatus(
