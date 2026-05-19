@@ -1439,6 +1439,9 @@ var require_light = __commonJS({
   }
 });
 
+// src/external-scheduler/azure/index.ts
+import { app } from "@azure/functions";
+
 // node_modules/.pnpm/universal-user-agent@7.0.3/node_modules/universal-user-agent/index.js
 function getUserAgent() {
   if (typeof navigator === "object" && "userAgent" in navigator) {
@@ -7899,8 +7902,8 @@ function webhooks(appOctokit, options) {
     }
   });
 }
-async function getInstallationOctokit(app, installationId) {
-  return app.octokit.auth({
+async function getInstallationOctokit(app2, installationId) {
+  return app2.octokit.auth({
     type: "installation",
     installationId,
     factory(auth7) {
@@ -7913,30 +7916,30 @@ async function getInstallationOctokit(app, installationId) {
     }
   });
 }
-function eachInstallationFactory(app) {
-  return Object.assign(eachInstallation.bind(null, app), {
-    iterator: eachInstallationIterator.bind(null, app)
+function eachInstallationFactory(app2) {
+  return Object.assign(eachInstallation.bind(null, app2), {
+    iterator: eachInstallationIterator.bind(null, app2)
   });
 }
-async function eachInstallation(app, callback) {
-  const i = eachInstallationIterator(app)[Symbol.asyncIterator]();
+async function eachInstallation(app2, callback) {
+  const i = eachInstallationIterator(app2)[Symbol.asyncIterator]();
   let result = await i.next();
   while (!result.done) {
     await callback(result.value);
     result = await i.next();
   }
 }
-function eachInstallationIterator(app) {
+function eachInstallationIterator(app2) {
   return {
     async *[Symbol.asyncIterator]() {
       const iterator2 = composePaginateRest.iterator(
-        app.octokit,
+        app2.octokit,
         "GET /app/installations"
       );
       for await (const { data: installations } of iterator2) {
         for (const installation of installations) {
           const installationOctokit = await getInstallationOctokit(
-            app,
+            app2,
             installation.id
           );
           yield { octokit: installationOctokit, installation };
@@ -7945,14 +7948,14 @@ function eachInstallationIterator(app) {
     }
   };
 }
-function eachRepositoryFactory(app) {
-  return Object.assign(eachRepository.bind(null, app), {
-    iterator: eachRepositoryIterator.bind(null, app)
+function eachRepositoryFactory(app2) {
+  return Object.assign(eachRepository.bind(null, app2), {
+    iterator: eachRepositoryIterator.bind(null, app2)
   });
 }
-async function eachRepository(app, queryOrCallback, callback) {
+async function eachRepository(app2, queryOrCallback, callback) {
   const i = eachRepositoryIterator(
-    app,
+    app2,
     callback ? queryOrCallback : void 0
   )[Symbol.asyncIterator]();
   let result = await i.next();
@@ -7965,19 +7968,19 @@ async function eachRepository(app, queryOrCallback, callback) {
     result = await i.next();
   }
 }
-function singleInstallationIterator(app, installationId) {
+function singleInstallationIterator(app2, installationId) {
   return {
     async *[Symbol.asyncIterator]() {
       yield {
-        octokit: await app.getInstallationOctokit(installationId)
+        octokit: await app2.getInstallationOctokit(installationId)
       };
     }
   };
 }
-function eachRepositoryIterator(app, query) {
+function eachRepositoryIterator(app2, query) {
   return {
     async *[Symbol.asyncIterator]() {
-      const iterator2 = query ? singleInstallationIterator(app, query.installationId) : app.eachInstallation.iterator();
+      const iterator2 = query ? singleInstallationIterator(app2, query.installationId) : app2.eachInstallation.iterator();
       for await (const { octokit } of iterator2) {
         const repositoriesIterator = composePaginateRest.iterator(
           octokit,
@@ -7992,11 +7995,11 @@ function eachRepositoryIterator(app, query) {
     }
   };
 }
-function getInstallationUrlFactory(app) {
+function getInstallationUrlFactory(app2) {
   let installationUrlBasePromise;
   return async function getInstallationUrl(options = {}) {
     if (!installationUrlBasePromise) {
-      installationUrlBasePromise = getInstallationUrlBase(app);
+      installationUrlBasePromise = getInstallationUrlBase(app2);
     }
     const installationUrlBase = await installationUrlBasePromise;
     const installationUrl = new URL(installationUrlBase);
@@ -8013,8 +8016,8 @@ function getInstallationUrlFactory(app) {
     return installationUrl.href;
   };
 }
-async function getInstallationUrlBase(app) {
-  const { data: appInfo } = await app.octokit.request("GET /app");
+async function getInstallationUrlBase(app2) {
+  const { data: appInfo } = await app2.octokit.request("GET /app");
   if (!appInfo) {
     throw new Error("[@octokit/app] unable to fetch metadata for app");
   }
@@ -8152,10 +8155,10 @@ var OAuthApp2 = OAuthApp.defaults({ Octokit: Octokit2 });
 async function dispatch(config) {
   const { appId, privateKey, repo, workflow } = config;
   const [owner, repoName] = splitRepo(repo);
-  const app = new App2({ appId, privateKey });
+  const app2 = new App2({ appId, privateKey });
   let installationId;
   try {
-    const { data } = await app.octokit.request(
+    const { data } = await app2.octokit.request(
       "GET /repos/{owner}/{repo}/installation",
       {
         owner,
@@ -8171,7 +8174,7 @@ async function dispatch(config) {
     }
     throw error;
   }
-  const octokit = await app.getInstallationOctokit(installationId);
+  const octokit = await app2.getInstallationOctokit(installationId);
   const {
     data: { default_branch: ref }
   } = await octokit.request("GET /repos/{owner}/{repo}", {
@@ -8200,19 +8203,19 @@ function hasStatus(error, status) {
 }
 
 // src/external-scheduler/azure/index.ts
-async function timerTrigger() {
-  const appId = process.env.GITHUB_APP_ID;
-  const privateKey = process.env.GITHUB_APP_PK;
-  const repo = process.env.GITHUB_REPO;
-  const workflow = process.env.GITHUB_WORKFLOW;
-  if (!appId || !privateKey || !repo || !workflow) {
-    throw new Error("Missing required environment variables");
+app.timer("schedulerTimer", {
+  schedule: "0 */30 * * * *",
+  handler: async () => {
+    const appId = process.env.GITHUB_APP_ID;
+    const privateKey = process.env.GITHUB_APP_PK;
+    const repo = process.env.GITHUB_REPO;
+    const workflow = process.env.GITHUB_WORKFLOW;
+    if (!appId || !privateKey || !repo || !workflow) {
+      throw new Error("Missing required environment variables");
+    }
+    await dispatch({ appId, privateKey, repo, workflow });
   }
-  await dispatch({ appId, privateKey, repo, workflow });
-}
-export {
-  timerTrigger
-};
+});
 /*! Bundled license information:
 
 @octokit/request-error/dist-src/index.js:

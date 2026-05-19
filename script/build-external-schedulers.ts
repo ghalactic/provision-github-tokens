@@ -10,6 +10,7 @@ const platforms = [
     format: "esm" as const,
     platform: "browser" as const,
     target: "es2022",
+    external: [] as string[],
   },
   {
     entryPoint: "src/external-scheduler/aws/index.ts",
@@ -17,6 +18,7 @@ const platforms = [
     format: "esm" as const,
     platform: "node" as const,
     target: "node20",
+    external: [] as string[],
   },
   {
     entryPoint: "src/external-scheduler/gcp/index.ts",
@@ -24,6 +26,7 @@ const platforms = [
     format: "esm" as const,
     platform: "node" as const,
     target: "node20",
+    external: [] as string[],
   },
   {
     entryPoint: "src/external-scheduler/azure/index.ts",
@@ -31,10 +34,11 @@ const platforms = [
     format: "esm" as const,
     platform: "node" as const,
     target: "node20",
+    external: ["@azure/functions"],
   },
 ];
 
-for (const { entryPoint, outfile, format, platform, target } of platforms) {
+for (const { entryPoint, outfile, format, platform, target, external } of platforms) {
   mkdirSync(dirname(outfile), { recursive: true });
 
   await build({
@@ -46,6 +50,7 @@ for (const { entryPoint, outfile, format, platform, target } of platforms) {
     target,
     format,
     outfile,
+    external,
   });
 
   console.log(`Built ${outfile}`);
