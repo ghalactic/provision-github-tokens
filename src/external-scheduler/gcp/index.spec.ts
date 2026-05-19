@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, expect, it, vi } from "vitest";
 
 vi.mock("../dispatch.js", () => ({
   dispatch: vi.fn().mockResolvedValue(undefined),
@@ -7,46 +7,44 @@ vi.mock("../dispatch.js", () => ({
 import { dispatch } from "../dispatch.js";
 import { handleSchedule } from "./index.js";
 
-describe("GCP Cloud Function handler", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-    vi.unstubAllEnvs();
+beforeEach(() => {
+  vi.clearAllMocks();
+  vi.unstubAllEnvs();
+});
+
+it("calls dispatch with config from environment variables", async () => {
+  vi.stubEnv("GITHUB_APP_ID", "12345");
+  vi.stubEnv("GITHUB_APP_PK", "fake-key");
+  vi.stubEnv("GITHUB_REPO", "owner/repo");
+  vi.stubEnv("GITHUB_WORKFLOW", "provision-tokens.yml");
+
+  await handleSchedule();
+
+  expect(dispatch).toHaveBeenCalledWith({
+    appId: "12345",
+    privateKey: "fake-key",
+    repo: "owner/repo",
+    workflow: "provision-tokens.yml",
   });
+});
 
-  it("calls dispatch with config from environment variables", async () => {
-    vi.stubEnv("GITHUB_APP_ID", "12345");
-    vi.stubEnv("GITHUB_APP_PK", "fake-key");
-    vi.stubEnv("GITHUB_REPO", "owner/repo");
-    vi.stubEnv("GITHUB_WORKFLOW", "provision-tokens.yml");
+it("throws when environment variables are missing", async () => {
+  vi.stubEnv("GITHUB_APP_ID", "");
+  vi.stubEnv("GITHUB_APP_PK", "");
+  vi.stubEnv("GITHUB_REPO", "");
+  vi.stubEnv("GITHUB_WORKFLOW", "");
 
-    await handleSchedule();
+  await expect(handleSchedule()).rejects.toThrow(
+    "Missing required environment variables",
+  );
+});
 
-    expect(dispatch).toHaveBeenCalledWith({
-      appId: "12345",
-      privateKey: "fake-key",
-      repo: "owner/repo",
-      workflow: "provision-tokens.yml",
-    });
-  });
+it("propagates errors from dispatch", async () => {
+  vi.stubEnv("GITHUB_APP_ID", "12345");
+  vi.stubEnv("GITHUB_APP_PK", "fake-key");
+  vi.stubEnv("GITHUB_REPO", "owner/repo");
+  vi.stubEnv("GITHUB_WORKFLOW", "provision-tokens.yml");
+  vi.mocked(dispatch).mockRejectedValue(new Error("dispatch failed"));
 
-  it("throws when environment variables are missing", async () => {
-    vi.stubEnv("GITHUB_APP_ID", "");
-    vi.stubEnv("GITHUB_APP_PK", "");
-    vi.stubEnv("GITHUB_REPO", "");
-    vi.stubEnv("GITHUB_WORKFLOW", "");
-
-    await expect(handleSchedule()).rejects.toThrow(
-      "Missing required environment variables",
-    );
-  });
-
-  it("propagates errors from dispatch", async () => {
-    vi.stubEnv("GITHUB_APP_ID", "12345");
-    vi.stubEnv("GITHUB_APP_PK", "fake-key");
-    vi.stubEnv("GITHUB_REPO", "owner/repo");
-    vi.stubEnv("GITHUB_WORKFLOW", "provision-tokens.yml");
-    vi.mocked(dispatch).mockRejectedValue(new Error("dispatch failed"));
-
-    await expect(handleSchedule()).rejects.toThrow("dispatch failed");
-  });
+  await expect(handleSchedule()).rejects.toThrow("dispatch failed");
 });

@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => {
   return {
@@ -26,79 +26,77 @@ const config: DispatchConfig = {
   workflow: "provision-tokens.yml",
 };
 
-describe("dispatch()", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-    mocks.appRequest.mockResolvedValue({ data: { id: 99 } });
-    mocks.installationRequest.mockResolvedValue(undefined);
-    mocks.getInstallationOctokit.mockResolvedValue({
-      request: mocks.installationRequest,
-    });
-    vi.mocked(App).mockImplementation(function mockApp() {
-      return {
-        octokit: {
-          request: mocks.appRequest,
-        },
-        getInstallationOctokit: mocks.getInstallationOctokit,
-      } as never;
-    });
+beforeEach(() => {
+  vi.clearAllMocks();
+  mocks.appRequest.mockResolvedValue({ data: { id: 99 } });
+  mocks.installationRequest.mockResolvedValue(undefined);
+  mocks.getInstallationOctokit.mockResolvedValue({
+    request: mocks.installationRequest,
   });
-
-  it("creates an App with the configured credentials", async () => {
-    await dispatch(config);
-
-    expect(App).toHaveBeenCalledWith({
-      appId: config.appId,
-      privateKey: config.privateKey,
-    });
-  });
-
-  it("discovers the installation for the target repo", async () => {
-    await dispatch(config);
-
-    expect(mocks.appRequest).toHaveBeenCalledWith(
-      "GET /repos/{owner}/{repo}/installation",
-      {
-        owner: "owner",
-        repo: "repo",
+  vi.mocked(App).mockImplementation(function mockApp() {
+    return {
+      octokit: {
+        request: mocks.appRequest,
       },
-    );
+      getInstallationOctokit: mocks.getInstallationOctokit,
+    } as never;
   });
+});
 
-  it("gets an installation octokit for the discovered installation", async () => {
-    await dispatch(config);
+it("creates an App with the configured credentials", async () => {
+  await dispatch(config);
 
-    expect(mocks.getInstallationOctokit).toHaveBeenCalledWith(99);
+  expect(App).toHaveBeenCalledWith({
+    appId: config.appId,
+    privateKey: config.privateKey,
   });
+});
 
-  it("dispatches the workflow using the installation octokit", async () => {
-    await dispatch(config);
+it("discovers the installation for the target repo", async () => {
+  await dispatch(config);
 
-    expect(mocks.installationRequest).toHaveBeenCalledWith(
-      "POST /repos/{owner}/{repo}/actions/workflows/{workflow_id}/dispatches",
-      {
-        owner: "owner",
-        repo: "repo",
-        workflow_id: config.workflow,
-        ref: "main",
-      },
-    );
-  });
+  expect(mocks.appRequest).toHaveBeenCalledWith(
+    "GET /repos/{owner}/{repo}/installation",
+    {
+      owner: "owner",
+      repo: "repo",
+    },
+  );
+});
 
-  it("throws when the app is not installed on the repo", async () => {
-    mocks.appRequest.mockRejectedValue(
-      Object.assign(new Error("Not Found"), { status: 404 }),
-    );
+it("gets an installation octokit for the discovered installation", async () => {
+  await dispatch(config);
 
-    await expect(dispatch(config)).rejects.toThrow(
-      `GitHub App ${config.appId} is not installed on ${config.repo}`,
-    );
-  });
+  expect(mocks.getInstallationOctokit).toHaveBeenCalledWith(99);
+});
 
-  it("rethrows other octokit errors", async () => {
-    const error = Object.assign(new Error("Boom"), { status: 500 });
-    mocks.appRequest.mockRejectedValue(error);
+it("dispatches the workflow using the installation octokit", async () => {
+  await dispatch(config);
 
-    await expect(dispatch(config)).rejects.toBe(error);
-  });
+  expect(mocks.installationRequest).toHaveBeenCalledWith(
+    "POST /repos/{owner}/{repo}/actions/workflows/{workflow_id}/dispatches",
+    {
+      owner: "owner",
+      repo: "repo",
+      workflow_id: config.workflow,
+      ref: "main",
+    },
+  );
+});
+
+it("throws when the app is not installed on the repo", async () => {
+  mocks.appRequest.mockRejectedValue(
+    Object.assign(new Error("Not Found"), { status: 404 }),
+  );
+
+  await expect(dispatch(config)).rejects.toThrow(
+    `GitHub App ${config.appId} is not installed on ${config.repo}`,
+  );
+});
+
+it("rethrows other octokit errors", async () => {
+  const error = Object.assign(new Error("Boom"), { status: 500 });
+  mocks.appRequest.mockRejectedValue(error);
+
+  await expect(dispatch(config)).rejects.toBe(error);
 });

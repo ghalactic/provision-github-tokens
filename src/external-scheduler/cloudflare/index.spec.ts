@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { beforeEach, expect, it, vi } from "vitest";
 
 vi.mock("../dispatch.js", () => ({
   dispatch: vi.fn().mockResolvedValue(undefined),
@@ -17,27 +17,23 @@ const env: Env = {
 
 const event = { cron: "*/30 * * * *", scheduledTime: Date.now() };
 
-describe("Cloudflare Worker scheduled handler", () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
+beforeEach(() => {
+  vi.clearAllMocks();
+});
+
+it("calls dispatch with config from env bindings", async () => {
+  await worker.scheduled(event, env);
+
+  expect(dispatch).toHaveBeenCalledWith({
+    appId: env.GITHUB_APP_ID,
+    privateKey: env.GITHUB_APP_PK,
+    repo: env.GITHUB_REPO,
+    workflow: env.GITHUB_WORKFLOW,
   });
+});
 
-  it("calls dispatch with config from env bindings", async () => {
-    await worker.scheduled(event, env);
+it("propagates errors from dispatch", async () => {
+  vi.mocked(dispatch).mockRejectedValue(new Error("dispatch failed"));
 
-    expect(dispatch).toHaveBeenCalledWith({
-      appId: env.GITHUB_APP_ID,
-      privateKey: env.GITHUB_APP_PK,
-      repo: env.GITHUB_REPO,
-      workflow: env.GITHUB_WORKFLOW,
-    });
-  });
-
-  it("propagates errors from dispatch", async () => {
-    vi.mocked(dispatch).mockRejectedValue(new Error("dispatch failed"));
-
-    await expect(worker.scheduled(event, env)).rejects.toThrow(
-      "dispatch failed",
-    );
-  });
+  await expect(worker.scheduled(event, env)).rejects.toThrow("dispatch failed");
 });
