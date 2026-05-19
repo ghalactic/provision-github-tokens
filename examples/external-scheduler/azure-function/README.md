@@ -5,9 +5,6 @@
 Use an Azure Functions timer trigger to dispatch the token-provider workflow on
 an interval.
 
-> [!NOTE] The deploy button is a placeholder. Azure deploy buttons expect an ARM
-> template. Use the manual CLI flow below as the primary deployment path.
-
 ## Prerequisites
 
 - Azure account
@@ -55,7 +52,7 @@ The 30-minute timer schedule is already configured in `function.json`.
 
 [deploy-badge]: https://aka.ms/deploytoazurebutton
 [deploy-url]:
-  https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fghalactic%2Fprovision-github-tokens%2Fmain%2Fexamples%2Fexternal-scheduler%2Fazure-function%2Fhost.json
+  https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fghalactic%2Fprovision-github-tokens%2Fmain%2Fexamples%2Fexternal-scheduler%2Fazure-function%2Fazuredeploy.json
 [functions-core-tools]:
   https://learn.microsoft.com/azure/azure-functions/functions-run-local
 [azure-cli]: https://learn.microsoft.com/cli/azure/install-azure-cli
