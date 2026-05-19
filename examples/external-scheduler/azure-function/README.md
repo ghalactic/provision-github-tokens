@@ -43,7 +43,7 @@ the function code:
 func azure functionapp publish <function-app>
 ```
 
-The 30-minute timer schedule is already configured in `function.json`.
+The 30-minute timer schedule is registered in code via `app.timer()`.
 
 [deploy-badge]: https://aka.ms/deploytoazurebutton
 [deploy-url]:

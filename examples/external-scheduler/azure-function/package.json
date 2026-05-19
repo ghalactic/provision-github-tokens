@@ -3,5 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "main": "dist/index.mjs"
+  "main": "dist/index.mjs",
+  "dependencies": {
+    "@azure/functions": "^4.14.0"
+  }
 }

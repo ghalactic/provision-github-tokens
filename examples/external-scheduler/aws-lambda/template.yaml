@@ -36,6 +36,7 @@ Resources:
   SchedulerFunction:
     Type: AWS::Serverless::Function
     Properties:
+      CodeUri: .
       Handler: dist/index.handler
       Runtime: nodejs20.x
       Timeout: 30

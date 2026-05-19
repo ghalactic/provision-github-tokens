@@ -23,7 +23,9 @@ beforeEach(() => {
 });
 
 function getHandler(): () => Promise<void> {
-  const options = mockTimer.mock.calls[0][1] as { handler: () => Promise<void> };
+  const options = mockTimer.mock.calls[0][1] as {
+    handler: () => Promise<void>;
+  };
 
   return options.handler;
 }

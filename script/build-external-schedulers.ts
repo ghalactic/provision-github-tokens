@@ -38,7 +38,14 @@ const platforms = [
   },
 ];
 
-for (const { entryPoint, outfile, format, platform, target, external } of platforms) {
+for (const {
+  entryPoint,
+  outfile,
+  format,
+  platform,
+  target,
+  external,
+} of platforms) {
   mkdirSync(dirname(outfile), { recursive: true });
 
   await build({
