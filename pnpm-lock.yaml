@@ -98,7 +98,7 @@ importers:
         version: 5.0.5
       openapi-sampler:
         specifier: ^1.7.2
-        version: 1.7.3
+        version: 1.7.4
       prettier:
         specifier: ^3.8.3
         version: 3.8.3
@@ -460,8 +460,8 @@ packages:
       '@emnapi/core': ^1.7.1
       '@emnapi/runtime': ^1.7.1
 
-  '@nodable/entities@2.1.0':
-    resolution: {integrity: sha512-nyT7T3nbMyBI/lvr6L5TyWbFJAI9FTgVRakNoBqCD+PmID8DzFrrNdLLtHMwMszOtqZa8PAOV24ZqDnQrhQINA==}
+  '@nodable/entities@2.1.1':
+    resolution: {integrity: sha512-Pig3HxDIoMgjdEH8OCf/dkcTmLFjJRjWuq8jSnklu284/TKOPibSRERmOykiwmyXTtv61mP+44f3GMx0tLAyjg==}
 
   '@octokit/action@8.0.4':
     resolution: {integrity: sha512-1qFYTCrShafc5fQaEbLNUo4xIi/nf98R8iAcJ0ITTCfoRnei9g5Ss9kGkN2tOA7gBlI4HB08Seub4navWXSSbg==}
@@ -1627,8 +1627,8 @@ packages:
     resolution: {integrity: sha512-4+/OFSqOjoyULo7eN7EA97DE0Xydj/PW5aIckxqQIoFjFwqXKuFCvXUJObyJfBF9Khu4RL/jlDRI9FPaMGfPnw==}
     engines: {node: '>= 20'}
 
-  openapi-sampler@1.7.3:
-    resolution: {integrity: sha512-Qgy2+Z7xR3l7kXurtzi1PCtzAINkFKhBADBe/8cidC2fQrLUQTudLiJjQDnqJXoisWAR6zaHhC0hP6Hn5vja+g==}
+  openapi-sampler@1.7.4:
+    resolution: {integrity: sha512-CKS/rd5ucPCuEDbJnjGDXZTsuGWcmv53aCmQx7soZlPEONUGN4af0/dY5+THRFZraSEjeA78nlfzdFswC/N5SA==}
 
   optionator@0.9.4:
     resolution: {integrity: sha512-6IpQ7mKUxRcZNLIObR0hz7lxsapSSIYNZJwXPGeF0mTVqGKFIXj1DQcMoT22S3ROcLyY/rz0PWaWZ9ayWmad9g==}
@@ -2389,7 +2389,7 @@ snapshots:
       '@tybys/wasm-util': 0.10.2
     optional: true
 
-  '@nodable/entities@2.1.0': {}
+  '@nodable/entities@2.1.1': {}
 
   '@octokit/action@8.0.4':
     dependencies:
@@ -3203,7 +3203,7 @@ snapshots:
 
   fast-xml-parser@5.8.0:
     dependencies:
-      '@nodable/entities': 2.1.0
+      '@nodable/entities': 2.1.1
       fast-xml-builder: 1.2.0
       path-expression-matcher: 1.5.0
       strnum: 2.3.0
@@ -3712,7 +3712,7 @@ snapshots:
       '@octokit/types': 16.0.0
       '@octokit/webhooks': 14.2.0
 
-  openapi-sampler@1.7.3:
+  openapi-sampler@1.7.4:
     dependencies:
       '@types/json-schema': 7.0.15
       fast-xml-parser: 5.8.0
