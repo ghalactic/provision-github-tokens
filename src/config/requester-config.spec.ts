@@ -271,27 +271,34 @@ it("parses comprehensive requester config", async () => {
   } satisfies RequesterConfig);
 });
 
-it("parses requester configs that are just comments", async () => {
+it("throws when requester configs are just comments", async () => {
   const fixturePath = join(fixturesPath, "just-comments.yml");
   const yaml = await readFile(fixturePath, "utf-8");
 
   expect(
-    parseRequesterConfig({ account: "account-self", repo: "repo-self" }, yaml),
-  ).toEqual({
-    $schema: requesterSchema.$id,
-    tokens: {},
-    provision: { secrets: {} },
-  } satisfies RequesterConfig);
+    throws(() =>
+      parseRequesterConfig(
+        { account: "account-self", repo: "repo-self" },
+        yaml,
+      ),
+    ),
+  ).toMatchInlineSnapshot(`
+    "Parsing of requester configuration failed
+
+    Caused by: expected a document, but the input is empty"
+  `);
 });
 
-it("parses requester configs that are empty", () => {
+it("throws when requester configs are empty", () => {
   expect(
-    parseRequesterConfig({ account: "account-self", repo: "repo-self" }, ""),
-  ).toEqual({
-    $schema: requesterSchema.$id,
-    tokens: {},
-    provision: { secrets: {} },
-  } satisfies RequesterConfig);
+    throws(() =>
+      parseRequesterConfig({ account: "account-self", repo: "repo-self" }, ""),
+    ),
+  ).toMatchInlineSnapshot(`
+    "Parsing of requester configuration failed
+
+    Caused by: expected a document, but the input is empty"
+  `);
 });
 
 it("throws when an invalid token name is defined", async () => {
@@ -477,12 +484,11 @@ it("throws when the YAML is invalid", () => {
       parseRequesterConfig({ account: "account-self", repo: "repo-self" }, "{"),
     ),
   ).toMatchInlineSnapshot(`
-      "Parsing of requester configuration failed
+    "Parsing of requester configuration failed
 
-      Caused by: unexpected end of the stream within a flow collection (2:1)
+    Caused by: unexpected end of the stream within a flow collection (1:2)
 
-       1 | {
-       2 |
-      -----^"
-    `);
+     1 | {
+    ------^"
+  `);
 });

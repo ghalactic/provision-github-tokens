@@ -19,9 +19,7 @@ export function parseRequesterConfig(
 
 function parseYaml(yaml: string): PartialRequesterConfig {
   try {
-    const parsed = load(yaml);
-
-    return validateRequester(parsed == null ? {} : parsed);
+    return validateRequester(load(yaml));
   } catch (cause) {
     debug(`Parsing of requester configuration failed: ${errorMessage(cause)}`);
     throw new Error("Parsing of requester configuration failed", { cause });
