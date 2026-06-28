@@ -698,27 +698,31 @@ it("reads comprehensive provider config", async () => {
   } satisfies ProviderConfig);
 });
 
-it("parses provider configs that are just comments", async () => {
+it("throws when provider configs are just comments", async () => {
   const fixturePath = join(fixturesPath, "just-comments.yml");
   const yaml = await readFile(fixturePath, "utf-8");
 
   expect(
-    parseProviderConfig({ account: "account-self", repo: "repo-self" }, yaml),
-  ).toEqual({
-    $schema: providerSchema.$id,
-    permissions: { rules: [] },
-    provision: { rules: { secrets: [] } },
-  } satisfies ProviderConfig);
+    throws(() =>
+      parseProviderConfig({ account: "account-self", repo: "repo-self" }, yaml),
+    ),
+  ).toMatchInlineSnapshot(`
+    "Parsing of provider configuration failed
+
+    Caused by: expected a document, but the input is empty"
+  `);
 });
 
-it("parses provider configs that are empty", () => {
+it("throws when provider configs are empty", () => {
   expect(
-    parseProviderConfig({ account: "account-self", repo: "repo-self" }, ""),
-  ).toEqual({
-    $schema: providerSchema.$id,
-    permissions: { rules: [] },
-    provision: { rules: { secrets: [] } },
-  } satisfies ProviderConfig);
+    throws(() =>
+      parseProviderConfig({ account: "account-self", repo: "repo-self" }, ""),
+    ),
+  ).toMatchInlineSnapshot(`
+    "Parsing of provider configuration failed
+
+    Caused by: expected a document, but the input is empty"
+  `);
 });
 
 it("throws when an invalid pattern is used in /permissions/rules/<n>/resources/<n>/accounts/<n>", async () => {
@@ -820,12 +824,11 @@ it("throws when the YAML is invalid", () => {
       parseProviderConfig({ account: "account-self", repo: "repo-self" }, "{"),
     ),
   ).toMatchInlineSnapshot(`
-      "Parsing of provider configuration failed
+    "Parsing of provider configuration failed
 
-      Caused by: unexpected end of the stream within a flow collection (2:1)
+    Caused by: unexpected end of the stream within a flow collection (1:2)
 
-       1 | {
-       2 |
-      -----^"
-    `);
+     1 | {
+    ------^"
+  `);
 });

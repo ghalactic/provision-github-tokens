@@ -102,10 +102,9 @@ it("throws if the input isn't valid YAML", () => {
   ).toMatchInlineSnapshot(`
     "Parsing of apps action input failed
 
-    Caused by: unexpected end of the stream within a flow collection (2:1)
+    Caused by: unexpected end of the stream within a flow collection (1:2)
 
      1 | {
-     2 |
-    -----^"
+    ------^"
   `);
 });

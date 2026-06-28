@@ -43,9 +43,7 @@ export function parseProviderConfig(
 
 function parseYaml(yaml: string): ProviderConfig {
   try {
-    const parsed = load(yaml);
-
-    return validateProvider(parsed == null ? {} : parsed);
+    return validateProvider(load(yaml));
   } catch (cause) {
     debug(`Parsing of provider configuration failed: ${errorMessage(cause)}`);
     throw new Error("Parsing of provider configuration failed", { cause });
