@@ -34,7 +34,7 @@ importers:
         version: 2.1.0
       js-yaml:
         specifier: ^5.0.0
-        version: 5.1.0
+        version: 5.2.0
       libsodium-wrappers:
         specifier: ^0.8.4
         version: 0.8.4
@@ -1391,8 +1391,8 @@ packages:
   js-tokens@10.0.0:
     resolution: {integrity: sha512-lM/UBzQmfJRo9ABXbPWemivdCW8V2G8FHaHdypQaIy523snUjog0W71ayWXTjiR+ixeMyVHN2XcpnTd/liPg/Q==}
 
-  js-yaml@5.1.0:
-    resolution: {integrity: sha512-s8VA5jkR8f22S3NAXmhKPFqGUduqZGlsufabVOgN14iTdw/RXcym7bKkbwjxLK9Yw2lEvvmJjFp119+KPeo8Kg==}
+  js-yaml@5.2.0:
+    resolution: {integrity: sha512-YeLUMlvR4Ou1B119LIaM0r65JvbOBooJDc9yEu0dClb/uSC5P4FrLU8OCCz/HXWvtPoIrR0dRzABTjo1sTN9Bw==}
     hasBin: true
 
   json-buffer@3.0.1:
@@ -1722,6 +1722,10 @@ packages:
 
   picomatch@4.0.4:
     resolution: {integrity: sha512-QP88BAKvMam/3NxH6vj2o21R6MjxZUAd6nlwAS/pnGvN9IVLocLHxGYIzFhg6fUQ+5th6P4dv4eW9jX3DSIj7A==}
+    engines: {node: '>=12'}
+
+  picomatch@4.0.5:
+    resolution: {integrity: sha512-RvwwcruNjI1ncT5xRakeyS9Lf8lcItv34KD+aif+VH9kduAyfYBipGh12274xtenIPZ119/R9BdTBa8gAwSh0A==}
     engines: {node: '>=12'}
 
   postcss@8.5.16:
@@ -3325,9 +3329,9 @@ snapshots:
       strnum: 2.3.0
       xml-naming: 0.1.0
 
-  fdir@6.5.0(picomatch@4.0.4):
+  fdir@6.5.0(picomatch@4.0.5):
     optionalDependencies:
-      picomatch: 4.0.4
+      picomatch: 4.0.5
 
   file-entry-cache@8.0.0:
     dependencies:
@@ -3433,7 +3437,7 @@ snapshots:
 
   js-tokens@10.0.0: {}
 
-  js-yaml@5.1.0:
+  js-yaml@5.2.0:
     dependencies:
       argparse: 2.0.1
 
@@ -3872,6 +3876,8 @@ snapshots:
 
   picomatch@4.0.4: {}
 
+  picomatch@4.0.5: {}
+
   postcss@8.5.16:
     dependencies:
       nanoid: 3.3.15
@@ -4040,8 +4046,8 @@ snapshots:
 
   tinyglobby@0.2.17:
     dependencies:
-      fdir: 6.5.0(picomatch@4.0.4)
-      picomatch: 4.0.4
+      fdir: 6.5.0(picomatch@4.0.5)
+      picomatch: 4.0.5
 
   tinyrainbow@3.1.0: {}
 
@@ -4121,7 +4127,7 @@ snapshots:
   vite@8.0.10(@types/node@24.13.2)(esbuild@0.28.1):
     dependencies:
       lightningcss: 1.32.0
-      picomatch: 4.0.4
+      picomatch: 4.0.5
       postcss: 8.5.16
       rolldown: 1.0.0-rc.17
       tinyglobby: 0.2.17
