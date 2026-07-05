@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import openapi from "@octokit/openapi";
 import { createHash } from "node:crypto";
 import openapiSampler from "openapi-sampler";
@@ -173,6 +174,12 @@ export function createTestInstallationRepos(
     owner: { ...sampleInstallationRepo.owner, login: account.login },
   }));
 }
+
+export type WorkflowDispatchData = {
+  workflow_run_id: number;
+  run_url: string;
+  html_url: string;
+};
 
 function stableId(...parts: string[]): number {
   const hash = createHash("sha256").update(parts.join("\0")).digest();

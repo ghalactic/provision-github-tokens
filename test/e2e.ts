@@ -2,6 +2,7 @@
 import { vi } from "vitest";
 import { sleep } from "./async.js";
 import type { GitHubActionsContext } from "./gha.js";
+import type { WorkflowDispatchData } from "./github-api.js";
 import type { Reference, TestOctokit, WorkflowRun } from "./octokit.js";
 
 export const E2E_TIMEOUT = 3 * 60 * 1000; // 3 minutes
@@ -35,20 +36,23 @@ export async function createWorkflowRun(
     sha,
     `${branchPrefix}-${branchSuffix}`,
   );
-  const existingRun = await findRun(octokit, owner, repo, workflowId, runRef);
-
-  if (existingRun) {
-    throw new Error(
-      `Run ${runRef.ref} already exists: ${existingRun.html_url}`,
-    );
-  }
-
-  await dispatchRun(octokit, owner, repo, workflowId, runRef, inputs);
+  const dispatchedRun = await dispatchRun(
+    octokit,
+    owner,
+    repo,
+    workflowId,
+    runRef,
+    inputs,
+  );
 
   return waitFor(`${workflowId} run`, async () => {
-    const run = await findRun(octokit, owner, repo, workflowId, runRef);
-    if (!run) throw new Error(`Run ${runRef.ref} not found`);
-    return run;
+    const { data } = await octokit.rest.actions.getWorkflowRun({
+      owner,
+      repo,
+      run_id: dispatchedRun.workflow_run_id,
+    });
+
+    return data;
   });
 }
 
@@ -200,29 +204,6 @@ async function createRunRef(
   return data;
 }
 
-async function findRun(
-  octokit: TestOctokit,
-  owner: string,
-  repo: string,
-  workflowId: string,
-  runRef: Reference,
-): Promise<WorkflowRun | undefined> {
-  const {
-    data: {
-      workflow_runs: [run],
-    },
-  } = await octokit.rest.actions.listWorkflowRuns({
-    owner,
-    repo,
-    event: "workflow_dispatch",
-    workflow_id: workflowId,
-    branch: runRef.ref.replace(/^refs\/heads\//, ""),
-    per_page: 1,
-  });
-
-  return run;
-}
-
 async function dispatchRun(
   octokit: TestOctokit,
   owner: string,
@@ -230,17 +211,22 @@ async function dispatchRun(
   workflowId: string,
   runRef: Reference,
   inputs: Record<string, string>,
-): Promise<void> {
-  await octokit.rest.actions.createWorkflowDispatch({
-    owner,
-    repo,
-    workflow_id: workflowId,
-    ref: runRef.ref,
-    inputs,
-    headers: {
-      "X-GitHub-Api-Version": "2026-03-10",
+): Promise<WorkflowDispatchData> {
+  const { data } = await octokit.request(
+    "POST /repos/{owner}/{repo}/actions/workflows/{workflow_id}/dispatches",
+    {
+      owner,
+      repo,
+      workflow_id: workflowId,
+      ref: runRef.ref,
+      inputs,
+      headers: {
+        "X-GitHub-Api-Version": "2026-03-10",
+      },
     },
-  });
+  );
+
+  return data;
 }
 
 async function waitFor<T>(
