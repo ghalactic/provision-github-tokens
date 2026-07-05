@@ -237,6 +237,9 @@ async function dispatchRun(
     workflow_id: workflowId,
     ref: runRef.ref,
     inputs,
+    headers: {
+      "X-GitHub-Api-Version": "2026-03-10",
+    },
   });
 }
 
