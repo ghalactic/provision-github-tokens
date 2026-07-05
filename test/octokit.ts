@@ -3,12 +3,10 @@ import { Octokit } from "octokit";
 
 export type TestOctokit = InstanceType<typeof Octokit>;
 
-export function createTestOctokit(): TestOctokit {
-  return new Octokit({ auth: process.env.GITHUB_TOKEN });
-}
-
-export function createTestOctokitWithToken(token: string): TestOctokit {
-  return new Octokit({ auth: token });
+export function createTestOctokit(
+  auth: string | undefined = process.env.GITHUB_TOKEN,
+): TestOctokit {
+  return new Octokit({ auth });
 }
 
 export type Reference =

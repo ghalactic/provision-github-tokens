@@ -1,7 +1,6 @@
 import { createDownloadArtifact } from "./e2e.js";
 import {
   createTestOctokit,
-  createTestOctokitWithToken,
   type TestOctokit,
   type WorkflowRun,
 } from "./octokit.js";
@@ -37,13 +36,12 @@ export function getGhaContext(): GitHubActionsContext {
     GITHUB_RUN_ID: runId = "",
     GITHUB_SHA: sha = "",
     GITHUB_RUN_ATTEMPT: runAttempt = "",
-    GITHUB_TOKEN: token = "",
   } = process.env;
 
   const [owner, repo] = slug.split("/");
   const octokit = createTestOctokit();
-  const fixturesOctokit = createTestOctokitWithToken(fixturesToken);
-  const downloadArtifact = createDownloadArtifact(owner, repo, token);
+  const fixturesOctokit = createTestOctokit(fixturesToken);
+  const downloadArtifact = createDownloadArtifact(octokit, owner, repo);
 
   return {
     downloadArtifact,

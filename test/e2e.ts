@@ -1,7 +1,4 @@
 /* eslint-disable no-console */
-import artifactClient from "@actions/artifact";
-import { readFile } from "node:fs/promises";
-import { join } from "node:path";
 import { vi } from "vitest";
 import { sleep } from "./async.js";
 import type { GitHubActionsContext } from "./gha.js";
@@ -10,8 +7,6 @@ import type { Reference, TestOctokit, WorkflowRun } from "./octokit.js";
 export const E2E_TIMEOUT = 3 * 60 * 1000; // 3 minutes
 const WAIT_INTERVAL = 15 * 1000; // 15 seconds
 const WAIT_TIMEOUT = 5 * 60 * 1000; // 5 minutes
-
-const ARTIFACTS_DIR = join(import.meta.dirname, "..", "artifacts");
 
 /**
  * Dispatch a workflow and wait for the resulting run to appear.
@@ -102,36 +97,50 @@ export async function getDefaultBranchSha(
 }
 
 /**
- * Create a function that downloads a named artifact from a workflow run into the
- * local artifacts/ directory.
+ * Create a function that downloads a named artifact from a workflow run.
  */
 export function createDownloadArtifact(
+  octokit: TestOctokit,
   owner: string,
   repo: string,
-  token: string,
 ) {
   return async (run: WorkflowRun, artifactName: string): Promise<Buffer> => {
-    const { artifact } = await artifactClient.getArtifact(artifactName, {
-      findBy: {
-        token,
-        workflowRunId: run.id,
-        repositoryName: repo,
-        repositoryOwner: owner,
+    const {
+      data: { artifacts },
+    } = await octokit.rest.actions.listWorkflowRunArtifacts({
+      owner,
+      repo,
+      run_id: run.id,
+      name: artifactName,
+      per_page: 100,
+    });
+
+    const artifact = artifacts.sort((a, b) => b.id - a.id)[0];
+    if (!artifact) {
+      throw new Error(`Artifact ${artifactName} not found for run ${run.id}`);
+    }
+
+    const { headers } = await octokit.rest.actions.downloadArtifact({
+      owner,
+      repo,
+      artifact_id: artifact.id,
+      archive_format: "zip",
+      request: {
+        redirect: "manual",
       },
     });
 
-    const downloadDir = join(ARTIFACTS_DIR, String(run.id));
-    await artifactClient.downloadArtifact(artifact.id, {
-      path: downloadDir,
-      findBy: {
-        token,
-        workflowRunId: run.id,
-        repositoryName: repo,
-        repositoryOwner: owner,
-      },
-    });
+    const location = headers.location;
+    if (!location) {
+      throw new Error(`Unable to download artifact ${artifactName}`);
+    }
 
-    return readFile(join(downloadDir, artifactName));
+    const response = await fetch(location);
+    if (!response.ok) {
+      throw new Error(`Unable to download artifact ${artifactName}`);
+    }
+
+    return Buffer.from(await response.arrayBuffer());
   };
 }
 

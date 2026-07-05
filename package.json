@@ -21,7 +21,6 @@
     "yaml": "^2.9.0"
   },
   "devDependencies": {
-    "@actions/artifact": "^6.2.1",
     "@eslint/js": "^10.0.0",
     "@octokit/openapi": "^22.0.0",
     "@octokit/openapi-types": "^27.0.0",
