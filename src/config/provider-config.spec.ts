@@ -698,31 +698,35 @@ it("reads comprehensive provider config", async () => {
   } satisfies ProviderConfig);
 });
 
-it("throws when provider configs are just comments", async () => {
+it("parses provider configs that are just comments", async () => {
   const fixturePath = join(fixturesPath, "just-comments.yml");
   const yaml = await readFile(fixturePath, "utf-8");
 
   expect(
-    throws(() =>
-      parseProviderConfig({ account: "account-self", repo: "repo-self" }, yaml),
+    parseProviderConfig(
+      { account: "account-self", repo: "repo-self" },
+      "path/to/config.yml",
+      yaml,
     ),
-  ).toMatchInlineSnapshot(`
-    "Parsing of provider configuration failed
-
-    Caused by: expected a document, but the input is empty"
-  `);
+  ).toEqual({
+    $schema: providerSchema.$id,
+    permissions: { rules: [] },
+    provision: { rules: { secrets: [] } },
+  } satisfies ProviderConfig);
 });
 
-it("throws when provider configs are empty", () => {
+it("parses provider configs that are empty", () => {
   expect(
-    throws(() =>
-      parseProviderConfig({ account: "account-self", repo: "repo-self" }, ""),
+    parseProviderConfig(
+      { account: "account-self", repo: "repo-self" },
+      "path/to/config.yml",
+      "",
     ),
-  ).toMatchInlineSnapshot(`
-    "Parsing of provider configuration failed
-
-    Caused by: expected a document, but the input is empty"
-  `);
+  ).toEqual({
+    $schema: providerSchema.$id,
+    permissions: { rules: [] },
+    provision: { rules: { secrets: [] } },
+  } satisfies ProviderConfig);
 });
 
 it("throws when an invalid pattern is used in /permissions/rules/<n>/resources/<n>/accounts/<n>", async () => {
@@ -734,7 +738,11 @@ it("throws when an invalid pattern is used in /permissions/rules/<n>/resources/<
 
   expect(
     throws(() =>
-      parseProviderConfig({ account: "account-self", repo: "repo-self" }, yaml),
+      parseProviderConfig(
+        { account: "account-self", repo: "repo-self" },
+        "path/to/config.yml",
+        yaml,
+      ),
     ),
   ).toMatchInlineSnapshot(`
     "Parsing of provider configuration failed
@@ -753,7 +761,11 @@ it("throws when an invalid pattern is used in /permissions/rules/<n>/consumers/<
 
   expect(
     throws(() =>
-      parseProviderConfig({ account: "account-self", repo: "repo-self" }, yaml),
+      parseProviderConfig(
+        { account: "account-self", repo: "repo-self" },
+        "path/to/config.yml",
+        yaml,
+      ),
     ),
   ).toMatchInlineSnapshot(`
       "Parsing of provider configuration failed
@@ -772,7 +784,11 @@ it("throws when an invalid pattern is used in /provision/rules/secrets/<n>/reque
 
   expect(
     throws(() =>
-      parseProviderConfig({ account: "account-self", repo: "repo-self" }, yaml),
+      parseProviderConfig(
+        { account: "account-self", repo: "repo-self" },
+        "path/to/config.yml",
+        yaml,
+      ),
     ),
   ).toMatchInlineSnapshot(`
       "Parsing of provider configuration failed
@@ -791,7 +807,11 @@ it("throws when an invalid pattern is used in /provision/rules/secrets/<n>/to/gi
 
   expect(
     throws(() =>
-      parseProviderConfig({ account: "account-self", repo: "repo-self" }, yaml),
+      parseProviderConfig(
+        { account: "account-self", repo: "repo-self" },
+        "path/to/config.yml",
+        yaml,
+      ),
     ),
   ).toMatchInlineSnapshot(`
       "Parsing of provider configuration failed
@@ -808,7 +828,11 @@ it("throws when there are additional properties", async () => {
 
   expect(
     throws(() =>
-      parseProviderConfig({ account: "account-self", repo: "repo-self" }, yaml),
+      parseProviderConfig(
+        { account: "account-self", repo: "repo-self" },
+        "path/to/config.yml",
+        yaml,
+      ),
     ),
   ).toMatchInlineSnapshot(`
       "Parsing of provider configuration failed
@@ -821,14 +845,20 @@ it("throws when there are additional properties", async () => {
 it("throws when the YAML is invalid", () => {
   expect(
     throws(() =>
-      parseProviderConfig({ account: "account-self", repo: "repo-self" }, "{"),
+      parseProviderConfig(
+        { account: "account-self", repo: "repo-self" },
+        "path/to/config.yml",
+        "{",
+      ),
     ),
   ).toMatchInlineSnapshot(`
     "Parsing of provider configuration failed
 
-    Caused by: unexpected end of the stream within a flow collection (1:2)
+    Caused by: Invalid YAML in account-self/repo-self/path/to/config.yml
 
-     1 | {
-    ------^"
+    Caused by: Flow map must end with a } at line 1, column 2:
+
+    {
+     ^"
   `);
 });

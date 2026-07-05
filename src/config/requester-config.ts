@@ -1,29 +1,36 @@
 import { debug } from "@actions/core";
-import { load } from "js-yaml";
 import { errorMessage } from "../error.js";
 import { normalizeGitHubPattern } from "../github-pattern.js";
-import type { RepoReference } from "../github-reference.js";
+import { repoRefToString, type RepoReference } from "../github-reference.js";
 import { normalizeTokenReference } from "../token-reference.js";
 import type {
   PartialRequesterConfig,
   RequesterConfig,
 } from "../type/requester-config.js";
 import { validateRequester } from "./validation.js";
+import { parseYaml } from "./yaml.js";
 
 export function parseRequesterConfig(
   definingRepo: RepoReference,
-  yaml: string,
+  configPath: string,
+  configYaml: string,
 ): RequesterConfig {
-  return normalizeRequesterConfig(definingRepo, parseYaml(yaml));
-}
+  let config: PartialRequesterConfig;
 
-function parseYaml(yaml: string): PartialRequesterConfig {
   try {
-    return validateRequester(load(yaml));
+    config = validateRequester(
+      parseYaml(
+        {},
+        configYaml,
+        `${repoRefToString(definingRepo)}/${configPath}`,
+      ),
+    );
   } catch (cause) {
     debug(`Parsing of requester configuration failed: ${errorMessage(cause)}`);
     throw new Error("Parsing of requester configuration failed", { cause });
   }
+
+  return normalizeRequesterConfig(definingRepo, config);
 }
 
 function normalizeRequesterConfig(
