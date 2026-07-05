@@ -2,7 +2,7 @@
 import { vi } from "vitest";
 import { sleep } from "./async.js";
 import type { GitHubActionsContext } from "./gha.js";
-import type { WorkflowDispatchData } from "./github-api.js";
+import type { Artifact, WorkflowDispatchData } from "./github-api.js";
 import type { Reference, TestOctokit, WorkflowRun } from "./octokit.js";
 
 export const E2E_TIMEOUT = 3 * 60 * 1000; // 3 minutes
@@ -109,17 +109,21 @@ export function createDownloadArtifact(
   repo: string,
 ) {
   return async (run: WorkflowRun, artifactName: string): Promise<Buffer> => {
-    const {
-      data: { artifacts },
-    } = await octokit.rest.actions.listWorkflowRunArtifacts({
-      owner,
-      repo,
-      run_id: run.id,
-      name: artifactName,
-      per_page: 100,
-    });
+    const artifactPages = octokit.paginate.iterator(
+      octokit.rest.actions.listWorkflowRunArtifacts,
+      { owner, repo, run_id: run.id, name: artifactName },
+    );
 
-    const artifact = artifacts.sort((a, b) => b.id - a.id)[0];
+    let artifact: Artifact | undefined;
+
+    for await (const { data: pageArtifacts } of artifactPages) {
+      for (const pageArtifact of pageArtifacts as Artifact[]) {
+        artifact = pageArtifact;
+
+        break;
+      }
+    }
+
     if (!artifact) {
       throw new Error(`Artifact ${artifactName} not found for run ${run.id}`);
     }
@@ -129,12 +133,10 @@ export function createDownloadArtifact(
       repo,
       artifact_id: artifact.id,
       archive_format: "zip",
-      request: {
-        redirect: "manual",
-      },
+      request: { redirect: "manual" },
     });
 
-    const location = headers.location;
+    const { location } = headers;
     if (!location) {
       throw new Error(`Unable to download artifact ${artifactName}`);
     }

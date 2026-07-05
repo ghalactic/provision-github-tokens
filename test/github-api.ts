@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import openapi from "@octokit/openapi";
+import type { components } from "@octokit/openapi-types";
 import { createHash } from "node:crypto";
 import openapiSampler from "openapi-sampler";
 import type {
@@ -174,6 +175,8 @@ export function createTestInstallationRepos(
     owner: { ...sampleInstallationRepo.owner, login: account.login },
   }));
 }
+
+export type Artifact = components["schemas"]["artifact"];
 
 export type WorkflowDispatchData = {
   workflow_run_id: number;
