@@ -15,7 +15,11 @@ it("parses comprehensive requester config", async () => {
   const yaml = await readFile(fixturePath, "utf-8");
 
   expect(
-    parseRequesterConfig({ account: "account-self", repo: "repo-self" }, yaml),
+    parseRequesterConfig(
+      { account: "account-self", repo: "repo-self" },
+      "path/to/config.yml",
+      yaml,
+    ),
   ).toEqual({
     $schema: requesterSchema.$id,
 
@@ -271,34 +275,35 @@ it("parses comprehensive requester config", async () => {
   } satisfies RequesterConfig);
 });
 
-it("throws when requester configs are just comments", async () => {
+it("parses requester configs that are just comments", async () => {
   const fixturePath = join(fixturesPath, "just-comments.yml");
   const yaml = await readFile(fixturePath, "utf-8");
 
   expect(
-    throws(() =>
-      parseRequesterConfig(
-        { account: "account-self", repo: "repo-self" },
-        yaml,
-      ),
+    parseRequesterConfig(
+      { account: "account-self", repo: "repo-self" },
+      "path/to/config.yml",
+      yaml,
     ),
-  ).toMatchInlineSnapshot(`
-    "Parsing of requester configuration failed
-
-    Caused by: expected a document, but the input is empty"
-  `);
+  ).toEqual({
+    $schema: requesterSchema.$id,
+    tokens: {},
+    provision: { secrets: {} },
+  } satisfies RequesterConfig);
 });
 
-it("throws when requester configs are empty", () => {
+it("parses requester configs that are empty", () => {
   expect(
-    throws(() =>
-      parseRequesterConfig({ account: "account-self", repo: "repo-self" }, ""),
+    parseRequesterConfig(
+      { account: "account-self", repo: "repo-self" },
+      "path/to/config.yml",
+      "",
     ),
-  ).toMatchInlineSnapshot(`
-    "Parsing of requester configuration failed
-
-    Caused by: expected a document, but the input is empty"
-  `);
+  ).toEqual({
+    $schema: requesterSchema.$id,
+    tokens: {},
+    provision: { secrets: {} },
+  } satisfies RequesterConfig);
 });
 
 it("throws when an invalid token name is defined", async () => {
@@ -309,6 +314,7 @@ it("throws when an invalid token name is defined", async () => {
     throws(() =>
       parseRequesterConfig(
         { account: "account-self", repo: "repo-self" },
+        "path/to/config.yml",
         yaml,
       ),
     ),
@@ -329,6 +335,7 @@ it("throws when empty permissions are specified", async () => {
     throws(() =>
       parseRequesterConfig(
         { account: "account-self", repo: "repo-self" },
+        "path/to/config.yml",
         yaml,
       ),
     ),
@@ -351,6 +358,7 @@ it("throws when an invalid pattern is used in /provision/secrets/<name>/github/r
     throws(() =>
       parseRequesterConfig(
         { account: "account-self", repo: "repo-self" },
+        "path/to/config.yml",
         yaml,
       ),
     ),
@@ -371,6 +379,7 @@ it("throws when an invalid secret name is defined", async () => {
     throws(() =>
       parseRequesterConfig(
         { account: "account-self", repo: "repo-self" },
+        "path/to/config.yml",
         yaml,
       ),
     ),
@@ -391,6 +400,7 @@ it("throws when a secret token reference has an empty account", async () => {
     throws(() =>
       parseRequesterConfig(
         { account: "account-self", repo: "repo-self" },
+        "path/to/config.yml",
         yaml,
       ),
     ),
@@ -410,6 +420,7 @@ it("throws when a secret token reference has an invalid account", async () => {
     throws(() =>
       parseRequesterConfig(
         { account: "account-self", repo: "repo-self" },
+        "path/to/config.yml",
         yaml,
       ),
     ),
@@ -429,6 +440,7 @@ it("throws when a secret token reference has an empty repo", async () => {
     throws(() =>
       parseRequesterConfig(
         { account: "account-self", repo: "repo-self" },
+        "path/to/config.yml",
         yaml,
       ),
     ),
@@ -448,6 +460,7 @@ it("throws when a secret token reference has an invalid repo", async () => {
     throws(() =>
       parseRequesterConfig(
         { account: "account-self", repo: "repo-self" },
+        "path/to/config.yml",
         yaml,
       ),
     ),
@@ -467,6 +480,7 @@ it("throws when there are additional properties", async () => {
     throws(() =>
       parseRequesterConfig(
         { account: "account-self", repo: "repo-self" },
+        "path/to/config.yml",
         yaml,
       ),
     ),
@@ -481,14 +495,20 @@ it("throws when there are additional properties", async () => {
 it("throws when the YAML is invalid", () => {
   expect(
     throws(() =>
-      parseRequesterConfig({ account: "account-self", repo: "repo-self" }, "{"),
+      parseRequesterConfig(
+        { account: "account-self", repo: "repo-self" },
+        "path/to/config.yml",
+        "{",
+      ),
     ),
   ).toMatchInlineSnapshot(`
     "Parsing of requester configuration failed
 
-    Caused by: unexpected end of the stream within a flow collection (1:2)
+    Caused by: Invalid YAML in account-self/repo-self/path/to/config.yml
 
-     1 | {
-    ------^"
+    Caused by: Flow map must end with a } at line 1, column 2:
+
+    {
+     ^"
   `);
 });

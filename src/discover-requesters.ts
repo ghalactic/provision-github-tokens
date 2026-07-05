@@ -7,6 +7,8 @@ import { pluralize } from "./pluralize.js";
 import type { AppInput } from "./type/input.js";
 import type { RequesterConfig } from "./type/requester-config.js";
 
+const CONFIG_PATH = ".github/ghalactic/provision-github-tokens.yml";
+
 export type DiscoveredRequester = {
   requester: RepoReference;
   config: RequesterConfig;
@@ -37,7 +39,7 @@ export async function discoverRequesters(
         const res = await octokit.rest.repos.getContent({
           owner: requester.account,
           repo: requester.repo,
-          path: ".github/ghalactic/provision-github-tokens.yml",
+          path: CONFIG_PATH,
           mediaType: { format: "raw" },
         });
 
@@ -65,7 +67,7 @@ export async function discoverRequesters(
       let config: RequesterConfig;
 
       try {
-        config = parseRequesterConfig(requester, configYaml);
+        config = parseRequesterConfig(requester, CONFIG_PATH, configYaml);
       } catch {
         logError(`Requester ${r.full_name} has invalid config`);
 

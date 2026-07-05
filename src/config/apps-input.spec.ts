@@ -10,7 +10,7 @@ beforeEach(() => {
   vi.resetAllMocks();
 });
 
-it("can parse valid input", () => {
+it("parses valid input", () => {
   __setInputs({
     apps: `
       - appId: 100
@@ -69,6 +69,18 @@ it("can parse valid input", () => {
   ] satisfies AppInput[]);
 });
 
+it("parses comment-only input", () => {
+  __setInputs({ apps: "# no apps configured\n" });
+
+  expect(readAppsInput()).toEqual([]);
+});
+
+it("parses empty input", () => {
+  __setInputs({ apps: "" });
+
+  expect(readAppsInput()).toEqual([]);
+});
+
 it("throws if the input doesn't match the schema", () => {
   __setInputs({
     apps: `
@@ -102,9 +114,11 @@ it("throws if the input isn't valid YAML", () => {
   ).toMatchInlineSnapshot(`
     "Parsing of apps action input failed
 
-    Caused by: unexpected end of the stream within a flow collection (1:2)
+    Caused by: Invalid YAML
 
-     1 | {
-    ------^"
+    Caused by: Flow map must end with a } at line 1, column 2:
+
+    {
+     ^"
   `);
 });

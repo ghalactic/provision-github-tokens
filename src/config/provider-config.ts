@@ -1,12 +1,16 @@
 import { debug, getInput, info } from "@actions/core";
-import { load } from "js-yaml";
 import { normalizeAccountPattern } from "../account.js";
 import { errorMessage } from "../error.js";
 import { normalizeGitHubPattern } from "../github-pattern.js";
-import { repoRefFromName, type RepoReference } from "../github-reference.js";
+import {
+  repoRefFromName,
+  repoRefToString,
+  type RepoReference,
+} from "../github-reference.js";
 import type { OctokitFactory } from "../octokit.js";
 import type { ProviderConfig } from "../type/provider-config.js";
 import { validateProvider } from "./validation.js";
+import { parseYaml } from "./yaml.js";
 
 export async function readProviderConfig(
   octokitFactory: OctokitFactory,
@@ -26,9 +30,9 @@ export async function readProviderConfig(
     path: configPath,
     mediaType: { format: "raw" },
   });
-  const yaml = res.data as unknown as string;
+  const configYaml = res.data as unknown as string;
 
-  const config = parseProviderConfig(provider, yaml);
+  const config = parseProviderConfig(provider, configPath, configYaml);
   debug(`Provider config: ${JSON.stringify(config, null, 2)}`);
 
   return config;
@@ -36,18 +40,25 @@ export async function readProviderConfig(
 
 export function parseProviderConfig(
   definingRepo: RepoReference,
-  yaml: string,
+  configPath: string,
+  configYaml: string,
 ): ProviderConfig {
-  return normalizeProviderConfig(definingRepo, parseYaml(yaml));
-}
+  let config: ProviderConfig;
 
-function parseYaml(yaml: string): ProviderConfig {
   try {
-    return validateProvider(load(yaml));
+    config = validateProvider(
+      parseYaml(
+        {},
+        configYaml,
+        `${repoRefToString(definingRepo)}/${configPath}`,
+      ),
+    );
   } catch (cause) {
     debug(`Parsing of provider configuration failed: ${errorMessage(cause)}`);
     throw new Error("Parsing of provider configuration failed", { cause });
   }
+
+  return normalizeProviderConfig(definingRepo, config);
 }
 
 function normalizeProviderConfig(

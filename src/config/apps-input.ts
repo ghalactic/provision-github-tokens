@@ -1,14 +1,14 @@
 import { debug, getInput } from "@actions/core";
-import { load } from "js-yaml";
 import { errorMessage } from "../error.js";
 import type { AppInput, RawAppInput } from "../type/input.js";
 import { validateApps } from "./validation.js";
+import { parseYaml } from "./yaml.js";
 
 export function readAppsInput(): AppInput[] {
   const yaml = getInput("apps");
 
   try {
-    const parsed = load(yaml);
+    const parsed = parseYaml([], yaml);
 
     return normalizeAppsInput(validateApps(parsed));
   } catch (cause) {
