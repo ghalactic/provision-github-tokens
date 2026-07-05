@@ -57,18 +57,18 @@ export function table(
     children: [
       {
         type: "tableRow",
-        children: headings.map(
-          (children): TableCell => ({ type: "tableCell", children }),
-        ),
+        children: headings.map((children): TableCell => ({
+          type: "tableCell",
+          children,
+        })),
       },
-      ...rows.map(
-        (row): TableRow => ({
-          type: "tableRow",
-          children: row.map(
-            (children): TableCell => ({ type: "tableCell", children }),
-          ),
-        }),
-      ),
+      ...rows.map((row): TableRow => ({
+        type: "tableRow",
+        children: row.map((children): TableCell => ({
+          type: "tableCell",
+          children,
+        })),
+      })),
     ],
   };
 }
