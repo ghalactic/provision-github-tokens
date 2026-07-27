@@ -116574,7 +116574,7 @@ function gfmAutolinkLiteralToMarkdown() {
   };
 }
 
-// node_modules/.pnpm/mdast-util-gfm-footnote@2.1.0/node_modules/mdast-util-gfm-footnote/lib/index.js
+// node_modules/.pnpm/mdast-util-gfm-footnote@2.1.0_supports-color@7.2.0/node_modules/mdast-util-gfm-footnote/lib/index.js
 footnoteReference.peek = footnoteReferencePeek;
 function footnoteReferencePeek() {
   return "[";
@@ -116632,7 +116632,7 @@ function mapAll(line, index, blank) {
   return (blank ? "" : "    ") + line;
 }
 
-// node_modules/.pnpm/mdast-util-gfm-strikethrough@2.0.0/node_modules/mdast-util-gfm-strikethrough/lib/index.js
+// node_modules/.pnpm/mdast-util-gfm-strikethrough@2.0.0_supports-color@7.2.0/node_modules/mdast-util-gfm-strikethrough/lib/index.js
 var constructsWithoutStrikethrough = [
   "autolink",
   "destinationLiteral",
@@ -120513,7 +120513,7 @@ function safeBound(value, config) {
   return safe(this, value, config);
 }
 
-// node_modules/.pnpm/mdast-util-gfm-table@2.0.0/node_modules/mdast-util-gfm-table/lib/index.js
+// node_modules/.pnpm/mdast-util-gfm-table@2.0.0_supports-color@7.2.0/node_modules/mdast-util-gfm-table/lib/index.js
 function gfmTableToMarkdown(options) {
   const settings = options || {};
   const padding = settings.tableCellPadding;
@@ -120608,7 +120608,7 @@ function gfmTableToMarkdown(options) {
   }
 }
 
-// node_modules/.pnpm/mdast-util-gfm-task-list-item@2.0.0/node_modules/mdast-util-gfm-task-list-item/lib/index.js
+// node_modules/.pnpm/mdast-util-gfm-task-list-item@2.0.0_supports-color@7.2.0/node_modules/mdast-util-gfm-task-list-item/lib/index.js
 function gfmTaskListItemToMarkdown() {
   return {
     unsafe: [{ atBreak: true, character: "-", after: "[:|-]" }],
@@ -120636,7 +120636,7 @@ function listItemWithTaskListItem(node2, parent, state, info2) {
   }
 }
 
-// node_modules/.pnpm/mdast-util-gfm@3.1.0/node_modules/mdast-util-gfm/lib/index.js
+// node_modules/.pnpm/mdast-util-gfm@3.1.0_supports-color@7.2.0/node_modules/mdast-util-gfm/lib/index.js
 function gfmToMarkdown(options) {
   return {
     extensions: [
