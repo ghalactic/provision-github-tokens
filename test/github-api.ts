@@ -106,7 +106,7 @@ export function createTestInstallation(
     suspended_by: null,
     suspended_at: null,
     target_type: account.type,
-    target_id: account.id,
+    target_id: account.id as number,
     account: { ...sampleInstallation.account, ...account },
   };
 }
