@@ -24339,24 +24339,24 @@ var require_fast_uri = __commonJS({
     function normalize(uri, options) {
       if (typeof uri === "string") {
         uri = /** @type {T} */
-        serialize2(parse4(uri, options), options);
+        serialize2(parse5(uri, options), options);
       } else if (typeof uri === "object") {
         uri = /** @type {T} */
-        parse4(serialize2(uri, options), options);
+        parse5(serialize2(uri, options), options);
       }
       return uri;
     }
     function resolve(baseURI, relativeURI, options) {
       const schemelessOptions = options ? Object.assign({ scheme: "null" }, options) : { scheme: "null" };
-      const resolved = resolveComponent(parse4(baseURI, schemelessOptions), parse4(relativeURI, schemelessOptions), schemelessOptions, true);
+      const resolved = resolveComponent(parse5(baseURI, schemelessOptions), parse5(relativeURI, schemelessOptions), schemelessOptions, true);
       schemelessOptions.skipEscape = true;
       return serialize2(resolved, schemelessOptions);
     }
     function resolveComponent(base, relative, options, skipNormalization) {
       const target = {};
       if (!skipNormalization) {
-        base = parse4(serialize2(base, options), options);
-        relative = parse4(serialize2(relative, options), options);
+        base = parse5(serialize2(base, options), options);
+        relative = parse5(serialize2(relative, options), options);
       }
       options = options || {};
       if (!options.tolerant && relative.scheme) {
@@ -24408,13 +24408,13 @@ var require_fast_uri = __commonJS({
     function equal(uriA, uriB, options) {
       if (typeof uriA === "string") {
         uriA = unescape(uriA);
-        uriA = serialize2(normalizeComponentEncoding(parse4(uriA, options), true), { ...options, skipEscape: true });
+        uriA = serialize2(normalizeComponentEncoding(parse5(uriA, options), true), { ...options, skipEscape: true });
       } else if (typeof uriA === "object") {
         uriA = serialize2(normalizeComponentEncoding(uriA, true), { ...options, skipEscape: true });
       }
       if (typeof uriB === "string") {
         uriB = unescape(uriB);
-        uriB = serialize2(normalizeComponentEncoding(parse4(uriB, options), true), { ...options, skipEscape: true });
+        uriB = serialize2(normalizeComponentEncoding(parse5(uriB, options), true), { ...options, skipEscape: true });
       } else if (typeof uriB === "object") {
         uriB = serialize2(normalizeComponentEncoding(uriB, true), { ...options, skipEscape: true });
       }
@@ -24483,7 +24483,7 @@ var require_fast_uri = __commonJS({
       return uriTokens.join("");
     }
     var URI_PARSE = /^(?:([^#/:?]+):)?(?:\/\/((?:([^#/?@]*)@)?(\[[^#/?\]]+\]|[^#/:?]*)(?::(\d*))?))?([^#?]*)(?:\?([^#]*))?(?:#((?:.|[\n\r])*))?/u;
-    function parse4(uri, opts) {
+    function parse5(uri, opts) {
       const options = Object.assign({}, opts);
       const parsed = {
         scheme: void 0,
@@ -24577,7 +24577,7 @@ var require_fast_uri = __commonJS({
       resolveComponent,
       equal,
       serialize: serialize2,
-      parse: parse4
+      parse: parse5
     };
     module2.exports = fastUri;
     module2.exports.default = fastUri;
@@ -34752,7 +34752,7 @@ var require_public_api = __commonJS({
       }
       return doc;
     }
-    function parse4(src, reviver, options) {
+    function parse5(src, reviver, options) {
       let _reviver = void 0;
       if (typeof reviver === "function") {
         _reviver = reviver;
@@ -34793,7 +34793,7 @@ var require_public_api = __commonJS({
         return value.toString(options);
       return new Document.Document(value, _replacer, options).toString(options);
     }
-    exports.parse = parse4;
+    exports.parse = parse5;
     exports.parseAllDocuments = parseAllDocuments;
     exports.parseDocument = parseDocument2;
     exports.stringify = stringify3;
@@ -34858,7 +34858,7 @@ var require_dist3 = __commonJS({
     "use strict";
     Object.defineProperty(exports, "__esModule", { value: true });
     exports.format = format;
-    exports.parse = parse4;
+    exports.parse = parse5;
     var TEXT_REGEXP = /^[\u0009\u0020-\u007e\u0080-\u00ff]*$/;
     var TOKEN_REGEXP = /^[!#$%&'*+.^_`|~0-9A-Za-z-]+$/;
     var QUOTE_REGEXP = /[\\"]/g;
@@ -34885,7 +34885,7 @@ var require_dist3 = __commonJS({
       }
       return result;
     }
-    function parse4(header, options) {
+    function parse5(header, options) {
       const len = header.length;
       let index = skipOWS(header, 0, len);
       const valueStart = index;
@@ -58414,102 +58414,6 @@ var require_undici2 = __commonJS({
   }
 });
 
-// node_modules/.pnpm/fast-content-type-parse@3.0.0/node_modules/fast-content-type-parse/index.js
-var require_fast_content_type_parse = __commonJS({
-  "node_modules/.pnpm/fast-content-type-parse@3.0.0/node_modules/fast-content-type-parse/index.js"(exports, module2) {
-    "use strict";
-    var NullObject = function NullObject2() {
-    };
-    NullObject.prototype = /* @__PURE__ */ Object.create(null);
-    var paramRE = /; *([!#$%&'*+.^\w`|~-]+)=("(?:[\v\u0020\u0021\u0023-\u005b\u005d-\u007e\u0080-\u00ff]|\\[\v\u0020-\u00ff])*"|[!#$%&'*+.^\w`|~-]+) */gu;
-    var quotedPairRE = /\\([\v\u0020-\u00ff])/gu;
-    var mediaTypeRE = /^[!#$%&'*+.^\w|~-]+\/[!#$%&'*+.^\w|~-]+$/u;
-    var defaultContentType = { type: "", parameters: new NullObject() };
-    Object.freeze(defaultContentType.parameters);
-    Object.freeze(defaultContentType);
-    function parse4(header) {
-      if (typeof header !== "string") {
-        throw new TypeError("argument header is required and must be a string");
-      }
-      let index = header.indexOf(";");
-      const type = index !== -1 ? header.slice(0, index).trim() : header.trim();
-      if (mediaTypeRE.test(type) === false) {
-        throw new TypeError("invalid media type");
-      }
-      const result = {
-        type: type.toLowerCase(),
-        parameters: new NullObject()
-      };
-      if (index === -1) {
-        return result;
-      }
-      let key;
-      let match;
-      let value;
-      paramRE.lastIndex = index;
-      while (match = paramRE.exec(header)) {
-        if (match.index !== index) {
-          throw new TypeError("invalid parameter format");
-        }
-        index += match[0].length;
-        key = match[1].toLowerCase();
-        value = match[2];
-        if (value[0] === '"') {
-          value = value.slice(1, value.length - 1);
-          quotedPairRE.test(value) && (value = value.replace(quotedPairRE, "$1"));
-        }
-        result.parameters[key] = value;
-      }
-      if (index !== header.length) {
-        throw new TypeError("invalid parameter format");
-      }
-      return result;
-    }
-    function safeParse2(header) {
-      if (typeof header !== "string") {
-        return defaultContentType;
-      }
-      let index = header.indexOf(";");
-      const type = index !== -1 ? header.slice(0, index).trim() : header.trim();
-      if (mediaTypeRE.test(type) === false) {
-        return defaultContentType;
-      }
-      const result = {
-        type: type.toLowerCase(),
-        parameters: new NullObject()
-      };
-      if (index === -1) {
-        return result;
-      }
-      let key;
-      let match;
-      let value;
-      paramRE.lastIndex = index;
-      while (match = paramRE.exec(header)) {
-        if (match.index !== index) {
-          return defaultContentType;
-        }
-        index += match[0].length;
-        key = match[1].toLowerCase();
-        value = match[2];
-        if (value[0] === '"') {
-          value = value.slice(1, value.length - 1);
-          quotedPairRE.test(value) && (value = value.replace(quotedPairRE, "$1"));
-        }
-        result.parameters[key] = value;
-      }
-      if (index !== header.length) {
-        return defaultContentType;
-      }
-      return result;
-    }
-    module2.exports.default = { parse: parse4, safeParse: safeParse2 };
-    module2.exports.parse = parse4;
-    module2.exports.safeParse = safeParse2;
-    module2.exports.defaultContentType = defaultContentType;
-  }
-});
-
 // node_modules/.pnpm/bottleneck@2.19.5/node_modules/bottleneck/light.js
 var require_light = __commonJS({
   "node_modules/.pnpm/bottleneck@2.19.5/node_modules/bottleneck/light.js"(exports, module2) {
@@ -66633,7 +66537,7 @@ function getApiBaseUrl() {
   return process.env["GITHUB_API_URL"] || "https://api.github.com";
 }
 
-// node_modules/.pnpm/@octokit+endpoint@11.0.2/node_modules/@octokit/endpoint/dist-bundle/index.js
+// node_modules/.pnpm/@octokit+endpoint@11.0.4/node_modules/@octokit/endpoint/dist-bundle/index.js
 var VERSION8 = "0.0.0-development";
 var userAgent2 = `octokit-endpoint.js/${VERSION8} ${getUserAgent()}`;
 var DEFAULTS3 = {
@@ -66768,7 +66672,7 @@ function isKeyOperator2(operator) {
 function getValues2(context, operator, key, modifier) {
   var value = context[key], result = [];
   if (isDefined2(value) && value !== "") {
-    if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+    if (typeof value === "string" || typeof value === "number" || typeof value === "bigint" || typeof value === "boolean") {
       value = value.toString();
       if (modifier && modifier !== "*") {
         value = value.substring(0, parseInt(modifier, 10));
@@ -66946,9 +66850,346 @@ function withDefaults4(oldDefaults, newDefaults) {
 }
 var endpoint2 = withDefaults4(null, DEFAULTS3);
 
-// node_modules/.pnpm/@octokit+request@10.0.7/node_modules/@octokit/request/dist-bundle/index.js
-var import_fast_content_type_parse = __toESM(require_fast_content_type_parse(), 1);
-var VERSION9 = "10.0.7";
+// node_modules/.pnpm/@octokit+request@10.0.13/node_modules/@octokit/request/dist-bundle/index.js
+var import_content_type2 = __toESM(require_dist3(), 1);
+
+// node_modules/.pnpm/json-with-bigint@3.5.10/node_modules/json-with-bigint/json-with-bigint.js
+var intRegex2 = /^-?\d+$/;
+var noiseValue2 = /^-?\d+n+$/;
+var originalStringify2 = JSON.stringify;
+var originalParse2 = JSON.parse;
+var customFormat2 = /^-?\d+n$/;
+var bigIntsStringify2 = /([\[:])?"(-?\d+)n"($|\s*[,\}\]])/g;
+var noiseStringify2 = /([\[:])?("-?\d+n+)n("$|"\s*[,\}\]])/g;
+var isUnstringifiable = (val) => val === void 0 || typeof val === "function" || typeof val === "symbol";
+var isRawJSON = (val) => val !== null && typeof val === "object" && val.constructor && val.constructor.name === "RawJSON";
+var stringifyIteratively = (rootValue, replacer, spaceParam) => {
+  let space = "";
+  if (typeof spaceParam === "number") {
+    space = " ".repeat(Math.min(10, Math.max(0, Math.floor(spaceParam))));
+  } else if (typeof spaceParam === "string") {
+    space = spaceParam.slice(0, 10);
+  }
+  const isFunctionReplacer = typeof replacer === "function";
+  const propertyList = Array.isArray(replacer) ? new Set(replacer.map(String)) : null;
+  const prepareVal = (parent, key, val) => {
+    const isObject = val !== null && typeof val === "object";
+    const hasToJSON = isObject && typeof val.toJSON === "function";
+    if (hasToJSON) {
+      val = val.toJSON(key);
+    }
+    const isNoise = typeof val === "string" && noiseValue2.test(val);
+    if (isNoise) return val + "n";
+    const isBigInt = typeof val === "bigint";
+    if (isBigInt) {
+      const supportsRawJSON = "rawJSON" in JSON;
+      if (supportsRawJSON) return JSON.rawJSON(val.toString());
+      return val.toString() + "n";
+    }
+    if (isFunctionReplacer) {
+      val = replacer.call(parent, key, val);
+    }
+    const isPostReplacerObject = val !== null && typeof val === "object";
+    if (isPostReplacerObject) {
+      const isPrimitiveWrapper = val instanceof Number || val instanceof String || val instanceof Boolean;
+      if (isPrimitiveWrapper) {
+        val = val.valueOf();
+      }
+    }
+    return val;
+  };
+  const rootProcessed = prepareVal({ "": rootValue }, "", rootValue);
+  if (isUnstringifiable(rootProcessed)) {
+    return void 0;
+  }
+  const isRootPrimitive = rootProcessed === null || typeof rootProcessed !== "object";
+  const isRootNativeRawJSON = isRawJSON(rootProcessed);
+  if (isRootPrimitive || isRootNativeRawJSON) {
+    return originalStringify2(rootProcessed);
+  }
+  const chunks = [];
+  let level = 0;
+  const stack = [
+    {
+      parent: { "": rootProcessed },
+      key: "",
+      val: rootProcessed,
+      isArray: Array.isArray(rootProcessed),
+      keys: Array.isArray(rootProcessed) ? null : Object.keys(rootProcessed),
+      index: 0,
+      first: true
+    }
+  ];
+  const visited = new WeakSet([rootProcessed]);
+  while (stack.length > 0) {
+    const node2 = stack[stack.length - 1];
+    if (node2.index === 0) {
+      chunks.push(node2.isArray ? "[" : "{");
+      level++;
+    }
+    let isDone = false;
+    if (node2.isArray) {
+      if (node2.index < node2.val.length) {
+        if (!node2.first) chunks.push(",");
+        if (space) chunks.push("\n" + space.repeat(level));
+        const childRaw = node2.val[node2.index];
+        const childVal = prepareVal(node2.val, String(node2.index), childRaw);
+        if (isUnstringifiable(childVal)) {
+          chunks.push("null");
+          node2.first = false;
+          node2.index++;
+        } else {
+          const isComplexObject = childVal !== null && typeof childVal === "object";
+          const isNativeRaw = isRawJSON(childVal);
+          if (isComplexObject && !isNativeRaw) {
+            if (visited.has(childVal)) {
+              throw new TypeError("Converting circular structure to JSON");
+            }
+            visited.add(childVal);
+            stack.push({
+              parent: node2.val,
+              key: String(node2.index),
+              val: childVal,
+              isArray: Array.isArray(childVal),
+              keys: Array.isArray(childVal) ? null : Object.keys(childVal),
+              index: 0,
+              first: true
+            });
+            node2.first = false;
+            node2.index++;
+          } else {
+            chunks.push(originalStringify2(childVal));
+            node2.first = false;
+            node2.index++;
+          }
+        }
+      } else {
+        isDone = true;
+      }
+    } else {
+      while (node2.index < node2.keys.length) {
+        const k2 = node2.keys[node2.index++];
+        const isFilteredOutByArray = propertyList && !propertyList.has(k2);
+        if (isFilteredOutByArray) continue;
+        const childRaw = node2.val[k2];
+        const childVal = prepareVal(node2.val, k2, childRaw);
+        if (isUnstringifiable(childVal)) continue;
+        if (!node2.first) chunks.push(",");
+        if (space) {
+          chunks.push("\n" + space.repeat(level) + originalStringify2(k2) + ": ");
+        } else {
+          chunks.push(originalStringify2(k2) + ":");
+        }
+        const isComplexObject = childVal !== null && typeof childVal === "object";
+        const isNativeRaw = isRawJSON(childVal);
+        if (isComplexObject && !isNativeRaw) {
+          if (visited.has(childVal)) {
+            throw new TypeError("Converting circular structure to JSON");
+          }
+          visited.add(childVal);
+          stack.push({
+            parent: node2.val,
+            key: k2,
+            val: childVal,
+            isArray: Array.isArray(childVal),
+            keys: Array.isArray(childVal) ? null : Object.keys(childVal),
+            index: 0,
+            first: true
+          });
+          node2.first = false;
+          break;
+        } else {
+          chunks.push(originalStringify2(childVal));
+          node2.first = false;
+        }
+      }
+      const isNodeFullyProcessed = node2.index >= node2.keys.length && stack[stack.length - 1] === node2;
+      if (isNodeFullyProcessed) {
+        isDone = true;
+      }
+    }
+    if (isDone) {
+      level--;
+      if (!node2.first && space) chunks.push("\n" + space.repeat(level));
+      chunks.push(node2.isArray ? "]" : "}");
+      visited.delete(node2.val);
+      stack.pop();
+    }
+  }
+  return chunks.join("");
+};
+var JSONStringify2 = (value, replacer, space) => {
+  try {
+    const supportsRawJSON = "rawJSON" in JSON;
+    if (supportsRawJSON) {
+      return originalStringify2(
+        value,
+        (key, val) => {
+          if (typeof val === "bigint") return JSON.rawJSON(val.toString());
+          const hasFunctionReplacer = typeof replacer === "function";
+          if (hasFunctionReplacer) return replacer(key, val);
+          const isKeyInArrayReplacer = Array.isArray(replacer) && replacer.includes(key);
+          if (isKeyInArrayReplacer) return val;
+          return val;
+        },
+        space
+      );
+    }
+    if (!value) return originalStringify2(value, replacer, space);
+    const convertedToCustomJSON = originalStringify2(
+      value,
+      (key, val) => {
+        const isNoise = typeof val === "string" && noiseValue2.test(val);
+        if (isNoise) return val.toString() + "n";
+        if (typeof val === "bigint") return val.toString() + "n";
+        const hasFunctionReplacer = typeof replacer === "function";
+        if (hasFunctionReplacer) return replacer(key, val);
+        const isKeyInArrayReplacer = Array.isArray(replacer) && replacer.includes(key);
+        if (isKeyInArrayReplacer) return val;
+        return val;
+      },
+      space
+    );
+    const processedJSON = convertedToCustomJSON.replace(
+      bigIntsStringify2,
+      "$1$2$3"
+    );
+    const denoisedJSON = processedJSON.replace(noiseStringify2, "$1$2$3");
+    return denoisedJSON;
+  } catch (error2) {
+    if (error2 instanceof RangeError) {
+      const convertedJSON = stringifyIteratively(value, replacer, space);
+      if (convertedJSON === void 0) return void 0;
+      const supportsRawJSON = "rawJSON" in JSON;
+      if (supportsRawJSON) return convertedJSON;
+      const processedJSON = convertedJSON.replace(bigIntsStringify2, "$1$2$3");
+      return processedJSON.replace(noiseStringify2, "$1$2$3");
+    }
+    throw error2;
+  }
+};
+var featureCache2 = /* @__PURE__ */ new Map();
+var isContextSourceSupported2 = () => {
+  const parseFingerprint = JSON.parse.toString();
+  if (featureCache2.has(parseFingerprint)) {
+    return featureCache2.get(parseFingerprint);
+  }
+  try {
+    const result = JSON.parse(
+      "1",
+      (_2, __2, context) => !!context?.source && context.source === "1"
+    );
+    featureCache2.set(parseFingerprint, result);
+    return result;
+  } catch {
+    featureCache2.set(parseFingerprint, false);
+    return false;
+  }
+};
+var convertMarkedBigIntsReviver2 = (key, value, context, userReviver) => {
+  const isCustomFormatBigInt = typeof value === "string" && customFormat2.test(value);
+  if (isCustomFormatBigInt) return BigInt(value.slice(0, -1));
+  const isNoiseValue = typeof value === "string" && noiseValue2.test(value);
+  if (isNoiseValue) return value.slice(0, -1);
+  const hasUserReviver = typeof userReviver === "function";
+  if (!hasUserReviver) return value;
+  return userReviver(key, value, context);
+};
+var JSONParseV22 = (text3, reviver) => {
+  return JSON.parse(text3, (key, value, context) => {
+    const isNumber = typeof value === "number";
+    const isOutOfBounds = value > Number.MAX_SAFE_INTEGER || value < Number.MIN_SAFE_INTEGER;
+    const isBigNumber = isNumber && isOutOfBounds;
+    const isInt = context && intRegex2.test(context.source);
+    const isBigInt = isBigNumber && isInt;
+    if (isBigInt) return BigInt(context.source);
+    const hasCustomReviver = typeof reviver === "function";
+    if (!hasCustomReviver) return value;
+    return reviver(key, value, context);
+  });
+};
+var MAX_INT2 = Number.MAX_SAFE_INTEGER.toString();
+var MAX_DIGITS2 = MAX_INT2.length;
+var stringsOrLargeNumbers2 = /"(?:\\.|[^"])*"|-?(0|[1-9][0-9]*)(\.[0-9]+)?([eE][+-]?[0-9]+)?/g;
+var noiseValueWithQuotes2 = /^"-?\d+n+"$/;
+var applyReviverIteratively = (parsed, userReviver) => {
+  const rootHolder = { "": parsed };
+  const stack = [{ parent: rootHolder, key: "", visited: false }];
+  while (stack.length > 0) {
+    const node2 = stack[stack.length - 1];
+    if (!node2.visited) {
+      node2.visited = true;
+      const value = node2.parent[node2.key];
+      const isComplexObject = value !== null && typeof value === "object";
+      if (isComplexObject) {
+        const keys = Object.keys(value);
+        for (let i2 = keys.length - 1; i2 >= 0; i2--) {
+          stack.push({ parent: value, key: keys[i2], visited: false });
+        }
+      }
+    } else {
+      const { parent, key } = node2;
+      let value = parent[key];
+      if (typeof value === "string") {
+        const isCustomFormatBigInt = customFormat2.test(value);
+        if (isCustomFormatBigInt) {
+          value = BigInt(value.slice(0, -1));
+        } else {
+          const isNoise = noiseValue2.test(value);
+          if (isNoise) value = value.slice(0, -1);
+        }
+      }
+      const hasUserReviver = typeof userReviver === "function";
+      if (hasUserReviver) {
+        value = userReviver.call(parent, key, value);
+      }
+      const isDeleted = value === void 0;
+      if (isDeleted) {
+        delete parent[key];
+      } else {
+        parent[key] = value;
+      }
+      stack.pop();
+    }
+  }
+  return rootHolder[""];
+};
+var serializeBigInts = (text3) => {
+  return text3.replace(
+    stringsOrLargeNumbers2,
+    (match, digits, fractional, exponential) => {
+      const isString = match[0] === '"';
+      const isNoise = isString && noiseValueWithQuotes2.test(match);
+      if (isNoise) return match.substring(0, match.length - 1) + 'n"';
+      const hasFractionalOrExponential = fractional || exponential;
+      const isLessThanMaxSafeInt = digits && (digits.length < MAX_DIGITS2 || digits.length === MAX_DIGITS2 && digits <= MAX_INT2);
+      const isStandardValue = isString || hasFractionalOrExponential || isLessThanMaxSafeInt;
+      if (isStandardValue) return match;
+      return '"' + match + 'n"';
+    }
+  );
+};
+var JSONParse2 = (text3, reviver) => {
+  if (!text3) return originalParse2(text3, reviver);
+  try {
+    if (isContextSourceSupported2()) return JSONParseV22(text3, reviver);
+    const serializedData = serializeBigInts(text3);
+    return originalParse2(
+      serializedData,
+      (key, value, context) => convertMarkedBigIntsReviver2(key, value, context, reviver)
+    );
+  } catch (error2) {
+    if (error2 instanceof RangeError) {
+      const serializedData = serializeBigInts(text3);
+      const parsed = originalParse2(serializedData);
+      return applyReviverIteratively(parsed, reviver);
+    }
+    throw error2;
+  }
+};
+
+// node_modules/.pnpm/@octokit+request@10.0.13/node_modules/@octokit/request/dist-bundle/index.js
+var VERSION9 = "10.0.13";
 var defaults_default2 = {
   headers: {
     "user-agent": `octokit-request.js/${VERSION9} ${getUserAgent()}`
@@ -66972,7 +67213,7 @@ async function fetchWrapper2(requestOptions) {
   }
   const log = requestOptions.request?.log || console;
   const parseSuccessResponseBody = requestOptions.request?.parseSuccessResponseBody !== false;
-  const body = isPlainObject4(requestOptions.body) || Array.isArray(requestOptions.body) ? JSON.stringify(requestOptions.body) : requestOptions.body;
+  const body = isPlainObject4(requestOptions.body) || Array.isArray(requestOptions.body) ? JSONStringify2(requestOptions.body) : requestOptions.body;
   const requestHeaders = Object.fromEntries(
     Object.entries(requestOptions.headers).map(([name, value]) => [
       name,
@@ -67066,16 +67307,19 @@ async function getResponseData2(response) {
   if (!contentType) {
     return response.text().catch(noop3);
   }
-  const mimetype = (0, import_fast_content_type_parse.safeParse)(contentType);
+  const mimetype = (0, import_content_type2.parse)(contentType);
   if (isJSONResponse2(mimetype)) {
     let text3 = "";
     try {
       text3 = await response.text();
-      return JSON.parse(text3);
+      return JSONParse2(text3);
     } catch (err) {
       return text3;
     }
-  } else if (mimetype.type.startsWith("text/") || mimetype.parameters.charset?.toLowerCase() === "utf-8") {
+  } else if (mimetype.type.startsWith("text/") || // `application/octet-stream` is the canonical "arbitrary binary" type
+  // (RFC 2046) and must never be decoded as text, even when the response
+  // carries a (misleading) `charset=utf-8` parameter — see #751.
+  mimetype.parameters.charset?.toLowerCase() === "utf-8" && mimetype.type !== "application/octet-stream") {
     return response.text().catch(noop3);
   } else {
     return response.arrayBuffer().catch(
@@ -67094,9 +67338,10 @@ function toErrorMessage2(data) {
   if (data instanceof ArrayBuffer) {
     return "Unknown error";
   }
-  if ("message" in data) {
-    const suffix = "documentation_url" in data ? ` - ${data.documentation_url}` : "";
-    return Array.isArray(data.errors) ? `${data.message}: ${data.errors.map((v2) => JSON.stringify(v2)).join(", ")}${suffix}` : `${data.message}${suffix}`;
+  if (typeof data === "object" && data !== null && "message" in data) {
+    const objectData = data;
+    const suffix = "documentation_url" in objectData ? ` - ${objectData.documentation_url}` : "";
+    return Array.isArray(objectData.errors) ? `${objectData.message}: ${objectData.errors.map((v2) => JSON.stringify(v2)).join(", ")}${suffix}` : `${objectData.message}${suffix}`;
   }
   return `Unknown error: ${JSON.stringify(data)}`;
 }
@@ -67125,7 +67370,7 @@ function withDefaults5(oldEndpoint, newDefaults) {
 }
 var request2 = withDefaults5(endpoint2, defaults_default2);
 
-// node_modules/.pnpm/@octokit+oauth-methods@6.0.2/node_modules/@octokit/oauth-methods/dist-bundle/index.js
+// node_modules/.pnpm/@octokit+oauth-methods@6.0.3/node_modules/@octokit/oauth-methods/dist-bundle/index.js
 function requestToOAuthBaseUrl(request3) {
   const endpointDefaults = request3.endpoint.DEFAULTS;
   return /^https:\/\/(api\.)?github\.com$/.test(endpointDefaults.baseUrl) ? "https://github.com" : endpointDefaults.baseUrl.replace("/api/v3", "");
@@ -67351,7 +67596,7 @@ async function deleteAuthorization(options) {
   );
 }
 
-// node_modules/.pnpm/@octokit+auth-oauth-device@8.0.3/node_modules/@octokit/auth-oauth-device/dist-bundle/index.js
+// node_modules/.pnpm/@octokit+auth-oauth-device@8.0.4/node_modules/@octokit/auth-oauth-device/dist-bundle/index.js
 async function getOAuthAccessToken(state, options) {
   const cachedAuthentication = getCachedAuthentication(state, options.auth);
   if (cachedAuthentication) return cachedAuthentication;
@@ -67474,7 +67719,7 @@ function createOAuthDeviceAuth(options) {
   });
 }
 
-// node_modules/.pnpm/@octokit+auth-oauth-user@6.0.2/node_modules/@octokit/auth-oauth-user/dist-bundle/index.js
+// node_modules/.pnpm/@octokit+auth-oauth-user@6.0.3/node_modules/@octokit/auth-oauth-user/dist-bundle/index.js
 var VERSION11 = "0.0.0-development";
 async function getAuthentication(state) {
   if ("code" in state.strategyOptions) {
@@ -67656,7 +67901,7 @@ function createOAuthUserAuth({
 }
 createOAuthUserAuth.VERSION = VERSION11;
 
-// node_modules/.pnpm/@octokit+auth-oauth-app@9.0.3/node_modules/@octokit/auth-oauth-app/dist-bundle/index.js
+// node_modules/.pnpm/@octokit+auth-oauth-app@9.0.4/node_modules/@octokit/auth-oauth-app/dist-bundle/index.js
 async function auth4(state, authOptions) {
   if (authOptions.type === "oauth-app") {
     return {
@@ -67847,15 +68092,18 @@ async function githubAppJwt({
   };
 }
 
-// node_modules/.pnpm/toad-cache@3.7.0/node_modules/toad-cache/dist/toad-cache.mjs
+// node_modules/.pnpm/toad-cache@3.7.4/node_modules/toad-cache/dist/toad-cache.mjs
+function validateCacheParams(max, ttlInMsecs) {
+  if (typeof max !== "number" || !Number.isInteger(max) || max < 0) {
+    throw new Error("Invalid max value");
+  }
+  if (typeof ttlInMsecs !== "number" || !Number.isInteger(ttlInMsecs) || ttlInMsecs < 0) {
+    throw new Error("Invalid ttl value");
+  }
+}
 var LruObject = class {
   constructor(max = 1e3, ttlInMsecs = 0) {
-    if (isNaN(max) || max < 0) {
-      throw new Error("Invalid max value");
-    }
-    if (isNaN(ttlInMsecs) || ttlInMsecs < 0) {
-      throw new Error("Invalid ttl value");
-    }
+    validateCacheParams(max, ttlInMsecs);
     this.first = null;
     this.items = /* @__PURE__ */ Object.create(null);
     this.last = null;
@@ -67891,8 +68139,8 @@ var LruObject = class {
     this.size = 0;
   }
   delete(key) {
-    if (Object.prototype.hasOwnProperty.call(this.items, key)) {
-      const item = this.items[key];
+    const item = this.items[key];
+    if (item !== void 0) {
       delete this.items[key];
       this.size--;
       if (item.prev !== null) {
@@ -67928,13 +68176,14 @@ var LruObject = class {
     }
   }
   expiresAt(key) {
-    if (Object.prototype.hasOwnProperty.call(this.items, key)) {
-      return this.items[key].expiry;
+    const item = this.items[key];
+    if (item !== void 0) {
+      return item.expiry;
     }
   }
   get(key) {
-    if (Object.prototype.hasOwnProperty.call(this.items, key)) {
-      const item = this.items[key];
+    const item = this.items[key];
+    if (item !== void 0) {
       if (this.ttl > 0 && item.expiry <= Date.now()) {
         this.delete(key);
         return;
@@ -67944,9 +68193,9 @@ var LruObject = class {
     }
   }
   getMany(keys) {
-    const result = [];
+    const result = new Array(keys.length);
     for (var i2 = 0; i2 < keys.length; i2++) {
-      result.push(this.get(keys[i2]));
+      result[i2] = this.get(keys[i2]);
     }
     return result;
   }
@@ -67954,16 +68203,14 @@ var LruObject = class {
     return Object.keys(this.items);
   }
   set(key, value) {
-    if (Object.prototype.hasOwnProperty.call(this.items, key)) {
-      const item2 = this.items[key];
-      item2.value = value;
-      item2.expiry = this.ttl > 0 ? Date.now() + this.ttl : this.ttl;
-      if (this.last !== item2) {
-        this.bumpLru(item2);
-      }
+    const existing = this.items[key];
+    if (existing !== void 0) {
+      existing.value = value;
+      existing.expiry = this.ttl > 0 ? Date.now() + this.ttl : this.ttl;
+      this.bumpLru(existing);
       return;
     }
-    if (this.max > 0 && this.size === this.max) {
+    if (this.max > 0 && this.size >= this.max) {
       this.evict();
     }
     const item = {
@@ -67983,7 +68230,7 @@ var LruObject = class {
   }
 };
 
-// node_modules/.pnpm/@octokit+auth-app@8.2.0/node_modules/@octokit/auth-app/dist-node/index.js
+// node_modules/.pnpm/@octokit+auth-app@8.3.0/node_modules/@octokit/auth-app/dist-node/index.js
 async function getAppAuthentication({
   appId,
   privateKey,
@@ -68394,7 +68641,7 @@ async function sendRequestWithRetries(state, request3, options, createdAt, retri
     return sendRequestWithRetries(state, request3, options, createdAt, retries);
   }
 }
-var VERSION13 = "8.2.0";
+var VERSION13 = "8.3.0";
 function createAppAuth(options) {
   if (!options.appId) {
     throw new Error("[@octokit/auth-app] appId option is required");
@@ -121566,15 +121813,32 @@ content-type/dist/index.js:
   (* v8 ignore else -- @preserve *)
 
 @octokit/action/dist-bundle/index.js:
+@octokit/auth-oauth-app/dist-bundle/index.js:
+  (* v8 ignore next -- @preserve *)
+
+@octokit/oauth-methods/dist-bundle/index.js:
+  (* v8 ignore next: we always pass a custom request in tests -- @preserve *)
+
+@octokit/auth-oauth-device/dist-bundle/index.js:
+  (* v8 ignore next 2 -- @preserve *)
+
+@octokit/auth-oauth-user/dist-bundle/index.js:
+  (* v8 ignore if -- @preserve *)
   (* v8 ignore next -- @preserve *)
 
 toad-cache/dist/toad-cache.mjs:
   (**
    * toad-cache
    *
-   * @copyright 2024 Igor Savin <kibertoad@gmail.com>
+   * @copyright 2026 Igor Savin <kibertoad@gmail.com>
    * @license MIT
-   * @version 3.7.0
+   * @version 3.7.3
    *)
+
+@octokit/auth-app/dist-node/index.js:
+  (* v8 ignore next - permissions are optional per OpenAPI spec, but we think that is incorrect -- @preserve *)
+  (* v8 ignore next - repositorySelection are optional per OpenAPI spec, but we think that is incorrect -- @preserve *)
+  (* v8 ignore start - due to skipped tests, see https://github.com/octokit/auth-app.js/pull/580 -- @preserve *)
+  (* v8 ignore end -- @preserve *)
 */
 //# sourceMappingURL=main.js.map
