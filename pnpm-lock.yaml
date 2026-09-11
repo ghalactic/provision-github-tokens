@@ -196,7 +196,7 @@ importers:
         version: 5.0.5
       openapi-sampler:
         specifier: ^1.7.2
-        version: 1.7.4
+        version: 1.7.5
       prettier:
         specifier: ^3.8.3
         version: 3.9.6
@@ -1567,8 +1567,8 @@ packages:
     resolution: {integrity: sha512-4+/OFSqOjoyULo7eN7EA97DE0Xydj/PW5aIckxqQIoFjFwqXKuFCvXUJObyJfBF9Khu4RL/jlDRI9FPaMGfPnw==}
     engines: {node: '>= 20'}
 
-  openapi-sampler@1.7.4:
-    resolution: {integrity: sha512-CKS/rd5ucPCuEDbJnjGDXZTsuGWcmv53aCmQx7soZlPEONUGN4af0/dY5+THRFZraSEjeA78nlfzdFswC/N5SA==}
+  openapi-sampler@1.7.5:
+    resolution: {integrity: sha512-zpnod1EYNkMP3xg18bhMknvzdaxz5ePUyHakO/7zwEIq/Y8T0SsliS9a+YXCWQCvn+5LfE//UtDVoUULcKdVAQ==}
 
   optionator@0.9.4:
     resolution: {integrity: sha512-6IpQ7mKUxRcZNLIObR0hz7lxsapSSIYNZJwXPGeF0mTVqGKFIXj1DQcMoT22S3ROcLyY/rz0PWaWZ9ayWmad9g==}
@@ -3291,7 +3291,7 @@ snapshots:
       '@octokit/types': 16.0.0
       '@octokit/webhooks': 14.2.0
 
-  openapi-sampler@1.7.4:
+  openapi-sampler@1.7.5:
     dependencies:
       '@types/json-schema': 7.0.15
       fast-xml-parser: 5.8.0
