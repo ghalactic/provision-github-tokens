@@ -61112,6 +61112,15 @@ var generated_provider_rule_permissions_v1_schema_default = {
         "write"
       ]
     },
+    code_quality: {
+      type: "string",
+      description: "The level of permission to grant the access token to view and manage code quality data.",
+      enum: [
+        "none",
+        "read",
+        "write"
+      ]
+    },
     codespaces: {
       type: "string",
       description: "The level of permission to grant the access token to create, edit, delete, and list Codespaces.",
@@ -61370,6 +61379,16 @@ var generated_provider_rule_permissions_v1_schema_default = {
       description: "The level of permission to grant the access token for managing access to GitHub Copilot for members of an organization with a Copilot Business subscription. This property is in public preview and is subject to change.",
       enum: [
         "none",
+        "read",
+        "write"
+      ]
+    },
+    organization_copilot_agent_settings: {
+      type: "string",
+      description: "The level of permission to grant the access token to view and manage Copilot cloud agent settings for an organization.",
+      enum: [
+        "none",
+        "read",
         "write"
       ]
     },
@@ -61465,15 +61484,6 @@ var generated_provider_rule_permissions_v1_schema_default = {
     organization_user_blocking: {
       type: "string",
       description: "The level of permission to grant the access token to view and manage users blocked by the organization.",
-      enum: [
-        "none",
-        "read",
-        "write"
-      ]
-    },
-    team_discussions: {
-      type: "string",
-      description: "The level of permission to grant the access token to manage team discussions and related comments.",
       enum: [
         "none",
         "read",
@@ -61619,6 +61629,14 @@ var generated_requester_token_permissions_v1_schema_default = {
         "write"
       ]
     },
+    code_quality: {
+      type: "string",
+      description: "The level of permission to grant the access token to view and manage code quality data.",
+      enum: [
+        "read",
+        "write"
+      ]
+    },
     codespaces: {
       type: "string",
       description: "The level of permission to grant the access token to create, edit, delete, and list Codespaces.",
@@ -61848,6 +61866,15 @@ var generated_requester_token_permissions_v1_schema_default = {
       type: "string",
       description: "The level of permission to grant the access token for managing access to GitHub Copilot for members of an organization with a Copilot Business subscription. This property is in public preview and is subject to change.",
       enum: [
+        "read",
+        "write"
+      ]
+    },
+    organization_copilot_agent_settings: {
+      type: "string",
+      description: "The level of permission to grant the access token to view and manage Copilot cloud agent settings for an organization.",
+      enum: [
+        "read",
         "write"
       ]
     },
@@ -61933,14 +61960,6 @@ var generated_requester_token_permissions_v1_schema_default = {
     organization_user_blocking: {
       type: "string",
       description: "The level of permission to grant the access token to view and manage users blocked by the organization.",
-      enum: [
-        "read",
-        "write"
-      ]
-    },
-    team_discussions: {
-      type: "string",
-      description: "The level of permission to grant the access token to manage team discussions and related comments.",
       enum: [
         "read",
         "write"
