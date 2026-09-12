@@ -6,6 +6,7 @@
     "moduleResolution": "NodeNext",
     "noEmit": true,
     "resolveJsonModule": true,
+    "skipLibCheck": true,
     "sourceMap": true,
     "strict": true,
     "target": "ESNext"
