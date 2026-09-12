@@ -17,8 +17,9 @@ const PROVIDER_WORKFLOW_ID = "run-action-for-ci.yml";
 
 const fixturesPath = join(import.meta.dirname, "testdata");
 
-it.sequential(
+it(
   "provider workflow produces expected summary",
+  { concurrent: false, timeout: E2E_TIMEOUT },
   async ({ onTestFinished }) => {
     const { owner, repo, sha, downloadArtifact } = ghaContext;
 
@@ -45,11 +46,11 @@ it.sequential(
       (await downloadArtifact(run, "summary.md")).toString("utf-8"),
     ).toMatchFileSnapshot(join(fixturesPath, "summary.md"));
   },
-  E2E_TIMEOUT,
 );
 
-it.sequential(
+it(
   "consumer can use provisioned token",
+  { concurrent: false, timeout: E2E_TIMEOUT },
   async ({ onTestFinished }) => {
     const { fixturesOctokit } = ghaContext;
 
@@ -76,5 +77,4 @@ it.sequential(
 
     expect(conclusion).toBe("success");
   },
-  E2E_TIMEOUT,
 );

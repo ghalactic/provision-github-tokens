@@ -3,6 +3,7 @@ import { defineConfig, type TestProjectConfiguration } from "vitest/config";
 export default defineConfig({
   test: {
     watch: false,
+    attachmentsDir: "artifacts/vitest/attachments",
     coverage: {
       include: ["src/**/*.ts"],
       exclude: ["src/type/**"],
