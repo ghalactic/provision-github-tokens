@@ -179,7 +179,7 @@ export function createTestInstallationRepos(
 export type Artifact = components["schemas"]["artifact"];
 
 export type WorkflowDispatchData = {
-  workflow_run_id: number;
+  workflow_run_id: number | bigint;
   run_url: string;
   html_url: string;
 };

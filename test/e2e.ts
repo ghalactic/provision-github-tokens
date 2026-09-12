@@ -49,7 +49,7 @@ export async function createWorkflowRun(
     const { data } = await octokit.rest.actions.getWorkflowRun({
       owner,
       repo,
-      run_id: dispatchedRun.workflow_run_id,
+      run_id: dispatchedRun.workflow_run_id as number,
     });
 
     return data;
@@ -71,7 +71,7 @@ export async function waitForWorkflowRunToComplete(
     } = await octokit.rest.actions.getWorkflowRun({
       owner,
       repo,
-      run_id: run.id,
+      run_id: run.id as number,
     });
 
     if (status !== "completed") {
@@ -111,7 +111,7 @@ export function createDownloadArtifact(
   return async (run: WorkflowRun, artifactName: string): Promise<Buffer> => {
     const artifactPages = octokit.paginate.iterator(
       octokit.rest.actions.listWorkflowRunArtifacts,
-      { owner, repo, run_id: run.id, name: artifactName },
+      { owner, repo, run_id: run.id as number, name: artifactName },
     );
 
     let artifact: Artifact | undefined;
