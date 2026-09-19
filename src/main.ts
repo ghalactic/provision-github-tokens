@@ -16,6 +16,7 @@ import { createProvisionAuthorizer } from "./provision-authorizer.js";
 import { createProvisionRequestFactory } from "./provision-request.js";
 import { createFindProvisionerOctokit } from "./provisioner-octokit.js";
 import { createProvisioner } from "./provisioner.js";
+import { createReconcileDashboards } from "./reconcile-dashboards.js";
 import { registerTokenDeclarations } from "./register-token-declarations.js";
 import { renderSummary } from "./summary.js";
 import { createTokenAuthorizer } from "./token-authorizer.js";
@@ -29,6 +30,7 @@ try {
   const githubRef = process.env.GITHUB_REF;
   const githubRepository = process.env.GITHUB_REPOSITORY;
   const githubServerUrl = process.env.GITHUB_SERVER_URL;
+  const githubRunId = process.env.GITHUB_RUN_ID;
   /* istanbul ignore next - @preserve */
   if (!githubRef) {
     throw new Error("Invariant violation: GITHUB_REF isn't set");
@@ -44,9 +46,15 @@ try {
     throw new Error("Invariant violation: GITHUB_SERVER_URL isn't set");
   }
 
+  /* istanbul ignore next - @preserve */
+  if (!githubRunId) {
+    throw new Error("Invariant violation: GITHUB_RUN_ID isn't set");
+  }
+
   const githubActionRepository =
     process.env.GITHUB_ACTION_REPOSITORY ?? githubRepository;
   const actionUrl = `${githubServerUrl}/${githubActionRepository}`;
+  const runUrl = `${githubServerUrl}/${githubRepository}/actions/runs/${githubRunId}`;
 
   const appsInput = readAppsInput();
   const octokitFactory = createOctokitFactory();
@@ -95,24 +103,30 @@ try {
     findProvisionerOctokit,
     encryptSecret,
   );
+  const reconcileDashboards = createReconcileDashboards(
+    octokitFactory,
+    appsInput,
+  );
 
   await group("Discovering apps", async () => {
     await discoverApps(octokitFactory, appRegistry, appsInput);
   });
 
   const requesters = await group("Discovering requesters", async () => {
-    const requesters = await discoverRequesters(
+    const result = await discoverRequesters(
       octokitFactory,
       appRegistry,
       appsInput,
     );
-    registerTokenDeclarations(declarationRegistry, requesters);
+    registerTokenDeclarations(declarationRegistry, result.requesters);
 
-    return requesters;
+    return result;
   });
 
   const authorizeResult = await group("Authorizing requests", async () => {
-    return await authorizer.authorize(Array.from(requesters.values()));
+    return await authorizer.authorize(
+      Array.from(requesters.requesters.values()),
+    );
   });
 
   const tokenCreationResults = await group("Creating tokens", async () => {
@@ -123,6 +137,18 @@ try {
     return await provisionSecrets(
       tokenCreationResults,
       provisionAuthorizer.listResults(),
+    );
+  });
+
+  await group("Reconciling dashboards", async () => {
+    await reconcileDashboards(
+      githubServerUrl,
+      runUrl,
+      config,
+      requesters,
+      authorizeResult.tokenResults,
+      tokenCreationResults,
+      provisionResults,
     );
   });
 

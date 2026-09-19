@@ -4756,8 +4756,8 @@ var require_util2 = __commonJS({
       }
       return values;
     }
-    function getDecodeSplit(name, list3) {
-      const value = list3.get(name, true);
+    function getDecodeSplit(name, list4) {
+      const value = list4.get(name, true);
       if (value === null) {
         return null;
       }
@@ -11970,9 +11970,9 @@ var require_headers = __commonJS({
       // https://fetch.spec.whatwg.org/#dom-headers-getsetcookie
       getSetCookie() {
         webidl.brandCheck(this, _Headers);
-        const list3 = this.#headersList.cookies;
-        if (list3) {
-          return [...list3];
+        const list4 = this.#headersList.cookies;
+        if (list4) {
+          return [...list4];
         }
         return [];
       }
@@ -12012,8 +12012,8 @@ var require_headers = __commonJS({
       static getHeadersList(o2) {
         return o2.#headersList;
       }
-      static setHeadersList(o2, list3) {
-        o2.#headersList = list3;
+      static setHeadersList(o2, list4) {
+        o2.#headersList = list4;
       }
     };
     var { getHeadersGuard, setHeadersGuard, getHeadersList, setHeadersList } = Headers2;
@@ -12981,13 +12981,13 @@ var require_request2 = __commonJS({
         if (this.signal.aborted) {
           ac.abort(this.signal.reason);
         } else {
-          let list3 = dependentControllerMap.get(this.signal);
-          if (list3 === void 0) {
-            list3 = /* @__PURE__ */ new Set();
-            dependentControllerMap.set(this.signal, list3);
+          let list4 = dependentControllerMap.get(this.signal);
+          if (list4 === void 0) {
+            list4 = /* @__PURE__ */ new Set();
+            dependentControllerMap.set(this.signal, list4);
           }
           const acRef = new WeakRef(ac);
-          list3.add(acRef);
+          list4.add(acRef);
           util.addAbortListener(
             ac.signal,
             buildAbort(acRef)
@@ -20376,10 +20376,10 @@ var require_source_map_support = __commonJS({
         return process.exit(code2);
       }
     }
-    function handlerExec(list3) {
+    function handlerExec(list4) {
       return function(arg) {
-        for (var i2 = 0; i2 < list3.length; i2++) {
-          var ret = list3[i2](arg);
+        for (var i2 = 0; i2 < list4.length; i2++) {
+          var ret = list4[i2](arg);
           if (ret) {
             return ret;
           }
@@ -24339,10 +24339,10 @@ var require_fast_uri = __commonJS({
     function normalize(uri, options) {
       if (typeof uri === "string") {
         uri = /** @type {T} */
-        serialize2(parse3(uri, options), options);
+        serialize3(parse3(uri, options), options);
       } else if (typeof uri === "object") {
         uri = /** @type {T} */
-        parse3(serialize2(uri, options), options);
+        parse3(serialize3(uri, options), options);
       }
       return uri;
     }
@@ -24350,13 +24350,13 @@ var require_fast_uri = __commonJS({
       const schemelessOptions = options ? Object.assign({ scheme: "null" }, options) : { scheme: "null" };
       const resolved = resolveComponent(parse3(baseURI, schemelessOptions), parse3(relativeURI, schemelessOptions), schemelessOptions, true);
       schemelessOptions.skipEscape = true;
-      return serialize2(resolved, schemelessOptions);
+      return serialize3(resolved, schemelessOptions);
     }
     function resolveComponent(base, relative, options, skipNormalization) {
       const target = {};
       if (!skipNormalization) {
-        base = parse3(serialize2(base, options), options);
-        relative = parse3(serialize2(relative, options), options);
+        base = parse3(serialize3(base, options), options);
+        relative = parse3(serialize3(relative, options), options);
       }
       options = options || {};
       if (!options.tolerant && relative.scheme) {
@@ -24408,19 +24408,19 @@ var require_fast_uri = __commonJS({
     function equal(uriA, uriB, options) {
       if (typeof uriA === "string") {
         uriA = unescape(uriA);
-        uriA = serialize2(normalizeComponentEncoding(parse3(uriA, options), true), { ...options, skipEscape: true });
+        uriA = serialize3(normalizeComponentEncoding(parse3(uriA, options), true), { ...options, skipEscape: true });
       } else if (typeof uriA === "object") {
-        uriA = serialize2(normalizeComponentEncoding(uriA, true), { ...options, skipEscape: true });
+        uriA = serialize3(normalizeComponentEncoding(uriA, true), { ...options, skipEscape: true });
       }
       if (typeof uriB === "string") {
         uriB = unescape(uriB);
-        uriB = serialize2(normalizeComponentEncoding(parse3(uriB, options), true), { ...options, skipEscape: true });
+        uriB = serialize3(normalizeComponentEncoding(parse3(uriB, options), true), { ...options, skipEscape: true });
       } else if (typeof uriB === "object") {
-        uriB = serialize2(normalizeComponentEncoding(uriB, true), { ...options, skipEscape: true });
+        uriB = serialize3(normalizeComponentEncoding(uriB, true), { ...options, skipEscape: true });
       }
       return uriA.toLowerCase() === uriB.toLowerCase();
     }
-    function serialize2(cmpts, opts) {
+    function serialize3(cmpts, opts) {
       const component = {
         host: cmpts.host,
         scheme: cmpts.scheme,
@@ -24576,7 +24576,7 @@ var require_fast_uri = __commonJS({
       resolve,
       resolveComponent,
       equal,
-      serialize: serialize2,
+      serialize: serialize3,
       parse: parse3
     };
     module2.exports = fastUri;
@@ -33839,15 +33839,15 @@ var require_parser = __commonJS({
     var node_process = __require("process");
     var cst = require_cst();
     var lexer = require_lexer();
-    function includesToken(list3, type) {
-      for (let i2 = 0; i2 < list3.length; ++i2)
-        if (list3[i2].type === type)
+    function includesToken(list4, type) {
+      for (let i2 = 0; i2 < list4.length; ++i2)
+        if (list4[i2].type === type)
           return true;
       return false;
     }
-    function findNonEmptyIndex(list3) {
-      for (let i2 = 0; i2 < list3.length; ++i2) {
-        switch (list3[i2].type) {
+    function findNonEmptyIndex(list4) {
+      for (let i2 = 0; i2 < list4.length; ++i2) {
+        switch (list4[i2].type) {
           case "space":
           case "comment":
           case "newline":
@@ -40374,8 +40374,8 @@ var require_util12 = __commonJS({
       }
       return values;
     }
-    function getDecodeSplit(name, list3) {
-      const value = list3.get(name, true);
+    function getDecodeSplit(name, list4) {
+      const value = list4.get(name, true);
       if (value === null) {
         return null;
       }
@@ -51851,9 +51851,9 @@ var require_headers2 = __commonJS({
       // https://fetch.spec.whatwg.org/#dom-headers-getsetcookie
       getSetCookie() {
         webidl.brandCheck(this, _Headers);
-        const list3 = this.#headersList.cookies;
-        if (list3) {
-          return [...list3];
+        const list4 = this.#headersList.cookies;
+        if (list4) {
+          return [...list4];
         }
         return [];
       }
@@ -51877,8 +51877,8 @@ var require_headers2 = __commonJS({
        * @param {Headers} target
        * @param {HeadersList} list
        */
-      static setHeadersList(target, list3) {
-        target.#headersList = list3;
+      static setHeadersList(target, list4) {
+        target.#headersList = list4;
       }
     };
     var { getHeadersGuard, setHeadersGuard, getHeadersList, setHeadersList } = Headers2;
@@ -52829,13 +52829,13 @@ var require_request4 = __commonJS({
         if (this.signal.aborted) {
           ac.abort(this.signal.reason);
         } else {
-          let list3 = dependentControllerMap.get(this.signal);
-          if (list3 === void 0) {
-            list3 = /* @__PURE__ */ new Set();
-            dependentControllerMap.set(this.signal, list3);
+          let list4 = dependentControllerMap.get(this.signal);
+          if (list4 === void 0) {
+            list4 = /* @__PURE__ */ new Set();
+            dependentControllerMap.set(this.signal, list4);
           }
           const acRef = new WeakRef(ac);
-          list3.add(acRef);
+          list4.add(acRef);
           util.addAbortListener(
             ac.signal,
             buildAbort(acRef)
@@ -58529,16 +58529,16 @@ var require_light = __commonJS({
           }
         }
         shiftAll(fn) {
-          return this._lists.forEach(function(list3) {
-            return list3.forEachShift(fn);
+          return this._lists.forEach(function(list4) {
+            return list4.forEachShift(fn);
           });
         }
         getFirst(arr = this._lists) {
-          var j2, len, list3;
+          var j2, len, list4;
           for (j2 = 0, len = arr.length; j2 < len; j2++) {
-            list3 = arr[j2];
-            if (list3.length > 0) {
-              return list3;
+            list4 = arr[j2];
+            if (list4.length > 0) {
+              return list4;
             }
           }
           return [];
@@ -60791,12 +60791,12 @@ function createTextTokenAuthExplainer() {
     return renderAllowDenyList(indent, entries);
   }
   function renderAllowDenyList(indent, items) {
-    let list3 = "";
+    let list4 = "";
     for (const [isAllowed, entry] of items) {
-      list3 += `
+      list4 += `
 ${indent}${icon(isAllowed)} ${entry}`;
     }
-    return list3;
+    return list4;
   }
 }
 
@@ -61937,6 +61937,21 @@ var provider_v1_schema_default = {
       const: "https://ghalactic.github.io/provision-github-tokens/schema/provider.v1.schema.json",
       default: "https://ghalactic.github.io/provision-github-tokens/schema/provider.v1.schema.json"
     },
+    dashboards: {
+      description: "Settings that control the token dashboards that this action maintains in requester repos.",
+      type: "object",
+      additionalProperties: false,
+      default: {
+        enabled: true
+      },
+      properties: {
+        enabled: {
+          description: "Whether to maintain token dashboards in requester repos.",
+          type: "boolean",
+          default: true
+        }
+      }
+    },
     permissions: {
       description: "Settings that control the token permissions that consumers can receive.",
       type: "object",
@@ -62293,6 +62308,21 @@ var requester_v1_schema_default = {
       const: "https://ghalactic.github.io/provision-github-tokens/schema/requester.v1.schema.json",
       default: "https://ghalactic.github.io/provision-github-tokens/schema/requester.v1.schema.json"
     },
+    dashboard: {
+      description: "Settings that control the token dashboard that this action maintains in this repo.",
+      type: "object",
+      additionalProperties: false,
+      default: {
+        enabled: true
+      },
+      properties: {
+        enabled: {
+          description: "Whether to maintain a token dashboard in this repo.",
+          type: "boolean",
+          default: true
+        }
+      }
+    },
     tokens: {
       description: "Declarations of GitHub tokens that requesters can request to be provisioned.",
       type: "object",
@@ -62550,6 +62580,16 @@ var validateRequester = createValidate(
   requester_v1_schema_default.$id,
   "requester configuration"
 );
+function findValidationErrors(error2) {
+  let current = error2;
+  for (; ; ) {
+    if (current instanceof ValidateError) return current.errors;
+    if (typeof current !== "object" || current === null || !("cause" in current)) {
+      return [];
+    }
+    current = current.cause;
+  }
+}
 var ValidateError = class extends Error {
   errors;
   constructor(message, errors) {
@@ -68441,7 +68481,9 @@ function normalizeRequesterConfig(definingRepo, config) {
 // src/discover-requesters.ts
 var CONFIG_PATH = ".github/ghalactic/provision-github-tokens.yml";
 async function discoverRequesters(octokitFactory, appRegistry, appsInput) {
-  const discovered = /* @__PURE__ */ new Map();
+  const requesters = /* @__PURE__ */ new Map();
+  const configIssues = /* @__PURE__ */ new Map();
+  const installations = /* @__PURE__ */ new Map();
   for (const [, instReg] of appRegistry.provisioners) {
     const { installation, repos } = instReg;
     const octokit = octokitFactory.installationOctokit(
@@ -68450,7 +68492,9 @@ async function discoverRequesters(octokitFactory, appRegistry, appsInput) {
       installation.id
     );
     for (const r2 of repos) {
-      if (discovered.has(r2.full_name)) continue;
+      if (requesters.has(r2.full_name) || configIssues.has(r2.full_name)) {
+        continue;
+      }
       const requester = createRepoRef(r2.owner.login, r2.name);
       let configYaml;
       try {
@@ -68474,12 +68518,19 @@ async function discoverRequesters(octokitFactory, appRegistry, appsInput) {
         });
         continue;
       }
+      installations.set(r2.full_name, instReg);
       debug(`Discovered requester ${r2.full_name}`);
       let config;
       try {
         config = parseRequesterConfig(requester, CONFIG_PATH, configYaml);
-      } catch {
+      } catch (error2) {
         error(`Requester ${r2.full_name} has invalid config`);
+        configIssues.set(r2.full_name, {
+          requester,
+          configPath: CONFIG_PATH,
+          errors: findValidationErrors(error2),
+          message: errorMessage(error2)
+        });
         continue;
       }
       const tokenDecNames = Object.keys(config.tokens);
@@ -68492,11 +68543,14 @@ async function discoverRequesters(octokitFactory, appRegistry, appsInput) {
       debug(
         `Requester ${r2.full_name} has ${secretDecs} ` + JSON.stringify(secretDecNames)
       );
-      discovered.set(r2.full_name, { requester, config });
+      requesters.set(r2.full_name, { requester, config });
     }
   }
-  info(`Discovered ${pluralize(discovered.size, "requester", "requesters")}`);
-  return discovered;
+  info(`Discovered ${pluralize(requesters.size, "requester", "requesters")}`);
+  info(
+    `Found ${pluralize(configIssues.size, "invalid requester config", "invalid requester configs")}`
+  );
+  return { requesters, configIssues, installations };
 }
 
 // node_modules/.pnpm/libsodium@0.8.0/node_modules/libsodium/dist/modules-esm/libsodium.mjs
@@ -115981,15 +116035,6 @@ Secret #${i2}:
   }
 }
 
-// src/register-token-declarations.ts
-function registerTokenDeclarations(declarationRegistry, requesters) {
-  for (const [, { requester, config }] of requesters) {
-    for (const [name, declaration] of Object.entries(config.tokens)) {
-      declarationRegistry.registerDeclaration(requester, name, declaration);
-    }
-  }
-}
-
 // node_modules/.pnpm/micromark-util-character@2.1.1/node_modules/micromark-util-character/index.js
 var asciiAlpha = regexCheck(/[A-Za-z]/);
 var asciiAlphanumeric = regexCheck(/[\dA-Za-z]/);
@@ -116549,16 +116594,16 @@ function map2(line, _2, blank) {
 function patternInScope(stack, pattern) {
   return listInScope(stack, pattern.inConstruct, true) && !listInScope(stack, pattern.notInConstruct, false);
 }
-function listInScope(stack, list3, none) {
-  if (typeof list3 === "string") {
-    list3 = [list3];
+function listInScope(stack, list4, none) {
+  if (typeof list4 === "string") {
+    list4 = [list4];
   }
-  if (!list3 || list3.length === 0) {
+  if (!list4 || list4.length === 0) {
     return none;
   }
   let index = -1;
-  while (++index < list3.length) {
-    if (stack.includes(list3[index])) {
+  while (++index < list4.length) {
+    if (stack.includes(list4[index])) {
       return true;
     }
   }
@@ -120344,6 +120389,556 @@ function text2(value) {
   return { type: "text", value };
 }
 
+// src/token-creation-explainer/text.ts
+var HEADER_ACCESS_LABELS = {
+  admin: "admin",
+  none: "",
+  read: "read-only",
+  write: "write"
+};
+function createTextTokenCreationExplainer(results) {
+  const resultIndices = /* @__PURE__ */ new Map();
+  const authResultIndices = /* @__PURE__ */ new Map();
+  let index = 0;
+  for (const [authResult, result] of results) {
+    authResultIndices.set(authResult, index);
+    if (!resultIndices.has(result)) resultIndices.set(result, index);
+    ++index;
+  }
+  return (authResult, creationResult) => {
+    const currentIndex = authResultIndices.get(authResult);
+    const firstIndex = resultIndices.get(creationResult);
+    if (typeof currentIndex !== "undefined" && typeof firstIndex !== "undefined" && firstIndex !== currentIndex) {
+      return `${icon(creationResult.type === "CREATED")} Same result as token #${firstIndex + 1}`;
+    }
+    return explainResult(authResult, creationResult);
+  };
+  function explainResult(authResult, result) {
+    const { account, permissions, as: role } = authResult.request.tokenDec;
+    const { repos } = authResult.request;
+    const access2 = maxAccess(permissions);
+    const isSuccess = result.type === "CREATED";
+    const permEntries = effectivePermissions(permissions);
+    const hasPermissions = permEntries.length > 0;
+    const lines = [];
+    lines.push(renderHeader(result.type, access2, repos, account));
+    lines.push(...renderErrorLines(result, authResult.request.consumer));
+    const subIcon = icon(isSuccess || void 0);
+    const verb = isSuccess ? "Has" : "Wanted";
+    if (hasPermissions) {
+      const roleStr = role ? `with role ${role}` : "without a role";
+      lines.push(`  ${subIcon} ${verb} ${access2} access ${roleStr}`);
+    }
+    lines.push(...renderRepoLines(subIcon, verb, repos, account));
+    lines.push(...renderPermissionLines(subIcon, verb, permEntries));
+    return lines.join("\n");
+  }
+  function renderHeader(type, access2, repos, account) {
+    const scope = repoScopeLabel(repos, account);
+    const isSuccess = type === "CREATED";
+    const label = HEADER_ACCESS_LABELS[access2];
+    if (isSuccess) {
+      return `${icon(isSuccess)} ${capitalize(label)} token created with access to ${scope}:`;
+    }
+    const prefix = label ? `${label} ` : "";
+    const verb = type === "NOT_ALLOWED" ? "Refused" : "Failed";
+    return `${icon(isSuccess)} ${verb} to create ${prefix}token with access to ${scope}:`;
+  }
+  function renderErrorLines(result, consumer) {
+    switch (result.type) {
+      case "CREATED":
+        return [];
+      case "NOT_ALLOWED": {
+        const suffix = isRepoRef(consumer) ? ` for repo ${repoRefToString(consumer)}` : ` for account ${consumer.account}`;
+        return [`  ${FAIL_ICON} Token not allowed${suffix}`];
+      }
+      case "NO_ISSUER":
+        return [`  ${FAIL_ICON} No suitable issuer`];
+      case "REQUEST_ERROR": {
+        const body = result.error.response?.data;
+        const detail = typeof body === "undefined" ? "(no response data)" : JSON.stringify(body, null, 2);
+        return [
+          `  ${FAIL_ICON} ${result.error.status} - ${result.error.message}`,
+          prefixLines("::debug::      ", detail)
+        ];
+      }
+      case "ERROR":
+        return [
+          `  ${FAIL_ICON} ${errorMessage(result.error)}`,
+          prefixLines("::debug::      ", errorStack(result.error))
+        ];
+    }
+  }
+  function renderRepoLines(icon2, verb, repos, account) {
+    if (repos === "all") {
+      return [`  ${icon2} ${verb} access to all repos in ${account}`];
+    }
+    if (repos.length < 1) return [`  ${icon2} ${verb} account-only access`];
+    const lines = [
+      `  ${icon2} ${verb} access to ${pluralize(repos.length, "repo", "repos")} in ${account}:`
+    ];
+    for (const repo of repos) lines.push(`    ${icon2} ${account}/${repo}`);
+    return lines;
+  }
+  function renderPermissionLines(icon2, verb, permEntries) {
+    if (permEntries.length < 1) {
+      return [`  ${FAIL_ICON} No permissions requested`];
+    }
+    const lines = [
+      `  ${icon2} ${verb} ${pluralize(permEntries.length, "permission", "permissions")}:`
+    ];
+    for (const [name, access2] of permEntries) {
+      lines.push(`    ${icon2} ${name}: ${access2}`);
+    }
+    return lines;
+  }
+  function repoScopeLabel(repos, account) {
+    if (repos === "all") return `all repos in ${account}`;
+    if (repos.length < 1) return account;
+    return `${pluralize(repos.length, "repo", "repos")} in ${account}`;
+  }
+  function effectivePermissions(permissions) {
+    const entries = [];
+    for (const [name, access2 = "none"] of Object.entries(permissions)) {
+      if (access2 !== "none") entries.push([name, access2]);
+    }
+    entries.sort(([a2], [b2]) => a2.localeCompare(b2));
+    return entries;
+  }
+}
+
+// src/dashboard.ts
+var DASHBOARD_LABEL = "gh-token-dashboard";
+var FAILURE_DASHBOARD_TITLE = "GitHub tokens couldn't be provisioned";
+var CONFIG_ISSUE_DASHBOARD_TITLE = "Token provisioning config is invalid";
+function renderFailureDashboard(runUrl, secrets, tokenResults, tokenCreationResults, provisionResults) {
+  const explainProvisionAuth = createTextProvisionAuthExplainer(tokenResults);
+  const explainTokenCreation = createTextTokenCreationExplainer(tokenCreationResults);
+  const explainProvision = createTextProvisionExplainer();
+  const children = [];
+  for (const secret of secrets) {
+    children.push(heading2(2, inlineCode2(secret.request.name)));
+    const explanation = explainSecret(
+      secret,
+      explainProvisionAuth,
+      explainTokenCreation,
+      explainProvision,
+      tokenCreationResults,
+      provisionResults
+    );
+    children.push(indentedTextToList(explanation));
+  }
+  children.push(runLink(runUrl));
+  return {
+    title: FAILURE_DASHBOARD_TITLE,
+    body: serialize2(children)
+  };
+}
+function renderConfigIssueDashboard(githubServerUrl, runUrl, issue2) {
+  const { requester, configPath, errors } = issue2;
+  const children = [
+    paragraph2(
+      text2("The config file "),
+      inlineCode2(configPath),
+      text2(` in ${repoRefToString(requester)} is invalid:`)
+    ),
+    list3(
+      errors.map((error2) => [
+        ...error2.instancePath.length > 0 ? [inlineCode2(error2.instancePath), text2(" ")] : [],
+        text2(error2.message ?? "is invalid")
+      ])
+    )
+  ];
+  const configUrl = new URL(
+    `${requester.account}/${requester.repo}/blob/HEAD/${configPath}`,
+    githubServerUrl
+  );
+  children.push(
+    paragraph2(
+      link2(configUrl, text2("Open config file")),
+      text2(" \xB7 "),
+      link2(runUrl, text2("Full logs for this run"))
+    )
+  );
+  return {
+    title: CONFIG_ISSUE_DASHBOARD_TITLE,
+    body: serialize2(children)
+  };
+}
+function explainSecret(secret, explainProvisionAuth, explainTokenCreation, explainProvision, tokenCreationResults, provisionResults) {
+  const explanations = [];
+  explanations.push(explainProvisionAuth(secret));
+  const explainedTokenAuths = /* @__PURE__ */ new Set();
+  for (const target of secret.results) {
+    const tokenAuthResult = target.tokenAuthResult;
+    if (!tokenAuthResult || explainedTokenAuths.has(tokenAuthResult)) continue;
+    explainedTokenAuths.add(tokenAuthResult);
+    const creationResult = tokenCreationResults.get(tokenAuthResult);
+    if (!creationResult) continue;
+    explanations.push(explainTokenCreation(tokenAuthResult, creationResult));
+  }
+  const targetResults = provisionResults.get(secret);
+  if (targetResults) explanations.push(explainProvision(secret, targetResults));
+  return explanations.join("\n");
+}
+function runLink(runUrl) {
+  return paragraph2(link2(runUrl, text2("Full logs for this run")));
+}
+function serialize2(children) {
+  return toMarkdown(
+    { type: "root", children },
+    { bullet: "-", extensions: [gfmToMarkdown()] }
+  );
+}
+function list3(items) {
+  return {
+    type: "list",
+    ordered: false,
+    spread: false,
+    children: items.map((children) => ({
+      type: "listItem",
+      spread: false,
+      checked: null,
+      children: [{ type: "paragraph", children }]
+    }))
+  };
+}
+function indentedTextToList(input) {
+  return nodesToList(parseIndentedLines(input));
+}
+function parseIndentedLines(input) {
+  const roots = [];
+  const stack = [];
+  for (const rawLine of input.split("\n")) {
+    const line = rawLine.trimEnd();
+    if (line.length < 1) continue;
+    const indent = line.length - line.trimStart().length;
+    const content = line.slice(indent);
+    if (content.startsWith("::debug::")) continue;
+    const depth = Math.floor(indent / 2);
+    const node2 = { content, children: [] };
+    while (stack.length > 0 && stack[stack.length - 1].depth >= depth) {
+      stack.pop();
+    }
+    if (stack.length > 0) {
+      stack[stack.length - 1].node.children.push(node2);
+    } else {
+      roots.push(node2);
+    }
+    stack.push({ depth, node: node2 });
+  }
+  return roots;
+}
+function nodesToList(nodes) {
+  return {
+    type: "list",
+    ordered: false,
+    spread: false,
+    children: nodes.map((node2) => ({
+      type: "listItem",
+      spread: false,
+      checked: null,
+      children: [
+        {
+          type: "paragraph",
+          children: [{ type: "text", value: node2.content }]
+        },
+        ...node2.children.length > 0 ? [nodesToList(node2.children)] : []
+      ]
+    }))
+  };
+}
+
+// src/failure-reason.ts
+function isFullyProvisioned(authResult, provisionResults) {
+  const targetResults = provisionResults.get(authResult);
+  if (!targetResults?.size) return false;
+  for (const result of targetResults.values()) {
+    if (result.type !== "PROVISIONED") return false;
+  }
+  return true;
+}
+function failureReason(authResult, tokenCreationResults, provisionResults) {
+  if (authResult.isMissingTargets || authResult.request.to.length < 1 || authResult.results.length < 1) {
+    return "No targets to provision to";
+  }
+  if (authResult.request.tokenDec == null) {
+    return authResult.request.tokenDecIsRegistered ? "Token declaration isn't shared" : "Token declaration doesn't exist";
+  }
+  if (!authResult.results.every((t2) => t2.isTokenAllowed)) {
+    return "Token not allowed";
+  }
+  if (!authResult.isAllowed) return "Secret not allowed";
+  const firstTarget = authResult.results[0];
+  if (!firstTarget.tokenAuthResult) {
+    throw new Error(
+      "Invariant violation: Missing token auth result for allowed target"
+    );
+  }
+  const tokenResult = tokenCreationResults.get(firstTarget.tokenAuthResult);
+  if (!tokenResult) {
+    throw new Error(
+      "Invariant violation: Missing token creation result for allowed target"
+    );
+  }
+  if (tokenResult.type === "NO_ISSUER") return "No suitable issuer";
+  if (tokenResult.type === "REQUEST_ERROR" || tokenResult.type === "ERROR") {
+    return "Failed to issue token";
+  }
+  const targetResults = provisionResults.get(authResult);
+  if (!targetResults) {
+    throw new Error(
+      "Invariant violation: Missing provision results for auth result"
+    );
+  }
+  let provisionedCount = 0;
+  let failedCount = 0;
+  let hasNoProvisioner = false;
+  for (const result of targetResults.values()) {
+    if (result.type === "PROVISIONED") {
+      ++provisionedCount;
+    } else {
+      ++failedCount;
+      if (result.type === "NO_PROVISIONER") hasNoProvisioner = true;
+    }
+  }
+  if (hasNoProvisioner && failedCount === targetResults.size) {
+    return "No suitable provisioner";
+  }
+  if (provisionedCount > 0 && failedCount > 0) {
+    return "Failed to provision to some targets";
+  }
+  return "Failed to provision";
+}
+
+// src/reconcile-dashboards.ts
+var DASHBOARD_LABEL_COLOR = "d4c5f9";
+var CLOSE_COMMENT_PREFIX = "This dashboard is being closed because ";
+var RESOLVED_REASON = "all provisioning issues for this repo have been resolved.";
+var CONFIG_DISABLED_REASON = "token dashboards are disabled in this repo's requester config.";
+var PROVIDER_DISABLED_REASON = "token dashboards are disabled in the provider config files.";
+function createReconcileDashboards(octokitFactory, appsInput) {
+  return async (githubServerUrl, runUrl, config, discovery, tokenResults, tokenCreationResults, provisionResults) => {
+    debug("Reconciling token dashboards");
+    const repoNames = /* @__PURE__ */ new Set([
+      ...discovery.requesters.keys(),
+      ...discovery.configIssues.keys()
+    ]);
+    for (const repoName of [...repoNames].sort()) {
+      try {
+        await reconcileRepo(
+          repoName,
+          githubServerUrl,
+          runUrl,
+          config,
+          discovery,
+          tokenResults,
+          tokenCreationResults,
+          provisionResults
+        );
+      } catch (error2) {
+        warning(
+          `Failed to reconcile dashboard for ${repoName}: ` + errorMessage(error2)
+        );
+      }
+    }
+  };
+  async function reconcileRepo(repoName, githubServerUrl, runUrl, config, discovery, tokenResults, tokenCreationResults, provisionResults) {
+    const instReg = discovery.installations.get(repoName);
+    if (!instReg) {
+      throw new Error(
+        `Invariant violation: No installation recorded for requester ${repoName}`
+      );
+    }
+    const octokit = octokitFactory.installationOctokit(
+      appsInput,
+      instReg.installation.app_id,
+      instReg.installation.id
+    );
+    if (!isWriteAccess(
+      permissionAccess(instReg.installation.permissions, "issues")
+    )) {
+      warning(
+        `Installation ${instReg.installation.id} doesn't have "issues: write" access - skipping dashboard for ${repoName}`
+      );
+      return;
+    }
+    const requester = discovery.requesters.get(repoName);
+    const configIssue = discovery.configIssues.get(repoName);
+    if (!config.dashboards.enabled) {
+      await closeOpenDashboards(octokit, repoName, PROVIDER_DISABLED_REASON);
+      return;
+    }
+    if (requester && !requester.config.dashboard.enabled) {
+      await closeOpenDashboards(octokit, repoName, CONFIG_DISABLED_REASON);
+      return;
+    }
+    const desired = desiredIssue(
+      githubServerUrl,
+      runUrl,
+      configIssue,
+      repoName,
+      tokenResults,
+      tokenCreationResults,
+      provisionResults
+    );
+    await upsertDashboard(octokit, repoName, desired);
+  }
+}
+function desiredIssue(githubServerUrl, runUrl, configIssue, repoName, tokenResults, tokenCreationResults, provisionResults) {
+  if (configIssue) {
+    return renderConfigIssueDashboard(githubServerUrl, runUrl, configIssue);
+  }
+  const failures = repoFailures(repoName, provisionResults);
+  if (failures.length > 0) {
+    return renderFailureDashboard(
+      runUrl,
+      failures,
+      tokenResults,
+      tokenCreationResults,
+      provisionResults
+    );
+  }
+  return void 0;
+}
+function repoFailures(repoName, provisionResults) {
+  const failures = [];
+  for (const secret of provisionResults.keys()) {
+    if (repoRefToString(secret.request.requester) !== repoName) continue;
+    if (!isFullyProvisioned(secret, provisionResults)) failures.push(secret);
+  }
+  return failures;
+}
+async function upsertDashboard(octokit, repoName, desired) {
+  const ref = repoRefFromName(repoName);
+  const openIssue = await firstOpenDashboardIssue(octokit, ref);
+  if (!desired) {
+    if (openIssue)
+      await closeIssue(octokit, ref, openIssue.number, RESOLVED_REASON);
+    return;
+  }
+  if (!openIssue) {
+    await ensureDashboardLabel(octokit, ref);
+    const created = await octokit.rest.issues.create({
+      owner: ref.account,
+      repo: ref.repo,
+      title: desired.title,
+      body: desired.body,
+      labels: [DASHBOARD_LABEL]
+    });
+    info(
+      `Created dashboard issue #${created.data.number} in ${repoRefToString(ref)}`
+    );
+    return;
+  }
+  if (openIssue.title === desired.title && (openIssue.body ?? "") === desired.body) {
+    debug(
+      `Dashboard issue #${openIssue.number} in ${repoRefToString(ref)} is up to date`
+    );
+    return;
+  }
+  await octokit.rest.issues.update({
+    owner: ref.account,
+    repo: ref.repo,
+    issue_number: openIssue.number,
+    title: desired.title,
+    body: desired.body
+  });
+  info(
+    `Updated dashboard issue #${openIssue.number} in ${repoRefToString(ref)}`
+  );
+}
+async function closeOpenDashboards(octokit, repoName, reason) {
+  const ref = repoRefFromName(repoName);
+  const openIssues = await openDashboardIssues(octokit, ref);
+  if (openIssues.length < 1) {
+    debug(`No open dashboard issue in ${repoRefToString(ref)}`);
+    return;
+  }
+  for (const issue2 of openIssues) {
+    await closeIssue(octokit, ref, issue2.number, reason);
+  }
+}
+async function firstOpenDashboardIssue(octokit, ref) {
+  const [first = void 0] = await openDashboardIssues(octokit, ref);
+  return first;
+}
+async function openDashboardIssues(octokit, ref) {
+  const repoName = repoRefToString(ref);
+  const openIssues = [];
+  const issuePages = octokit.paginate.iterator(
+    octokit.rest.issues.listForRepo,
+    {
+      owner: ref.account,
+      repo: ref.repo,
+      state: "open"
+    }
+  );
+  for await (const { data } of issuePages) {
+    for (const issue2 of data) {
+      if (issue2.state !== "open" || !issue2.labels.some((label) => isDashboardLabel(label))) {
+        continue;
+      }
+      openIssues.push(issue2);
+    }
+  }
+  debug(`Found ${openIssues.length} open dashboard issue(s) in ${repoName}`);
+  return openIssues;
+}
+function isDashboardLabel(label) {
+  if (typeof label === "string") return label === DASHBOARD_LABEL;
+  return label.name === DASHBOARD_LABEL;
+}
+async function closeIssue(octokit, ref, number, reason) {
+  await octokit.rest.issues.update({
+    owner: ref.account,
+    repo: ref.repo,
+    issue_number: number,
+    state: "closed"
+  });
+  await octokit.rest.issues.createComment({
+    owner: ref.account,
+    repo: ref.repo,
+    issue_number: number,
+    body: `${CLOSE_COMMENT_PREFIX}${reason}`
+  });
+  info(`Closed dashboard issue #${number} in ${repoRefToString(ref)}`);
+}
+async function ensureDashboardLabel(octokit, ref) {
+  let labelExists = true;
+  try {
+    await octokit.rest.issues.getLabel({
+      owner: ref.account,
+      repo: ref.repo,
+      name: DASHBOARD_LABEL
+    });
+  } catch (error2) {
+    handleRequestError(error2, {
+      404: () => {
+        labelExists = false;
+      }
+    });
+  }
+  if (labelExists) return;
+  await octokit.rest.issues.createLabel({
+    owner: ref.account,
+    repo: ref.repo,
+    name: DASHBOARD_LABEL,
+    color: DASHBOARD_LABEL_COLOR,
+    description: "Tracks provisioning failures reported by the token dashboard"
+  });
+  debug(`Created dashboard label in ${repoRefToString(ref)}`);
+}
+
+// src/register-token-declarations.ts
+function registerTokenDeclarations(declarationRegistry, requesters) {
+  for (const [, { requester, config }] of requesters) {
+    for (const [name, declaration] of Object.entries(config.tokens)) {
+      declarationRegistry.registerDeclaration(requester, name, declaration);
+    }
+  }
+}
+
 // src/summary.ts
 var LINK_REF_PREFIX = "gh/";
 var MAX_ROWS = 1e3;
@@ -120473,66 +121068,6 @@ function failureRow(result, tokenCreationResults, provisionResults, definitions,
     targetCellChildren(result.request.to, definitions, githubServerUrl),
     [text2(failureReason(result, tokenCreationResults, provisionResults))]
   ];
-}
-function failureReason(authResult, tokenCreationResults, provisionResults) {
-  if (authResult.isMissingTargets || authResult.request.to.length < 1 || authResult.results.length < 1) {
-    return "No targets to provision to";
-  }
-  if (authResult.request.tokenDec == null) {
-    return authResult.request.tokenDecIsRegistered ? "Token declaration isn't shared" : "Token declaration doesn't exist";
-  }
-  if (!authResult.results.every((t2) => t2.isTokenAllowed)) {
-    return "Token not allowed";
-  }
-  if (!authResult.isAllowed) return "Secret not allowed";
-  const firstTarget = authResult.results[0];
-  if (!firstTarget.tokenAuthResult) {
-    throw new Error(
-      "Invariant violation: Missing token auth result for allowed target"
-    );
-  }
-  const tokenResult = tokenCreationResults.get(firstTarget.tokenAuthResult);
-  if (!tokenResult) {
-    throw new Error(
-      "Invariant violation: Missing token creation result for allowed target"
-    );
-  }
-  if (tokenResult.type === "NO_ISSUER") return "No suitable issuer";
-  if (tokenResult.type === "REQUEST_ERROR" || tokenResult.type === "ERROR") {
-    return "Failed to issue token";
-  }
-  const targetResults = provisionResults.get(authResult);
-  if (!targetResults) {
-    throw new Error(
-      "Invariant violation: Missing provision results for auth result"
-    );
-  }
-  let provisionedCount = 0;
-  let failedCount = 0;
-  let hasNoProvisioner = false;
-  for (const result of targetResults.values()) {
-    if (result.type === "PROVISIONED") {
-      ++provisionedCount;
-    } else {
-      ++failedCount;
-      if (result.type === "NO_PROVISIONER") hasNoProvisioner = true;
-    }
-  }
-  if (hasNoProvisioner && failedCount === targetResults.size) {
-    return "No suitable provisioner";
-  }
-  if (provisionedCount > 0 && failedCount > 0) {
-    return "Failed to provision to some targets";
-  }
-  return "Failed to provision";
-}
-function isFullyProvisioned(authResult, provisionResults) {
-  const targetResults = provisionResults.get(authResult);
-  if (!targetResults?.size) return false;
-  for (const result of targetResults.values()) {
-    if (result.type !== "PROVISIONED") return false;
-  }
-  return true;
 }
 function targetCellChildren(targets, definitions, githubServerUrl) {
   if (targets.length < 1) return [emphasis2(text2("(none)"))];
@@ -120865,126 +121400,6 @@ function createTokenDeclarationRegistry() {
 
 // src/token-factory.ts
 var import_fast_json_stable_stringify = __toESM(require_fast_json_stable_stringify(), 1);
-
-// src/token-creation-explainer/text.ts
-var HEADER_ACCESS_LABELS = {
-  admin: "admin",
-  none: "",
-  read: "read-only",
-  write: "write"
-};
-function createTextTokenCreationExplainer(results) {
-  const resultIndices = /* @__PURE__ */ new Map();
-  const authResultIndices = /* @__PURE__ */ new Map();
-  let index = 0;
-  for (const [authResult, result] of results) {
-    authResultIndices.set(authResult, index);
-    if (!resultIndices.has(result)) resultIndices.set(result, index);
-    ++index;
-  }
-  return (authResult, creationResult) => {
-    const currentIndex = authResultIndices.get(authResult);
-    const firstIndex = resultIndices.get(creationResult);
-    if (typeof currentIndex !== "undefined" && typeof firstIndex !== "undefined" && firstIndex !== currentIndex) {
-      return `${icon(creationResult.type === "CREATED")} Same result as token #${firstIndex + 1}`;
-    }
-    return explainResult(authResult, creationResult);
-  };
-  function explainResult(authResult, result) {
-    const { account, permissions, as: role } = authResult.request.tokenDec;
-    const { repos } = authResult.request;
-    const access2 = maxAccess(permissions);
-    const isSuccess = result.type === "CREATED";
-    const permEntries = effectivePermissions(permissions);
-    const hasPermissions = permEntries.length > 0;
-    const lines = [];
-    lines.push(renderHeader(result.type, access2, repos, account));
-    lines.push(...renderErrorLines(result, authResult.request.consumer));
-    const subIcon = icon(isSuccess || void 0);
-    const verb = isSuccess ? "Has" : "Wanted";
-    if (hasPermissions) {
-      const roleStr = role ? `with role ${role}` : "without a role";
-      lines.push(`  ${subIcon} ${verb} ${access2} access ${roleStr}`);
-    }
-    lines.push(...renderRepoLines(subIcon, verb, repos, account));
-    lines.push(...renderPermissionLines(subIcon, verb, permEntries));
-    return lines.join("\n");
-  }
-  function renderHeader(type, access2, repos, account) {
-    const scope = repoScopeLabel(repos, account);
-    const isSuccess = type === "CREATED";
-    const label = HEADER_ACCESS_LABELS[access2];
-    if (isSuccess) {
-      return `${icon(isSuccess)} ${capitalize(label)} token created with access to ${scope}:`;
-    }
-    const prefix = label ? `${label} ` : "";
-    const verb = type === "NOT_ALLOWED" ? "Refused" : "Failed";
-    return `${icon(isSuccess)} ${verb} to create ${prefix}token with access to ${scope}:`;
-  }
-  function renderErrorLines(result, consumer) {
-    switch (result.type) {
-      case "CREATED":
-        return [];
-      case "NOT_ALLOWED": {
-        const suffix = isRepoRef(consumer) ? ` for repo ${repoRefToString(consumer)}` : ` for account ${consumer.account}`;
-        return [`  ${FAIL_ICON} Token not allowed${suffix}`];
-      }
-      case "NO_ISSUER":
-        return [`  ${FAIL_ICON} No suitable issuer`];
-      case "REQUEST_ERROR": {
-        const body = result.error.response?.data;
-        const detail = typeof body === "undefined" ? "(no response data)" : JSON.stringify(body, null, 2);
-        return [
-          `  ${FAIL_ICON} ${result.error.status} - ${result.error.message}`,
-          prefixLines("::debug::      ", detail)
-        ];
-      }
-      case "ERROR":
-        return [
-          `  ${FAIL_ICON} ${errorMessage(result.error)}`,
-          prefixLines("::debug::      ", errorStack(result.error))
-        ];
-    }
-  }
-  function renderRepoLines(icon2, verb, repos, account) {
-    if (repos === "all") {
-      return [`  ${icon2} ${verb} access to all repos in ${account}`];
-    }
-    if (repos.length < 1) return [`  ${icon2} ${verb} account-only access`];
-    const lines = [
-      `  ${icon2} ${verb} access to ${pluralize(repos.length, "repo", "repos")} in ${account}:`
-    ];
-    for (const repo of repos) lines.push(`    ${icon2} ${account}/${repo}`);
-    return lines;
-  }
-  function renderPermissionLines(icon2, verb, permEntries) {
-    if (permEntries.length < 1) {
-      return [`  ${FAIL_ICON} No permissions requested`];
-    }
-    const lines = [
-      `  ${icon2} ${verb} ${pluralize(permEntries.length, "permission", "permissions")}:`
-    ];
-    for (const [name, access2] of permEntries) {
-      lines.push(`    ${icon2} ${name}: ${access2}`);
-    }
-    return lines;
-  }
-  function repoScopeLabel(repos, account) {
-    if (repos === "all") return `all repos in ${account}`;
-    if (repos.length < 1) return account;
-    return `${pluralize(repos.length, "repo", "repos")} in ${account}`;
-  }
-  function effectivePermissions(permissions) {
-    const entries = [];
-    for (const [name, access2 = "none"] of Object.entries(permissions)) {
-      if (access2 !== "none") entries.push([name, access2]);
-    }
-    entries.sort(([a2], [b2]) => a2.localeCompare(b2));
-    return entries;
-  }
-}
-
-// src/token-factory.ts
 function createTokenFactory(findIssuerOctokit) {
   return async (authResults) => {
     const cache = {};
@@ -121087,6 +121502,7 @@ try {
   const githubRef = process.env.GITHUB_REF;
   const githubRepository = process.env.GITHUB_REPOSITORY;
   const githubServerUrl = process.env.GITHUB_SERVER_URL;
+  const githubRunId = process.env.GITHUB_RUN_ID;
   if (!githubRef) {
     throw new Error("Invariant violation: GITHUB_REF isn't set");
   }
@@ -121096,8 +121512,12 @@ try {
   if (!githubServerUrl) {
     throw new Error("Invariant violation: GITHUB_SERVER_URL isn't set");
   }
+  if (!githubRunId) {
+    throw new Error("Invariant violation: GITHUB_RUN_ID isn't set");
+  }
   const githubActionRepository = process.env.GITHUB_ACTION_REPOSITORY ?? githubRepository;
   const actionUrl = `${githubServerUrl}/${githubActionRepository}`;
+  const runUrl = `${githubServerUrl}/${githubRepository}/actions/runs/${githubRunId}`;
   const appsInput = readAppsInput();
   const octokitFactory = createOctokitFactory();
   const config = await group("Reading config", async () => {
@@ -121143,20 +121563,26 @@ try {
     findProvisionerOctokit,
     encryptSecret
   );
+  const reconcileDashboards = createReconcileDashboards(
+    octokitFactory,
+    appsInput
+  );
   await group("Discovering apps", async () => {
     await discoverApps(octokitFactory, appRegistry, appsInput);
   });
   const requesters = await group("Discovering requesters", async () => {
-    const requesters2 = await discoverRequesters(
+    const result = await discoverRequesters(
       octokitFactory,
       appRegistry,
       appsInput
     );
-    registerTokenDeclarations(declarationRegistry, requesters2);
-    return requesters2;
+    registerTokenDeclarations(declarationRegistry, result.requesters);
+    return result;
   });
   const authorizeResult = await group("Authorizing requests", async () => {
-    return await authorizer.authorize(Array.from(requesters.values()));
+    return await authorizer.authorize(
+      Array.from(requesters.requesters.values())
+    );
   });
   const tokenCreationResults = await group("Creating tokens", async () => {
     return await createTokens(tokenAuthorizer.listResults());
@@ -121165,6 +121591,17 @@ try {
     return await provisionSecrets(
       tokenCreationResults,
       provisionAuthorizer.listResults()
+    );
+  });
+  await group("Reconciling dashboards", async () => {
+    await reconcileDashboards(
+      githubServerUrl,
+      runUrl,
+      config,
+      requesters,
+      authorizeResult.tokenResults,
+      tokenCreationResults,
+      provisionResults
     );
   });
   const summaryMarkdown = renderSummary(
@@ -121186,6 +121623,9 @@ try {
 /* istanbul ignore next - never seen without an account login - @preserve */
 /* istanbul ignore next - Header guarantees string data - @preserve */
 /* istanbul ignore else - @preserve */
+/* istanbul ignore next - defensive vs empty explainer lines - @preserve */
+/* istanbul ignore next - never seen in explainer output - @preserve */
+/* istanbul ignore next - Set by discoverRequesters - @preserve */
 /* istanbul ignore file - TODO: remove coverage ignore - @preserve */
 /*! Bundled license information:
 

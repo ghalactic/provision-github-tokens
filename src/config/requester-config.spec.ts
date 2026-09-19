@@ -23,6 +23,8 @@ it("parses comprehensive requester config", async () => {
   ).toEqual({
     $schema: requesterSchema.$id,
 
+    dashboard: { enabled: true },
+
     tokens: {
       oneRepOnePerm: {
         shared: false,
@@ -287,6 +289,7 @@ it("parses requester configs that are just comments", async () => {
     ),
   ).toEqual({
     $schema: requesterSchema.$id,
+    dashboard: { enabled: true },
     tokens: {},
     provision: { secrets: {} },
   } satisfies RequesterConfig);
@@ -301,6 +304,7 @@ it("parses requester configs that are empty", () => {
     ),
   ).toEqual({
     $schema: requesterSchema.$id,
+    dashboard: { enabled: true },
     tokens: {},
     provision: { secrets: {} },
   } satisfies RequesterConfig);

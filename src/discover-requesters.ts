@@ -1,25 +1,43 @@
 import { debug, info, error as logError } from "@actions/core";
-import type { AppRegistry } from "./app-registry.js";
+import type { ErrorObject } from "ajv";
+import type { AppRegistry, InstallationRegistration } from "./app-registry.js";
 import { parseRequesterConfig } from "./config/requester-config.js";
+import { findValidationErrors } from "./config/validation.js";
+import { errorMessage } from "./error.js";
 import { createRepoRef, type RepoReference } from "./github-reference.js";
 import { handleRequestError, type OctokitFactory } from "./octokit.js";
 import { pluralize } from "./pluralize.js";
 import type { AppInput } from "./type/input.js";
 import type { RequesterConfig } from "./type/requester-config.js";
 
-const CONFIG_PATH = ".github/ghalactic/provision-github-tokens.yml";
+export const CONFIG_PATH = ".github/ghalactic/provision-github-tokens.yml";
 
 export type DiscoveredRequester = {
   requester: RepoReference;
   config: RequesterConfig;
 };
 
+export type RequesterConfigIssue = {
+  requester: RepoReference;
+  configPath: string;
+  errors: ErrorObject[];
+  message: string;
+};
+
+export type DiscoverRequestersResult = {
+  requesters: Map<string, DiscoveredRequester>;
+  configIssues: Map<string, RequesterConfigIssue>;
+  installations: Map<string, InstallationRegistration>;
+};
+
 export async function discoverRequesters(
   octokitFactory: OctokitFactory,
   appRegistry: AppRegistry,
   appsInput: AppInput[],
-): Promise<Map<string, DiscoveredRequester>> {
-  const discovered = new Map<string, DiscoveredRequester>();
+): Promise<DiscoverRequestersResult> {
+  const requesters = new Map<string, DiscoveredRequester>();
+  const configIssues = new Map<string, RequesterConfigIssue>();
+  const installations = new Map<string, InstallationRegistration>();
 
   for (const [, instReg] of appRegistry.provisioners) {
     const { installation, repos } = instReg;
@@ -30,7 +48,9 @@ export async function discoverRequesters(
     );
 
     for (const r of repos) {
-      if (discovered.has(r.full_name)) continue;
+      if (requesters.has(r.full_name) || configIssues.has(r.full_name)) {
+        continue;
+      }
 
       const requester = createRepoRef(r.owner.login, r.name);
       let configYaml: string;
@@ -62,14 +82,23 @@ export async function discoverRequesters(
         continue;
       }
 
+      installations.set(r.full_name, instReg);
+
       debug(`Discovered requester ${r.full_name}`);
 
       let config: RequesterConfig;
 
       try {
         config = parseRequesterConfig(requester, CONFIG_PATH, configYaml);
-      } catch {
+      } catch (error) {
         logError(`Requester ${r.full_name} has invalid config`);
+
+        configIssues.set(r.full_name, {
+          requester,
+          configPath: CONFIG_PATH,
+          errors: findValidationErrors(error),
+          message: errorMessage(error),
+        });
 
         continue;
       }
@@ -94,11 +123,14 @@ export async function discoverRequesters(
           JSON.stringify(secretDecNames),
       );
 
-      discovered.set(r.full_name, { requester: requester, config });
+      requesters.set(r.full_name, { requester, config });
     }
   }
 
-  info(`Discovered ${pluralize(discovered.size, "requester", "requesters")}`);
+  info(`Discovered ${pluralize(requesters.size, "requester", "requesters")}`);
+  info(
+    `Found ${pluralize(configIssues.size, "invalid requester config", "invalid requester configs")}`,
+  );
 
-  return discovered;
+  return { requesters, configIssues, installations };
 }

@@ -54,6 +54,9 @@ let repoSecrets: Record<
   }
 >;
 let envSecrets: Record<string, Record<string, string>>;
+let issues: Record<string, TestIssue[]>;
+let issueComments: Record<string, string[]>;
+let labels: Record<string, string[]>;
 let errorsByEndpoint: Record<string, (Error | undefined)[]>;
 
 export function __reset() {
@@ -67,6 +70,9 @@ export function __reset() {
   orgSecrets = {};
   repoSecrets = {};
   envSecrets = {};
+  issues = {};
+  issueComments = {};
+  labels = {};
   errorsByEndpoint = {};
 }
 
@@ -154,6 +160,52 @@ export function __getEnvSecrets(owner: string, repo: string, env: string) {
   return envSecrets[`${owner}/${repo}/${env}`];
 }
 
+export function __setIssues(
+  newIssues: [repo: string, repoIssues: TestIssue[]][],
+) {
+  issues = {};
+  for (const [repo, repoIssues] of newIssues) issues[repo] = repoIssues;
+}
+
+export function __setRepoLabels(repo: string, repoLabels: string[]) {
+  labels[repo] = repoLabels;
+}
+
+export function __getIssues(owner: string, repo: string) {
+  return issues[`${owner}/${repo}`] ?? [];
+}
+
+export function __getRepoLabels(repo: string) {
+  return labels[repo] ?? [];
+}
+
+export function __getIssueComments(owner: string, repo: string) {
+  return issueComments[`${owner}/${repo}`] ?? [];
+}
+
+export type TestIssue = {
+  number: number;
+  state: "open" | "closed";
+  title: string;
+  body: string | null;
+  labels: (string | { name: string })[];
+};
+
+function labelNames(
+  labels: string | (string | { name?: string })[] | undefined,
+): { name: string }[] {
+  if (typeof labels === "string") return [{ name: labels }];
+
+  const names: { name: string }[] = [];
+
+  for (const label of labels ?? []) {
+    if (typeof label === "string") names.push({ name: label });
+    else if (typeof label.name === "string") names.push({ name: label.name });
+  }
+
+  return names;
+}
+
 export function Octokit({
   auth: { appId, privateKey, installationId } = {},
 }: {
@@ -161,7 +213,10 @@ export function Octokit({
 } = {}) {
   return {
     paginate: {
-      iterator: (endpoint: string) => {
+      iterator: (
+        endpoint: string,
+        options?: { owner?: string; repo?: string; state?: string },
+      ) => {
         if (appId == null) {
           throw new Error(`Endpoint ${endpoint} requires appId`);
         }
@@ -180,6 +235,10 @@ export function Octokit({
 
         if (endpoint === "repos.getAllEnvironments") {
           return getAllEnvironments(appId, installationId);
+        }
+
+        if (endpoint === "issues.listForRepo") {
+          return listIssues(appId, installationId, options);
         }
 
         throw new Error("Not implemented");
@@ -391,6 +450,146 @@ export function Octokit({
         ) => getRepoPublicKey("dependabot", params),
       },
 
+      issues: {
+        create: async ({
+          owner,
+          repo,
+          title,
+          body,
+          labels: desiredLabels,
+        }: RestEndpointMethodTypes["issues"]["create"]["parameters"]) => {
+          throwIfEndpointError("issues.create");
+
+          if (appId == null) {
+            throw new Error("Endpoint issues.create requires appId");
+          }
+          if (installationId == null) {
+            throw new Error("Endpoint issues.create requires installationId");
+          }
+
+          const repoName = `${owner}/${repo}`;
+          const repoIssues = issues[repoName] ?? (issues[repoName] = []);
+
+          const issue: TestIssue = {
+            number: repoIssues.length + 1,
+            state: "open",
+            title: String(title),
+            body: body ?? "",
+            labels: labelNames(desiredLabels),
+          };
+
+          repoIssues.push(issue);
+
+          return { data: issue };
+        },
+
+        createComment: async ({
+          owner,
+          repo,
+          issue_number,
+          body,
+        }: RestEndpointMethodTypes["issues"]["createComment"]["parameters"]) => {
+          throwIfEndpointError("issues.createComment");
+
+          if (appId == null) {
+            throw new Error("Endpoint issues.createComment requires appId");
+          }
+          if (installationId == null) {
+            throw new Error(
+              "Endpoint issues.createComment requires installationId",
+            );
+          }
+
+          const repoName = `${owner}/${repo}`;
+          const comments =
+            issueComments[repoName] ?? (issueComments[repoName] = []);
+          comments.push(`#${issue_number}: ${body}`);
+
+          return { data: { body } };
+        },
+
+        createLabel: async ({
+          owner,
+          repo,
+          name,
+        }: RestEndpointMethodTypes["issues"]["createLabel"]["parameters"]) => {
+          throwIfEndpointError("issues.createLabel");
+
+          if (appId == null) {
+            throw new Error("Endpoint issues.createLabel requires appId");
+          }
+          if (installationId == null) {
+            throw new Error(
+              "Endpoint issues.createLabel requires installationId",
+            );
+          }
+
+          const repoName = `${owner}/${repo}`;
+          const repoLabels = labels[repoName] ?? (labels[repoName] = []);
+
+          if (!repoLabels.includes(name)) repoLabels.push(name);
+
+          return { data: { name } };
+        },
+
+        getLabel: async ({
+          owner,
+          repo,
+          name,
+        }: RestEndpointMethodTypes["issues"]["getLabel"]["parameters"]) => {
+          throwIfEndpointError("issues.getLabel");
+
+          if (appId == null) {
+            throw new Error("Endpoint issues.getLabel requires appId");
+          }
+          if (installationId == null) {
+            throw new Error("Endpoint issues.getLabel requires installationId");
+          }
+
+          const repoLabels = labels[`${owner}/${repo}`] ?? [];
+
+          if (!repoLabels.includes(name)) throw new TestRequestError(404);
+
+          return { data: { name } };
+        },
+
+        listForRepo: "issues.listForRepo",
+
+        update: async ({
+          owner,
+          repo,
+          issue_number,
+          title,
+          body,
+          state,
+          labels: updatedLabels,
+        }: RestEndpointMethodTypes["issues"]["update"]["parameters"]) => {
+          throwIfEndpointError("issues.update");
+
+          if (appId == null) {
+            throw new Error("Endpoint issues.update requires appId");
+          }
+          if (installationId == null) {
+            throw new Error("Endpoint issues.update requires installationId");
+          }
+
+          const repoIssues = issues[`${owner}/${repo}`] ?? [];
+          const issue = repoIssues.find((i) => i.number === issue_number);
+
+          if (!issue) throw new TestRequestError(404);
+
+          if (typeof title === "string") issue.title = title;
+          if (typeof body === "string") issue.body = body;
+          if (typeof state === "string") issue.state = state;
+
+          if (updatedLabels) {
+            issue.labels = labelNames(updatedLabels);
+          }
+
+          return { data: issue };
+        },
+      },
+
       repos: {
         getAllEnvironments: "repos.getAllEnvironments",
 
@@ -573,6 +772,40 @@ async function* getAllEnvironments(appId: number, installationId: number) {
 
       for (const env of envs) {
         page.push(env);
+
+        if (page.length >= per_page) {
+          yield { data: page };
+          page = [];
+        }
+      }
+    }
+  }
+
+  yield { data: page };
+}
+
+async function* listIssues(
+  appId: number,
+  installationId: number,
+  options?: { owner?: string; repo?: string; state?: string },
+) {
+  throwIfEndpointError("issues.listForRepo");
+
+  const per_page = 2;
+  let page = [];
+
+  for (const [installation, repos] of installations) {
+    if (installation.app_id !== appId) continue;
+    if (installation.id !== installationId) continue;
+
+    for (const r of repos) {
+      if (options?.owner != null && r.owner.login !== options.owner) continue;
+      if (options?.repo != null && r.name !== options.repo) continue;
+
+      for (const issue of issues[r.full_name] ?? []) {
+        if (options?.state != null && issue.state !== options.state) continue;
+
+        page.push(issue);
 
         if (page.length >= per_page) {
           yield { data: page };

@@ -1,3 +1,4 @@
+import type { ErrorObject } from "ajv";
 import { beforeEach, expect, it, vi } from "vitest";
 import {
   __getOutput,
@@ -15,6 +16,7 @@ import {
 import {
   discoverRequesters,
   type DiscoveredRequester,
+  type RequesterConfigIssue,
 } from "./discover-requesters.js";
 import { createOctokitFactory } from "./octokit.js";
 import type { RequesterConfig } from "./type/requester-config.js";
@@ -93,14 +95,18 @@ it("discovers requesters in a single account", async () => {
 
   const octokitFactory = createOctokitFactory();
 
-  const discovered = await discoverRequesters(octokitFactory, appRegistry, [
-    {
-      appId: appA.id,
-      privateKey: appA.privateKey,
-      issuer: { enabled: false, roles: [] },
-      provisioner: { enabled: true },
-    },
-  ]);
+  const { requesters: discovered } = await discoverRequesters(
+    octokitFactory,
+    appRegistry,
+    [
+      {
+        appId: appA.id,
+        privateKey: appA.privateKey,
+        issuer: { enabled: false, roles: [] },
+        provisioner: { enabled: true },
+      },
+    ],
+  );
 
   expect(__getOutput()).toMatchInlineSnapshot(`
     "::debug::Discovered requester org-a/repo-a
@@ -111,6 +117,7 @@ it("discovers requesters in a single account", async () => {
     ::debug::Requester org-a/repo-c has 2 token declarations ["tokenB","tokenC"]
     ::debug::Requester org-a/repo-c has 2 secret declarations ["SECRET_B","SECRET_C"]
     Discovered 2 requesters
+    Found 0 invalid requester configs
     "
   `);
   expect(discovered).toEqual(
@@ -197,20 +204,24 @@ it("discovers requesters in multiple account", async () => {
 
   const octokitFactory = createOctokitFactory();
 
-  const discovered = await discoverRequesters(octokitFactory, appRegistry, [
-    {
-      appId: appA.id,
-      privateKey: appA.privateKey,
-      issuer: { enabled: false, roles: [] },
-      provisioner: { enabled: true },
-    },
-    {
-      appId: appB.id,
-      privateKey: appB.privateKey,
-      issuer: { enabled: false, roles: [] },
-      provisioner: { enabled: true },
-    },
-  ]);
+  const { requesters: discovered } = await discoverRequesters(
+    octokitFactory,
+    appRegistry,
+    [
+      {
+        appId: appA.id,
+        privateKey: appA.privateKey,
+        issuer: { enabled: false, roles: [] },
+        provisioner: { enabled: true },
+      },
+      {
+        appId: appB.id,
+        privateKey: appB.privateKey,
+        issuer: { enabled: false, roles: [] },
+        provisioner: { enabled: true },
+      },
+    ],
+  );
 
   expect(__getOutput()).toMatchInlineSnapshot(`
     "::debug::Discovered requester org-a/repo-a
@@ -222,6 +233,7 @@ it("discovers requesters in multiple account", async () => {
     ::debug::Requester user-b/repo-c has 1 secret declaration ["SECRET_A"]
     ::debug::Repo user-b/repo-d isn't a requester
     Discovered 2 requesters
+    Found 0 invalid requester configs
     "
   `);
   expect(discovered).toEqual(
@@ -305,20 +317,24 @@ it("only discovers requesters once when multiple providers can access them", asy
 
   const octokitFactory = createOctokitFactory();
 
-  const discovered = await discoverRequesters(octokitFactory, appRegistry, [
-    {
-      appId: appA.id,
-      privateKey: appA.privateKey,
-      issuer: { enabled: false, roles: [] },
-      provisioner: { enabled: true },
-    },
-    {
-      appId: appB.id,
-      privateKey: appB.privateKey,
-      issuer: { enabled: false, roles: [] },
-      provisioner: { enabled: true },
-    },
-  ]);
+  const { requesters: discovered } = await discoverRequesters(
+    octokitFactory,
+    appRegistry,
+    [
+      {
+        appId: appA.id,
+        privateKey: appA.privateKey,
+        issuer: { enabled: false, roles: [] },
+        provisioner: { enabled: true },
+      },
+      {
+        appId: appB.id,
+        privateKey: appB.privateKey,
+        issuer: { enabled: false, roles: [] },
+        provisioner: { enabled: true },
+      },
+    ],
+  );
 
   expect(__getOutput()).toMatchInlineSnapshot(`
     "::debug::Discovered requester org-a/repo-a
@@ -331,6 +347,7 @@ it("only discovers requesters once when multiple providers can access them", asy
     ::debug::Requester org-a/repo-c has 1 token declaration ["tokenC"]
     ::debug::Requester org-a/repo-c has 0 secret declarations []
     Discovered 3 requesters
+    Found 0 invalid requester configs
     "
   `);
   expect(discovered).toEqual(
@@ -429,7 +446,7 @@ it("skips requesters with invalid configuration", async () => {
 
   const octokitFactory = createOctokitFactory();
 
-  const discovered = await discoverRequesters(octokitFactory, appRegistry, [
+  const result = await discoverRequesters(octokitFactory, appRegistry, [
     {
       appId: appA.id,
       privateKey: appA.privateKey,
@@ -450,9 +467,10 @@ it("skips requesters with invalid configuration", async () => {
     ::debug::Requester org-a/repo-c has 1 token declaration ["tokenB"]
     ::debug::Requester org-a/repo-c has 1 secret declaration ["SECRET_B"]
     Discovered 2 requesters
+    Found 1 invalid requester config
     "
   `);
-  expect(discovered).toEqual(
+  expect(result.requesters).toEqual(
     new Map<string, DiscoveredRequester>([
       [
         "org-a/repo-a",
@@ -466,6 +484,25 @@ it("skips requesters with invalid configuration", async () => {
         {
           requester: { account: "org-a", repo: "repo-c" },
           config: expect.objectContaining({}) as RequesterConfig,
+        },
+      ],
+    ]),
+  );
+
+  expect(result.configIssues).toEqual(
+    new Map<string, RequesterConfigIssue>([
+      [
+        "org-a/repo-b",
+        {
+          requester: { account: "org-a", repo: "repo-b" },
+          configPath: ".github/ghalactic/provision-github-tokens.yml",
+          errors: [
+            expect.objectContaining({
+              instancePath: "/tokens/tokenA/shared",
+              message: "must be boolean",
+            }),
+          ] as ErrorObject[],
+          message: "Parsing of requester configuration failed",
         },
       ],
     ]),

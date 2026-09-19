@@ -12,6 +12,21 @@
       "const": "https://ghalactic.github.io/provision-github-tokens/schema/provider.v1.schema.json",
       "default": "https://ghalactic.github.io/provision-github-tokens/schema/provider.v1.schema.json"
     },
+    "dashboards": {
+      "description": "Settings that control the token dashboards that this action maintains in requester repos.",
+      "type": "object",
+      "additionalProperties": false,
+      "default": {
+        "enabled": true
+      },
+      "properties": {
+        "enabled": {
+          "description": "Whether to maintain token dashboards in requester repos.",
+          "type": "boolean",
+          "default": true
+        }
+      }
+    },
     "permissions": {
       "description": "Settings that control the token permissions that consumers can receive.",
       "type": "object",
