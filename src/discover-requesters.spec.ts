@@ -502,7 +502,6 @@ it("skips requesters with invalid configuration", async () => {
               message: "must be boolean",
             }),
           ] as ErrorObject[],
-          message: "Parsing of requester configuration failed",
         },
       ],
     ]),

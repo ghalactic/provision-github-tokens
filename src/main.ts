@@ -112,7 +112,7 @@ try {
     await discoverApps(octokitFactory, appRegistry, appsInput);
   });
 
-  const requesters = await group("Discovering requesters", async () => {
+  const discovery = await group("Discovering requesters", async () => {
     const result = await discoverRequesters(
       octokitFactory,
       appRegistry,
@@ -125,7 +125,7 @@ try {
 
   const authorizeResult = await group("Authorizing requests", async () => {
     return await authorizer.authorize(
-      Array.from(requesters.requesters.values()),
+      Array.from(discovery.requesters.values()),
     );
   });
 
@@ -145,7 +145,7 @@ try {
       githubServerUrl,
       runUrl,
       config,
-      requesters,
+      discovery,
       authorizeResult.tokenResults,
       tokenCreationResults,
       provisionResults,

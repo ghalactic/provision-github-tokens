@@ -68528,8 +68528,7 @@ async function discoverRequesters(octokitFactory, appRegistry, appsInput) {
         configIssues.set(r2.full_name, {
           requester,
           configPath: CONFIG_PATH,
-          errors: findValidationErrors(error2),
-          message: errorMessage(error2)
+          errors: findValidationErrors(error2)
         });
         continue;
       }
@@ -120713,7 +120712,7 @@ function failureReason(authResult, tokenCreationResults, provisionResults) {
 
 // src/reconcile-dashboards.ts
 var DASHBOARD_LABEL_COLOR = "d4c5f9";
-var CLOSE_COMMENT_PREFIX = "This dashboard is being closed because ";
+var CLOSE_COMMENT_PREFIX = "This dashboard will be closed because ";
 var RESOLVED_REASON = "all provisioning issues for this repo have been resolved.";
 var CONFIG_DISABLED_REASON = "token dashboards are disabled in this repo's requester config.";
 var PROVIDER_DISABLED_REASON = "token dashboards are disabled in the provider config files.";
@@ -120725,9 +120724,10 @@ function createReconcileDashboards(octokitFactory, appsInput) {
       ...discovery.configIssues.keys()
     ]);
     for (const repoName of [...repoNames].sort()) {
+      const ref = repoRefFromName(repoName);
       try {
         await reconcileRepo(
-          repoName,
+          ref,
           githubServerUrl,
           runUrl,
           config,
@@ -120743,7 +120743,8 @@ function createReconcileDashboards(octokitFactory, appsInput) {
       }
     }
   };
-  async function reconcileRepo(repoName, githubServerUrl, runUrl, config, discovery, tokenResults, tokenCreationResults, provisionResults) {
+  async function reconcileRepo(ref, githubServerUrl, runUrl, config, discovery, tokenResults, tokenCreationResults, provisionResults) {
+    const repoName = repoRefToString(ref);
     const instReg = discovery.installations.get(repoName);
     if (!instReg) {
       throw new Error(
@@ -120766,30 +120767,30 @@ function createReconcileDashboards(octokitFactory, appsInput) {
     const requester = discovery.requesters.get(repoName);
     const configIssue = discovery.configIssues.get(repoName);
     if (!config.dashboards.enabled) {
-      await closeOpenDashboards(octokit, repoName, PROVIDER_DISABLED_REASON);
+      await closeOpenDashboards(octokit, ref, PROVIDER_DISABLED_REASON);
       return;
     }
     if (requester && !requester.config.dashboard.enabled) {
-      await closeOpenDashboards(octokit, repoName, CONFIG_DISABLED_REASON);
+      await closeOpenDashboards(octokit, ref, CONFIG_DISABLED_REASON);
       return;
     }
     const desired = desiredIssue(
       githubServerUrl,
       runUrl,
       configIssue,
-      repoName,
+      ref,
       tokenResults,
       tokenCreationResults,
       provisionResults
     );
-    await upsertDashboard(octokit, repoName, desired);
+    await upsertDashboard(octokit, ref, desired);
   }
 }
-function desiredIssue(githubServerUrl, runUrl, configIssue, repoName, tokenResults, tokenCreationResults, provisionResults) {
+function desiredIssue(githubServerUrl, runUrl, configIssue, ref, tokenResults, tokenCreationResults, provisionResults) {
   if (configIssue) {
     return renderConfigIssueDashboard(githubServerUrl, runUrl, configIssue);
   }
-  const failures = repoFailures(repoName, provisionResults);
+  const failures = repoFailures(ref, provisionResults);
   if (failures.length > 0) {
     return renderFailureDashboard(
       runUrl,
@@ -120801,23 +120802,20 @@ function desiredIssue(githubServerUrl, runUrl, configIssue, repoName, tokenResul
   }
   return void 0;
 }
-function repoFailures(repoName, provisionResults) {
+function repoFailures(ref, provisionResults) {
   const failures = [];
   for (const secret of provisionResults.keys()) {
-    if (repoRefToString(secret.request.requester) !== repoName) continue;
+    if (repoRefToString(secret.request.requester) !== repoRefToString(ref)) {
+      continue;
+    }
     if (!isFullyProvisioned(secret, provisionResults)) failures.push(secret);
   }
   return failures;
 }
-async function upsertDashboard(octokit, repoName, desired) {
-  const ref = repoRefFromName(repoName);
-  const openIssue = await firstOpenDashboardIssue(octokit, ref);
-  if (!desired) {
-    if (openIssue)
-      await closeIssue(octokit, ref, openIssue.number, RESOLVED_REASON);
-    return;
-  }
-  if (!openIssue) {
+async function upsertDashboard(octokit, ref, desired) {
+  const openIssues = await openDashboardIssues(octokit, ref);
+  if (openIssues.length < 1) {
+    if (!desired) return;
     await ensureDashboardLabel(octokit, ref);
     const created = await octokit.rest.issues.create({
       owner: ref.account,
@@ -120831,25 +120829,25 @@ async function upsertDashboard(octokit, repoName, desired) {
     );
     return;
   }
-  if (openIssue.title === desired.title && (openIssue.body ?? "") === desired.body) {
-    debug(
-      `Dashboard issue #${openIssue.number} in ${repoRefToString(ref)} is up to date`
-    );
+  const [newest] = openIssues.slice(-1);
+  for (const issue2 of openIssues) {
+    if (issue2.number === newest.number) continue;
+    await closeIssue(octokit, ref, issue2.number);
+  }
+  if (!desired) {
+    await closeIssue(octokit, ref, newest.number, RESOLVED_REASON);
     return;
   }
   await octokit.rest.issues.update({
     owner: ref.account,
     repo: ref.repo,
-    issue_number: openIssue.number,
+    issue_number: newest.number,
     title: desired.title,
     body: desired.body
   });
-  info(
-    `Updated dashboard issue #${openIssue.number} in ${repoRefToString(ref)}`
-  );
+  info(`Updated dashboard issue #${newest.number} in ${repoRefToString(ref)}`);
 }
-async function closeOpenDashboards(octokit, repoName, reason) {
-  const ref = repoRefFromName(repoName);
+async function closeOpenDashboards(octokit, ref, reason) {
   const openIssues = await openDashboardIssues(octokit, ref);
   if (openIssues.length < 1) {
     debug(`No open dashboard issue in ${repoRefToString(ref)}`);
@@ -120858,10 +120856,6 @@ async function closeOpenDashboards(octokit, repoName, reason) {
   for (const issue2 of openIssues) {
     await closeIssue(octokit, ref, issue2.number, reason);
   }
-}
-async function firstOpenDashboardIssue(octokit, ref) {
-  const [first = void 0] = await openDashboardIssues(octokit, ref);
-  return first;
 }
 async function openDashboardIssues(octokit, ref) {
   const repoName = repoRefToString(ref);
@@ -120876,12 +120870,11 @@ async function openDashboardIssues(octokit, ref) {
   );
   for await (const { data } of issuePages) {
     for (const issue2 of data) {
-      if (issue2.state !== "open" || !issue2.labels.some((label) => isDashboardLabel(label))) {
-        continue;
-      }
+      if (!issue2.labels.some((label) => isDashboardLabel(label))) continue;
       openIssues.push(issue2);
     }
   }
+  openIssues.sort((a2, b2) => a2.number - b2.number);
   debug(`Found ${openIssues.length} open dashboard issue(s) in ${repoName}`);
   return openIssues;
 }
@@ -120890,17 +120883,19 @@ function isDashboardLabel(label) {
   return label.name === DASHBOARD_LABEL;
 }
 async function closeIssue(octokit, ref, number, reason) {
+  if (reason) {
+    await octokit.rest.issues.createComment({
+      owner: ref.account,
+      repo: ref.repo,
+      issue_number: number,
+      body: `${CLOSE_COMMENT_PREFIX}${reason}`
+    });
+  }
   await octokit.rest.issues.update({
     owner: ref.account,
     repo: ref.repo,
     issue_number: number,
     state: "closed"
-  });
-  await octokit.rest.issues.createComment({
-    owner: ref.account,
-    repo: ref.repo,
-    issue_number: number,
-    body: `${CLOSE_COMMENT_PREFIX}${reason}`
   });
   info(`Closed dashboard issue #${number} in ${repoRefToString(ref)}`);
 }
@@ -121570,7 +121565,7 @@ try {
   await group("Discovering apps", async () => {
     await discoverApps(octokitFactory, appRegistry, appsInput);
   });
-  const requesters = await group("Discovering requesters", async () => {
+  const discovery = await group("Discovering requesters", async () => {
     const result = await discoverRequesters(
       octokitFactory,
       appRegistry,
@@ -121581,7 +121576,7 @@ try {
   });
   const authorizeResult = await group("Authorizing requests", async () => {
     return await authorizer.authorize(
-      Array.from(requesters.requesters.values())
+      Array.from(discovery.requesters.values())
     );
   });
   const tokenCreationResults = await group("Creating tokens", async () => {
@@ -121598,7 +121593,7 @@ try {
       githubServerUrl,
       runUrl,
       config,
-      requesters,
+      discovery,
       authorizeResult.tokenResults,
       tokenCreationResults,
       provisionResults

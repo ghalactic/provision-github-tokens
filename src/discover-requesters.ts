@@ -3,7 +3,6 @@ import type { ErrorObject } from "ajv";
 import type { AppRegistry, InstallationRegistration } from "./app-registry.js";
 import { parseRequesterConfig } from "./config/requester-config.js";
 import { findValidationErrors } from "./config/validation.js";
-import { errorMessage } from "./error.js";
 import { createRepoRef, type RepoReference } from "./github-reference.js";
 import { handleRequestError, type OctokitFactory } from "./octokit.js";
 import { pluralize } from "./pluralize.js";
@@ -21,7 +20,6 @@ export type RequesterConfigIssue = {
   requester: RepoReference;
   configPath: string;
   errors: ErrorObject[];
-  message: string;
 };
 
 export type DiscoverRequestersResult = {
@@ -97,7 +95,6 @@ export async function discoverRequesters(
           requester,
           configPath: CONFIG_PATH,
           errors: findValidationErrors(error),
-          message: errorMessage(error),
         });
 
         continue;

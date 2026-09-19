@@ -136,7 +136,7 @@ it("updates a dashboard when its body is stale", async () => {
   );
 });
 
-it("leaves an up-to-date dashboard unchanged", async () => {
+it("updates a dashboard even when its body is identical", async () => {
   const subject = setup({ dashboardEnabled: true });
   subject.discovery.requesters = new Map([
     [
@@ -185,9 +185,116 @@ it("leaves an up-to-date dashboard unchanged", async () => {
     body: currentBody,
   });
   expect(__getIssueComments("org-a", "repo-a")).toEqual([]);
-  expect(__getOutput()).toContain(
-    "Dashboard issue #7 in org-a/repo-a is up to date",
+  expect(__getOutput()).toContain("Updated dashboard issue #7 in org-a/repo-a");
+});
+
+it("converges to the newest dashboard when several are open", async () => {
+  const subject = setup({ dashboardEnabled: true });
+  subject.discovery.requesters = new Map([
+    [
+      subject.repoA.full_name,
+      {
+        requester: createRepoRef("org-a", "repo-a"),
+        config: requesterConfig({ dashboardEnabled: true }),
+      },
+    ],
+  ]);
+  subject.provisionResults = failingProvisionResults(subject.failingSecret);
+
+  __setIssues([
+    [
+      subject.repoA.full_name,
+      [
+        {
+          number: 5,
+          state: "open",
+          title: FAILURE_DASHBOARD_TITLE,
+          body: "stale dashboard",
+          labels: [{ name: DASHBOARD_LABEL }],
+        },
+        {
+          number: 8,
+          state: "open",
+          title: FAILURE_DASHBOARD_TITLE,
+          body: "newest dashboard",
+          labels: [{ name: DASHBOARD_LABEL }],
+        },
+      ],
+    ],
+  ]);
+
+  await subject.reconcile(
+    subject.provisionResults,
+    subject.tokenCreationResults,
   );
+
+  const issues = __getIssues("org-a", "repo-a");
+  expect(issues).toHaveLength(2);
+  expect(issues[0]).toMatchObject({ number: 5, state: "closed" });
+  expect(issues[1]).toMatchObject({
+    number: 8,
+    state: "open",
+    title: FAILURE_DASHBOARD_TITLE,
+  });
+  expect(issues[1].body).toBe(
+    renderFailureDashboard(
+      runUrl,
+      [subject.failingSecret],
+      [subject.tokenAuthResult],
+      subject.tokenCreationResults,
+      subject.provisionResults,
+    ).body,
+  );
+  expect(__getIssueComments("org-a", "repo-a")).toEqual([]);
+  expect(__getOutput()).toContain("Updated dashboard issue #8 in org-a/repo-a");
+});
+
+it("closes every open dashboard when nothing is failing", async () => {
+  const subject = setup({ dashboardEnabled: true });
+  subject.discovery.requesters = new Map([
+    [
+      subject.repoA.full_name,
+      {
+        requester: createRepoRef("org-a", "repo-a"),
+        config: requesterConfig({ dashboardEnabled: true }),
+      },
+    ],
+  ]);
+
+  __setIssues([
+    [
+      subject.repoA.full_name,
+      [
+        {
+          number: 5,
+          state: "open",
+          title: FAILURE_DASHBOARD_TITLE,
+          body: "stale dashboard",
+          labels: [{ name: DASHBOARD_LABEL }],
+        },
+        {
+          number: 8,
+          state: "open",
+          title: FAILURE_DASHBOARD_TITLE,
+          body: "newest dashboard",
+          labels: [{ name: DASHBOARD_LABEL }],
+        },
+      ],
+    ],
+  ]);
+
+  await subject.reconcile(new Map(), subject.tokenCreationResults);
+
+  const issues = __getIssues("org-a", "repo-a");
+  expect(issues).toHaveLength(2);
+  expect(issues[0]).toMatchObject({ number: 5, state: "closed" });
+  expect(issues[1]).toMatchObject({ number: 8, state: "closed" });
+  expect(__getIssueComments("org-a", "repo-a")).toEqual([
+    "#8: This dashboard will be closed because " +
+      "all provisioning issues for this repo have been resolved.",
+  ]);
+  expect(__getOutput()).toContain("Closed dashboard issue #5 in org-a/repo-a");
+  expect(__getOutput()).toContain("Closed dashboard issue #8 in org-a/repo-a");
 });
 
 it("closes a dashboard when all provisioned", async () => {
@@ -245,7 +352,7 @@ it("closes a dashboard when all provisioned", async () => {
   expect(issues).toHaveLength(1);
   expect(issues[0]).toMatchObject({ number: 7, state: "closed" });
   expect(__getIssueComments("org-a", "repo-a")).toEqual([
-    "#7: This dashboard is being closed because " +
+    "#7: This dashboard will be closed because " +
       "all provisioning issues for this repo have been resolved.",
   ]);
 });
@@ -287,7 +394,7 @@ it("closes dashboards when the provider disables them", async () => {
   expect(issues).toHaveLength(1);
   expect(issues[0]).toMatchObject({ number: 7, state: "closed" });
   expect(__getIssueComments("org-a", "repo-a")).toEqual([
-    "#7: This dashboard is being closed because token dashboards are " +
+    "#7: This dashboard will be closed because token dashboards are " +
       "disabled in the provider config files.",
   ]);
 });
@@ -328,7 +435,7 @@ it("closes a dashboard when the requester disables it", async () => {
   const issues = __getIssues("org-a", "repo-a");
   expect(issues[0]).toMatchObject({ number: 7, state: "closed" });
   expect(__getIssueComments("org-a", "repo-a")).toEqual([
-    "#7: This dashboard is being closed because token dashboards are " +
+    "#7: This dashboard will be closed because token dashboards are " +
       "disabled in this repo's requester config.",
   ]);
 });
@@ -350,7 +457,6 @@ it("creates a config issue dashboard", async () => {
             message: "must NOT have additional properties",
           },
         ],
-        message: "Parsing of requester configuration failed",
       },
     ],
   ]);
@@ -378,7 +484,6 @@ it("closes a config issue dashboard when the provider disables them", async () =
         requester: createRepoRef("org-a", "repo-a"),
         configPath: ".github/ghalactic/provision-github-tokens.yml",
         errors: [],
-        message: "Parsing of requester configuration failed",
       },
     ],
   ]);
@@ -401,7 +506,7 @@ it("closes a config issue dashboard when the provider disables them", async () =
   await subject.reconcile(new Map(), new Map());
 
   expect(__getIssueComments("org-a", "repo-a")).toEqual([
-    "#7: This dashboard is being closed because token dashboards are " +
+    "#7: This dashboard will be closed because token dashboards are " +
       "disabled in the provider config files.",
   ]);
 });
