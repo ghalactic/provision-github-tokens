@@ -64,8 +64,9 @@ The only exception is references to external writing that has its own style
 rules (e.g. a proper noun, a product name, or a title defined elsewhere).
 
 Before writing any documentation, you MUST consult the project's skills
-`technical-writing` and `diataxis` for style and content guidelines. Where the
-skills' guidelines conflict with this file, defer to this file.
+`diataxis` and the `google-developer-style-guide` family for style and content
+guidelines. Where the skills' guidelines conflict with this file, defer to this
+file.
 
 ### Markdown
 
@@ -146,10 +147,9 @@ and calls `setFailed()`.
 
 ### Architecture Decision Records
 
-ADRs live in `docs/adrs/`. **Always use the repo-local ADR skill** at
-`.agents/skills/adr-skill/` when writing or updating ADRs — it encodes all
-project conventions (brevity, sentence case, no file paths, etc.) and walks you
-through the full workflow. Don't use globally installed ADR skills.
+ADRs live in `docs/adr/`. Use the `domain-modeling` skill when writing or
+updating ADRs — it defines when an ADR is worth writing and the minimal format
+to use. See `docs/agents/domain.md` for the consumer rules.
 
 **ADRs tend to come out too verbose on the first pass.** After completing a new
 ADR, immediately re-read it and cut it down as if a reviewer had said "The new
@@ -158,7 +158,7 @@ collapse multi-sentence explanations into single sentences where possible.
 Commit the trimmed version — not the first draft.
 
 **Consult ADRs during research.** When investigating an area of the codebase,
-search `docs/adrs/` for ADRs that relate to the subsystem or concept you're
+search `docs/adr/` for ADRs that relate to the subsystem or concept you're
 working on. ADRs capture the _why_ behind design decisions — reading them before
 making changes helps you avoid inadvertently contradicting prior decisions or
 re-litigating settled debates. If you find that existing ADRs conflict with
@@ -193,3 +193,21 @@ creating a PR**:
    quickly and confuse code reviewers when they don't match the final
    implementation. They remain in Git history for posterity.
 3. **Push and create the PR** — Only after the above steps are committed.
+
+## Agent skills
+
+### Issue tracker
+
+Issues live as GitHub issues, managed with the `gh` CLI. See
+`docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+Five canonical triage labels, each matching its role name: `needs-triage`,
+`needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`. See
+`docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: one `CONTEXT.md` and one `docs/adr/` at the repo root. See
+`docs/agents/domain.md`.
