@@ -17,6 +17,7 @@ import { createProvisionAuthorizer } from "./provision-authorizer.js";
 import { createProvisionRequestFactory } from "./provision-request.js";
 import { createFindProvisionerOctokit } from "./provisioner-octokit.js";
 import { createProvisioner } from "./provisioner.js";
+import { createReconcileDashboards } from "./reconcile-dashboards.js";
 import { registerTokenDeclarations } from "./register-token-declarations.js";
 import { renderSummary } from "./summary.js";
 import { createTokenAuthorizer } from "./token-authorizer.js";
@@ -110,6 +111,7 @@ try {
     findProvisionerOctokit,
     encryptSecret,
   );
+  const reconcileDashboards = createReconcileDashboards(findProvisionerOctokit);
 
   await group("Discovering apps", async () => {
     await discoverApps(octokitFactory, appRegistry, appsInput);
@@ -138,6 +140,17 @@ try {
     return await provisionSecrets(
       tokenCreationResults,
       provisionAuthorizer.listResults(),
+    );
+  });
+
+  await group("Reconciling dashboards", async () => {
+    await reconcileDashboards(
+      context,
+      config,
+      requesters,
+      authorizeResult.tokenResults,
+      tokenCreationResults,
+      provisionResults,
     );
   });
 
