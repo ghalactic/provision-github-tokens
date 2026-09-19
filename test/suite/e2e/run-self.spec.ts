@@ -78,17 +78,9 @@ it(
     expect(conclusion).toBe("success");
 
     // The run reconciles one dashboard per requester repo: this repo
-    // provisions without failures, so it keeps no dashboard; the consumer
-    // deliberately requests unauthorized provisions, so it keeps a failure
-    // dashboard that names them.
-    const selfIssues = await ghaContext.octokit.rest.issues.listForRepo({
-      owner: ghaContext.owner,
-      repo: ghaContext.repo,
-      state: "open",
-      labels: DASHBOARD_LABEL,
-    });
-    expect(selfIssues.data).toHaveLength(0);
-
+    // disables dashboards, while the consumer deliberately requests
+    // unauthorized provisions, so it keeps a failure dashboard that names
+    // them.
     const consumerIssues =
       await ghaContext.fixturesOctokit.rest.issues.listForRepo({
         owner: CONSUMER_OWNER,

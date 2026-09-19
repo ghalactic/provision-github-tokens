@@ -754,7 +754,10 @@ export function Octokit({
 }
 
 Object.defineProperty(Octokit, "plugin", {
-  value: () => Octokit,
+  value: () =>
+    Object.assign(Octokit, {
+      defaults: () => Octokit,
+    }),
 });
 
 async function* getAllEnvironments(appId: number, installationId: number) {

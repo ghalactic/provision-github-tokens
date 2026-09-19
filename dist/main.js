@@ -68204,7 +68204,9 @@ function retry(octokit, octokitOptions) {
 retry.VERSION = VERSION12;
 
 // src/octokit.ts
-var CustomOctokit = Octokit2.plugin(retry);
+var CustomOctokit = Octokit2.plugin(retry).defaults({
+  request: { headers: { "X-GitHub-Api-Version": "2026-03-10" } }
+});
 function createOctokitFactory() {
   let actionOctokit;
   const appOctokits = {};
