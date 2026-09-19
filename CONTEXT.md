@@ -123,6 +123,12 @@ target.
 **Token creation result**: The result of trying to create an access token after
 authorization passes.
 
+**Token dashboard**: The single persistent issue in a requester repo listing
+that repo's current provisioning failures, authorization denials, or config
+issues. At most one is open at a time; each run refreshes it, and it is closed
+when nothing is failing or when dashboards are disabled. It is never reopened —
+a fresh dashboard is opened instead. _Avoid_: failure dashboard
+
 ### References and patterns
 
 **Account reference**: A reference written `<account>` naming a GitHub org or
