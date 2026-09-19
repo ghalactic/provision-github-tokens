@@ -5,7 +5,9 @@ import { RequestError } from "@octokit/request-error";
 import type { AppInput } from "./type/input.js";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention -- class constructor
-const CustomOctokit = OctokitAction.plugin(retry);
+const CustomOctokit = OctokitAction.plugin(retry).defaults({
+  request: { headers: { "X-GitHub-Api-Version": "2026-03-10" } },
+});
 
 export type Octokit = InstanceType<typeof CustomOctokit>;
 

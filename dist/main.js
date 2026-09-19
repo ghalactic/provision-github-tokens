@@ -4756,8 +4756,8 @@ var require_util2 = __commonJS({
       }
       return values;
     }
-    function getDecodeSplit(name, list3) {
-      const value = list3.get(name, true);
+    function getDecodeSplit(name, list4) {
+      const value = list4.get(name, true);
       if (value === null) {
         return null;
       }
@@ -11970,9 +11970,9 @@ var require_headers = __commonJS({
       // https://fetch.spec.whatwg.org/#dom-headers-getsetcookie
       getSetCookie() {
         webidl.brandCheck(this, _Headers);
-        const list3 = this.#headersList.cookies;
-        if (list3) {
-          return [...list3];
+        const list4 = this.#headersList.cookies;
+        if (list4) {
+          return [...list4];
         }
         return [];
       }
@@ -12012,8 +12012,8 @@ var require_headers = __commonJS({
       static getHeadersList(o2) {
         return o2.#headersList;
       }
-      static setHeadersList(o2, list3) {
-        o2.#headersList = list3;
+      static setHeadersList(o2, list4) {
+        o2.#headersList = list4;
       }
     };
     var { getHeadersGuard, setHeadersGuard, getHeadersList, setHeadersList } = Headers2;
@@ -12981,13 +12981,13 @@ var require_request2 = __commonJS({
         if (this.signal.aborted) {
           ac.abort(this.signal.reason);
         } else {
-          let list3 = dependentControllerMap.get(this.signal);
-          if (list3 === void 0) {
-            list3 = /* @__PURE__ */ new Set();
-            dependentControllerMap.set(this.signal, list3);
+          let list4 = dependentControllerMap.get(this.signal);
+          if (list4 === void 0) {
+            list4 = /* @__PURE__ */ new Set();
+            dependentControllerMap.set(this.signal, list4);
           }
           const acRef = new WeakRef(ac);
-          list3.add(acRef);
+          list4.add(acRef);
           util.addAbortListener(
             ac.signal,
             buildAbort(acRef)
@@ -20376,10 +20376,10 @@ var require_source_map_support = __commonJS({
         return process.exit(code2);
       }
     }
-    function handlerExec(list3) {
+    function handlerExec(list4) {
       return function(arg) {
-        for (var i2 = 0; i2 < list3.length; i2++) {
-          var ret = list3[i2](arg);
+        for (var i2 = 0; i2 < list4.length; i2++) {
+          var ret = list4[i2](arg);
           if (ret) {
             return ret;
           }
@@ -24339,10 +24339,10 @@ var require_fast_uri = __commonJS({
     function normalize(uri, options) {
       if (typeof uri === "string") {
         uri = /** @type {T} */
-        serialize2(parse3(uri, options), options);
+        serialize3(parse3(uri, options), options);
       } else if (typeof uri === "object") {
         uri = /** @type {T} */
-        parse3(serialize2(uri, options), options);
+        parse3(serialize3(uri, options), options);
       }
       return uri;
     }
@@ -24350,13 +24350,13 @@ var require_fast_uri = __commonJS({
       const schemelessOptions = options ? Object.assign({ scheme: "null" }, options) : { scheme: "null" };
       const resolved = resolveComponent(parse3(baseURI, schemelessOptions), parse3(relativeURI, schemelessOptions), schemelessOptions, true);
       schemelessOptions.skipEscape = true;
-      return serialize2(resolved, schemelessOptions);
+      return serialize3(resolved, schemelessOptions);
     }
     function resolveComponent(base, relative, options, skipNormalization) {
       const target = {};
       if (!skipNormalization) {
-        base = parse3(serialize2(base, options), options);
-        relative = parse3(serialize2(relative, options), options);
+        base = parse3(serialize3(base, options), options);
+        relative = parse3(serialize3(relative, options), options);
       }
       options = options || {};
       if (!options.tolerant && relative.scheme) {
@@ -24408,19 +24408,19 @@ var require_fast_uri = __commonJS({
     function equal(uriA, uriB, options) {
       if (typeof uriA === "string") {
         uriA = unescape(uriA);
-        uriA = serialize2(normalizeComponentEncoding(parse3(uriA, options), true), { ...options, skipEscape: true });
+        uriA = serialize3(normalizeComponentEncoding(parse3(uriA, options), true), { ...options, skipEscape: true });
       } else if (typeof uriA === "object") {
-        uriA = serialize2(normalizeComponentEncoding(uriA, true), { ...options, skipEscape: true });
+        uriA = serialize3(normalizeComponentEncoding(uriA, true), { ...options, skipEscape: true });
       }
       if (typeof uriB === "string") {
         uriB = unescape(uriB);
-        uriB = serialize2(normalizeComponentEncoding(parse3(uriB, options), true), { ...options, skipEscape: true });
+        uriB = serialize3(normalizeComponentEncoding(parse3(uriB, options), true), { ...options, skipEscape: true });
       } else if (typeof uriB === "object") {
-        uriB = serialize2(normalizeComponentEncoding(uriB, true), { ...options, skipEscape: true });
+        uriB = serialize3(normalizeComponentEncoding(uriB, true), { ...options, skipEscape: true });
       }
       return uriA.toLowerCase() === uriB.toLowerCase();
     }
-    function serialize2(cmpts, opts) {
+    function serialize3(cmpts, opts) {
       const component = {
         host: cmpts.host,
         scheme: cmpts.scheme,
@@ -24576,7 +24576,7 @@ var require_fast_uri = __commonJS({
       resolve,
       resolveComponent,
       equal,
-      serialize: serialize2,
+      serialize: serialize3,
       parse: parse3
     };
     module2.exports = fastUri;
@@ -33839,15 +33839,15 @@ var require_parser = __commonJS({
     var node_process = __require("process");
     var cst = require_cst();
     var lexer = require_lexer();
-    function includesToken(list3, type) {
-      for (let i2 = 0; i2 < list3.length; ++i2)
-        if (list3[i2].type === type)
+    function includesToken(list4, type) {
+      for (let i2 = 0; i2 < list4.length; ++i2)
+        if (list4[i2].type === type)
           return true;
       return false;
     }
-    function findNonEmptyIndex(list3) {
-      for (let i2 = 0; i2 < list3.length; ++i2) {
-        switch (list3[i2].type) {
+    function findNonEmptyIndex(list4) {
+      for (let i2 = 0; i2 < list4.length; ++i2) {
+        switch (list4[i2].type) {
           case "space":
           case "comment":
           case "newline":
@@ -40374,8 +40374,8 @@ var require_util12 = __commonJS({
       }
       return values;
     }
-    function getDecodeSplit(name, list3) {
-      const value = list3.get(name, true);
+    function getDecodeSplit(name, list4) {
+      const value = list4.get(name, true);
       if (value === null) {
         return null;
       }
@@ -51851,9 +51851,9 @@ var require_headers2 = __commonJS({
       // https://fetch.spec.whatwg.org/#dom-headers-getsetcookie
       getSetCookie() {
         webidl.brandCheck(this, _Headers);
-        const list3 = this.#headersList.cookies;
-        if (list3) {
-          return [...list3];
+        const list4 = this.#headersList.cookies;
+        if (list4) {
+          return [...list4];
         }
         return [];
       }
@@ -51877,8 +51877,8 @@ var require_headers2 = __commonJS({
        * @param {Headers} target
        * @param {HeadersList} list
        */
-      static setHeadersList(target, list3) {
-        target.#headersList = list3;
+      static setHeadersList(target, list4) {
+        target.#headersList = list4;
       }
     };
     var { getHeadersGuard, setHeadersGuard, getHeadersList, setHeadersList } = Headers2;
@@ -52829,13 +52829,13 @@ var require_request4 = __commonJS({
         if (this.signal.aborted) {
           ac.abort(this.signal.reason);
         } else {
-          let list3 = dependentControllerMap.get(this.signal);
-          if (list3 === void 0) {
-            list3 = /* @__PURE__ */ new Set();
-            dependentControllerMap.set(this.signal, list3);
+          let list4 = dependentControllerMap.get(this.signal);
+          if (list4 === void 0) {
+            list4 = /* @__PURE__ */ new Set();
+            dependentControllerMap.set(this.signal, list4);
           }
           const acRef = new WeakRef(ac);
-          list3.add(acRef);
+          list4.add(acRef);
           util.addAbortListener(
             ac.signal,
             buildAbort(acRef)
@@ -58529,16 +58529,16 @@ var require_light = __commonJS({
           }
         }
         shiftAll(fn) {
-          return this._lists.forEach(function(list3) {
-            return list3.forEachShift(fn);
+          return this._lists.forEach(function(list4) {
+            return list4.forEachShift(fn);
           });
         }
         getFirst(arr = this._lists) {
-          var j2, len, list3;
+          var j2, len, list4;
           for (j2 = 0, len = arr.length; j2 < len; j2++) {
-            list3 = arr[j2];
-            if (list3.length > 0) {
-              return list3;
+            list4 = arr[j2];
+            if (list4.length > 0) {
+              return list4;
             }
           }
           return [];
@@ -60791,12 +60791,12 @@ function createTextTokenAuthExplainer() {
     return renderAllowDenyList(indent, entries);
   }
   function renderAllowDenyList(indent, items) {
-    let list3 = "";
+    let list4 = "";
     for (const [isAllowed, entry] of items) {
-      list3 += `
+      list4 += `
 ${indent}${icon(isAllowed)} ${entry}`;
     }
-    return list3;
+    return list4;
   }
 }
 
@@ -61937,6 +61937,21 @@ var provider_v1_schema_default = {
       const: "https://ghalactic.github.io/provision-github-tokens/schema/provider.v1.schema.json",
       default: "https://ghalactic.github.io/provision-github-tokens/schema/provider.v1.schema.json"
     },
+    dashboards: {
+      description: "Settings that control the token dashboards that this action maintains in requester repos.",
+      type: "object",
+      additionalProperties: false,
+      default: {
+        enabled: true
+      },
+      properties: {
+        enabled: {
+          description: "Whether to maintain token dashboards in requester repos.",
+          type: "boolean",
+          default: true
+        }
+      }
+    },
     permissions: {
       description: "Settings that control the token permissions that consumers can receive.",
       type: "object",
@@ -62293,6 +62308,21 @@ var requester_v1_schema_default = {
       const: "https://ghalactic.github.io/provision-github-tokens/schema/requester.v1.schema.json",
       default: "https://ghalactic.github.io/provision-github-tokens/schema/requester.v1.schema.json"
     },
+    dashboard: {
+      description: "Settings that control the token dashboard that this action maintains in this repo.",
+      type: "object",
+      additionalProperties: false,
+      default: {
+        enabled: true
+      },
+      properties: {
+        enabled: {
+          description: "Whether to maintain a token dashboard in this repo.",
+          type: "boolean",
+          default: true
+        }
+      }
+    },
     tokens: {
       description: "Declarations of GitHub tokens that requesters can request to be provisioned.",
       type: "object",
@@ -62550,6 +62580,16 @@ var validateRequester = createValidate(
   requester_v1_schema_default.$id,
   "requester configuration"
 );
+function findValidationErrors(error2) {
+  let current = error2;
+  for (; ; ) {
+    if (current instanceof ValidateError) return current.errors;
+    if (typeof current !== "object" || current === null || !("cause" in current)) {
+      return [];
+    }
+    current = current.cause;
+  }
+}
 var ValidateError = class extends Error {
   errors;
   constructor(message, errors) {
@@ -68164,7 +68204,9 @@ function retry(octokit, octokitOptions) {
 retry.VERSION = VERSION12;
 
 // src/octokit.ts
-var CustomOctokit = Octokit2.plugin(retry);
+var CustomOctokit = Octokit2.plugin(retry).defaults({
+  request: { headers: { "X-GitHub-Api-Version": "2026-03-10" } }
+});
 function createOctokitFactory() {
   let actionOctokit;
   const appOctokits = {};
@@ -68441,7 +68483,9 @@ function normalizeRequesterConfig(definingRepo, config) {
 // src/discover-requesters.ts
 var CONFIG_PATH = ".github/ghalactic/provision-github-tokens.yml";
 async function discoverRequesters(octokitFactory, appRegistry, appsInput) {
-  const discovered = /* @__PURE__ */ new Map();
+  const requesters = /* @__PURE__ */ new Map();
+  const configIssues = /* @__PURE__ */ new Map();
+  const installations = /* @__PURE__ */ new Map();
   for (const [, instReg] of appRegistry.provisioners) {
     const { installation, repos } = instReg;
     const octokit = octokitFactory.installationOctokit(
@@ -68450,7 +68494,9 @@ async function discoverRequesters(octokitFactory, appRegistry, appsInput) {
       installation.id
     );
     for (const r2 of repos) {
-      if (discovered.has(r2.full_name)) continue;
+      if (requesters.has(r2.full_name) || configIssues.has(r2.full_name)) {
+        continue;
+      }
       const requester = createRepoRef(r2.owner.login, r2.name);
       let configYaml;
       try {
@@ -68474,12 +68520,18 @@ async function discoverRequesters(octokitFactory, appRegistry, appsInput) {
         });
         continue;
       }
+      installations.set(r2.full_name, instReg);
       debug(`Discovered requester ${r2.full_name}`);
       let config;
       try {
         config = parseRequesterConfig(requester, CONFIG_PATH, configYaml);
-      } catch {
+      } catch (error2) {
         error(`Requester ${r2.full_name} has invalid config`);
+        configIssues.set(r2.full_name, {
+          requester,
+          configPath: CONFIG_PATH,
+          errors: findValidationErrors(error2)
+        });
         continue;
       }
       const tokenDecNames = Object.keys(config.tokens);
@@ -68492,11 +68544,14 @@ async function discoverRequesters(octokitFactory, appRegistry, appsInput) {
       debug(
         `Requester ${r2.full_name} has ${secretDecs} ` + JSON.stringify(secretDecNames)
       );
-      discovered.set(r2.full_name, { requester, config });
+      requesters.set(r2.full_name, { requester, config });
     }
   }
-  info(`Discovered ${pluralize(discovered.size, "requester", "requesters")}`);
-  return discovered;
+  info(`Discovered ${pluralize(requesters.size, "requester", "requesters")}`);
+  info(
+    `Found ${pluralize(configIssues.size, "invalid requester config", "invalid requester configs")}`
+  );
+  return { requesters, configIssues, installations };
 }
 
 // node_modules/.pnpm/libsodium@0.8.0/node_modules/libsodium/dist/modules-esm/libsodium.mjs
@@ -115981,15 +116036,6 @@ Secret #${i2}:
   }
 }
 
-// src/register-token-declarations.ts
-function registerTokenDeclarations(declarationRegistry, requesters) {
-  for (const [, { requester, config }] of requesters) {
-    for (const [name, declaration] of Object.entries(config.tokens)) {
-      declarationRegistry.registerDeclaration(requester, name, declaration);
-    }
-  }
-}
-
 // node_modules/.pnpm/micromark-util-character@2.1.1/node_modules/micromark-util-character/index.js
 var asciiAlpha = regexCheck(/[A-Za-z]/);
 var asciiAlphanumeric = regexCheck(/[\dA-Za-z]/);
@@ -116549,16 +116595,16 @@ function map2(line, _2, blank) {
 function patternInScope(stack, pattern) {
   return listInScope(stack, pattern.inConstruct, true) && !listInScope(stack, pattern.notInConstruct, false);
 }
-function listInScope(stack, list3, none) {
-  if (typeof list3 === "string") {
-    list3 = [list3];
+function listInScope(stack, list4, none) {
+  if (typeof list4 === "string") {
+    list4 = [list4];
   }
-  if (!list3 || list3.length === 0) {
+  if (!list4 || list4.length === 0) {
     return none;
   }
   let index = -1;
-  while (++index < list3.length) {
-    if (stack.includes(list3[index])) {
+  while (++index < list4.length) {
+    if (stack.includes(list4[index])) {
       return true;
     }
   }
@@ -120306,8 +120352,40 @@ function emphasis2(...children) {
 function gfmAlert(type, ...children) {
   return blockquote2(paragraph2(text2(`[!${type}]`)), ...children);
 }
+function details(body) {
+  return html2(
+    `<details>
+<summary>Error details</summary>
+
+\`\`\`
+${body}
+\`\`\`
+
+</details>
+`
+  );
+}
 function heading2(depth, ...children) {
   return { type: "heading", depth, children };
+}
+function html2(value) {
+  return { type: "html", value };
+}
+function list3(items) {
+  return {
+    type: "list",
+    ordered: false,
+    spread: false,
+    children: items.map(({ contents, nested }) => ({
+      type: "listItem",
+      spread: false,
+      checked: null,
+      children: [
+        { type: "paragraph", children: contents },
+        ...nested ? [nested] : []
+      ]
+    }))
+  };
 }
 function inlineCode2(code2) {
   return { type: "inlineCode", value: code2 };
@@ -120342,6 +120420,1076 @@ function table(align, headings, rows) {
 }
 function text2(value) {
   return { type: "text", value };
+}
+
+// src/provision-auth-explainer/markdown.ts
+function createMarkdownProvisionAuthExplainer(tokenResults) {
+  return (result) => [list3(explainSummary(result))];
+  function explainSummary({
+    request: request2,
+    isAllowed,
+    results,
+    isMissingTargets
+  }) {
+    return [
+      {
+        contents: [
+          text2(`${icon(isAllowed)} Repo `),
+          inlineCode2(repoRefToString(request2.requester)),
+          text2(
+            isAllowed ? " was allowed to provision secret " : " wasn't allowed to provision secret "
+          ),
+          inlineCode2(request2.name),
+          text2(":")
+        ],
+        nested: list3([
+          explainTokenDec(request2),
+          ...explainTargets(request2, results, isMissingTargets)
+        ])
+      }
+    ];
+  }
+  function explainTokenDec(request2) {
+    if (request2.tokenDec) {
+      return {
+        contents: [
+          text2(`${PASS_ICON} Can use token declaration `),
+          inlineCode2(request2.secretDec.token)
+        ]
+      };
+    }
+    const reason = request2.tokenDecIsRegistered ? "it isn't shared" : "it doesn't exist";
+    return {
+      contents: [
+        text2(`${FAIL_ICON} Can't use token declaration `),
+        inlineCode2(request2.secretDec.token),
+        text2(` because ${reason}`)
+      ]
+    };
+  }
+  function explainTargets(request2, results, isMissingTargets) {
+    if (isMissingTargets) {
+      return [{ contents: [text2(`${FAIL_ICON} No targets specified`)] }];
+    }
+    const entries = [];
+    for (let i2 = 0; i2 < results.length; ++i2) {
+      entries.push([request2.to[i2], results[i2]]);
+    }
+    entries.sort(([a2], [b2]) => compareProvisionRequestTarget(a2, b2));
+    return entries.map(([target, result]) => explainTarget(result, target));
+  }
+  function explainTarget(result, target) {
+    const { isAllowed } = result;
+    return {
+      contents: [
+        text2(`${icon(isAllowed)} ${isAllowed ? "Can" : "Can't"} `),
+        text2("provision token to "),
+        ...explainSubject(target),
+        text2(":")
+      ],
+      nested: list3([
+        explainTargetToken(result),
+        explainTargetProvision(result)
+      ])
+    };
+  }
+  function explainTargetToken({
+    isTokenAllowed,
+    tokenAuthResult
+  }) {
+    if (!tokenAuthResult) {
+      return {
+        contents: [
+          text2(`${FAIL_ICON} Token can't be authorized without a declaration`)
+        ]
+      };
+    }
+    const name = accountOrRepoRefToString(tokenAuthResult.request.consumer);
+    const ref = `#${tokenResults.indexOf(tokenAuthResult) + 1}`;
+    const kind = isRepoRef(tokenAuthResult.request.consumer) ? "Repo" : "Account";
+    const verb = isTokenAllowed ? "was allowed" : "was denied";
+    return {
+      contents: [
+        text2(`${icon(isTokenAllowed)} ${kind} `),
+        inlineCode2(name),
+        text2(` ${verb} access to token `),
+        inlineCode2(ref)
+      ]
+    };
+  }
+  function explainTargetProvision({
+    isProvisionAllowed,
+    rules
+  }) {
+    return {
+      contents: [
+        text2(`${icon(isProvisionAllowed)} `),
+        text2(`${isProvisionAllowed ? "Can" : "Can't"} provision secret `),
+        ...explainBasedOnRules(rules)
+      ],
+      nested: rules.length > 0 ? list3(rules.map(explainRule)) : void 0
+    };
+  }
+  function explainBasedOnRules(rules) {
+    if (rules.length < 1) return [text2("(no matching rules)")];
+    return [
+      text2(
+        `based on ${rules.length} ${rules.length === 1 ? "rule" : "rules"}:`
+      )
+    ];
+  }
+  function explainRule({
+    index,
+    rule,
+    have
+  }) {
+    const isAllowed = have === "allow";
+    return {
+      contents: [
+        text2(`${icon(isAllowed)} ${isAllowed ? "Allowed" : "Denied"} by rule `),
+        inlineCode2(`#${index + 1}`),
+        ...rule.description ? [text2(`: ${JSON.stringify(rule.description)}`)] : []
+      ]
+    };
+  }
+  function explainSubject(target) {
+    const type = ((r2) => {
+      const type2 = r2.type;
+      switch (type2) {
+        case "actions":
+          return "GitHub Actions";
+        case "codespaces":
+          return "GitHub Codespaces";
+        case "dependabot":
+          return "Dependabot";
+        case "environment":
+          return `GitHub environment ${r2.target.environment}`;
+      }
+      throw new Error(
+        `Invariant violation: Unexpected secret type ${JSON.stringify(type2)}`
+      );
+    })(target);
+    return [
+      text2(`${type} secret in `),
+      inlineCode2(accountOrRepoRefToString(target.target))
+    ];
+  }
+}
+
+// src/provision-explainer/markdown.ts
+function createMarkdownProvisionExplainer() {
+  return (authResult, targetResults) => {
+    if (targetResults.size < 1) {
+      return [noTargetsDashboard(authResult)];
+    }
+    const { request: request2 } = authResult;
+    const targetEntries = [...targetResults.entries()].sort(
+      ([a2], [b2]) => compareProvisionRequestTarget(a2.target, b2.target)
+    );
+    const allProvisioned = targetEntries.every(
+      ([, result]) => result.type === "PROVISIONED"
+    );
+    const noneProvisioned = targetEntries.every(
+      ([, result]) => result.type !== "PROVISIONED"
+    );
+    const status = allProvisioned ? "was provisioned" : noneProvisioned ? "wasn't provisioned" : "was partially provisioned";
+    const items = [
+      {
+        contents: [
+          text2(`${icon(allProvisioned)} Secret `),
+          inlineCode2(request2.name),
+          text2(` ${status} for repo `),
+          inlineCode2(repoRefToString(request2.requester)),
+          text2(":")
+        ]
+      }
+    ];
+    const errorDetails = [];
+    for (const [targetAuth, result] of targetEntries) {
+      const { item, detail } = explainTarget(targetAuth.target, result);
+      items.push(item);
+      if (detail) errorDetails.push(details(detail));
+    }
+    return [list3(items), ...errorDetails];
+  };
+  function noTargetsDashboard(authResult) {
+    return list3([
+      {
+        contents: [
+          text2(`${FAIL_ICON} Secret `),
+          inlineCode2(authResult.request.name),
+          text2(" wasn't provisioned for repo "),
+          inlineCode2(repoRefToString(authResult.request.requester)),
+          text2(":")
+        ],
+        nested: list3([
+          { contents: [text2(`${FAIL_ICON} No targets to provision to`)] }
+        ])
+      }
+    ]);
+  }
+  function explainTarget(target, result) {
+    const suffix = explainSubject(target);
+    switch (result.type) {
+      case "PROVISIONED":
+        return {
+          item: {
+            contents: [text2(`${PASS_ICON} Provisioned to `), ...suffix]
+          }
+        };
+      case "NOT_ALLOWED":
+        return {
+          item: {
+            contents: [
+              text2(`${FAIL_ICON} Not allowed to provision to `),
+              ...suffix
+            ]
+          }
+        };
+      case "NO_TOKEN":
+        return {
+          item: {
+            contents: [
+              text2(`${FAIL_ICON} Token wasn't created for `),
+              ...suffix
+            ]
+          }
+        };
+      case "NO_PROVISIONER":
+        return {
+          item: {
+            contents: [
+              text2(`${FAIL_ICON} No suitable provisioner for `),
+              ...suffix
+            ]
+          }
+        };
+      case "REQUEST_ERROR": {
+        const body = result.error.response?.data;
+        const detail = typeof body === "undefined" ? "(no response data)" : JSON.stringify(body, null, 2);
+        return {
+          item: {
+            contents: [
+              text2(`${FAIL_ICON} Failed to provision to `),
+              ...suffix,
+              text2(`: ${result.error.status} - ${result.error.message}`)
+            ]
+          },
+          detail
+        };
+      }
+      case "ERROR":
+        return {
+          item: {
+            contents: [
+              text2(`${FAIL_ICON} Failed to provision to `),
+              ...suffix,
+              text2(`: ${errorMessage(result.error)}`)
+            ]
+          },
+          detail: errorStack(result.error)
+        };
+    }
+  }
+  function explainSubject(target) {
+    const type = ((r2) => {
+      const type2 = r2.type;
+      switch (type2) {
+        case "actions":
+          return "GitHub Actions";
+        case "codespaces":
+          return "GitHub Codespaces";
+        case "dependabot":
+          return "Dependabot";
+        case "environment":
+          return `GitHub environment ${r2.target.environment}`;
+      }
+      throw new Error(
+        `Invariant violation: Unexpected secret type ${JSON.stringify(type2)}`
+      );
+    })(target);
+    return [
+      text2(`${type} secret in `),
+      inlineCode2(accountOrRepoRefToString(target.target))
+    ];
+  }
+}
+
+// src/token-auth-explainer/markdown.ts
+var ACCESS_LEVELS2 = {
+  none: "No",
+  admin: "Admin",
+  read: "Read",
+  write: "Write"
+};
+function createMarkdownTokenAuthExplainer() {
+  return (result) => [list3(explainTokenAuth(result))];
+  function explainTokenAuth(result) {
+    if (result.type === "ALL_REPOS") return explainAllRepos(result);
+    if (result.type === "NO_REPOS") return explainNoRepos(result);
+    return explainSelectedRepos(result);
+  }
+  function explainAllRepos(result) {
+    const subject = [
+      text2("all repos in "),
+      inlineCode2(result.request.tokenDec.account)
+    ];
+    return [
+      explainConsumer(result),
+      explainAccessAndRole(result, subject),
+      explainSufficient(result, subject)
+    ];
+  }
+  function explainNoRepos(result) {
+    const subject = [
+      inlineCode2(result.request.tokenDec.account)
+    ];
+    return [
+      explainConsumer(result),
+      explainAccessAndRole(result, subject),
+      explainSufficient(result, subject)
+    ];
+  }
+  function explainSelectedRepos(result) {
+    const { request: request2 } = result;
+    const subject = [
+      text2("repos in "),
+      inlineCode2(request2.tokenDec.account)
+    ];
+    const resourceEntries = Object.entries(result.results).sort(
+      ([a2], [b2]) => a2.localeCompare(b2)
+    );
+    const resources = [];
+    for (const [resourceRepo, resourceResult] of resourceEntries) {
+      resources.push(
+        explainResourceRepo(
+          resourceRepo,
+          request2.tokenDec.permissions,
+          resourceResult
+        )
+      );
+    }
+    return [
+      explainConsumer(result),
+      explainAccessAndRole(result, subject),
+      {
+        contents: [
+          text2(
+            `${icon(result.isMatched)} ${pluralize(request2.tokenDec.repos.length, "repo pattern", "repo patterns")} matched ${pluralize(request2.repos.length, "repo", "repos")}`
+          )
+        ]
+      },
+      ...resources
+    ];
+  }
+  function explainConsumer({
+    request: request2,
+    isAllowed
+  }) {
+    const name = accountOrRepoRefToString(request2.consumer);
+    const who = isRepoRef(request2.consumer) ? [text2("Repo "), inlineCode2(name)] : [text2("Account "), inlineCode2(name)];
+    return {
+      contents: [
+        text2(`${icon(isAllowed)} `),
+        ...who,
+        text2(
+          isAllowed ? " was allowed access to a token:" : " was denied access to a token:"
+        )
+      ]
+    };
+  }
+  function explainAccessAndRole({ request: request2, maxWant, isMissingRole }, subject) {
+    const { as } = request2.tokenDec;
+    return {
+      contents: [
+        text2(`${icon(!isMissingRole)} ${ACCESS_LEVELS2[maxWant]} access to `),
+        ...subject,
+        text2(as ? " requested with role " : " requested without a role"),
+        ...as ? [inlineCode2(as)] : []
+      ]
+    };
+  }
+  function explainSufficient({
+    request: request2,
+    isSufficient,
+    rules
+  }, subject) {
+    const basedOn = explainBasedOnRules(request2.tokenDec.permissions, rules);
+    return {
+      contents: [
+        text2(
+          `${icon(isSufficient)} ${isSufficient ? "Sufficient" : "Insufficient"} access to `
+        ),
+        ...subject,
+        ...basedOn.contents
+      ],
+      ...basedOn.nested ? { nested: basedOn.nested } : {}
+    };
+  }
+  function explainResourceRepo(resource, want, result) {
+    const basedOn = explainBasedOnRules(want, result.rules);
+    return {
+      contents: [
+        text2(
+          `${icon(result.isSufficient)} ${result.isSufficient ? "Sufficient" : "Insufficient"} access to repo `
+        ),
+        inlineCode2(resource),
+        ...basedOn.contents
+      ],
+      ...basedOn.nested ? { nested: basedOn.nested } : {}
+    };
+  }
+  function explainBasedOnRules(want, rules) {
+    const ruleCount = rules.length;
+    if (ruleCount < 1) {
+      return { contents: [text2(" (no matching rules)")] };
+    }
+    return {
+      contents: [
+        text2(
+          ruleCount === 1 ? " based on 1 rule:" : ` based on ${ruleCount} rules:`
+        )
+      ],
+      nested: list3(rules.map((ruleResult) => explainRule(want, ruleResult)))
+    };
+  }
+  function explainRule(want, { index, rule, have, isSufficient }) {
+    const described = rule.description ? `: ${JSON.stringify(rule.description)}` : "";
+    return {
+      contents: [
+        text2(`${icon(isSufficient)} Rule `),
+        inlineCode2(`#${index + 1}`),
+        text2(
+          `${described} gave ${isSufficient ? "sufficient" : "insufficient"} access:`
+        )
+      ],
+      nested: list3(renderPermissionComparison(have, want))
+    };
+  }
+  function renderPermissionComparison(have, want) {
+    const items = [];
+    for (const permission of Object.keys(want).sort(
+      (a2, b2) => a2.localeCompare(b2)
+    )) {
+      const haveAccess = permissionAccess(have, permission);
+      const wantAccess = permissionAccess(want, permission);
+      items.push({
+        contents: [
+          text2(`${icon(isSufficientAccess(haveAccess, wantAccess))} `),
+          text2(`${permission}: have `),
+          inlineCode2(haveAccess),
+          text2(", wanted "),
+          inlineCode2(wantAccess)
+        ]
+      });
+    }
+    return items;
+  }
+}
+
+// src/token-creation-explainer/markdown.ts
+var HEADER_ACCESS_LABELS = {
+  admin: "admin",
+  none: "",
+  read: "read-only",
+  write: "write"
+};
+function createMarkdownTokenCreationExplainer(results) {
+  const resultIndices = /* @__PURE__ */ new Map();
+  const authResultIndices = /* @__PURE__ */ new Map();
+  let index = 0;
+  for (const [authResult, result] of results) {
+    authResultIndices.set(authResult, index);
+    if (!resultIndices.has(result)) resultIndices.set(result, index);
+    ++index;
+  }
+  return (authResult, creationResult) => {
+    const currentIndex = authResultIndices.get(authResult);
+    const firstIndex = resultIndices.get(creationResult);
+    if (typeof currentIndex !== "undefined" && typeof firstIndex !== "undefined" && firstIndex !== currentIndex) {
+      return [
+        paragraph2(
+          text2(
+            `${icon(creationResult.type === "CREATED")} Same result as token `
+          ),
+          inlineCode2(`#${firstIndex + 1}`)
+        )
+      ];
+    }
+    const { items, detail } = explainResult(authResult, creationResult);
+    return detail ? [list3(items), details(detail)] : [list3(items)];
+  };
+  function explainResult(authResult, result) {
+    const { account, permissions, as: role } = authResult.request.tokenDec;
+    const { repos } = authResult.request;
+    const access2 = maxAccess(permissions);
+    const isSuccess = result.type === "CREATED";
+    const permEntries = effectivePermissions(permissions);
+    const hasPermissions = permEntries.length > 0;
+    const items = [
+      renderHeader(result.type, access2, repos, account)
+    ];
+    const errorLines = renderErrorLines(result, authResult.request.consumer);
+    items.push(...errorLines.items);
+    const subIcon = icon(isSuccess || void 0);
+    const verb = isSuccess ? "Has" : "Wanted";
+    if (hasPermissions) {
+      items.push({
+        contents: [
+          text2(`${subIcon} ${verb} ${access2} access `),
+          text2(role ? "with role " : "without a role"),
+          ...role ? [inlineCode2(role)] : []
+        ]
+      });
+    }
+    items.push(...renderRepoLines(subIcon, verb, repos, account));
+    items.push(...renderPermissionLines(subIcon, verb, permEntries));
+    return {
+      items,
+      detail: errorLines.detail
+    };
+  }
+  function renderHeader(type, access2, repos, account) {
+    const label = HEADER_ACCESS_LABELS[access2];
+    const isSuccess = type === "CREATED";
+    return {
+      contents: [
+        text2(`${icon(isSuccess)} `),
+        text2(
+          isSuccess ? `${capitalize(label)} token created with access to ` : `${type === "NOT_ALLOWED" ? "Refused" : "Failed"} to create ${label ? `${label} ` : ""}token with access to `
+        ),
+        ...repoScopeLabel(repos, account),
+        text2(":")
+      ]
+    };
+  }
+  function renderErrorLines(result, consumer) {
+    switch (result.type) {
+      case "CREATED":
+        return { items: [] };
+      case "NOT_ALLOWED": {
+        const suffix = isRepoRef(consumer) ? [text2(" for repo "), inlineCode2(repoRefToString(consumer))] : [text2(" for account "), inlineCode2(consumer.account)];
+        return {
+          items: [
+            { contents: [text2(`${FAIL_ICON} Token not allowed`), ...suffix] }
+          ]
+        };
+      }
+      case "NO_ISSUER":
+        return {
+          items: [{ contents: [text2(`${FAIL_ICON} No suitable issuer`)] }]
+        };
+      case "REQUEST_ERROR": {
+        const body = result.error.response?.data;
+        const detail = typeof body === "undefined" ? "(no response data)" : JSON.stringify(body, null, 2);
+        return {
+          items: [
+            {
+              contents: [
+                text2(
+                  `${FAIL_ICON} ${result.error.status} - ${result.error.message}`
+                )
+              ]
+            }
+          ],
+          detail
+        };
+      }
+      case "ERROR":
+        return {
+          items: [
+            { contents: [text2(`${FAIL_ICON} ${errorMessage(result.error)}`)] }
+          ],
+          detail: errorStack(result.error)
+        };
+    }
+  }
+  function renderRepoLines(subIcon, verb, repos, account) {
+    if (repos === "all") {
+      return [
+        {
+          contents: [
+            text2(`${subIcon} ${verb} access to all repos in `),
+            inlineCode2(account)
+          ]
+        }
+      ];
+    }
+    if (repos.length < 1) {
+      return [{ contents: [text2(`${subIcon} ${verb} account-only access`)] }];
+    }
+    return [
+      {
+        contents: [
+          text2(`${subIcon} ${verb} access to `),
+          text2(`${pluralize(repos.length, "repo", "repos")} in `),
+          inlineCode2(account),
+          text2(":")
+        ],
+        nested: list3(
+          repos.map((repo) => ({
+            contents: [text2(`${subIcon} `), inlineCode2(`${account}/${repo}`)]
+          }))
+        )
+      }
+    ];
+  }
+  function renderPermissionLines(subIcon, verb, permEntries) {
+    if (permEntries.length < 1) {
+      return [{ contents: [text2(`${FAIL_ICON} No permissions requested`)] }];
+    }
+    return [
+      {
+        contents: [
+          text2(`${subIcon} ${verb} `),
+          text2(
+            `${pluralize(permEntries.length, "permission", "permissions")}:`
+          )
+        ],
+        nested: list3(
+          permEntries.map(([name, access2]) => ({
+            contents: [
+              text2(`${subIcon} `),
+              text2(`${name}: `),
+              inlineCode2(access2)
+            ]
+          }))
+        )
+      }
+    ];
+  }
+  function repoScopeLabel(repos, account) {
+    if (repos === "all") {
+      return [text2("all repos in "), inlineCode2(account)];
+    }
+    if (repos.length < 1) {
+      return [inlineCode2(account)];
+    }
+    return [
+      text2(`${pluralize(repos.length, "repo", "repos")} in `),
+      inlineCode2(account)
+    ];
+  }
+  function effectivePermissions(permissions) {
+    const entries = [];
+    for (const [name, access2 = "none"] of Object.entries(permissions)) {
+      if (access2 !== "none") entries.push([name, access2]);
+    }
+    entries.sort(([a2], [b2]) => a2.localeCompare(b2));
+    return entries;
+  }
+}
+
+// src/dashboard.ts
+var DASHBOARD_LABEL = "gh-token-dashboard";
+var FAILURE_DASHBOARD_TITLE = "GitHub tokens couldn't be provisioned";
+var CONFIG_ISSUE_DASHBOARD_TITLE = "Token provisioning config is invalid";
+function renderFailureDashboard(runUrl, secrets, tokenResults, tokenCreationResults, provisionResults) {
+  const secretProvisioning = [];
+  const tokenCreation = [];
+  const requestAuthorization = [];
+  const scopedTokens = findScopedTokens(secrets, tokenResults);
+  const scopedCreationResults = /* @__PURE__ */ new Map();
+  for (const token of scopedTokens) {
+    const creationResult = tokenCreationResults.get(token);
+    if (creationResult) scopedCreationResults.set(token, creationResult);
+  }
+  const explainProvision = createMarkdownProvisionExplainer();
+  const explainTokenCreation = createMarkdownTokenCreationExplainer(
+    scopedCreationResults
+  );
+  const explainProvisionAuth = createMarkdownProvisionAuthExplainer(scopedTokens);
+  const explainTokenAuth = createMarkdownTokenAuthExplainer();
+  for (let i2 = 0; i2 < secrets.length; ++i2) {
+    const secret = secrets[i2];
+    const secretHeading = [text2("Secret "), inlineCode2(`#${i2 + 1}`)];
+    const targetResults = provisionResults.get(secret);
+    if (targetResults) {
+      secretProvisioning.push(
+        heading2(3, ...secretHeading),
+        ...explainProvision(secret, targetResults)
+      );
+    }
+    requestAuthorization.push(
+      heading2(3, ...secretHeading),
+      ...explainProvisionAuth(secret)
+    );
+  }
+  for (let i2 = 0; i2 < scopedTokens.length; ++i2) {
+    const token = scopedTokens[i2];
+    const tokenHeading = [text2("Token "), inlineCode2(`#${i2 + 1}`)];
+    const creationResult = scopedCreationResults.get(token);
+    if (creationResult) {
+      tokenCreation.push(
+        heading2(3, ...tokenHeading),
+        ...explainTokenCreation(token, creationResult)
+      );
+    }
+    requestAuthorization.push(
+      heading2(3, ...tokenHeading),
+      ...explainTokenAuth(token)
+    );
+  }
+  const children = [];
+  if (secretProvisioning.length > 0) {
+    children.push(
+      heading2(2, text2("Secret provisioning")),
+      ...secretProvisioning
+    );
+  }
+  if (tokenCreation.length > 0) {
+    children.push(heading2(2, text2("Token creation")), ...tokenCreation);
+  }
+  if (requestAuthorization.length > 0) {
+    children.push(
+      heading2(2, text2("Request authorization")),
+      ...requestAuthorization
+    );
+  }
+  children.push(runLink(runUrl));
+  return {
+    title: FAILURE_DASHBOARD_TITLE,
+    body: serialize2(children)
+  };
+}
+function renderConfigIssueDashboard(githubServerUrl, runUrl, issue2) {
+  const { requester, configPath, errors } = issue2;
+  const children = [
+    paragraph2(
+      text2("The config file "),
+      inlineCode2(configPath),
+      text2(` in ${repoRefToString(requester)} is invalid:`)
+    ),
+    list3(
+      errors.map((error2) => ({
+        contents: [
+          ...error2.instancePath.length > 0 ? [inlineCode2(error2.instancePath), text2(" ")] : [],
+          text2(error2.message ?? "is invalid")
+        ]
+      }))
+    )
+  ];
+  const configUrl = new URL(
+    `${requester.account}/${requester.repo}/blob/HEAD/${configPath}`,
+    githubServerUrl
+  );
+  children.push(
+    paragraph2(
+      link2(configUrl, text2("Open config file")),
+      text2(" \xB7 "),
+      link2(runUrl, text2("Full logs for this run"))
+    )
+  );
+  return {
+    title: CONFIG_ISSUE_DASHBOARD_TITLE,
+    body: serialize2(children)
+  };
+}
+function findScopedTokens(secrets, tokenResults) {
+  const requesterTokens = /* @__PURE__ */ new Set();
+  for (const secret of secrets) {
+    for (const { tokenAuthResult } of secret.results) {
+      if (tokenAuthResult) requesterTokens.add(tokenAuthResult);
+    }
+  }
+  return tokenResults.filter((token) => requesterTokens.has(token));
+}
+function runLink(runUrl) {
+  return paragraph2(link2(runUrl, text2("Full logs for this run")));
+}
+function serialize2(children) {
+  return toMarkdown(
+    { type: "root", children },
+    { bullet: "-", extensions: [gfmToMarkdown()] }
+  );
+}
+
+// src/failure-reason.ts
+function isFullyProvisioned(authResult, provisionResults) {
+  const targetResults = provisionResults.get(authResult);
+  if (!targetResults?.size) return false;
+  for (const result of targetResults.values()) {
+    if (result.type !== "PROVISIONED") return false;
+  }
+  return true;
+}
+function failureReason(authResult, tokenCreationResults, provisionResults) {
+  if (authResult.isMissingTargets || authResult.request.to.length < 1 || authResult.results.length < 1) {
+    return "No targets to provision to";
+  }
+  if (authResult.request.tokenDec == null) {
+    return authResult.request.tokenDecIsRegistered ? "Token declaration isn't shared" : "Token declaration doesn't exist";
+  }
+  if (!authResult.results.every((t2) => t2.isTokenAllowed)) {
+    return "Token not allowed";
+  }
+  if (!authResult.isAllowed) return "Secret not allowed";
+  const firstTarget = authResult.results[0];
+  if (!firstTarget.tokenAuthResult) {
+    throw new Error(
+      "Invariant violation: Missing token auth result for allowed target"
+    );
+  }
+  const tokenResult = tokenCreationResults.get(firstTarget.tokenAuthResult);
+  if (!tokenResult) {
+    throw new Error(
+      "Invariant violation: Missing token creation result for allowed target"
+    );
+  }
+  if (tokenResult.type === "NO_ISSUER") return "No suitable issuer";
+  if (tokenResult.type === "REQUEST_ERROR" || tokenResult.type === "ERROR") {
+    return "Failed to issue token";
+  }
+  const targetResults = provisionResults.get(authResult);
+  if (!targetResults) {
+    throw new Error(
+      "Invariant violation: Missing provision results for auth result"
+    );
+  }
+  let provisionedCount = 0;
+  let failedCount = 0;
+  let hasNoProvisioner = false;
+  for (const result of targetResults.values()) {
+    if (result.type === "PROVISIONED") {
+      ++provisionedCount;
+    } else {
+      ++failedCount;
+      if (result.type === "NO_PROVISIONER") hasNoProvisioner = true;
+    }
+  }
+  if (hasNoProvisioner && failedCount === targetResults.size) {
+    return "No suitable provisioner";
+  }
+  if (provisionedCount > 0 && failedCount > 0) {
+    return "Failed to provision to some targets";
+  }
+  return "Failed to provision";
+}
+
+// src/reconcile-dashboards.ts
+var DASHBOARD_LABEL_COLOR = "d4c5f9";
+var CLOSE_COMMENT_PREFIX = "This dashboard will be closed because ";
+var RESOLVED_REASON = "all provisioning issues for this repo have been resolved.";
+var CONFIG_DISABLED_REASON = "token dashboards are disabled in this repo's requester config.";
+var PROVIDER_DISABLED_REASON = "token dashboards are disabled in the provider config files.";
+function createReconcileDashboards(octokitFactory, appsInput) {
+  return async (githubServerUrl, runUrl, config, discovery, tokenResults, tokenCreationResults, provisionResults) => {
+    debug("Reconciling token dashboards");
+    const repoNames = /* @__PURE__ */ new Set([
+      ...discovery.requesters.keys(),
+      ...discovery.configIssues.keys()
+    ]);
+    for (const repoName of [...repoNames].sort()) {
+      const ref = repoRefFromName(repoName);
+      try {
+        await reconcileRepo(
+          ref,
+          githubServerUrl,
+          runUrl,
+          config,
+          discovery,
+          tokenResults,
+          tokenCreationResults,
+          provisionResults
+        );
+      } catch (error2) {
+        warning(
+          `Failed to reconcile dashboard for ${repoName}: ` + errorMessage(error2)
+        );
+      }
+    }
+  };
+  async function reconcileRepo(ref, githubServerUrl, runUrl, config, discovery, tokenResults, tokenCreationResults, provisionResults) {
+    const repoName = repoRefToString(ref);
+    const instReg = discovery.installations.get(repoName);
+    if (!instReg) {
+      throw new Error(
+        `Invariant violation: No installation recorded for requester ${repoName}`
+      );
+    }
+    const octokit = octokitFactory.installationOctokit(
+      appsInput,
+      instReg.installation.app_id,
+      instReg.installation.id
+    );
+    if (!isWriteAccess(
+      permissionAccess(instReg.installation.permissions, "issues")
+    )) {
+      warning(
+        `Installation ${instReg.installation.id} doesn't have "issues: write" access - skipping dashboard for ${repoName}`
+      );
+      return;
+    }
+    const requester = discovery.requesters.get(repoName);
+    const configIssue = discovery.configIssues.get(repoName);
+    if (!config.dashboards.enabled) {
+      await closeOpenDashboards(octokit, ref, PROVIDER_DISABLED_REASON);
+      return;
+    }
+    if (requester && !requester.config.dashboard.enabled) {
+      await closeOpenDashboards(octokit, ref, CONFIG_DISABLED_REASON);
+      return;
+    }
+    const desired = desiredIssue(
+      githubServerUrl,
+      runUrl,
+      configIssue,
+      ref,
+      tokenResults,
+      tokenCreationResults,
+      provisionResults
+    );
+    await upsertDashboard(octokit, ref, desired);
+  }
+}
+function desiredIssue(githubServerUrl, runUrl, configIssue, ref, tokenResults, tokenCreationResults, provisionResults) {
+  if (configIssue) {
+    return renderConfigIssueDashboard(githubServerUrl, runUrl, configIssue);
+  }
+  const secrets = requesterSecrets(ref, provisionResults);
+  const hasFailures = secrets.some(
+    (secret) => !isFullyProvisioned(secret, provisionResults)
+  );
+  if (hasFailures) {
+    return renderFailureDashboard(
+      runUrl,
+      secrets,
+      tokenResults,
+      tokenCreationResults,
+      provisionResults
+    );
+  }
+  return void 0;
+}
+function requesterSecrets(ref, provisionResults) {
+  const requesterSecrets2 = [];
+  for (const secret of provisionResults.keys()) {
+    if (repoRefToString(secret.request.requester) === repoRefToString(ref)) {
+      requesterSecrets2.push(secret);
+    }
+  }
+  return requesterSecrets2;
+}
+async function upsertDashboard(octokit, ref, desired) {
+  const openIssues = await openDashboardIssues(octokit, ref);
+  if (openIssues.length < 1) {
+    if (!desired) return;
+    await ensureDashboardLabel(octokit, ref);
+    const created = await octokit.rest.issues.create({
+      owner: ref.account,
+      repo: ref.repo,
+      title: desired.title,
+      body: desired.body,
+      labels: [DASHBOARD_LABEL]
+    });
+    info(
+      `Created dashboard issue #${created.data.number} in ${repoRefToString(ref)}`
+    );
+    return;
+  }
+  const [newest] = openIssues.slice(-1);
+  for (const issue2 of openIssues) {
+    if (issue2.number === newest.number) continue;
+    await closeIssue(octokit, ref, issue2.number);
+  }
+  if (!desired) {
+    await closeIssue(octokit, ref, newest.number, RESOLVED_REASON);
+    return;
+  }
+  await octokit.rest.issues.update({
+    owner: ref.account,
+    repo: ref.repo,
+    issue_number: newest.number,
+    title: desired.title,
+    body: desired.body
+  });
+  info(`Updated dashboard issue #${newest.number} in ${repoRefToString(ref)}`);
+}
+async function closeOpenDashboards(octokit, ref, reason) {
+  const openIssues = await openDashboardIssues(octokit, ref);
+  if (openIssues.length < 1) {
+    debug(`No open dashboard issue in ${repoRefToString(ref)}`);
+    return;
+  }
+  for (const issue2 of openIssues) {
+    await closeIssue(octokit, ref, issue2.number, reason);
+  }
+}
+async function openDashboardIssues(octokit, ref) {
+  const repoName = repoRefToString(ref);
+  const openIssues = [];
+  const issuePages = octokit.paginate.iterator(
+    octokit.rest.issues.listForRepo,
+    {
+      owner: ref.account,
+      repo: ref.repo,
+      state: "open"
+    }
+  );
+  for await (const { data } of issuePages) {
+    for (const issue2 of data) {
+      if (!issue2.labels.some((label) => isDashboardLabel(label))) continue;
+      openIssues.push(issue2);
+    }
+  }
+  openIssues.sort((a2, b2) => a2.number - b2.number);
+  debug(`Found ${openIssues.length} open dashboard issue(s) in ${repoName}`);
+  return openIssues;
+}
+function isDashboardLabel(label) {
+  if (typeof label === "string") return label === DASHBOARD_LABEL;
+  return label.name === DASHBOARD_LABEL;
+}
+async function closeIssue(octokit, ref, number, reason) {
+  if (reason) {
+    await octokit.rest.issues.createComment({
+      owner: ref.account,
+      repo: ref.repo,
+      issue_number: number,
+      body: `${CLOSE_COMMENT_PREFIX}${reason}`
+    });
+  }
+  await octokit.rest.issues.update({
+    owner: ref.account,
+    repo: ref.repo,
+    issue_number: number,
+    state: "closed"
+  });
+  info(`Closed dashboard issue #${number} in ${repoRefToString(ref)}`);
+}
+async function ensureDashboardLabel(octokit, ref) {
+  let labelExists = true;
+  try {
+    await octokit.rest.issues.getLabel({
+      owner: ref.account,
+      repo: ref.repo,
+      name: DASHBOARD_LABEL
+    });
+  } catch (error2) {
+    handleRequestError(error2, {
+      404: () => {
+        labelExists = false;
+      }
+    });
+  }
+  if (labelExists) return;
+  await octokit.rest.issues.createLabel({
+    owner: ref.account,
+    repo: ref.repo,
+    name: DASHBOARD_LABEL,
+    color: DASHBOARD_LABEL_COLOR,
+    description: "Tracks provisioning failures reported by the token dashboard"
+  });
+  debug(`Created dashboard label in ${repoRefToString(ref)}`);
+}
+
+// src/register-token-declarations.ts
+function registerTokenDeclarations(declarationRegistry, requesters) {
+  for (const [, { requester, config }] of requesters) {
+    for (const [name, declaration] of Object.entries(config.tokens)) {
+      declarationRegistry.registerDeclaration(requester, name, declaration);
+    }
+  }
 }
 
 // src/summary.ts
@@ -120473,66 +121621,6 @@ function failureRow(result, tokenCreationResults, provisionResults, definitions,
     targetCellChildren(result.request.to, definitions, githubServerUrl),
     [text2(failureReason(result, tokenCreationResults, provisionResults))]
   ];
-}
-function failureReason(authResult, tokenCreationResults, provisionResults) {
-  if (authResult.isMissingTargets || authResult.request.to.length < 1 || authResult.results.length < 1) {
-    return "No targets to provision to";
-  }
-  if (authResult.request.tokenDec == null) {
-    return authResult.request.tokenDecIsRegistered ? "Token declaration isn't shared" : "Token declaration doesn't exist";
-  }
-  if (!authResult.results.every((t2) => t2.isTokenAllowed)) {
-    return "Token not allowed";
-  }
-  if (!authResult.isAllowed) return "Secret not allowed";
-  const firstTarget = authResult.results[0];
-  if (!firstTarget.tokenAuthResult) {
-    throw new Error(
-      "Invariant violation: Missing token auth result for allowed target"
-    );
-  }
-  const tokenResult = tokenCreationResults.get(firstTarget.tokenAuthResult);
-  if (!tokenResult) {
-    throw new Error(
-      "Invariant violation: Missing token creation result for allowed target"
-    );
-  }
-  if (tokenResult.type === "NO_ISSUER") return "No suitable issuer";
-  if (tokenResult.type === "REQUEST_ERROR" || tokenResult.type === "ERROR") {
-    return "Failed to issue token";
-  }
-  const targetResults = provisionResults.get(authResult);
-  if (!targetResults) {
-    throw new Error(
-      "Invariant violation: Missing provision results for auth result"
-    );
-  }
-  let provisionedCount = 0;
-  let failedCount = 0;
-  let hasNoProvisioner = false;
-  for (const result of targetResults.values()) {
-    if (result.type === "PROVISIONED") {
-      ++provisionedCount;
-    } else {
-      ++failedCount;
-      if (result.type === "NO_PROVISIONER") hasNoProvisioner = true;
-    }
-  }
-  if (hasNoProvisioner && failedCount === targetResults.size) {
-    return "No suitable provisioner";
-  }
-  if (provisionedCount > 0 && failedCount > 0) {
-    return "Failed to provision to some targets";
-  }
-  return "Failed to provision";
-}
-function isFullyProvisioned(authResult, provisionResults) {
-  const targetResults = provisionResults.get(authResult);
-  if (!targetResults?.size) return false;
-  for (const result of targetResults.values()) {
-    if (result.type !== "PROVISIONED") return false;
-  }
-  return true;
 }
 function targetCellChildren(targets, definitions, githubServerUrl) {
   if (targets.length < 1) return [emphasis2(text2("(none)"))];
@@ -120867,7 +121955,7 @@ function createTokenDeclarationRegistry() {
 var import_fast_json_stable_stringify = __toESM(require_fast_json_stable_stringify(), 1);
 
 // src/token-creation-explainer/text.ts
-var HEADER_ACCESS_LABELS = {
+var HEADER_ACCESS_LABELS2 = {
   admin: "admin",
   none: "",
   read: "read-only",
@@ -120913,7 +122001,7 @@ function createTextTokenCreationExplainer(results) {
   function renderHeader(type, access2, repos, account) {
     const scope = repoScopeLabel(repos, account);
     const isSuccess = type === "CREATED";
-    const label = HEADER_ACCESS_LABELS[access2];
+    const label = HEADER_ACCESS_LABELS2[access2];
     if (isSuccess) {
       return `${icon(isSuccess)} ${capitalize(label)} token created with access to ${scope}:`;
     }
@@ -121087,6 +122175,7 @@ try {
   const githubRef = process.env.GITHUB_REF;
   const githubRepository = process.env.GITHUB_REPOSITORY;
   const githubServerUrl = process.env.GITHUB_SERVER_URL;
+  const githubRunId = process.env.GITHUB_RUN_ID;
   if (!githubRef) {
     throw new Error("Invariant violation: GITHUB_REF isn't set");
   }
@@ -121096,8 +122185,12 @@ try {
   if (!githubServerUrl) {
     throw new Error("Invariant violation: GITHUB_SERVER_URL isn't set");
   }
+  if (!githubRunId) {
+    throw new Error("Invariant violation: GITHUB_RUN_ID isn't set");
+  }
   const githubActionRepository = process.env.GITHUB_ACTION_REPOSITORY ?? githubRepository;
   const actionUrl = `${githubServerUrl}/${githubActionRepository}`;
+  const runUrl = `${githubServerUrl}/${githubRepository}/actions/runs/${githubRunId}`;
   const appsInput = readAppsInput();
   const octokitFactory = createOctokitFactory();
   const config = await group("Reading config", async () => {
@@ -121143,20 +122236,26 @@ try {
     findProvisionerOctokit,
     encryptSecret
   );
+  const reconcileDashboards = createReconcileDashboards(
+    octokitFactory,
+    appsInput
+  );
   await group("Discovering apps", async () => {
     await discoverApps(octokitFactory, appRegistry, appsInput);
   });
-  const requesters = await group("Discovering requesters", async () => {
-    const requesters2 = await discoverRequesters(
+  const discovery = await group("Discovering requesters", async () => {
+    const result = await discoverRequesters(
       octokitFactory,
       appRegistry,
       appsInput
     );
-    registerTokenDeclarations(declarationRegistry, requesters2);
-    return requesters2;
+    registerTokenDeclarations(declarationRegistry, result.requesters);
+    return result;
   });
   const authorizeResult = await group("Authorizing requests", async () => {
-    return await authorizer.authorize(Array.from(requesters.values()));
+    return await authorizer.authorize(
+      Array.from(discovery.requesters.values())
+    );
   });
   const tokenCreationResults = await group("Creating tokens", async () => {
     return await createTokens(tokenAuthorizer.listResults());
@@ -121165,6 +122264,17 @@ try {
     return await provisionSecrets(
       tokenCreationResults,
       provisionAuthorizer.listResults()
+    );
+  });
+  await group("Reconciling dashboards", async () => {
+    await reconcileDashboards(
+      githubServerUrl,
+      runUrl,
+      config,
+      discovery,
+      authorizeResult.tokenResults,
+      tokenCreationResults,
+      provisionResults
     );
   });
   const summaryMarkdown = renderSummary(
@@ -121186,6 +122296,7 @@ try {
 /* istanbul ignore next - never seen without an account login - @preserve */
 /* istanbul ignore next - Header guarantees string data - @preserve */
 /* istanbul ignore else - @preserve */
+/* istanbul ignore next - Set by discoverRequesters - @preserve */
 /* istanbul ignore file - TODO: remove coverage ignore - @preserve */
 /*! Bundled license information:
 

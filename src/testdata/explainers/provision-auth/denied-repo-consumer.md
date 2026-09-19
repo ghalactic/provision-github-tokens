@@ -1,0 +1,8 @@
+- ❌ Repo `org-x/repo-x` wasn't allowed to provision secret `SECRET_A`:
+  - ✅ Can use token declaration `org-b/repo-b.token-b`
+  - ❌ Can't provision token to Dependabot secret in `org-b/repo-b`:
+    - ❌ Repo `org-a/repo-a` was denied access to token `#1`
+    - ✅ Can provision secret (no matching rules)
+  - ❌ Can't provision token to GitHub environment production secret in `org-b/repo-b`:
+    - ❌ Account `org-b` was denied access to token `#2`
+    - ❌ Can't provision secret (no matching rules)

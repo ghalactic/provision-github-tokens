@@ -1,0 +1,3 @@
+- ❌ Repo `org-a/repo-a` was denied access to a token:
+- ❌ Read access to all repos in `account-a` requested without a role
+- ❌ Insufficient access to all repos in `account-a` (no matching rules)

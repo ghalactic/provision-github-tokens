@@ -1,0 +1,4 @@
+- ❌ Secret `SECRET_A` wasn't provisioned for repo `org-x/repo-x`:
+- ❌ Not allowed to provision to Dependabot secret in `org-a/repo-a`
+- ❌ Token wasn't created for GitHub environment production secret in `org-a/repo-a`
+- ❌ No suitable provisioner for GitHub Actions secret in `org-b`

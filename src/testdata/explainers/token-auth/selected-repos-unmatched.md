@@ -1,0 +1,4 @@
+- ❌ Account `account-a` was denied access to a token:
+- ✅ Write access to repos in `account-a` requested without a role
+- ❌ 0 repo patterns matched 1 repo
+- ❌ Insufficient access to repo `org-a/repo-a` (no matching rules)

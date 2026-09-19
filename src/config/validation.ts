@@ -42,6 +42,24 @@ export const validateRequester = createValidate<PartialRequesterConfig>(
   "requester configuration",
 );
 
+export function findValidationErrors(error: unknown): ErrorObject[] {
+  let current: unknown = error;
+
+  for (;;) {
+    if (current instanceof ValidateError) return current.errors;
+
+    if (
+      typeof current !== "object" ||
+      current === null ||
+      !("cause" in current)
+    ) {
+      return [];
+    }
+
+    current = (current as { cause?: unknown }).cause;
+  }
+}
+
 class ValidateError extends Error {
   public errors: ErrorObject[];
 

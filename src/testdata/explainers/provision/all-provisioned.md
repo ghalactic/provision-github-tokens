@@ -1,0 +1,3 @@
+- ✅ Secret `SECRET_A` was provisioned for repo `org-x/repo-x`:
+- ✅ Provisioned to GitHub Actions secret in `account-a`
+- ✅ Provisioned to GitHub Codespaces secret in `account-a`

@@ -3,8 +3,11 @@ import type {
   Blockquote,
   Emphasis,
   Heading,
+  Html,
   InlineCode,
   Link,
+  List,
+  ListItem,
   Paragraph,
   Table,
   TableCell,
@@ -27,11 +30,44 @@ export function gfmAlert(
   return blockquote(paragraph(text(`[!${type}]`)), ...children);
 }
 
+export function details(body: string): Html {
+  return html(
+    `<details>\n<summary>Error details</summary>\n\n` +
+      `\`\`\`\n${body}\n\`\`\`\n\n</details>\n`,
+  );
+}
+
 export function heading(
   depth: Heading["depth"],
   ...children: Heading["children"]
 ): Heading {
   return { type: "heading", depth, children };
+}
+
+export function html(value: string): Html {
+  return { type: "html", value };
+}
+
+export function list(
+  items: {
+    contents: Paragraph["children"];
+    nested?: List;
+  }[],
+): List {
+  return {
+    type: "list",
+    ordered: false,
+    spread: false,
+    children: items.map(({ contents, nested }): ListItem => ({
+      type: "listItem",
+      spread: false,
+      checked: null,
+      children: [
+        { type: "paragraph", children: contents },
+        ...(nested ? [nested] : []),
+      ],
+    })),
+  };
 }
 
 export function inlineCode(code: string): InlineCode {

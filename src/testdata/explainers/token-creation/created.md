@@ -1,0 +1,6 @@
+- ✅ Write token created with access to all repos in `account-b`:
+- ✅ Has write access with role `admin`
+- ✅ Has access to all repos in `account-b`
+- ✅ Has 2 permissions:
+  - ✅ contents: `write`
+  - ✅ metadata: `read`
