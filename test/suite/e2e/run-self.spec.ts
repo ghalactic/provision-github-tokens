@@ -1,6 +1,10 @@
 import { join } from "node:path";
 import { expect, it } from "vitest";
 import {
+  DASHBOARD_LABEL,
+  FAILURE_DASHBOARD_TITLE,
+} from "../../../src/dashboard.js";
+import {
   createWorkflowRun,
   E2E_TIMEOUT,
   getDefaultBranchSha,
@@ -18,7 +22,7 @@ const PROVIDER_WORKFLOW_ID = "run-action-for-ci.yml";
 const fixturesPath = join(import.meta.dirname, "testdata");
 
 it(
-  "produces well-formed summaries",
+  "produces well-formed summaries and dashboards",
   { concurrent: false, timeout: E2E_TIMEOUT },
   async ({ onTestFinished }) => {
     const { owner, repo, sha, downloadArtifact } = ghaContext;
@@ -45,6 +49,22 @@ it(
     await expect(
       (await downloadArtifact(run, "summary.md")).toString("utf-8"),
     ).toMatchFileSnapshot(join(fixturesPath, "summary.md"));
+
+    const consumerIssues =
+      await ghaContext.fixturesOctokit.rest.issues.listForRepo({
+        owner: CONSUMER_OWNER,
+        repo: CONSUMER_REPO,
+        labels: DASHBOARD_LABEL,
+        state: "open",
+      });
+
+    expect(consumerIssues.data).toHaveLength(1);
+    expect(consumerIssues.data[0]).toMatchObject({
+      title: FAILURE_DASHBOARD_TITLE,
+    });
+    expect(consumerIssues.data[0].body ?? "").toContain(
+      "UNAUTHORIZED_PROVISION",
+    );
   },
 );
 

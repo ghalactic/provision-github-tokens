@@ -594,10 +594,10 @@ var require_errors = __commonJS({
     };
     var kHTTPParserError = /* @__PURE__ */ Symbol.for("undici.error.UND_ERR_HTTP_PARSER");
     var HTTPParserError = class extends Error {
-      constructor(message, code2, data) {
+      constructor(message, code3, data) {
         super(message);
         this.name = "HTTPParserError";
-        this.code = code2 ? `HPE_${code2}` : void 0;
+        this.code = code3 ? `HPE_${code3}` : void 0;
         this.data = data ? data.toString() : void 0;
       }
       static [Symbol.hasInstance](instance) {
@@ -620,12 +620,12 @@ var require_errors = __commonJS({
     };
     var kRequestRetryError = /* @__PURE__ */ Symbol.for("undici.error.UND_ERR_REQ_RETRY");
     var RequestRetryError = class extends UndiciError {
-      constructor(message, code2, { headers, data }) {
+      constructor(message, code3, { headers, data }) {
         super(message);
         this.name = "RequestRetryError";
         this.message = message || "Request retry error";
         this.code = "UND_ERR_REQ_RETRY";
-        this.statusCode = code2;
+        this.statusCode = code3;
         this.data = data;
         this.headers = headers;
       }
@@ -636,12 +636,12 @@ var require_errors = __commonJS({
     };
     var kResponseError = /* @__PURE__ */ Symbol.for("undici.error.UND_ERR_RESPONSE");
     var ResponseError = class extends UndiciError {
-      constructor(message, code2, { headers, data }) {
+      constructor(message, code3, { headers, data }) {
         super(message);
         this.name = "ResponseError";
         this.message = message || "Response error";
         this.code = "UND_ERR_RESPONSE";
-        this.statusCode = code2;
+        this.statusCode = code3;
         this.data = data;
         this.headers = headers;
       }
@@ -835,8 +835,8 @@ var require_tree = __commonJS({
         if (index === void 0 || index >= key.length) {
           throw new TypeError("Unreachable");
         }
-        const code2 = this.code = key.charCodeAt(index);
-        if (code2 > 127) {
+        const code3 = this.code = key.charCodeAt(index);
+        if (code3 > 127) {
           throw new TypeError("key must be ascii string");
         }
         if (key.length !== ++index) {
@@ -857,11 +857,11 @@ var require_tree = __commonJS({
         let index = 0;
         let node2 = this;
         while (true) {
-          const code2 = key.charCodeAt(index);
-          if (code2 > 127) {
+          const code3 = key.charCodeAt(index);
+          if (code3 > 127) {
             throw new TypeError("key must be ascii string");
           }
-          if (node2.code === code2) {
+          if (node2.code === code3) {
             if (length === ++index) {
               node2.value = value;
               break;
@@ -871,7 +871,7 @@ var require_tree = __commonJS({
               node2.middle = new _TstNode(key, value, index);
               break;
             }
-          } else if (node2.code < code2) {
+          } else if (node2.code < code3) {
             if (node2.left !== null) {
               node2 = node2.left;
             } else {
@@ -895,19 +895,19 @@ var require_tree = __commonJS({
         let index = 0;
         let node2 = this;
         while (node2 !== null && index < keylength) {
-          let code2 = key[index];
-          if (code2 <= 90 && code2 >= 65) {
-            code2 |= 32;
+          let code3 = key[index];
+          if (code3 <= 90 && code3 >= 65) {
+            code3 |= 32;
           }
           while (node2 !== null) {
-            if (code2 === node2.code) {
+            if (code3 === node2.code) {
               if (keylength === ++index) {
                 return node2;
               }
               node2 = node2.middle;
               break;
             }
-            node2 = node2.code < code2 ? node2.left : node2.right;
+            node2 = node2.code < code3 ? node2.left : node2.right;
           }
         }
         return null;
@@ -1614,11 +1614,11 @@ var require_diagnostics = __commonJS({
         websocketDebuglog("connection opened %s%s", address, port ? `:${port}` : "");
       });
       diagnosticsChannel.channel("undici:websocket:close").subscribe((evt) => {
-        const { websocket, code: code2, reason } = evt;
+        const { websocket, code: code3, reason } = evt;
         websocketDebuglog(
           "closed connection to %s - %s %s",
           websocket.url,
-          code2,
+          code3,
           reason
         );
       });
@@ -4018,9 +4018,9 @@ var require_util2 = __commonJS({
     }
     function isValidEncodedURL(url) {
       for (let i2 = 0; i2 < url.length; ++i2) {
-        const code2 = url.charCodeAt(i2);
-        if (code2 > 126 || // Non-US-ASCII + DEL
-        code2 < 32) {
+        const code3 = url.charCodeAt(i2);
+        if (code3 > 126 || // Non-US-ASCII + DEL
+        code3 < 32) {
           return false;
         }
       }
@@ -4611,8 +4611,8 @@ var require_util2 = __commonJS({
       }
       const rangeStart = collectASequenceOfCodePoints(
         (char) => {
-          const code2 = char.charCodeAt(0);
-          return code2 >= 48 && code2 <= 57;
+          const code3 = char.charCodeAt(0);
+          return code3 >= 48 && code3 <= 57;
         },
         data,
         position
@@ -4638,8 +4638,8 @@ var require_util2 = __commonJS({
       }
       const rangeEnd = collectASequenceOfCodePoints(
         (char) => {
-          const code2 = char.charCodeAt(0);
-          return code2 >= 48 && code2 <= 57;
+          const code3 = char.charCodeAt(0);
+          return code3 >= 48 && code3 <= 57;
         },
         data,
         position
@@ -4756,8 +4756,8 @@ var require_util2 = __commonJS({
       }
       return values;
     }
-    function getDecodeSplit(name, list3) {
-      const value = list3.get(name, true);
+    function getDecodeSplit(name, list4) {
+      const value = list4.get(name, true);
       if (value === null) {
         return null;
       }
@@ -6817,9 +6817,9 @@ var require_client_h2 = __commonJS({
       this[kSocket][kError] = err;
       this[kClient][kOnError](err);
     }
-    function onHttp2FrameError(type, code2, id) {
+    function onHttp2FrameError(type, code3, id) {
       if (id === 0) {
-        const err = new InformationalError(`HTTP/2: "frameError" received - type ${type}, code ${code2}`);
+        const err = new InformationalError(`HTTP/2: "frameError" received - type ${type}, code ${code3}`);
         this[kSocket][kError] = err;
         this[kClient][kOnError](err);
       }
@@ -6829,8 +6829,8 @@ var require_client_h2 = __commonJS({
       this.destroy(err);
       util.destroy(this[kSocket], err);
     }
-    function onHTTP2GoAway(code2) {
-      const err = this[kError] || new SocketError(`HTTP/2: "GOAWAY" frame received with code ${code2}`, util.getSocketInfo(this));
+    function onHTTP2GoAway(code3) {
+      const err = this[kError] || new SocketError(`HTTP/2: "GOAWAY" frame received with code ${code3}`, util.getSocketInfo(this));
       const client = this[kClient];
       client[kSocket] = null;
       client[kHTTPContext] = null;
@@ -7005,8 +7005,8 @@ var require_client_h2 = __commonJS({
       stream.once("error", function(err) {
         abort(err);
       });
-      stream.once("frameError", (type, code2) => {
-        abort(new InformationalError(`HTTP/2: "frameError" received - type ${type}, code ${code2}`));
+      stream.once("frameError", (type, code3) => {
+        abort(new InformationalError(`HTTP/2: "frameError" received - type ${type}, code ${code3}`));
       });
       return true;
       function writeBodyH2() {
@@ -8909,7 +8909,7 @@ var require_retry_handler = __commonJS({
         if (this.handler.onBodySent) return this.handler.onBodySent(chunk);
       }
       static [kRetryHandlerDefaultRetry](err, { state, opts }, cb) {
-        const { statusCode, code: code2, headers } = err;
+        const { statusCode, code: code3, headers } = err;
         const { method, retryOptions } = opts;
         const {
           maxRetries,
@@ -8921,7 +8921,7 @@ var require_retry_handler = __commonJS({
           methods
         } = retryOptions;
         const { counter } = state;
-        if (code2 && code2 !== "UND_ERR_REQ_RETRY" && !errorCodes.includes(code2)) {
+        if (code3 && code3 !== "UND_ERR_REQ_RETRY" && !errorCodes.includes(code3)) {
           cb(err);
           return;
         }
@@ -11643,8 +11643,8 @@ var require_headers = __commonJS({
     var util = __require("node:util");
     var kHeadersMap = /* @__PURE__ */ Symbol("headers map");
     var kHeadersSortedMap = /* @__PURE__ */ Symbol("headers map sorted");
-    function isHTTPWhiteSpaceCharCode(code2) {
-      return code2 === 10 || code2 === 13 || code2 === 9 || code2 === 32;
+    function isHTTPWhiteSpaceCharCode(code3) {
+      return code3 === 10 || code3 === 13 || code3 === 9 || code3 === 32;
     }
     function headerValueNormalize(potentialValue) {
       let i2 = 0;
@@ -11970,9 +11970,9 @@ var require_headers = __commonJS({
       // https://fetch.spec.whatwg.org/#dom-headers-getsetcookie
       getSetCookie() {
         webidl.brandCheck(this, _Headers);
-        const list3 = this.#headersList.cookies;
-        if (list3) {
-          return [...list3];
+        const list4 = this.#headersList.cookies;
+        if (list4) {
+          return [...list4];
         }
         return [];
       }
@@ -12012,8 +12012,8 @@ var require_headers = __commonJS({
       static getHeadersList(o2) {
         return o2.#headersList;
       }
-      static setHeadersList(o2, list3) {
-        o2.#headersList = list3;
+      static setHeadersList(o2, list4) {
+        o2.#headersList = list4;
       }
     };
     var { getHeadersGuard, setHeadersGuard, getHeadersList, setHeadersList } = Headers2;
@@ -12981,13 +12981,13 @@ var require_request2 = __commonJS({
         if (this.signal.aborted) {
           ac.abort(this.signal.reason);
         } else {
-          let list3 = dependentControllerMap.get(this.signal);
-          if (list3 === void 0) {
-            list3 = /* @__PURE__ */ new Set();
-            dependentControllerMap.set(this.signal, list3);
+          let list4 = dependentControllerMap.get(this.signal);
+          if (list4 === void 0) {
+            list4 = /* @__PURE__ */ new Set();
+            dependentControllerMap.set(this.signal, list4);
           }
           const acRef = new WeakRef(ac);
-          list3.add(acRef);
+          list4.add(acRef);
           util.addAbortListener(
             ac.signal,
             buildAbort(acRef)
@@ -15801,8 +15801,8 @@ var require_util6 = __commonJS({
     "use strict";
     function isCTLExcludingHtab(value) {
       for (let i2 = 0; i2 < value.length; ++i2) {
-        const code2 = value.charCodeAt(i2);
-        if (code2 >= 0 && code2 <= 8 || code2 >= 10 && code2 <= 31 || code2 === 127) {
+        const code3 = value.charCodeAt(i2);
+        if (code3 >= 0 && code3 <= 8 || code3 >= 10 && code3 <= 31 || code3 === 127) {
           return true;
         }
       }
@@ -15810,26 +15810,26 @@ var require_util6 = __commonJS({
     }
     function validateCookieName(name) {
       for (let i2 = 0; i2 < name.length; ++i2) {
-        const code2 = name.charCodeAt(i2);
-        if (code2 < 33 || // exclude CTLs (0-31), SP and HT
-        code2 > 126 || // exclude non-ascii and DEL
-        code2 === 34 || // "
-        code2 === 40 || // (
-        code2 === 41 || // )
-        code2 === 60 || // <
-        code2 === 62 || // >
-        code2 === 64 || // @
-        code2 === 44 || // ,
-        code2 === 59 || // ;
-        code2 === 58 || // :
-        code2 === 92 || // \
-        code2 === 47 || // /
-        code2 === 91 || // [
-        code2 === 93 || // ]
-        code2 === 63 || // ?
-        code2 === 61 || // =
-        code2 === 123 || // {
-        code2 === 125) {
+        const code3 = name.charCodeAt(i2);
+        if (code3 < 33 || // exclude CTLs (0-31), SP and HT
+        code3 > 126 || // exclude non-ascii and DEL
+        code3 === 34 || // "
+        code3 === 40 || // (
+        code3 === 41 || // )
+        code3 === 60 || // <
+        code3 === 62 || // >
+        code3 === 64 || // @
+        code3 === 44 || // ,
+        code3 === 59 || // ;
+        code3 === 58 || // :
+        code3 === 92 || // \
+        code3 === 47 || // /
+        code3 === 91 || // [
+        code3 === 93 || // ]
+        code3 === 63 || // ?
+        code3 === 61 || // =
+        code3 === 123 || // {
+        code3 === 125) {
           throw new Error("Invalid cookie name");
         }
       }
@@ -15845,23 +15845,23 @@ var require_util6 = __commonJS({
         ++i2;
       }
       while (i2 < len) {
-        const code2 = value.charCodeAt(i2++);
-        if (code2 < 33 || // exclude CTLs (0-31)
-        code2 > 126 || // non-ascii and DEL (127)
-        code2 === 34 || // "
-        code2 === 44 || // ,
-        code2 === 59 || // ;
-        code2 === 92) {
+        const code3 = value.charCodeAt(i2++);
+        if (code3 < 33 || // exclude CTLs (0-31)
+        code3 > 126 || // non-ascii and DEL (127)
+        code3 === 34 || // "
+        code3 === 44 || // ,
+        code3 === 59 || // ;
+        code3 === 92) {
           throw new Error("Invalid cookie value");
         }
       }
     }
     function validateCookiePath(path) {
       for (let i2 = 0; i2 < path.length; ++i2) {
-        const code2 = path.charCodeAt(i2);
-        if (code2 < 32 || // exclude CTLs (0-31)
-        code2 === 127 || // DEL
-        code2 === 59) {
+        const code3 = path.charCodeAt(i2);
+        if (code3 < 32 || // exclude CTLs (0-31)
+        code3 === 127 || // DEL
+        code3 === 59) {
           throw new Error("Invalid cookie path");
         }
       }
@@ -16634,37 +16634,37 @@ var require_util7 = __commonJS({
         return false;
       }
       for (let i2 = 0; i2 < protocol.length; ++i2) {
-        const code2 = protocol.charCodeAt(i2);
-        if (code2 < 33 || // CTL, contains SP (0x20) and HT (0x09)
-        code2 > 126 || code2 === 34 || // "
-        code2 === 40 || // (
-        code2 === 41 || // )
-        code2 === 44 || // ,
-        code2 === 47 || // /
-        code2 === 58 || // :
-        code2 === 59 || // ;
-        code2 === 60 || // <
-        code2 === 61 || // =
-        code2 === 62 || // >
-        code2 === 63 || // ?
-        code2 === 64 || // @
-        code2 === 91 || // [
-        code2 === 92 || // \
-        code2 === 93 || // ]
-        code2 === 123 || // {
-        code2 === 125) {
+        const code3 = protocol.charCodeAt(i2);
+        if (code3 < 33 || // CTL, contains SP (0x20) and HT (0x09)
+        code3 > 126 || code3 === 34 || // "
+        code3 === 40 || // (
+        code3 === 41 || // )
+        code3 === 44 || // ,
+        code3 === 47 || // /
+        code3 === 58 || // :
+        code3 === 59 || // ;
+        code3 === 60 || // <
+        code3 === 61 || // =
+        code3 === 62 || // >
+        code3 === 63 || // ?
+        code3 === 64 || // @
+        code3 === 91 || // [
+        code3 === 92 || // \
+        code3 === 93 || // ]
+        code3 === 123 || // {
+        code3 === 125) {
           return false;
         }
       }
       return true;
     }
-    function isValidStatusCode(code2) {
-      if (code2 >= 1e3 && code2 < 1015) {
-        return code2 !== 1004 && // reserved
-        code2 !== 1005 && // "MUST NOT be set as a status code"
-        code2 !== 1006;
+    function isValidStatusCode(code3) {
+      if (code3 >= 1e3 && code3 < 1015) {
+        return code3 !== 1004 && // reserved
+        code3 !== 1005 && // "MUST NOT be set as a status code"
+        code3 !== 1006;
       }
-      return code2 >= 3e3 && code2 <= 4999;
+      return code3 >= 3e3 && code3 <= 4999;
     }
     function failWebsocketConnection(ws, reason) {
       const { [kController]: controller, [kResponse]: response } = ws;
@@ -16929,7 +16929,7 @@ var require_connection = __commonJS({
       });
       return controller;
     }
-    function closeWebSocketConnection(ws, code2, reason, reasonByteLength) {
+    function closeWebSocketConnection(ws, code3, reason, reasonByteLength) {
       if (isClosing(ws) || isClosed(ws)) {
       } else if (!isEstablished(ws)) {
         failWebsocketConnection(ws, "Connection was closed before it was established.");
@@ -16937,12 +16937,12 @@ var require_connection = __commonJS({
       } else if (ws[kSentClose] === sentCloseFrameState.NOT_SENT) {
         ws[kSentClose] = sentCloseFrameState.PROCESSING;
         const frame = new WebsocketFrameSend();
-        if (code2 !== void 0 && reason === void 0) {
+        if (code3 !== void 0 && reason === void 0) {
           frame.frameData = Buffer.allocUnsafe(2);
-          frame.frameData.writeUInt16BE(code2, 0);
-        } else if (code2 !== void 0 && reason !== void 0) {
+          frame.frameData.writeUInt16BE(code3, 0);
+        } else if (code3 !== void 0 && reason !== void 0) {
           frame.frameData = Buffer.allocUnsafe(2 + reasonByteLength);
-          frame.frameData.writeUInt16BE(code2, 0);
+          frame.frameData.writeUInt16BE(code3, 0);
           frame.frameData.write(reason, 2, "utf-8");
         } else {
           frame.frameData = emptyBuffer;
@@ -16967,25 +16967,25 @@ var require_connection = __commonJS({
       response.socket.off("close", onSocketClose);
       response.socket.off("error", onSocketError);
       const wasClean = ws[kSentClose] === sentCloseFrameState.SENT && ws[kReceivedClose];
-      let code2 = 1005;
+      let code3 = 1005;
       let reason = "";
       const result = ws[kByteParser].closingInfo;
       if (result && !result.error) {
-        code2 = result.code ?? 1005;
+        code3 = result.code ?? 1005;
         reason = result.reason;
       } else if (!ws[kReceivedClose]) {
-        code2 = 1006;
+        code3 = 1006;
       }
       ws[kReadyState] = states.CLOSED;
       fireEvent("close", ws, (type, init) => new CloseEvent(type, init), {
         wasClean,
-        code: code2,
+        code: code3,
         reason
       });
       if (channels.close.hasSubscribers) {
         channels.close.publish({
           websocket: ws,
-          code: code2,
+          code: code3,
           reason
         });
       }
@@ -17281,11 +17281,11 @@ var require_receiver = __commonJS({
       }
       parseCloseBody(data) {
         assert(data.length !== 1);
-        let code2;
+        let code3;
         if (data.length >= 2) {
-          code2 = data.readUInt16BE(0);
+          code3 = data.readUInt16BE(0);
         }
-        if (code2 !== void 0 && !isValidStatusCode(code2)) {
+        if (code3 !== void 0 && !isValidStatusCode(code3)) {
           return { code: 1002, reason: "Invalid status code", error: true };
         }
         let reason = data.subarray(2);
@@ -17297,7 +17297,7 @@ var require_receiver = __commonJS({
         } catch {
           return { code: 1007, reason: "Invalid UTF-8", error: true };
         }
-        return { code: code2, reason, error: false };
+        return { code: code3, reason, error: false };
       }
       /**
        * Parses control frames.
@@ -17312,8 +17312,8 @@ var require_receiver = __commonJS({
           }
           this.#info.closeInfo = this.parseCloseBody(body);
           if (this.#info.closeInfo.error) {
-            const { code: code2, reason } = this.#info.closeInfo;
-            closeWebSocketConnection(this.ws, code2, reason, reason.length);
+            const { code: code3, reason } = this.#info.closeInfo;
+            closeWebSocketConnection(this.ws, code3, reason, reason.length);
             failWebsocketConnection(this.ws, reason);
             return false;
           }
@@ -17551,17 +17551,17 @@ var require_websocket = __commonJS({
        * @param {number|undefined} code
        * @param {string|undefined} reason
        */
-      close(code2 = void 0, reason = void 0) {
+      close(code3 = void 0, reason = void 0) {
         webidl.brandCheck(this, _WebSocket);
         const prefix = "WebSocket.close";
-        if (code2 !== void 0) {
-          code2 = webidl.converters["unsigned short"](code2, prefix, "code", { clamp: true });
+        if (code3 !== void 0) {
+          code3 = webidl.converters["unsigned short"](code3, prefix, "code", { clamp: true });
         }
         if (reason !== void 0) {
           reason = webidl.converters.USVString(reason, prefix, "reason");
         }
-        if (code2 !== void 0) {
-          if (code2 !== 1e3 && (code2 < 3e3 || code2 > 4999)) {
+        if (code3 !== void 0) {
+          if (code3 !== 1e3 && (code3 < 3e3 || code3 > 4999)) {
             throw new DOMException("invalid code", "InvalidAccessError");
           }
         }
@@ -17575,7 +17575,7 @@ var require_websocket = __commonJS({
             );
           }
         }
-        closeWebSocketConnection(this, code2, reason, reasonByteLength);
+        closeWebSocketConnection(this, code3, reason, reasonByteLength);
       }
       /**
        * @see https://websockets.spec.whatwg.org/#dom-websocket-send
@@ -17815,15 +17815,15 @@ var require_websocket = __commonJS({
     }
     function onParserError(err) {
       let message;
-      let code2;
+      let code3;
       if (err instanceof CloseEvent) {
         message = err.reason;
-        code2 = err.code;
+        code3 = err.code;
       } else {
         message = err.message;
       }
       fireEvent("error", this, () => new ErrorEvent("error", { error: err, message }));
-      closeWebSocketConnection(this, code2);
+      closeWebSocketConnection(this, code3);
     }
     module2.exports = {
       WebSocket
@@ -20040,10 +20040,10 @@ var require_source_node = __commonJS({
             lastGeneratedColumn = 0;
           } else {
             var nextLine = remainingLines[remainingLinesIndex] || "";
-            var code2 = nextLine.substr(0, mapping.generatedColumn - lastGeneratedColumn);
+            var code3 = nextLine.substr(0, mapping.generatedColumn - lastGeneratedColumn);
             remainingLines[remainingLinesIndex] = nextLine.substr(mapping.generatedColumn - lastGeneratedColumn);
             lastGeneratedColumn = mapping.generatedColumn;
-            addMappingWithCode(lastMapping, code2);
+            addMappingWithCode(lastMapping, code3);
             lastMapping = mapping;
             return;
           }
@@ -20076,16 +20076,16 @@ var require_source_node = __commonJS({
         }
       });
       return node2;
-      function addMappingWithCode(mapping, code2) {
+      function addMappingWithCode(mapping, code3) {
         if (mapping === null || mapping.source === void 0) {
-          node2.add(code2);
+          node2.add(code3);
         } else {
           var source = aRelativePath ? util.join(aRelativePath, mapping.source) : mapping.source;
           node2.add(new SourceNode(
             mapping.originalLine,
             mapping.originalColumn,
             source,
-            code2,
+            code3,
             mapping.name
           ));
         }
@@ -20371,15 +20371,15 @@ var require_source_map_support = __commonJS({
         return process.stderr;
       }
     }
-    function globalProcessExit(code2) {
+    function globalProcessExit(code3) {
       if (typeof process === "object" && process !== null && typeof process.exit === "function") {
-        return process.exit(code2);
+        return process.exit(code3);
       }
     }
-    function handlerExec(list3) {
+    function handlerExec(list4) {
       return function(arg) {
-        for (var i2 = 0; i2 < list3.length; i2++) {
-          var ret = list3[i2](arg);
+        for (var i2 = 0; i2 < list4.length; i2++) {
+          var ret = list4[i2](arg);
           if (ret) {
             return ret;
           }
@@ -20688,9 +20688,9 @@ var require_source_map_support = __commonJS({
           }
         }
         if (contents) {
-          var code2 = contents.split(/(?:\r\n|\r|\n)/)[line - 1];
-          if (code2) {
-            return source + ":" + line + "\n" + code2 + "\n" + new Array(column).join(" ") + "^";
+          var code3 = contents.split(/(?:\r\n|\r|\n)/)[line - 1];
+          if (code3) {
+            return source + ":" + line + "\n" + code3 + "\n" + new Array(column).join(" ") + "^";
           }
         }
       }
@@ -20822,9 +20822,9 @@ var require_code = __commonJS({
     };
     exports.Name = Name;
     var _Code = class extends _CodeOrName {
-      constructor(code2) {
+      constructor(code3) {
         super();
-        this._items = typeof code2 === "string" ? [code2] : code2;
+        this._items = typeof code3 === "string" ? [code3] : code3;
       }
       toString() {
         return this.str;
@@ -20851,13 +20851,13 @@ var require_code = __commonJS({
     exports._Code = _Code;
     exports.nil = new _Code("");
     function _2(strs, ...args) {
-      const code2 = [strs[0]];
+      const code3 = [strs[0]];
       let i2 = 0;
       while (i2 < args.length) {
-        addCodeArg(code2, args[i2]);
-        code2.push(strs[++i2]);
+        addCodeArg(code3, args[i2]);
+        code3.push(strs[++i2]);
       }
-      return new _Code(code2);
+      return new _Code(code3);
     }
     exports._ = _2;
     var plus = new _Code("+");
@@ -20873,13 +20873,13 @@ var require_code = __commonJS({
       return new _Code(expr);
     }
     exports.str = str;
-    function addCodeArg(code2, arg) {
+    function addCodeArg(code3, arg) {
       if (arg instanceof _Code)
-        code2.push(...arg._items);
+        code3.push(...arg._items);
       else if (arg instanceof Name)
-        code2.push(arg);
+        code3.push(arg);
       else
-        code2.push(interpolate(arg));
+        code3.push(interpolate(arg));
     }
     exports.addCodeArg = addCodeArg;
     function optimize(expr) {
@@ -21063,7 +21063,7 @@ var require_scope = __commonJS({
         }, usedValues, getCode);
       }
       _reduceValues(values, valueCode, usedValues = {}, getCode) {
-        let code2 = code_1.nil;
+        let code3 = code_1.nil;
         for (const prefix in values) {
           const vs = values[prefix];
           if (!vs)
@@ -21076,16 +21076,16 @@ var require_scope = __commonJS({
             let c2 = valueCode(name);
             if (c2) {
               const def = this.opts.es5 ? exports.varKinds.var : exports.varKinds.const;
-              code2 = (0, code_1._)`${code2}${def} ${name} = ${c2};${this.opts._n}`;
+              code3 = (0, code_1._)`${code3}${def} ${name} = ${c2};${this.opts._n}`;
             } else if (c2 = getCode === null || getCode === void 0 ? void 0 : getCode(name)) {
-              code2 = (0, code_1._)`${code2}${c2}${this.opts._n}`;
+              code3 = (0, code_1._)`${code3}${c2}${this.opts._n}`;
             } else {
               throw new ValueError(name);
             }
             nameSet.set(name, UsedValueState.Completed);
           });
         }
-        return code2;
+        return code3;
       }
     };
     exports.ValueScope = ValueScope;
@@ -21245,9 +21245,9 @@ var require_codegen = __commonJS({
       }
     };
     var AnyCode = class extends Node {
-      constructor(code2) {
+      constructor(code3) {
         super();
-        this.code = code2;
+        this.code = code3;
       }
       render({ _n }) {
         return `${this.code};` + _n;
@@ -21269,7 +21269,7 @@ var require_codegen = __commonJS({
         this.nodes = nodes;
       }
       render(opts) {
-        return this.nodes.reduce((code2, n2) => code2 + n2.render(opts), "");
+        return this.nodes.reduce((code3, n2) => code3 + n2.render(opts), "");
       }
       optimizeNodes() {
         const { nodes } = this;
@@ -21317,10 +21317,10 @@ var require_codegen = __commonJS({
         this.condition = condition;
       }
       render(opts) {
-        let code2 = `if(${this.condition})` + super.render(opts);
+        let code3 = `if(${this.condition})` + super.render(opts);
         if (this.else)
-          code2 += "else " + this.else.render(opts);
-        return code2;
+          code3 += "else " + this.else.render(opts);
+        return code3;
       }
       optimizeNodes() {
         super.optimizeNodes();
@@ -21441,12 +21441,12 @@ var require_codegen = __commonJS({
     Return.kind = "return";
     var Try = class extends BlockNode {
       render(opts) {
-        let code2 = "try" + super.render(opts);
+        let code3 = "try" + super.render(opts);
         if (this.catch)
-          code2 += this.catch.render(opts);
+          code3 += this.catch.render(opts);
         if (this.finally)
-          code2 += this.finally.render(opts);
-        return code2;
+          code3 += this.finally.render(opts);
+        return code3;
       }
       optimizeNodes() {
         var _a2, _b;
@@ -21563,18 +21563,18 @@ var require_codegen = __commonJS({
       }
       // returns code for object literal for the passed argument list of key-value pairs
       object(...keyValues) {
-        const code2 = ["{"];
+        const code3 = ["{"];
         for (const [key, value] of keyValues) {
-          if (code2.length > 1)
-            code2.push(",");
-          code2.push(key);
+          if (code3.length > 1)
+            code3.push(",");
+          code3.push(key);
           if (key !== value || this.opts.es5) {
-            code2.push(":");
-            (0, code_1.addCodeArg)(code2, value);
+            code3.push(":");
+            (0, code_1.addCodeArg)(code3, value);
           }
         }
-        code2.push("}");
-        return new code_1._Code(code2);
+        code3.push("}");
+        return new code_1._Code(code3);
       }
       // `if` clause (or statement if `thenBody` and, optionally, `elseBody` are passed)
       if(condition, thenBody, elseBody) {
@@ -23871,22 +23871,22 @@ var require_utils2 = __commonJS({
     var isIPv4 = RegExp.prototype.test.bind(/^(?:(?:25[0-5]|2[0-4]\d|1\d{2}|[1-9]\d|\d)\.){3}(?:25[0-5]|2[0-4]\d|1\d{2}|[1-9]\d|\d)$/u);
     function stringArrayToHexStripped(input) {
       let acc = "";
-      let code2 = 0;
+      let code3 = 0;
       let i2 = 0;
       for (i2 = 0; i2 < input.length; i2++) {
-        code2 = input[i2].charCodeAt(0);
-        if (code2 === 48) {
+        code3 = input[i2].charCodeAt(0);
+        if (code3 === 48) {
           continue;
         }
-        if (!(code2 >= 48 && code2 <= 57 || code2 >= 65 && code2 <= 70 || code2 >= 97 && code2 <= 102)) {
+        if (!(code3 >= 48 && code3 <= 57 || code3 >= 65 && code3 <= 70 || code3 >= 97 && code3 <= 102)) {
           return "";
         }
         acc += input[i2];
         break;
       }
       for (i2 += 1; i2 < input.length; i2++) {
-        code2 = input[i2].charCodeAt(0);
-        if (!(code2 >= 48 && code2 <= 57 || code2 >= 65 && code2 <= 70 || code2 >= 97 && code2 <= 102)) {
+        code3 = input[i2].charCodeAt(0);
+        if (!(code3 >= 48 && code3 <= 57 || code3 >= 65 && code3 <= 70 || code3 >= 97 && code3 <= 102)) {
           return "";
         }
         acc += input[i2];
@@ -26821,8 +26821,8 @@ var require_format = __commonJS({
             }
           }
           function getFormat(fmtDef) {
-            const code2 = fmtDef instanceof RegExp ? (0, codegen_1.regexpCode)(fmtDef) : opts.code.formats ? (0, codegen_1._)`${opts.code.formats}${(0, codegen_1.getProperty)(schema)}` : void 0;
-            const fmt = gen.scopeValue("formats", { key: schema, ref: fmtDef, code: code2 });
+            const code3 = fmtDef instanceof RegExp ? (0, codegen_1.regexpCode)(fmtDef) : opts.code.formats ? (0, codegen_1._)`${opts.code.formats}${(0, codegen_1.getProperty)(schema)}` : void 0;
+            const fmt = gen.scopeValue("formats", { key: schema, ref: fmtDef, code: code3 });
             if (typeof fmtDef == "object" && !(fmtDef instanceof RegExp)) {
               return [fmtDef.type || "string", fmtDef.validate, (0, codegen_1._)`${fmt}.validate`];
             }
@@ -28672,8 +28672,8 @@ var require_stringifyString = __commonJS({
             case "u":
               {
                 str += json.slice(start, i2);
-                const code2 = json.substr(i2 + 2, 4);
-                switch (code2) {
+                const code3 = json.substr(i2 + 2, 4);
+                switch (code3) {
                   case "0000":
                     str += "\\0";
                     break;
@@ -28699,8 +28699,8 @@ var require_stringifyString = __commonJS({
                     str += "\\P";
                     break;
                   default:
-                    if (code2.substr(0, 2) === "00")
-                      str += "\\x" + code2.substr(2);
+                    if (code3.substr(0, 2) === "00")
+                      str += "\\x" + code3.substr(2);
                     else
                       str += json.substr(i2, 6);
                 }
@@ -31199,22 +31199,22 @@ var require_errors3 = __commonJS({
   "node_modules/.pnpm/yaml@2.9.1/node_modules/yaml/dist/errors.js"(exports) {
     "use strict";
     var YAMLError = class extends Error {
-      constructor(name, pos, code2, message) {
+      constructor(name, pos, code3, message) {
         super();
         this.name = name;
-        this.code = code2;
+        this.code = code3;
         this.message = message;
         this.pos = pos;
       }
     };
     var YAMLParseError = class extends YAMLError {
-      constructor(pos, code2, message) {
-        super("YAMLParseError", pos, code2, message);
+      constructor(pos, code3, message) {
+        super("YAMLParseError", pos, code3, message);
       }
     };
     var YAMLWarning = class extends YAMLError {
-      constructor(pos, code2, message) {
-        super("YAMLWarning", pos, code2, message);
+      constructor(pos, code3, message) {
+        super("YAMLWarning", pos, code3, message);
       }
     };
     var prettifyError = (src, lc) => (error2) => {
@@ -32123,7 +32123,7 @@ var require_resolve_flow_scalar = __commonJS({
       const { offset, type, source, end } = scalar;
       let _type;
       let value;
-      const _onError = (rel, code2, msg) => onError(offset + rel, code2, msg);
+      const _onError = (rel, code3, msg) => onError(offset + rel, code3, msg);
       switch (type) {
         case "scalar":
           _type = Scalar.Scalar.PLAIN;
@@ -32321,9 +32321,9 @@ var require_resolve_flow_scalar = __commonJS({
     function parseCharCode(source, offset, length, onError) {
       const cc = source.substr(offset, length);
       const ok2 = cc.length === length && /^[0-9a-fA-F]+$/.test(cc);
-      const code2 = ok2 ? parseInt(cc, 16) : NaN;
+      const code3 = ok2 ? parseInt(cc, 16) : NaN;
       try {
-        return String.fromCodePoint(code2);
+        return String.fromCodePoint(code3);
       } catch {
         const raw = source.substr(offset - 2, length + 2);
         onError(offset - 2, "BAD_DQ_ESCAPE", `Invalid escape sequence ${raw}`);
@@ -32645,12 +32645,12 @@ var require_composer = __commonJS({
         this.prelude = [];
         this.errors = [];
         this.warnings = [];
-        this.onError = (source, code2, message, warning2) => {
+        this.onError = (source, code3, message, warning2) => {
           const pos = getErrorPos(source);
           if (warning2)
-            this.warnings.push(new errors.YAMLWarning(pos, code2, message));
+            this.warnings.push(new errors.YAMLWarning(pos, code3, message));
           else
-            this.errors.push(new errors.YAMLParseError(pos, code2, message));
+            this.errors.push(new errors.YAMLParseError(pos, code3, message));
         };
         this.directives = new directives.Directives({ version: options.version || "1.2" });
         this.options = options;
@@ -32812,12 +32812,12 @@ var require_cst_scalar = __commonJS({
     var stringifyString = require_stringifyString();
     function resolveAsScalar(token, strict = true, onError) {
       if (token) {
-        const _onError = (pos, code2, message) => {
+        const _onError = (pos, code3, message) => {
           const offset = typeof pos === "number" ? pos : Array.isArray(pos) ? pos[0] : pos.offset;
           if (onError)
-            onError(offset, code2, message);
+            onError(offset, code3, message);
           else
-            throw new errors.YAMLParseError([offset, offset + 1], code2, message);
+            throw new errors.YAMLParseError([offset, offset + 1], code3, message);
         };
         switch (token.type) {
           case "scalar":
@@ -33839,15 +33839,15 @@ var require_parser = __commonJS({
     var node_process = __require("process");
     var cst = require_cst();
     var lexer = require_lexer();
-    function includesToken(list3, type) {
-      for (let i2 = 0; i2 < list3.length; ++i2)
-        if (list3[i2].type === type)
+    function includesToken(list4, type) {
+      for (let i2 = 0; i2 < list4.length; ++i2)
+        if (list4[i2].type === type)
           return true;
       return false;
     }
-    function findNonEmptyIndex(list3) {
-      for (let i2 = 0; i2 < list3.length; ++i2) {
-        switch (list3[i2].type) {
+    function findNonEmptyIndex(list4) {
+      for (let i2 = 0; i2 < list4.length; ++i2) {
+        switch (list4[i2].type) {
           case "space":
           case "comment":
           case "newline":
@@ -35421,10 +35421,10 @@ var require_errors4 = __commonJS({
     };
     var kHTTPParserError = /* @__PURE__ */ Symbol.for("undici.error.UND_ERR_HTTP_PARSER");
     var HTTPParserError = class extends Error {
-      constructor(message, code2, data) {
+      constructor(message, code3, data) {
         super(message);
         this.name = "HTTPParserError";
-        this.code = code2 ? `HPE_${code2}` : void 0;
+        this.code = code3 ? `HPE_${code3}` : void 0;
         this.data = data ? data.toString() : void 0;
       }
       static [Symbol.hasInstance](instance) {
@@ -35451,12 +35451,12 @@ var require_errors4 = __commonJS({
     };
     var kRequestRetryError = /* @__PURE__ */ Symbol.for("undici.error.UND_ERR_REQ_RETRY");
     var RequestRetryError = class extends UndiciError {
-      constructor(message, code2, { headers, data }) {
+      constructor(message, code3, { headers, data }) {
         super(message);
         this.name = "RequestRetryError";
         this.message = message || "Request retry error";
         this.code = "UND_ERR_REQ_RETRY";
-        this.statusCode = code2;
+        this.statusCode = code3;
         this.data = data;
         this.headers = headers;
       }
@@ -35469,12 +35469,12 @@ var require_errors4 = __commonJS({
     };
     var kResponseError = /* @__PURE__ */ Symbol.for("undici.error.UND_ERR_RESPONSE");
     var ResponseError = class extends UndiciError {
-      constructor(message, code2, { headers, body }) {
+      constructor(message, code3, { headers, body }) {
         super(message);
         this.name = "ResponseError";
         this.message = message || "Response error";
         this.code = "UND_ERR_RESPONSE";
-        this.statusCode = code2;
+        this.statusCode = code3;
         this.body = body;
         this.headers = headers;
       }
@@ -35700,8 +35700,8 @@ var require_tree2 = __commonJS({
         if (index === void 0 || index >= key.length) {
           throw new TypeError("Unreachable");
         }
-        const code2 = this.code = key.charCodeAt(index);
-        if (code2 > 127) {
+        const code3 = this.code = key.charCodeAt(index);
+        if (code3 > 127) {
           throw new TypeError("key must be ascii string");
         }
         if (key.length !== ++index) {
@@ -35723,11 +35723,11 @@ var require_tree2 = __commonJS({
         let index = 0;
         let node2 = this;
         while (true) {
-          const code2 = key.charCodeAt(index);
-          if (code2 > 127) {
+          const code3 = key.charCodeAt(index);
+          if (code3 > 127) {
             throw new TypeError("key must be ascii string");
           }
-          if (node2.code === code2) {
+          if (node2.code === code3) {
             if (length === ++index) {
               node2.value = value;
               break;
@@ -35737,7 +35737,7 @@ var require_tree2 = __commonJS({
               node2.middle = new _TstNode(key, value, index);
               break;
             }
-          } else if (node2.code < code2) {
+          } else if (node2.code < code3) {
             if (node2.left !== null) {
               node2 = node2.left;
             } else {
@@ -35761,19 +35761,19 @@ var require_tree2 = __commonJS({
         let index = 0;
         let node2 = this;
         while (node2 !== null && index < keylength) {
-          let code2 = key[index];
-          if (code2 <= 90 && code2 >= 65) {
-            code2 |= 32;
+          let code3 = key[index];
+          if (code3 <= 90 && code3 >= 65) {
+            code3 |= 32;
           }
           while (node2 !== null) {
-            if (code2 === node2.code) {
+            if (code3 === node2.code) {
               if (keylength === ++index) {
                 return node2;
               }
               node2 = node2.middle;
               break;
             }
-            node2 = node2.code < code2 ? node2.left : node2.right;
+            node2 = node2.code < code3 ? node2.left : node2.right;
           }
         }
         return null;
@@ -36839,11 +36839,11 @@ var require_diagnostics2 = __commonJS({
       diagnosticsChannel.subscribe(
         "undici:websocket:close",
         (evt) => {
-          const { websocket, code: code2, reason } = evt;
+          const { websocket, code: code3, reason } = evt;
           debugLog(
             "closed connection to %s - %s %s",
             websocket.url,
-            code2,
+            code3,
             reason
           );
         }
@@ -39726,9 +39726,9 @@ var require_util12 = __commonJS({
     }
     function isValidEncodedURL(url) {
       for (let i2 = 0; i2 < url.length; ++i2) {
-        const code2 = url.charCodeAt(i2);
-        if (code2 > 126 || // Non-US-ASCII + DEL
-        code2 < 32) {
+        const code3 = url.charCodeAt(i2);
+        if (code3 > 126 || // Non-US-ASCII + DEL
+        code3 < 32) {
           return false;
         }
       }
@@ -40229,8 +40229,8 @@ var require_util12 = __commonJS({
       }
       const rangeStart = collectASequenceOfCodePoints(
         (char) => {
-          const code2 = char.charCodeAt(0);
-          return code2 >= 48 && code2 <= 57;
+          const code3 = char.charCodeAt(0);
+          return code3 >= 48 && code3 <= 57;
         },
         data,
         position
@@ -40256,8 +40256,8 @@ var require_util12 = __commonJS({
       }
       const rangeEnd = collectASequenceOfCodePoints(
         (char) => {
-          const code2 = char.charCodeAt(0);
-          return code2 >= 48 && code2 <= 57;
+          const code3 = char.charCodeAt(0);
+          return code3 >= 48 && code3 <= 57;
         },
         data,
         position
@@ -40374,8 +40374,8 @@ var require_util12 = __commonJS({
       }
       return values;
     }
-    function getDecodeSplit(name, list3) {
-      const value = list3.get(name, true);
+    function getDecodeSplit(name, list4) {
+      const value = list4.get(name, true);
       if (value === null) {
         return null;
       }
@@ -42587,9 +42587,9 @@ var require_client_h22 = __commonJS({
       this[kSocket][kError] = err;
       this[kClient][kOnError](err);
     }
-    function onHttp2FrameError(type, code2, id) {
+    function onHttp2FrameError(type, code3, id) {
       if (id === 0) {
-        const err = new InformationalError(`HTTP/2: "frameError" received - type ${type}, code ${code2}`);
+        const err = new InformationalError(`HTTP/2: "frameError" received - type ${type}, code ${code3}`);
         this[kSocket][kError] = err;
         this[kClient][kOnError](err);
       }
@@ -42874,9 +42874,9 @@ var require_client_h22 = __commonJS({
         stream.removeAllListeners("data");
         abort(err);
       });
-      stream.once("frameError", (type, code2) => {
+      stream.once("frameError", (type, code3) => {
         stream.removeAllListeners("data");
-        abort(new InformationalError(`HTTP/2: "frameError" received - type ${type}, code ${code2}`));
+        abort(new InformationalError(`HTTP/2: "frameError" received - type ${type}, code ${code3}`));
       });
       stream.on("aborted", () => {
         stream.removeAllListeners("data");
@@ -44788,7 +44788,7 @@ var require_retry_handler2 = __commonJS({
         this.handler.onRequestUpgrade?.(controller, statusCode, headers, socket);
       }
       static [kRetryHandlerDefaultRetry](err, { state, opts }, cb) {
-        const { statusCode, code: code2, headers } = err;
+        const { statusCode, code: code3, headers } = err;
         const { method, retryOptions } = opts;
         const {
           maxRetries,
@@ -44800,7 +44800,7 @@ var require_retry_handler2 = __commonJS({
           methods
         } = retryOptions;
         const { counter } = state;
-        if (code2 && code2 !== "UND_ERR_REQ_RETRY" && !errorCodes.includes(code2)) {
+        if (code3 && code3 !== "UND_ERR_REQ_RETRY" && !errorCodes.includes(code3)) {
           cb(err);
           return;
         }
@@ -49256,21 +49256,21 @@ var require_date = __commonJS({
       }
       let day = 0;
       if (date[5] === "0") {
-        const code2 = date.charCodeAt(6);
-        if (code2 < 49 || code2 > 57) {
+        const code3 = date.charCodeAt(6);
+        if (code3 < 49 || code3 > 57) {
           return void 0;
         }
-        day = code2 - 48;
+        day = code3 - 48;
       } else {
         const code1 = date.charCodeAt(5);
         if (code1 < 49 || code1 > 51) {
           return void 0;
         }
-        const code2 = date.charCodeAt(6);
-        if (code2 < 48 || code2 > 57) {
+        const code22 = date.charCodeAt(6);
+        if (code22 < 48 || code22 > 57) {
           return void 0;
         }
-        day = (code1 - 48) * 10 + (code2 - 48);
+        day = (code1 - 48) * 10 + (code22 - 48);
       }
       let monthIdx = -1;
       if (date[8] === "J" && date[9] === "a" && date[10] === "n") {
@@ -49337,60 +49337,60 @@ var require_date = __commonJS({
       const year = (yearDigit1 - 48) * 1e3 + (yearDigit2 - 48) * 100 + (yearDigit3 - 48) * 10 + (yearDigit4 - 48);
       let hour = 0;
       if (date[17] === "0") {
-        const code2 = date.charCodeAt(18);
-        if (code2 < 48 || code2 > 57) {
+        const code3 = date.charCodeAt(18);
+        if (code3 < 48 || code3 > 57) {
           return void 0;
         }
-        hour = code2 - 48;
+        hour = code3 - 48;
       } else {
         const code1 = date.charCodeAt(17);
         if (code1 < 48 || code1 > 50) {
           return void 0;
         }
-        const code2 = date.charCodeAt(18);
-        if (code2 < 48 || code2 > 57) {
+        const code22 = date.charCodeAt(18);
+        if (code22 < 48 || code22 > 57) {
           return void 0;
         }
-        if (code1 === 50 && code2 > 51) {
+        if (code1 === 50 && code22 > 51) {
           return void 0;
         }
-        hour = (code1 - 48) * 10 + (code2 - 48);
+        hour = (code1 - 48) * 10 + (code22 - 48);
       }
       let minute = 0;
       if (date[20] === "0") {
-        const code2 = date.charCodeAt(21);
-        if (code2 < 48 || code2 > 57) {
+        const code3 = date.charCodeAt(21);
+        if (code3 < 48 || code3 > 57) {
           return void 0;
         }
-        minute = code2 - 48;
+        minute = code3 - 48;
       } else {
         const code1 = date.charCodeAt(20);
         if (code1 < 48 || code1 > 53) {
           return void 0;
         }
-        const code2 = date.charCodeAt(21);
-        if (code2 < 48 || code2 > 57) {
+        const code22 = date.charCodeAt(21);
+        if (code22 < 48 || code22 > 57) {
           return void 0;
         }
-        minute = (code1 - 48) * 10 + (code2 - 48);
+        minute = (code1 - 48) * 10 + (code22 - 48);
       }
       let second = 0;
       if (date[23] === "0") {
-        const code2 = date.charCodeAt(24);
-        if (code2 < 48 || code2 > 57) {
+        const code3 = date.charCodeAt(24);
+        if (code3 < 48 || code3 > 57) {
           return void 0;
         }
-        second = code2 - 48;
+        second = code3 - 48;
       } else {
         const code1 = date.charCodeAt(23);
         if (code1 < 48 || code1 > 53) {
           return void 0;
         }
-        const code2 = date.charCodeAt(24);
-        if (code2 < 48 || code2 > 57) {
+        const code22 = date.charCodeAt(24);
+        if (code22 < 48 || code22 > 57) {
           return void 0;
         }
-        second = (code1 - 48) * 10 + (code2 - 48);
+        second = (code1 - 48) * 10 + (code22 - 48);
       }
       const result = new Date(Date.UTC(year, monthIdx, day, hour, minute, second));
       return result.getUTCDay() === weekday ? result : void 0;
@@ -49465,78 +49465,78 @@ var require_date = __commonJS({
       }
       let day = 0;
       if (date[8] === " ") {
-        const code2 = date.charCodeAt(9);
-        if (code2 < 49 || code2 > 57) {
+        const code3 = date.charCodeAt(9);
+        if (code3 < 49 || code3 > 57) {
           return void 0;
         }
-        day = code2 - 48;
+        day = code3 - 48;
       } else {
         const code1 = date.charCodeAt(8);
         if (code1 < 49 || code1 > 51) {
           return void 0;
         }
-        const code2 = date.charCodeAt(9);
-        if (code2 < 48 || code2 > 57) {
+        const code22 = date.charCodeAt(9);
+        if (code22 < 48 || code22 > 57) {
           return void 0;
         }
-        day = (code1 - 48) * 10 + (code2 - 48);
+        day = (code1 - 48) * 10 + (code22 - 48);
       }
       let hour = 0;
       if (date[11] === "0") {
-        const code2 = date.charCodeAt(12);
-        if (code2 < 48 || code2 > 57) {
+        const code3 = date.charCodeAt(12);
+        if (code3 < 48 || code3 > 57) {
           return void 0;
         }
-        hour = code2 - 48;
+        hour = code3 - 48;
       } else {
         const code1 = date.charCodeAt(11);
         if (code1 < 48 || code1 > 50) {
           return void 0;
         }
-        const code2 = date.charCodeAt(12);
-        if (code2 < 48 || code2 > 57) {
+        const code22 = date.charCodeAt(12);
+        if (code22 < 48 || code22 > 57) {
           return void 0;
         }
-        if (code1 === 50 && code2 > 51) {
+        if (code1 === 50 && code22 > 51) {
           return void 0;
         }
-        hour = (code1 - 48) * 10 + (code2 - 48);
+        hour = (code1 - 48) * 10 + (code22 - 48);
       }
       let minute = 0;
       if (date[14] === "0") {
-        const code2 = date.charCodeAt(15);
-        if (code2 < 48 || code2 > 57) {
+        const code3 = date.charCodeAt(15);
+        if (code3 < 48 || code3 > 57) {
           return void 0;
         }
-        minute = code2 - 48;
+        minute = code3 - 48;
       } else {
         const code1 = date.charCodeAt(14);
         if (code1 < 48 || code1 > 53) {
           return void 0;
         }
-        const code2 = date.charCodeAt(15);
-        if (code2 < 48 || code2 > 57) {
+        const code22 = date.charCodeAt(15);
+        if (code22 < 48 || code22 > 57) {
           return void 0;
         }
-        minute = (code1 - 48) * 10 + (code2 - 48);
+        minute = (code1 - 48) * 10 + (code22 - 48);
       }
       let second = 0;
       if (date[17] === "0") {
-        const code2 = date.charCodeAt(18);
-        if (code2 < 48 || code2 > 57) {
+        const code3 = date.charCodeAt(18);
+        if (code3 < 48 || code3 > 57) {
           return void 0;
         }
-        second = code2 - 48;
+        second = code3 - 48;
       } else {
         const code1 = date.charCodeAt(17);
         if (code1 < 48 || code1 > 53) {
           return void 0;
         }
-        const code2 = date.charCodeAt(18);
-        if (code2 < 48 || code2 > 57) {
+        const code22 = date.charCodeAt(18);
+        if (code22 < 48 || code22 > 57) {
           return void 0;
         }
-        second = (code1 - 48) * 10 + (code2 - 48);
+        second = (code1 - 48) * 10 + (code22 - 48);
       }
       const yearDigit1 = date.charCodeAt(20);
       if (yearDigit1 < 48 || yearDigit1 > 57) {
@@ -49594,21 +49594,21 @@ var require_date = __commonJS({
       }
       let day = 0;
       if (date[commaIndex + 2] === "0") {
-        const code2 = date.charCodeAt(commaIndex + 3);
-        if (code2 < 49 || code2 > 57) {
+        const code3 = date.charCodeAt(commaIndex + 3);
+        if (code3 < 49 || code3 > 57) {
           return void 0;
         }
-        day = code2 - 48;
+        day = code3 - 48;
       } else {
         const code1 = date.charCodeAt(commaIndex + 2);
         if (code1 < 49 || code1 > 51) {
           return void 0;
         }
-        const code2 = date.charCodeAt(commaIndex + 3);
-        if (code2 < 48 || code2 > 57) {
+        const code22 = date.charCodeAt(commaIndex + 3);
+        if (code22 < 48 || code22 > 57) {
           return void 0;
         }
-        day = (code1 - 48) * 10 + (code2 - 48);
+        day = (code1 - 48) * 10 + (code22 - 48);
       }
       let monthIdx = -1;
       if (date[commaIndex + 5] === "J" && date[commaIndex + 6] === "a" && date[commaIndex + 7] === "n") {
@@ -49650,60 +49650,60 @@ var require_date = __commonJS({
       year += year < 70 ? 2e3 : 1900;
       let hour = 0;
       if (date[commaIndex + 12] === "0") {
-        const code2 = date.charCodeAt(commaIndex + 13);
-        if (code2 < 48 || code2 > 57) {
+        const code3 = date.charCodeAt(commaIndex + 13);
+        if (code3 < 48 || code3 > 57) {
           return void 0;
         }
-        hour = code2 - 48;
+        hour = code3 - 48;
       } else {
         const code1 = date.charCodeAt(commaIndex + 12);
         if (code1 < 48 || code1 > 50) {
           return void 0;
         }
-        const code2 = date.charCodeAt(commaIndex + 13);
-        if (code2 < 48 || code2 > 57) {
+        const code22 = date.charCodeAt(commaIndex + 13);
+        if (code22 < 48 || code22 > 57) {
           return void 0;
         }
-        if (code1 === 50 && code2 > 51) {
+        if (code1 === 50 && code22 > 51) {
           return void 0;
         }
-        hour = (code1 - 48) * 10 + (code2 - 48);
+        hour = (code1 - 48) * 10 + (code22 - 48);
       }
       let minute = 0;
       if (date[commaIndex + 15] === "0") {
-        const code2 = date.charCodeAt(commaIndex + 16);
-        if (code2 < 48 || code2 > 57) {
+        const code3 = date.charCodeAt(commaIndex + 16);
+        if (code3 < 48 || code3 > 57) {
           return void 0;
         }
-        minute = code2 - 48;
+        minute = code3 - 48;
       } else {
         const code1 = date.charCodeAt(commaIndex + 15);
         if (code1 < 48 || code1 > 53) {
           return void 0;
         }
-        const code2 = date.charCodeAt(commaIndex + 16);
-        if (code2 < 48 || code2 > 57) {
+        const code22 = date.charCodeAt(commaIndex + 16);
+        if (code22 < 48 || code22 > 57) {
           return void 0;
         }
-        minute = (code1 - 48) * 10 + (code2 - 48);
+        minute = (code1 - 48) * 10 + (code22 - 48);
       }
       let second = 0;
       if (date[commaIndex + 18] === "0") {
-        const code2 = date.charCodeAt(commaIndex + 19);
-        if (code2 < 48 || code2 > 57) {
+        const code3 = date.charCodeAt(commaIndex + 19);
+        if (code3 < 48 || code3 > 57) {
           return void 0;
         }
-        second = code2 - 48;
+        second = code3 - 48;
       } else {
         const code1 = date.charCodeAt(commaIndex + 18);
         if (code1 < 48 || code1 > 53) {
           return void 0;
         }
-        const code2 = date.charCodeAt(commaIndex + 19);
-        if (code2 < 48 || code2 > 57) {
+        const code22 = date.charCodeAt(commaIndex + 19);
+        if (code22 < 48 || code22 > 57) {
           return void 0;
         }
-        second = (code1 - 48) * 10 + (code2 - 48);
+        second = (code1 - 48) * 10 + (code22 - 48);
       }
       const result = new Date(Date.UTC(year, monthIdx, day, hour, minute, second));
       return result.getUTCDay() === weekday ? result : void 0;
@@ -51489,8 +51489,8 @@ var require_headers2 = __commonJS({
     var { webidl } = require_webidl2();
     var assert = __require("node:assert");
     var util = __require("node:util");
-    function isHTTPWhiteSpaceCharCode(code2) {
-      return code2 === 10 || code2 === 13 || code2 === 9 || code2 === 32;
+    function isHTTPWhiteSpaceCharCode(code3) {
+      return code3 === 10 || code3 === 13 || code3 === 9 || code3 === 32;
     }
     function headerValueNormalize(potentialValue) {
       let i2 = 0;
@@ -51851,9 +51851,9 @@ var require_headers2 = __commonJS({
       // https://fetch.spec.whatwg.org/#dom-headers-getsetcookie
       getSetCookie() {
         webidl.brandCheck(this, _Headers);
-        const list3 = this.#headersList.cookies;
-        if (list3) {
-          return [...list3];
+        const list4 = this.#headersList.cookies;
+        if (list4) {
+          return [...list4];
         }
         return [];
       }
@@ -51877,8 +51877,8 @@ var require_headers2 = __commonJS({
        * @param {Headers} target
        * @param {HeadersList} list
        */
-      static setHeadersList(target, list3) {
-        target.#headersList = list3;
+      static setHeadersList(target, list4) {
+        target.#headersList = list4;
       }
     };
     var { getHeadersGuard, setHeadersGuard, getHeadersList, setHeadersList } = Headers2;
@@ -52829,13 +52829,13 @@ var require_request4 = __commonJS({
         if (this.signal.aborted) {
           ac.abort(this.signal.reason);
         } else {
-          let list3 = dependentControllerMap.get(this.signal);
-          if (list3 === void 0) {
-            list3 = /* @__PURE__ */ new Set();
-            dependentControllerMap.set(this.signal, list3);
+          let list4 = dependentControllerMap.get(this.signal);
+          if (list4 === void 0) {
+            list4 = /* @__PURE__ */ new Set();
+            dependentControllerMap.set(this.signal, list4);
           }
           const acRef = new WeakRef(ac);
-          list3.add(acRef);
+          list4.add(acRef);
           util.addAbortListener(
             ac.signal,
             buildAbort(acRef)
@@ -55027,8 +55027,8 @@ var require_util14 = __commonJS({
     "use strict";
     function isCTLExcludingHtab(value) {
       for (let i2 = 0; i2 < value.length; ++i2) {
-        const code2 = value.charCodeAt(i2);
-        if (code2 >= 0 && code2 <= 8 || code2 >= 10 && code2 <= 31 || code2 === 127) {
+        const code3 = value.charCodeAt(i2);
+        if (code3 >= 0 && code3 <= 8 || code3 >= 10 && code3 <= 31 || code3 === 127) {
           return true;
         }
       }
@@ -55036,26 +55036,26 @@ var require_util14 = __commonJS({
     }
     function validateCookieName(name) {
       for (let i2 = 0; i2 < name.length; ++i2) {
-        const code2 = name.charCodeAt(i2);
-        if (code2 < 33 || // exclude CTLs (0-31), SP and HT
-        code2 > 126 || // exclude non-ascii and DEL
-        code2 === 34 || // "
-        code2 === 40 || // (
-        code2 === 41 || // )
-        code2 === 60 || // <
-        code2 === 62 || // >
-        code2 === 64 || // @
-        code2 === 44 || // ,
-        code2 === 59 || // ;
-        code2 === 58 || // :
-        code2 === 92 || // \
-        code2 === 47 || // /
-        code2 === 91 || // [
-        code2 === 93 || // ]
-        code2 === 63 || // ?
-        code2 === 61 || // =
-        code2 === 123 || // {
-        code2 === 125) {
+        const code3 = name.charCodeAt(i2);
+        if (code3 < 33 || // exclude CTLs (0-31), SP and HT
+        code3 > 126 || // exclude non-ascii and DEL
+        code3 === 34 || // "
+        code3 === 40 || // (
+        code3 === 41 || // )
+        code3 === 60 || // <
+        code3 === 62 || // >
+        code3 === 64 || // @
+        code3 === 44 || // ,
+        code3 === 59 || // ;
+        code3 === 58 || // :
+        code3 === 92 || // \
+        code3 === 47 || // /
+        code3 === 91 || // [
+        code3 === 93 || // ]
+        code3 === 63 || // ?
+        code3 === 61 || // =
+        code3 === 123 || // {
+        code3 === 125) {
           throw new Error("Invalid cookie name");
         }
       }
@@ -55071,23 +55071,23 @@ var require_util14 = __commonJS({
         ++i2;
       }
       while (i2 < len) {
-        const code2 = value.charCodeAt(i2++);
-        if (code2 < 33 || // exclude CTLs (0-31)
-        code2 > 126 || // non-ascii and DEL (127)
-        code2 === 34 || // "
-        code2 === 44 || // ,
-        code2 === 59 || // ;
-        code2 === 92) {
+        const code3 = value.charCodeAt(i2++);
+        if (code3 < 33 || // exclude CTLs (0-31)
+        code3 > 126 || // non-ascii and DEL (127)
+        code3 === 34 || // "
+        code3 === 44 || // ,
+        code3 === 59 || // ;
+        code3 === 92) {
           throw new Error("Invalid cookie value");
         }
       }
     }
     function validateCookiePath(path) {
       for (let i2 = 0; i2 < path.length; ++i2) {
-        const code2 = path.charCodeAt(i2);
-        if (code2 < 32 || // exclude CTLs (0-31)
-        code2 === 127 || // DEL
-        code2 === 59) {
+        const code3 = path.charCodeAt(i2);
+        if (code3 < 32 || // exclude CTLs (0-31)
+        code3 === 127 || // DEL
+        code3 === 59) {
           throw new Error("Invalid cookie path");
         }
       }
@@ -55829,37 +55829,37 @@ var require_util15 = __commonJS({
         return false;
       }
       for (let i2 = 0; i2 < protocol.length; ++i2) {
-        const code2 = protocol.charCodeAt(i2);
-        if (code2 < 33 || // CTL, contains SP (0x20) and HT (0x09)
-        code2 > 126 || code2 === 34 || // "
-        code2 === 40 || // (
-        code2 === 41 || // )
-        code2 === 44 || // ,
-        code2 === 47 || // /
-        code2 === 58 || // :
-        code2 === 59 || // ;
-        code2 === 60 || // <
-        code2 === 61 || // =
-        code2 === 62 || // >
-        code2 === 63 || // ?
-        code2 === 64 || // @
-        code2 === 91 || // [
-        code2 === 92 || // \
-        code2 === 93 || // ]
-        code2 === 123 || // {
-        code2 === 125) {
+        const code3 = protocol.charCodeAt(i2);
+        if (code3 < 33 || // CTL, contains SP (0x20) and HT (0x09)
+        code3 > 126 || code3 === 34 || // "
+        code3 === 40 || // (
+        code3 === 41 || // )
+        code3 === 44 || // ,
+        code3 === 47 || // /
+        code3 === 58 || // :
+        code3 === 59 || // ;
+        code3 === 60 || // <
+        code3 === 61 || // =
+        code3 === 62 || // >
+        code3 === 63 || // ?
+        code3 === 64 || // @
+        code3 === 91 || // [
+        code3 === 92 || // \
+        code3 === 93 || // ]
+        code3 === 123 || // {
+        code3 === 125) {
           return false;
         }
       }
       return true;
     }
-    function isValidStatusCode(code2) {
-      if (code2 >= 1e3 && code2 < 1015) {
-        return code2 !== 1004 && // reserved
-        code2 !== 1005 && // "MUST NOT be set as a status code"
-        code2 !== 1006;
+    function isValidStatusCode(code3) {
+      if (code3 >= 1e3 && code3 < 1015) {
+        return code3 !== 1004 && // reserved
+        code3 !== 1005 && // "MUST NOT be set as a status code"
+        code3 !== 1006;
       }
-      return code2 >= 3e3 && code2 <= 4999;
+      return code3 >= 3e3 && code3 <= 4999;
     }
     function isControlFrame(opcode) {
       return opcode === opcodes.CLOSE || opcode === opcodes.PING || opcode === opcodes.PONG;
@@ -55916,9 +55916,9 @@ var require_util15 = __commonJS({
       }
       return urlRecord;
     }
-    function validateCloseCodeAndReason(code2, reason) {
-      if (code2 !== null) {
-        if (code2 !== 1e3 && (code2 < 3e3 || code2 > 4999)) {
+    function validateCloseCodeAndReason(code3, reason) {
+      if (code3 !== null) {
+        if (code3 !== 1e3 && (code3 < 3e3 || code3 > 4999)) {
           throw new DOMException("invalid code", "InvalidAccessError");
         }
       }
@@ -56172,28 +56172,28 @@ var require_connection2 = __commonJS({
       });
       return controller;
     }
-    function closeWebSocketConnection(object, code2, reason, validate = false) {
-      code2 ??= null;
+    function closeWebSocketConnection(object, code3, reason, validate = false) {
+      code3 ??= null;
       reason ??= "";
-      if (validate) validateCloseCodeAndReason(code2, reason);
+      if (validate) validateCloseCodeAndReason(code3, reason);
       if (isClosed(object.readyState) || isClosing(object.readyState)) {
       } else if (!isEstablished(object.readyState)) {
         failWebsocketConnection(object);
         object.readyState = states.CLOSING;
       } else if (!object.closeState.has(sentCloseFrameState.SENT) && !object.closeState.has(sentCloseFrameState.RECEIVED)) {
         const frame = new WebsocketFrameSend();
-        if (reason.length !== 0 && code2 === null) {
-          code2 = 1e3;
+        if (reason.length !== 0 && code3 === null) {
+          code3 = 1e3;
         }
-        assert(code2 === null || Number.isInteger(code2));
-        if (code2 === null && reason.length === 0) {
+        assert(code3 === null || Number.isInteger(code3));
+        if (code3 === null && reason.length === 0) {
           frame.frameData = emptyBuffer;
-        } else if (code2 !== null && reason === null) {
+        } else if (code3 !== null && reason === null) {
           frame.frameData = Buffer.allocUnsafe(2);
-          frame.frameData.writeUInt16BE(code2, 0);
-        } else if (code2 !== null && reason !== null) {
+          frame.frameData.writeUInt16BE(code3, 0);
+        } else if (code3 !== null && reason !== null) {
           frame.frameData = Buffer.allocUnsafe(2 + Buffer.byteLength(reason));
-          frame.frameData.writeUInt16BE(code2, 0);
+          frame.frameData.writeUInt16BE(code3, 0);
           frame.frameData.write(reason, 2, "utf-8");
         } else {
           frame.frameData = emptyBuffer;
@@ -56205,9 +56205,9 @@ var require_connection2 = __commonJS({
         object.readyState = states.CLOSING;
       }
     }
-    function failWebsocketConnection(handler2, code2, reason, cause) {
+    function failWebsocketConnection(handler2, code3, reason, cause) {
       if (isEstablished(handler2.readyState)) {
-        closeWebSocketConnection(handler2, code2, reason, false);
+        closeWebSocketConnection(handler2, code3, reason, false);
       }
       handler2.controller.abort();
       if (isConnecting(handler2.readyState)) {
@@ -56522,11 +56522,11 @@ var require_receiver2 = __commonJS({
       }
       parseCloseBody(data) {
         assert(data.length !== 1);
-        let code2;
+        let code3;
         if (data.length >= 2) {
-          code2 = data.readUInt16BE(0);
+          code3 = data.readUInt16BE(0);
         }
-        if (code2 !== void 0 && !isValidStatusCode(code2)) {
+        if (code3 !== void 0 && !isValidStatusCode(code3)) {
           return { code: 1002, reason: "Invalid status code", error: true };
         }
         let reason = data.subarray(2);
@@ -56538,7 +56538,7 @@ var require_receiver2 = __commonJS({
         } catch {
           return { code: 1007, reason: "Invalid UTF-8", error: true };
         }
-        return { code: code2, reason, error: false };
+        return { code: code3, reason, error: false };
       }
       /**
        * Parses control frames.
@@ -56553,8 +56553,8 @@ var require_receiver2 = __commonJS({
           }
           this.#info.closeInfo = this.parseCloseBody(body);
           if (this.#info.closeInfo.error) {
-            const { code: code2, reason } = this.#info.closeInfo;
-            failWebsocketConnection(this.#handler, code2, reason);
+            const { code: code3, reason } = this.#info.closeInfo;
+            failWebsocketConnection(this.#handler, code3, reason);
             return false;
           }
           if (!this.#handler.closeState.has(sentCloseFrameState.SENT) && !this.#handler.closeState.has(sentCloseFrameState.RECEIVED)) {
@@ -56803,18 +56803,18 @@ var require_websocket2 = __commonJS({
        * @param {number|undefined} code
        * @param {string|undefined} reason
        */
-      close(code2 = void 0, reason = void 0) {
+      close(code3 = void 0, reason = void 0) {
         webidl.brandCheck(this, _WebSocket);
         const prefix = "WebSocket.close";
-        if (code2 !== void 0) {
-          code2 = webidl.converters["unsigned short"](code2, prefix, "code", webidl.attributes.Clamp);
+        if (code3 !== void 0) {
+          code3 = webidl.converters["unsigned short"](code3, prefix, "code", webidl.attributes.Clamp);
         }
         if (reason !== void 0) {
           reason = webidl.converters.USVString(reason);
         }
-        code2 ??= null;
+        code3 ??= null;
         reason ??= "";
-        closeWebSocketConnection(this.#handler, code2, reason, true);
+        closeWebSocketConnection(this.#handler, code3, reason, true);
       }
       /**
        * @see https://websockets.spec.whatwg.org/#dom-websocket-send
@@ -57022,29 +57022,29 @@ var require_websocket2 = __commonJS({
        */
       #onSocketClose() {
         const wasClean = this.#handler.closeState.has(sentCloseFrameState.SENT) && this.#handler.closeState.has(sentCloseFrameState.RECEIVED);
-        let code2 = 1005;
+        let code3 = 1005;
         let reason = "";
         const result = this.#parser?.closingInfo;
         if (result && !result.error) {
-          code2 = result.code ?? 1005;
+          code3 = result.code ?? 1005;
           reason = result.reason;
         }
         this.#handler.readyState = states.CLOSED;
         if (!this.#handler.closeState.has(sentCloseFrameState.RECEIVED)) {
-          code2 = 1006;
+          code3 = 1006;
           fireEvent("error", this, (type, init) => new ErrorEvent(type, init), {
             error: new TypeError(reason)
           });
         }
         fireEvent("close", this, (type, init) => new CloseEvent(type, init), {
           wasClean,
-          code: code2,
+          code: code3,
           reason
         });
         if (channels.close.hasSubscribers) {
           channels.close.publish({
             websocket: this,
-            code: code2,
+            code: code3,
             reason
           });
         }
@@ -57189,13 +57189,13 @@ var require_websocketerror = __commonJS({
         } else if (init !== null) {
           init = webidl.converters.WebSocketCloseInfo(init);
         }
-        let code2 = init.closeCode ?? null;
+        let code3 = init.closeCode ?? null;
         const reason = init.reason ?? "";
-        validateCloseCodeAndReason(code2, reason);
-        if (reason.length !== 0 && code2 === null) {
-          code2 = 1e3;
+        validateCloseCodeAndReason(code3, reason);
+        if (reason.length !== 0 && code3 === null) {
+          code3 = 1e3;
         }
-        this.#closeCode = code2;
+        this.#closeCode = code3;
         this.#reason = reason;
       }
       get closeCode() {
@@ -57209,9 +57209,9 @@ var require_websocketerror = __commonJS({
        * @param {number|null} code
        * @param {string} reason
        */
-      static createUnvalidatedWebSocketError(message, code2, reason) {
+      static createUnvalidatedWebSocketError(message, code3, reason) {
         const error2 = new _WebSocketError(message, kConstruct);
-        error2.#closeCode = code2;
+        error2.#closeCode = code3;
         error2.#reason = reason;
         return error2;
       }
@@ -57369,9 +57369,9 @@ var require_websocketstream = __commonJS({
         if (closeInfo !== null) {
           closeInfo = webidl.converters.WebSocketCloseInfo(closeInfo);
         }
-        const code2 = closeInfo.closeCode ?? null;
+        const code3 = closeInfo.closeCode ?? null;
         const reason = closeInfo.reason;
-        closeWebSocketConnection(this.#handler, code2, reason, true);
+        closeWebSocketConnection(this.#handler, code3, reason, true);
       }
       #write(chunk) {
         chunk = webidl.converters.WebSocketStreamWrite(chunk);
@@ -57465,9 +57465,9 @@ var require_websocketstream = __commonJS({
           this.#openedPromise.reject(new WebSocketError("Socket never opened"));
         }
         const result = this.#parser.closingInfo;
-        let code2 = result?.code ?? 1005;
+        let code3 = result?.code ?? 1005;
         if (!this.#handler.closeState.has(sentCloseFrameState.SENT) && !this.#handler.closeState.has(sentCloseFrameState.RECEIVED)) {
-          code2 = 1006;
+          code3 = 1006;
         }
         const reason = result?.reason == null ? "" : utf8DecodeBytes(Buffer.from(result.reason));
         if (wasClean) {
@@ -57476,24 +57476,24 @@ var require_websocketstream = __commonJS({
             this.#writableStream.abort(new DOMException("A closed WebSocketStream cannot be written to", "InvalidStateError"));
           }
           this.#closedPromise.resolve({
-            closeCode: code2,
+            closeCode: code3,
             reason
           });
         } else {
-          const error2 = createUnvalidatedWebSocketError("unclean close", code2, reason);
+          const error2 = createUnvalidatedWebSocketError("unclean close", code3, reason);
           this.#readableStreamController.error(error2);
           this.#writableStream.abort(error2);
           this.#closedPromise.reject(error2);
         }
       }
       #closeUsingReason(reason) {
-        let code2 = null;
+        let code3 = null;
         let reasonString = "";
         if (webidl.is.WebSocketError(reason)) {
-          code2 = reason.closeCode;
+          code3 = reason.closeCode;
           reasonString = reason.reason;
         }
-        closeWebSocketConnection(this.#handler, code2, reasonString);
+        closeWebSocketConnection(this.#handler, code3, reasonString);
       }
       //  To cancel a WebSocketStream stream given reason , close using reason giving stream and reason .
       #cancel(reason) {
@@ -58529,16 +58529,16 @@ var require_light = __commonJS({
           }
         }
         shiftAll(fn) {
-          return this._lists.forEach(function(list3) {
-            return list3.forEachShift(fn);
+          return this._lists.forEach(function(list4) {
+            return list4.forEachShift(fn);
           });
         }
         getFirst(arr = this._lists) {
-          var j2, len, list3;
+          var j2, len, list4;
           for (j2 = 0, len = arr.length; j2 < len; j2++) {
-            list3 = arr[j2];
-            if (list3.length > 0) {
-              return list3;
+            list4 = arr[j2];
+            if (list4.length > 0) {
+              return list4;
             }
           }
           return [];
@@ -59976,9 +59976,9 @@ var Summary = class {
    *
    * @returns {Summary} summary instance
    */
-  addCodeBlock(code2, lang) {
+  addCodeBlock(code3, lang) {
     const attrs = Object.assign({}, lang && { lang });
-    const element = this.wrap("pre", this.wrap("code", code2), attrs);
+    const element = this.wrap("pre", this.wrap("code", code3), attrs);
     return this.addRaw(element).addEOL();
   }
   /**
@@ -60601,15 +60601,15 @@ var asciiAtext = regexCheck(/[#-'*+\--9=?A-Z^-~]/);
 var asciiDigit = regexCheck(/\d/);
 var asciiHexDigit = regexCheck(/[\dA-Fa-f]/);
 var asciiPunctuation = regexCheck(/[!-/:-@[-`{-~]/);
-function markdownLineEndingOrSpace(code2) {
-  return code2 !== null && (code2 < 0 || code2 === 32);
+function markdownLineEndingOrSpace(code3) {
+  return code3 !== null && (code3 < 0 || code3 === 32);
 }
 var unicodePunctuation = regexCheck(new RegExp("\\p{P}|\\p{S}", "u"));
 var unicodeWhitespace = regexCheck(/\s/);
 function regexCheck(regex) {
   return check;
-  function check(code2) {
-    return code2 !== null && code2 > -1 && regex.test(String.fromCharCode(code2));
+  function check(code3) {
+    return code3 !== null && code3 > -1 && regex.test(String.fromCharCode(code3));
   }
 }
 
@@ -60963,24 +60963,24 @@ function markdownTable(table2, options) {
       alignments[columnIndex] = toAlignment(align[columnIndex]);
     }
   } else {
-    const code2 = toAlignment(align);
+    const code3 = toAlignment(align);
     while (++columnIndex < mostCellsPerRow) {
-      alignments[columnIndex] = code2;
+      alignments[columnIndex] = code3;
     }
   }
   columnIndex = -1;
   const row = [];
   const sizes = [];
   while (++columnIndex < mostCellsPerRow) {
-    const code2 = alignments[columnIndex];
+    const code3 = alignments[columnIndex];
     let before = "";
     let after = "";
-    if (code2 === 99) {
+    if (code3 === 99) {
       before = ":";
       after = ":";
-    } else if (code2 === 108) {
+    } else if (code3 === 108) {
       before = ":";
-    } else if (code2 === 114) {
+    } else if (code3 === 114) {
       after = ":";
     }
     let size = settings.alignDelimiters === false ? 1 : Math.max(
@@ -61012,10 +61012,10 @@ function markdownTable(table2, options) {
       let after = "";
       if (settings.alignDelimiters !== false) {
         const size = longestCellByColumn[columnIndex] - (sizes2[columnIndex] || 0);
-        const code2 = alignments[columnIndex];
-        if (code2 === 114) {
+        const code3 = alignments[columnIndex];
+        if (code3 === 114) {
           before = " ".repeat(size);
-        } else if (code2 === 99) {
+        } else if (code3 === 99) {
           if (size % 2) {
             before = " ".repeat(size / 2 + 0.5);
             after = " ".repeat(size / 2 - 0.5);
@@ -61059,8 +61059,8 @@ function serialize(value) {
   return value === null || value === void 0 ? "" : String(value);
 }
 function toAlignment(value) {
-  const code2 = typeof value === "string" ? value.codePointAt(0) : 0;
-  return code2 === 67 || code2 === 99 ? 99 : code2 === 76 || code2 === 108 ? 108 : code2 === 82 || code2 === 114 ? 114 : 0;
+  const code3 = typeof value === "string" ? value.codePointAt(0) : 0;
+  return code3 === 67 || code3 === 99 ? 99 : code3 === 76 || code3 === 108 ? 108 : code3 === 82 || code3 === 114 ? 114 : 0;
 }
 
 // node_modules/.pnpm/zwitch@2.0.4/node_modules/zwitch/index.js
@@ -61153,16 +61153,16 @@ function map2(line, _2, blank) {
 function patternInScope(stack, pattern) {
   return listInScope(stack, pattern.inConstruct, true) && !listInScope(stack, pattern.notInConstruct, false);
 }
-function listInScope(stack, list3, none) {
-  if (typeof list3 === "string") {
-    list3 = [list3];
+function listInScope(stack, list4, none) {
+  if (typeof list4 === "string") {
+    list4 = [list4];
   }
-  if (!list3 || list3.length === 0) {
+  if (!list4 || list4.length === 0) {
     return none;
   }
   let index = -1;
-  while (++index < list3.length) {
-    if (stack.includes(list3[index])) {
+  while (++index < list4.length) {
+    if (stack.includes(list4[index])) {
       return true;
     }
   }
@@ -61356,16 +61356,16 @@ function checkEmphasis(state) {
 }
 
 // node_modules/.pnpm/mdast-util-to-markdown@2.1.2/node_modules/mdast-util-to-markdown/lib/util/encode-character-reference.js
-function encodeCharacterReference(code2) {
-  return "&#x" + code2.toString(16).toUpperCase() + ";";
+function encodeCharacterReference(code3) {
+  return "&#x" + code3.toString(16).toUpperCase() + ";";
 }
 
 // node_modules/.pnpm/micromark-util-classify-character@2.0.1/node_modules/micromark-util-classify-character/index.js
-function classifyCharacter(code2) {
-  if (code2 === null || markdownLineEndingOrSpace(code2) || unicodeWhitespace(code2)) {
+function classifyCharacter(code3) {
+  if (code3 === null || markdownLineEndingOrSpace(code3) || unicodeWhitespace(code3)) {
     return 1;
   }
-  if (unicodePunctuation(code2)) {
+  if (unicodePunctuation(code3)) {
     return 2;
   }
 }
@@ -64401,20 +64401,20 @@ function decodeNamedCharacterReference(value) {
 
 // node_modules/.pnpm/micromark-util-decode-numeric-character-reference@2.0.2/node_modules/micromark-util-decode-numeric-character-reference/index.js
 function decodeNumericCharacterReference(value, base) {
-  const code2 = Number.parseInt(value, base);
+  const code3 = Number.parseInt(value, base);
   if (
     // C0 except for HT, LF, FF, CR, space.
-    code2 < 9 || code2 === 11 || code2 > 13 && code2 < 32 || // Control character (DEL) of C0, and C1 controls.
-    code2 > 126 && code2 < 160 || // Lone high surrogates and low surrogates.
-    code2 > 55295 && code2 < 57344 || // Noncharacters.
-    code2 > 64975 && code2 < 65008 || /* eslint-disable no-bitwise */
-    (code2 & 65535) === 65535 || (code2 & 65535) === 65534 || /* eslint-enable no-bitwise */
+    code3 < 9 || code3 === 11 || code3 > 13 && code3 < 32 || // Control character (DEL) of C0, and C1 controls.
+    code3 > 126 && code3 < 160 || // Lone high surrogates and low surrogates.
+    code3 > 55295 && code3 < 57344 || // Noncharacters.
+    code3 > 64975 && code3 < 65008 || /* eslint-disable no-bitwise */
+    (code3 & 65535) === 65535 || (code3 & 65535) === 65534 || /* eslint-enable no-bitwise */
     // Out of range
-    code2 > 1114111
+    code3 > 1114111
   ) {
     return "\uFFFD";
   }
-  return String.fromCodePoint(code2);
+  return String.fromCodePoint(code3);
 }
 
 // node_modules/.pnpm/micromark-util-decode-string@2.0.1/node_modules/micromark-util-decode-string/index.js
@@ -64910,6 +64910,18 @@ function toMarkdown2(children) {
 function blockquote2(...children) {
   return { type: "blockquote", children };
 }
+function code2(language, content) {
+  return { type: "code", lang: language, meta: null, value: content };
+}
+function details(summary2, ...children) {
+  return [
+    { type: "html", value: `<details>
+<summary>${summary2}</summary>
+` },
+    ...children,
+    { type: "html", value: "\n</details>" }
+  ];
+}
 function emphasis2(...children) {
   return { type: "emphasis", children };
 }
@@ -64919,14 +64931,23 @@ function gfmAlert(type, ...children) {
 function heading2(depth, ...children) {
   return { type: "heading", depth, children };
 }
-function inlineCode2(code2) {
-  return { type: "inlineCode", value: code2 };
+function list3(...children) {
+  return { type: "list", ordered: false, spread: false, children };
+}
+function listItem2(...children) {
+  return { type: "listItem", spread: false, checked: null, children };
+}
+function inlineCode2(code3) {
+  return { type: "inlineCode", value: code3 };
 }
 function link2(url, ...children) {
   return { type: "link", url: url.toString(), children };
 }
 function paragraph2(...children) {
   return { type: "paragraph", children };
+}
+function strong2(...children) {
+  return { type: "strong", children };
 }
 function table(align, headings, rows) {
   return {
@@ -64966,6 +64987,26 @@ function secretTypeText(target) {
       return "Dependabot";
     case "environment":
       return `GitHub environment ${target.target.environment}`;
+  }
+  throw new Error(
+    `Invariant violation: Unexpected secret type ${JSON.stringify(type)}`
+  );
+}
+function secretTypeMdast(target) {
+  const type = target.type;
+  switch (target.type) {
+    case "actions":
+      return [strong2(text2("GitHub Actions"))];
+    case "codespaces":
+      return [strong2(text2("GitHub Codespaces"))];
+    case "dependabot":
+      return [strong2(text2("Dependabot"))];
+    case "environment":
+      return [
+        strong2(text2("GitHub environment")),
+        text2(" "),
+        inlineCode2(target.target.environment)
+      ];
   }
   throw new Error(
     `Invariant violation: Unexpected secret type ${JSON.stringify(type)}`
@@ -67650,12 +67691,12 @@ function parseParameters(header, type, index, len, stopChar) {
     index = skipOWS(header, index + 1, len);
     const keyStart = index;
     while (index < len) {
-      const code2 = header.charCodeAt(index);
-      if (code2 === stopChar)
+      const code3 = header.charCodeAt(index);
+      if (code3 === stopChar)
         break parameter;
-      if (code2 === SEMI)
+      if (code3 === SEMI)
         continue parameter;
-      if (code2 === EQ) {
+      if (code3 === EQ) {
         const keyEnd = trailingOWS(header, keyStart, index);
         const key = header.slice(keyStart, keyEnd).toLowerCase();
         index = skipOWS(header, index + 1, len);
@@ -67663,18 +67704,18 @@ function parseParameters(header, type, index, len, stopChar) {
           index++;
           let value = "";
           while (index < len) {
-            const code3 = header.charCodeAt(index++);
-            if (code3 === DQUOTE) {
+            const code4 = header.charCodeAt(index++);
+            if (code4 === DQUOTE) {
               index = skipValue(header, index, len, stopChar);
               if (parameters[key] === void 0)
                 parameters[key] = value;
               break;
             }
-            if (code3 === BSLASH && index < len) {
+            if (code4 === BSLASH && index < len) {
               value += header[index++];
               continue;
             }
-            value += String.fromCharCode(code3);
+            value += String.fromCharCode(code4);
           }
           continue parameter;
         }
@@ -67693,8 +67734,8 @@ function parseParameters(header, type, index, len, stopChar) {
 }
 function skipValue(str, index, len, stopChar) {
   while (index < len) {
-    const code2 = str.charCodeAt(index);
-    if (code2 === SEMI || code2 === stopChar)
+    const code3 = str.charCodeAt(index);
+    if (code3 === SEMI || code3 === stopChar)
       break;
     index++;
   }
@@ -72629,6 +72670,21 @@ function handleRequestError(error2, handlers = {}) {
     );
   }
   handler2(error2);
+}
+function requestErrorHasError(error2, match) {
+  const data = error2.response?.data;
+  if (!data) return false;
+  for (const errorItem of data.errors) {
+    let isMatch = true;
+    for (const [key, value] of Object.entries(match)) {
+      if (errorItem[key] !== value) {
+        isMatch = false;
+        break;
+      }
+    }
+    if (isMatch) return true;
+  }
+  return false;
 }
 
 // src/discover-apps.ts
@@ -115316,13 +115372,13 @@ Module.ready = new Promise(function(resolve, reject) {
         quit_2(1, e);
       };
       var keepRuntimeAlive2 = () => noExitRuntime2 || runtimeKeepaliveCounter2 > 0;
-      var _proc_exit2 = (code2) => {
-        EXITSTATUS2 = code2;
+      var _proc_exit2 = (code3) => {
+        EXITSTATUS2 = code3;
         if (!keepRuntimeAlive2()) {
-          Module3["onExit"]?.(code2);
+          Module3["onExit"]?.(code3);
           ABORT2 = true;
         }
-        quit_2(code2, new ExitStatus2(code2));
+        quit_2(code3, new ExitStatus2(code3));
       };
       var exitJS2 = (status, implicit) => {
         EXITSTATUS2 = status;
@@ -115376,11 +115432,11 @@ Module.ready = new Promise(function(resolve, reject) {
         }
         return readEmAsmArgsArray2;
       };
-      var runEmAsmFunction2 = (code2, sigPtr, argbuf) => {
+      var runEmAsmFunction2 = (code3, sigPtr, argbuf) => {
         var args = readEmAsmArgs2(sigPtr, argbuf);
-        return ASM_CONSTS2[code2](...args);
+        return ASM_CONSTS2[code3](...args);
       };
-      var _emscripten_asm_const_int2 = (code2, sigPtr, argbuf) => runEmAsmFunction2(code2, sigPtr, argbuf);
+      var _emscripten_asm_const_int2 = (code3, sigPtr, argbuf) => runEmAsmFunction2(code3, sigPtr, argbuf);
       var getHeapMax2 = () => 2147483648;
       var alignMemory2 = (size, alignment) => Math.ceil(size / alignment) * alignment;
       var growMemory2 = (size) => {
@@ -116099,13 +116155,13 @@ Module.ready = new Promise(function(resolve, reject) {
     quit_(1, e);
   };
   var keepRuntimeAlive = () => noExitRuntime || runtimeKeepaliveCounter > 0;
-  var _proc_exit = (code2) => {
-    EXITSTATUS = code2;
+  var _proc_exit = (code3) => {
+    EXITSTATUS = code3;
     if (!keepRuntimeAlive()) {
-      Module2["onExit"]?.(code2);
+      Module2["onExit"]?.(code3);
       ABORT = true;
     }
-    quit_(code2, new ExitStatus(code2));
+    quit_(code3, new ExitStatus(code3));
   };
   var exitJS = (status, implicit) => {
     EXITSTATUS = status;
@@ -116159,11 +116215,11 @@ Module.ready = new Promise(function(resolve, reject) {
     }
     return readEmAsmArgsArray;
   };
-  var runEmAsmFunction = (code2, sigPtr, argbuf) => {
+  var runEmAsmFunction = (code3, sigPtr, argbuf) => {
     var args = readEmAsmArgs(sigPtr, argbuf);
-    return ASM_CONSTS[code2](...args);
+    return ASM_CONSTS[code3](...args);
   };
-  var _emscripten_asm_const_int = (code2, sigPtr, argbuf) => runEmAsmFunction(code2, sigPtr, argbuf);
+  var _emscripten_asm_const_int = (code3, sigPtr, argbuf) => runEmAsmFunction(code3, sigPtr, argbuf);
   var getHeapMax = () => 2147483648;
   var alignMemory = (size, alignment) => Math.ceil(size / alignment) * alignment;
   var growMemory = (size) => {
@@ -120419,13 +120475,875 @@ Secret #${i2}:
   }
 }
 
-// src/register-token-declarations.ts
-function registerTokenDeclarations(declarationRegistry, requesters) {
-  for (const { requester, config } of requesters.values()) {
-    if (!config) continue;
-    for (const [name, declaration] of Object.entries(config.tokens)) {
-      declarationRegistry.registerDeclaration(requester, name, declaration);
+// src/provision-auth-explainer/markdown.ts
+function createMarkdownProvisionAuthExplainer() {
+  const tokenSeq = createSequencer();
+  return (result) => {
+    const summary2 = listItem2(...explainSummary(result));
+    summary2.children.push(list3(listItem2(...explainTokenDec(result))));
+    summary2.children.push(list3(...explainTargets(result)));
+    return [list3(summary2)];
+  };
+  function explainSummary({
+    request: request2,
+    isAllowed
+  }) {
+    return [
+      paragraph2(
+        text2(`${icon(isAllowed)} Repo `),
+        inlineCode2(repoRefToString(request2.requester)),
+        text2(" "),
+        strong2(text2(isAllowed ? "was allowed" : "wasn't allowed")),
+        text2(" to provision secret "),
+        inlineCode2(request2.name),
+        text2(":")
+      )
+    ];
+  }
+  function explainTokenDec({
+    request: request2
+  }) {
+    const { secretDec, tokenDec, tokenDecIsRegistered } = request2;
+    if (tokenDec) {
+      return [
+        paragraph2(
+          text2(`${PASS_ICON} `),
+          strong2(text2("Can")),
+          text2(" use token declaration "),
+          inlineCode2(secretDec.token)
+        )
+      ];
     }
+    return [
+      paragraph2(
+        text2(`${PASS_ICON} `),
+        strong2(text2("Can't")),
+        text2(" use token declaration "),
+        inlineCode2(secretDec.token),
+        text2(" because "),
+        text2(tokenDecIsRegistered ? "it isn't shared" : "it doesn't exist")
+      )
+    ];
+  }
+  function explainTargets({
+    request: request2,
+    results,
+    isMissingTargets
+  }) {
+    if (isMissingTargets) {
+      return [listItem2(paragraph2(text2(`${FAIL_ICON} No targets specified`)))];
+    }
+    const entries = [];
+    for (let i2 = 0; i2 < results.length; ++i2) {
+      entries.push([request2.to[i2], results[i2]]);
+    }
+    entries.sort(([a2], [b2]) => compareProvisionRequestTarget(a2, b2));
+    const targets = [];
+    for (const [target, result] of entries) {
+      targets.push(listItem2(...explainTarget(target, result)));
+    }
+    return targets;
+  }
+  function explainTarget(target, result) {
+    const { isAllowed } = result;
+    return [
+      paragraph2(
+        text2(`${icon(isAllowed)} `),
+        strong2(text2(isAllowed ? "Can" : "Can't")),
+        text2(" provision token to "),
+        ...explainSubject(target),
+        text2(":")
+      ),
+      list3(
+        listItem2(...explainTargetToken(result)),
+        listItem2(...explainBasedOnRules(result))
+      )
+    ];
+  }
+  function explainTargetToken({
+    isTokenAllowed,
+    tokenAuthResult
+  }) {
+    if (!tokenAuthResult) {
+      return [
+        paragraph2(
+          text2(`${FAIL_ICON} Token can't be authorized without a declaration`)
+        )
+      ];
+    }
+    const name = accountOrRepoRefToString(tokenAuthResult.request.consumer);
+    const ref = `#${tokenSeq(tokenAuthResult)}`;
+    const kind = isRepoRef(tokenAuthResult.request.consumer) ? "Repo" : "Account";
+    return [
+      paragraph2(
+        text2(`${icon(isTokenAllowed)} ${kind} `),
+        inlineCode2(name),
+        text2(" was "),
+        strong2(text2(isTokenAllowed ? "allowed" : "denied")),
+        text2(" access to token "),
+        inlineCode2(ref)
+      )
+    ];
+  }
+  function explainSubject(target) {
+    return [
+      ...secretTypeMdast(target),
+      text2(" secret in "),
+      inlineCode2(accountOrRepoRefToString(target.target))
+    ];
+  }
+  function explainBasedOnRules({
+    isProvisionAllowed,
+    rules
+  }) {
+    const ruleCount = rules.length;
+    const summary2 = paragraph2(
+      text2(`${icon(isProvisionAllowed)}  `),
+      strong2(text2(isProvisionAllowed ? "Can" : "Can't")),
+      text2(" provision secret "),
+      ...ruleCount < 1 ? [text2("(no matching rules)")] : [text2(`based on ${pluralize(ruleCount, "rule", "rules")}:`)]
+    );
+    if (ruleCount < 1) return [summary2];
+    const explainedRules = [];
+    for (const ruleResult of rules) {
+      explainedRules.push(listItem2(...explainRule(ruleResult)));
+    }
+    return [summary2, list3(...explainedRules)];
+  }
+  function explainRule({
+    index,
+    rule,
+    have
+  }) {
+    const isAllowed = have === "allow";
+    return [
+      paragraph2(
+        text2(`${icon(isAllowed)} `),
+        strong2(text2(isAllowed ? "Allowed" : "Denied")),
+        text2(" by rule "),
+        ...renderRule(index, rule)
+      )
+    ];
+  }
+  function renderRule(index, { description }) {
+    const n2 = inlineCode2(`#${index + 1}`);
+    return description ? [n2, text2(": "), emphasis2(text2(description))] : [n2];
+  }
+}
+
+// src/provision-explainer/markdown.ts
+function createMarkdownProvisionExplainer() {
+  return (authResult, targetResults) => {
+    if (targetResults.size < 1) {
+      return [
+        list3(
+          listItem2(
+            paragraph2(
+              text2(`${FAIL_ICON} Secret `),
+              inlineCode2(authResult.request.name),
+              text2(" "),
+              strong2(text2("wasn't")),
+              text2(" provisioned for repo "),
+              inlineCode2(repoRefToString(authResult.request.requester)),
+              text2(":")
+            ),
+            list3(
+              listItem2(
+                paragraph2(text2(`${FAIL_ICON} No targets to provision to`))
+              )
+            )
+          )
+        )
+      ];
+    }
+    const allProvisioned = [...targetResults.values()].every(
+      (r2) => r2.type === "PROVISIONED"
+    );
+    const noneProvisioned = [...targetResults.values()].every(
+      (r2) => r2.type !== "PROVISIONED"
+    );
+    const sortedTargetResults = [...targetResults.entries()].sort(
+      ([a2], [b2]) => compareProvisionRequestTarget(a2.target, b2.target)
+    );
+    const targets = list3();
+    for (const [targetAuth, result] of sortedTargetResults) {
+      targets.children.push(
+        listItem2(...explainTarget(targetAuth.target, result))
+      );
+    }
+    return [
+      list3(
+        listItem2(
+          paragraph2(
+            text2(`${icon(allProvisioned)} Secret `),
+            inlineCode2(authResult.request.name),
+            text2(" "),
+            ...allProvisioned ? [strong2(text2("was")), text2(" provisioned")] : noneProvisioned ? [strong2(text2("wasn't")), text2(" provisioned")] : [
+              text2("was "),
+              strong2(text2("partially")),
+              text2(" provisioned")
+            ],
+            text2(" for repo "),
+            inlineCode2(repoRefToString(authResult.request.requester)),
+            text2(":")
+          ),
+          targets
+        )
+      )
+    ];
+  };
+  function explainTarget(target, result) {
+    const subject = explainSubject(target);
+    switch (result.type) {
+      case "PROVISIONED":
+        return [
+          paragraph2(
+            text2(`${PASS_ICON} `),
+            strong2(text2("Provisioned")),
+            text2(" to "),
+            ...subject
+          )
+        ];
+      case "NOT_ALLOWED":
+        return [
+          paragraph2(
+            text2(`${FAIL_ICON} `),
+            strong2(text2("Not allowed")),
+            text2(" to provision to "),
+            ...subject
+          )
+        ];
+      case "NO_TOKEN":
+        return [
+          paragraph2(
+            text2(`${FAIL_ICON} Token `),
+            strong2(text2("wasn't")),
+            text2(" created for "),
+            ...subject
+          )
+        ];
+      case "NO_PROVISIONER":
+        return [
+          paragraph2(
+            text2(`${FAIL_ICON} No suitable provisioner for `),
+            ...subject
+          )
+        ];
+      case "REQUEST_ERROR": {
+        const body = result.error.response?.data;
+        return [
+          paragraph2(
+            text2(`${FAIL_ICON} `),
+            strong2(text2("Failed")),
+            text2(" to provision to "),
+            ...subject,
+            text2(":")
+          ),
+          list3(
+            listItem2(
+              paragraph2(
+                text2(`${FAIL_ICON} `),
+                strong2(text2(String(result.error.status))),
+                text2(" - "),
+                emphasis2(text2(result.error.message))
+              ),
+              ...details(
+                "Response body",
+                typeof body === "undefined" ? paragraph2(emphasis2(text2("(no response data)"))) : code2("json", JSON.stringify(body, null, 2))
+              )
+            )
+          )
+        ];
+      }
+      case "ERROR":
+        return [
+          paragraph2(
+            text2(`${FAIL_ICON} `),
+            strong2(text2("Failed")),
+            text2(" to provision to "),
+            ...subject,
+            text2(":")
+          ),
+          list3(
+            listItem2(
+              paragraph2(text2(`${FAIL_ICON} ${errorMessage(result.error)}`)),
+              ...details("Error stack", code2("text", errorStack(result.error)))
+            )
+          )
+        ];
+    }
+  }
+  function explainSubject(target) {
+    return [
+      ...secretTypeMdast(target),
+      text2(" secret in "),
+      inlineCode2(accountOrRepoRefToString(target.target))
+    ];
+  }
+}
+
+// src/token-auth-explainer/markdown.ts
+function createMarkdownTokenAuthExplainer() {
+  return (result) => {
+    if (result.type === "ALL_REPOS") return [explainAllRepos(result)];
+    if (result.type === "NO_REPOS") return [explainNoRepos(result)];
+    return [explainSelectedRepos(result)];
+  };
+  function explainAllRepos(result) {
+    const { request: request2, isSufficient, rules } = result;
+    const subject = [
+      strong2(text2("all repos")),
+      text2(" in "),
+      inlineCode2(request2.tokenDec.account)
+    ];
+    const summary2 = listItem2(...explainSummary(result));
+    const maxAccessAndRole = listItem2(
+      ...explainMaxAccessAndRole(result, subject)
+    );
+    summary2.children.push(list3(maxAccessAndRole));
+    const basedOnRules = listItem2(
+      ...explainBasedOnRules(
+        isSufficient,
+        subject,
+        request2.tokenDec.permissions,
+        rules
+      )
+    );
+    summary2.children.push(list3(basedOnRules));
+    return list3(summary2);
+  }
+  function explainNoRepos(result) {
+    const { request: request2, isSufficient, rules } = result;
+    const subject = [inlineCode2(request2.tokenDec.account)];
+    const summary2 = listItem2(...explainSummary(result));
+    const maxAccessAndRole = listItem2(
+      ...explainMaxAccessAndRole(result, subject)
+    );
+    summary2.children.push(list3(maxAccessAndRole));
+    const basedOnRules = listItem2(
+      ...explainBasedOnRules(
+        isSufficient,
+        subject,
+        request2.tokenDec.permissions,
+        rules
+      )
+    );
+    summary2.children.push(list3(basedOnRules));
+    return list3(summary2);
+  }
+  function explainSelectedRepos(result) {
+    const { request: request2, results } = result;
+    const subject = [
+      text2("repos in "),
+      inlineCode2(request2.tokenDec.account)
+    ];
+    const summary2 = listItem2(...explainSummary(result));
+    const maxAccessAndRole = listItem2(
+      ...explainMaxAccessAndRole(result, subject)
+    );
+    summary2.children.push(list3(maxAccessAndRole));
+    const selectedReposMatch = listItem2(...explainSelectedReposMatch(result));
+    summary2.children.push(list3(selectedReposMatch));
+    const resourceEntries = Object.entries(results).sort(
+      ([a2], [b2]) => a2.localeCompare(b2)
+    );
+    const explainedResources = list3();
+    for (const [resourceRepo, resourceResult] of resourceEntries) {
+      explainedResources.children.push(
+        listItem2(
+          ...explainResourceRepo(
+            resourceRepo,
+            request2.tokenDec.permissions,
+            resourceResult
+          )
+        )
+      );
+    }
+    summary2.children.push(explainedResources);
+    return list3(summary2);
+  }
+  function explainSummary({
+    request: request2,
+    isAllowed
+  }) {
+    const name = accountOrRepoRefToString(request2.consumer);
+    if (isRepoRef(request2.consumer)) {
+      return [
+        paragraph2(
+          text2(`${icon(isAllowed)} Repo `),
+          inlineCode2(name),
+          text2(" was "),
+          strong2(text2(isAllowed ? "allowed" : "denied")),
+          text2(" access to a token:")
+        )
+      ];
+    }
+    return [
+      paragraph2(
+        text2(`${icon(isAllowed)} Account `),
+        inlineCode2(name),
+        text2(" was "),
+        strong2(text2(isAllowed ? "allowed" : "denied")),
+        text2(" access to a token:")
+      )
+    ];
+  }
+  function explainMaxAccessAndRole({ request: request2, maxWant, isMissingRole }, accessTo) {
+    return [
+      paragraph2(
+        text2(`${icon(!isMissingRole)} `),
+        strong2(text2(`${ACCESS_LEVEL_LABELS[maxWant]}`)),
+        text2(" access to "),
+        ...accessTo,
+        ...request2.tokenDec.as ? [text2(" requested with role "), inlineCode2(request2.tokenDec.as)] : [text2(" requested without a role")]
+      )
+    ];
+  }
+  function explainSelectedReposMatch({
+    request: request2,
+    isMatched
+  }) {
+    const repoPatterns = pluralize(
+      request2.tokenDec.repos.length,
+      "repo pattern",
+      "repo patterns"
+    );
+    const repos = pluralize(request2.repos.length, "repo", "repos");
+    return [
+      paragraph2(text2(`${icon(isMatched)} ${repoPatterns} matched ${repos}`))
+    ];
+  }
+  function explainResourceRepo(resource, want, { isSufficient, rules }) {
+    return explainBasedOnRules(
+      isSufficient,
+      [text2("repo "), inlineCode2(resource)],
+      want,
+      rules
+    );
+  }
+  function explainBasedOnRules(isSufficient, accessTo, want, rules) {
+    const ruleCount = rules.length;
+    const summary2 = paragraph2(
+      text2(`${icon(isSufficient)} `),
+      strong2(text2(isSufficient ? "Sufficient" : "Insufficient")),
+      text2(" access to "),
+      ...accessTo,
+      ...ruleCount < 1 ? [text2(" (no matching rules)")] : [text2(` based on ${pluralize(ruleCount, "rule", "rules")}:`)]
+    );
+    if (ruleCount < 1) return [summary2];
+    const explainedRules = [];
+    for (const ruleResult of rules) {
+      explainedRules.push(listItem2(...explainRule(want, ruleResult)));
+    }
+    return [summary2, list3(...explainedRules)];
+  }
+  function explainRule(want, { index, rule, have, isSufficient }) {
+    return [
+      paragraph2(
+        text2(`${icon(isSufficient)} Rule `),
+        ...renderRule(index, rule),
+        text2(` gave ${isSufficient ? "sufficient" : "insufficient"} access:`)
+      ),
+      list3(...renderPermissionComparison(have, want))
+    ];
+  }
+  function renderRule(index, { description }) {
+    const n2 = inlineCode2(`#${index + 1}`);
+    return description ? [n2, text2(": "), emphasis2(text2(description))] : [n2];
+  }
+  function renderPermissionComparison(have, want) {
+    const comparison = [];
+    for (const p2 of Object.keys(want).sort((a2, b2) => a2.localeCompare(b2))) {
+      const h2 = permissionAccess(have, p2);
+      const w2 = permissionAccess(want, p2);
+      comparison.push(
+        listItem2(
+          paragraph2(
+            text2(`${icon(isSufficientAccess(h2, w2))} `),
+            emphasis2(text2(p2)),
+            text2(": have "),
+            inlineCode2(h2),
+            text2(", wanted "),
+            inlineCode2(w2)
+          )
+        )
+      );
+    }
+    return comparison;
+  }
+}
+
+// src/token-creation-explainer/access-level.ts
+var ACCESS_LEVEL_LABELS2 = {
+  admin: "admin",
+  none: "no-permission",
+  read: "read-only",
+  write: "write"
+};
+
+// src/token-creation-explainer/markdown.ts
+function createMarkdownTokenCreationExplainer() {
+  const tokenSeq = createSequencer();
+  const firstTokenIndex = /* @__PURE__ */ new Map();
+  return (authResult, creationResult) => {
+    const currentIndex = tokenSeq(authResult);
+    let firstIndex = firstTokenIndex.get(creationResult);
+    if (typeof firstIndex === "undefined") {
+      firstIndex = currentIndex;
+      firstTokenIndex.set(creationResult, firstIndex);
+    }
+    if (firstIndex !== currentIndex) {
+      return [
+        paragraph2(
+          text2(
+            `${icon(creationResult.type === "CREATED")} Same result as token `
+          ),
+          inlineCode2(`#${firstIndex}`)
+        )
+      ];
+    }
+    return explainResult(authResult, creationResult);
+  };
+  function explainResult(authResult, result) {
+    const { account, permissions, as: role } = authResult.request.tokenDec;
+    const { repos } = authResult.request;
+    const access2 = maxAccess(permissions);
+    const isSuccess = result.type === "CREATED";
+    const permEntries = effectivePermissions(permissions);
+    const hasPermissions = permEntries.length > 0;
+    const summary2 = listItem2(renderHeader(result.type, access2, repos, account));
+    const subIcon = icon(isSuccess || void 0);
+    const verb = isSuccess ? "Has" : "Wanted";
+    const nested = list3(
+      ...renderErrorLines(result, authResult.request.consumer)
+    );
+    if (hasPermissions) {
+      const accessLine = paragraph2(
+        text2(`${subIcon} ${verb} `),
+        strong2(text2(access2)),
+        ...role ? [text2(" access with role "), inlineCode2(role)] : [text2(" access "), emphasis2(text2("without")), text2(" a role")]
+      );
+      nested.children.push(listItem2(accessLine));
+    }
+    nested.children.push(...renderRepoLines(subIcon, verb, repos, account));
+    nested.children.push(...renderPermissionLines(subIcon, verb, permEntries));
+    summary2.children.push(nested);
+    return [list3(summary2)];
+  }
+  function renderHeader(type, access2, repos, account) {
+    const scope = repoScopeLabel(repos, account);
+    const isSuccess = type === "CREATED";
+    const label = ACCESS_LEVEL_LABELS2[access2];
+    if (isSuccess) {
+      return paragraph2(
+        text2(`${icon(isSuccess)} `),
+        strong2(text2(capitalize(label))),
+        text2(" token created with access to "),
+        ...scope,
+        text2(":")
+      );
+    }
+    const verb = type === "NOT_ALLOWED" ? "Refused" : "Failed";
+    return paragraph2(
+      text2(`${icon(isSuccess)} `),
+      strong2(text2(verb)),
+      text2(" to create "),
+      strong2(text2(label)),
+      text2(" token with access to "),
+      ...scope,
+      text2(":")
+    );
+  }
+  function renderErrorLines(result, consumer) {
+    switch (result.type) {
+      case "CREATED":
+        return [];
+      case "NOT_ALLOWED": {
+        return [
+          listItem2(
+            paragraph2(
+              text2(`${FAIL_ICON} Token `),
+              strong2(text2("not allowed")),
+              ...isRepoRef(consumer) ? [text2(" for repo "), inlineCode2(repoRefToString(consumer))] : [text2(" for account "), inlineCode2(consumer.account)]
+            )
+          )
+        ];
+      }
+      case "NO_ISSUER":
+        return [listItem2(paragraph2(text2(`${FAIL_ICON} No suitable issuer`)))];
+      case "REQUEST_ERROR": {
+        const body = result.error.response?.data;
+        return [
+          listItem2(
+            paragraph2(
+              text2(`${FAIL_ICON} `),
+              strong2(text2(String(result.error.status))),
+              text2(" - "),
+              emphasis2(text2(result.error.message))
+            ),
+            ...details(
+              "Response body",
+              typeof body === "undefined" ? paragraph2(emphasis2(text2("(no response data)"))) : code2("json", JSON.stringify(body, null, 2))
+            )
+          )
+        ];
+      }
+      case "ERROR":
+        return [
+          listItem2(
+            paragraph2(text2(`${FAIL_ICON} ${errorMessage(result.error)}`)),
+            ...details("Error stack", code2("text", errorStack(result.error)))
+          )
+        ];
+    }
+  }
+  function renderRepoLines(icon2, verb, repos, account) {
+    if (repos === "all") {
+      return [
+        listItem2(
+          paragraph2(
+            text2(`${icon2} ${verb} access to `),
+            strong2(text2("all repos")),
+            text2(" in "),
+            inlineCode2(account)
+          )
+        )
+      ];
+    }
+    if (repos.length < 1) {
+      return [
+        listItem2(
+          paragraph2(
+            text2(`${icon2} ${verb} `),
+            strong2(text2("account-only")),
+            text2(" access")
+          )
+        )
+      ];
+    }
+    const repoItems = repos.map(
+      (repo) => listItem2(paragraph2(text2(`${icon2} `), inlineCode2(`${account}/${repo}`)))
+    );
+    return [
+      listItem2(
+        paragraph2(
+          text2(`${icon2} ${verb} access to `),
+          strong2(text2(`${pluralize(repos.length, "repo", "repos")}`)),
+          text2(" in "),
+          inlineCode2(account)
+        ),
+        list3(...repoItems)
+      )
+    ];
+  }
+  function renderPermissionLines(icon2, verb, permEntries) {
+    if (permEntries.length < 1) {
+      return [
+        listItem2(
+          paragraph2(
+            text2(`${FAIL_ICON} `),
+            strong2(text2("No permissions")),
+            text2(" requested")
+          )
+        )
+      ];
+    }
+    const permItems = permEntries.map(
+      ([name, access2]) => listItem2(
+        paragraph2(
+          text2(`${icon2} `),
+          emphasis2(text2(name)),
+          text2(": "),
+          inlineCode2(access2)
+        )
+      )
+    );
+    return [
+      listItem2(
+        paragraph2(
+          text2(`${icon2} ${verb} `),
+          strong2(
+            text2(pluralize(permEntries.length, "permission", "permissions"))
+          ),
+          text2(":")
+        ),
+        list3(...permItems)
+      )
+    ];
+  }
+  function repoScopeLabel(repos, account) {
+    if (repos === "all") {
+      return [strong2(text2("all repos")), text2(" in "), inlineCode2(account)];
+    }
+    if (repos.length < 1) {
+      return [inlineCode2(account)];
+    }
+    return [
+      strong2(text2(`${pluralize(repos.length, "repo", "repos")}`)),
+      text2(" in "),
+      inlineCode2(account)
+    ];
+  }
+}
+
+// src/dashboard.ts
+var DASHBOARD_LABEL = "gh-token-dashboard";
+var DASHBOARD_LABEL_DESCRIPTION = "A summary of GitHub token provisioning";
+var FAILURE_DASHBOARD_TITLE = "GitHub tokens couldn't be provisioned";
+var CONFIG_ISSUE_DASHBOARD_TITLE = "Token provisioning config is invalid";
+function renderFailureDashboard(context, secrets, tokenResults, tokenCreationResults, provisionResults) {
+  const secretProvisioning = [];
+  const tokenCreation = [];
+  const requestAuthorization = [];
+  const scopedTokens = findScopedTokens();
+  const scopedCreationResults = /* @__PURE__ */ new Map();
+  for (const token of scopedTokens) {
+    const creationResult = tokenCreationResults.get(token);
+    if (creationResult) scopedCreationResults.set(token, creationResult);
+  }
+  const explainProvision = createMarkdownProvisionExplainer();
+  const explainTokenCreation = createMarkdownTokenCreationExplainer();
+  const explainProvisionAuth = createMarkdownProvisionAuthExplainer();
+  const explainTokenAuth = createMarkdownTokenAuthExplainer();
+  for (let i2 = 0; i2 < secrets.length; ++i2) {
+    const secret = secrets[i2];
+    const secretHeading = [text2("Secret "), inlineCode2(`#${i2 + 1}`)];
+    const targetResults = provisionResults.get(secret);
+    if (targetResults) {
+      secretProvisioning.push(
+        heading2(3, ...secretHeading),
+        ...explainProvision(secret, targetResults)
+      );
+    }
+    requestAuthorization.push(
+      heading2(3, ...secretHeading),
+      ...explainProvisionAuth(secret)
+    );
+  }
+  for (let i2 = 0; i2 < scopedTokens.length; ++i2) {
+    const token = scopedTokens[i2];
+    const tokenHeading = [text2("Token "), inlineCode2(`#${i2 + 1}`)];
+    requestAuthorization.push(
+      heading2(3, ...tokenHeading),
+      ...explainTokenAuth(token)
+    );
+  }
+  let creationIndex = 0;
+  for (const [token, creationResult] of scopedCreationResults) {
+    const tokenHeading = [text2("Token "), inlineCode2(`#${++creationIndex}`)];
+    tokenCreation.push(
+      heading2(3, ...tokenHeading),
+      ...explainTokenCreation(token, creationResult)
+    );
+  }
+  const body = [
+    gfmAlert(
+      "WARNING",
+      paragraph2(
+        link2(
+          "https://github.com/ghalactic/provision-github-tokens",
+          text2("Provision GitHub Tokens")
+        ),
+        text2(
+          " couldn't provision some of the requested tokens. The following is a summary of "
+        ),
+        link2(context.githubRunAttemptUrl, text2("this workflow run")),
+        text2(".")
+      )
+    )
+  ];
+  if (secretProvisioning.length > 0) {
+    body.push(heading2(2, text2("Secret provisioning")), ...secretProvisioning);
+  }
+  if (tokenCreation.length > 0) {
+    body.push(heading2(2, text2("Token creation")), ...tokenCreation);
+  }
+  if (requestAuthorization.length > 0) {
+    body.push(
+      heading2(2, text2("Request authorization")),
+      ...requestAuthorization
+    );
+  }
+  return {
+    title: FAILURE_DASHBOARD_TITLE,
+    body
+  };
+  function findScopedTokens() {
+    const requesterTokens = /* @__PURE__ */ new Set();
+    for (const secret of secrets) {
+      for (const { tokenAuthResult } of secret.results) {
+        if (tokenAuthResult) requesterTokens.add(tokenAuthResult);
+      }
+    }
+    return tokenResults.filter((token) => requesterTokens.has(token));
+  }
+}
+function renderConfigIssueDashboard(context, issue2) {
+  const { requester, configPath, error: error2 } = issue2;
+  const configUrl = new URL(
+    `${requester.account}/${requester.repo}/blob/HEAD/${configPath}`,
+    context.githubServerUrl
+  );
+  const body = [
+    gfmAlert(
+      "WARNING",
+      paragraph2(
+        link2(
+          "https://github.com/ghalactic/provision-github-tokens",
+          text2("Provision GitHub Tokens")
+        ),
+        text2(" couldn't parse or validate "),
+        link2(configUrl, text2("this repo's config")),
+        text2(".")
+      )
+    ),
+    ...errorDetails(error2)
+  ];
+  return {
+    title: CONFIG_ISSUE_DASHBOARD_TITLE,
+    body
+  };
+  function errorDetails(error3) {
+    if (error3 instanceof ParseYamlError) return parseYamlErrorDetails(error3);
+    if (error3 instanceof ValidateError) return validateErrorDetails(error3);
+    return [
+      heading2(2, text2("Something went wrong")),
+      paragraph2(text2("An unexpected error occurred:")),
+      blockquote2(paragraph2(emphasis2(text2(errorMessage(error3)))))
+    ];
+  }
+  function parseYamlErrorDetails(error3) {
+    return [
+      heading2(2, text2("Invalid YAML")),
+      paragraph2(
+        text2("Your "),
+        link2(configUrl, text2("config")),
+        text2(
+          ` contains invalid YAML${error3.yamlErrors.length > 0 ? ":" : "."}`
+        )
+      ),
+      ...error3.yamlErrors.map((error4) => code2("txt", errorMessage(error4)))
+    ];
+  }
+  function validateErrorDetails(error3) {
+    return [
+      heading2(2, text2("Invalid configuration")),
+      paragraph2(
+        text2("Your "),
+        link2(configUrl, text2("config")),
+        text2(" is not valid:")
+      ),
+      list3(
+        ...error3.errors.map(
+          (error4) => listItem2(
+            paragraph2(
+              ...error4.instancePath ? [inlineCode2(error4.instancePath)] : [strong2(text2("The config root"))],
+              text2(` ${error4.message ?? "is invalid"}`)
+            )
+          )
+        )
+      )
+    ];
   }
 }
 
@@ -120437,6 +121355,225 @@ function isFullyProvisioned(authResult, provisionResults) {
     if (result.type !== "PROVISIONED") return false;
   }
   return true;
+}
+
+// src/reconcile-dashboards.ts
+var DASHBOARD_LABEL_COLOR = "d4c5f9";
+var CLOSE_COMMENT_PREFIX = "This dashboard will be closed because ";
+var RESOLVED_REASON = "all provisioning issues for this repo have been resolved.";
+var CONFIG_DISABLED_REASON = "token dashboards are disabled in this repo's requester config.";
+var PROVIDER_DISABLED_REASON = "token dashboards are disabled in the provider config files.";
+function createReconcileDashboards(findProvisionerOctokit) {
+  return async (context, config, discovery, tokenResults, tokenCreationResults, provisionResults) => {
+    debug("Reconciling token dashboards");
+    const entries = [...discovery.entries()].sort(
+      ([a2], [b2]) => a2.localeCompare(b2)
+    );
+    for (const [repoName, discovered] of entries) {
+      try {
+        await reconcileRepo(
+          context,
+          config,
+          discovered,
+          tokenResults,
+          tokenCreationResults,
+          provisionResults
+        );
+      } catch (error2) {
+        warning(
+          `Failed to reconcile dashboard for ${repoName}: ` + errorMessage(error2)
+        );
+      }
+    }
+  };
+  async function reconcileRepo(context, config, discovered, tokenResults, tokenCreationResults, provisionResults) {
+    const { requester } = discovered;
+    const repoName = repoRefToString(requester);
+    const found = findProvisionerOctokit(requester);
+    if (!found) {
+      throw new Error(
+        `Invariant violation: No provisioner found for requester ${repoName}`
+      );
+    }
+    const [octokit, instReg] = found;
+    if (!isWriteAccess(
+      permissionAccess(instReg.installation.permissions, "issues")
+    )) {
+      warning(
+        `Installation ${instReg.installation.id} doesn't have "issues: write" access - skipping dashboard for ${repoName}`
+      );
+      return;
+    }
+    if (!config.dashboards.enabled) {
+      await closeOpenDashboards(octokit, requester, PROVIDER_DISABLED_REASON);
+      return;
+    }
+    if (discovered.configError) {
+      const desired2 = renderConfigIssueDashboard(context, {
+        requester,
+        configPath: discovered.configPath,
+        error: discovered.configError
+      });
+      await upsertDashboard(octokit, requester, desired2);
+      return;
+    }
+    if (!discovered.config) {
+      throw new Error(
+        `Invariant violation: Discovered requester ${repoName} has no config`
+      );
+    }
+    if (!discovered.config.dashboard.enabled) {
+      await closeOpenDashboards(octokit, requester, CONFIG_DISABLED_REASON);
+      return;
+    }
+    const desired = desiredIssue(
+      context,
+      requester,
+      tokenResults,
+      tokenCreationResults,
+      provisionResults
+    );
+    await upsertDashboard(octokit, requester, desired);
+  }
+}
+function desiredIssue(context, ref, tokenResults, tokenCreationResults, provisionResults) {
+  const secrets = requesterSecrets(ref, provisionResults);
+  const hasFailures = secrets.some(
+    (secret) => !isFullyProvisioned(secret, provisionResults)
+  );
+  if (hasFailures) {
+    return renderFailureDashboard(
+      context,
+      secrets,
+      tokenResults,
+      tokenCreationResults,
+      provisionResults
+    );
+  }
+  return void 0;
+}
+function requesterSecrets(ref, provisionResults) {
+  const requesterSecrets2 = [];
+  for (const secret of provisionResults.keys()) {
+    if (repoRefToString(secret.request.requester) === repoRefToString(ref)) {
+      requesterSecrets2.push(secret);
+    }
+  }
+  return requesterSecrets2;
+}
+async function upsertDashboard(octokit, ref, desired) {
+  const openIssues = await openDashboardIssues(octokit, ref);
+  if (openIssues.length < 1) {
+    if (!desired) return;
+    await ensureDashboardLabel(octokit, ref);
+    const created = await octokit.rest.issues.create({
+      owner: ref.account,
+      repo: ref.repo,
+      title: desired.title,
+      body: toMarkdown2(desired.body),
+      labels: [DASHBOARD_LABEL]
+    });
+    info(
+      `Created dashboard issue #${created.data.number} in ${repoRefToString(ref)}`
+    );
+    return;
+  }
+  const [newest] = openIssues.slice(-1);
+  for (const issue2 of openIssues) {
+    if (issue2.number === newest.number) continue;
+    await closeIssue(octokit, ref, issue2.number);
+  }
+  if (!desired) {
+    await closeIssue(octokit, ref, newest.number, RESOLVED_REASON);
+    return;
+  }
+  await octokit.rest.issues.update({
+    owner: ref.account,
+    repo: ref.repo,
+    issue_number: newest.number,
+    title: desired.title,
+    body: toMarkdown2(desired.body)
+  });
+  info(`Updated dashboard issue #${newest.number} in ${repoRefToString(ref)}`);
+}
+async function closeOpenDashboards(octokit, ref, reason) {
+  const openIssues = await openDashboardIssues(octokit, ref);
+  if (openIssues.length < 1) {
+    debug(`No open dashboard issue in ${repoRefToString(ref)}`);
+    return;
+  }
+  for (const issue2 of openIssues) {
+    await closeIssue(octokit, ref, issue2.number, reason);
+  }
+}
+async function openDashboardIssues(octokit, ref) {
+  const repoName = repoRefToString(ref);
+  const openIssues = [];
+  const issuePages = octokit.paginate.iterator(
+    octokit.rest.issues.listForRepo,
+    { owner: ref.account, repo: ref.repo, state: "open" }
+  );
+  for await (const { data } of issuePages) {
+    for (const issue2 of data) {
+      for (const label of issue2.labels) {
+        if (label.name === DASHBOARD_LABEL) {
+          openIssues.push(issue2);
+          break;
+        }
+      }
+    }
+  }
+  openIssues.sort((a2, b2) => a2.number - b2.number);
+  debug(`Found ${openIssues.length} open dashboard issue(s) in ${repoName}`);
+  return openIssues;
+}
+async function closeIssue(octokit, ref, number, reason) {
+  if (reason) {
+    await octokit.rest.issues.createComment({
+      owner: ref.account,
+      repo: ref.repo,
+      issue_number: number,
+      body: `${CLOSE_COMMENT_PREFIX}${reason}`
+    });
+  }
+  await octokit.rest.issues.update({
+    owner: ref.account,
+    repo: ref.repo,
+    issue_number: number,
+    state: "closed"
+  });
+  info(`Closed dashboard issue #${number} in ${repoRefToString(ref)}`);
+}
+async function ensureDashboardLabel(octokit, ref) {
+  try {
+    await octokit.rest.issues.createLabel({
+      owner: ref.account,
+      repo: ref.repo,
+      name: DASHBOARD_LABEL,
+      color: DASHBOARD_LABEL_COLOR,
+      description: DASHBOARD_LABEL_DESCRIPTION
+    });
+    debug(`Created dashboard label in ${repoRefToString(ref)}`);
+  } catch (cause) {
+    handleRequestError(cause, {
+      422: (cause2) => {
+        if (!requestErrorHasError(cause2, { code: "already_exists" })) {
+          throw new Error("Unable to create token dashboard label", { cause: cause2 });
+        }
+        debug(`Dashboard label already exists in ${repoRefToString(ref)}`);
+      }
+    });
+  }
+}
+
+// src/register-token-declarations.ts
+function registerTokenDeclarations(declarationRegistry, requesters) {
+  for (const { requester, config } of requesters.values()) {
+    if (!config) continue;
+    for (const [name, declaration] of Object.entries(config.tokens)) {
+      declarationRegistry.registerDeclaration(requester, name, declaration);
+    }
+  }
 }
 
 // src/summary.ts
@@ -120932,14 +122069,6 @@ function createTokenDeclarationRegistry() {
 // src/token-factory.ts
 var import_fast_json_stable_stringify = __toESM(require_fast_json_stable_stringify(), 1);
 
-// src/token-creation-explainer/access-level.ts
-var ACCESS_LEVEL_LABELS2 = {
-  admin: "admin",
-  none: "no-permission",
-  read: "read-only",
-  write: "write"
-};
-
 // src/token-creation-explainer/text.ts
 function createTextTokenCreationExplainer() {
   const tokenSeq = createSequencer();
@@ -121213,6 +122342,7 @@ try {
     findProvisionerOctokit,
     encryptSecret
   );
+  const reconcileDashboards = createReconcileDashboards(findProvisionerOctokit);
   await group("Discovering apps", async () => {
     await discoverApps(octokitFactory, appRegistry, appsInput);
   });
@@ -121237,6 +122367,16 @@ try {
       provisionAuthorizer.listResults()
     );
   });
+  await group("Reconciling dashboards", async () => {
+    await reconcileDashboards(
+      context,
+      config,
+      requesters,
+      authorizeResult.tokenResults,
+      tokenCreationResults,
+      provisionResults
+    );
+  });
   const summaryMarkdown = renderSummary(
     context,
     authorizeResult,
@@ -121256,6 +122396,8 @@ try {
 /* istanbul ignore next - Header guarantees string data - @preserve */
 /* istanbul ignore next - parseRequesterConfig always throws with a cause - @preserve */
 /* istanbul ignore else - @preserve */
+/* istanbul ignore next - discoverRequesters only records repos reachable via a provisioner - @preserve */
+/* istanbul ignore next - discovery records a config or a config issue - @preserve */
 /* istanbul ignore file - TODO: remove coverage ignore - @preserve */
 /*! Bundled license information:
 
