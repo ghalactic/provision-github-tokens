@@ -1,6 +1,10 @@
 import { join } from "node:path";
 import { expect, it } from "vitest";
 import {
+  DASHBOARD_LABEL,
+  FAILURE_DASHBOARD_TITLE,
+} from "../../../src/dashboard.js";
+import {
   createWorkflowRun,
   E2E_TIMEOUT,
   getDefaultBranchSha,
@@ -45,6 +49,33 @@ it(
     await expect(
       (await downloadArtifact(run, "summary.md")).toString("utf-8"),
     ).toMatchFileSnapshot(join(fixturesPath, "summary.md"));
+
+    // The run reconciles one dashboard per requester repo: this repo
+    // provisions without failures, so it keeps no dashboard; the consumer
+    // deliberately requests unauthorized provisions, so it keeps a failure
+    // dashboard that names them.
+    const selfIssues = await ghaContext.octokit.rest.issues.listForRepo({
+      owner: ghaContext.owner,
+      repo: ghaContext.repo,
+      state: "open",
+      labels: DASHBOARD_LABEL,
+    });
+    expect(selfIssues.data).toHaveLength(0);
+
+    const consumerIssues =
+      await ghaContext.fixturesOctokit.rest.issues.listForRepo({
+        owner: CONSUMER_OWNER,
+        repo: CONSUMER_REPO,
+        state: "open",
+        labels: DASHBOARD_LABEL,
+      });
+    expect(consumerIssues.data).toHaveLength(1);
+    expect(consumerIssues.data[0]).toMatchObject({
+      title: FAILURE_DASHBOARD_TITLE,
+    });
+    expect(consumerIssues.data[0].body ?? "").toContain(
+      "UNAUTHORIZED_PROVISION",
+    );
   },
 );
 
