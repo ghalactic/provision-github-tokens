@@ -7,9 +7,9 @@ status: accepted
 Provisioning failures, authorization denials, and invalid requester configs were
 only visible in the provider's job summary and logs, so requesters never learned
 their tokens failed. Each run now maintains one persistent issue per requester
-repo — a token dashboard — listing that repo's current failures with full
-Markdown explanations (not the summary's terse table), refreshed from each run's
-results and closed with an explanatory comment once nothing is failing or
+repo — a token dashboard — showing that repo's current provisioning results with
+full Markdown explanations (not the summary's terse table), refreshed from each
+run's results and closed with an explanatory comment once nothing is failing or
 dashboards are turned off. Dashboards are anchored by a `gh-token-dashboard`
 label, never reopened after a human or the action closes them (a fresh issue is
 opened instead), enabled by default with per-repo opt-out, and posted by the
