@@ -1,15 +1,28 @@
-## `SECRET_A`
+## Token creation
 
-- ✅ Repo account-x/repo-x was allowed to provision secret SECRET\_A:
-  - ✅ Can use token declaration account-a/repo-a.token-a
-  - ✅ Can provision token to GitHub Actions secret in account-a:
-    - ✅ Account account-a was allowed access to token #1
+### Token `#1`
+
+- ❌ Failed to create write token with access to all repos in `account-a`:
+- ❌ No suitable issuer
+- ➖ Wanted write access without a role
+- ➖ Wanted access to all repos in `account-a`
+- ➖ Wanted 1 permission:
+  - ➖ contents: `write`
+
+## Request authorization
+
+### Secret `#1`
+
+- ✅ Repo `account-x/repo-x` was allowed to provision secret `SECRET_A`:
+  - ✅ Can use token declaration `account-a/repo-a.token-a`
+  - ✅ Can provision token to GitHub Actions secret in `account-a`:
+    - ✅ Account `account-a` was allowed access to token `#1`
     - ✅ Can provision secret (no matching rules)
-- ❌ Failed to create write token with access to all repos in account-a:
-  - ❌ No suitable issuer
-  - ➖ Wanted write access without a role
-  - ➖ Wanted access to all repos in account-a
-  - ➖ Wanted 1 permission:
-    - ➖ contents: write
+
+### Token `#1`
+
+- ✅ Account `account-a` was allowed access to a token:
+- ✅ Write access to all repos in `account-a` requested without a role
+- ✅ Sufficient access to all repos in `account-a` (no matching rules)
 
 [Full logs for this run](https://github.example.com/account-x/repo-x/actions/runs/42)

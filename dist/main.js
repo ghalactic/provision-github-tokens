@@ -120352,8 +120352,40 @@ function emphasis2(...children) {
 function gfmAlert(type, ...children) {
   return blockquote2(paragraph2(text2(`[!${type}]`)), ...children);
 }
+function details(body) {
+  return html2(
+    `<details>
+<summary>Error details</summary>
+
+\`\`\`
+${body}
+\`\`\`
+
+</details>
+`
+  );
+}
 function heading2(depth, ...children) {
   return { type: "heading", depth, children };
+}
+function html2(value) {
+  return { type: "html", value };
+}
+function list3(items) {
+  return {
+    type: "list",
+    ordered: false,
+    spread: false,
+    children: items.map(({ contents, nested }) => ({
+      type: "listItem",
+      spread: false,
+      checked: null,
+      children: [
+        { type: "paragraph", children: contents },
+        ...nested ? [nested] : []
+      ]
+    }))
+  };
 }
 function inlineCode2(code2) {
   return { type: "inlineCode", value: code2 };
@@ -120390,14 +120422,479 @@ function text2(value) {
   return { type: "text", value };
 }
 
-// src/token-creation-explainer/text.ts
+// src/provision-auth-explainer/markdown.ts
+function createMarkdownProvisionAuthExplainer(tokenResults) {
+  return (result) => [list3(explainSummary(result))];
+  function explainSummary({
+    request: request2,
+    isAllowed,
+    results,
+    isMissingTargets
+  }) {
+    return [
+      {
+        contents: [
+          text2(`${icon(isAllowed)} Repo `),
+          inlineCode2(repoRefToString(request2.requester)),
+          text2(
+            isAllowed ? " was allowed to provision secret " : " wasn't allowed to provision secret "
+          ),
+          inlineCode2(request2.name),
+          text2(":")
+        ],
+        nested: list3([
+          explainTokenDec(request2),
+          ...explainTargets(request2, results, isMissingTargets)
+        ])
+      }
+    ];
+  }
+  function explainTokenDec(request2) {
+    if (request2.tokenDec) {
+      return {
+        contents: [
+          text2(`${PASS_ICON} Can use token declaration `),
+          inlineCode2(request2.secretDec.token)
+        ]
+      };
+    }
+    const reason = request2.tokenDecIsRegistered ? "it isn't shared" : "it doesn't exist";
+    return {
+      contents: [
+        text2(`${FAIL_ICON} Can't use token declaration `),
+        inlineCode2(request2.secretDec.token),
+        text2(` because ${reason}`)
+      ]
+    };
+  }
+  function explainTargets(request2, results, isMissingTargets) {
+    if (isMissingTargets) {
+      return [{ contents: [text2(`${FAIL_ICON} No targets specified`)] }];
+    }
+    const entries = [];
+    for (let i2 = 0; i2 < results.length; ++i2) {
+      entries.push([request2.to[i2], results[i2]]);
+    }
+    entries.sort(([a2], [b2]) => compareProvisionRequestTarget(a2, b2));
+    return entries.map(([target, result]) => explainTarget(result, target));
+  }
+  function explainTarget(result, target) {
+    const { isAllowed } = result;
+    return {
+      contents: [
+        text2(`${icon(isAllowed)} ${isAllowed ? "Can" : "Can't"} `),
+        text2("provision token to "),
+        ...explainSubject(target),
+        text2(":")
+      ],
+      nested: list3([
+        explainTargetToken(result),
+        explainTargetProvision(result)
+      ])
+    };
+  }
+  function explainTargetToken({
+    isTokenAllowed,
+    tokenAuthResult
+  }) {
+    if (!tokenAuthResult) {
+      return {
+        contents: [
+          text2(`${FAIL_ICON} Token can't be authorized without a declaration`)
+        ]
+      };
+    }
+    const name = accountOrRepoRefToString(tokenAuthResult.request.consumer);
+    const ref = `#${tokenResults.indexOf(tokenAuthResult) + 1}`;
+    const kind = isRepoRef(tokenAuthResult.request.consumer) ? "Repo" : "Account";
+    const verb = isTokenAllowed ? "was allowed" : "was denied";
+    return {
+      contents: [
+        text2(`${icon(isTokenAllowed)} ${kind} `),
+        inlineCode2(name),
+        text2(` ${verb} access to token `),
+        inlineCode2(ref)
+      ]
+    };
+  }
+  function explainTargetProvision({
+    isProvisionAllowed,
+    rules
+  }) {
+    return {
+      contents: [
+        text2(`${icon(isProvisionAllowed)} `),
+        text2(`${isProvisionAllowed ? "Can" : "Can't"} provision secret `),
+        ...explainBasedOnRules(rules)
+      ],
+      nested: rules.length > 0 ? list3(rules.map(explainRule)) : void 0
+    };
+  }
+  function explainBasedOnRules(rules) {
+    if (rules.length < 1) return [text2("(no matching rules)")];
+    return [
+      text2(
+        `based on ${rules.length} ${rules.length === 1 ? "rule" : "rules"}:`
+      )
+    ];
+  }
+  function explainRule({
+    index,
+    rule,
+    have
+  }) {
+    const isAllowed = have === "allow";
+    return {
+      contents: [
+        text2(`${icon(isAllowed)} ${isAllowed ? "Allowed" : "Denied"} by rule `),
+        inlineCode2(`#${index + 1}`),
+        ...rule.description ? [text2(`: ${JSON.stringify(rule.description)}`)] : []
+      ]
+    };
+  }
+  function explainSubject(target) {
+    const type = ((r2) => {
+      const type2 = r2.type;
+      switch (type2) {
+        case "actions":
+          return "GitHub Actions";
+        case "codespaces":
+          return "GitHub Codespaces";
+        case "dependabot":
+          return "Dependabot";
+        case "environment":
+          return `GitHub environment ${r2.target.environment}`;
+      }
+      throw new Error(
+        `Invariant violation: Unexpected secret type ${JSON.stringify(type2)}`
+      );
+    })(target);
+    return [
+      text2(`${type} secret in `),
+      inlineCode2(accountOrRepoRefToString(target.target))
+    ];
+  }
+}
+
+// src/provision-explainer/markdown.ts
+function createMarkdownProvisionExplainer() {
+  return (authResult, targetResults) => {
+    if (targetResults.size < 1) {
+      return [noTargetsDashboard(authResult)];
+    }
+    const { request: request2 } = authResult;
+    const targetEntries = [...targetResults.entries()].sort(
+      ([a2], [b2]) => compareProvisionRequestTarget(a2.target, b2.target)
+    );
+    const allProvisioned = targetEntries.every(
+      ([, result]) => result.type === "PROVISIONED"
+    );
+    const noneProvisioned = targetEntries.every(
+      ([, result]) => result.type !== "PROVISIONED"
+    );
+    const status = allProvisioned ? "was provisioned" : noneProvisioned ? "wasn't provisioned" : "was partially provisioned";
+    const items = [
+      {
+        contents: [
+          text2(`${icon(allProvisioned)} Secret `),
+          inlineCode2(request2.name),
+          text2(` ${status} for repo `),
+          inlineCode2(repoRefToString(request2.requester)),
+          text2(":")
+        ]
+      }
+    ];
+    const errorDetails = [];
+    for (const [targetAuth, result] of targetEntries) {
+      const { item, detail } = explainTarget(targetAuth.target, result);
+      items.push(item);
+      if (detail) errorDetails.push(details(detail));
+    }
+    return [list3(items), ...errorDetails];
+  };
+  function noTargetsDashboard(authResult) {
+    return list3([
+      {
+        contents: [
+          text2(`${FAIL_ICON} Secret `),
+          inlineCode2(authResult.request.name),
+          text2(" wasn't provisioned for repo "),
+          inlineCode2(repoRefToString(authResult.request.requester)),
+          text2(":")
+        ],
+        nested: list3([
+          { contents: [text2(`${FAIL_ICON} No targets to provision to`)] }
+        ])
+      }
+    ]);
+  }
+  function explainTarget(target, result) {
+    const suffix = explainSubject(target);
+    switch (result.type) {
+      case "PROVISIONED":
+        return {
+          item: {
+            contents: [text2(`${PASS_ICON} Provisioned to `), ...suffix]
+          }
+        };
+      case "NOT_ALLOWED":
+        return {
+          item: {
+            contents: [
+              text2(`${FAIL_ICON} Not allowed to provision to `),
+              ...suffix
+            ]
+          }
+        };
+      case "NO_TOKEN":
+        return {
+          item: {
+            contents: [
+              text2(`${FAIL_ICON} Token wasn't created for `),
+              ...suffix
+            ]
+          }
+        };
+      case "NO_PROVISIONER":
+        return {
+          item: {
+            contents: [
+              text2(`${FAIL_ICON} No suitable provisioner for `),
+              ...suffix
+            ]
+          }
+        };
+      case "REQUEST_ERROR": {
+        const body = result.error.response?.data;
+        const detail = typeof body === "undefined" ? "(no response data)" : JSON.stringify(body, null, 2);
+        return {
+          item: {
+            contents: [
+              text2(`${FAIL_ICON} Failed to provision to `),
+              ...suffix,
+              text2(`: ${result.error.status} - ${result.error.message}`)
+            ]
+          },
+          detail
+        };
+      }
+      case "ERROR":
+        return {
+          item: {
+            contents: [
+              text2(`${FAIL_ICON} Failed to provision to `),
+              ...suffix,
+              text2(`: ${errorMessage(result.error)}`)
+            ]
+          },
+          detail: errorStack(result.error)
+        };
+    }
+  }
+  function explainSubject(target) {
+    const type = ((r2) => {
+      const type2 = r2.type;
+      switch (type2) {
+        case "actions":
+          return "GitHub Actions";
+        case "codespaces":
+          return "GitHub Codespaces";
+        case "dependabot":
+          return "Dependabot";
+        case "environment":
+          return `GitHub environment ${r2.target.environment}`;
+      }
+      throw new Error(
+        `Invariant violation: Unexpected secret type ${JSON.stringify(type2)}`
+      );
+    })(target);
+    return [
+      text2(`${type} secret in `),
+      inlineCode2(accountOrRepoRefToString(target.target))
+    ];
+  }
+}
+
+// src/token-auth-explainer/markdown.ts
+var ACCESS_LEVELS2 = {
+  none: "No",
+  admin: "Admin",
+  read: "Read",
+  write: "Write"
+};
+function createMarkdownTokenAuthExplainer() {
+  return (result) => [list3(explainTokenAuth(result))];
+  function explainTokenAuth(result) {
+    if (result.type === "ALL_REPOS") return explainAllRepos(result);
+    if (result.type === "NO_REPOS") return explainNoRepos(result);
+    return explainSelectedRepos(result);
+  }
+  function explainAllRepos(result) {
+    const subject = [
+      text2("all repos in "),
+      inlineCode2(result.request.tokenDec.account)
+    ];
+    return [
+      explainConsumer(result),
+      explainAccessAndRole(result, subject),
+      explainSufficient(result, subject)
+    ];
+  }
+  function explainNoRepos(result) {
+    const subject = [
+      inlineCode2(result.request.tokenDec.account)
+    ];
+    return [
+      explainConsumer(result),
+      explainAccessAndRole(result, subject),
+      explainSufficient(result, subject)
+    ];
+  }
+  function explainSelectedRepos(result) {
+    const { request: request2 } = result;
+    const subject = [
+      text2("repos in "),
+      inlineCode2(request2.tokenDec.account)
+    ];
+    const resourceEntries = Object.entries(result.results).sort(
+      ([a2], [b2]) => a2.localeCompare(b2)
+    );
+    const resources = [];
+    for (const [resourceRepo, resourceResult] of resourceEntries) {
+      resources.push(
+        explainResourceRepo(
+          resourceRepo,
+          request2.tokenDec.permissions,
+          resourceResult
+        )
+      );
+    }
+    return [
+      explainConsumer(result),
+      explainAccessAndRole(result, subject),
+      {
+        contents: [
+          text2(
+            `${icon(result.isMatched)} ${pluralize(request2.tokenDec.repos.length, "repo pattern", "repo patterns")} matched ${pluralize(request2.repos.length, "repo", "repos")}`
+          )
+        ]
+      },
+      ...resources
+    ];
+  }
+  function explainConsumer({
+    request: request2,
+    isAllowed
+  }) {
+    const name = accountOrRepoRefToString(request2.consumer);
+    const who = isRepoRef(request2.consumer) ? [text2("Repo "), inlineCode2(name)] : [text2("Account "), inlineCode2(name)];
+    return {
+      contents: [
+        text2(`${icon(isAllowed)} `),
+        ...who,
+        text2(
+          isAllowed ? " was allowed access to a token:" : " was denied access to a token:"
+        )
+      ]
+    };
+  }
+  function explainAccessAndRole({ request: request2, maxWant, isMissingRole }, subject) {
+    const { as } = request2.tokenDec;
+    return {
+      contents: [
+        text2(`${icon(!isMissingRole)} ${ACCESS_LEVELS2[maxWant]} access to `),
+        ...subject,
+        text2(as ? " requested with role " : " requested without a role"),
+        ...as ? [inlineCode2(as)] : []
+      ]
+    };
+  }
+  function explainSufficient({
+    request: request2,
+    isSufficient,
+    rules
+  }, subject) {
+    const basedOn = explainBasedOnRules(request2.tokenDec.permissions, rules);
+    return {
+      contents: [
+        text2(
+          `${icon(isSufficient)} ${isSufficient ? "Sufficient" : "Insufficient"} access to `
+        ),
+        ...subject,
+        ...basedOn.contents
+      ],
+      ...basedOn.nested ? { nested: basedOn.nested } : {}
+    };
+  }
+  function explainResourceRepo(resource, want, result) {
+    const basedOn = explainBasedOnRules(want, result.rules);
+    return {
+      contents: [
+        text2(
+          `${icon(result.isSufficient)} ${result.isSufficient ? "Sufficient" : "Insufficient"} access to repo `
+        ),
+        inlineCode2(resource),
+        ...basedOn.contents
+      ],
+      ...basedOn.nested ? { nested: basedOn.nested } : {}
+    };
+  }
+  function explainBasedOnRules(want, rules) {
+    const ruleCount = rules.length;
+    if (ruleCount < 1) {
+      return { contents: [text2(" (no matching rules)")] };
+    }
+    return {
+      contents: [
+        text2(
+          ruleCount === 1 ? " based on 1 rule:" : ` based on ${ruleCount} rules:`
+        )
+      ],
+      nested: list3(rules.map((ruleResult) => explainRule(want, ruleResult)))
+    };
+  }
+  function explainRule(want, { index, rule, have, isSufficient }) {
+    const described = rule.description ? `: ${JSON.stringify(rule.description)}` : "";
+    return {
+      contents: [
+        text2(`${icon(isSufficient)} Rule `),
+        inlineCode2(`#${index + 1}`),
+        text2(
+          `${described} gave ${isSufficient ? "sufficient" : "insufficient"} access:`
+        )
+      ],
+      nested: list3(renderPermissionComparison(have, want))
+    };
+  }
+  function renderPermissionComparison(have, want) {
+    const items = [];
+    for (const permission of Object.keys(want).sort(
+      (a2, b2) => a2.localeCompare(b2)
+    )) {
+      const haveAccess = permissionAccess(have, permission);
+      const wantAccess = permissionAccess(want, permission);
+      items.push({
+        contents: [
+          text2(`${icon(isSufficientAccess(haveAccess, wantAccess))} `),
+          text2(`${permission}: have `),
+          inlineCode2(haveAccess),
+          text2(", wanted "),
+          inlineCode2(wantAccess)
+        ]
+      });
+    }
+    return items;
+  }
+}
+
+// src/token-creation-explainer/markdown.ts
 var HEADER_ACCESS_LABELS = {
   admin: "admin",
   none: "",
   read: "read-only",
   write: "write"
 };
-function createTextTokenCreationExplainer(results) {
+function createMarkdownTokenCreationExplainer(results) {
   const resultIndices = /* @__PURE__ */ new Map();
   const authResultIndices = /* @__PURE__ */ new Map();
   let index = 0;
@@ -120410,9 +120907,17 @@ function createTextTokenCreationExplainer(results) {
     const currentIndex = authResultIndices.get(authResult);
     const firstIndex = resultIndices.get(creationResult);
     if (typeof currentIndex !== "undefined" && typeof firstIndex !== "undefined" && firstIndex !== currentIndex) {
-      return `${icon(creationResult.type === "CREATED")} Same result as token #${firstIndex + 1}`;
+      return [
+        paragraph2(
+          text2(
+            `${icon(creationResult.type === "CREATED")} Same result as token `
+          ),
+          inlineCode2(`#${firstIndex + 1}`)
+        )
+      ];
     }
-    return explainResult(authResult, creationResult);
+    const { items, detail } = explainResult(authResult, creationResult);
+    return detail ? [list3(items), details(detail)] : [list3(items)];
   };
   function explainResult(authResult, result) {
     const { account, permissions, as: role } = authResult.request.tokenDec;
@@ -120421,82 +120926,149 @@ function createTextTokenCreationExplainer(results) {
     const isSuccess = result.type === "CREATED";
     const permEntries = effectivePermissions(permissions);
     const hasPermissions = permEntries.length > 0;
-    const lines = [];
-    lines.push(renderHeader(result.type, access2, repos, account));
-    lines.push(...renderErrorLines(result, authResult.request.consumer));
+    const items = [
+      renderHeader(result.type, access2, repos, account)
+    ];
+    const errorLines = renderErrorLines(result, authResult.request.consumer);
+    items.push(...errorLines.items);
     const subIcon = icon(isSuccess || void 0);
     const verb = isSuccess ? "Has" : "Wanted";
     if (hasPermissions) {
-      const roleStr = role ? `with role ${role}` : "without a role";
-      lines.push(`  ${subIcon} ${verb} ${access2} access ${roleStr}`);
+      items.push({
+        contents: [
+          text2(`${subIcon} ${verb} ${access2} access `),
+          text2(role ? "with role " : "without a role"),
+          ...role ? [inlineCode2(role)] : []
+        ]
+      });
     }
-    lines.push(...renderRepoLines(subIcon, verb, repos, account));
-    lines.push(...renderPermissionLines(subIcon, verb, permEntries));
-    return lines.join("\n");
+    items.push(...renderRepoLines(subIcon, verb, repos, account));
+    items.push(...renderPermissionLines(subIcon, verb, permEntries));
+    return {
+      items,
+      detail: errorLines.detail
+    };
   }
   function renderHeader(type, access2, repos, account) {
-    const scope = repoScopeLabel(repos, account);
-    const isSuccess = type === "CREATED";
     const label = HEADER_ACCESS_LABELS[access2];
-    if (isSuccess) {
-      return `${icon(isSuccess)} ${capitalize(label)} token created with access to ${scope}:`;
-    }
-    const prefix = label ? `${label} ` : "";
-    const verb = type === "NOT_ALLOWED" ? "Refused" : "Failed";
-    return `${icon(isSuccess)} ${verb} to create ${prefix}token with access to ${scope}:`;
+    const isSuccess = type === "CREATED";
+    return {
+      contents: [
+        text2(`${icon(isSuccess)} `),
+        text2(
+          isSuccess ? `${capitalize(label)} token created with access to ` : `${type === "NOT_ALLOWED" ? "Refused" : "Failed"} to create ${label ? `${label} ` : ""}token with access to `
+        ),
+        ...repoScopeLabel(repos, account),
+        text2(":")
+      ]
+    };
   }
   function renderErrorLines(result, consumer) {
     switch (result.type) {
       case "CREATED":
-        return [];
+        return { items: [] };
       case "NOT_ALLOWED": {
-        const suffix = isRepoRef(consumer) ? ` for repo ${repoRefToString(consumer)}` : ` for account ${consumer.account}`;
-        return [`  ${FAIL_ICON} Token not allowed${suffix}`];
+        const suffix = isRepoRef(consumer) ? [text2(" for repo "), inlineCode2(repoRefToString(consumer))] : [text2(" for account "), inlineCode2(consumer.account)];
+        return {
+          items: [
+            { contents: [text2(`${FAIL_ICON} Token not allowed`), ...suffix] }
+          ]
+        };
       }
       case "NO_ISSUER":
-        return [`  ${FAIL_ICON} No suitable issuer`];
+        return {
+          items: [{ contents: [text2(`${FAIL_ICON} No suitable issuer`)] }]
+        };
       case "REQUEST_ERROR": {
         const body = result.error.response?.data;
         const detail = typeof body === "undefined" ? "(no response data)" : JSON.stringify(body, null, 2);
-        return [
-          `  ${FAIL_ICON} ${result.error.status} - ${result.error.message}`,
-          prefixLines("::debug::      ", detail)
-        ];
+        return {
+          items: [
+            {
+              contents: [
+                text2(
+                  `${FAIL_ICON} ${result.error.status} - ${result.error.message}`
+                )
+              ]
+            }
+          ],
+          detail
+        };
       }
       case "ERROR":
-        return [
-          `  ${FAIL_ICON} ${errorMessage(result.error)}`,
-          prefixLines("::debug::      ", errorStack(result.error))
-        ];
+        return {
+          items: [
+            { contents: [text2(`${FAIL_ICON} ${errorMessage(result.error)}`)] }
+          ],
+          detail: errorStack(result.error)
+        };
     }
   }
-  function renderRepoLines(icon2, verb, repos, account) {
+  function renderRepoLines(subIcon, verb, repos, account) {
     if (repos === "all") {
-      return [`  ${icon2} ${verb} access to all repos in ${account}`];
+      return [
+        {
+          contents: [
+            text2(`${subIcon} ${verb} access to all repos in `),
+            inlineCode2(account)
+          ]
+        }
+      ];
     }
-    if (repos.length < 1) return [`  ${icon2} ${verb} account-only access`];
-    const lines = [
-      `  ${icon2} ${verb} access to ${pluralize(repos.length, "repo", "repos")} in ${account}:`
+    if (repos.length < 1) {
+      return [{ contents: [text2(`${subIcon} ${verb} account-only access`)] }];
+    }
+    return [
+      {
+        contents: [
+          text2(`${subIcon} ${verb} access to `),
+          text2(`${pluralize(repos.length, "repo", "repos")} in `),
+          inlineCode2(account),
+          text2(":")
+        ],
+        nested: list3(
+          repos.map((repo) => ({
+            contents: [text2(`${subIcon} `), inlineCode2(`${account}/${repo}`)]
+          }))
+        )
+      }
     ];
-    for (const repo of repos) lines.push(`    ${icon2} ${account}/${repo}`);
-    return lines;
   }
-  function renderPermissionLines(icon2, verb, permEntries) {
+  function renderPermissionLines(subIcon, verb, permEntries) {
     if (permEntries.length < 1) {
-      return [`  ${FAIL_ICON} No permissions requested`];
+      return [{ contents: [text2(`${FAIL_ICON} No permissions requested`)] }];
     }
-    const lines = [
-      `  ${icon2} ${verb} ${pluralize(permEntries.length, "permission", "permissions")}:`
+    return [
+      {
+        contents: [
+          text2(`${subIcon} ${verb} `),
+          text2(
+            `${pluralize(permEntries.length, "permission", "permissions")}:`
+          )
+        ],
+        nested: list3(
+          permEntries.map(([name, access2]) => ({
+            contents: [
+              text2(`${subIcon} `),
+              text2(`${name}: `),
+              inlineCode2(access2)
+            ]
+          }))
+        )
+      }
     ];
-    for (const [name, access2] of permEntries) {
-      lines.push(`    ${icon2} ${name}: ${access2}`);
-    }
-    return lines;
   }
   function repoScopeLabel(repos, account) {
-    if (repos === "all") return `all repos in ${account}`;
-    if (repos.length < 1) return account;
-    return `${pluralize(repos.length, "repo", "repos")} in ${account}`;
+    if (repos === "all") {
+      return [text2("all repos in "), inlineCode2(account)];
+    }
+    if (repos.length < 1) {
+      return [inlineCode2(account)];
+    }
+    return [
+      text2(`${pluralize(repos.length, "repo", "repos")} in `),
+      inlineCode2(account)
+    ];
   }
   function effectivePermissions(permissions) {
     const entries = [];
@@ -120513,21 +121085,66 @@ var DASHBOARD_LABEL = "gh-token-dashboard";
 var FAILURE_DASHBOARD_TITLE = "GitHub tokens couldn't be provisioned";
 var CONFIG_ISSUE_DASHBOARD_TITLE = "Token provisioning config is invalid";
 function renderFailureDashboard(runUrl, secrets, tokenResults, tokenCreationResults, provisionResults) {
-  const explainProvisionAuth = createTextProvisionAuthExplainer(tokenResults);
-  const explainTokenCreation = createTextTokenCreationExplainer(tokenCreationResults);
-  const explainProvision = createTextProvisionExplainer();
-  const children = [];
-  for (const secret of secrets) {
-    children.push(heading2(2, inlineCode2(secret.request.name)));
-    const explanation = explainSecret(
-      secret,
-      explainProvisionAuth,
-      explainTokenCreation,
-      explainProvision,
-      tokenCreationResults,
-      provisionResults
+  const secretProvisioning = [];
+  const tokenCreation = [];
+  const requestAuthorization = [];
+  const scopedTokens = findScopedTokens(secrets, tokenResults);
+  const scopedCreationResults = /* @__PURE__ */ new Map();
+  for (const token of scopedTokens) {
+    const creationResult = tokenCreationResults.get(token);
+    if (creationResult) scopedCreationResults.set(token, creationResult);
+  }
+  const explainProvision = createMarkdownProvisionExplainer();
+  const explainTokenCreation = createMarkdownTokenCreationExplainer(
+    scopedCreationResults
+  );
+  const explainProvisionAuth = createMarkdownProvisionAuthExplainer(scopedTokens);
+  const explainTokenAuth = createMarkdownTokenAuthExplainer();
+  for (let i2 = 0; i2 < secrets.length; ++i2) {
+    const secret = secrets[i2];
+    const secretHeading = [text2("Secret "), inlineCode2(`#${i2 + 1}`)];
+    const targetResults = provisionResults.get(secret);
+    if (targetResults) {
+      secretProvisioning.push(
+        heading2(3, ...secretHeading),
+        ...explainProvision(secret, targetResults)
+      );
+    }
+    requestAuthorization.push(
+      heading2(3, ...secretHeading),
+      ...explainProvisionAuth(secret)
     );
-    children.push(indentedTextToList(explanation));
+  }
+  for (let i2 = 0; i2 < scopedTokens.length; ++i2) {
+    const token = scopedTokens[i2];
+    const tokenHeading = [text2("Token "), inlineCode2(`#${i2 + 1}`)];
+    const creationResult = scopedCreationResults.get(token);
+    if (creationResult) {
+      tokenCreation.push(
+        heading2(3, ...tokenHeading),
+        ...explainTokenCreation(token, creationResult)
+      );
+    }
+    requestAuthorization.push(
+      heading2(3, ...tokenHeading),
+      ...explainTokenAuth(token)
+    );
+  }
+  const children = [];
+  if (secretProvisioning.length > 0) {
+    children.push(
+      heading2(2, text2("Secret provisioning")),
+      ...secretProvisioning
+    );
+  }
+  if (tokenCreation.length > 0) {
+    children.push(heading2(2, text2("Token creation")), ...tokenCreation);
+  }
+  if (requestAuthorization.length > 0) {
+    children.push(
+      heading2(2, text2("Request authorization")),
+      ...requestAuthorization
+    );
   }
   children.push(runLink(runUrl));
   return {
@@ -120544,10 +121161,12 @@ function renderConfigIssueDashboard(githubServerUrl, runUrl, issue2) {
       text2(` in ${repoRefToString(requester)} is invalid:`)
     ),
     list3(
-      errors.map((error2) => [
-        ...error2.instancePath.length > 0 ? [inlineCode2(error2.instancePath), text2(" ")] : [],
-        text2(error2.message ?? "is invalid")
-      ])
+      errors.map((error2) => ({
+        contents: [
+          ...error2.instancePath.length > 0 ? [inlineCode2(error2.instancePath), text2(" ")] : [],
+          text2(error2.message ?? "is invalid")
+        ]
+      }))
     )
   ];
   const configUrl = new URL(
@@ -120566,21 +121185,14 @@ function renderConfigIssueDashboard(githubServerUrl, runUrl, issue2) {
     body: serialize2(children)
   };
 }
-function explainSecret(secret, explainProvisionAuth, explainTokenCreation, explainProvision, tokenCreationResults, provisionResults) {
-  const explanations = [];
-  explanations.push(explainProvisionAuth(secret));
-  const explainedTokenAuths = /* @__PURE__ */ new Set();
-  for (const target of secret.results) {
-    const tokenAuthResult = target.tokenAuthResult;
-    if (!tokenAuthResult || explainedTokenAuths.has(tokenAuthResult)) continue;
-    explainedTokenAuths.add(tokenAuthResult);
-    const creationResult = tokenCreationResults.get(tokenAuthResult);
-    if (!creationResult) continue;
-    explanations.push(explainTokenCreation(tokenAuthResult, creationResult));
+function findScopedTokens(secrets, tokenResults) {
+  const requesterTokens = /* @__PURE__ */ new Set();
+  for (const secret of secrets) {
+    for (const { tokenAuthResult } of secret.results) {
+      if (tokenAuthResult) requesterTokens.add(tokenAuthResult);
+    }
   }
-  const targetResults = provisionResults.get(secret);
-  if (targetResults) explanations.push(explainProvision(secret, targetResults));
-  return explanations.join("\n");
+  return tokenResults.filter((token) => requesterTokens.has(token));
 }
 function runLink(runUrl) {
   return paragraph2(link2(runUrl, text2("Full logs for this run")));
@@ -120590,64 +121202,6 @@ function serialize2(children) {
     { type: "root", children },
     { bullet: "-", extensions: [gfmToMarkdown()] }
   );
-}
-function list3(items) {
-  return {
-    type: "list",
-    ordered: false,
-    spread: false,
-    children: items.map((children) => ({
-      type: "listItem",
-      spread: false,
-      checked: null,
-      children: [{ type: "paragraph", children }]
-    }))
-  };
-}
-function indentedTextToList(input) {
-  return nodesToList(parseIndentedLines(input));
-}
-function parseIndentedLines(input) {
-  const roots = [];
-  const stack = [];
-  for (const rawLine of input.split("\n")) {
-    const line = rawLine.trimEnd();
-    if (line.length < 1) continue;
-    const indent = line.length - line.trimStart().length;
-    const content = line.slice(indent);
-    if (content.startsWith("::debug::")) continue;
-    const depth = Math.floor(indent / 2);
-    const node2 = { content, children: [] };
-    while (stack.length > 0 && stack[stack.length - 1].depth >= depth) {
-      stack.pop();
-    }
-    if (stack.length > 0) {
-      stack[stack.length - 1].node.children.push(node2);
-    } else {
-      roots.push(node2);
-    }
-    stack.push({ depth, node: node2 });
-  }
-  return roots;
-}
-function nodesToList(nodes) {
-  return {
-    type: "list",
-    ordered: false,
-    spread: false,
-    children: nodes.map((node2) => ({
-      type: "listItem",
-      spread: false,
-      checked: null,
-      children: [
-        {
-          type: "paragraph",
-          children: [{ type: "text", value: node2.content }]
-        },
-        ...node2.children.length > 0 ? [nodesToList(node2.children)] : []
-      ]
-    }))
-  };
 }
 
 // src/failure-reason.ts
@@ -120792,11 +121346,14 @@ function desiredIssue(githubServerUrl, runUrl, configIssue, ref, tokenResults, t
   if (configIssue) {
     return renderConfigIssueDashboard(githubServerUrl, runUrl, configIssue);
   }
-  const failures = repoFailures(ref, provisionResults);
-  if (failures.length > 0) {
+  const secrets = requesterSecrets(ref, provisionResults);
+  const hasFailures = secrets.some(
+    (secret) => !isFullyProvisioned(secret, provisionResults)
+  );
+  if (hasFailures) {
     return renderFailureDashboard(
       runUrl,
-      failures,
+      secrets,
       tokenResults,
       tokenCreationResults,
       provisionResults
@@ -120804,15 +121361,14 @@ function desiredIssue(githubServerUrl, runUrl, configIssue, ref, tokenResults, t
   }
   return void 0;
 }
-function repoFailures(ref, provisionResults) {
-  const failures = [];
+function requesterSecrets(ref, provisionResults) {
+  const requesterSecrets2 = [];
   for (const secret of provisionResults.keys()) {
-    if (repoRefToString(secret.request.requester) !== repoRefToString(ref)) {
-      continue;
+    if (repoRefToString(secret.request.requester) === repoRefToString(ref)) {
+      requesterSecrets2.push(secret);
     }
-    if (!isFullyProvisioned(secret, provisionResults)) failures.push(secret);
   }
-  return failures;
+  return requesterSecrets2;
 }
 async function upsertDashboard(octokit, ref, desired) {
   const openIssues = await openDashboardIssues(octokit, ref);
@@ -121397,6 +121953,126 @@ function createTokenDeclarationRegistry() {
 
 // src/token-factory.ts
 var import_fast_json_stable_stringify = __toESM(require_fast_json_stable_stringify(), 1);
+
+// src/token-creation-explainer/text.ts
+var HEADER_ACCESS_LABELS2 = {
+  admin: "admin",
+  none: "",
+  read: "read-only",
+  write: "write"
+};
+function createTextTokenCreationExplainer(results) {
+  const resultIndices = /* @__PURE__ */ new Map();
+  const authResultIndices = /* @__PURE__ */ new Map();
+  let index = 0;
+  for (const [authResult, result] of results) {
+    authResultIndices.set(authResult, index);
+    if (!resultIndices.has(result)) resultIndices.set(result, index);
+    ++index;
+  }
+  return (authResult, creationResult) => {
+    const currentIndex = authResultIndices.get(authResult);
+    const firstIndex = resultIndices.get(creationResult);
+    if (typeof currentIndex !== "undefined" && typeof firstIndex !== "undefined" && firstIndex !== currentIndex) {
+      return `${icon(creationResult.type === "CREATED")} Same result as token #${firstIndex + 1}`;
+    }
+    return explainResult(authResult, creationResult);
+  };
+  function explainResult(authResult, result) {
+    const { account, permissions, as: role } = authResult.request.tokenDec;
+    const { repos } = authResult.request;
+    const access2 = maxAccess(permissions);
+    const isSuccess = result.type === "CREATED";
+    const permEntries = effectivePermissions(permissions);
+    const hasPermissions = permEntries.length > 0;
+    const lines = [];
+    lines.push(renderHeader(result.type, access2, repos, account));
+    lines.push(...renderErrorLines(result, authResult.request.consumer));
+    const subIcon = icon(isSuccess || void 0);
+    const verb = isSuccess ? "Has" : "Wanted";
+    if (hasPermissions) {
+      const roleStr = role ? `with role ${role}` : "without a role";
+      lines.push(`  ${subIcon} ${verb} ${access2} access ${roleStr}`);
+    }
+    lines.push(...renderRepoLines(subIcon, verb, repos, account));
+    lines.push(...renderPermissionLines(subIcon, verb, permEntries));
+    return lines.join("\n");
+  }
+  function renderHeader(type, access2, repos, account) {
+    const scope = repoScopeLabel(repos, account);
+    const isSuccess = type === "CREATED";
+    const label = HEADER_ACCESS_LABELS2[access2];
+    if (isSuccess) {
+      return `${icon(isSuccess)} ${capitalize(label)} token created with access to ${scope}:`;
+    }
+    const prefix = label ? `${label} ` : "";
+    const verb = type === "NOT_ALLOWED" ? "Refused" : "Failed";
+    return `${icon(isSuccess)} ${verb} to create ${prefix}token with access to ${scope}:`;
+  }
+  function renderErrorLines(result, consumer) {
+    switch (result.type) {
+      case "CREATED":
+        return [];
+      case "NOT_ALLOWED": {
+        const suffix = isRepoRef(consumer) ? ` for repo ${repoRefToString(consumer)}` : ` for account ${consumer.account}`;
+        return [`  ${FAIL_ICON} Token not allowed${suffix}`];
+      }
+      case "NO_ISSUER":
+        return [`  ${FAIL_ICON} No suitable issuer`];
+      case "REQUEST_ERROR": {
+        const body = result.error.response?.data;
+        const detail = typeof body === "undefined" ? "(no response data)" : JSON.stringify(body, null, 2);
+        return [
+          `  ${FAIL_ICON} ${result.error.status} - ${result.error.message}`,
+          prefixLines("::debug::      ", detail)
+        ];
+      }
+      case "ERROR":
+        return [
+          `  ${FAIL_ICON} ${errorMessage(result.error)}`,
+          prefixLines("::debug::      ", errorStack(result.error))
+        ];
+    }
+  }
+  function renderRepoLines(icon2, verb, repos, account) {
+    if (repos === "all") {
+      return [`  ${icon2} ${verb} access to all repos in ${account}`];
+    }
+    if (repos.length < 1) return [`  ${icon2} ${verb} account-only access`];
+    const lines = [
+      `  ${icon2} ${verb} access to ${pluralize(repos.length, "repo", "repos")} in ${account}:`
+    ];
+    for (const repo of repos) lines.push(`    ${icon2} ${account}/${repo}`);
+    return lines;
+  }
+  function renderPermissionLines(icon2, verb, permEntries) {
+    if (permEntries.length < 1) {
+      return [`  ${FAIL_ICON} No permissions requested`];
+    }
+    const lines = [
+      `  ${icon2} ${verb} ${pluralize(permEntries.length, "permission", "permissions")}:`
+    ];
+    for (const [name, access2] of permEntries) {
+      lines.push(`    ${icon2} ${name}: ${access2}`);
+    }
+    return lines;
+  }
+  function repoScopeLabel(repos, account) {
+    if (repos === "all") return `all repos in ${account}`;
+    if (repos.length < 1) return account;
+    return `${pluralize(repos.length, "repo", "repos")} in ${account}`;
+  }
+  function effectivePermissions(permissions) {
+    const entries = [];
+    for (const [name, access2 = "none"] of Object.entries(permissions)) {
+      if (access2 !== "none") entries.push([name, access2]);
+    }
+    entries.sort(([a2], [b2]) => a2.localeCompare(b2));
+    return entries;
+  }
+}
+
+// src/token-factory.ts
 function createTokenFactory(findIssuerOctokit) {
   return async (authResults) => {
     const cache = {};
@@ -121620,8 +122296,6 @@ try {
 /* istanbul ignore next - never seen without an account login - @preserve */
 /* istanbul ignore next - Header guarantees string data - @preserve */
 /* istanbul ignore else - @preserve */
-/* istanbul ignore next - defensive vs empty explainer lines - @preserve */
-/* istanbul ignore next - never seen in explainer output - @preserve */
 /* istanbul ignore next - Set by discoverRequesters - @preserve */
 /* istanbul ignore file - TODO: remove coverage ignore - @preserve */
 /*! Bundled license information:

@@ -1,0 +1,3 @@
+- ✅  token created with access to all repos in `account-b`:
+- ✅ Has access to all repos in `account-b`
+- ❌ No permissions requested

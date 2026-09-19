@@ -1,0 +1,7 @@
+- ✅ Account `account-a` was allowed access to a token:
+- ✅ Read access to `account-a` requested without a role
+- ✅ Sufficient access to `account-a` based on 2 rules:
+  - ✅ Rule `#1` gave sufficient access:
+    - ✅ metadata: have `read`, wanted `read`
+  - ❌ Rule `#2`: "A denied rule" gave insufficient access:
+    - ❌ metadata: have `none`, wanted `read`

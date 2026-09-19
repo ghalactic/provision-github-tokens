@@ -394,3 +394,36 @@ it("renders a config issue dashboard", async () => {
     join(fixturesPath, "config-issue.md"),
   );
 });
+
+it("renders only the log link when there are no results", () => {
+  const issue = renderFailureDashboard(runUrl, [], [], new Map(), new Map());
+
+  expect(issue.body).toBe(`[Full logs for this run](${runUrl})\n`);
+});
+
+it("omits token sections when authorization has no token result", () => {
+  const target = createTestProvisionRequestTarget("actions");
+  const targetResult: ProvisionAuthTargetResult = {
+    ...createTestProvisionAuthTargetResult({ target }),
+    tokenAuthResult: undefined,
+    isTokenAllowed: false,
+    isAllowed: false,
+  };
+  const secret = createTestProvisionAuthResult({
+    isAllowed: false,
+    request: createTestProvisionRequest({ to: [target] }),
+    results: [targetResult],
+  });
+
+  const issue = renderFailureDashboard(
+    runUrl,
+    [secret],
+    [],
+    new Map(),
+    new Map(),
+  );
+
+  expect(issue.body).toContain("## Request authorization");
+  expect(issue.body).not.toContain("## Token creation");
+  expect(issue.body).not.toContain("### Token");
+});

@@ -1,0 +1,7 @@
+- ✅ Account `account-a` was allowed access to a token:
+- ✅ Read access to repos in `account-a` requested without a role
+- ✅ 2 repo patterns matched 2 repos
+- ✅ Sufficient access to repo `account-a/repo-a` based on 1 rule:
+  - ✅ Rule `#1` gave sufficient access:
+    - ✅ metadata: have `read`, wanted `read`
+- ✅ Sufficient access to repo `org-a/repo-b` (no matching rules)

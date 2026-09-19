@@ -1,13 +1,21 @@
 import type { ErrorObject } from "ajv";
-import type { List, ListItem, Paragraph, RootContent } from "mdast";
+import type { Paragraph, RootContent } from "mdast";
 import { gfmToMarkdown } from "mdast-util-gfm";
 import { toMarkdown } from "mdast-util-to-markdown";
 import type { RepoReference } from "./github-reference.js";
 import { repoRefToString } from "./github-reference.js";
-import { heading, inlineCode, link, paragraph, text } from "./markdown.js";
-import { createTextProvisionAuthExplainer } from "./provision-auth-explainer/text.js";
-import { createTextProvisionExplainer } from "./provision-explainer/text.js";
-import { createTextTokenCreationExplainer } from "./token-creation-explainer/text.js";
+import {
+  heading,
+  inlineCode,
+  link,
+  list,
+  paragraph,
+  text,
+} from "./markdown.js";
+import { createMarkdownProvisionAuthExplainer } from "./provision-auth-explainer/markdown.js";
+import { createMarkdownProvisionExplainer } from "./provision-explainer/markdown.js";
+import { createMarkdownTokenAuthExplainer } from "./token-auth-explainer/markdown.js";
+import { createMarkdownTokenCreationExplainer } from "./token-creation-explainer/markdown.js";
 import type {
   ProvisionAuthResult,
   ProvisionAuthTargetResult,
@@ -42,26 +50,82 @@ export function renderFailureDashboard(
     Map<ProvisionAuthTargetResult, ProvisionResult>
   >,
 ): DashboardIssue {
-  const explainProvisionAuth = createTextProvisionAuthExplainer(tokenResults);
-  const explainTokenCreation =
-    createTextTokenCreationExplainer(tokenCreationResults);
-  const explainProvision = createTextProvisionExplainer();
+  const secretProvisioning: RootContent[] = [];
+  const tokenCreation: RootContent[] = [];
+  const requestAuthorization: RootContent[] = [];
+
+  const scopedTokens = findScopedTokens(secrets, tokenResults);
+  const scopedCreationResults = new Map<TokenAuthResult, TokenCreationResult>();
+
+  for (const token of scopedTokens) {
+    const creationResult = tokenCreationResults.get(token);
+
+    if (creationResult) scopedCreationResults.set(token, creationResult);
+  }
+
+  const explainProvision = createMarkdownProvisionExplainer();
+  const explainTokenCreation = createMarkdownTokenCreationExplainer(
+    scopedCreationResults,
+  );
+  const explainProvisionAuth =
+    createMarkdownProvisionAuthExplainer(scopedTokens);
+  const explainTokenAuth = createMarkdownTokenAuthExplainer();
+
+  for (let i = 0; i < secrets.length; ++i) {
+    const secret = secrets[i];
+    const secretHeading = [text("Secret "), inlineCode(`#${i + 1}`)];
+
+    const targetResults = provisionResults.get(secret);
+
+    if (targetResults) {
+      secretProvisioning.push(
+        heading(3, ...secretHeading),
+        ...explainProvision(secret, targetResults),
+      );
+    }
+
+    requestAuthorization.push(
+      heading(3, ...secretHeading),
+      ...explainProvisionAuth(secret),
+    );
+  }
+
+  for (let i = 0; i < scopedTokens.length; ++i) {
+    const token = scopedTokens[i];
+    const tokenHeading = [text("Token "), inlineCode(`#${i + 1}`)];
+    const creationResult = scopedCreationResults.get(token);
+
+    if (creationResult) {
+      tokenCreation.push(
+        heading(3, ...tokenHeading),
+        ...explainTokenCreation(token, creationResult),
+      );
+    }
+
+    requestAuthorization.push(
+      heading(3, ...tokenHeading),
+      ...explainTokenAuth(token),
+    );
+  }
 
   const children: RootContent[] = [];
 
-  for (const secret of secrets) {
-    children.push(heading(2, inlineCode(secret.request.name)));
-
-    const explanation = explainSecret(
-      secret,
-      explainProvisionAuth,
-      explainTokenCreation,
-      explainProvision,
-      tokenCreationResults,
-      provisionResults,
+  if (secretProvisioning.length > 0) {
+    children.push(
+      heading(2, text("Secret provisioning")),
+      ...secretProvisioning,
     );
+  }
 
-    children.push(indentedTextToList(explanation));
+  if (tokenCreation.length > 0) {
+    children.push(heading(2, text("Token creation")), ...tokenCreation);
+  }
+
+  if (requestAuthorization.length > 0) {
+    children.push(
+      heading(2, text("Request authorization")),
+      ...requestAuthorization,
+    );
   }
 
   children.push(runLink(runUrl));
@@ -86,12 +150,14 @@ export function renderConfigIssueDashboard(
       text(` in ${repoRefToString(requester)} is invalid:`),
     ),
     list(
-      errors.map((error) => [
-        ...(error.instancePath.length > 0
-          ? [inlineCode(error.instancePath), text(" ")]
-          : []),
-        text(error.message ?? "is invalid"),
-      ]),
+      errors.map((error) => ({
+        contents: [
+          ...(error.instancePath.length > 0
+            ? [inlineCode(error.instancePath), text(" ")]
+            : []),
+          text(error.message ?? "is invalid"),
+        ],
+      })),
     ),
   ];
 
@@ -114,40 +180,19 @@ export function renderConfigIssueDashboard(
   };
 }
 
-function explainSecret(
-  secret: ProvisionAuthResult,
-  explainProvisionAuth: ReturnType<typeof createTextProvisionAuthExplainer>,
-  explainTokenCreation: ReturnType<typeof createTextTokenCreationExplainer>,
-  explainProvision: ReturnType<typeof createTextProvisionExplainer>,
-  tokenCreationResults: Map<TokenAuthResult, TokenCreationResult>,
-  provisionResults: Map<
-    ProvisionAuthResult,
-    Map<ProvisionAuthTargetResult, ProvisionResult>
-  >,
-): string {
-  const explanations: string[] = [];
-  explanations.push(explainProvisionAuth(secret));
+function findScopedTokens(
+  secrets: ProvisionAuthResult[],
+  tokenResults: TokenAuthResult[],
+): TokenAuthResult[] {
+  const requesterTokens = new Set<TokenAuthResult>();
 
-  const explainedTokenAuths = new Set<TokenAuthResult>();
-
-  for (const target of secret.results) {
-    const tokenAuthResult = target.tokenAuthResult;
-
-    if (!tokenAuthResult || explainedTokenAuths.has(tokenAuthResult)) continue;
-
-    explainedTokenAuths.add(tokenAuthResult);
-    const creationResult = tokenCreationResults.get(tokenAuthResult);
-
-    if (!creationResult) continue;
-
-    explanations.push(explainTokenCreation(tokenAuthResult, creationResult));
+  for (const secret of secrets) {
+    for (const { tokenAuthResult } of secret.results) {
+      if (tokenAuthResult) requesterTokens.add(tokenAuthResult);
+    }
   }
 
-  const targetResults = provisionResults.get(secret);
-
-  if (targetResults) explanations.push(explainProvision(secret, targetResults));
-
-  return explanations.join("\n");
+  return tokenResults.filter((token) => requesterTokens.has(token));
 }
 
 function runLink(runUrl: string): Paragraph {
@@ -159,82 +204,4 @@ function serialize(children: RootContent[]): string {
     { type: "root", children },
     { bullet: "-", extensions: [gfmToMarkdown()] },
   );
-}
-
-function list(items: Paragraph["children"][]): List {
-  return {
-    type: "list",
-    ordered: false,
-    spread: false,
-    children: items.map((children): ListItem => ({
-      type: "listItem",
-      spread: false,
-      checked: null,
-      children: [{ type: "paragraph", children }],
-    })),
-  };
-}
-
-function indentedTextToList(input: string): List {
-  return nodesToList(parseIndentedLines(input));
-}
-
-type IndentedTextNode = {
-  content: string;
-  children: IndentedTextNode[];
-};
-
-function parseIndentedLines(input: string): IndentedTextNode[] {
-  const roots: IndentedTextNode[] = [];
-  const stack: { depth: number; node: IndentedTextNode }[] = [];
-
-  for (const rawLine of input.split("\n")) {
-    const line = rawLine.trimEnd();
-
-    /* istanbul ignore next - defensive vs empty explainer lines - @preserve */
-    if (line.length < 1) continue;
-
-    const indent = line.length - line.trimStart().length;
-    const content = line.slice(indent);
-
-    /* istanbul ignore next - never seen in explainer output - @preserve */
-    if (content.startsWith("::debug::")) continue;
-
-    const depth = Math.floor(indent / 2);
-    const node: IndentedTextNode = { content, children: [] };
-
-    while (stack.length > 0 && stack[stack.length - 1].depth >= depth) {
-      stack.pop();
-    }
-
-    if (stack.length > 0) {
-      stack[stack.length - 1].node.children.push(node);
-    } else {
-      roots.push(node);
-    }
-
-    stack.push({ depth, node });
-  }
-
-  return roots;
-}
-
-function nodesToList(nodes: IndentedTextNode[]): List {
-  return {
-    type: "list",
-    ordered: false,
-    spread: false,
-    children: nodes.map((node): ListItem => ({
-      type: "listItem",
-      spread: false,
-      checked: null,
-      children: [
-        {
-          type: "paragraph",
-          children: [{ type: "text", value: node.content }],
-        },
-        ...(node.children.length > 0 ? [nodesToList(node.children)] : []),
-      ],
-    })),
-  };
 }

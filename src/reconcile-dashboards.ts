@@ -193,12 +193,16 @@ function desiredIssue(
     return renderConfigIssueDashboard(githubServerUrl, runUrl, configIssue);
   }
 
-  const failures = repoFailures(ref, provisionResults);
+  const secrets = requesterSecrets(ref, provisionResults);
 
-  if (failures.length > 0) {
+  const hasFailures = secrets.some(
+    (secret) => !isFullyProvisioned(secret, provisionResults),
+  );
+
+  if (hasFailures) {
     return renderFailureDashboard(
       runUrl,
-      failures,
+      secrets,
       tokenResults,
       tokenCreationResults,
       provisionResults,
@@ -208,24 +212,22 @@ function desiredIssue(
   return undefined;
 }
 
-function repoFailures(
+function requesterSecrets(
   ref: RepoReference,
   provisionResults: Map<
     ProvisionAuthResult,
     Map<ProvisionAuthTargetResult, ProvisionResult>
   >,
 ): ProvisionAuthResult[] {
-  const failures: ProvisionAuthResult[] = [];
+  const requesterSecrets: ProvisionAuthResult[] = [];
 
   for (const secret of provisionResults.keys()) {
-    if (repoRefToString(secret.request.requester) !== repoRefToString(ref)) {
-      continue;
+    if (repoRefToString(secret.request.requester) === repoRefToString(ref)) {
+      requesterSecrets.push(secret);
     }
-
-    if (!isFullyProvisioned(secret, provisionResults)) failures.push(secret);
   }
 
-  return failures;
+  return requesterSecrets;
 }
 
 async function upsertDashboard(

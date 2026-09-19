@@ -1,0 +1,6 @@
+- ❌ Failed to create read-only token with access to `account-b`:
+- ❌ No suitable issuer
+- ➖ Wanted read access without a role
+- ➖ Wanted account-only access
+- ➖ Wanted 1 permission:
+  - ➖ metadata: `read`

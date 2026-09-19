@@ -1,0 +1,4 @@
+- ❌ Refused to create token with access to `account-b`:
+- ❌ Token not allowed for account `org-a`
+- ➖ Wanted account-only access
+- ❌ No permissions requested
