@@ -16,17 +16,17 @@ across your repositories.
   <dd>A GitHub org or user.</dd>
 </dl>
 
-### Roles
+### Parties
 
 <dl>
   <dt>Provider</dt>
   <dd>
-    The repo that runs this action. It sets the auth policy.
+    The repo that runs this action. Its config sets the auth policy.
   </dd>
 
   <dt>Requester</dt>
   <dd>
-    A repo that declares what tokens it needs and where to provision them as
+    A repo that declares the tokens it wants and where to provision them as
     secrets.
   </dd>
 
@@ -61,8 +61,8 @@ across your repositories.
 
   <dt>Requester config</dt>
   <dd>
-    A YAML file in a requesting repo. It declares what tokens that repo
-    needs and where to provision them.
+    A YAML file in a requesting repo. It declares the tokens the repo wants
+    issued and where to provision them.
   </dd>
 
   <dt>Token declaration</dt>
@@ -72,7 +72,13 @@ across your repositories.
   </dd>
 
   <dt>Token reference</dt>
-  <dd>An ID that points to a token declaration.</dd>
+  <dd>
+    An ID that points to a token declaration, written
+    <code>&lt;owner&gt;/&lt;repo&gt;.&lt;name&gt;</code>, or as a shorthand:
+    <code>./&lt;repo&gt;.&lt;name&gt;</code> for a declaration in the same
+    account, or a bare <code>&lt;name&gt;</code> for a declaration in the same
+    repo.
+  </dd>
 
   <dt>Secret declaration</dt>
   <dd>
@@ -86,8 +92,8 @@ across your repositories.
 <dl>
   <dt>Permission rule</dt>
   <dd>
-    A rule in the provider config. It controls what tokens consumers can
-    request.
+    A rule in the provider config. It controls which tokens requesters may
+    obtain for which consumers.
   </dd>
 
   <dt>Provision rule</dt>
@@ -98,14 +104,14 @@ across your repositories.
 
   <dt>Token authorization</dt>
   <dd>
-    The check that decides if a requester can get a token with certain
-    permissions and repositories.
+    The check that decides whether a consumer can have access to a token with
+    certain permissions and repositories.
   </dd>
 
   <dt>Provision authorization</dt>
   <dd>
-    The check that decides if a requester can place a secret at a given
-    target.
+    The check that decides whether a requester can provision a secret to a
+    given target.
   </dd>
 
   <dt>Permissions boundary</dt>
@@ -141,7 +147,7 @@ across your repositories.
   <dt>Provision target</dt>
   <dd>
     A secret type plus the account, repo, or environment where the action
-    places that secret.
+    provisions that secret.
   </dd>
 
   <dt>Secret type</dt>
