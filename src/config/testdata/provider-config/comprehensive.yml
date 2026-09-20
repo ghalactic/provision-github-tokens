@@ -1,6 +1,9 @@
 # yaml-language-server: $schema=https://ghalactic.github.io/provision-github-tokens/schema/provider.v1.schema.json
 $schema: https://ghalactic.github.io/provision-github-tokens/schema/provider.v1.schema.json
 
+dashboards:
+  enabled: false
+
 permissions:
   rules:
     - description: Access to anything from anywhere

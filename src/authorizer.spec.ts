@@ -141,6 +141,7 @@ it("authorizes all requests and outputs the results", async () => {
       requester: { account: "account-a", repo: "repo-a" },
       config: {
         $schema: "",
+        dashboard: { enabled: true },
         tokens: {},
         provision: {
           secrets: {
@@ -351,6 +352,7 @@ it("handles empty token requests", async () => {
       requester: { account: "account-a", repo: "repo-a" },
       config: {
         $schema: "",
+        dashboard: { enabled: true },
         tokens: {},
         provision: {
           secrets: {

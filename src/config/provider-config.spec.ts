@@ -64,6 +64,10 @@ it("reads comprehensive provider config", async () => {
   ).toEqual({
     $schema: providerSchema.$id,
 
+    dashboards: {
+      enabled: false,
+    },
+
     permissions: {
       rules: [
         {
@@ -710,6 +714,7 @@ it("parses provider configs that are just comments", async () => {
     ),
   ).toEqual({
     $schema: providerSchema.$id,
+    dashboards: { enabled: true },
     permissions: { rules: [] },
     provision: { rules: { secrets: [] } },
   } satisfies ProviderConfig);
@@ -724,6 +729,7 @@ it("parses provider configs that are empty", () => {
     ),
   ).toEqual({
     $schema: providerSchema.$id,
+    dashboards: { enabled: true },
     permissions: { rules: [] },
     provision: { rules: { secrets: [] } },
   } satisfies ProviderConfig);

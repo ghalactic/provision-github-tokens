@@ -61937,6 +61937,21 @@ var provider_v1_schema_default = {
       const: "https://ghalactic.github.io/provision-github-tokens/schema/provider.v1.schema.json",
       default: "https://ghalactic.github.io/provision-github-tokens/schema/provider.v1.schema.json"
     },
+    dashboards: {
+      description: "Settings that control token dashboards in requesting repos.",
+      type: "object",
+      additionalProperties: false,
+      default: {
+        enabled: true
+      },
+      properties: {
+        enabled: {
+          description: "Whether to maintain token dashboards in requesting repos.",
+          type: "boolean",
+          default: true
+        }
+      }
+    },
     permissions: {
       description: "Settings that control the token permissions that consumers can receive.",
       type: "object",
@@ -62292,6 +62307,21 @@ var requester_v1_schema_default = {
       type: "string",
       const: "https://ghalactic.github.io/provision-github-tokens/schema/requester.v1.schema.json",
       default: "https://ghalactic.github.io/provision-github-tokens/schema/requester.v1.schema.json"
+    },
+    dashboard: {
+      description: "Settings that control this repo's token dashboard.",
+      type: "object",
+      additionalProperties: false,
+      default: {
+        enabled: true
+      },
+      properties: {
+        enabled: {
+          description: "Whether to maintain a token dashboard in this repo.",
+          type: "boolean",
+          default: true
+        }
+      }
     },
     tokens: {
       description: "Declarations of GitHub tokens that requesters can request to be provisioned.",

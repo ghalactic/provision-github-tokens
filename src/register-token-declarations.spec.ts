@@ -32,6 +32,7 @@ it("registers token declarations from discovered requesters", () => {
         config: {
           $schema:
             "https://ghalactic.github.io/provision-github-tokens/schema/requester.v1.schema.json",
+          dashboard: { enabled: true },
           tokens: { tokenA: declarationA, tokenB: declarationB },
           provision: { secrets: {} },
         },
@@ -44,6 +45,7 @@ it("registers token declarations from discovered requesters", () => {
         config: {
           $schema:
             "https://ghalactic.github.io/provision-github-tokens/schema/requester.v1.schema.json",
+          dashboard: { enabled: true },
           tokens: { tokenC: declarationC },
           provision: { secrets: {} },
         },

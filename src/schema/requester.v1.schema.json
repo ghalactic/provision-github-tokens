@@ -12,6 +12,21 @@
       "const": "https://ghalactic.github.io/provision-github-tokens/schema/requester.v1.schema.json",
       "default": "https://ghalactic.github.io/provision-github-tokens/schema/requester.v1.schema.json"
     },
+    "dashboard": {
+      "description": "Settings that control this repo's token dashboard.",
+      "type": "object",
+      "additionalProperties": false,
+      "default": {
+        "enabled": true
+      },
+      "properties": {
+        "enabled": {
+          "description": "Whether to maintain a token dashboard in this repo.",
+          "type": "boolean",
+          "default": true
+        }
+      }
+    },
     "tokens": {
       "description": "Declarations of GitHub tokens that requesters can request to be provisioned.",
       "type": "object",

@@ -3,6 +3,7 @@ import type { SecretDeclaration } from "./secret-declaration.js";
 
 export type PartialRequesterConfig = {
   $schema: string;
+  dashboard: RequesterDashboardConfig;
   tokens: Record<string, TokenDeclaration>;
   provision: {
     secrets: Record<string, SecretDeclaration>;
@@ -11,4 +12,8 @@ export type PartialRequesterConfig = {
 
 export type RequesterConfig = PartialRequesterConfig & {
   tokens: Record<string, TokenDeclaration & { account: string }>;
+};
+
+export type RequesterDashboardConfig = {
+  enabled: boolean;
 };
