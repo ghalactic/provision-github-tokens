@@ -5,6 +5,7 @@ import {
   repoRefToString,
 } from "../github-reference.js";
 import { FAIL_ICON, PASS_ICON, icon } from "../icon.js";
+import { pluralize } from "../pluralize.js";
 import type { ProvisionRequestTarget } from "../provision-request.js";
 import type {
   ProvisionAuthResult,
@@ -82,7 +83,7 @@ export function createTextProvisionAuthExplainer(
       `${isAllowed ? "Can" : "Can't"} ` +
       `provision token to ${explainSubject(target)}:` +
       explainTargetToken(result) +
-      explainTargetProvision(result)
+      explainBasedOnRules(result.isProvisionAllowed, result.rules)
     );
   }
 
@@ -99,28 +100,13 @@ export function createTextProvisionAuthExplainer(
 
     const name = accountOrRepoRefToString(tokenAuthResult.request.consumer);
     const ref = `#${tokenResults.indexOf(tokenAuthResult) + 1}`;
-
-    if (isRepoRef(tokenAuthResult.request.consumer)) {
-      return (
-        `\n    ${icon(isTokenAllowed)} Repo ${name} ` +
-        `was ${isTokenAllowed ? "allowed" : "denied"} access to token ${ref}`
-      );
-    }
+    const kind = isRepoRef(tokenAuthResult.request.consumer)
+      ? "Repo"
+      : "Account";
 
     return (
-      `\n    ${icon(isTokenAllowed)} Account ${name} ` +
+      `\n    ${icon(isTokenAllowed)} ${kind} ${name} ` +
       `was ${isTokenAllowed ? "allowed" : "denied"} access to token ${ref}`
-    );
-  }
-
-  function explainTargetProvision({
-    isProvisionAllowed,
-    rules,
-  }: ProvisionAuthTargetResult): string {
-    return (
-      `\n    ${icon(isProvisionAllowed)} ` +
-      `${isProvisionAllowed ? "Can" : "Can't"} ` +
-      `provision secret ${explainBasedOnRules(rules)}`
     );
   }
 
@@ -148,20 +134,27 @@ export function createTextProvisionAuthExplainer(
     return `${type} secret in ${accountOrRepoRefToString(target.target)}`;
   }
 
-  function explainBasedOnRules(rules: ProvisionAuthTargetRuleResult[]): string {
+  function explainBasedOnRules(
+    isProvisionAllowed: boolean,
+    rules: ProvisionAuthTargetRuleResult[],
+  ): string {
     const ruleCount = rules.length;
-    const ruleOrRules = ruleCount === 1 ? "rule" : "rules";
-    const basedOn =
-      ruleCount < 1
+    const summary =
+      `\n    ${icon(isProvisionAllowed)} ` +
+      `${isProvisionAllowed ? "Can" : "Can't"} ` +
+      `provision secret ` +
+      (ruleCount < 1
         ? "(no matching rules)"
-        : `based on ${ruleCount} ${ruleOrRules}`;
+        : `based on ${pluralize(ruleCount, "rule", "rules")}:`);
 
-    if (ruleCount < 1) return basedOn;
+    if (ruleCount < 1) return summary;
 
     let explainedRules = "";
-    for (const ruleResult of rules) explainedRules += explainRule(ruleResult);
+    for (const ruleResult of rules) {
+      explainedRules += explainRule(ruleResult);
+    }
 
-    return `${basedOn}:${explainedRules}`;
+    return `${summary}${explainedRules}`;
   }
 
   function explainRule({

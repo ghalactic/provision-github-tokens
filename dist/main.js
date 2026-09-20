@@ -60581,6 +60581,11 @@ function icon(status) {
   return typeof status === "undefined" ? DASH_ICON : status ? PASS_ICON : FAIL_ICON;
 }
 
+// src/pluralize.ts
+function pluralize(amount, singular, plural) {
+  return `${amount} ${amount === 1 ? singular : plural}`;
+}
+
 // src/provision-auth-explainer/text.ts
 function createTextProvisionAuthExplainer(tokenResults) {
   return (result) => {
@@ -60620,7 +60625,7 @@ function createTextProvisionAuthExplainer(tokenResults) {
   function explainTarget(target, result) {
     const { isAllowed } = result;
     return `
-  ${icon(isAllowed)} ${isAllowed ? "Can" : "Can't"} provision token to ${explainSubject(target)}:` + explainTargetToken(result) + explainTargetProvision(result);
+  ${icon(isAllowed)} ${isAllowed ? "Can" : "Can't"} provision token to ${explainSubject(target)}:` + explainTargetToken(result) + explainBasedOnRules(result.isProvisionAllowed, result.rules);
   }
   function explainTargetToken({
     isTokenAllowed,
@@ -60632,19 +60637,9 @@ function createTextProvisionAuthExplainer(tokenResults) {
     }
     const name = accountOrRepoRefToString(tokenAuthResult.request.consumer);
     const ref = `#${tokenResults.indexOf(tokenAuthResult) + 1}`;
-    if (isRepoRef(tokenAuthResult.request.consumer)) {
-      return `
-    ${icon(isTokenAllowed)} Repo ${name} was ${isTokenAllowed ? "allowed" : "denied"} access to token ${ref}`;
-    }
+    const kind = isRepoRef(tokenAuthResult.request.consumer) ? "Repo" : "Account";
     return `
-    ${icon(isTokenAllowed)} Account ${name} was ${isTokenAllowed ? "allowed" : "denied"} access to token ${ref}`;
-  }
-  function explainTargetProvision({
-    isProvisionAllowed,
-    rules
-  }) {
-    return `
-    ${icon(isProvisionAllowed)} ${isProvisionAllowed ? "Can" : "Can't"} provision secret ${explainBasedOnRules(rules)}`;
+    ${icon(isTokenAllowed)} ${kind} ${name} was ${isTokenAllowed ? "allowed" : "denied"} access to token ${ref}`;
   }
   function explainSubject(target) {
     const type = ((r2) => {
@@ -60665,14 +60660,16 @@ function createTextProvisionAuthExplainer(tokenResults) {
     })(target);
     return `${type} secret in ${accountOrRepoRefToString(target.target)}`;
   }
-  function explainBasedOnRules(rules) {
+  function explainBasedOnRules(isProvisionAllowed, rules) {
     const ruleCount = rules.length;
-    const ruleOrRules = ruleCount === 1 ? "rule" : "rules";
-    const basedOn = ruleCount < 1 ? "(no matching rules)" : `based on ${ruleCount} ${ruleOrRules}`;
-    if (ruleCount < 1) return basedOn;
+    const summary2 = `
+    ${icon(isProvisionAllowed)} ${isProvisionAllowed ? "Can" : "Can't"} provision secret ` + (ruleCount < 1 ? "(no matching rules)" : `based on ${pluralize(ruleCount, "rule", "rules")}:`);
+    if (ruleCount < 1) return summary2;
     let explainedRules = "";
-    for (const ruleResult of rules) explainedRules += explainRule(ruleResult);
-    return `${basedOn}:${explainedRules}`;
+    for (const ruleResult of rules) {
+      explainedRules += explainRule(ruleResult);
+    }
+    return `${summary2}${explainedRules}`;
   }
   function explainRule({
     index,
@@ -60687,11 +60684,6 @@ function createTextProvisionAuthExplainer(tokenResults) {
     const n2 = `#${index + 1}`;
     return description ? `${n2}: ${JSON.stringify(description)}` : n2;
   }
-}
-
-// src/pluralize.ts
-function pluralize(amount, singular, plural) {
-  return `${amount} ${amount === 1 ? singular : plural}`;
 }
 
 // src/token-auth-explainer/access-level.ts

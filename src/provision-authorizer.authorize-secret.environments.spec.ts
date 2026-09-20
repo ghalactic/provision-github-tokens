@@ -1,3 +1,4 @@
+import { join } from "node:path";
 import { expect, it } from "vitest";
 import {
   createTestProvisionRequest,
@@ -6,10 +7,17 @@ import {
 import { createTestTokenAuthorizer } from "../test/token-authorizer.js";
 import { createTestTokenRequestFactory } from "../test/token-request.js";
 import { compareTokenRequest } from "./compare-token-request.js";
+import { toMarkdown } from "./markdown.js";
+import { createMarkdownProvisionAuthExplainer } from "./provision-auth-explainer/markdown.js";
 import { createTextProvisionAuthExplainer } from "./provision-auth-explainer/text.js";
 import { createProvisionAuthorizer } from "./provision-authorizer.js";
 
-it("allows GitHub environment secrets that should be allowed", () => {
+const fixturesPath = join(
+  import.meta.dirname,
+  "testdata/provision-authorizer/environments",
+);
+
+it("allows GitHub environment secrets that should be allowed", async () => {
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
@@ -78,6 +86,11 @@ it("allows GitHub environment secrets that should be allowed", () => {
       .listResults()
       .sort((a, b) => compareTokenRequest(a.request, b.request)),
   );
+  const toMdast = createMarkdownProvisionAuthExplainer(
+    tokenAuthorizer
+      .listResults()
+      .sort((a, b) => compareTokenRequest(a.request, b.request)),
+  );
 
   expect(explain(resultA)).toMatchInlineSnapshot(`
     "✅ Repo account-x/repo-x was allowed to provision secret SECRET_A:
@@ -87,6 +100,9 @@ it("allows GitHub environment secrets that should be allowed", () => {
         ✅ Can provision secret based on 1 rule:
           ✅ Allowed by rule #1"
   `);
+  await expect(toMarkdown(toMdast(resultA))).toMatchFileSnapshot(
+    join(fixturesPath, "allowed/a.md"),
+  );
   expect(explain(resultB)).toMatchInlineSnapshot(`
     "✅ Repo account-y-1/repo-y-1 was allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
@@ -95,9 +111,12 @@ it("allows GitHub environment secrets that should be allowed", () => {
         ✅ Can provision secret based on 1 rule:
           ✅ Allowed by rule #1"
   `);
+  await expect(toMarkdown(toMdast(resultB))).toMatchFileSnapshot(
+    join(fixturesPath, "allowed/b.md"),
+  );
 });
 
-it("allows GitHub environment secrets that should be allowed within the requesting repo", () => {
+it("allows GitHub environment secrets that should be allowed within the requesting repo", async () => {
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
@@ -159,6 +178,11 @@ it("allows GitHub environment secrets that should be allowed within the requesti
       .listResults()
       .sort((a, b) => compareTokenRequest(a.request, b.request)),
   );
+  const toMdast = createMarkdownProvisionAuthExplainer(
+    tokenAuthorizer
+      .listResults()
+      .sort((a, b) => compareTokenRequest(a.request, b.request)),
+  );
 
   expect(explain(resultA)).toMatchInlineSnapshot(`
     "✅ Repo account-a/repo-a was allowed to provision secret SECRET_A:
@@ -168,6 +192,9 @@ it("allows GitHub environment secrets that should be allowed within the requesti
         ✅ Can provision secret based on 1 rule:
           ✅ Allowed by rule #1"
   `);
+  await expect(toMarkdown(toMdast(resultA))).toMatchFileSnapshot(
+    join(fixturesPath, "allowed-within-requester-repo/a.md"),
+  );
   expect(explain(resultB)).toMatchInlineSnapshot(`
     "✅ Repo account-b-1/repo-b-1 was allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
@@ -176,9 +203,12 @@ it("allows GitHub environment secrets that should be allowed within the requesti
         ✅ Can provision secret based on 1 rule:
           ✅ Allowed by rule #1"
   `);
+  await expect(toMarkdown(toMdast(resultB))).toMatchFileSnapshot(
+    join(fixturesPath, "allowed-within-requester-repo/b.md"),
+  );
 });
 
-it("allows GitHub environment secrets that should be allowed within the requesting repo even when denied by a repo pattern in the same rule", () => {
+it("allows GitHub environment secrets that should be allowed within the requesting repo even when denied by a repo pattern in the same rule", async () => {
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
@@ -246,6 +276,11 @@ it("allows GitHub environment secrets that should be allowed within the requesti
       .listResults()
       .sort((a, b) => compareTokenRequest(a.request, b.request)),
   );
+  const toMdast = createMarkdownProvisionAuthExplainer(
+    tokenAuthorizer
+      .listResults()
+      .sort((a, b) => compareTokenRequest(a.request, b.request)),
+  );
 
   expect(explain(resultA)).toMatchInlineSnapshot(`
     "✅ Repo account-a/repo-a was allowed to provision secret SECRET_A:
@@ -255,6 +290,9 @@ it("allows GitHub environment secrets that should be allowed within the requesti
         ✅ Can provision secret based on 1 rule:
           ✅ Allowed by rule #1"
   `);
+  await expect(toMarkdown(toMdast(resultA))).toMatchFileSnapshot(
+    join(fixturesPath, "allowed-within-requester-repo-overriding-pattern/a.md"),
+  );
   expect(explain(resultB)).toMatchInlineSnapshot(`
     "✅ Repo account-b-1/repo-b-1 was allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
@@ -263,9 +301,12 @@ it("allows GitHub environment secrets that should be allowed within the requesti
         ✅ Can provision secret based on 1 rule:
           ✅ Allowed by rule #1"
   `);
+  await expect(toMarkdown(toMdast(resultB))).toMatchFileSnapshot(
+    join(fixturesPath, "allowed-within-requester-repo-overriding-pattern/b.md"),
+  );
 });
 
-it("doesn't allow GitHub environment secrets for unauthorized requesters", () => {
+it("doesn't allow GitHub environment secrets for unauthorized requesters", async () => {
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
@@ -316,6 +357,11 @@ it("doesn't allow GitHub environment secrets for unauthorized requesters", () =>
       .listResults()
       .sort((a, b) => compareTokenRequest(a.request, b.request)),
   );
+  const toMdast = createMarkdownProvisionAuthExplainer(
+    tokenAuthorizer
+      .listResults()
+      .sort((a, b) => compareTokenRequest(a.request, b.request)),
+  );
 
   expect(explain(resultA)).toMatchInlineSnapshot(`
     "❌ Repo account-y/repo-y wasn't allowed to provision secret SECRET_A:
@@ -324,9 +370,12 @@ it("doesn't allow GitHub environment secrets for unauthorized requesters", () =>
         ✅ Repo account-a/repo-a was allowed access to token #1
         ❌ Can't provision secret (no matching rules)"
   `);
+  await expect(toMarkdown(toMdast(resultA))).toMatchFileSnapshot(
+    join(fixturesPath, "denied-unauthorized-requester/a.md"),
+  );
 });
 
-it("doesn't allow GitHub environment secrets within the requesting repo for unauthorized requesters", () => {
+it("doesn't allow GitHub environment secrets within the requesting repo for unauthorized requesters", async () => {
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
@@ -414,6 +463,11 @@ it("doesn't allow GitHub environment secrets within the requesting repo for unau
       .listResults()
       .sort((a, b) => compareTokenRequest(a.request, b.request)),
   );
+  const toMdast = createMarkdownProvisionAuthExplainer(
+    tokenAuthorizer
+      .listResults()
+      .sort((a, b) => compareTokenRequest(a.request, b.request)),
+  );
 
   expect(explain(resultA)).toMatchInlineSnapshot(`
     "❌ Repo account-y/repo-y wasn't allowed to provision secret SECRET_A:
@@ -422,6 +476,12 @@ it("doesn't allow GitHub environment secrets within the requesting repo for unau
         ✅ Repo account-x/repo-x was allowed access to token #1
         ❌ Can't provision secret (no matching rules)"
   `);
+  await expect(toMarkdown(toMdast(resultA))).toMatchFileSnapshot(
+    join(
+      fixturesPath,
+      "denied-unauthorized-requester-within-requester-repo/a.md",
+    ),
+  );
   expect(explain(resultB)).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-y wasn't allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
@@ -429,6 +489,12 @@ it("doesn't allow GitHub environment secrets within the requesting repo for unau
         ✅ Repo account-x/repo-x was allowed access to token #1
         ❌ Can't provision secret (no matching rules)"
   `);
+  await expect(toMarkdown(toMdast(resultB))).toMatchFileSnapshot(
+    join(
+      fixturesPath,
+      "denied-unauthorized-requester-within-requester-repo/b.md",
+    ),
+  );
   expect(explain(resultC)).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x wasn't allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
@@ -436,6 +502,12 @@ it("doesn't allow GitHub environment secrets within the requesting repo for unau
         ✅ Repo account-x/repo-y was allowed access to token #2
         ❌ Can't provision secret (no matching rules)"
   `);
+  await expect(toMarkdown(toMdast(resultC))).toMatchFileSnapshot(
+    join(
+      fixturesPath,
+      "denied-unauthorized-requester-within-requester-repo/c.md",
+    ),
+  );
   expect(explain(resultD)).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x wasn't allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
@@ -443,9 +515,15 @@ it("doesn't allow GitHub environment secrets within the requesting repo for unau
         ✅ Repo account-x/repo-x was allowed access to token #1
         ❌ Can't provision secret (no matching rules)"
   `);
+  await expect(toMarkdown(toMdast(resultD))).toMatchFileSnapshot(
+    join(
+      fixturesPath,
+      "denied-unauthorized-requester-within-requester-repo/d.md",
+    ),
+  );
 });
 
-it("doesn't allow GitHub environment secrets within the requesting repo when denied even when allowed by a repo pattern in the same rule", () => {
+it("doesn't allow GitHub environment secrets within the requesting repo when denied even when allowed by a repo pattern in the same rule", async () => {
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
@@ -499,6 +577,11 @@ it("doesn't allow GitHub environment secrets within the requesting repo when den
       .listResults()
       .sort((a, b) => compareTokenRequest(a.request, b.request)),
   );
+  const toMdast = createMarkdownProvisionAuthExplainer(
+    tokenAuthorizer
+      .listResults()
+      .sort((a, b) => compareTokenRequest(a.request, b.request)),
+  );
 
   expect(explain(resultA)).toMatchInlineSnapshot(`
     "❌ Repo account-a/repo-a wasn't allowed to provision secret SECRET_A:
@@ -508,9 +591,12 @@ it("doesn't allow GitHub environment secrets within the requesting repo when den
         ❌ Can't provision secret based on 1 rule:
           ❌ Denied by rule #1"
   `);
+  await expect(toMarkdown(toMdast(resultA))).toMatchFileSnapshot(
+    join(fixturesPath, "denied-within-requester-repo-overriding-pattern/a.md"),
+  );
 });
 
-it("doesn't allow GitHub environment secrets when two environment patterns match but one allows and one denies", () => {
+it("doesn't allow GitHub environment secrets when two environment patterns match but one allows and one denies", async () => {
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
@@ -562,6 +648,11 @@ it("doesn't allow GitHub environment secrets when two environment patterns match
       .listResults()
       .sort((a, b) => compareTokenRequest(a.request, b.request)),
   );
+  const toMdast = createMarkdownProvisionAuthExplainer(
+    tokenAuthorizer
+      .listResults()
+      .sort((a, b) => compareTokenRequest(a.request, b.request)),
+  );
 
   expect(explain(resultA)).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x wasn't allowed to provision secret SECRET_A:
@@ -571,4 +662,7 @@ it("doesn't allow GitHub environment secrets when two environment patterns match
         ❌ Can't provision secret based on 1 rule:
           ❌ Denied by rule #1"
   `);
+  await expect(toMarkdown(toMdast(resultA))).toMatchFileSnapshot(
+    join(fixturesPath, "denied-one-environment-allows-one-denies/a.md"),
+  );
 });
