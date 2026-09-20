@@ -6,11 +6,13 @@ import stringify from "fast-json-stable-stringify";
 import type {
   Environment,
   Installation,
+  Issue,
   Repo,
 } from "../../src/type/github-api.js";
 import type { Permissions } from "../../src/type/permissions.js";
 import {
   createTestInstallationToken,
+  createTestIssue,
   type TestApp,
 } from "../../test/github-api.js";
 import { decrypt, type TestKeyPair } from "../../test/key.js";
@@ -37,6 +39,7 @@ let repoKeys: Record<
     environments: Record<string, TestKeyPair>;
   }
 >;
+let repoIssueLabels: Record<string, string[]>;
 let orgSecrets: Record<
   string,
   {
@@ -54,6 +57,8 @@ let repoSecrets: Record<
   }
 >;
 let envSecrets: Record<string, Record<string, string>>;
+let issues: Record<string, Issue[]>;
+let issueComments: Record<string, string[]>;
 let errorsByEndpoint: Record<string, (Error | undefined)[]>;
 
 export function __reset() {
@@ -64,9 +69,12 @@ export function __reset() {
   files = {};
   orgKeys = {};
   repoKeys = {};
+  repoIssueLabels = {};
   orgSecrets = {};
   repoSecrets = {};
   envSecrets = {};
+  issues = {};
+  issueComments = {};
   errorsByEndpoint = {};
 }
 
@@ -154,6 +162,30 @@ export function __getEnvSecrets(owner: string, repo: string, env: string) {
   return envSecrets[`${owner}/${repo}/${env}`];
 }
 
+export function __setIssues(repo: string, newIssues: Issue[]) {
+  issues[repo] = newIssues;
+}
+
+export function __getIssues(owner: string, repo: string) {
+  return issues[`${owner}/${repo}`] ?? [];
+}
+
+export function __setRepoIssueLabels(repo: string, labels: string[]) {
+  repoIssueLabels[repo] = labels;
+}
+
+export function __getRepoIssueLabels(repo: string) {
+  return repoIssueLabels[repo] ?? [];
+}
+
+export function __getIssueComments(
+  owner: string,
+  repo: string,
+  number: number,
+) {
+  return issueComments[`${owner}/${repo}/${number}`] ?? [];
+}
+
 export function Octokit({
   auth: { appId, privateKey, installationId } = {},
 }: {
@@ -161,7 +193,7 @@ export function Octokit({
 } = {}) {
   return {
     paginate: {
-      iterator: (endpoint: string) => {
+      iterator: (endpoint: string, params?: object) => {
         if (appId == null) {
           throw new Error(`Endpoint ${endpoint} requires appId`);
         }
@@ -180,6 +212,14 @@ export function Octokit({
 
         if (endpoint === "repos.getAllEnvironments") {
           return getAllEnvironments(appId, installationId);
+        }
+
+        if (endpoint === "issues.listForRepo") {
+          return listIssuesForRepo(
+            appId,
+            installationId,
+            params as { owner: string; repo: string; state?: string },
+          );
         }
 
         throw new Error("Not implemented");
@@ -391,6 +431,132 @@ export function Octokit({
         ) => getRepoPublicKey("dependabot", params),
       },
 
+      issues: {
+        create: async ({
+          owner,
+          repo,
+          title,
+          body,
+          labels = [],
+        }: RestEndpointMethodTypes["issues"]["create"]["parameters"]) => {
+          throwIfEndpointError("issues.create");
+
+          if (appId == null) {
+            throw new Error("Endpoint issues.create requires appId");
+          }
+          if (installationId == null) {
+            throw new Error("Endpoint issues.create requires installationId");
+          }
+
+          const repoName = `${owner}/${repo}`;
+          const repoIssues = issues[repoName] ?? (issues[repoName] = []);
+
+          const issue = createTestIssue(
+            owner,
+            repo,
+            repoIssues.length + 1,
+            "open",
+            String(title),
+            body ?? null,
+            labels as string[],
+          );
+
+          repoIssues.push(issue);
+
+          return { data: issue };
+        },
+
+        createComment: async ({
+          owner,
+          repo,
+          issue_number,
+          body,
+        }: RestEndpointMethodTypes["issues"]["createComment"]["parameters"]) => {
+          throwIfEndpointError("issues.createComment");
+
+          if (appId == null) {
+            throw new Error("Endpoint issues.createComment requires appId");
+          }
+          if (installationId == null) {
+            throw new Error(
+              "Endpoint issues.createComment requires installationId",
+            );
+          }
+
+          const key = `${owner}/${repo}/${issue_number}`;
+          const comments = issueComments[key] ?? (issueComments[key] = []);
+          comments.push(body);
+
+          return { data: { body } };
+        },
+
+        createLabel: async ({
+          owner,
+          repo,
+          name,
+        }: RestEndpointMethodTypes["issues"]["createLabel"]["parameters"]) => {
+          throwIfEndpointError("issues.createLabel");
+
+          if (appId == null) {
+            throw new Error("Endpoint issues.createLabel requires appId");
+          }
+          if (installationId == null) {
+            throw new Error(
+              "Endpoint issues.createLabel requires installationId",
+            );
+          }
+
+          const repoName = `${owner}/${repo}`;
+          const repoLabels =
+            repoIssueLabels[repoName] ?? (repoIssueLabels[repoName] = []);
+
+          if (repoLabels.includes(name)) {
+            throw new TestRequestError(422, {
+              errors: [
+                { resource: "Label", code: "already_exists", field: "name" },
+              ],
+            });
+          }
+
+          repoLabels.push(name);
+
+          return { data: { name } };
+        },
+
+        listForRepo: "issues.listForRepo",
+
+        update: async ({
+          owner,
+          repo,
+          issue_number,
+          title,
+          body,
+          state,
+          labels = [],
+        }: RestEndpointMethodTypes["issues"]["update"]["parameters"]) => {
+          throwIfEndpointError("issues.update");
+
+          if (appId == null) {
+            throw new Error("Endpoint issues.update requires appId");
+          }
+          if (installationId == null) {
+            throw new Error("Endpoint issues.update requires installationId");
+          }
+
+          const repoIssues = issues[`${owner}/${repo}`] ?? [];
+          const issue = repoIssues.find((i) => i.number === issue_number);
+
+          if (!issue) throw new TestRequestError(404);
+
+          if (typeof title === "string") issue.title = title;
+          if (typeof body === "string") issue.body = body;
+          if (typeof state === "string") issue.state = state;
+          if (labels) issue.labels = labels;
+
+          return { data: issue };
+        },
+      },
+
       repos: {
         getAllEnvironments: "repos.getAllEnvironments",
 
@@ -573,6 +739,40 @@ async function* getAllEnvironments(appId: number, installationId: number) {
 
       for (const env of envs) {
         page.push(env);
+
+        if (page.length >= per_page) {
+          yield { data: page };
+          page = [];
+        }
+      }
+    }
+  }
+
+  yield { data: page };
+}
+
+async function* listIssuesForRepo(
+  appId: number,
+  installationId: number,
+  options: { owner: string; repo: string; state?: string },
+) {
+  throwIfEndpointError("issues.listForRepo");
+
+  const per_page = 2;
+  let page = [];
+
+  for (const [installation, repos] of installations) {
+    if (installation.app_id !== appId) continue;
+    if (installation.id !== installationId) continue;
+
+    for (const r of repos) {
+      if (options.owner != null && r.owner.login !== options.owner) continue;
+      if (options.repo != null && r.name !== options.repo) continue;
+
+      for (const issue of issues[r.full_name] ?? []) {
+        if (options.state != null && issue.state !== options.state) continue;
+
+        page.push(issue);
 
         if (page.length >= per_page) {
           yield { data: page };

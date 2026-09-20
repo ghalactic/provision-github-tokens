@@ -26,3 +26,7 @@ export type PublicKey = {
   key_id: string;
   key: string;
 };
+
+export type Issue = NonNullable<
+  Endpoints["GET /repos/{owner}/{repo}/issues/{issue_number}"]["response"]["data"]
+>;

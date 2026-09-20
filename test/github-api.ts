@@ -10,6 +10,7 @@ import type {
   InstallationAccount,
   InstallationRepo,
   InstallationToken,
+  Issue,
 } from "../src/type/github-api.js";
 import type { Permissions } from "../src/type/permissions.js";
 
@@ -43,6 +44,12 @@ const sampleEnvironment = openapiSampler.sample(
     "/repos/{owner}/{repo}/environments/{environment_name}"
   ].get.responses["200"].content["application/json"].schema,
 ) as Environment;
+
+const sampleIssue = openapiSampler.sample(
+  openapi.schemas["api.github.com.deref"].paths[
+    "/repos/{owner}/{repo}/issues/{issue_number}"
+  ].get.responses["200"].content["application/json"].schema,
+) as Issue;
 
 export type TestApp = App & {
   privateKey: string;
@@ -174,6 +181,25 @@ export function createTestInstallationRepos(
     full_name: `${account.login}/${name}`,
     owner: { ...sampleInstallationRepo.owner, login: account.login },
   }));
+}
+
+export function createTestIssue(
+  owner: string,
+  repo: string,
+  number: number,
+  state: "open" | "closed",
+  title: string,
+  body: string | null,
+  labels: string[],
+): Issue {
+  return {
+    ...sampleIssue,
+    number,
+    state,
+    title,
+    body,
+    labels: labels.map((name) => ({ name })),
+  };
 }
 
 export type Artifact = components["schemas"]["artifact"];
