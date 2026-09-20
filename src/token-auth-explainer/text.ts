@@ -4,7 +4,7 @@ import { icon } from "../icon.js";
 import { permissionAccess } from "../permissions.js";
 import { pluralize } from "../pluralize.js";
 import type { PermissionsRule } from "../type/permissions-rule.js";
-import type { PermissionAccess, Permissions } from "../type/permissions.js";
+import type { Permissions } from "../type/permissions.js";
 import type {
   TokenAuthResourceResult,
   TokenAuthResourceResultRuleResult,
@@ -14,13 +14,7 @@ import type {
   TokenAuthResultNoRepos,
   TokenAuthResultSelectedRepos,
 } from "../type/token-auth-result.js";
-
-const ACCESS_LEVELS: Record<PermissionAccess, string> = {
-  none: "No",
-  admin: "Admin",
-  read: "Read",
-  write: "Write",
-};
+import { ACCESS_LEVEL_LABELS } from "./access-level.js";
 
 export function createTextTokenAuthExplainer(): TokenAuthResultExplainer<string> {
   return (result) => {
@@ -37,10 +31,12 @@ export function createTextTokenAuthExplainer(): TokenAuthResultExplainer<string>
     return (
       explainSummary(result) +
       explainMaxAccessAndRole(result, subject) +
-      `\n  ${icon(isSufficient)} ` +
-      `${isSufficient ? "Sufficient" : "Insufficient"} ` +
-      `access to ${subject} ` +
-      `${explainBasedOnRules(request.tokenDec.permissions, rules)}`
+      explainBasedOnRules(
+        isSufficient,
+        subject,
+        request.tokenDec.permissions,
+        rules,
+      )
     );
   }
 
@@ -50,10 +46,12 @@ export function createTextTokenAuthExplainer(): TokenAuthResultExplainer<string>
     return (
       explainSummary(result) +
       explainMaxAccessAndRole(result, request.tokenDec.account) +
-      `\n  ${icon(isSufficient)} ` +
-      `${isSufficient ? "Sufficient" : "Insufficient"} ` +
-      `access to ${request.tokenDec.account} ` +
-      `${explainBasedOnRules(request.tokenDec.permissions, rules)}`
+      explainBasedOnRules(
+        isSufficient,
+        request.tokenDec.account,
+        request.tokenDec.permissions,
+        rules,
+      )
     );
   }
 
@@ -103,7 +101,7 @@ export function createTextTokenAuthExplainer(): TokenAuthResultExplainer<string>
     accessTo: string,
   ): string {
     return (
-      `\n  ${icon(!isMissingRole)} ${ACCESS_LEVELS[maxWant]} ` +
+      `\n  ${icon(!isMissingRole)} ${ACCESS_LEVEL_LABELS[maxWant]} ` +
       `access to ${accessTo} ` +
       (request.tokenDec.as
         ? `requested with role ${request.tokenDec.as}`
@@ -130,25 +128,25 @@ export function createTextTokenAuthExplainer(): TokenAuthResultExplainer<string>
     want: Permissions,
     { isSufficient, rules }: TokenAuthResourceResult,
   ): string {
-    return (
-      `\n  ${icon(isSufficient)} ` +
-      `${isSufficient ? "Sufficient" : "Insufficient"} ` +
-      `access to repo ${resource} ${explainBasedOnRules(want, rules)}`
-    );
+    return explainBasedOnRules(isSufficient, `repo ${resource}`, want, rules);
   }
 
   function explainBasedOnRules(
+    isSufficient: boolean,
+    accessTo: string,
     want: Permissions,
     rules: TokenAuthResourceResultRuleResult[],
   ): string {
     const ruleCount = rules.length;
-    const ruleOrRules = ruleCount === 1 ? "rule" : "rules";
-    const basedOn =
-      ruleCount < 1
+    const summary =
+      `\n  ${icon(isSufficient)} ` +
+      `${isSufficient ? "Sufficient" : "Insufficient"} ` +
+      `access to ${accessTo} ` +
+      (ruleCount < 1
         ? "(no matching rules)"
-        : `based on ${ruleCount} ${ruleOrRules}`;
+        : `based on ${pluralize(ruleCount, "rule", "rules")}:`);
 
-    if (ruleCount < 1) return basedOn;
+    if (ruleCount < 1) return summary;
 
     let explainedRules = "";
 
@@ -156,7 +154,7 @@ export function createTextTokenAuthExplainer(): TokenAuthResultExplainer<string>
       explainedRules += explainRule(want, ruleResult);
     }
 
-    return `${basedOn}:${explainedRules}`;
+    return `${summary}${explainedRules}`;
   }
 
   function explainRule(
@@ -166,7 +164,7 @@ export function createTextTokenAuthExplainer(): TokenAuthResultExplainer<string>
     return (
       `\n    ${icon(isSufficient)} Rule ${renderRule(index, rule)} ` +
       `gave ${isSufficient ? "sufficient" : "insufficient"} access:` +
-      renderPermissionComparison("      ", have, want)
+      renderPermissionComparison(have, want)
     );
   }
 
@@ -177,32 +175,20 @@ export function createTextTokenAuthExplainer(): TokenAuthResultExplainer<string>
   }
 
   function renderPermissionComparison(
-    indent: string,
     have: Permissions,
     want: Permissions,
   ): string {
-    const entries: [boolean, string][] = [];
+    let comparison = "";
 
     for (const p of Object.keys(want).sort((a, b) => a.localeCompare(b))) {
       const h = permissionAccess(have, p);
       const w = permissionAccess(want, p);
 
-      entries.push([isSufficientAccess(h, w), `${p}: have ${h}, wanted ${w}`]);
+      comparison +=
+        `\n      ${icon(isSufficientAccess(h, w))} ${p}: ` +
+        `have ${h}, wanted ${w}`;
     }
 
-    return renderAllowDenyList(indent, entries);
-  }
-
-  function renderAllowDenyList(
-    indent: string,
-    items: [boolean, string][],
-  ): string {
-    let list = "";
-
-    for (const [isAllowed, entry] of items) {
-      list += `\n${indent}${icon(isAllowed)} ${entry}`;
-    }
-
-    return list;
+    return comparison;
   }
 }

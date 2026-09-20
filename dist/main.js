@@ -60694,13 +60694,15 @@ function pluralize(amount, singular, plural) {
   return `${amount} ${amount === 1 ? singular : plural}`;
 }
 
-// src/token-auth-explainer/text.ts
-var ACCESS_LEVELS = {
+// src/token-auth-explainer/access-level.ts
+var ACCESS_LEVEL_LABELS = {
   none: "No",
   admin: "Admin",
   read: "Read",
   write: "Write"
 };
+
+// src/token-auth-explainer/text.ts
 function createTextTokenAuthExplainer() {
   return (result) => {
     if (result.type === "ALL_REPOS") return explainAllRepos(result);
@@ -60710,13 +60712,21 @@ function createTextTokenAuthExplainer() {
   function explainAllRepos(result) {
     const { request: request2, isSufficient, rules } = result;
     const subject = `all repos in ${request2.tokenDec.account}`;
-    return explainSummary(result) + explainMaxAccessAndRole(result, subject) + `
-  ${icon(isSufficient)} ${isSufficient ? "Sufficient" : "Insufficient"} access to ${subject} ${explainBasedOnRules(request2.tokenDec.permissions, rules)}`;
+    return explainSummary(result) + explainMaxAccessAndRole(result, subject) + explainBasedOnRules(
+      isSufficient,
+      subject,
+      request2.tokenDec.permissions,
+      rules
+    );
   }
   function explainNoRepos(result) {
     const { request: request2, isSufficient, rules } = result;
-    return explainSummary(result) + explainMaxAccessAndRole(result, request2.tokenDec.account) + `
-  ${icon(isSufficient)} ${isSufficient ? "Sufficient" : "Insufficient"} access to ${request2.tokenDec.account} ${explainBasedOnRules(request2.tokenDec.permissions, rules)}`;
+    return explainSummary(result) + explainMaxAccessAndRole(result, request2.tokenDec.account) + explainBasedOnRules(
+      isSufficient,
+      request2.tokenDec.account,
+      request2.tokenDec.permissions,
+      rules
+    );
   }
   function explainSelectedRepos(result) {
     const { request: request2, results } = result;
@@ -60743,7 +60753,7 @@ function createTextTokenAuthExplainer() {
   }
   function explainMaxAccessAndRole({ request: request2, maxWant, isMissingRole }, accessTo) {
     return `
-  ${icon(!isMissingRole)} ${ACCESS_LEVELS[maxWant]} access to ${accessTo} ` + (request2.tokenDec.as ? `requested with role ${request2.tokenDec.as}` : "requested without a role");
+  ${icon(!isMissingRole)} ${ACCESS_LEVEL_LABELS[maxWant]} access to ${accessTo} ` + (request2.tokenDec.as ? `requested with role ${request2.tokenDec.as}` : "requested without a role");
   }
   function explainSelectedReposMatch({
     request: request2,
@@ -60759,44 +60769,36 @@ function createTextTokenAuthExplainer() {
   ${icon(isMatched)} ${repoPatterns} matched ${repos}`;
   }
   function explainResourceRepo(resource, want, { isSufficient, rules }) {
-    return `
-  ${icon(isSufficient)} ${isSufficient ? "Sufficient" : "Insufficient"} access to repo ${resource} ${explainBasedOnRules(want, rules)}`;
+    return explainBasedOnRules(isSufficient, `repo ${resource}`, want, rules);
   }
-  function explainBasedOnRules(want, rules) {
+  function explainBasedOnRules(isSufficient, accessTo, want, rules) {
     const ruleCount = rules.length;
-    const ruleOrRules = ruleCount === 1 ? "rule" : "rules";
-    const basedOn = ruleCount < 1 ? "(no matching rules)" : `based on ${ruleCount} ${ruleOrRules}`;
-    if (ruleCount < 1) return basedOn;
+    const summary2 = `
+  ${icon(isSufficient)} ${isSufficient ? "Sufficient" : "Insufficient"} access to ${accessTo} ` + (ruleCount < 1 ? "(no matching rules)" : `based on ${pluralize(ruleCount, "rule", "rules")}:`);
+    if (ruleCount < 1) return summary2;
     let explainedRules = "";
     for (const ruleResult of rules) {
       explainedRules += explainRule(want, ruleResult);
     }
-    return `${basedOn}:${explainedRules}`;
+    return `${summary2}${explainedRules}`;
   }
   function explainRule(want, { index, rule, have, isSufficient }) {
     return `
-    ${icon(isSufficient)} Rule ${renderRule(index, rule)} gave ${isSufficient ? "sufficient" : "insufficient"} access:` + renderPermissionComparison("      ", have, want);
+    ${icon(isSufficient)} Rule ${renderRule(index, rule)} gave ${isSufficient ? "sufficient" : "insufficient"} access:` + renderPermissionComparison(have, want);
   }
   function renderRule(index, { description }) {
     const n2 = `#${index + 1}`;
     return description ? `${n2}: ${JSON.stringify(description)}` : n2;
   }
-  function renderPermissionComparison(indent, have, want) {
-    const entries = [];
+  function renderPermissionComparison(have, want) {
+    let comparison = "";
     for (const p2 of Object.keys(want).sort((a2, b2) => a2.localeCompare(b2))) {
       const h2 = permissionAccess(have, p2);
       const w2 = permissionAccess(want, p2);
-      entries.push([isSufficientAccess(h2, w2), `${p2}: have ${h2}, wanted ${w2}`]);
+      comparison += `
+      ${icon(isSufficientAccess(h2, w2))} ${p2}: have ${h2}, wanted ${w2}`;
     }
-    return renderAllowDenyList(indent, entries);
-  }
-  function renderAllowDenyList(indent, items) {
-    let list3 = "";
-    for (const [isAllowed, entry] of items) {
-      list3 += `
-${indent}${icon(isAllowed)} ${entry}`;
-    }
-    return list3;
+    return comparison;
   }
 }
 
@@ -120327,6 +120329,12 @@ function gfmToMarkdown(options) {
 }
 
 // src/markdown.ts
+function toMarkdown2(children) {
+  return toMarkdown(
+    { type: "root", children },
+    { bullet: "-", emphasis: "_", extensions: [gfmToMarkdown()] }
+  );
+}
 function blockquote2(...children) {
   return { type: "blockquote", children };
 }
@@ -120392,26 +120400,20 @@ function renderSummary(githubServerUrl, actionUrl, authResult, tokenCreationResu
   const omittedAllowedCount = allAllowedRows.length - allowedRows.length;
   const omittedCount = omittedDeniedCount + omittedAllowedCount;
   const definitions = {};
-  return toMarkdown(
-    {
-      type: "root",
-      children: [
-        statsHeading(authResults, provisionResults),
-        ...emptySection(authResults, authResult, actionUrl),
-        ...failuresTable(
-          deniedRows,
-          tokenCreationResults,
-          provisionResults,
-          definitions,
-          githubServerUrl
-        ),
-        ...successesTable(allowedRows, definitions, githubServerUrl),
-        ...omittedNotice(authResults.length, omittedCount),
-        ...definitionsAst(definitions)
-      ]
-    },
-    { bullet: "-", extensions: [gfmToMarkdown()] }
-  );
+  return toMarkdown2([
+    statsHeading(authResults, provisionResults),
+    ...emptySection(authResults, authResult, actionUrl),
+    ...failuresTable(
+      deniedRows,
+      tokenCreationResults,
+      provisionResults,
+      definitions,
+      githubServerUrl
+    ),
+    ...successesTable(allowedRows, definitions, githubServerUrl),
+    ...omittedNotice(authResults.length, omittedCount),
+    ...definitionsAst(definitions)
+  ]);
 }
 function statsHeading(authResults, provisionResults) {
   const totalCount = authResults.length;

@@ -2,7 +2,7 @@
 
 |    | Requester                               | Secret     | Targets  | Reason                     |
 | :- | :-------------------------------------- | :--------- | :------- | :------------------------- |
-| ❌  | [account-x/repo-x][gh/account-x/repo-x] | `SECRET_B` | *(none)* | No targets to provision to |
+| ❌  | [account-x/repo-x][gh/account-x/repo-x] | `SECRET_B` | _(none)_ | No targets to provision to |
 
 |    | Requester                               | Secret     | Targets                   |
 | :- | :-------------------------------------- | :--------- | :------------------------ |

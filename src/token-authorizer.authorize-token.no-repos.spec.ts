@@ -1,11 +1,20 @@
+import { join } from "node:path";
 import { expect, it } from "vitest";
 import { createTestTokenDec } from "../test/declaration.js";
+import { toMarkdown } from "./markdown.js";
+import { createMarkdownTokenAuthExplainer } from "./token-auth-explainer/markdown.js";
 import { createTextTokenAuthExplainer } from "./token-auth-explainer/text.js";
 import { createTokenAuthorizer } from "./token-authorizer.js";
 
-const explain = createTextTokenAuthExplainer();
+const fixturesPath = join(
+  import.meta.dirname,
+  "testdata/token-authorizer/no-repos",
+);
 
-it("allows tokens that should be allowed", () => {
+const toText = createTextTokenAuthExplainer();
+const toMdast = createMarkdownTokenAuthExplainer();
+
+it("allows tokens that should be allowed", async () => {
   const authorizer = createTokenAuthorizer({
     rules: [
       {
@@ -23,38 +32,54 @@ it("allows tokens that should be allowed", () => {
     ],
   });
 
-  expect(
-    explain(
-      authorizer.authorizeToken({
-        consumer: { account: "account-x" },
-        tokenDec: createTestTokenDec({
-          as: "role-a",
-          repos: [],
-          permissions: { members: "write" },
-        }),
-        repos: [],
-      }),
-    ),
-  ).toMatchInlineSnapshot(`
+  const resultA = authorizer.authorizeToken({
+    consumer: { account: "account-x" },
+    tokenDec: createTestTokenDec({
+      as: "role-a",
+      repos: [],
+      permissions: { members: "write" },
+    }),
+    repos: [],
+  });
+  const resultB = authorizer.authorizeToken({
+    consumer: { account: "account-x" },
+    tokenDec: createTestTokenDec({
+      as: "role-a",
+      repos: [],
+      permissions: { members: "write", metadata: "read" },
+    }),
+    repos: [],
+  });
+  const resultC = authorizer.authorizeToken({
+    consumer: { account: "account-x", repo: "repo-x" },
+    tokenDec: createTestTokenDec({
+      as: "role-a",
+      repos: [],
+      permissions: { members: "write" },
+    }),
+    repos: [],
+  });
+  const resultD = authorizer.authorizeToken({
+    consumer: { account: "account-x", repo: "repo-x" },
+    tokenDec: createTestTokenDec({
+      as: "role-a",
+      repos: [],
+      permissions: { members: "write", metadata: "read" },
+    }),
+    repos: [],
+  });
+
+  expect(toText(resultA)).toMatchInlineSnapshot(`
     "✅ Account account-x was allowed access to a token:
       ✅ Write access to account-a requested with role role-a
       ✅ Sufficient access to account-a based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ members: have write, wanted write"
   `);
-  expect(
-    explain(
-      authorizer.authorizeToken({
-        consumer: { account: "account-x" },
-        tokenDec: createTestTokenDec({
-          as: "role-a",
-          repos: [],
-          permissions: { members: "write", metadata: "read" },
-        }),
-        repos: [],
-      }),
-    ),
-  ).toMatchInlineSnapshot(`
+  await expect(toMarkdown(toMdast(resultA))).toMatchFileSnapshot(
+    join(fixturesPath, "allowed/a.md"),
+  );
+  expect(toText(resultB)).toMatchInlineSnapshot(`
     "✅ Account account-x was allowed access to a token:
       ✅ Write access to account-a requested with role role-a
       ✅ Sufficient access to account-a based on 1 rule:
@@ -62,38 +87,20 @@ it("allows tokens that should be allowed", () => {
           ✅ members: have write, wanted write
           ✅ metadata: have read, wanted read"
   `);
-  expect(
-    explain(
-      authorizer.authorizeToken({
-        consumer: { account: "account-x", repo: "repo-x" },
-        tokenDec: createTestTokenDec({
-          as: "role-a",
-          repos: [],
-          permissions: { members: "write" },
-        }),
-        repos: [],
-      }),
-    ),
-  ).toMatchInlineSnapshot(`
+  await expect(toMarkdown(toMdast(resultB))).toMatchFileSnapshot(
+    join(fixturesPath, "allowed/b.md"),
+  );
+  expect(toText(resultC)).toMatchInlineSnapshot(`
     "✅ Repo account-x/repo-x was allowed access to a token:
       ✅ Write access to account-a requested with role role-a
       ✅ Sufficient access to account-a based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ members: have write, wanted write"
   `);
-  expect(
-    explain(
-      authorizer.authorizeToken({
-        consumer: { account: "account-x", repo: "repo-x" },
-        tokenDec: createTestTokenDec({
-          as: "role-a",
-          repos: [],
-          permissions: { members: "write", metadata: "read" },
-        }),
-        repos: [],
-      }),
-    ),
-  ).toMatchInlineSnapshot(`
+  await expect(toMarkdown(toMdast(resultC))).toMatchFileSnapshot(
+    join(fixturesPath, "allowed/c.md"),
+  );
+  expect(toText(resultD)).toMatchInlineSnapshot(`
     "✅ Repo account-x/repo-x was allowed access to a token:
       ✅ Write access to account-a requested with role role-a
       ✅ Sufficient access to account-a based on 1 rule:
@@ -101,9 +108,12 @@ it("allows tokens that should be allowed", () => {
           ✅ members: have write, wanted write
           ✅ metadata: have read, wanted read"
   `);
+  await expect(toMarkdown(toMdast(resultD))).toMatchFileSnapshot(
+    join(fixturesPath, "allowed/d.md"),
+  );
 });
 
-it("allows tokens when the actual access level is higher than requested", () => {
+it("allows tokens when the actual access level is higher than requested", async () => {
   const authorizer = createTokenAuthorizer({
     rules: [
       {
@@ -121,19 +131,26 @@ it("allows tokens when the actual access level is higher than requested", () => 
     ],
   });
 
-  expect(
-    explain(
-      authorizer.authorizeToken({
-        consumer: { account: "account-x" },
-        tokenDec: createTestTokenDec({
-          as: "role-a",
-          repos: [],
-          permissions: { metadata: "read", repository_projects: "write" },
-        }),
-        repos: [],
-      }),
-    ),
-  ).toMatchInlineSnapshot(`
+  const resultA = authorizer.authorizeToken({
+    consumer: { account: "account-x" },
+    tokenDec: createTestTokenDec({
+      as: "role-a",
+      repos: [],
+      permissions: { metadata: "read", repository_projects: "write" },
+    }),
+    repos: [],
+  });
+  const resultB = authorizer.authorizeToken({
+    consumer: { account: "account-x", repo: "repo-x" },
+    tokenDec: createTestTokenDec({
+      as: "role-a",
+      repos: [],
+      permissions: { metadata: "read", repository_projects: "write" },
+    }),
+    repos: [],
+  });
+
+  expect(toText(resultA)).toMatchInlineSnapshot(`
     "✅ Account account-x was allowed access to a token:
       ✅ Write access to account-a requested with role role-a
       ✅ Sufficient access to account-a based on 1 rule:
@@ -141,19 +158,10 @@ it("allows tokens when the actual access level is higher than requested", () => 
           ✅ metadata: have write, wanted read
           ✅ repository_projects: have admin, wanted write"
   `);
-  expect(
-    explain(
-      authorizer.authorizeToken({
-        consumer: { account: "account-x", repo: "repo-x" },
-        tokenDec: createTestTokenDec({
-          as: "role-a",
-          repos: [],
-          permissions: { metadata: "read", repository_projects: "write" },
-        }),
-        repos: [],
-      }),
-    ),
-  ).toMatchInlineSnapshot(`
+  await expect(toMarkdown(toMdast(resultA))).toMatchFileSnapshot(
+    join(fixturesPath, "allowed-access-level-higher/a.md"),
+  );
+  expect(toText(resultB)).toMatchInlineSnapshot(`
     "✅ Repo account-x/repo-x was allowed access to a token:
       ✅ Write access to account-a requested with role role-a
       ✅ Sufficient access to account-a based on 1 rule:
@@ -161,9 +169,12 @@ it("allows tokens when the actual access level is higher than requested", () => 
           ✅ metadata: have write, wanted read
           ✅ repository_projects: have admin, wanted write"
   `);
+  await expect(toMarkdown(toMdast(resultB))).toMatchFileSnapshot(
+    join(fixturesPath, "allowed-access-level-higher/b.md"),
+  );
 });
 
-it("allows tokens when a later rule allows access that a previous rule denied", () => {
+it("allows tokens when a later rule allows access that a previous rule denied", async () => {
   const authorizer = createTokenAuthorizer({
     rules: [
       {
@@ -193,19 +204,26 @@ it("allows tokens when a later rule allows access that a previous rule denied", 
     ],
   });
 
-  expect(
-    explain(
-      authorizer.authorizeToken({
-        consumer: { account: "account-x" },
-        tokenDec: createTestTokenDec({
-          as: "role-a",
-          repos: [],
-          permissions: { contents: "write", metadata: "read" },
-        }),
-        repos: [],
-      }),
-    ),
-  ).toMatchInlineSnapshot(`
+  const resultA = authorizer.authorizeToken({
+    consumer: { account: "account-x" },
+    tokenDec: createTestTokenDec({
+      as: "role-a",
+      repos: [],
+      permissions: { contents: "write", metadata: "read" },
+    }),
+    repos: [],
+  });
+  const resultB = authorizer.authorizeToken({
+    consumer: { account: "account-x", repo: "repo-x" },
+    tokenDec: createTestTokenDec({
+      as: "role-a",
+      repos: [],
+      permissions: { contents: "write", metadata: "read" },
+    }),
+    repos: [],
+  });
+
+  expect(toText(resultA)).toMatchInlineSnapshot(`
     "✅ Account account-x was allowed access to a token:
       ✅ Write access to account-a requested with role role-a
       ✅ Sufficient access to account-a based on 2 rules:
@@ -216,19 +234,10 @@ it("allows tokens when a later rule allows access that a previous rule denied", 
           ✅ contents: have write, wanted write
           ✅ metadata: have read, wanted read"
   `);
-  expect(
-    explain(
-      authorizer.authorizeToken({
-        consumer: { account: "account-x", repo: "repo-x" },
-        tokenDec: createTestTokenDec({
-          as: "role-a",
-          repos: [],
-          permissions: { contents: "write", metadata: "read" },
-        }),
-        repos: [],
-      }),
-    ),
-  ).toMatchInlineSnapshot(`
+  await expect(toMarkdown(toMdast(resultA))).toMatchFileSnapshot(
+    join(fixturesPath, "allowed-after-denied/a.md"),
+  );
+  expect(toText(resultB)).toMatchInlineSnapshot(`
     "✅ Repo account-x/repo-x was allowed access to a token:
       ✅ Write access to account-a requested with role role-a
       ✅ Sufficient access to account-a based on 2 rules:
@@ -239,9 +248,12 @@ it("allows tokens when a later rule allows access that a previous rule denied", 
           ✅ contents: have write, wanted write
           ✅ metadata: have read, wanted read"
   `);
+  await expect(toMarkdown(toMdast(resultB))).toMatchFileSnapshot(
+    join(fixturesPath, "allowed-after-denied/b.md"),
+  );
 });
 
-it("allows tokens when a later unrelated rule denies access to the requested permission", () => {
+it("allows tokens when a later unrelated rule denies access to the requested permission", async () => {
   const authorizer = createTokenAuthorizer({
     rules: [
       {
@@ -283,19 +295,26 @@ it("allows tokens when a later unrelated rule denies access to the requested per
     ],
   });
 
-  expect(
-    explain(
-      authorizer.authorizeToken({
-        consumer: { account: "account-x" },
-        tokenDec: createTestTokenDec({
-          as: "role-a",
-          repos: [],
-          permissions: { contents: "write", metadata: "read" },
-        }),
-        repos: [],
-      }),
-    ),
-  ).toMatchInlineSnapshot(`
+  const resultA = authorizer.authorizeToken({
+    consumer: { account: "account-x" },
+    tokenDec: createTestTokenDec({
+      as: "role-a",
+      repos: [],
+      permissions: { contents: "write", metadata: "read" },
+    }),
+    repos: [],
+  });
+  const resultB = authorizer.authorizeToken({
+    consumer: { account: "account-x", repo: "repo-x" },
+    tokenDec: createTestTokenDec({
+      as: "role-a",
+      repos: [],
+      permissions: { contents: "write", metadata: "read" },
+    }),
+    repos: [],
+  });
+
+  expect(toText(resultA)).toMatchInlineSnapshot(`
     "✅ Account account-x was allowed access to a token:
       ✅ Write access to account-a requested with role role-a
       ✅ Sufficient access to account-a based on 1 rule:
@@ -303,19 +322,10 @@ it("allows tokens when a later unrelated rule denies access to the requested per
           ✅ contents: have write, wanted write
           ✅ metadata: have read, wanted read"
   `);
-  expect(
-    explain(
-      authorizer.authorizeToken({
-        consumer: { account: "account-x", repo: "repo-x" },
-        tokenDec: createTestTokenDec({
-          as: "role-a",
-          repos: [],
-          permissions: { contents: "write", metadata: "read" },
-        }),
-        repos: [],
-      }),
-    ),
-  ).toMatchInlineSnapshot(`
+  await expect(toMarkdown(toMdast(resultA))).toMatchFileSnapshot(
+    join(fixturesPath, "allowed-unrelated-denied/a.md"),
+  );
+  expect(toText(resultB)).toMatchInlineSnapshot(`
     "✅ Repo account-x/repo-x was allowed access to a token:
       ✅ Write access to account-a requested with role role-a
       ✅ Sufficient access to account-a based on 1 rule:
@@ -323,9 +333,12 @@ it("allows tokens when a later unrelated rule denies access to the requested per
           ✅ contents: have write, wanted write
           ✅ metadata: have read, wanted read"
   `);
+  await expect(toMarkdown(toMdast(resultB))).toMatchFileSnapshot(
+    join(fixturesPath, "allowed-unrelated-denied/b.md"),
+  );
 });
 
-it("allows read-only tokens without a role", () => {
+it("allows read-only tokens without a role", async () => {
   const authorizer = createTokenAuthorizer({
     rules: [
       {
@@ -343,18 +356,24 @@ it("allows read-only tokens without a role", () => {
     ],
   });
 
-  expect(
-    explain(
-      authorizer.authorizeToken({
-        consumer: { account: "account-x" },
-        tokenDec: createTestTokenDec({
-          repos: [],
-          permissions: { contents: "read", metadata: "read" },
-        }),
-        repos: [],
-      }),
-    ),
-  ).toMatchInlineSnapshot(`
+  const resultA = authorizer.authorizeToken({
+    consumer: { account: "account-x" },
+    tokenDec: createTestTokenDec({
+      repos: [],
+      permissions: { contents: "read", metadata: "read" },
+    }),
+    repos: [],
+  });
+  const resultB = authorizer.authorizeToken({
+    consumer: { account: "account-x", repo: "repo-x" },
+    tokenDec: createTestTokenDec({
+      repos: [],
+      permissions: { contents: "read", metadata: "read" },
+    }),
+    repos: [],
+  });
+
+  expect(toText(resultA)).toMatchInlineSnapshot(`
     "✅ Account account-x was allowed access to a token:
       ✅ Read access to account-a requested without a role
       ✅ Sufficient access to account-a based on 1 rule:
@@ -362,18 +381,10 @@ it("allows read-only tokens without a role", () => {
           ✅ contents: have write, wanted read
           ✅ metadata: have read, wanted read"
   `);
-  expect(
-    explain(
-      authorizer.authorizeToken({
-        consumer: { account: "account-x", repo: "repo-x" },
-        tokenDec: createTestTokenDec({
-          repos: [],
-          permissions: { contents: "read", metadata: "read" },
-        }),
-        repos: [],
-      }),
-    ),
-  ).toMatchInlineSnapshot(`
+  await expect(toMarkdown(toMdast(resultA))).toMatchFileSnapshot(
+    join(fixturesPath, "allowed-read-only-no-role/a.md"),
+  );
+  expect(toText(resultB)).toMatchInlineSnapshot(`
     "✅ Repo account-x/repo-x was allowed access to a token:
       ✅ Read access to account-a requested without a role
       ✅ Sufficient access to account-a based on 1 rule:
@@ -381,9 +392,12 @@ it("allows read-only tokens without a role", () => {
           ✅ contents: have write, wanted read
           ✅ metadata: have read, wanted read"
   `);
+  await expect(toMarkdown(toMdast(resultB))).toMatchFileSnapshot(
+    join(fixturesPath, "allowed-read-only-no-role/b.md"),
+  );
 });
 
-it("supports rule descriptions", () => {
+it("supports rule descriptions", async () => {
   const authorizer = createTokenAuthorizer({
     rules: [
       {
@@ -402,39 +416,40 @@ it("supports rule descriptions", () => {
     ],
   });
 
-  expect(
-    explain(
-      authorizer.authorizeToken({
-        consumer: { account: "account-x" },
-        tokenDec: createTestTokenDec({ as: "role-a", repos: [] }),
-        repos: [],
-      }),
-    ),
-  ).toMatchInlineSnapshot(`
+  const resultA = authorizer.authorizeToken({
+    consumer: { account: "account-x" },
+    tokenDec: createTestTokenDec({ as: "role-a", repos: [] }),
+    repos: [],
+  });
+  const resultB = authorizer.authorizeToken({
+    consumer: { account: "account-x", repo: "repo-x" },
+    tokenDec: createTestTokenDec({ as: "role-a", repos: [] }),
+    repos: [],
+  });
+
+  expect(toText(resultA)).toMatchInlineSnapshot(`
     "✅ Account account-x was allowed access to a token:
       ✅ Read access to account-a requested with role role-a
       ✅ Sufficient access to account-a based on 1 rule:
         ✅ Rule #1: "<description>" gave sufficient access:
           ✅ metadata: have read, wanted read"
   `);
-  expect(
-    explain(
-      authorizer.authorizeToken({
-        consumer: { account: "account-x", repo: "repo-x" },
-        tokenDec: createTestTokenDec({ as: "role-a", repos: [] }),
-        repos: [],
-      }),
-    ),
-  ).toMatchInlineSnapshot(`
+  await expect(toMarkdown(toMdast(resultA))).toMatchFileSnapshot(
+    join(fixturesPath, "rule-descriptions/a.md"),
+  );
+  expect(toText(resultB)).toMatchInlineSnapshot(`
     "✅ Repo account-x/repo-x was allowed access to a token:
       ✅ Read access to account-a requested with role role-a
       ✅ Sufficient access to account-a based on 1 rule:
         ✅ Rule #1: "<description>" gave sufficient access:
           ✅ metadata: have read, wanted read"
   `);
+  await expect(toMarkdown(toMdast(resultB))).toMatchFileSnapshot(
+    join(fixturesPath, "rule-descriptions/b.md"),
+  );
 });
 
-it("sorts permissions in the explanation", () => {
+it("sorts permissions in the explanation", async () => {
   const authorizer = createTokenAuthorizer({
     rules: [
       {
@@ -452,19 +467,26 @@ it("sorts permissions in the explanation", () => {
     ],
   });
 
-  expect(
-    explain(
-      authorizer.authorizeToken({
-        consumer: { account: "account-x" },
-        tokenDec: createTestTokenDec({
-          as: "role-a",
-          repos: [],
-          permissions: { metadata: "read", contents: "write" },
-        }),
-        repos: [],
-      }),
-    ),
-  ).toMatchInlineSnapshot(`
+  const resultA = authorizer.authorizeToken({
+    consumer: { account: "account-x" },
+    tokenDec: createTestTokenDec({
+      as: "role-a",
+      repos: [],
+      permissions: { metadata: "read", contents: "write" },
+    }),
+    repos: [],
+  });
+  const resultB = authorizer.authorizeToken({
+    consumer: { account: "account-x", repo: "repo-x" },
+    tokenDec: createTestTokenDec({
+      as: "role-a",
+      repos: [],
+      permissions: { metadata: "read", contents: "write" },
+    }),
+    repos: [],
+  });
+
+  expect(toText(resultA)).toMatchInlineSnapshot(`
     "✅ Account account-x was allowed access to a token:
       ✅ Write access to account-a requested with role role-a
       ✅ Sufficient access to account-a based on 1 rule:
@@ -472,19 +494,10 @@ it("sorts permissions in the explanation", () => {
           ✅ contents: have write, wanted write
           ✅ metadata: have read, wanted read"
   `);
-  expect(
-    explain(
-      authorizer.authorizeToken({
-        consumer: { account: "account-x", repo: "repo-x" },
-        tokenDec: createTestTokenDec({
-          as: "role-a",
-          repos: [],
-          permissions: { metadata: "read", contents: "write" },
-        }),
-        repos: [],
-      }),
-    ),
-  ).toMatchInlineSnapshot(`
+  await expect(toMarkdown(toMdast(resultA))).toMatchFileSnapshot(
+    join(fixturesPath, "sorted-permissions/a.md"),
+  );
+  expect(toText(resultB)).toMatchInlineSnapshot(`
     "✅ Repo account-x/repo-x was allowed access to a token:
       ✅ Write access to account-a requested with role role-a
       ✅ Sufficient access to account-a based on 1 rule:
@@ -492,9 +505,12 @@ it("sorts permissions in the explanation", () => {
           ✅ contents: have write, wanted write
           ✅ metadata: have read, wanted read"
   `);
+  await expect(toMarkdown(toMdast(resultB))).toMatchFileSnapshot(
+    join(fixturesPath, "sorted-permissions/b.md"),
+  );
 });
 
-it("doesn't allow tokens for unauthorized consumers", () => {
+it("doesn't allow tokens for unauthorized consumers", async () => {
   const authorizer = createTokenAuthorizer({
     rules: [
       {
@@ -512,61 +528,62 @@ it("doesn't allow tokens for unauthorized consumers", () => {
     ],
   });
 
-  expect(
-    explain(
-      authorizer.authorizeToken({
-        consumer: { account: "account-y" },
-        tokenDec: createTestTokenDec({ as: "role-a", repos: [] }),
-        repos: [],
-      }),
-    ),
-  ).toMatchInlineSnapshot(`
+  const resultA = authorizer.authorizeToken({
+    consumer: { account: "account-y" },
+    tokenDec: createTestTokenDec({ as: "role-a", repos: [] }),
+    repos: [],
+  });
+  const resultB = authorizer.authorizeToken({
+    consumer: { account: "account-y", repo: "repo-x" },
+    tokenDec: createTestTokenDec({ as: "role-a", repos: [] }),
+    repos: [],
+  });
+  const resultC = authorizer.authorizeToken({
+    consumer: { account: "account-x", repo: "repo-y" },
+    tokenDec: createTestTokenDec({ as: "role-a", repos: [] }),
+    repos: [],
+  });
+  const resultD = authorizer.authorizeToken({
+    consumer: { account: "account-y", repo: "repo-y" },
+    tokenDec: createTestTokenDec({ as: "role-a", repos: [] }),
+    repos: [],
+  });
+
+  expect(toText(resultA)).toMatchInlineSnapshot(`
     "❌ Account account-y was denied access to a token:
       ✅ Read access to account-a requested with role role-a
       ❌ Insufficient access to account-a (no matching rules)"
   `);
-  expect(
-    explain(
-      authorizer.authorizeToken({
-        consumer: { account: "account-y", repo: "repo-x" },
-        tokenDec: createTestTokenDec({ as: "role-a", repos: [] }),
-        repos: [],
-      }),
-    ),
-  ).toMatchInlineSnapshot(`
+  await expect(toMarkdown(toMdast(resultA))).toMatchFileSnapshot(
+    join(fixturesPath, "denied-unauthed-consumer/a.md"),
+  );
+  expect(toText(resultB)).toMatchInlineSnapshot(`
     "❌ Repo account-y/repo-x was denied access to a token:
       ✅ Read access to account-a requested with role role-a
       ❌ Insufficient access to account-a (no matching rules)"
   `);
-  expect(
-    explain(
-      authorizer.authorizeToken({
-        consumer: { account: "account-x", repo: "repo-y" },
-        tokenDec: createTestTokenDec({ as: "role-a", repos: [] }),
-        repos: [],
-      }),
-    ),
-  ).toMatchInlineSnapshot(`
+  await expect(toMarkdown(toMdast(resultB))).toMatchFileSnapshot(
+    join(fixturesPath, "denied-unauthed-consumer/b.md"),
+  );
+  expect(toText(resultC)).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-y was denied access to a token:
       ✅ Read access to account-a requested with role role-a
       ❌ Insufficient access to account-a (no matching rules)"
   `);
-  expect(
-    explain(
-      authorizer.authorizeToken({
-        consumer: { account: "account-y", repo: "repo-y" },
-        tokenDec: createTestTokenDec({ as: "role-a", repos: [] }),
-        repos: [],
-      }),
-    ),
-  ).toMatchInlineSnapshot(`
+  await expect(toMarkdown(toMdast(resultC))).toMatchFileSnapshot(
+    join(fixturesPath, "denied-unauthed-consumer/c.md"),
+  );
+  expect(toText(resultD)).toMatchInlineSnapshot(`
     "❌ Repo account-y/repo-y was denied access to a token:
       ✅ Read access to account-a requested with role role-a
       ❌ Insufficient access to account-a (no matching rules)"
   `);
+  await expect(toMarkdown(toMdast(resultD))).toMatchFileSnapshot(
+    join(fixturesPath, "denied-unauthed-consumer/d.md"),
+  );
 });
 
-it("doesn't allow tokens for unauthorized resource repos", () => {
+it("doesn't allow tokens for unauthorized resource repos", async () => {
   const authorizer = createTokenAuthorizer({
     rules: [
       {
@@ -584,81 +601,46 @@ it("doesn't allow tokens for unauthorized resource repos", () => {
     ],
   });
 
-  expect(
-    explain(
-      authorizer.authorizeToken({
-        consumer: { account: "account-x" },
-        tokenDec: createTestTokenDec({
-          as: "role-a",
-          repos: ["repo-y"],
-          permissions: { contents: "write" },
-        }),
-        repos: ["repo-y"],
-      }),
-    ),
-  ).toMatchInlineSnapshot(`
-    "❌ Account account-x was denied access to a token:
-      ✅ Write access to repos in account-a requested with role role-a
-      ✅ 1 repo pattern matched 1 repo
-      ❌ Insufficient access to repo account-a/repo-y (no matching rules)"
-  `);
-  expect(
-    explain(
-      authorizer.authorizeToken({
-        consumer: { account: "account-x" },
-        tokenDec: createTestTokenDec({
-          as: "role-a",
-          account: "account-y",
-          repos: [],
-          permissions: { contents: "write" },
-        }),
-        repos: [],
-      }),
-    ),
-  ).toMatchInlineSnapshot(`
+  const resultA = authorizer.authorizeToken({
+    consumer: { account: "account-x" },
+    tokenDec: createTestTokenDec({
+      as: "role-a",
+      account: "account-y",
+      repos: [],
+      permissions: { contents: "write" },
+    }),
+    repos: [],
+  });
+  const resultB = authorizer.authorizeToken({
+    consumer: { account: "account-x", repo: "repo-x" },
+    tokenDec: createTestTokenDec({
+      as: "role-a",
+      account: "account-y",
+      repos: [],
+      permissions: { contents: "write" },
+    }),
+    repos: [],
+  });
+
+  expect(toText(resultA)).toMatchInlineSnapshot(`
     "❌ Account account-x was denied access to a token:
       ✅ Write access to account-y requested with role role-a
       ❌ Insufficient access to account-y (no matching rules)"
   `);
-  expect(
-    explain(
-      authorizer.authorizeToken({
-        consumer: { account: "account-x", repo: "repo-x" },
-        tokenDec: createTestTokenDec({
-          as: "role-a",
-          repos: ["repo-y"],
-          permissions: { contents: "write" },
-        }),
-        repos: ["repo-y"],
-      }),
-    ),
-  ).toMatchInlineSnapshot(`
-    "❌ Repo account-x/repo-x was denied access to a token:
-      ✅ Write access to repos in account-a requested with role role-a
-      ✅ 1 repo pattern matched 1 repo
-      ❌ Insufficient access to repo account-a/repo-y (no matching rules)"
-  `);
-  expect(
-    explain(
-      authorizer.authorizeToken({
-        consumer: { account: "account-x", repo: "repo-x" },
-        tokenDec: createTestTokenDec({
-          as: "role-a",
-          account: "account-y",
-          repos: [],
-          permissions: { contents: "write" },
-        }),
-        repos: [],
-      }),
-    ),
-  ).toMatchInlineSnapshot(`
+  await expect(toMarkdown(toMdast(resultA))).toMatchFileSnapshot(
+    join(fixturesPath, "denied-unauthed-resource-repo/a.md"),
+  );
+  expect(toText(resultB)).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x was denied access to a token:
       ✅ Write access to account-y requested with role role-a
       ❌ Insufficient access to account-y (no matching rules)"
   `);
+  await expect(toMarkdown(toMdast(resultB))).toMatchFileSnapshot(
+    join(fixturesPath, "denied-unauthed-resource-repo/b.md"),
+  );
 });
 
-it("doesn't allow tokens for unauthorized permissions", () => {
+it("doesn't allow tokens for unauthorized permissions", async () => {
   const authorizer = createTokenAuthorizer({
     rules: [
       {
@@ -676,47 +658,48 @@ it("doesn't allow tokens for unauthorized permissions", () => {
     ],
   });
 
-  expect(
-    explain(
-      authorizer.authorizeToken({
-        consumer: { account: "account-x" },
-        tokenDec: createTestTokenDec({
-          as: "role-a",
-          repos: [],
-          permissions: { contents: "read" },
-        }),
-        repos: [],
-      }),
-    ),
-  ).toMatchInlineSnapshot(`
+  const resultA = authorizer.authorizeToken({
+    consumer: { account: "account-x" },
+    tokenDec: createTestTokenDec({
+      as: "role-a",
+      repos: [],
+      permissions: { contents: "read" },
+    }),
+    repos: [],
+  });
+  const resultB = authorizer.authorizeToken({
+    consumer: { account: "account-x", repo: "repo-x" },
+    tokenDec: createTestTokenDec({
+      as: "role-a",
+      repos: [],
+      permissions: { contents: "read" },
+    }),
+    repos: [],
+  });
+
+  expect(toText(resultA)).toMatchInlineSnapshot(`
     "❌ Account account-x was denied access to a token:
       ✅ Read access to account-a requested with role role-a
       ❌ Insufficient access to account-a based on 1 rule:
         ❌ Rule #1 gave insufficient access:
           ❌ contents: have none, wanted read"
   `);
-  expect(
-    explain(
-      authorizer.authorizeToken({
-        consumer: { account: "account-x", repo: "repo-x" },
-        tokenDec: createTestTokenDec({
-          as: "role-a",
-          repos: [],
-          permissions: { contents: "read" },
-        }),
-        repos: [],
-      }),
-    ),
-  ).toMatchInlineSnapshot(`
+  await expect(toMarkdown(toMdast(resultA))).toMatchFileSnapshot(
+    join(fixturesPath, "denied-unauthed-perms/a.md"),
+  );
+  expect(toText(resultB)).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x was denied access to a token:
       ✅ Read access to account-a requested with role role-a
       ❌ Insufficient access to account-a based on 1 rule:
         ❌ Rule #1 gave insufficient access:
           ❌ contents: have none, wanted read"
   `);
+  await expect(toMarkdown(toMdast(resultB))).toMatchFileSnapshot(
+    join(fixturesPath, "denied-unauthed-perms/b.md"),
+  );
 });
 
-it("doesn't allow tokens where only some of the permissions are authorized", () => {
+it("doesn't allow tokens where only some of the permissions are authorized", async () => {
   const authorizer = createTokenAuthorizer({
     rules: [
       {
@@ -734,19 +717,26 @@ it("doesn't allow tokens where only some of the permissions are authorized", () 
     ],
   });
 
-  expect(
-    explain(
-      authorizer.authorizeToken({
-        consumer: { account: "account-x" },
-        tokenDec: createTestTokenDec({
-          as: "role-a",
-          repos: [],
-          permissions: { contents: "read", metadata: "read" },
-        }),
-        repos: [],
-      }),
-    ),
-  ).toMatchInlineSnapshot(`
+  const resultA = authorizer.authorizeToken({
+    consumer: { account: "account-x" },
+    tokenDec: createTestTokenDec({
+      as: "role-a",
+      repos: [],
+      permissions: { contents: "read", metadata: "read" },
+    }),
+    repos: [],
+  });
+  const resultB = authorizer.authorizeToken({
+    consumer: { account: "account-x", repo: "repo-x" },
+    tokenDec: createTestTokenDec({
+      as: "role-a",
+      repos: [],
+      permissions: { contents: "read", metadata: "read" },
+    }),
+    repos: [],
+  });
+
+  expect(toText(resultA)).toMatchInlineSnapshot(`
     "❌ Account account-x was denied access to a token:
       ✅ Read access to account-a requested with role role-a
       ❌ Insufficient access to account-a based on 1 rule:
@@ -754,19 +744,10 @@ it("doesn't allow tokens where only some of the permissions are authorized", () 
           ❌ contents: have none, wanted read
           ✅ metadata: have read, wanted read"
   `);
-  expect(
-    explain(
-      authorizer.authorizeToken({
-        consumer: { account: "account-x", repo: "repo-x" },
-        tokenDec: createTestTokenDec({
-          as: "role-a",
-          repos: [],
-          permissions: { contents: "read", metadata: "read" },
-        }),
-        repos: [],
-      }),
-    ),
-  ).toMatchInlineSnapshot(`
+  await expect(toMarkdown(toMdast(resultA))).toMatchFileSnapshot(
+    join(fixturesPath, "denied-partial-perms/a.md"),
+  );
+  expect(toText(resultB)).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x was denied access to a token:
       ✅ Read access to account-a requested with role role-a
       ❌ Insufficient access to account-a based on 1 rule:
@@ -774,9 +755,12 @@ it("doesn't allow tokens where only some of the permissions are authorized", () 
           ❌ contents: have none, wanted read
           ✅ metadata: have read, wanted read"
   `);
+  await expect(toMarkdown(toMdast(resultB))).toMatchFileSnapshot(
+    join(fixturesPath, "denied-partial-perms/b.md"),
+  );
 });
 
-it("doesn't allow tokens that are denied by a wildcard rule", () => {
+it("doesn't allow tokens that are denied by a wildcard rule", async () => {
   const authorizer = createTokenAuthorizer({
     rules: [
       {
@@ -806,15 +790,18 @@ it("doesn't allow tokens that are denied by a wildcard rule", () => {
     ],
   });
 
-  expect(
-    explain(
-      authorizer.authorizeToken({
-        consumer: { account: "account-x" },
-        tokenDec: createTestTokenDec({ as: "role-a", repos: [] }),
-        repos: [],
-      }),
-    ),
-  ).toMatchInlineSnapshot(`
+  const resultA = authorizer.authorizeToken({
+    consumer: { account: "account-x" },
+    tokenDec: createTestTokenDec({ as: "role-a", repos: [] }),
+    repos: [],
+  });
+  const resultB = authorizer.authorizeToken({
+    consumer: { account: "account-x", repo: "repo-x" },
+    tokenDec: createTestTokenDec({ as: "role-a", repos: [] }),
+    repos: [],
+  });
+
+  expect(toText(resultA)).toMatchInlineSnapshot(`
     "❌ Account account-x was denied access to a token:
       ✅ Read access to account-a requested with role role-a
       ❌ Insufficient access to account-a based on 2 rules:
@@ -823,15 +810,10 @@ it("doesn't allow tokens that are denied by a wildcard rule", () => {
         ❌ Rule #2 gave insufficient access:
           ❌ metadata: have none, wanted read"
   `);
-  expect(
-    explain(
-      authorizer.authorizeToken({
-        consumer: { account: "account-x", repo: "repo-x" },
-        tokenDec: createTestTokenDec({ as: "role-a", repos: [] }),
-        repos: [],
-      }),
-    ),
-  ).toMatchInlineSnapshot(`
+  await expect(toMarkdown(toMdast(resultA))).toMatchFileSnapshot(
+    join(fixturesPath, "denied-wildcard/a.md"),
+  );
+  expect(toText(resultB)).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x was denied access to a token:
       ✅ Read access to account-a requested with role role-a
       ❌ Insufficient access to account-a based on 2 rules:
@@ -840,9 +822,12 @@ it("doesn't allow tokens that are denied by a wildcard rule", () => {
         ❌ Rule #2 gave insufficient access:
           ❌ metadata: have none, wanted read"
   `);
+  await expect(toMarkdown(toMdast(resultB))).toMatchFileSnapshot(
+    join(fixturesPath, "denied-wildcard/b.md"),
+  );
 });
 
-it("doesn't allow tokens when the actual access level is lower than requested", () => {
+it("doesn't allow tokens when the actual access level is lower than requested", async () => {
   const authorizer = createTokenAuthorizer({
     rules: [
       {
@@ -860,47 +845,48 @@ it("doesn't allow tokens when the actual access level is lower than requested", 
     ],
   });
 
-  expect(
-    explain(
-      authorizer.authorizeToken({
-        consumer: { account: "account-x" },
-        tokenDec: createTestTokenDec({
-          as: "role-a",
-          repos: [],
-          permissions: { repository_projects: "admin" },
-        }),
-        repos: [],
-      }),
-    ),
-  ).toMatchInlineSnapshot(`
+  const resultA = authorizer.authorizeToken({
+    consumer: { account: "account-x" },
+    tokenDec: createTestTokenDec({
+      as: "role-a",
+      repos: [],
+      permissions: { repository_projects: "admin" },
+    }),
+    repos: [],
+  });
+  const resultB = authorizer.authorizeToken({
+    consumer: { account: "account-x", repo: "repo-x" },
+    tokenDec: createTestTokenDec({
+      as: "role-a",
+      repos: [],
+      permissions: { repository_projects: "admin" },
+    }),
+    repos: [],
+  });
+
+  expect(toText(resultA)).toMatchInlineSnapshot(`
     "❌ Account account-x was denied access to a token:
       ✅ Admin access to account-a requested with role role-a
       ❌ Insufficient access to account-a based on 1 rule:
         ❌ Rule #1 gave insufficient access:
           ❌ repository_projects: have write, wanted admin"
   `);
-  expect(
-    explain(
-      authorizer.authorizeToken({
-        consumer: { account: "account-x", repo: "repo-x" },
-        tokenDec: createTestTokenDec({
-          as: "role-a",
-          repos: [],
-          permissions: { repository_projects: "admin" },
-        }),
-        repos: [],
-      }),
-    ),
-  ).toMatchInlineSnapshot(`
+  await expect(toMarkdown(toMdast(resultA))).toMatchFileSnapshot(
+    join(fixturesPath, "denied-lower-access/a.md"),
+  );
+  expect(toText(resultB)).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x was denied access to a token:
       ✅ Admin access to account-a requested with role role-a
       ❌ Insufficient access to account-a based on 1 rule:
         ❌ Rule #1 gave insufficient access:
           ❌ repository_projects: have write, wanted admin"
   `);
+  await expect(toMarkdown(toMdast(resultB))).toMatchFileSnapshot(
+    join(fixturesPath, "denied-lower-access/b.md"),
+  );
 });
 
-it("doesn't allow tokens for no repos in an account unless a resource rule explicitly allows no repos", () => {
+it("doesn't allow tokens for no repos in an account unless a resource rule explicitly allows no repos", async () => {
   const authorizer = createTokenAuthorizer({
     rules: [
       {
@@ -930,43 +916,44 @@ it("doesn't allow tokens for no repos in an account unless a resource rule expli
     ],
   });
 
-  expect(
-    explain(
-      authorizer.authorizeToken({
-        consumer: { account: "account-x" },
-        tokenDec: createTestTokenDec({
-          as: "role-a",
-          repos: [],
-          permissions: { contents: "read" },
-        }),
-        repos: [],
-      }),
-    ),
-  ).toMatchInlineSnapshot(`
+  const resultA = authorizer.authorizeToken({
+    consumer: { account: "account-x" },
+    tokenDec: createTestTokenDec({
+      as: "role-a",
+      repos: [],
+      permissions: { contents: "read" },
+    }),
+    repos: [],
+  });
+  const resultB = authorizer.authorizeToken({
+    consumer: { account: "account-x", repo: "repo-x" },
+    tokenDec: createTestTokenDec({
+      as: "role-a",
+      repos: [],
+      permissions: { contents: "read" },
+    }),
+    repos: [],
+  });
+
+  expect(toText(resultA)).toMatchInlineSnapshot(`
     "❌ Account account-x was denied access to a token:
       ✅ Read access to account-a requested with role role-a
       ❌ Insufficient access to account-a (no matching rules)"
   `);
-  expect(
-    explain(
-      authorizer.authorizeToken({
-        consumer: { account: "account-x", repo: "repo-x" },
-        tokenDec: createTestTokenDec({
-          as: "role-a",
-          repos: [],
-          permissions: { contents: "read" },
-        }),
-        repos: [],
-      }),
-    ),
-  ).toMatchInlineSnapshot(`
+  await expect(toMarkdown(toMdast(resultA))).toMatchFileSnapshot(
+    join(fixturesPath, "denied-no-no-repos-rule/a.md"),
+  );
+  expect(toText(resultB)).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x was denied access to a token:
       ✅ Read access to account-a requested with role role-a
       ❌ Insufficient access to account-a (no matching rules)"
   `);
+  await expect(toMarkdown(toMdast(resultB))).toMatchFileSnapshot(
+    join(fixturesPath, "denied-no-no-repos-rule/b.md"),
+  );
 });
 
-it("doesn't allow tokens when a later rule denies access that a previous rule allowed", () => {
+it("doesn't allow tokens when a later rule denies access that a previous rule allowed", async () => {
   const authorizer = createTokenAuthorizer({
     rules: [
       {
@@ -996,19 +983,26 @@ it("doesn't allow tokens when a later rule denies access that a previous rule al
     ],
   });
 
-  expect(
-    explain(
-      authorizer.authorizeToken({
-        consumer: { account: "account-x" },
-        tokenDec: createTestTokenDec({
-          as: "role-a",
-          repos: [],
-          permissions: { contents: "write" },
-        }),
-        repos: [],
-      }),
-    ),
-  ).toMatchInlineSnapshot(`
+  const resultA = authorizer.authorizeToken({
+    consumer: { account: "account-x" },
+    tokenDec: createTestTokenDec({
+      as: "role-a",
+      repos: [],
+      permissions: { contents: "write" },
+    }),
+    repos: [],
+  });
+  const resultB = authorizer.authorizeToken({
+    consumer: { account: "account-x", repo: "repo-x" },
+    tokenDec: createTestTokenDec({
+      as: "role-a",
+      repos: [],
+      permissions: { contents: "write" },
+    }),
+    repos: [],
+  });
+
+  expect(toText(resultA)).toMatchInlineSnapshot(`
     "❌ Account account-x was denied access to a token:
       ✅ Write access to account-a requested with role role-a
       ❌ Insufficient access to account-a based on 2 rules:
@@ -1017,19 +1011,10 @@ it("doesn't allow tokens when a later rule denies access that a previous rule al
         ❌ Rule #2 gave insufficient access:
           ❌ contents: have read, wanted write"
   `);
-  expect(
-    explain(
-      authorizer.authorizeToken({
-        consumer: { account: "account-x", repo: "repo-x" },
-        tokenDec: createTestTokenDec({
-          as: "role-a",
-          repos: [],
-          permissions: { contents: "write" },
-        }),
-        repos: [],
-      }),
-    ),
-  ).toMatchInlineSnapshot(`
+  await expect(toMarkdown(toMdast(resultA))).toMatchFileSnapshot(
+    join(fixturesPath, "denied-after-allowed/a.md"),
+  );
+  expect(toText(resultB)).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x was denied access to a token:
       ✅ Write access to account-a requested with role role-a
       ❌ Insufficient access to account-a based on 2 rules:
@@ -1038,9 +1023,12 @@ it("doesn't allow tokens when a later rule denies access that a previous rule al
         ❌ Rule #2 gave insufficient access:
           ❌ contents: have read, wanted write"
   `);
+  await expect(toMarkdown(toMdast(resultB))).toMatchFileSnapshot(
+    join(fixturesPath, "denied-after-allowed/b.md"),
+  );
 });
 
-it("doesn't allow tokens when a later rule removes access that a previous rule allowed", () => {
+it("doesn't allow tokens when a later rule removes access that a previous rule allowed", async () => {
   const authorizer = createTokenAuthorizer({
     rules: [
       {
@@ -1070,19 +1058,26 @@ it("doesn't allow tokens when a later rule removes access that a previous rule a
     ],
   });
 
-  expect(
-    explain(
-      authorizer.authorizeToken({
-        consumer: { account: "account-x" },
-        tokenDec: createTestTokenDec({
-          as: "role-a",
-          repos: [],
-          permissions: { contents: "write" },
-        }),
-        repos: [],
-      }),
-    ),
-  ).toMatchInlineSnapshot(`
+  const resultA = authorizer.authorizeToken({
+    consumer: { account: "account-x" },
+    tokenDec: createTestTokenDec({
+      as: "role-a",
+      repos: [],
+      permissions: { contents: "write" },
+    }),
+    repos: [],
+  });
+  const resultB = authorizer.authorizeToken({
+    consumer: { account: "account-x", repo: "repo-x" },
+    tokenDec: createTestTokenDec({
+      as: "role-a",
+      repos: [],
+      permissions: { contents: "write" },
+    }),
+    repos: [],
+  });
+
+  expect(toText(resultA)).toMatchInlineSnapshot(`
     "❌ Account account-x was denied access to a token:
       ✅ Write access to account-a requested with role role-a
       ❌ Insufficient access to account-a based on 2 rules:
@@ -1091,19 +1086,10 @@ it("doesn't allow tokens when a later rule removes access that a previous rule a
         ❌ Rule #2 gave insufficient access:
           ❌ contents: have none, wanted write"
   `);
-  expect(
-    explain(
-      authorizer.authorizeToken({
-        consumer: { account: "account-x", repo: "repo-x" },
-        tokenDec: createTestTokenDec({
-          as: "role-a",
-          repos: [],
-          permissions: { contents: "write" },
-        }),
-        repos: [],
-      }),
-    ),
-  ).toMatchInlineSnapshot(`
+  await expect(toMarkdown(toMdast(resultA))).toMatchFileSnapshot(
+    join(fixturesPath, "denied-removed/a.md"),
+  );
+  expect(toText(resultB)).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x was denied access to a token:
       ✅ Write access to account-a requested with role role-a
       ❌ Insufficient access to account-a based on 2 rules:
@@ -1112,9 +1098,12 @@ it("doesn't allow tokens when a later rule removes access that a previous rule a
         ❌ Rule #2 gave insufficient access:
           ❌ contents: have none, wanted write"
   `);
+  await expect(toMarkdown(toMdast(resultB))).toMatchFileSnapshot(
+    join(fixturesPath, "denied-removed/b.md"),
+  );
 });
 
-it("doesn't allow write tokens if no role is specified", () => {
+it("doesn't allow write tokens if no role is specified", async () => {
   const authorizer = createTokenAuthorizer({
     rules: [
       {
@@ -1135,21 +1124,52 @@ it("doesn't allow write tokens if no role is specified", () => {
     ],
   });
 
-  expect(
-    explain(
-      authorizer.authorizeToken({
-        consumer: { account: "account-x" },
-        tokenDec: createTestTokenDec({
-          repos: [],
-          permissions: {
-            repository_hooks: "read",
-            repository_projects: "write",
-          },
-        }),
-        repos: [],
-      }),
-    ),
-  ).toMatchInlineSnapshot(`
+  const resultA = authorizer.authorizeToken({
+    consumer: { account: "account-x" },
+    tokenDec: createTestTokenDec({
+      repos: [],
+      permissions: {
+        repository_hooks: "read",
+        repository_projects: "write",
+      },
+    }),
+    repos: [],
+  });
+  const resultB = authorizer.authorizeToken({
+    consumer: { account: "account-x" },
+    tokenDec: createTestTokenDec({
+      repos: [],
+      permissions: {
+        repository_hooks: "write",
+        repository_projects: "admin",
+      },
+    }),
+    repos: [],
+  });
+  const resultC = authorizer.authorizeToken({
+    consumer: { account: "account-x", repo: "repo-x" },
+    tokenDec: createTestTokenDec({
+      repos: [],
+      permissions: {
+        repository_hooks: "read",
+        repository_projects: "write",
+      },
+    }),
+    repos: [],
+  });
+  const resultD = authorizer.authorizeToken({
+    consumer: { account: "account-x", repo: "repo-x" },
+    tokenDec: createTestTokenDec({
+      repos: [],
+      permissions: {
+        repository_hooks: "write",
+        repository_projects: "admin",
+      },
+    }),
+    repos: [],
+  });
+
+  expect(toText(resultA)).toMatchInlineSnapshot(`
     "❌ Account account-x was denied access to a token:
       ❌ Write access to account-a requested without a role
       ✅ Sufficient access to account-a based on 1 rule:
@@ -1157,21 +1177,10 @@ it("doesn't allow write tokens if no role is specified", () => {
           ✅ repository_hooks: have write, wanted read
           ✅ repository_projects: have admin, wanted write"
   `);
-  expect(
-    explain(
-      authorizer.authorizeToken({
-        consumer: { account: "account-x" },
-        tokenDec: createTestTokenDec({
-          repos: [],
-          permissions: {
-            repository_hooks: "write",
-            repository_projects: "admin",
-          },
-        }),
-        repos: [],
-      }),
-    ),
-  ).toMatchInlineSnapshot(`
+  await expect(toMarkdown(toMdast(resultA))).toMatchFileSnapshot(
+    join(fixturesPath, "denied-write-no-role/a.md"),
+  );
+  expect(toText(resultB)).toMatchInlineSnapshot(`
     "❌ Account account-x was denied access to a token:
       ❌ Admin access to account-a requested without a role
       ✅ Sufficient access to account-a based on 1 rule:
@@ -1179,21 +1188,10 @@ it("doesn't allow write tokens if no role is specified", () => {
           ✅ repository_hooks: have write, wanted write
           ✅ repository_projects: have admin, wanted admin"
   `);
-  expect(
-    explain(
-      authorizer.authorizeToken({
-        consumer: { account: "account-x", repo: "repo-x" },
-        tokenDec: createTestTokenDec({
-          repos: [],
-          permissions: {
-            repository_hooks: "read",
-            repository_projects: "write",
-          },
-        }),
-        repos: [],
-      }),
-    ),
-  ).toMatchInlineSnapshot(`
+  await expect(toMarkdown(toMdast(resultB))).toMatchFileSnapshot(
+    join(fixturesPath, "denied-write-no-role/b.md"),
+  );
+  expect(toText(resultC)).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x was denied access to a token:
       ❌ Write access to account-a requested without a role
       ✅ Sufficient access to account-a based on 1 rule:
@@ -1201,21 +1199,10 @@ it("doesn't allow write tokens if no role is specified", () => {
           ✅ repository_hooks: have write, wanted read
           ✅ repository_projects: have admin, wanted write"
   `);
-  expect(
-    explain(
-      authorizer.authorizeToken({
-        consumer: { account: "account-x", repo: "repo-x" },
-        tokenDec: createTestTokenDec({
-          repos: [],
-          permissions: {
-            repository_hooks: "write",
-            repository_projects: "admin",
-          },
-        }),
-        repos: [],
-      }),
-    ),
-  ).toMatchInlineSnapshot(`
+  await expect(toMarkdown(toMdast(resultC))).toMatchFileSnapshot(
+    join(fixturesPath, "denied-write-no-role/c.md"),
+  );
+  expect(toText(resultD)).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x was denied access to a token:
       ❌ Admin access to account-a requested without a role
       ✅ Sufficient access to account-a based on 1 rule:
@@ -1223,4 +1210,7 @@ it("doesn't allow write tokens if no role is specified", () => {
           ✅ repository_hooks: have write, wanted write
           ✅ repository_projects: have admin, wanted admin"
   `);
+  await expect(toMarkdown(toMdast(resultD))).toMatchFileSnapshot(
+    join(fixturesPath, "denied-write-no-role/d.md"),
+  );
 });

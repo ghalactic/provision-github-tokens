@@ -1,6 +1,4 @@
 import type { LinkReference, RootContent, TableCell } from "mdast";
-import { gfmToMarkdown } from "mdast-util-gfm";
-import { toMarkdown } from "mdast-util-to-markdown";
 import type { AuthorizeResult } from "./authorizer.js";
 import {
   accountOrRepoRefToString,
@@ -16,6 +14,7 @@ import {
   paragraph,
   table,
   text,
+  toMarkdown,
 } from "./markdown.js";
 import { pluralize } from "./pluralize.js";
 import type { ProvisionRequestTarget } from "./provision-request.js";
@@ -59,26 +58,20 @@ export function renderSummary(
 
   const definitions: Record<string, string> = {};
 
-  return toMarkdown(
-    {
-      type: "root",
-      children: [
-        statsHeading(authResults, provisionResults),
-        ...emptySection(authResults, authResult, actionUrl),
-        ...failuresTable(
-          deniedRows,
-          tokenCreationResults,
-          provisionResults,
-          definitions,
-          githubServerUrl,
-        ),
-        ...successesTable(allowedRows, definitions, githubServerUrl),
-        ...omittedNotice(authResults.length, omittedCount),
-        ...definitionsAst(definitions),
-      ],
-    },
-    { bullet: "-", extensions: [gfmToMarkdown()] },
-  );
+  return toMarkdown([
+    statsHeading(authResults, provisionResults),
+    ...emptySection(authResults, authResult, actionUrl),
+    ...failuresTable(
+      deniedRows,
+      tokenCreationResults,
+      provisionResults,
+      definitions,
+      githubServerUrl,
+    ),
+    ...successesTable(allowedRows, definitions, githubServerUrl),
+    ...omittedNotice(authResults.length, omittedCount),
+    ...definitionsAst(definitions),
+  ]);
 }
 
 function statsHeading(
