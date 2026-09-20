@@ -68521,12 +68521,20 @@ async function discoverRequesters(octokitFactory, appRegistry, appsInput) {
         continue;
       }
       const tokenDecNames = Object.keys(config.tokens);
-      const tokenDecs = tokenDecNames.length === 1 ? "1 token declaration" : `${tokenDecNames.length} token declarations`;
+      const tokenDecs = pluralize(
+        tokenDecNames.length,
+        "token declaration",
+        "token declarations"
+      );
       debug(
         `Requester ${r2.full_name} has ${tokenDecs} ` + JSON.stringify(tokenDecNames)
       );
       const secretDecNames = Object.keys(config.provision.secrets);
-      const secretDecs = secretDecNames.length === 1 ? "1 secret declaration" : `${secretDecNames.length} secret declarations`;
+      const secretDecs = pluralize(
+        secretDecNames.length,
+        "secret declaration",
+        "secret declarations"
+      );
       debug(
         `Requester ${r2.full_name} has ${secretDecs} ` + JSON.stringify(secretDecNames)
       );
