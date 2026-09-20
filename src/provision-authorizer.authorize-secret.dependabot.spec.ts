@@ -6,7 +6,6 @@ import {
 } from "../test/provision-request.js";
 import { createTestTokenAuthorizer } from "../test/token-authorizer.js";
 import { createTestTokenRequestFactory } from "../test/token-request.js";
-import { compareTokenRequest } from "./compare-token-request.js";
 import { toMarkdown } from "./markdown.js";
 import { createMarkdownProvisionAuthExplainer } from "./provision-auth-explainer/markdown.js";
 import { createTextProvisionAuthExplainer } from "./provision-auth-explainer/text.js";
@@ -63,16 +62,8 @@ it("allows GitHub Dependabot account secrets that should be allowed", async () =
     }),
   );
 
-  const explain = createTextProvisionAuthExplainer(
-    tokenAuthorizer
-      .listResults()
-      .sort((a, b) => compareTokenRequest(a.request, b.request)),
-  );
-  const toMdast = createMarkdownProvisionAuthExplainer(
-    tokenAuthorizer
-      .listResults()
-      .sort((a, b) => compareTokenRequest(a.request, b.request)),
-  );
+  const explain = createTextProvisionAuthExplainer();
+  const toMdast = createMarkdownProvisionAuthExplainer();
 
   expect(explain(resultA)).toMatchInlineSnapshot(`
     "✅ Repo account-x/repo-x was allowed to provision secret SECRET_A:
@@ -138,16 +129,8 @@ it("allows GitHub Dependabot account secrets that should be allowed within the r
     }),
   );
 
-  const explain = createTextProvisionAuthExplainer(
-    tokenAuthorizer
-      .listResults()
-      .sort((a, b) => compareTokenRequest(a.request, b.request)),
-  );
-  const toMdast = createMarkdownProvisionAuthExplainer(
-    tokenAuthorizer
-      .listResults()
-      .sort((a, b) => compareTokenRequest(a.request, b.request)),
-  );
+  const explain = createTextProvisionAuthExplainer();
+  const toMdast = createMarkdownProvisionAuthExplainer();
 
   expect(explain(resultA)).toMatchInlineSnapshot(`
     "✅ Repo account-a/repo-a was allowed to provision secret SECRET_A:
@@ -211,16 +194,8 @@ it("allows GitHub Dependabot account secrets that should be allowed within the r
     }),
   );
 
-  const explain = createTextProvisionAuthExplainer(
-    tokenAuthorizer
-      .listResults()
-      .sort((a, b) => compareTokenRequest(a.request, b.request)),
-  );
-  const toMdast = createMarkdownProvisionAuthExplainer(
-    tokenAuthorizer
-      .listResults()
-      .sort((a, b) => compareTokenRequest(a.request, b.request)),
-  );
+  const explain = createTextProvisionAuthExplainer();
+  const toMdast = createMarkdownProvisionAuthExplainer();
 
   expect(explain(resultA)).toMatchInlineSnapshot(`
     "✅ Repo account-a/repo-a was allowed to provision secret SECRET_A:
@@ -291,16 +266,8 @@ it("allows GitHub Dependabot repo secrets that should be allowed", async () => {
     }),
   );
 
-  const explain = createTextProvisionAuthExplainer(
-    tokenAuthorizer
-      .listResults()
-      .sort((a, b) => compareTokenRequest(a.request, b.request)),
-  );
-  const toMdast = createMarkdownProvisionAuthExplainer(
-    tokenAuthorizer
-      .listResults()
-      .sort((a, b) => compareTokenRequest(a.request, b.request)),
-  );
+  const explain = createTextProvisionAuthExplainer();
+  const toMdast = createMarkdownProvisionAuthExplainer();
 
   expect(explain(resultA)).toMatchInlineSnapshot(`
     "✅ Repo account-x/repo-x was allowed to provision secret SECRET_A:
@@ -375,16 +342,8 @@ it("allows GitHub Dependabot repo secrets that should be allowed within the requ
     }),
   );
 
-  const explain = createTextProvisionAuthExplainer(
-    tokenAuthorizer
-      .listResults()
-      .sort((a, b) => compareTokenRequest(a.request, b.request)),
-  );
-  const toMdast = createMarkdownProvisionAuthExplainer(
-    tokenAuthorizer
-      .listResults()
-      .sort((a, b) => compareTokenRequest(a.request, b.request)),
-  );
+  const explain = createTextProvisionAuthExplainer();
+  const toMdast = createMarkdownProvisionAuthExplainer();
 
   expect(explain(resultA)).toMatchInlineSnapshot(`
     "✅ Repo account-a/repo-a was allowed to provision secret SECRET_A:
@@ -464,16 +423,8 @@ it("allows GitHub Dependabot repo secrets that should be allowed within the requ
     }),
   );
 
-  const explain = createTextProvisionAuthExplainer(
-    tokenAuthorizer
-      .listResults()
-      .sort((a, b) => compareTokenRequest(a.request, b.request)),
-  );
-  const toMdast = createMarkdownProvisionAuthExplainer(
-    tokenAuthorizer
-      .listResults()
-      .sort((a, b) => compareTokenRequest(a.request, b.request)),
-  );
+  const explain = createTextProvisionAuthExplainer();
+  const toMdast = createMarkdownProvisionAuthExplainer();
 
   expect(explain(resultA)).toMatchInlineSnapshot(`
     "✅ Repo account-a/repo-a was allowed to provision secret SECRET_A:
@@ -536,16 +487,8 @@ it("doesn't allow GitHub Dependabot account secrets for unauthorized requesters"
     }),
   );
 
-  const explain = createTextProvisionAuthExplainer(
-    tokenAuthorizer
-      .listResults()
-      .sort((a, b) => compareTokenRequest(a.request, b.request)),
-  );
-  const toMdast = createMarkdownProvisionAuthExplainer(
-    tokenAuthorizer
-      .listResults()
-      .sort((a, b) => compareTokenRequest(a.request, b.request)),
-  );
+  const explain = createTextProvisionAuthExplainer();
+  const toMdast = createMarkdownProvisionAuthExplainer();
 
   expect(explain(resultA)).toMatchInlineSnapshot(`
     "❌ Repo account-y/repo-y wasn't allowed to provision secret SECRET_A:
@@ -606,16 +549,8 @@ it("doesn't allow GitHub Dependabot account secrets within the requesting accoun
     }),
   );
 
-  const explain = createTextProvisionAuthExplainer(
-    tokenAuthorizer
-      .listResults()
-      .sort((a, b) => compareTokenRequest(a.request, b.request)),
-  );
-  const toMdast = createMarkdownProvisionAuthExplainer(
-    tokenAuthorizer
-      .listResults()
-      .sort((a, b) => compareTokenRequest(a.request, b.request)),
-  );
+  const explain = createTextProvisionAuthExplainer();
+  const toMdast = createMarkdownProvisionAuthExplainer();
 
   expect(explain(resultA)).toMatchInlineSnapshot(`
     "❌ Repo account-y/repo-y wasn't allowed to provision secret SECRET_A:
@@ -687,16 +622,8 @@ it("doesn't allow GitHub Dependabot account secrets within the requesting accoun
     }),
   );
 
-  const explain = createTextProvisionAuthExplainer(
-    tokenAuthorizer
-      .listResults()
-      .sort((a, b) => compareTokenRequest(a.request, b.request)),
-  );
-  const toMdast = createMarkdownProvisionAuthExplainer(
-    tokenAuthorizer
-      .listResults()
-      .sort((a, b) => compareTokenRequest(a.request, b.request)),
-  );
+  const explain = createTextProvisionAuthExplainer();
+  const toMdast = createMarkdownProvisionAuthExplainer();
 
   expect(explain(resultA)).toMatchInlineSnapshot(`
     "❌ Repo account-a/repo-a wasn't allowed to provision secret SECRET_A:
@@ -751,16 +678,8 @@ it("doesn't allow GitHub Dependabot repo secrets for unauthorized requesters", a
     }),
   );
 
-  const explain = createTextProvisionAuthExplainer(
-    tokenAuthorizer
-      .listResults()
-      .sort((a, b) => compareTokenRequest(a.request, b.request)),
-  );
-  const toMdast = createMarkdownProvisionAuthExplainer(
-    tokenAuthorizer
-      .listResults()
-      .sort((a, b) => compareTokenRequest(a.request, b.request)),
-  );
+  const explain = createTextProvisionAuthExplainer();
+  const toMdast = createMarkdownProvisionAuthExplainer();
 
   expect(explain(resultA)).toMatchInlineSnapshot(`
     "❌ Repo account-y/repo-y wasn't allowed to provision secret SECRET_A:
@@ -828,16 +747,8 @@ it("doesn't allow GitHub Dependabot repo secrets within the requesting repo for 
     }),
   );
 
-  const explain = createTextProvisionAuthExplainer(
-    tokenAuthorizer
-      .listResults()
-      .sort((a, b) => compareTokenRequest(a.request, b.request)),
-  );
-  const toMdast = createMarkdownProvisionAuthExplainer(
-    tokenAuthorizer
-      .listResults()
-      .sort((a, b) => compareTokenRequest(a.request, b.request)),
-  );
+  const explain = createTextProvisionAuthExplainer();
+  const toMdast = createMarkdownProvisionAuthExplainer();
 
   expect(explain(resultA)).toMatchInlineSnapshot(`
     "❌ Repo account-y/repo-y wasn't allowed to provision secret SECRET_A:
@@ -913,16 +824,8 @@ it("doesn't allow GitHub Dependabot repo secrets within the requesting repo when
     }),
   );
 
-  const explain = createTextProvisionAuthExplainer(
-    tokenAuthorizer
-      .listResults()
-      .sort((a, b) => compareTokenRequest(a.request, b.request)),
-  );
-  const toMdast = createMarkdownProvisionAuthExplainer(
-    tokenAuthorizer
-      .listResults()
-      .sort((a, b) => compareTokenRequest(a.request, b.request)),
-  );
+  const explain = createTextProvisionAuthExplainer();
+  const toMdast = createMarkdownProvisionAuthExplainer();
 
   expect(explain(resultA)).toMatchInlineSnapshot(`
     "❌ Repo account-a/repo-a wasn't allowed to provision secret SECRET_A:

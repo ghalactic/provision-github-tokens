@@ -7,6 +7,7 @@ import {
 } from "../github-reference.js";
 import { FAIL_ICON, icon } from "../icon.js";
 import { pluralize } from "../pluralize.js";
+import { createSequencer } from "../sequencer.js";
 import { capitalize, prefixLines } from "../text.js";
 import type { PermissionAccess, Permissions } from "../type/permissions.js";
 import type { TokenAuthResult } from "../type/token-auth-result.js";
@@ -22,32 +23,23 @@ const HEADER_ACCESS_LABELS: Record<PermissionAccess, string> = {
   write: "write",
 };
 
-export function createTextTokenCreationExplainer(
-  results: Map<TokenAuthResult, TokenCreationResult>,
-): TokenCreationResultExplainer<string> {
-  const resultIndices = new Map<TokenCreationResult, number>();
-  const authResultIndices = new Map<TokenAuthResult, number>();
-
-  let index = 0;
-  for (const [authResult, result] of results) {
-    authResultIndices.set(authResult, index);
-    if (!resultIndices.has(result)) resultIndices.set(result, index);
-
-    ++index;
-  }
+export function createTextTokenCreationExplainer(): TokenCreationResultExplainer<string> {
+  const tokenSeq = createSequencer<TokenAuthResult>();
+  const firstTokenIndex = new Map<TokenCreationResult, number>();
 
   return (authResult, creationResult) => {
-    const currentIndex = authResultIndices.get(authResult);
-    const firstIndex = resultIndices.get(creationResult);
+    const currentIndex = tokenSeq(authResult);
+    let firstIndex = firstTokenIndex.get(creationResult);
 
-    if (
-      typeof currentIndex !== "undefined" &&
-      typeof firstIndex !== "undefined" &&
-      firstIndex !== currentIndex
-    ) {
+    if (typeof firstIndex === "undefined") {
+      firstIndex = currentIndex;
+      firstTokenIndex.set(creationResult, firstIndex);
+    }
+
+    if (firstIndex !== currentIndex) {
       return (
         `${icon(creationResult.type === "CREATED")} Same result ` +
-        `as token #${firstIndex + 1}`
+        `as token #${firstIndex}`
       );
     }
 

@@ -7,6 +7,7 @@ import {
 import { FAIL_ICON, PASS_ICON, icon } from "../icon.js";
 import { pluralize } from "../pluralize.js";
 import type { ProvisionRequestTarget } from "../provision-request.js";
+import { createSequencer } from "../sequencer.js";
 import type {
   ProvisionAuthResult,
   ProvisionAuthResultExplainer,
@@ -16,9 +17,9 @@ import type {
 import type { ProvisionSecretsRule } from "../type/provision-rule.js";
 import type { TokenAuthResult } from "../type/token-auth-result.js";
 
-export function createTextProvisionAuthExplainer(
-  tokenResults: TokenAuthResult[],
-): ProvisionAuthResultExplainer<string> {
+export function createTextProvisionAuthExplainer(): ProvisionAuthResultExplainer<string> {
+  const tokenSeq = createSequencer<TokenAuthResult>();
+
   return (result) => {
     return (
       explainSummary(result) + explainTokenDec(result) + explainTargets(result)
@@ -99,7 +100,7 @@ export function createTextProvisionAuthExplainer(
     }
 
     const name = accountOrRepoRefToString(tokenAuthResult.request.consumer);
-    const ref = `#${tokenResults.indexOf(tokenAuthResult) + 1}`;
+    const ref = `#${tokenSeq(tokenAuthResult)}`;
     const kind = isRepoRef(tokenAuthResult.request.consumer)
       ? "Repo"
       : "Account";

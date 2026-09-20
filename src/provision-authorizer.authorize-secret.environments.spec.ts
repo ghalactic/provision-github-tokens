@@ -6,7 +6,6 @@ import {
 } from "../test/provision-request.js";
 import { createTestTokenAuthorizer } from "../test/token-authorizer.js";
 import { createTestTokenRequestFactory } from "../test/token-request.js";
-import { compareTokenRequest } from "./compare-token-request.js";
 import { toMarkdown } from "./markdown.js";
 import { createMarkdownProvisionAuthExplainer } from "./provision-auth-explainer/markdown.js";
 import { createTextProvisionAuthExplainer } from "./provision-auth-explainer/text.js";
@@ -81,16 +80,8 @@ it("allows GitHub environment secrets that should be allowed", async () => {
     }),
   );
 
-  const explain = createTextProvisionAuthExplainer(
-    tokenAuthorizer
-      .listResults()
-      .sort((a, b) => compareTokenRequest(a.request, b.request)),
-  );
-  const toMdast = createMarkdownProvisionAuthExplainer(
-    tokenAuthorizer
-      .listResults()
-      .sort((a, b) => compareTokenRequest(a.request, b.request)),
-  );
+  const explain = createTextProvisionAuthExplainer();
+  const toMdast = createMarkdownProvisionAuthExplainer();
 
   expect(explain(resultA)).toMatchInlineSnapshot(`
     "✅ Repo account-x/repo-x was allowed to provision secret SECRET_A:
@@ -173,16 +164,8 @@ it("allows GitHub environment secrets that should be allowed within the requesti
     }),
   );
 
-  const explain = createTextProvisionAuthExplainer(
-    tokenAuthorizer
-      .listResults()
-      .sort((a, b) => compareTokenRequest(a.request, b.request)),
-  );
-  const toMdast = createMarkdownProvisionAuthExplainer(
-    tokenAuthorizer
-      .listResults()
-      .sort((a, b) => compareTokenRequest(a.request, b.request)),
-  );
+  const explain = createTextProvisionAuthExplainer();
+  const toMdast = createMarkdownProvisionAuthExplainer();
 
   expect(explain(resultA)).toMatchInlineSnapshot(`
     "✅ Repo account-a/repo-a was allowed to provision secret SECRET_A:
@@ -271,16 +254,8 @@ it("allows GitHub environment secrets that should be allowed within the requesti
     }),
   );
 
-  const explain = createTextProvisionAuthExplainer(
-    tokenAuthorizer
-      .listResults()
-      .sort((a, b) => compareTokenRequest(a.request, b.request)),
-  );
-  const toMdast = createMarkdownProvisionAuthExplainer(
-    tokenAuthorizer
-      .listResults()
-      .sort((a, b) => compareTokenRequest(a.request, b.request)),
-  );
+  const explain = createTextProvisionAuthExplainer();
+  const toMdast = createMarkdownProvisionAuthExplainer();
 
   expect(explain(resultA)).toMatchInlineSnapshot(`
     "✅ Repo account-a/repo-a was allowed to provision secret SECRET_A:
@@ -352,16 +327,8 @@ it("doesn't allow GitHub environment secrets for unauthorized requesters", async
     }),
   );
 
-  const explain = createTextProvisionAuthExplainer(
-    tokenAuthorizer
-      .listResults()
-      .sort((a, b) => compareTokenRequest(a.request, b.request)),
-  );
-  const toMdast = createMarkdownProvisionAuthExplainer(
-    tokenAuthorizer
-      .listResults()
-      .sort((a, b) => compareTokenRequest(a.request, b.request)),
-  );
+  const explain = createTextProvisionAuthExplainer();
+  const toMdast = createMarkdownProvisionAuthExplainer();
 
   expect(explain(resultA)).toMatchInlineSnapshot(`
     "❌ Repo account-y/repo-y wasn't allowed to provision secret SECRET_A:
@@ -458,16 +425,8 @@ it("doesn't allow GitHub environment secrets within the requesting repo for unau
     }),
   );
 
-  const explain = createTextProvisionAuthExplainer(
-    tokenAuthorizer
-      .listResults()
-      .sort((a, b) => compareTokenRequest(a.request, b.request)),
-  );
-  const toMdast = createMarkdownProvisionAuthExplainer(
-    tokenAuthorizer
-      .listResults()
-      .sort((a, b) => compareTokenRequest(a.request, b.request)),
-  );
+  const explain = createTextProvisionAuthExplainer();
+  const toMdast = createMarkdownProvisionAuthExplainer();
 
   expect(explain(resultA)).toMatchInlineSnapshot(`
     "❌ Repo account-y/repo-y wasn't allowed to provision secret SECRET_A:
@@ -572,16 +531,8 @@ it("doesn't allow GitHub environment secrets within the requesting repo when den
     }),
   );
 
-  const explain = createTextProvisionAuthExplainer(
-    tokenAuthorizer
-      .listResults()
-      .sort((a, b) => compareTokenRequest(a.request, b.request)),
-  );
-  const toMdast = createMarkdownProvisionAuthExplainer(
-    tokenAuthorizer
-      .listResults()
-      .sort((a, b) => compareTokenRequest(a.request, b.request)),
-  );
+  const explain = createTextProvisionAuthExplainer();
+  const toMdast = createMarkdownProvisionAuthExplainer();
 
   expect(explain(resultA)).toMatchInlineSnapshot(`
     "❌ Repo account-a/repo-a wasn't allowed to provision secret SECRET_A:
@@ -643,16 +594,8 @@ it("doesn't allow GitHub environment secrets when two environment patterns match
     }),
   );
 
-  const explain = createTextProvisionAuthExplainer(
-    tokenAuthorizer
-      .listResults()
-      .sort((a, b) => compareTokenRequest(a.request, b.request)),
-  );
-  const toMdast = createMarkdownProvisionAuthExplainer(
-    tokenAuthorizer
-      .listResults()
-      .sort((a, b) => compareTokenRequest(a.request, b.request)),
-  );
+  const explain = createTextProvisionAuthExplainer();
+  const toMdast = createMarkdownProvisionAuthExplainer();
 
   expect(explain(resultA)).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x wasn't allowed to provision secret SECRET_A:

@@ -61,7 +61,7 @@ export function createTokenFactory(
       creationResults.set(auth, (cache[key] = result));
     }
 
-    const explain = createTextTokenCreationExplainer(creationResults);
+    const explain = createTextTokenCreationExplainer();
 
     if (creationResults.size > 0) {
       let i = 0;

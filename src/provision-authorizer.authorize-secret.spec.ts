@@ -10,7 +10,6 @@ import {
 } from "../test/provision-request.js";
 import { createTestTokenAuthorizer } from "../test/token-authorizer.js";
 import { createTestTokenRequestFactory } from "../test/token-request.js";
-import { compareTokenRequest } from "./compare-token-request.js";
 import { toMarkdown } from "./markdown.js";
 import { createMarkdownProvisionAuthExplainer } from "./provision-auth-explainer/markdown.js";
 import { createTextProvisionAuthExplainer } from "./provision-auth-explainer/text.js";
@@ -65,16 +64,8 @@ it("supports multiple secrets per rule", async () => {
     }),
   );
 
-  const explain = createTextProvisionAuthExplainer(
-    tokenAuthorizer
-      .listResults()
-      .sort((a, b) => compareTokenRequest(a.request, b.request)),
-  );
-  const toMdast = createMarkdownProvisionAuthExplainer(
-    tokenAuthorizer
-      .listResults()
-      .sort((a, b) => compareTokenRequest(a.request, b.request)),
-  );
+  const explain = createTextProvisionAuthExplainer();
+  const toMdast = createMarkdownProvisionAuthExplainer();
 
   expect(explain(resultA)).toMatchInlineSnapshot(`
     "✅ Repo account-x/repo-x was allowed to provision secret SECRET_A:
@@ -142,16 +133,8 @@ it("supports multiple targets in requests", async () => {
     }),
   );
 
-  const explain = createTextProvisionAuthExplainer(
-    tokenAuthorizer
-      .listResults()
-      .sort((a, b) => compareTokenRequest(a.request, b.request)),
-  );
-  const toMdast = createMarkdownProvisionAuthExplainer(
-    tokenAuthorizer
-      .listResults()
-      .sort((a, b) => compareTokenRequest(a.request, b.request)),
-  );
+  const explain = createTextProvisionAuthExplainer();
+  const toMdast = createMarkdownProvisionAuthExplainer();
 
   expect(explain(resultA)).toMatchInlineSnapshot(`
     "✅ Repo account-x/repo-x was allowed to provision secret SECRET_A:
@@ -214,16 +197,8 @@ it("supports wildcards in secret names", async () => {
     }),
   );
 
-  const explain = createTextProvisionAuthExplainer(
-    tokenAuthorizer
-      .listResults()
-      .sort((a, b) => compareTokenRequest(a.request, b.request)),
-  );
-  const toMdast = createMarkdownProvisionAuthExplainer(
-    tokenAuthorizer
-      .listResults()
-      .sort((a, b) => compareTokenRequest(a.request, b.request)),
-  );
+  const explain = createTextProvisionAuthExplainer();
+  const toMdast = createMarkdownProvisionAuthExplainer();
 
   expect(explain(resultA)).toMatchInlineSnapshot(`
     "✅ Repo account-x/repo-x was allowed to provision secret SECRET_A:
@@ -287,16 +262,8 @@ it("supports rule descriptions", async () => {
     }),
   );
 
-  const explain = createTextProvisionAuthExplainer(
-    tokenAuthorizer
-      .listResults()
-      .sort((a, b) => compareTokenRequest(a.request, b.request)),
-  );
-  const toMdast = createMarkdownProvisionAuthExplainer(
-    tokenAuthorizer
-      .listResults()
-      .sort((a, b) => compareTokenRequest(a.request, b.request)),
-  );
+  const explain = createTextProvisionAuthExplainer();
+  const toMdast = createMarkdownProvisionAuthExplainer();
 
   expect(explain(resultA)).toMatchInlineSnapshot(`
     "✅ Repo account-x/repo-x was allowed to provision secret SECRET_A:
@@ -381,16 +348,8 @@ it("allows secrets when a later rule allows access that a previous rule denied",
     }),
   );
 
-  const explain = createTextProvisionAuthExplainer(
-    tokenAuthorizer
-      .listResults()
-      .sort((a, b) => compareTokenRequest(a.request, b.request)),
-  );
-  const toMdast = createMarkdownProvisionAuthExplainer(
-    tokenAuthorizer
-      .listResults()
-      .sort((a, b) => compareTokenRequest(a.request, b.request)),
-  );
+  const explain = createTextProvisionAuthExplainer();
+  const toMdast = createMarkdownProvisionAuthExplainer();
 
   expect(explain(resultA)).toMatchInlineSnapshot(`
     "✅ Repo account-x/repo-x was allowed to provision secret SECRET_A:
@@ -488,16 +447,8 @@ it("doesn't allow secrets when a later rule denies access that a previous rule a
     }),
   );
 
-  const explain = createTextProvisionAuthExplainer(
-    tokenAuthorizer
-      .listResults()
-      .sort((a, b) => compareTokenRequest(a.request, b.request)),
-  );
-  const toMdast = createMarkdownProvisionAuthExplainer(
-    tokenAuthorizer
-      .listResults()
-      .sort((a, b) => compareTokenRequest(a.request, b.request)),
-  );
+  const explain = createTextProvisionAuthExplainer();
+  const toMdast = createMarkdownProvisionAuthExplainer();
 
   expect(explain(resultA)).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x wasn't allowed to provision secret SECRET_A:
@@ -568,16 +519,8 @@ it("doesn't allow secrets when no rule matches the secret name", async () => {
     }),
   );
 
-  const explain = createTextProvisionAuthExplainer(
-    tokenAuthorizer
-      .listResults()
-      .sort((a, b) => compareTokenRequest(a.request, b.request)),
-  );
-  const toMdast = createMarkdownProvisionAuthExplainer(
-    tokenAuthorizer
-      .listResults()
-      .sort((a, b) => compareTokenRequest(a.request, b.request)),
-  );
+  const explain = createTextProvisionAuthExplainer();
+  const toMdast = createMarkdownProvisionAuthExplainer();
 
   expect(explain(resultA)).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x wasn't allowed to provision secret SECRET_X:
@@ -631,16 +574,8 @@ it("doesn't allow secrets when two account patterns match but one allows and one
     }),
   );
 
-  const explain = createTextProvisionAuthExplainer(
-    tokenAuthorizer
-      .listResults()
-      .sort((a, b) => compareTokenRequest(a.request, b.request)),
-  );
-  const toMdast = createMarkdownProvisionAuthExplainer(
-    tokenAuthorizer
-      .listResults()
-      .sort((a, b) => compareTokenRequest(a.request, b.request)),
-  );
+  const explain = createTextProvisionAuthExplainer();
+  const toMdast = createMarkdownProvisionAuthExplainer();
 
   expect(explain(resultA)).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x wasn't allowed to provision secret SECRET_A:
@@ -698,16 +633,8 @@ it("doesn't allow secrets when two repo patterns match but one allows and one de
     }),
   );
 
-  const explain = createTextProvisionAuthExplainer(
-    tokenAuthorizer
-      .listResults()
-      .sort((a, b) => compareTokenRequest(a.request, b.request)),
-  );
-  const toMdast = createMarkdownProvisionAuthExplainer(
-    tokenAuthorizer
-      .listResults()
-      .sort((a, b) => compareTokenRequest(a.request, b.request)),
-  );
+  const explain = createTextProvisionAuthExplainer();
+  const toMdast = createMarkdownProvisionAuthExplainer();
 
   expect(explain(resultA)).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x wasn't allowed to provision secret SECRET_A:
@@ -766,16 +693,8 @@ it("doesn't allow secrets when some targets aren't allowed", async () => {
     }),
   );
 
-  const explain = createTextProvisionAuthExplainer(
-    tokenAuthorizer
-      .listResults()
-      .sort((a, b) => compareTokenRequest(a.request, b.request)),
-  );
-  const toMdast = createMarkdownProvisionAuthExplainer(
-    tokenAuthorizer
-      .listResults()
-      .sort((a, b) => compareTokenRequest(a.request, b.request)),
-  );
+  const explain = createTextProvisionAuthExplainer();
+  const toMdast = createMarkdownProvisionAuthExplainer();
 
   expect(explain(resultA)).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x wasn't allowed to provision secret SECRET_A:
@@ -832,16 +751,8 @@ it("doesn't allow secrets when no targets are specified", async () => {
     }),
   );
 
-  const explain = createTextProvisionAuthExplainer(
-    tokenAuthorizer
-      .listResults()
-      .sort((a, b) => compareTokenRequest(a.request, b.request)),
-  );
-  const toMdast = createMarkdownProvisionAuthExplainer(
-    tokenAuthorizer
-      .listResults()
-      .sort((a, b) => compareTokenRequest(a.request, b.request)),
-  );
+  const explain = createTextProvisionAuthExplainer();
+  const toMdast = createMarkdownProvisionAuthExplainer();
 
   expect(explain(resultA)).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x wasn't allowed to provision secret SECRET_A:
@@ -891,16 +802,8 @@ it("doesn't allow secrets when the token isn't allowed for a target", async () =
     }),
   );
 
-  const explain = createTextProvisionAuthExplainer(
-    tokenAuthorizer
-      .listResults()
-      .sort((a, b) => compareTokenRequest(a.request, b.request)),
-  );
-  const toMdast = createMarkdownProvisionAuthExplainer(
-    tokenAuthorizer
-      .listResults()
-      .sort((a, b) => compareTokenRequest(a.request, b.request)),
-  );
+  const explain = createTextProvisionAuthExplainer();
+  const toMdast = createMarkdownProvisionAuthExplainer();
 
   expect(explain(resultA)).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x wasn't allowed to provision secret SECRET_A:
@@ -958,16 +861,8 @@ it("doesn't allow secrets for unshared token declarations", async () => {
     }),
   );
 
-  const explain = createTextProvisionAuthExplainer(
-    tokenAuthorizer
-      .listResults()
-      .sort((a, b) => compareTokenRequest(a.request, b.request)),
-  );
-  const toMdast = createMarkdownProvisionAuthExplainer(
-    tokenAuthorizer
-      .listResults()
-      .sort((a, b) => compareTokenRequest(a.request, b.request)),
-  );
+  const explain = createTextProvisionAuthExplainer();
+  const toMdast = createMarkdownProvisionAuthExplainer();
 
   expect(explain(resultA)).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x wasn't allowed to provision secret SECRET_A:
@@ -1021,16 +916,8 @@ it("doesn't allow secrets for undefined token declarations", async () => {
     }),
   );
 
-  const explain = createTextProvisionAuthExplainer(
-    tokenAuthorizer
-      .listResults()
-      .sort((a, b) => compareTokenRequest(a.request, b.request)),
-  );
-  const toMdast = createMarkdownProvisionAuthExplainer(
-    tokenAuthorizer
-      .listResults()
-      .sort((a, b) => compareTokenRequest(a.request, b.request)),
-  );
+  const explain = createTextProvisionAuthExplainer();
+  const toMdast = createMarkdownProvisionAuthExplainer();
 
   expect(explain(resultA)).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x wasn't allowed to provision secret SECRET_A:
@@ -1082,16 +969,8 @@ it("doesn't allow secrets when the account matches but the secret type isn't all
     }),
   );
 
-  const explain = createTextProvisionAuthExplainer(
-    tokenAuthorizer
-      .listResults()
-      .sort((a, b) => compareTokenRequest(a.request, b.request)),
-  );
-  const toMdast = createMarkdownProvisionAuthExplainer(
-    tokenAuthorizer
-      .listResults()
-      .sort((a, b) => compareTokenRequest(a.request, b.request)),
-  );
+  const explain = createTextProvisionAuthExplainer();
+  const toMdast = createMarkdownProvisionAuthExplainer();
 
   expect(explain(resultA)).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x wasn't allowed to provision secret SECRET_A:

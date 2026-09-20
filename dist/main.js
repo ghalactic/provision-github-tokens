@@ -60586,8 +60586,22 @@ function pluralize(amount, singular, plural) {
   return `${amount} ${amount === 1 ? singular : plural}`;
 }
 
+// src/sequencer.ts
+function createSequencer() {
+  const seqs = /* @__PURE__ */ new Map();
+  return (value) => {
+    let seq = seqs.get(value);
+    if (typeof seq === "undefined") {
+      seq = seqs.size + 1;
+      seqs.set(value, seq);
+    }
+    return seq;
+  };
+}
+
 // src/provision-auth-explainer/text.ts
-function createTextProvisionAuthExplainer(tokenResults) {
+function createTextProvisionAuthExplainer() {
+  const tokenSeq = createSequencer();
   return (result) => {
     return explainSummary(result) + explainTokenDec(result) + explainTargets(result);
   };
@@ -60636,7 +60650,7 @@ function createTextProvisionAuthExplainer(tokenResults) {
     ${FAIL_ICON} Token can't be authorized without a declaration`;
     }
     const name = accountOrRepoRefToString(tokenAuthResult.request.consumer);
-    const ref = `#${tokenResults.indexOf(tokenAuthResult) + 1}`;
+    const ref = `#${tokenSeq(tokenAuthResult)}`;
     const kind = isRepoRef(tokenAuthResult.request.consumer) ? "Repo" : "Account";
     return `
     ${icon(isTokenAllowed)} ${kind} ${name} was ${isTokenAllowed ? "allowed" : "denied"} access to token ${ref}`;
@@ -60811,7 +60825,7 @@ function createAuthorizer(createProvisionRequest, provisionAuthorizer, tokenAuth
       }
       const provisionResults = provisionAuthorizer.listResults().sort((a2, b2) => compareProvisionRequest(a2.request, b2.request));
       const tokenResults = tokenAuthorizer.listResults().sort((a2, b2) => compareTokenRequest(a2.request, b2.request));
-      const explainProvisionAuth = createTextProvisionAuthExplainer(tokenResults);
+      const explainProvisionAuth = createTextProvisionAuthExplainer();
       const explainTokenAuth = createTextTokenAuthExplainer();
       if (provisionResults.length > 0) {
         for (let i2 = 1; i2 <= provisionResults.length; ++i2) {
@@ -120897,20 +120911,18 @@ var HEADER_ACCESS_LABELS = {
   read: "read-only",
   write: "write"
 };
-function createTextTokenCreationExplainer(results) {
-  const resultIndices = /* @__PURE__ */ new Map();
-  const authResultIndices = /* @__PURE__ */ new Map();
-  let index = 0;
-  for (const [authResult, result] of results) {
-    authResultIndices.set(authResult, index);
-    if (!resultIndices.has(result)) resultIndices.set(result, index);
-    ++index;
-  }
+function createTextTokenCreationExplainer() {
+  const tokenSeq = createSequencer();
+  const firstTokenIndex = /* @__PURE__ */ new Map();
   return (authResult, creationResult) => {
-    const currentIndex = authResultIndices.get(authResult);
-    const firstIndex = resultIndices.get(creationResult);
-    if (typeof currentIndex !== "undefined" && typeof firstIndex !== "undefined" && firstIndex !== currentIndex) {
-      return `${icon(creationResult.type === "CREATED")} Same result as token #${firstIndex + 1}`;
+    const currentIndex = tokenSeq(authResult);
+    let firstIndex = firstTokenIndex.get(creationResult);
+    if (typeof firstIndex === "undefined") {
+      firstIndex = currentIndex;
+      firstTokenIndex.set(creationResult, firstIndex);
+    }
+    if (firstIndex !== currentIndex) {
+      return `${icon(creationResult.type === "CREATED")} Same result as token #${firstIndex}`;
     }
     return explainResult(authResult, creationResult);
   };
@@ -121041,7 +121053,7 @@ function createTokenFactory(findIssuerOctokit) {
       })();
       creationResults.set(auth6, cache[key] = result);
     }
-    const explain = createTextTokenCreationExplainer(creationResults);
+    const explain = createTextTokenCreationExplainer();
     if (creationResults.size > 0) {
       let i2 = 0;
       for (const [authResult, creationResult] of creationResults) {

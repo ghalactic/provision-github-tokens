@@ -17,6 +17,7 @@ import {
 } from "../markdown.js";
 import { pluralize } from "../pluralize.js";
 import type { ProvisionRequestTarget } from "../provision-request.js";
+import { createSequencer } from "../sequencer.js";
 import type {
   ProvisionAuthResult,
   ProvisionAuthResultExplainer,
@@ -26,9 +27,11 @@ import type {
 import type { ProvisionSecretsRule } from "../type/provision-rule.js";
 import type { TokenAuthResult } from "../type/token-auth-result.js";
 
-export function createMarkdownProvisionAuthExplainer(
-  tokenResults: TokenAuthResult[],
-): ProvisionAuthResultExplainer<RootContent[]> {
+export function createMarkdownProvisionAuthExplainer(): ProvisionAuthResultExplainer<
+  RootContent[]
+> {
+  const tokenSeq = createSequencer<TokenAuthResult>();
+
   return (result) => {
     const summary = listItem(...explainSummary(result));
 
@@ -143,7 +146,7 @@ export function createMarkdownProvisionAuthExplainer(
     }
 
     const name = accountOrRepoRefToString(tokenAuthResult.request.consumer);
-    const ref = `#${tokenResults.indexOf(tokenAuthResult) + 1}`;
+    const ref = `#${tokenSeq(tokenAuthResult)}`;
     const kind = isRepoRef(tokenAuthResult.request.consumer)
       ? "Repo"
       : "Account";

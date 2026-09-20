@@ -45,8 +45,7 @@ export function createAuthorizer(
         .listResults()
         .sort((a, b) => compareTokenRequest(a.request, b.request));
 
-      const explainProvisionAuth =
-        createTextProvisionAuthExplainer(tokenResults);
+      const explainProvisionAuth = createTextProvisionAuthExplainer();
       const explainTokenAuth = createTextTokenAuthExplainer();
 
       if (provisionResults.length > 0) {
