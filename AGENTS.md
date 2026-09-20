@@ -147,22 +147,15 @@ and calls `setFailed()`.
 
 ### Architecture Decision Records
 
-ADRs live in `docs/adr/`. Use the `domain-modeling` skill when writing or
-updating ADRs — it defines when an ADR is worth writing and the minimal format
-to use. See `docs/agents/domain.md` for the consumer rules.
+ADRs live in `docs/adr/`. Use the `domain-modeling` skill to decide when a
+decision warrants an ADR and to write it. See `docs/agents/domain.md` for how
+skills consume ADRs.
 
 **ADRs tend to come out too verbose on the first pass.** After completing a new
 ADR, immediately re-read it and cut it down as if a reviewer had said "The new
 ADR is too verbose." Tighten every section, remove redundant phrasing, and
 collapse multi-sentence explanations into single sentences where possible.
 Commit the trimmed version — not the first draft.
-
-**Consult ADRs during research.** When investigating an area of the codebase,
-search `docs/adr/` for ADRs that relate to the subsystem or concept you're
-working on. ADRs capture the _why_ behind design decisions — reading them before
-making changes helps you avoid inadvertently contradicting prior decisions or
-re-litigating settled debates. If you find that existing ADRs conflict with
-proposed changes, surface this to the user before proceeding.
 
 ### Commit messages
 
@@ -178,21 +171,6 @@ Write commit messages for **human readers**, not automated tooling.
   fine for most changes
 - **Wrap the body at 72 characters** and use it to explain _what_ and _why_, not
   _how_ (the code shows how)
-
-### Finishing a development branch
-
-When development on a feature branch is complete (all code and tests are
-committed and passing), perform the following cleanup **before pushing and
-creating a PR**:
-
-1. **Distill decisions into ADRs** — Any architectural decisions made during the
-   feature branch should be captured in ADRs (using available ADR skills). ADRs
-   are the lasting record; plans and specs are ephemeral.
-2. **Delete plan and spec files** — Remove any files under `docs/superpowers/`
-   (plans, specs, retros). These are useful during development but become stale
-   quickly and confuse code reviewers when they don't match the final
-   implementation. They remain in Git history for posterity.
-3. **Push and create the PR** — Only after the above steps are committed.
 
 ## Agent skills
 
