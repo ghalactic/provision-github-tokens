@@ -1,0 +1,5 @@
+- ✅ **Read-only** token created with access to **all repos** in `account-b`:
+  - ✅ Has **read** access _without_ a role
+  - ✅ Has access to **all repos** in `account-b`
+  - ✅ Has **1 permission**:
+    - ✅ _metadata_: `read`

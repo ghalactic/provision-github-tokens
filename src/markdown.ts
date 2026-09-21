@@ -1,6 +1,8 @@
 import type {
   AlignType,
+  BlockContent,
   Blockquote,
+  Code,
   Emphasis,
   Heading,
   InlineCode,
@@ -27,6 +29,21 @@ export function toMarkdown(children: RootContent[]): string {
 
 export function blockquote(...children: Blockquote["children"]): Blockquote {
   return { type: "blockquote", children };
+}
+
+export function code(language: string, content: string): Code {
+  return { type: "code", lang: language, meta: null, value: content };
+}
+
+export function details(
+  summary: string,
+  ...children: BlockContent[]
+): BlockContent[] {
+  return [
+    { type: "html", value: `<details>\n<summary>${summary}</summary>\n` },
+    ...children,
+    { type: "html", value: "\n</details>" },
+  ];
 }
 
 export function emphasis(...children: Emphasis["children"]): Emphasis {

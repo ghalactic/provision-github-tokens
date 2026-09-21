@@ -60323,6 +60323,14 @@ function isSufficientPermissions(have, want) {
   }
   return true;
 }
+function effectivePermissions(permissions) {
+  const entries = [];
+  for (const [name, access2 = "none"] of Object.entries(permissions)) {
+    if (access2 !== "none") entries.push([name, access2]);
+  }
+  entries.sort(([a2], [b2]) => a2.localeCompare(b2));
+  return entries;
+}
 
 // src/app-registry.ts
 function createAppRegistry() {
@@ -120912,13 +120920,15 @@ function createTokenDeclarationRegistry() {
 // src/token-factory.ts
 var import_fast_json_stable_stringify = __toESM(require_fast_json_stable_stringify(), 1);
 
-// src/token-creation-explainer/text.ts
-var HEADER_ACCESS_LABELS = {
+// src/token-creation-explainer/access-level.ts
+var ACCESS_LEVEL_LABELS2 = {
   admin: "admin",
-  none: "",
+  none: "no-permission",
   read: "read-only",
   write: "write"
 };
+
+// src/token-creation-explainer/text.ts
 function createTextTokenCreationExplainer() {
   const tokenSeq = createSequencer();
   const firstTokenIndex = /* @__PURE__ */ new Map();
@@ -120957,13 +120967,12 @@ function createTextTokenCreationExplainer() {
   function renderHeader(type, access2, repos, account) {
     const scope = repoScopeLabel(repos, account);
     const isSuccess = type === "CREATED";
-    const label = HEADER_ACCESS_LABELS[access2];
+    const label = ACCESS_LEVEL_LABELS2[access2];
     if (isSuccess) {
       return `${icon(isSuccess)} ${capitalize(label)} token created with access to ${scope}:`;
     }
-    const prefix = label ? `${label} ` : "";
     const verb = type === "NOT_ALLOWED" ? "Refused" : "Failed";
-    return `${icon(isSuccess)} ${verb} to create ${prefix}token with access to ${scope}:`;
+    return `${icon(isSuccess)} ${verb} to create ${label} token with access to ${scope}:`;
   }
   function renderErrorLines(result, consumer) {
     switch (result.type) {
@@ -121017,14 +121026,6 @@ function createTextTokenCreationExplainer() {
     if (repos === "all") return `all repos in ${account}`;
     if (repos.length < 1) return account;
     return `${pluralize(repos.length, "repo", "repos")} in ${account}`;
-  }
-  function effectivePermissions(permissions) {
-    const entries = [];
-    for (const [name, access2 = "none"] of Object.entries(permissions)) {
-      if (access2 !== "none") entries.push([name, access2]);
-    }
-    entries.sort(([a2], [b2]) => a2.localeCompare(b2));
-    return entries;
   }
 }
 

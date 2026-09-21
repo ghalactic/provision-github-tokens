@@ -1,3 +1,4 @@
+import { join } from "node:path";
 import { beforeEach, expect, it, vi } from "vitest";
 import {
   __getOutput,
@@ -17,6 +18,8 @@ import {
 } from "../test/github-api.js";
 import { createTestOctokitFactory } from "../test/octokit-factory.js";
 import { createTestTokenAuthResult } from "../test/result.js";
+import { toMarkdown } from "./markdown.js";
+import { createMarkdownTokenCreationExplainer } from "./token-creation-explainer/markdown.js";
 import { createTokenFactory } from "./token-factory.js";
 
 vi.mock("@actions/core");
@@ -26,6 +29,8 @@ beforeEach(() => {
   __resetCore();
   __resetOctokit();
 });
+
+const fixturesPath = join(import.meta.dirname, "testdata/token-creation");
 
 it("warns when no token requests are provided", async () => {
   const appRegistry = createTestAppRegistry();
@@ -74,7 +79,9 @@ it("creates read-only tokens", async () => {
     },
   });
 
-  await createTokens([createdResult]);
+  const results = await createTokens([createdResult]);
+
+  const toMdast = createMarkdownTokenCreationExplainer();
 
   expect(__getOutput()).toMatchInlineSnapshot(`
     "
@@ -88,6 +95,9 @@ it("creates read-only tokens", async () => {
 
     "
   `);
+  await expect(
+    toMarkdown(toMdast(createdResult, results.get(createdResult)!)),
+  ).toMatchFileSnapshot(join(fixturesPath, "read-only/created.md"));
 });
 
 it("creates write tokens", async () => {
@@ -127,7 +137,9 @@ it("creates write tokens", async () => {
     have: { contents: "write" },
   });
 
-  await createTokens([authResult]);
+  const results = await createTokens([authResult]);
+
+  const toMdast = createMarkdownTokenCreationExplainer();
 
   expect(__getOutput()).toMatchInlineSnapshot(`
     "
@@ -141,6 +153,9 @@ it("creates write tokens", async () => {
 
     "
   `);
+  await expect(
+    toMarkdown(toMdast(authResult, results.get(authResult)!)),
+  ).toMatchFileSnapshot(join(fixturesPath, "write/auth.md"));
 });
 
 it("creates admin tokens", async () => {
@@ -182,7 +197,9 @@ it("creates admin tokens", async () => {
     have: { organization_administration: "admin", metadata: "read" },
   });
 
-  await createTokens([authResult]);
+  const results = await createTokens([authResult]);
+
+  const toMdast = createMarkdownTokenCreationExplainer();
 
   expect(__getOutput()).toMatchInlineSnapshot(`
     "
@@ -197,6 +214,9 @@ it("creates admin tokens", async () => {
 
     "
   `);
+  await expect(
+    toMarkdown(toMdast(authResult, results.get(authResult)!)),
+  ).toMatchFileSnapshot(join(fixturesPath, "admin/auth.md"));
 });
 
 it("creates account-only tokens", async () => {
@@ -239,7 +259,9 @@ it("creates account-only tokens", async () => {
     have: { organization_administration: "admin" },
   });
 
-  await createTokens([authResult]);
+  const results = await createTokens([authResult]);
+
+  const toMdast = createMarkdownTokenCreationExplainer();
 
   expect(__getOutput()).toMatchInlineSnapshot(`
     "
@@ -253,6 +275,9 @@ it("creates account-only tokens", async () => {
 
     "
   `);
+  await expect(
+    toMarkdown(toMdast(authResult, results.get(authResult)!)),
+  ).toMatchFileSnapshot(join(fixturesPath, "account-only/auth.md"));
 });
 
 it("creates all-repos tokens", async () => {
@@ -287,7 +312,9 @@ it("creates all-repos tokens", async () => {
     },
   });
 
-  await createTokens([authResult]);
+  const results = await createTokens([authResult]);
+
+  const toMdast = createMarkdownTokenCreationExplainer();
 
   expect(__getOutput()).toMatchInlineSnapshot(`
     "
@@ -301,6 +328,9 @@ it("creates all-repos tokens", async () => {
 
     "
   `);
+  await expect(
+    toMarkdown(toMdast(authResult, results.get(authResult)!)),
+  ).toMatchFileSnapshot(join(fixturesPath, "all-repos/auth.md"));
 });
 
 it("creates selected-repos tokens", async () => {
@@ -345,7 +375,9 @@ it("creates selected-repos tokens", async () => {
     isMatched: true,
   });
 
-  await createTokens([authResult]);
+  const results = await createTokens([authResult]);
+
+  const toMdast = createMarkdownTokenCreationExplainer();
 
   expect(__getOutput()).toMatchInlineSnapshot(`
     "
@@ -361,6 +393,9 @@ it("creates selected-repos tokens", async () => {
 
     "
   `);
+  await expect(
+    toMarkdown(toMdast(authResult, results.get(authResult)!)),
+  ).toMatchFileSnapshot(join(fixturesPath, "selected-repos/auth.md"));
 });
 
 it('ignores permissions with "none" access level', async () => {
@@ -399,7 +434,9 @@ it('ignores permissions with "none" access level', async () => {
     },
   });
 
-  await createTokens([authResult]);
+  const results = await createTokens([authResult]);
+
+  const toMdast = createMarkdownTokenCreationExplainer();
 
   expect(__getOutput()).toMatchInlineSnapshot(`
     "
@@ -413,6 +450,9 @@ it('ignores permissions with "none" access level', async () => {
 
     "
   `);
+  await expect(
+    toMarkdown(toMdast(authResult, results.get(authResult)!)),
+  ).toMatchFileSnapshot(join(fixturesPath, "none-access/auth.md"));
 });
 
 it("reuses one token for identical requests", async () => {
@@ -461,7 +501,13 @@ it("reuses one token for identical requests", async () => {
     },
   });
 
-  await createTokens([consumerAResult, consumerBResult, consumerCResult]);
+  const results = await createTokens([
+    consumerAResult,
+    consumerBResult,
+    consumerCResult,
+  ]);
+
+  const toMdast = createMarkdownTokenCreationExplainer();
 
   expect(__getOutput()).toMatchInlineSnapshot(`
     "
@@ -483,6 +529,15 @@ it("reuses one token for identical requests", async () => {
 
     "
   `);
+  await expect(
+    toMarkdown(toMdast(consumerAResult, results.get(consumerAResult)!)),
+  ).toMatchFileSnapshot(join(fixturesPath, "reuses-identical/consumer-a.md"));
+  await expect(
+    toMarkdown(toMdast(consumerBResult, results.get(consumerBResult)!)),
+  ).toMatchFileSnapshot(join(fixturesPath, "reuses-identical/consumer-b.md"));
+  await expect(
+    toMarkdown(toMdast(consumerCResult, results.get(consumerCResult)!)),
+  ).toMatchFileSnapshot(join(fixturesPath, "reuses-identical/consumer-c.md"));
 });
 
 it("reuses the same no-issuer outcome for identical requests", async () => {
@@ -506,7 +561,9 @@ it("reuses the same no-issuer outcome for identical requests", async () => {
     },
   });
 
-  await createTokens([authResultA, authResultB]);
+  const results = await createTokens([authResultA, authResultB]);
+
+  const toMdast = createMarkdownTokenCreationExplainer();
 
   expect(__getOutput()).toMatchInlineSnapshot(`
     "
@@ -525,6 +582,12 @@ it("reuses the same no-issuer outcome for identical requests", async () => {
 
     "
   `);
+  await expect(
+    toMarkdown(toMdast(authResultA, results.get(authResultA)!)),
+  ).toMatchFileSnapshot(join(fixturesPath, "reuses-no-issuer/auth-a.md"));
+  await expect(
+    toMarkdown(toMdast(authResultB, results.get(authResultB)!)),
+  ).toMatchFileSnapshot(join(fixturesPath, "reuses-no-issuer/auth-b.md"));
 });
 
 it("reuses the same failure outcome for identical requests", async () => {
@@ -548,7 +611,7 @@ it("reuses the same failure outcome for identical requests", async () => {
   const { findIssuerOctokit } = createTestOctokitFactory(appRegistry);
 
   const unexpectedError = new Error("<message>");
-  unexpectedError.stack = "Error: <message>\\n    at token-factory.ts:1:1";
+  unexpectedError.stack = "Error: <message>\n    at token-factory.ts:1:1";
   __setErrors("apps.createInstallationAccessToken", [
     new TestRequestError(403, { message: "Resource not accessible" }),
     unexpectedError,
@@ -598,6 +661,8 @@ it("reuses the same failure outcome for identical requests", async () => {
     authResultD,
   ]);
 
+  const toMdast = createMarkdownTokenCreationExplainer();
+
   expect(results.get(authResultA)).toBe(results.get(authResultB));
   expect(results.get(authResultC)).toBe(results.get(authResultD));
   expect(__getOutput()).toMatchInlineSnapshot(`
@@ -622,7 +687,8 @@ it("reuses the same failure outcome for identical requests", async () => {
 
     ❌ Failed to create read-only token with access to all repos in account-a:
       ❌ <message>
-    ::debug::      Error: <message>\\n    at token-factory.ts:1:1
+    ::debug::      Error: <message>
+    ::debug::          at token-factory.ts:1:1
       ➖ Wanted read access without a role
       ➖ Wanted access to all repos in account-a
       ➖ Wanted 1 permission:
@@ -634,6 +700,18 @@ it("reuses the same failure outcome for identical requests", async () => {
 
     "
   `);
+  await expect(
+    toMarkdown(toMdast(authResultA, results.get(authResultA)!)),
+  ).toMatchFileSnapshot(join(fixturesPath, "reuses-failure/auth-a.md"));
+  await expect(
+    toMarkdown(toMdast(authResultB, results.get(authResultB)!)),
+  ).toMatchFileSnapshot(join(fixturesPath, "reuses-failure/auth-b.md"));
+  await expect(
+    toMarkdown(toMdast(authResultC, results.get(authResultC)!)),
+  ).toMatchFileSnapshot(join(fixturesPath, "reuses-failure/auth-c.md"));
+  await expect(
+    toMarkdown(toMdast(authResultD, results.get(authResultD)!)),
+  ).toMatchFileSnapshot(join(fixturesPath, "reuses-failure/auth-d.md"));
 });
 
 it("creates separate tokens when the requested account is different", async () => {
@@ -678,7 +756,9 @@ it("creates separate tokens when the requested account is different", async () =
     },
   });
 
-  await createTokens([accountAResult, accountBResult]);
+  const results = await createTokens([accountAResult, accountBResult]);
+
+  const toMdast = createMarkdownTokenCreationExplainer();
 
   expect(__getOutput()).toMatchInlineSnapshot(`
     "
@@ -700,6 +780,12 @@ it("creates separate tokens when the requested account is different", async () =
 
     "
   `);
+  await expect(
+    toMarkdown(toMdast(accountAResult, results.get(accountAResult)!)),
+  ).toMatchFileSnapshot(join(fixturesPath, "separate-account/account-a.md"));
+  await expect(
+    toMarkdown(toMdast(accountBResult, results.get(accountBResult)!)),
+  ).toMatchFileSnapshot(join(fixturesPath, "separate-account/account-b.md"));
 });
 
 it("creates separate tokens when the requested role is different", async () => {
@@ -751,7 +837,9 @@ it("creates separate tokens when the requested role is different", async () => {
     have: { contents: "write" },
   });
 
-  await createTokens([roleAResult, roleBResult]);
+  const results = await createTokens([roleAResult, roleBResult]);
+
+  const toMdast = createMarkdownTokenCreationExplainer();
 
   expect(__getOutput()).toMatchInlineSnapshot(`
     "
@@ -773,6 +861,12 @@ it("creates separate tokens when the requested role is different", async () => {
 
     "
   `);
+  await expect(
+    toMarkdown(toMdast(roleAResult, results.get(roleAResult)!)),
+  ).toMatchFileSnapshot(join(fixturesPath, "separate-role/role-a.md"));
+  await expect(
+    toMarkdown(toMdast(roleBResult, results.get(roleBResult)!)),
+  ).toMatchFileSnapshot(join(fixturesPath, "separate-role/role-b.md"));
 });
 
 it("creates separate tokens when requested permissions are different", async () => {
@@ -810,7 +904,9 @@ it("creates separate tokens when requested permissions are different", async () 
     have: { contents: "read" },
   });
 
-  await createTokens([metadataResult, contentsResult]);
+  const results = await createTokens([metadataResult, contentsResult]);
+
+  const toMdast = createMarkdownTokenCreationExplainer();
 
   expect(__getOutput()).toMatchInlineSnapshot(`
     "
@@ -832,6 +928,12 @@ it("creates separate tokens when requested permissions are different", async () 
 
     "
   `);
+  await expect(
+    toMarkdown(toMdast(metadataResult, results.get(metadataResult)!)),
+  ).toMatchFileSnapshot(join(fixturesPath, "separate-permissions/metadata.md"));
+  await expect(
+    toMarkdown(toMdast(contentsResult, results.get(contentsResult)!)),
+  ).toMatchFileSnapshot(join(fixturesPath, "separate-permissions/contents.md"));
 });
 
 it("creates separate tokens when requested repository access is different", async () => {
@@ -877,7 +979,9 @@ it("creates separate tokens when requested repository access is different", asyn
     isMatched: true,
   });
 
-  await createTokens([allReposResult, selectedReposResult]);
+  const results = await createTokens([allReposResult, selectedReposResult]);
+
+  const toMdast = createMarkdownTokenCreationExplainer();
 
   expect(__getOutput()).toMatchInlineSnapshot(`
     "
@@ -900,6 +1004,12 @@ it("creates separate tokens when requested repository access is different", asyn
 
     "
   `);
+  await expect(
+    toMarkdown(toMdast(allReposResult, results.get(allReposResult)!)),
+  ).toMatchFileSnapshot(join(fixturesPath, "separate-repos/all-repos.md"));
+  await expect(
+    toMarkdown(toMdast(selectedReposResult, results.get(selectedReposResult)!)),
+  ).toMatchFileSnapshot(join(fixturesPath, "separate-repos/selected-repos.md"));
 });
 
 it("doesn't create tokens when not allowed", async () => {
@@ -930,7 +1040,9 @@ it("doesn't create tokens when not allowed", async () => {
     have: { metadata: "read" },
   });
 
-  await createTokens([notAllowedResult]);
+  const results = await createTokens([notAllowedResult]);
+
+  const toMdast = createMarkdownTokenCreationExplainer();
 
   expect(__getOutput()).toMatchInlineSnapshot(`
     "
@@ -945,6 +1057,9 @@ it("doesn't create tokens when not allowed", async () => {
 
     "
   `);
+  await expect(
+    toMarkdown(toMdast(notAllowedResult, results.get(notAllowedResult)!)),
+  ).toMatchFileSnapshot(join(fixturesPath, "not-allowed/not-allowed.md"));
 });
 
 it("shows separate explanations for non-allowed tokens", async () => {
@@ -992,6 +1107,8 @@ it("shows separate explanations for non-allowed tokens", async () => {
 
   const results = await createTokens([notAllowedResultA, notAllowedResultB]);
 
+  const toMdast = createMarkdownTokenCreationExplainer();
+
   expect(results.get(notAllowedResultA)).not.toBe(
     results.get(notAllowedResultB),
   );
@@ -1017,6 +1134,16 @@ it("shows separate explanations for non-allowed tokens", async () => {
 
     "
   `);
+  await expect(
+    toMarkdown(toMdast(notAllowedResultA, results.get(notAllowedResultA)!)),
+  ).toMatchFileSnapshot(
+    join(fixturesPath, "not-allowed-distinct/not-allowed-a.md"),
+  );
+  await expect(
+    toMarkdown(toMdast(notAllowedResultB, results.get(notAllowedResultB)!)),
+  ).toMatchFileSnapshot(
+    join(fixturesPath, "not-allowed-distinct/not-allowed-b.md"),
+  );
 });
 
 it("explains when no permissions were requested", async () => {
@@ -1062,26 +1189,45 @@ it("explains when no permissions were requested", async () => {
     },
   });
 
-  await createTokens([emptyPermissionsResult, allNonePermissionsResult]);
+  const results = await createTokens([
+    emptyPermissionsResult,
+    allNonePermissionsResult,
+  ]);
+
+  const toMdast = createMarkdownTokenCreationExplainer();
 
   expect(__getOutput()).toMatchInlineSnapshot(`
     "
     Token #1:
 
-    ❌ Refused to create token with access to all repos in account-a:
+    ❌ Refused to create no-permission token with access to all repos in account-a:
       ❌ Token not allowed for account consumer-a
       ➖ Wanted access to all repos in account-a
       ❌ No permissions requested
 
     Token #2:
 
-    ❌ Refused to create token with access to all repos in account-a:
+    ❌ Refused to create no-permission token with access to all repos in account-a:
       ❌ Token not allowed for account consumer-b
       ➖ Wanted access to all repos in account-a
       ❌ No permissions requested
 
     "
   `);
+  await expect(
+    toMarkdown(
+      toMdast(emptyPermissionsResult, results.get(emptyPermissionsResult)!),
+    ),
+  ).toMatchFileSnapshot(
+    join(fixturesPath, "no-permissions/empty-permissions.md"),
+  );
+  await expect(
+    toMarkdown(
+      toMdast(allNonePermissionsResult, results.get(allNonePermissionsResult)!),
+    ),
+  ).toMatchFileSnapshot(
+    join(fixturesPath, "no-permissions/all-none-permissions.md"),
+  );
 });
 
 it("fails when no suitable issuer can create the token", async () => {
@@ -1099,7 +1245,9 @@ it("fails when no suitable issuer can create the token", async () => {
     },
   });
 
-  await createTokens([noIssuerResult]);
+  const results = await createTokens([noIssuerResult]);
+
+  const toMdast = createMarkdownTokenCreationExplainer();
 
   expect(__getOutput()).toMatchInlineSnapshot(`
     "
@@ -1114,6 +1262,9 @@ it("fails when no suitable issuer can create the token", async () => {
 
     "
   `);
+  await expect(
+    toMarkdown(toMdast(noIssuerResult, results.get(noIssuerResult)!)),
+  ).toMatchFileSnapshot(join(fixturesPath, "no-issuer/no-issuer.md"));
 });
 
 it("explains failures caused by GitHub API errors", async () => {
@@ -1166,7 +1317,12 @@ it("explains failures caused by GitHub API errors", async () => {
     isMatched: true,
   });
 
-  await createTokens([allReposAuthResult, selectedReposAuthResult]);
+  const results = await createTokens([
+    allReposAuthResult,
+    selectedReposAuthResult,
+  ]);
+
+  const toMdast = createMarkdownTokenCreationExplainer();
 
   expect(__getOutput()).toMatchInlineSnapshot(`
     "
@@ -1195,6 +1351,16 @@ it("explains failures caused by GitHub API errors", async () => {
 
     "
   `);
+  await expect(
+    toMarkdown(toMdast(allReposAuthResult, results.get(allReposAuthResult)!)),
+  ).toMatchFileSnapshot(join(fixturesPath, "request-error/all-repos-auth.md"));
+  await expect(
+    toMarkdown(
+      toMdast(selectedReposAuthResult, results.get(selectedReposAuthResult)!),
+    ),
+  ).toMatchFileSnapshot(
+    join(fixturesPath, "request-error/selected-repos-auth.md"),
+  );
 });
 
 it("explains failures caused by unexpected errors", async () => {
@@ -1218,7 +1384,7 @@ it("explains failures caused by unexpected errors", async () => {
   const { findIssuerOctokit } = createTestOctokitFactory(appRegistry);
 
   const unexpectedError = new Error("<message>");
-  unexpectedError.stack = "Error: <message>\\n    at token-factory.ts:1:1";
+  unexpectedError.stack = "Error: <message>\n    at token-factory.ts:1:1";
   __setErrors("apps.createInstallationAccessToken", [unexpectedError]);
 
   const createTokens = createTokenFactory(findIssuerOctokit);
@@ -1231,7 +1397,9 @@ it("explains failures caused by unexpected errors", async () => {
     },
   });
 
-  await createTokens([authResult]);
+  const results = await createTokens([authResult]);
+
+  const toMdast = createMarkdownTokenCreationExplainer();
 
   expect(__getOutput()).toMatchInlineSnapshot(`
     "
@@ -1239,7 +1407,8 @@ it("explains failures caused by unexpected errors", async () => {
 
     ❌ Failed to create read-only token with access to all repos in account-a:
       ❌ <message>
-    ::debug::      Error: <message>\\n    at token-factory.ts:1:1
+    ::debug::      Error: <message>
+    ::debug::          at token-factory.ts:1:1
       ➖ Wanted read access without a role
       ➖ Wanted access to all repos in account-a
       ➖ Wanted 1 permission:
@@ -1247,4 +1416,7 @@ it("explains failures caused by unexpected errors", async () => {
 
     "
   `);
+  await expect(
+    toMarkdown(toMdast(authResult, results.get(authResult)!)),
+  ).toMatchFileSnapshot(join(fixturesPath, "unexpected-error/auth.md"));
 });

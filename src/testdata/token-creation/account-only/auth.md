@@ -1,0 +1,5 @@
+- ✅ **Admin** token created with access to `account-a`:
+  - ✅ Has **admin** access with role `role-a`
+  - ✅ Has **account-only** access
+  - ✅ Has **1 permission**:
+    - ✅ _organization\_administration_: `admin`

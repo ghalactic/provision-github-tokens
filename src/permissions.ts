@@ -42,3 +42,17 @@ export function isSufficientPermissions(
 
   return true;
 }
+
+export function effectivePermissions(
+  permissions: Permissions,
+): [string, PermissionAccess][] {
+  const entries: [string, PermissionAccess][] = [];
+
+  for (const [name, access = "none"] of Object.entries(permissions)) {
+    if (access !== "none") entries.push([name, access]);
+  }
+
+  entries.sort(([a], [b]) => a.localeCompare(b));
+
+  return entries;
+}

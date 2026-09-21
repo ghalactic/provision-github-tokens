@@ -1,0 +1,6 @@
+- ❌ **Refused** to create **read-only** token with access to **all repos** in `account-a`:
+  - ❌ Token **not allowed** for account `account-x`
+  - ➖ Wanted **read** access _without_ a role
+  - ➖ Wanted access to **all repos** in `account-a`
+  - ➖ Wanted **1 permission**:
+    - ➖ _metadata_: `read`

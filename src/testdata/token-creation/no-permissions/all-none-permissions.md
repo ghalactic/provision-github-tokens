@@ -1,0 +1,4 @@
+- ❌ **Refused** to create **no-permission** token with access to **all repos** in `account-a`:
+  - ❌ Token **not allowed** for account `consumer-b`
+  - ➖ Wanted access to **all repos** in `account-a`
+  - ❌ **No permissions** requested

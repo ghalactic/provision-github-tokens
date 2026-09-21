@@ -1,0 +1,6 @@
+- ❌ **Failed** to create **read-only** token with access to **all repos** in `account-b`:
+  - ❌ No suitable issuer
+  - ➖ Wanted **read** access _without_ a role
+  - ➖ Wanted access to **all repos** in `account-b`
+  - ➖ Wanted **1 permission**:
+    - ➖ _metadata_: `read`

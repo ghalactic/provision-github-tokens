@@ -6,22 +6,17 @@ import {
   repoRefToString,
 } from "../github-reference.js";
 import { FAIL_ICON, icon } from "../icon.js";
+import { effectivePermissions } from "../permissions.js";
 import { pluralize } from "../pluralize.js";
 import { createSequencer } from "../sequencer.js";
 import { capitalize, prefixLines } from "../text.js";
-import type { PermissionAccess, Permissions } from "../type/permissions.js";
+import type { PermissionAccess } from "../type/permissions.js";
 import type { TokenAuthResult } from "../type/token-auth-result.js";
 import type {
   TokenCreationResult,
   TokenCreationResultExplainer,
 } from "../type/token-creation-result.js";
-
-const HEADER_ACCESS_LABELS: Record<PermissionAccess, string> = {
-  admin: "admin",
-  none: "",
-  read: "read-only",
-  write: "write",
-};
+import { ACCESS_LEVEL_LABELS } from "./access-level.js";
 
 export function createTextTokenCreationExplainer(): TokenCreationResultExplainer<string> {
   const tokenSeq = createSequencer<TokenAuthResult>();
@@ -84,7 +79,7 @@ export function createTextTokenCreationExplainer(): TokenCreationResultExplainer
   ): string {
     const scope = repoScopeLabel(repos, account);
     const isSuccess = type === "CREATED";
-    const label = HEADER_ACCESS_LABELS[access];
+    const label = ACCESS_LEVEL_LABELS[access];
 
     if (isSuccess) {
       return (
@@ -93,11 +88,10 @@ export function createTextTokenCreationExplainer(): TokenCreationResultExplainer
       );
     }
 
-    const prefix = label ? `${label} ` : "";
     const verb = type === "NOT_ALLOWED" ? "Refused" : "Failed";
 
     return (
-      `${icon(isSuccess)} ${verb} to create ${prefix}token ` +
+      `${icon(isSuccess)} ${verb} to create ${label} token ` +
       `with access to ${scope}:`
     );
   }
@@ -191,19 +185,5 @@ export function createTextTokenCreationExplainer(): TokenCreationResultExplainer
     if (repos.length < 1) return account;
 
     return `${pluralize(repos.length, "repo", "repos")} in ${account}`;
-  }
-
-  function effectivePermissions(
-    permissions: Permissions,
-  ): [string, PermissionAccess][] {
-    const entries: [string, PermissionAccess][] = [];
-
-    for (const [name, access = "none"] of Object.entries(permissions)) {
-      if (access !== "none") entries.push([name, access]);
-    }
-
-    entries.sort(([a], [b]) => a.localeCompare(b));
-
-    return entries;
   }
 }

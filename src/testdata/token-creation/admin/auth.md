@@ -1,0 +1,6 @@
+- ✅ **Admin** token created with access to **all repos** in `account-a`:
+  - ✅ Has **admin** access with role `role-a`
+  - ✅ Has access to **all repos** in `account-a`
+  - ✅ Has **2 permissions**:
+    - ✅ _metadata_: `read`
+    - ✅ _organization\_administration_: `admin`

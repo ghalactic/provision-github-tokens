@@ -1,0 +1,5 @@
+- ✅ **Write** token created with access to **all repos** in `account-a`:
+  - ✅ Has **write** access with role `role-b`
+  - ✅ Has access to **all repos** in `account-a`
+  - ✅ Has **1 permission**:
+    - ✅ _contents_: `write`
