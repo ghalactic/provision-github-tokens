@@ -64,10 +64,10 @@ it("supports multiple secrets per rule", async () => {
     }),
   );
 
-  const explain = createTextProvisionAuthExplainer();
+  const toText = createTextProvisionAuthExplainer();
   const toMdast = createMarkdownProvisionAuthExplainer();
 
-  expect(explain(resultA)).toMatchInlineSnapshot(`
+  expect(toText(resultA)).toMatchInlineSnapshot(`
     "✅ Repo account-x/repo-x was allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-y/repo-y.token-y
       ✅ Can provision token to GitHub Actions secret in account-a:
@@ -78,7 +78,7 @@ it("supports multiple secrets per rule", async () => {
   await expect(toMarkdown(toMdast(resultA))).toMatchFileSnapshot(
     join(fixturesPath, "multiple-secrets-per-rule/a.md"),
   );
-  expect(explain(resultB)).toMatchInlineSnapshot(`
+  expect(toText(resultB)).toMatchInlineSnapshot(`
     "✅ Repo account-x/repo-x was allowed to provision secret SECRET_B:
       ✅ Can use token declaration account-y/repo-y.token-y
       ✅ Can provision token to GitHub Actions secret in account-a:
@@ -133,10 +133,10 @@ it("supports multiple targets in requests", async () => {
     }),
   );
 
-  const explain = createTextProvisionAuthExplainer();
+  const toText = createTextProvisionAuthExplainer();
   const toMdast = createMarkdownProvisionAuthExplainer();
 
-  expect(explain(resultA)).toMatchInlineSnapshot(`
+  expect(toText(resultA)).toMatchInlineSnapshot(`
     "✅ Repo account-x/repo-x was allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-y/repo-y.token-y
       ✅ Can provision token to GitHub Actions secret in account-a:
@@ -197,10 +197,10 @@ it("supports wildcards in secret names", async () => {
     }),
   );
 
-  const explain = createTextProvisionAuthExplainer();
+  const toText = createTextProvisionAuthExplainer();
   const toMdast = createMarkdownProvisionAuthExplainer();
 
-  expect(explain(resultA)).toMatchInlineSnapshot(`
+  expect(toText(resultA)).toMatchInlineSnapshot(`
     "✅ Repo account-x/repo-x was allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-y/repo-y.token-y
       ✅ Can provision token to GitHub Actions secret in account-a:
@@ -211,7 +211,7 @@ it("supports wildcards in secret names", async () => {
   await expect(toMarkdown(toMdast(resultA))).toMatchFileSnapshot(
     join(fixturesPath, "wildcard-secret-names/a.md"),
   );
-  expect(explain(resultB)).toMatchInlineSnapshot(`
+  expect(toText(resultB)).toMatchInlineSnapshot(`
     "✅ Repo account-x/repo-x was allowed to provision secret SECRET_B:
       ✅ Can use token declaration account-y/repo-y.token-y
       ✅ Can provision token to GitHub Actions secret in account-a:
@@ -262,10 +262,10 @@ it("supports rule descriptions", async () => {
     }),
   );
 
-  const explain = createTextProvisionAuthExplainer();
+  const toText = createTextProvisionAuthExplainer();
   const toMdast = createMarkdownProvisionAuthExplainer();
 
-  expect(explain(resultA)).toMatchInlineSnapshot(`
+  expect(toText(resultA)).toMatchInlineSnapshot(`
     "✅ Repo account-x/repo-x was allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-y/repo-y.token-y
       ✅ Can provision token to GitHub Actions secret in account-a:
@@ -348,10 +348,10 @@ it("allows secrets when a later rule allows access that a previous rule denied",
     }),
   );
 
-  const explain = createTextProvisionAuthExplainer();
+  const toText = createTextProvisionAuthExplainer();
   const toMdast = createMarkdownProvisionAuthExplainer();
 
-  expect(explain(resultA)).toMatchInlineSnapshot(`
+  expect(toText(resultA)).toMatchInlineSnapshot(`
     "✅ Repo account-x/repo-x was allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-y/repo-y.token-y
       ✅ Can provision token to GitHub Actions secret in account-a:
@@ -363,7 +363,7 @@ it("allows secrets when a later rule allows access that a previous rule denied",
   await expect(toMarkdown(toMdast(resultA))).toMatchFileSnapshot(
     join(fixturesPath, "allowed-after-denied/a.md"),
   );
-  expect(explain(resultB)).toMatchInlineSnapshot(`
+  expect(toText(resultB)).toMatchInlineSnapshot(`
     "✅ Repo account-x/repo-x was allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-y/repo-y.token-y
       ✅ Can provision token to GitHub Actions secret in account-a/repo-a:
@@ -447,10 +447,10 @@ it("doesn't allow secrets when a later rule denies access that a previous rule a
     }),
   );
 
-  const explain = createTextProvisionAuthExplainer();
+  const toText = createTextProvisionAuthExplainer();
   const toMdast = createMarkdownProvisionAuthExplainer();
 
-  expect(explain(resultA)).toMatchInlineSnapshot(`
+  expect(toText(resultA)).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x wasn't allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-y/repo-y.token-y
       ❌ Can't provision token to GitHub Actions secret in account-a:
@@ -462,7 +462,7 @@ it("doesn't allow secrets when a later rule denies access that a previous rule a
   await expect(toMarkdown(toMdast(resultA))).toMatchFileSnapshot(
     join(fixturesPath, "denied-after-allowed/a.md"),
   );
-  expect(explain(resultB)).toMatchInlineSnapshot(`
+  expect(toText(resultB)).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x wasn't allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-y/repo-y.token-y
       ❌ Can't provision token to GitHub Actions secret in account-a/repo-a:
@@ -519,10 +519,10 @@ it("doesn't allow secrets when no rule matches the secret name", async () => {
     }),
   );
 
-  const explain = createTextProvisionAuthExplainer();
+  const toText = createTextProvisionAuthExplainer();
   const toMdast = createMarkdownProvisionAuthExplainer();
 
-  expect(explain(resultA)).toMatchInlineSnapshot(`
+  expect(toText(resultA)).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x wasn't allowed to provision secret SECRET_X:
       ✅ Can use token declaration account-y/repo-y.token-y
       ❌ Can't provision token to GitHub Actions secret in account-a:
@@ -574,10 +574,10 @@ it("doesn't allow secrets when two account patterns match but one allows and one
     }),
   );
 
-  const explain = createTextProvisionAuthExplainer();
+  const toText = createTextProvisionAuthExplainer();
   const toMdast = createMarkdownProvisionAuthExplainer();
 
-  expect(explain(resultA)).toMatchInlineSnapshot(`
+  expect(toText(resultA)).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x wasn't allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-y/repo-y.token-y
       ❌ Can't provision token to GitHub Actions secret in account-a:
@@ -633,10 +633,10 @@ it("doesn't allow secrets when two repo patterns match but one allows and one de
     }),
   );
 
-  const explain = createTextProvisionAuthExplainer();
+  const toText = createTextProvisionAuthExplainer();
   const toMdast = createMarkdownProvisionAuthExplainer();
 
-  expect(explain(resultA)).toMatchInlineSnapshot(`
+  expect(toText(resultA)).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x wasn't allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-y/repo-y.token-y
       ❌ Can't provision token to GitHub Actions secret in account-a/repo-a:
@@ -693,10 +693,10 @@ it("doesn't allow secrets when some targets aren't allowed", async () => {
     }),
   );
 
-  const explain = createTextProvisionAuthExplainer();
+  const toText = createTextProvisionAuthExplainer();
   const toMdast = createMarkdownProvisionAuthExplainer();
 
-  expect(explain(resultA)).toMatchInlineSnapshot(`
+  expect(toText(resultA)).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x wasn't allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-y/repo-y.token-y
       ✅ Can provision token to GitHub Actions secret in account-a:
@@ -751,10 +751,10 @@ it("doesn't allow secrets when no targets are specified", async () => {
     }),
   );
 
-  const explain = createTextProvisionAuthExplainer();
+  const toText = createTextProvisionAuthExplainer();
   const toMdast = createMarkdownProvisionAuthExplainer();
 
-  expect(explain(resultA)).toMatchInlineSnapshot(`
+  expect(toText(resultA)).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x wasn't allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-y/repo-y.token-y
       ❌ No targets specified"
@@ -802,10 +802,10 @@ it("doesn't allow secrets when the token isn't allowed for a target", async () =
     }),
   );
 
-  const explain = createTextProvisionAuthExplainer();
+  const toText = createTextProvisionAuthExplainer();
   const toMdast = createMarkdownProvisionAuthExplainer();
 
-  expect(explain(resultA)).toMatchInlineSnapshot(`
+  expect(toText(resultA)).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x wasn't allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-y/repo-y.token-y
       ❌ Can't provision token to GitHub Actions secret in account-a:
@@ -861,10 +861,10 @@ it("doesn't allow secrets for unshared token declarations", async () => {
     }),
   );
 
-  const explain = createTextProvisionAuthExplainer();
+  const toText = createTextProvisionAuthExplainer();
   const toMdast = createMarkdownProvisionAuthExplainer();
 
-  expect(explain(resultA)).toMatchInlineSnapshot(`
+  expect(toText(resultA)).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x wasn't allowed to provision secret SECRET_A:
       ❌ Can't use token declaration account-y/repo-y.token-y because it isn't shared
       ❌ Can't provision token to GitHub Actions secret in account-a:
@@ -916,10 +916,10 @@ it("doesn't allow secrets for undefined token declarations", async () => {
     }),
   );
 
-  const explain = createTextProvisionAuthExplainer();
+  const toText = createTextProvisionAuthExplainer();
   const toMdast = createMarkdownProvisionAuthExplainer();
 
-  expect(explain(resultA)).toMatchInlineSnapshot(`
+  expect(toText(resultA)).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x wasn't allowed to provision secret SECRET_A:
       ❌ Can't use token declaration account-y/repo-y.token-y because it doesn't exist
       ❌ Can't provision token to GitHub Actions secret in account-a:
@@ -969,10 +969,10 @@ it("doesn't allow secrets when the account matches but the secret type isn't all
     }),
   );
 
-  const explain = createTextProvisionAuthExplainer();
+  const toText = createTextProvisionAuthExplainer();
   const toMdast = createMarkdownProvisionAuthExplainer();
 
-  expect(explain(resultA)).toMatchInlineSnapshot(`
+  expect(toText(resultA)).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x wasn't allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-y/repo-y.token-y
       ❌ Can't provision token to GitHub Actions secret in account-a:

@@ -5,7 +5,7 @@ import { createTextTokenAuthExplainer } from "./token-auth-explainer/text.js";
 import { createTokenAuthorizer } from "./token-authorizer.js";
 import type { TokenRequest } from "./token-request.js";
 
-const explain = createTextTokenAuthExplainer();
+const toText = createTextTokenAuthExplainer();
 
 it("supports wildcard account consumers", () => {
   const authorizer = createTokenAuthorizer({
@@ -26,7 +26,7 @@ it("supports wildcard account consumers", () => {
   });
 
   expect(
-    explain(
+    toText(
       authorizer.authorizeToken({
         consumer: { account: "account-x" },
         tokenDec: createTestTokenDec(),
@@ -41,7 +41,7 @@ it("supports wildcard account consumers", () => {
           ✅ metadata: have read, wanted read"
   `);
   expect(
-    explain(
+    toText(
       authorizer.authorizeToken({
         consumer: { account: "account-y" },
         tokenDec: createTestTokenDec(),
@@ -76,7 +76,7 @@ it("supports wildcard repo consumers", () => {
   });
 
   expect(
-    explain(
+    toText(
       authorizer.authorizeToken({
         consumer: { account: "account-x", repo: "repo-x" },
         tokenDec: createTestTokenDec(),
@@ -91,7 +91,7 @@ it("supports wildcard repo consumers", () => {
           ✅ metadata: have read, wanted read"
   `);
   expect(
-    explain(
+    toText(
       authorizer.authorizeToken({
         consumer: { account: "account-y", repo: "repo-y" },
         tokenDec: createTestTokenDec(),

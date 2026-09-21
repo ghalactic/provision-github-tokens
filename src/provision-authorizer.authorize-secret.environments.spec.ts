@@ -80,10 +80,10 @@ it("allows GitHub environment secrets that should be allowed", async () => {
     }),
   );
 
-  const explain = createTextProvisionAuthExplainer();
+  const toText = createTextProvisionAuthExplainer();
   const toMdast = createMarkdownProvisionAuthExplainer();
 
-  expect(explain(resultA)).toMatchInlineSnapshot(`
+  expect(toText(resultA)).toMatchInlineSnapshot(`
     "✅ Repo account-x/repo-x was allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
       ✅ Can provision token to GitHub environment env-a secret in account-a/repo-a:
@@ -94,7 +94,7 @@ it("allows GitHub environment secrets that should be allowed", async () => {
   await expect(toMarkdown(toMdast(resultA))).toMatchFileSnapshot(
     join(fixturesPath, "allowed/a.md"),
   );
-  expect(explain(resultB)).toMatchInlineSnapshot(`
+  expect(toText(resultB)).toMatchInlineSnapshot(`
     "✅ Repo account-y-1/repo-y-1 was allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
       ✅ Can provision token to GitHub environment env-b-1 secret in account-b-1/repo-b-1:
@@ -164,10 +164,10 @@ it("allows GitHub environment secrets that should be allowed within the requesti
     }),
   );
 
-  const explain = createTextProvisionAuthExplainer();
+  const toText = createTextProvisionAuthExplainer();
   const toMdast = createMarkdownProvisionAuthExplainer();
 
-  expect(explain(resultA)).toMatchInlineSnapshot(`
+  expect(toText(resultA)).toMatchInlineSnapshot(`
     "✅ Repo account-a/repo-a was allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
       ✅ Can provision token to GitHub environment env-a secret in account-a/repo-a:
@@ -178,7 +178,7 @@ it("allows GitHub environment secrets that should be allowed within the requesti
   await expect(toMarkdown(toMdast(resultA))).toMatchFileSnapshot(
     join(fixturesPath, "allowed-within-requester-repo/a.md"),
   );
-  expect(explain(resultB)).toMatchInlineSnapshot(`
+  expect(toText(resultB)).toMatchInlineSnapshot(`
     "✅ Repo account-b-1/repo-b-1 was allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
       ✅ Can provision token to GitHub environment env-b-1 secret in account-b-1/repo-b-1:
@@ -254,10 +254,10 @@ it("allows GitHub environment secrets that should be allowed within the requesti
     }),
   );
 
-  const explain = createTextProvisionAuthExplainer();
+  const toText = createTextProvisionAuthExplainer();
   const toMdast = createMarkdownProvisionAuthExplainer();
 
-  expect(explain(resultA)).toMatchInlineSnapshot(`
+  expect(toText(resultA)).toMatchInlineSnapshot(`
     "✅ Repo account-a/repo-a was allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
       ✅ Can provision token to GitHub environment env-a secret in account-a/repo-a:
@@ -268,7 +268,7 @@ it("allows GitHub environment secrets that should be allowed within the requesti
   await expect(toMarkdown(toMdast(resultA))).toMatchFileSnapshot(
     join(fixturesPath, "allowed-within-requester-repo-overriding-pattern/a.md"),
   );
-  expect(explain(resultB)).toMatchInlineSnapshot(`
+  expect(toText(resultB)).toMatchInlineSnapshot(`
     "✅ Repo account-b-1/repo-b-1 was allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
       ✅ Can provision token to GitHub environment env-b-1 secret in account-b-1/repo-b-1:
@@ -327,10 +327,10 @@ it("doesn't allow GitHub environment secrets for unauthorized requesters", async
     }),
   );
 
-  const explain = createTextProvisionAuthExplainer();
+  const toText = createTextProvisionAuthExplainer();
   const toMdast = createMarkdownProvisionAuthExplainer();
 
-  expect(explain(resultA)).toMatchInlineSnapshot(`
+  expect(toText(resultA)).toMatchInlineSnapshot(`
     "❌ Repo account-y/repo-y wasn't allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
       ❌ Can't provision token to GitHub environment env-a secret in account-a/repo-a:
@@ -425,10 +425,10 @@ it("doesn't allow GitHub environment secrets within the requesting repo for unau
     }),
   );
 
-  const explain = createTextProvisionAuthExplainer();
+  const toText = createTextProvisionAuthExplainer();
   const toMdast = createMarkdownProvisionAuthExplainer();
 
-  expect(explain(resultA)).toMatchInlineSnapshot(`
+  expect(toText(resultA)).toMatchInlineSnapshot(`
     "❌ Repo account-y/repo-y wasn't allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
       ❌ Can't provision token to GitHub environment env-x secret in account-x/repo-x:
@@ -441,7 +441,7 @@ it("doesn't allow GitHub environment secrets within the requesting repo for unau
       "denied-unauthorized-requester-within-requester-repo/a.md",
     ),
   );
-  expect(explain(resultB)).toMatchInlineSnapshot(`
+  expect(toText(resultB)).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-y wasn't allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
       ❌ Can't provision token to GitHub environment env-x secret in account-x/repo-x:
@@ -454,7 +454,7 @@ it("doesn't allow GitHub environment secrets within the requesting repo for unau
       "denied-unauthorized-requester-within-requester-repo/b.md",
     ),
   );
-  expect(explain(resultC)).toMatchInlineSnapshot(`
+  expect(toText(resultC)).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x wasn't allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
       ❌ Can't provision token to GitHub environment env-x secret in account-x/repo-y:
@@ -467,7 +467,7 @@ it("doesn't allow GitHub environment secrets within the requesting repo for unau
       "denied-unauthorized-requester-within-requester-repo/c.md",
     ),
   );
-  expect(explain(resultD)).toMatchInlineSnapshot(`
+  expect(toText(resultD)).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x wasn't allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
       ❌ Can't provision token to GitHub environment env-y secret in account-x/repo-x:
@@ -531,10 +531,10 @@ it("doesn't allow GitHub environment secrets within the requesting repo when den
     }),
   );
 
-  const explain = createTextProvisionAuthExplainer();
+  const toText = createTextProvisionAuthExplainer();
   const toMdast = createMarkdownProvisionAuthExplainer();
 
-  expect(explain(resultA)).toMatchInlineSnapshot(`
+  expect(toText(resultA)).toMatchInlineSnapshot(`
     "❌ Repo account-a/repo-a wasn't allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
       ❌ Can't provision token to GitHub environment env-a secret in account-a/repo-a:
@@ -594,10 +594,10 @@ it("doesn't allow GitHub environment secrets when two environment patterns match
     }),
   );
 
-  const explain = createTextProvisionAuthExplainer();
+  const toText = createTextProvisionAuthExplainer();
   const toMdast = createMarkdownProvisionAuthExplainer();
 
-  expect(explain(resultA)).toMatchInlineSnapshot(`
+  expect(toText(resultA)).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x wasn't allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
       ❌ Can't provision token to GitHub environment env-a secret in account-a/repo-a:
