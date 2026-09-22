@@ -1,0 +1,4 @@
+- ❌ Secret `SECRET_A` was **partially** provisioned for repo `account-a/repo-a`:
+  - ❌ Token **wasn't** created for **GitHub Actions** secret in `account-a`
+  - ✅ **Provisioned** to **GitHub Actions** secret in `account-a`
+  - ❌ No suitable provisioner for **GitHub Actions** secret in `account-x`

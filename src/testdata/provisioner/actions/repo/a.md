@@ -1,0 +1,2 @@
+- ✅ Secret `SECRET_A` **was** provisioned for repo `account-a/repo-a`:
+  - ✅ **Provisioned** to **GitHub Actions** secret in `account-a/repo-a`

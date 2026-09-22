@@ -1,0 +1,2 @@
+- ❌ Secret `SECRET_A` **wasn't** provisioned for repo `account-a/repo-a`:
+  - ❌ No targets to provision to

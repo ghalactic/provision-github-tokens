@@ -1,3 +1,4 @@
+import { join } from "node:path";
 import { beforeEach, expect, it, vi } from "vitest";
 import {
   __getOutput,
@@ -27,7 +28,14 @@ import {
   createTestTokenAuthResult,
 } from "../test/result.js";
 import { createEncryptSecret } from "./encrypt-secret.js";
+import { toMarkdown } from "./markdown.js";
+import { createMarkdownProvisionExplainer } from "./provision-explainer/markdown.js";
 import { createProvisioner } from "./provisioner.js";
+
+const fixturesPath = join(
+  import.meta.dirname,
+  "testdata/provisioner/environments",
+);
 
 vi.mock("@actions/core");
 vi.mock("@octokit/action");
@@ -84,7 +92,7 @@ it("handles GitHub API errors when provisioning environment secrets", async () =
     ],
   ]);
 
-  await provisionSecrets(tokenResults, [
+  const [[resultA, targetResultsA]] = await provisionSecrets(tokenResults, [
     {
       request: createTestProvisionRequest({
         secretDec: createTestSecretDec({
@@ -115,6 +123,8 @@ it("handles GitHub API errors when provisioning environment secrets", async () =
     },
   ]);
 
+  const toMdast = createMarkdownProvisionExplainer();
+
   expect(__getOutput()).toMatchInlineSnapshot(`
     "
     Secret #1:
@@ -125,6 +135,9 @@ it("handles GitHub API errors when provisioning environment secrets", async () =
 
     "
   `);
+  await expect(
+    toMarkdown(toMdast(resultA, targetResultsA)),
+  ).toMatchFileSnapshot(join(fixturesPath, "request-error/a.md"));
 });
 
 it("handles unexpected errors when provisioning environment secrets", async () => {
@@ -177,7 +190,7 @@ it("handles unexpected errors when provisioning environment secrets", async () =
     ],
   ]);
 
-  await provisionSecrets(tokenResults, [
+  const [[resultA, targetResultsA]] = await provisionSecrets(tokenResults, [
     {
       request: createTestProvisionRequest({
         secretDec: createTestSecretDec({
@@ -208,6 +221,8 @@ it("handles unexpected errors when provisioning environment secrets", async () =
     },
   ]);
 
+  const toMdast = createMarkdownProvisionExplainer();
+
   expect(__getOutput()).toMatchInlineSnapshot(`
     "
     Secret #1:
@@ -219,6 +234,9 @@ it("handles unexpected errors when provisioning environment secrets", async () =
 
     "
   `);
+  await expect(
+    toMarkdown(toMdast(resultA, targetResultsA)),
+  ).toMatchFileSnapshot(join(fixturesPath, "unexpected-error/a.md"));
 });
 
 it("can provision environment secrets", async () => {
@@ -267,7 +285,7 @@ it("can provision environment secrets", async () => {
     ],
   ]);
 
-  await provisionSecrets(tokenResults, [
+  const [[resultA, targetResultsA]] = await provisionSecrets(tokenResults, [
     {
       request: createTestProvisionRequest({
         secretDec: createTestSecretDec({
@@ -298,6 +316,8 @@ it("can provision environment secrets", async () => {
     },
   ]);
 
+  const toMdast = createMarkdownProvisionExplainer();
+
   expect(__getEnvSecrets("account-a", "repo-a", "env-a")).toEqual({
     SECRET_A: "<token-a>",
   });
@@ -310,4 +330,7 @@ it("can provision environment secrets", async () => {
 
     "
   `);
+  await expect(
+    toMarkdown(toMdast(resultA, targetResultsA)),
+  ).toMatchFileSnapshot(join(fixturesPath, "environment/a.md"));
 });

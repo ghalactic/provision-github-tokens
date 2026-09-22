@@ -1,3 +1,4 @@
+import { join } from "node:path";
 import { beforeEach, expect, it, vi } from "vitest";
 import {
   __getOutput,
@@ -34,7 +35,11 @@ import {
   createTestTokenAuthResult,
 } from "../test/result.js";
 import { createEncryptSecret } from "./encrypt-secret.js";
+import { toMarkdown } from "./markdown.js";
+import { createMarkdownProvisionExplainer } from "./provision-explainer/markdown.js";
 import { createProvisioner } from "./provisioner.js";
+
+const fixturesPath = join(import.meta.dirname, "testdata/provisioner/general");
 
 vi.mock("@actions/core");
 vi.mock("@octokit/action");
@@ -86,7 +91,7 @@ it("handles secrets with no targets to provision to", async () => {
     ],
   ]);
 
-  await provisionSecrets(tokenResults, [
+  const [[resultA, targetResultsA]] = await provisionSecrets(tokenResults, [
     {
       request: createTestProvisionRequest({
         secretDec: createTestSecretDec({
@@ -100,6 +105,8 @@ it("handles secrets with no targets to provision to", async () => {
     },
   ]);
 
+  const toMdast = createMarkdownProvisionExplainer();
+
   expect(__getOutput()).toMatchInlineSnapshot(`
     "
     Secret #1:
@@ -109,6 +116,9 @@ it("handles secrets with no targets to provision to", async () => {
 
     "
   `);
+  await expect(
+    toMarkdown(toMdast(resultA, targetResultsA)),
+  ).toMatchFileSnapshot(join(fixturesPath, "no-targets/a.md"));
 });
 
 it("doesn't provision secrets when provisioning isn't allowed", async () => {
@@ -153,7 +163,7 @@ it("doesn't provision secrets when provisioning isn't allowed", async () => {
     ],
   ]);
 
-  await provisionSecrets(tokenResults, [
+  const [[resultA, targetResultsA]] = await provisionSecrets(tokenResults, [
     {
       request: createTestProvisionRequest({
         secretDec: createTestSecretDec({
@@ -172,6 +182,8 @@ it("doesn't provision secrets when provisioning isn't allowed", async () => {
     },
   ]);
 
+  const toMdast = createMarkdownProvisionExplainer();
+
   expect(__getOutput()).toMatchInlineSnapshot(`
     "
     Secret #1:
@@ -181,6 +193,9 @@ it("doesn't provision secrets when provisioning isn't allowed", async () => {
 
     "
   `);
+  await expect(
+    toMarkdown(toMdast(resultA, targetResultsA)),
+  ).toMatchFileSnapshot(join(fixturesPath, "not-allowed/a.md"));
 });
 
 it("doesn't provision secrets when the token wasn't created", async () => {
@@ -261,7 +276,7 @@ it("doesn't provision secrets when the token wasn't created", async () => {
     ],
   ]);
 
-  await provisionSecrets(tokenResults, [
+  const [[resultA, targetResultsA]] = await provisionSecrets(tokenResults, [
     {
       request: createTestProvisionRequest({
         secretDec: createTestSecretDec({
@@ -306,6 +321,8 @@ it("doesn't provision secrets when the token wasn't created", async () => {
     },
   ]);
 
+  const toMdast = createMarkdownProvisionExplainer();
+
   expect(__getOutput()).toMatchInlineSnapshot(`
     "
     Secret #1:
@@ -317,6 +334,9 @@ it("doesn't provision secrets when the token wasn't created", async () => {
 
     "
   `);
+  await expect(
+    toMarkdown(toMdast(resultA, targetResultsA)),
+  ).toMatchFileSnapshot(join(fixturesPath, "no-token/a.md"));
 });
 
 it("doesn't provision secrets when no suitable provisioners are found", async () => {
@@ -361,7 +381,7 @@ it("doesn't provision secrets when no suitable provisioners are found", async ()
     ],
   ]);
 
-  await provisionSecrets(tokenResults, [
+  const [[resultA, targetResultsA]] = await provisionSecrets(tokenResults, [
     {
       request: createTestProvisionRequest({
         secretDec: createTestSecretDec({
@@ -380,6 +400,8 @@ it("doesn't provision secrets when no suitable provisioners are found", async ()
     },
   ]);
 
+  const toMdast = createMarkdownProvisionExplainer();
+
   expect(__getOutput()).toMatchInlineSnapshot(`
     "
     Secret #1:
@@ -389,6 +411,9 @@ it("doesn't provision secrets when no suitable provisioners are found", async ()
 
     "
   `);
+  await expect(
+    toMarkdown(toMdast(resultA, targetResultsA)),
+  ).toMatchFileSnapshot(join(fixturesPath, "no-provisioner/a.md"));
 });
 
 it("doesn't provision secrets when target provisioning fails with a GitHub API error", async () => {
@@ -437,7 +462,7 @@ it("doesn't provision secrets when target provisioning fails with a GitHub API e
     ],
   ]);
 
-  await provisionSecrets(tokenResults, [
+  const [[resultA, targetResultsA]] = await provisionSecrets(tokenResults, [
     {
       request: createTestProvisionRequest({
         secretDec: createTestSecretDec({
@@ -455,6 +480,8 @@ it("doesn't provision secrets when target provisioning fails with a GitHub API e
     },
   ]);
 
+  const toMdast = createMarkdownProvisionExplainer();
+
   expect(__getOutput()).toMatchInlineSnapshot(`
     "
     Secret #1:
@@ -467,6 +494,9 @@ it("doesn't provision secrets when target provisioning fails with a GitHub API e
 
     "
   `);
+  await expect(
+    toMarkdown(toMdast(resultA, targetResultsA)),
+  ).toMatchFileSnapshot(join(fixturesPath, "request-error/a.md"));
 });
 
 it("doesn't provision secrets when target provisioning fails with an unexpected error", async () => {
@@ -487,7 +517,7 @@ it("doesn't provision secrets when target provisioning fails with an unexpected 
   __setOrgKeys("account-a", { actions: accountAActionsKey });
 
   const error = new Error("<message>");
-  error.stack = "Error: <message>\\n    at provisioner.ts:1:1";
+  error.stack = "Error: <message>\n    at provisioner.ts:1:1";
   __setErrors("actions.createOrUpdateOrgSecret", [error]);
 
   const appRegistry = createTestAppRegistry({
@@ -515,7 +545,7 @@ it("doesn't provision secrets when target provisioning fails with an unexpected 
     ],
   ]);
 
-  await provisionSecrets(tokenResults, [
+  const [[resultA, targetResultsA]] = await provisionSecrets(tokenResults, [
     {
       request: createTestProvisionRequest({
         secretDec: createTestSecretDec({
@@ -533,16 +563,22 @@ it("doesn't provision secrets when target provisioning fails with an unexpected 
     },
   ]);
 
+  const toMdast = createMarkdownProvisionExplainer();
+
   expect(__getOutput()).toMatchInlineSnapshot(`
     "
     Secret #1:
 
     ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
       ❌ Failed to provision to GitHub Actions secret in account-a: <message>
-    ::debug::      Error: <message>\\n    at provisioner.ts:1:1
+    ::debug::      Error: <message>
+    ::debug::          at provisioner.ts:1:1
 
     "
   `);
+  await expect(
+    toMarkdown(toMdast(resultA, targetResultsA)),
+  ).toMatchFileSnapshot(join(fixturesPath, "unexpected-error/a.md"));
 });
 
 it("doesn't provision secrets when encryption fails with a GitHub API error", async () => {
@@ -586,7 +622,7 @@ it("doesn't provision secrets when encryption fails with a GitHub API error", as
     ],
   ]);
 
-  await provisionSecrets(tokenResults, [
+  const [[resultA, targetResultsA]] = await provisionSecrets(tokenResults, [
     {
       request: createTestProvisionRequest({
         secretDec: createTestSecretDec({
@@ -604,6 +640,8 @@ it("doesn't provision secrets when encryption fails with a GitHub API error", as
     },
   ]);
 
+  const toMdast = createMarkdownProvisionExplainer();
+
   expect(__getOutput()).toMatchInlineSnapshot(`
     "
     Secret #1:
@@ -614,6 +652,9 @@ it("doesn't provision secrets when encryption fails with a GitHub API error", as
 
     "
   `);
+  await expect(
+    toMarkdown(toMdast(resultA, targetResultsA)),
+  ).toMatchFileSnapshot(join(fixturesPath, "encryption-request-error/a.md"));
 });
 
 it("doesn't provision secrets when encryption fails with an unexpected error", async () => {
@@ -662,7 +703,7 @@ it("doesn't provision secrets when encryption fails with an unexpected error", a
     ],
   ]);
 
-  await provisionSecrets(tokenResults, [
+  const [[resultA, targetResultsA]] = await provisionSecrets(tokenResults, [
     {
       request: createTestProvisionRequest({
         secretDec: createTestSecretDec({
@@ -680,6 +721,8 @@ it("doesn't provision secrets when encryption fails with an unexpected error", a
     },
   ]);
 
+  const toMdast = createMarkdownProvisionExplainer();
+
   expect(__getOutput()).toMatchInlineSnapshot(`
     "
     Secret #1:
@@ -691,6 +734,9 @@ it("doesn't provision secrets when encryption fails with an unexpected error", a
 
     "
   `);
+  await expect(
+    toMarkdown(toMdast(resultA, targetResultsA)),
+  ).toMatchFileSnapshot(join(fixturesPath, "encryption-unexpected-error/a.md"));
 });
 
 it("can provision multiple secrets of the same type", async () => {
@@ -753,94 +799,97 @@ it("can provision multiple secrets of the same type", async () => {
     ],
   ]);
 
-  await provisionSecrets(tokenResults, [
-    {
-      request: createTestProvisionRequest({
-        secretDec: createTestSecretDec({
-          github: { accounts: { "account-a": { actions: true } } },
+  const [[resultA, targetResultsA], [resultB, targetResultsB]] =
+    await provisionSecrets(tokenResults, [
+      {
+        request: createTestProvisionRequest({
+          secretDec: createTestSecretDec({
+            github: { accounts: { "account-a": { actions: true } } },
+          }),
+          to: [
+            createTestProvisionRequestTarget("actions"),
+            createTestProvisionRequestTarget("actions", "account-a", "repo-a"),
+            createTestProvisionRequestTarget(
+              "environment",
+              "account-a",
+              "repo-a",
+              "env-a",
+            ),
+          ],
         }),
-        to: [
-          createTestProvisionRequestTarget("actions"),
-          createTestProvisionRequestTarget("actions", "account-a", "repo-a"),
-          createTestProvisionRequestTarget(
-            "environment",
-            "account-a",
-            "repo-a",
-            "env-a",
-          ),
+        results: [
+          createTestProvisionAuthTargetResult({
+            target: createTestProvisionRequestTarget("actions"),
+            tokenAuthResult: tokenAuthResultA,
+          }),
+          createTestProvisionAuthTargetResult({
+            target: createTestProvisionRequestTarget(
+              "actions",
+              "account-a",
+              "repo-a",
+            ),
+            tokenAuthResult: tokenAuthResultA,
+          }),
+          createTestProvisionAuthTargetResult({
+            target: createTestProvisionRequestTarget(
+              "environment",
+              "account-a",
+              "repo-a",
+              "env-a",
+            ),
+            tokenAuthResult: tokenAuthResultA,
+          }),
         ],
-      }),
-      results: [
-        createTestProvisionAuthTargetResult({
-          target: createTestProvisionRequestTarget("actions"),
-          tokenAuthResult: tokenAuthResultA,
+        isMissingTargets: false,
+        isAllowed: true,
+      },
+      {
+        request: createTestProvisionRequest({
+          tokenDec: createTestTokenDec({ permissions: { contents: "write" } }),
+          secretDec: createTestSecretDec({
+            github: { repos: { "account-a/repo-a": { codespaces: true } } },
+          }),
+          name: "SECRET_B",
+          to: [
+            createTestProvisionRequestTarget("actions"),
+            createTestProvisionRequestTarget("actions", "account-a", "repo-a"),
+            createTestProvisionRequestTarget(
+              "environment",
+              "account-a",
+              "repo-a",
+              "env-a",
+            ),
+          ],
         }),
-        createTestProvisionAuthTargetResult({
-          target: createTestProvisionRequestTarget(
-            "actions",
-            "account-a",
-            "repo-a",
-          ),
-          tokenAuthResult: tokenAuthResultA,
-        }),
-        createTestProvisionAuthTargetResult({
-          target: createTestProvisionRequestTarget(
-            "environment",
-            "account-a",
-            "repo-a",
-            "env-a",
-          ),
-          tokenAuthResult: tokenAuthResultA,
-        }),
-      ],
-      isMissingTargets: false,
-      isAllowed: true,
-    },
-    {
-      request: createTestProvisionRequest({
-        tokenDec: createTestTokenDec({ permissions: { contents: "write" } }),
-        secretDec: createTestSecretDec({
-          github: { repos: { "account-a/repo-a": { codespaces: true } } },
-        }),
-        name: "SECRET_B",
-        to: [
-          createTestProvisionRequestTarget("actions"),
-          createTestProvisionRequestTarget("actions", "account-a", "repo-a"),
-          createTestProvisionRequestTarget(
-            "environment",
-            "account-a",
-            "repo-a",
-            "env-a",
-          ),
+        results: [
+          createTestProvisionAuthTargetResult({
+            target: createTestProvisionRequestTarget("actions"),
+            tokenAuthResult: tokenAuthResultB,
+          }),
+          createTestProvisionAuthTargetResult({
+            target: createTestProvisionRequestTarget(
+              "actions",
+              "account-a",
+              "repo-a",
+            ),
+            tokenAuthResult: tokenAuthResultB,
+          }),
+          createTestProvisionAuthTargetResult({
+            target: createTestProvisionRequestTarget(
+              "environment",
+              "account-a",
+              "repo-a",
+              "env-a",
+            ),
+            tokenAuthResult: tokenAuthResultB,
+          }),
         ],
-      }),
-      results: [
-        createTestProvisionAuthTargetResult({
-          target: createTestProvisionRequestTarget("actions"),
-          tokenAuthResult: tokenAuthResultB,
-        }),
-        createTestProvisionAuthTargetResult({
-          target: createTestProvisionRequestTarget(
-            "actions",
-            "account-a",
-            "repo-a",
-          ),
-          tokenAuthResult: tokenAuthResultB,
-        }),
-        createTestProvisionAuthTargetResult({
-          target: createTestProvisionRequestTarget(
-            "environment",
-            "account-a",
-            "repo-a",
-            "env-a",
-          ),
-          tokenAuthResult: tokenAuthResultB,
-        }),
-      ],
-      isMissingTargets: false,
-      isAllowed: true,
-    },
-  ]);
+        isMissingTargets: false,
+        isAllowed: true,
+      },
+    ]);
+
+  const toMdast = createMarkdownProvisionExplainer();
 
   expect(__getOutput()).toMatchInlineSnapshot(`
     "
@@ -874,6 +923,12 @@ it("can provision multiple secrets of the same type", async () => {
     SECRET_A: "<token-a>",
     SECRET_B: "<token-b>",
   });
+  await expect(
+    toMarkdown(toMdast(resultA, targetResultsA)),
+  ).toMatchFileSnapshot(join(fixturesPath, "multiple-secrets/a.md"));
+  await expect(
+    toMarkdown(toMdast(resultB, targetResultsB)),
+  ).toMatchFileSnapshot(join(fixturesPath, "multiple-secrets/b.md"));
 });
 
 it("can provision a secret to multiple targets", async () => {
@@ -942,7 +997,7 @@ it("can provision a secret to multiple targets", async () => {
     ],
   ]);
 
-  await provisionSecrets(tokenResults, [
+  const [[resultA, targetResultsA]] = await provisionSecrets(tokenResults, [
     {
       request: createTestProvisionRequest({
         secretDec: createTestSecretDec({
@@ -1015,6 +1070,8 @@ it("can provision a secret to multiple targets", async () => {
     },
   ]);
 
+  const toMdast = createMarkdownProvisionExplainer();
+
   expect(__getOutput()).toMatchInlineSnapshot(`
     "
     Secret #1:
@@ -1043,6 +1100,9 @@ it("can provision a secret to multiple targets", async () => {
   expect(__getEnvSecrets("account-a", "repo-a", "env-a")).toEqual({
     SECRET_A: "<token-a>",
   });
+  await expect(
+    toMarkdown(toMdast(resultA, targetResultsA)),
+  ).toMatchFileSnapshot(join(fixturesPath, "multiple-targets/a.md"));
 });
 
 it("doesn't stop provisioning when some targets fail", async () => {
@@ -1089,47 +1149,50 @@ it("doesn't stop provisioning when some targets fail", async () => {
     [tokenAuthResultB, { type: "NO_ISSUER" as const }],
   ]);
 
-  await provisionSecrets(tokenResults, [
-    {
-      request: createTestProvisionRequest({
-        secretDec: createTestSecretDec({
-          github: { accounts: { "account-a": { actions: true } } },
+  const [[resultA, targetResultsA], [resultB, targetResultsB]] =
+    await provisionSecrets(tokenResults, [
+      {
+        request: createTestProvisionRequest({
+          secretDec: createTestSecretDec({
+            github: { accounts: { "account-a": { actions: true } } },
+          }),
         }),
-      }),
-      results: [
-        createTestProvisionAuthTargetResult({
-          isAllowed: false,
-          target: createTestProvisionRequestTarget("actions"),
-          tokenAuthResult: tokenAuthResultA,
+        results: [
+          createTestProvisionAuthTargetResult({
+            isAllowed: false,
+            target: createTestProvisionRequestTarget("actions"),
+            tokenAuthResult: tokenAuthResultA,
+          }),
+        ],
+        isMissingTargets: false,
+        isAllowed: false,
+      },
+      {
+        request: createTestProvisionRequest({
+          secretDec: createTestSecretDec({
+            github: { accounts: { "account-a": { actions: true } } },
+          }),
         }),
-      ],
-      isMissingTargets: false,
-      isAllowed: false,
-    },
-    {
-      request: createTestProvisionRequest({
-        secretDec: createTestSecretDec({
-          github: { accounts: { "account-a": { actions: true } } },
-        }),
-      }),
-      results: [
-        createTestProvisionAuthTargetResult({
-          target: createTestProvisionRequestTarget("actions"),
-          tokenAuthResult: tokenAuthResultB,
-        }),
-        createTestProvisionAuthTargetResult({
-          target: createTestProvisionRequestTarget("actions", "account-x"),
-          tokenAuthResult: tokenAuthResultA,
-        }),
-        createTestProvisionAuthTargetResult({
-          target: createTestProvisionRequestTarget("actions"),
-          tokenAuthResult: tokenAuthResultA,
-        }),
-      ],
-      isMissingTargets: false,
-      isAllowed: true,
-    },
-  ]);
+        results: [
+          createTestProvisionAuthTargetResult({
+            target: createTestProvisionRequestTarget("actions"),
+            tokenAuthResult: tokenAuthResultB,
+          }),
+          createTestProvisionAuthTargetResult({
+            target: createTestProvisionRequestTarget("actions", "account-x"),
+            tokenAuthResult: tokenAuthResultA,
+          }),
+          createTestProvisionAuthTargetResult({
+            target: createTestProvisionRequestTarget("actions"),
+            tokenAuthResult: tokenAuthResultA,
+          }),
+        ],
+        isMissingTargets: false,
+        isAllowed: true,
+      },
+    ]);
+
+  const toMdast = createMarkdownProvisionExplainer();
 
   expect(__getOutput()).toMatchInlineSnapshot(`
     "
@@ -1147,6 +1210,12 @@ it("doesn't stop provisioning when some targets fail", async () => {
 
     "
   `);
+  await expect(
+    toMarkdown(toMdast(resultA, targetResultsA)),
+  ).toMatchFileSnapshot(join(fixturesPath, "partial-failure/a.md"));
+  await expect(
+    toMarkdown(toMdast(resultB, targetResultsB)),
+  ).toMatchFileSnapshot(join(fixturesPath, "partial-failure/b.md"));
 });
 
 it("warns when no auth results are provided", async () => {

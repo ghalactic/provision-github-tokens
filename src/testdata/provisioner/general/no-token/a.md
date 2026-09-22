@@ -1,0 +1,4 @@
+- ❌ Secret `SECRET_A` **wasn't** provisioned for repo `account-a/repo-a`:
+  - ❌ Token **wasn't** created for **GitHub Actions** secret in `account-a`
+  - ❌ Token **wasn't** created for **GitHub Actions** secret in `account-a/repo-a`
+  - ❌ Token **wasn't** created for **GitHub environment** `env-a` secret in `account-a/repo-a`

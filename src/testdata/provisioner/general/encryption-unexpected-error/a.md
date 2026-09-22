@@ -1,0 +1,12 @@
+- ❌ Secret `SECRET_A` **wasn't** provisioned for repo `account-a/repo-a`:
+  - ❌ **Failed** to provision to **GitHub Actions** secret in `account-a`:
+    - ❌ \<message>
+      <details>
+      <summary>Error stack</summary>
+
+      ```text
+      Error: <message>
+          at encrypt.ts:1:1
+      ```
+
+      </details>

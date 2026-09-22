@@ -1,3 +1,4 @@
+import { join } from "node:path";
 import { beforeEach, expect, it, vi } from "vitest";
 import {
   __getOutput,
@@ -29,7 +30,14 @@ import {
   createTestTokenAuthResult,
 } from "../test/result.js";
 import { createEncryptSecret } from "./encrypt-secret.js";
+import { toMarkdown } from "./markdown.js";
+import { createMarkdownProvisionExplainer } from "./provision-explainer/markdown.js";
 import { createProvisioner } from "./provisioner.js";
+
+const fixturesPath = join(
+  import.meta.dirname,
+  "testdata/provisioner/dependabot",
+);
 
 vi.mock("@actions/core");
 vi.mock("@octokit/action");
@@ -82,7 +90,7 @@ it("handles GitHub API errors when provisioning org-level Dependabot secrets", a
     ],
   ]);
 
-  await provisionSecrets(tokenResults, [
+  const [[resultA, targetResultsA]] = await provisionSecrets(tokenResults, [
     {
       request: createTestProvisionRequest({
         secretDec: createTestSecretDec({
@@ -101,6 +109,8 @@ it("handles GitHub API errors when provisioning org-level Dependabot secrets", a
     },
   ]);
 
+  const toMdast = createMarkdownProvisionExplainer();
+
   expect(__getOutput()).toMatchInlineSnapshot(`
     "
     Secret #1:
@@ -111,6 +121,9 @@ it("handles GitHub API errors when provisioning org-level Dependabot secrets", a
 
     "
   `);
+  await expect(
+    toMarkdown(toMdast(resultA, targetResultsA)),
+  ).toMatchFileSnapshot(join(fixturesPath, "org-request-error/a.md"));
 });
 
 it("handles unexpected errors when provisioning org-level Dependabot secrets", async () => {
@@ -159,7 +172,7 @@ it("handles unexpected errors when provisioning org-level Dependabot secrets", a
     ],
   ]);
 
-  await provisionSecrets(tokenResults, [
+  const [[resultA, targetResultsA]] = await provisionSecrets(tokenResults, [
     {
       request: createTestProvisionRequest({
         secretDec: createTestSecretDec({
@@ -178,6 +191,8 @@ it("handles unexpected errors when provisioning org-level Dependabot secrets", a
     },
   ]);
 
+  const toMdast = createMarkdownProvisionExplainer();
+
   expect(__getOutput()).toMatchInlineSnapshot(`
     "
     Secret #1:
@@ -189,6 +204,9 @@ it("handles unexpected errors when provisioning org-level Dependabot secrets", a
 
     "
   `);
+  await expect(
+    toMarkdown(toMdast(resultA, targetResultsA)),
+  ).toMatchFileSnapshot(join(fixturesPath, "org-unexpected-error/a.md"));
 });
 
 it("can provision org-level Dependabot secrets", async () => {
@@ -233,7 +251,7 @@ it("can provision org-level Dependabot secrets", async () => {
     ],
   ]);
 
-  await provisionSecrets(tokenResults, [
+  const [[resultA, targetResultsA]] = await provisionSecrets(tokenResults, [
     {
       request: createTestProvisionRequest({
         secretDec: createTestSecretDec({
@@ -252,6 +270,8 @@ it("can provision org-level Dependabot secrets", async () => {
     },
   ]);
 
+  const toMdast = createMarkdownProvisionExplainer();
+
   expect(__getOrgSecrets("account-a")).toEqual({
     actions: {},
     codespaces: {},
@@ -266,6 +286,9 @@ it("can provision org-level Dependabot secrets", async () => {
 
     "
   `);
+  await expect(
+    toMarkdown(toMdast(resultA, targetResultsA)),
+  ).toMatchFileSnapshot(join(fixturesPath, "org/a.md"));
 });
 
 it("handles GitHub API errors when provisioning repo-level Dependabot secrets", async () => {
@@ -315,7 +338,7 @@ it("handles GitHub API errors when provisioning repo-level Dependabot secrets", 
     ],
   ]);
 
-  await provisionSecrets(tokenResults, [
+  const [[resultA, targetResultsA]] = await provisionSecrets(tokenResults, [
     {
       request: createTestProvisionRequest({
         secretDec: createTestSecretDec({
@@ -340,6 +363,8 @@ it("handles GitHub API errors when provisioning repo-level Dependabot secrets", 
     },
   ]);
 
+  const toMdast = createMarkdownProvisionExplainer();
+
   expect(__getOutput()).toMatchInlineSnapshot(`
     "
     Secret #1:
@@ -350,6 +375,9 @@ it("handles GitHub API errors when provisioning repo-level Dependabot secrets", 
 
     "
   `);
+  await expect(
+    toMarkdown(toMdast(resultA, targetResultsA)),
+  ).toMatchFileSnapshot(join(fixturesPath, "repo-request-error/a.md"));
 });
 
 it("handles unexpected errors when provisioning repo-level Dependabot secrets", async () => {
@@ -402,7 +430,7 @@ it("handles unexpected errors when provisioning repo-level Dependabot secrets", 
     ],
   ]);
 
-  await provisionSecrets(tokenResults, [
+  const [[resultA, targetResultsA]] = await provisionSecrets(tokenResults, [
     {
       request: createTestProvisionRequest({
         secretDec: createTestSecretDec({
@@ -427,6 +455,8 @@ it("handles unexpected errors when provisioning repo-level Dependabot secrets", 
     },
   ]);
 
+  const toMdast = createMarkdownProvisionExplainer();
+
   expect(__getOutput()).toMatchInlineSnapshot(`
     "
     Secret #1:
@@ -438,6 +468,9 @@ it("handles unexpected errors when provisioning repo-level Dependabot secrets", 
 
     "
   `);
+  await expect(
+    toMarkdown(toMdast(resultA, targetResultsA)),
+  ).toMatchFileSnapshot(join(fixturesPath, "repo-unexpected-error/a.md"));
 });
 
 it("can provision repo-level Dependabot secrets", async () => {
@@ -486,7 +519,7 @@ it("can provision repo-level Dependabot secrets", async () => {
     ],
   ]);
 
-  await provisionSecrets(tokenResults, [
+  const [[resultA, targetResultsA]] = await provisionSecrets(tokenResults, [
     {
       request: createTestProvisionRequest({
         secretDec: createTestSecretDec({
@@ -511,6 +544,8 @@ it("can provision repo-level Dependabot secrets", async () => {
     },
   ]);
 
+  const toMdast = createMarkdownProvisionExplainer();
+
   expect(__getRepoSecrets("account-a", "repo-a")).toEqual({
     actions: {},
     codespaces: {},
@@ -525,4 +560,7 @@ it("can provision repo-level Dependabot secrets", async () => {
 
     "
   `);
+  await expect(
+    toMarkdown(toMdast(resultA, targetResultsA)),
+  ).toMatchFileSnapshot(join(fixturesPath, "repo/a.md"));
 });

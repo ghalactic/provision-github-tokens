@@ -17,6 +17,7 @@ import {
 } from "../markdown.js";
 import { pluralize } from "../pluralize.js";
 import type { ProvisionRequestTarget } from "../provision-request.js";
+import { secretTypeMdast } from "../secret-type.js";
 import { createSequencer } from "../sequencer.js";
 import type {
   ProvisionAuthResult,
@@ -164,28 +165,8 @@ export function createMarkdownProvisionAuthExplainer(): ProvisionAuthResultExpla
   }
 
   function explainSubject(target: ProvisionRequestTarget): PhrasingContent[] {
-    const type = ((r) => {
-      const type = r.type;
-
-      switch (type) {
-        case "actions":
-          return "GitHub Actions";
-        case "codespaces":
-          return "GitHub Codespaces";
-        case "dependabot":
-          return "Dependabot";
-        case "environment":
-          return `GitHub environment ${r.target.environment}`;
-      }
-
-      /* istanbul ignore next - @preserve */
-      throw new Error(
-        `Invariant violation: Unexpected secret type ${JSON.stringify(type)}`,
-      );
-    })(target);
-
     return [
-      strong(text(type)),
+      ...secretTypeMdast(target),
       text(" secret in "),
       inlineCode(accountOrRepoRefToString(target.target)),
     ];

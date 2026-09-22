@@ -6,6 +6,7 @@ import {
 } from "../github-reference.js";
 import { FAIL_ICON, icon, PASS_ICON } from "../icon.js";
 import type { ProvisionRequestTarget } from "../provision-request.js";
+import { secretTypeText } from "../secret-type.js";
 import { prefixLines } from "../text.js";
 import type {
   ProvisionResult,
@@ -94,26 +95,9 @@ export function createTextProvisionExplainer(): ProvisionResultExplainer<string>
   }
 
   function explainSubject(target: ProvisionRequestTarget): string {
-    const type = ((r) => {
-      const type = r.type;
-
-      switch (type) {
-        case "actions":
-          return "GitHub Actions";
-        case "codespaces":
-          return "GitHub Codespaces";
-        case "dependabot":
-          return "Dependabot";
-        case "environment":
-          return `GitHub environment ${r.target.environment}`;
-      }
-
-      /* istanbul ignore next - @preserve */
-      throw new Error(
-        `Invariant violation: Unexpected secret type ${JSON.stringify(type)}`,
-      );
-    })(target);
-
-    return `${type} secret in ${accountOrRepoRefToString(target.target)}`;
+    return (
+      `${secretTypeText(target)} secret in ` +
+      `${accountOrRepoRefToString(target.target)}`
+    );
   }
 }

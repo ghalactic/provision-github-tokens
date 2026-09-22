@@ -1,0 +1,2 @@
+- ❌ Secret `SECRET_A` **wasn't** provisioned for repo `account-a/repo-a`:
+  - ❌ No suitable provisioner for **GitHub Actions** secret in `account-x`
