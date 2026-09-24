@@ -72618,7 +72618,7 @@ function handleRequestError(error2, handlers = {}) {
       { cause: error2 }
     );
   }
-  handler2();
+  handler2(error2);
 }
 
 // src/discover-apps.ts

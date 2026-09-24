@@ -65,7 +65,7 @@ export function createOctokitFactory(): OctokitFactory {
 
 export function handleRequestError(
   error: unknown,
-  handlers: Record<number, () => void> = {},
+  handlers: Record<number, (error: RequestError) => void> = {},
 ): void {
   if (!(error instanceof RequestError)) throw error;
 
@@ -79,5 +79,33 @@ export function handleRequestError(
     );
   }
 
-  handler();
+  handler(error);
 }
+
+export function requestErrorHasError(
+  error: RequestError,
+  match: object,
+): boolean {
+  const data = error.response?.data as RequestErrorData | undefined;
+
+  if (!data) return false;
+
+  for (const errorItem of data.errors) {
+    let isMatch = true;
+
+    for (const [key, value] of Object.entries(match)) {
+      if (errorItem[key] !== value) {
+        isMatch = false;
+        break;
+      }
+    }
+
+    if (isMatch) return true;
+  }
+
+  return false;
+}
+
+type RequestErrorData = {
+  errors: Record<string, unknown>[];
+};
