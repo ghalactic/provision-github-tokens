@@ -120390,6 +120390,16 @@ function registerTokenDeclarations(declarationRegistry, requesters) {
   }
 }
 
+// src/is-fully-provisioned.ts
+function isFullyProvisioned(authResult, provisionResults) {
+  const targetResults = provisionResults.get(authResult);
+  if (!targetResults?.size) return false;
+  for (const result of targetResults.values()) {
+    if (result.type !== "PROVISIONED") return false;
+  }
+  return true;
+}
+
 // src/summary.ts
 var LINK_REF_PREFIX = "gh/";
 var MAX_ROWS = 1e3;
@@ -120565,14 +120575,6 @@ function failureReason(authResult, tokenCreationResults, provisionResults) {
     return "Failed to provision to some targets";
   }
   return "Failed to provision";
-}
-function isFullyProvisioned(authResult, provisionResults) {
-  const targetResults = provisionResults.get(authResult);
-  if (!targetResults?.size) return false;
-  for (const result of targetResults.values()) {
-    if (result.type !== "PROVISIONED") return false;
-  }
-  return true;
 }
 function targetCellChildren(targets, definitions, githubServerUrl) {
   if (targets.length < 1) return [emphasis2(text2("(none)"))];

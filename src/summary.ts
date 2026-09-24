@@ -5,6 +5,7 @@ import {
   type AccountOrRepoReference,
 } from "./github-reference.js";
 import { FAIL_ICON, PASS_ICON } from "./icon.js";
+import { isFullyProvisioned } from "./is-fully-provisioned.js";
 import {
   emphasis,
   gfmAlert,
@@ -308,24 +309,6 @@ function failureReason(
   }
 
   return "Failed to provision";
-}
-
-function isFullyProvisioned(
-  authResult: ProvisionAuthResult,
-  provisionResults: Map<
-    ProvisionAuthResult,
-    Map<ProvisionAuthTargetResult, ProvisionResult>
-  >,
-): boolean {
-  const targetResults = provisionResults.get(authResult);
-
-  if (!targetResults?.size) return false;
-
-  for (const result of targetResults.values()) {
-    if (result.type !== "PROVISIONED") return false;
-  }
-
-  return true;
 }
 
 function targetCellChildren(
