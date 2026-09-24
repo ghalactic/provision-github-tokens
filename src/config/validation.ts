@@ -42,7 +42,7 @@ export const validateRequester = createValidate<PartialRequesterConfig>(
   "requester configuration",
 );
 
-class ValidateError extends Error {
+export class ValidateError extends Error {
   public errors: ErrorObject[];
 
   constructor(message: string, errors: ErrorObject[]) {
