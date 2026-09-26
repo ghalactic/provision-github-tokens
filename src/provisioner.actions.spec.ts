@@ -35,10 +35,10 @@ import { toMarkdown } from "./markdown.js";
 import { createMarkdownProvisionExplainer } from "./provision-explainer/markdown.js";
 import { createProvisioner } from "./provisioner.js";
 
-const fixturesPath = join(import.meta.dirname, "testdata/provisioner/actions");
-
 vi.mock("@actions/core");
 vi.mock("@octokit/action");
+
+const fixturesPath = join(import.meta.dirname, "testdata/provisioner/actions");
 
 beforeEach(() => {
   __resetCore();

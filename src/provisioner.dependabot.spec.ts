@@ -34,13 +34,13 @@ import { toMarkdown } from "./markdown.js";
 import { createMarkdownProvisionExplainer } from "./provision-explainer/markdown.js";
 import { createProvisioner } from "./provisioner.js";
 
+vi.mock("@actions/core");
+vi.mock("@octokit/action");
+
 const fixturesPath = join(
   import.meta.dirname,
   "testdata/provisioner/dependabot",
 );
-
-vi.mock("@actions/core");
-vi.mock("@octokit/action");
 
 beforeEach(() => {
   __resetCore();
