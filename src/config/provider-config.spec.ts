@@ -10,6 +10,7 @@ import {
   __setFiles,
 } from "../../__mocks__/@octokit/action.js";
 import { createTestAppRegistry } from "../../test/app-registry.js";
+import { testContext } from "../../test/context.js";
 import { throws } from "../../test/error.js";
 import {
   createTestApps,
@@ -57,9 +58,14 @@ it("reads comprehensive provider config", async () => {
 
   expect(
     await readProviderConfig(
+      {
+        ...testContext,
+        githubRepository: "account-self/repo-self",
+        githubRepositoryUrl:
+          "https://github.example.com/account-self/repo-self",
+        githubRef: "refs/heads/main",
+      },
       octokitFactory,
-      "account-self/repo-self",
-      "refs/heads/main",
     ),
   ).toEqual({
     $schema: providerSchema.$id,

@@ -67111,15 +67111,15 @@ function splitGitHubPattern(pattern) {
 }
 
 // src/config/provider-config.ts
-async function readProviderConfig(octokitFactory, repoName, ref) {
-  const provider = repoRefFromName(repoName);
+async function readProviderConfig(context, octokitFactory) {
+  const provider = repoRefFromName(context.githubRepository);
   const configPath = getInput("configPath");
-  info(`Reading from ${repoName}/${configPath}`);
+  info(`Reading from ${context.githubRepository}/${configPath}`);
   const octokit = octokitFactory.actionOctokit();
   const res = await octokit.rest.repos.getContent({
     owner: provider.account,
     repo: provider.repo,
-    ref,
+    ref: context.githubRef,
     path: configPath,
     mediaType: { format: "raw" }
   });
@@ -120436,7 +120436,7 @@ function isFullyProvisioned(authResult, provisionResults) {
 // src/summary.ts
 var LINK_REF_PREFIX = "gh/";
 var MAX_ROWS = 1e3;
-function renderSummary(githubServerUrl, actionUrl, authResult, tokenCreationResults, provisionResults) {
+function renderSummary(context, authResult, tokenCreationResults, provisionResults) {
   const { provisionResults: authResults } = authResult;
   const allDeniedRows = authResults.filter(
     (r2) => !isFullyProvisioned(r2, provisionResults)
@@ -120452,214 +120452,199 @@ function renderSummary(githubServerUrl, actionUrl, authResult, tokenCreationResu
   const omittedCount = omittedDeniedCount + omittedAllowedCount;
   const definitions = {};
   return toMarkdown2([
-    statsHeading(authResults, provisionResults),
-    ...emptySection(authResults, authResult, actionUrl),
-    ...failuresTable(
-      deniedRows,
-      tokenCreationResults,
-      provisionResults,
-      definitions,
-      githubServerUrl
-    ),
-    ...successesTable(allowedRows, definitions, githubServerUrl),
-    ...omittedNotice(authResults.length, omittedCount),
-    ...definitionsAst(definitions)
+    statsHeading(),
+    ...emptySection(),
+    ...failuresTable(),
+    ...successesTable(),
+    ...omittedNotice(),
+    ...definitionsAst()
   ]);
-}
-function statsHeading(authResults, provisionResults) {
-  const totalCount = authResults.length;
-  const allowedCount = authResults.filter(
-    (r2) => isFullyProvisioned(r2, provisionResults)
-  ).length;
-  return heading2(
-    3,
-    text2(
-      allowedCount === totalCount ? `Provisioned ${pluralize(totalCount, "secret", "secrets")}` : `Provisioned ${allowedCount} of ${pluralize(totalCount, "secret", "secrets")}`
-    )
-  );
-}
-function emptySection(authResults, authResult, actionUrl) {
-  if (authResults.length > 0 || authResult.tokenResults.length > 0) return [];
-  return [
-    gfmAlert(
-      "TIP",
-      paragraph2(
-        text2("Need help getting started? See the "),
-        link2(new URL("#readme", actionUrl), text2("docs")),
-        text2(".")
+  function statsHeading() {
+    const totalCount = authResults.length;
+    const allowedCount = authResults.filter(
+      (r2) => isFullyProvisioned(r2, provisionResults)
+    ).length;
+    return heading2(
+      3,
+      text2(
+        allowedCount === totalCount ? `Provisioned ${pluralize(totalCount, "secret", "secrets")}` : `Provisioned ${allowedCount} of ${pluralize(totalCount, "secret", "secrets")}`
       )
-    )
-  ];
-}
-function failuresTable(deniedRows, tokenCreationResults, provisionResults, definitions, githubServerUrl) {
-  if (deniedRows.length < 1) return [];
-  return [
-    table(
-      ["left", "left", "left", "left", "left"],
-      [
-        [],
-        [text2("Requester")],
-        [text2("Secret")],
-        [text2("Targets")],
-        [text2("Reason")]
-      ],
-      deniedRows.map(
-        (r2) => failureRow(
-          r2,
-          tokenCreationResults,
-          provisionResults,
-          definitions,
-          githubServerUrl
+    );
+  }
+  function emptySection() {
+    if (authResults.length > 0 || authResult.tokenResults.length > 0) return [];
+    return [
+      gfmAlert(
+        "TIP",
+        paragraph2(
+          text2("Need help getting started? See the "),
+          link2(
+            "https://github.com/ghalactic/provision-github-tokens#readme",
+            text2("docs")
+          ),
+          text2(".")
         )
       )
-    )
-  ];
-}
-function successesTable(allowedRows, definitions, githubServerUrl) {
-  if (allowedRows.length < 1) return [];
-  return [
-    table(
-      ["left", "left", "left", "left"],
-      [[], [text2("Requester")], [text2("Secret")], [text2("Targets")]],
-      allowedRows.map((r2) => successRow(r2, definitions, githubServerUrl))
-    )
-  ];
-}
-function omittedNotice(totalCount, omittedCount) {
-  if (omittedCount < 1) return [];
-  return [
-    gfmAlert(
-      "IMPORTANT",
-      paragraph2(
-        text2(
-          `Showing ${totalCount - omittedCount} of ${totalCount} secrets. Check the logs for the full list.`
+    ];
+  }
+  function failuresTable() {
+    if (deniedRows.length < 1) return [];
+    return [
+      table(
+        ["left", "left", "left", "left", "left"],
+        [
+          [],
+          [text2("Requester")],
+          [text2("Secret")],
+          [text2("Targets")],
+          [text2("Reason")]
+        ],
+        deniedRows.map((r2) => failureRow(r2))
+      )
+    ];
+  }
+  function failureRow(result) {
+    addAccountOrRepoDef(result.request.requester);
+    return [
+      [text2(FAIL_ICON)],
+      [accountOrRepoLinkRef(result.request.requester)],
+      [inlineCode2(result.request.name)],
+      targetCellChildren(result.request.to),
+      [text2(failureReason(result))]
+    ];
+  }
+  function successesTable() {
+    if (allowedRows.length < 1) return [];
+    return [
+      table(
+        ["left", "left", "left", "left"],
+        [[], [text2("Requester")], [text2("Secret")], [text2("Targets")]],
+        allowedRows.map((r2) => successRow(r2))
+      )
+    ];
+  }
+  function successRow(result) {
+    addAccountOrRepoDef(result.request.requester);
+    return [
+      [text2(PASS_ICON)],
+      [accountOrRepoLinkRef(result.request.requester)],
+      [inlineCode2(result.request.name)],
+      targetCellChildren(result.request.to)
+    ];
+  }
+  function omittedNotice() {
+    if (omittedCount < 1) return [];
+    return [
+      gfmAlert(
+        "IMPORTANT",
+        paragraph2(
+          text2(
+            `Showing ${authResults.length - omittedCount} of ${authResults.length} secrets. Check the logs for the full list.`
+          )
         )
       )
-    )
-  ];
-}
-function successRow(result, definitions, githubServerUrl) {
-  addAccountOrRepoDef(definitions, githubServerUrl, result.request.requester);
-  return [
-    [text2(PASS_ICON)],
-    [accountOrRepoLinkRef(result.request.requester)],
-    [inlineCode2(result.request.name)],
-    targetCellChildren(result.request.to, definitions, githubServerUrl)
-  ];
-}
-function failureRow(result, tokenCreationResults, provisionResults, definitions, githubServerUrl) {
-  addAccountOrRepoDef(definitions, githubServerUrl, result.request.requester);
-  return [
-    [text2(FAIL_ICON)],
-    [accountOrRepoLinkRef(result.request.requester)],
-    [inlineCode2(result.request.name)],
-    targetCellChildren(result.request.to, definitions, githubServerUrl),
-    [text2(failureReason(result, tokenCreationResults, provisionResults))]
-  ];
-}
-function failureReason(authResult, tokenCreationResults, provisionResults) {
-  if (authResult.isMissingTargets || authResult.request.to.length < 1 || authResult.results.length < 1) {
-    return "No targets to provision to";
+    ];
   }
-  if (authResult.request.tokenDec == null) {
-    return authResult.request.tokenDecIsRegistered ? "Token declaration isn't shared" : "Token declaration doesn't exist";
-  }
-  if (!authResult.results.every((t2) => t2.isTokenAllowed)) {
-    return "Token not allowed";
-  }
-  if (!authResult.isAllowed) return "Secret not allowed";
-  const firstTarget = authResult.results[0];
-  if (!firstTarget.tokenAuthResult) {
-    throw new Error(
-      "Invariant violation: Missing token auth result for allowed target"
-    );
-  }
-  const tokenResult = tokenCreationResults.get(firstTarget.tokenAuthResult);
-  if (!tokenResult) {
-    throw new Error(
-      "Invariant violation: Missing token creation result for allowed target"
-    );
-  }
-  if (tokenResult.type === "NO_ISSUER") return "No suitable issuer";
-  if (tokenResult.type === "REQUEST_ERROR" || tokenResult.type === "ERROR") {
-    return "Failed to issue token";
-  }
-  const targetResults = provisionResults.get(authResult);
-  if (!targetResults) {
-    throw new Error(
-      "Invariant violation: Missing provision results for auth result"
-    );
-  }
-  let provisionedCount = 0;
-  let failedCount = 0;
-  let hasNoProvisioner = false;
-  for (const result of targetResults.values()) {
-    if (result.type === "PROVISIONED") {
-      ++provisionedCount;
-    } else {
-      ++failedCount;
-      if (result.type === "NO_PROVISIONER") hasNoProvisioner = true;
+  function failureReason(authResult2) {
+    if (authResult2.isMissingTargets || authResult2.request.to.length < 1 || authResult2.results.length < 1) {
+      return "No targets to provision to";
     }
+    if (authResult2.request.tokenDec == null) {
+      return authResult2.request.tokenDecIsRegistered ? "Token declaration isn't shared" : "Token declaration doesn't exist";
+    }
+    if (!authResult2.results.every((t2) => t2.isTokenAllowed)) {
+      return "Token not allowed";
+    }
+    if (!authResult2.isAllowed) return "Secret not allowed";
+    const firstTarget = authResult2.results[0];
+    if (!firstTarget.tokenAuthResult) {
+      throw new Error(
+        "Invariant violation: Missing token auth result for allowed target"
+      );
+    }
+    const tokenResult = tokenCreationResults.get(firstTarget.tokenAuthResult);
+    if (!tokenResult) {
+      throw new Error(
+        "Invariant violation: Missing token creation result for allowed target"
+      );
+    }
+    if (tokenResult.type === "NO_ISSUER") return "No suitable issuer";
+    if (tokenResult.type === "REQUEST_ERROR" || tokenResult.type === "ERROR") {
+      return "Failed to issue token";
+    }
+    const targetResults = provisionResults.get(authResult2);
+    if (!targetResults) {
+      throw new Error(
+        "Invariant violation: Missing provision results for auth result"
+      );
+    }
+    let provisionedCount = 0;
+    let failedCount = 0;
+    let hasNoProvisioner = false;
+    for (const result of targetResults.values()) {
+      if (result.type === "PROVISIONED") {
+        ++provisionedCount;
+      } else {
+        ++failedCount;
+        if (result.type === "NO_PROVISIONER") hasNoProvisioner = true;
+      }
+    }
+    if (hasNoProvisioner && failedCount === targetResults.size) {
+      return "No suitable provisioner";
+    }
+    if (provisionedCount > 0 && failedCount > 0) {
+      return "Failed to provision to some targets";
+    }
+    return "Failed to provision";
   }
-  if (hasNoProvisioner && failedCount === targetResults.size) {
-    return "No suitable provisioner";
+  function targetCellChildren(targets) {
+    if (targets.length < 1) return [emphasis2(text2("(none)"))];
+    const refs = /* @__PURE__ */ new Map();
+    for (const t2 of targets) {
+      const identifier = addAccountOrRepoDef(t2.target);
+      if (!refs.has(identifier)) refs.set(identifier, t2.target);
+    }
+    const refOrder = [...refs.keys()].sort((a2, b2) => a2.localeCompare(b2));
+    const children = [];
+    for (let i2 = 0; i2 < refOrder.length; ++i2) {
+      if (i2 > 0) children.push(text2(", "));
+      children.push(accountOrRepoLinkRef(refs.get(refOrder[i2])));
+    }
+    return children;
   }
-  if (provisionedCount > 0 && failedCount > 0) {
-    return "Failed to provision to some targets";
-  }
-  return "Failed to provision";
-}
-function targetCellChildren(targets, definitions, githubServerUrl) {
-  if (targets.length < 1) return [emphasis2(text2("(none)"))];
-  const refs = /* @__PURE__ */ new Map();
-  for (const t2 of targets) {
-    const identifier = addAccountOrRepoDef(
-      definitions,
-      githubServerUrl,
-      t2.target
+  function definitionsAst() {
+    const entries = Object.entries(definitions).sort(
+      ([a2], [b2]) => a2.localeCompare(b2)
     );
-    if (!refs.has(identifier)) refs.set(identifier, t2.target);
+    const ast = [];
+    for (const [identifier, url] of entries) {
+      ast.push({
+        type: "definition",
+        identifier,
+        label: identifier,
+        url,
+        title: null
+      });
+    }
+    return ast;
   }
-  const refOrder = [...refs.keys()].sort((a2, b2) => a2.localeCompare(b2));
-  const children = [];
-  for (let i2 = 0; i2 < refOrder.length; ++i2) {
-    if (i2 > 0) children.push(text2(", "));
-    children.push(accountOrRepoLinkRef(refs.get(refOrder[i2])));
-  }
-  return children;
-}
-function definitionsAst(definitions) {
-  const entries = Object.entries(definitions).sort(
-    ([a2], [b2]) => a2.localeCompare(b2)
-  );
-  const ast = [];
-  for (const [identifier, url] of entries) {
-    ast.push({
-      type: "definition",
+  function accountOrRepoLinkRef(accountOrRepo) {
+    const slug = accountOrRepoRefToString(accountOrRepo);
+    const identifier = `${LINK_REF_PREFIX}${slug}`.toLowerCase();
+    return {
+      type: "linkReference",
       identifier,
       label: identifier,
-      url,
-      title: null
-    });
+      referenceType: "full",
+      children: [text2(slug)]
+    };
   }
-  return ast;
-}
-function accountOrRepoLinkRef(accountOrRepo) {
-  const slug = accountOrRepoRefToString(accountOrRepo);
-  const identifier = `${LINK_REF_PREFIX}${slug}`.toLowerCase();
-  return {
-    type: "linkReference",
-    identifier,
-    label: identifier,
-    referenceType: "full",
-    children: [text2(slug)]
-  };
-}
-function addAccountOrRepoDef(definitions, githubServerUrl, accountOrRepo) {
-  const slug = accountOrRepoRefToString(accountOrRepo).toLowerCase();
-  const identifier = `${LINK_REF_PREFIX}${slug}`.toLowerCase();
-  definitions[identifier] = new URL(slug, githubServerUrl).toString();
-  return identifier;
+  function addAccountOrRepoDef(accountOrRepo) {
+    const slug = accountOrRepoRefToString(accountOrRepo).toLowerCase();
+    const identifier = `${LINK_REF_PREFIX}${slug}`.toLowerCase();
+    definitions[identifier] = new URL(slug, context.githubServerUrl).toString();
+    return identifier;
+  }
 }
 
 // src/token-authorizer.ts
@@ -121152,6 +121137,8 @@ try {
   (0, import_source_map_support.install)();
   const githubRef = process.env.GITHUB_REF;
   const githubRepository = process.env.GITHUB_REPOSITORY;
+  const githubRunAttempt = process.env.GITHUB_RUN_ATTEMPT;
+  const githubRunId = process.env.GITHUB_RUN_ID;
   const githubServerUrl = process.env.GITHUB_SERVER_URL;
   if (!githubRef) {
     throw new Error("Invariant violation: GITHUB_REF isn't set");
@@ -121162,16 +121149,27 @@ try {
   if (!githubServerUrl) {
     throw new Error("Invariant violation: GITHUB_SERVER_URL isn't set");
   }
-  const githubActionRepository = process.env.GITHUB_ACTION_REPOSITORY ?? githubRepository;
-  const actionUrl = `${githubServerUrl}/${githubActionRepository}`;
+  if (!githubRunId) {
+    throw new Error("Invariant violation: GITHUB_RUN_ID isn't set");
+  }
+  if (!githubRunAttempt) {
+    throw new Error("Invariant violation: GITHUB_RUN_ATTEMPT isn't set");
+  }
+  const githubRepositoryUrl = `${githubServerUrl}/${githubRepository}`;
+  const githubRunAttemptUrl = `${githubRepositoryUrl}/actions/runs/${githubRunId}/attempts/${githubRunAttempt}`;
+  const context = {
+    githubRef,
+    githubRepository,
+    githubRepositoryUrl,
+    githubRunAttempt,
+    githubRunAttemptUrl,
+    githubRunId,
+    githubServerUrl
+  };
   const appsInput = readAppsInput();
   const octokitFactory = createOctokitFactory();
   const config = await group("Reading config", async () => {
-    return await readProviderConfig(
-      octokitFactory,
-      githubRepository,
-      githubRef
-    );
+    return await readProviderConfig(context, octokitFactory);
   });
   const appRegistry = createAppRegistry();
   const findIssuerOctokit = createFindIssuerOctokit(
@@ -121234,8 +121232,7 @@ try {
     );
   });
   const summaryMarkdown = renderSummary(
-    githubServerUrl,
-    actionUrl,
+    context,
     authorizeResult,
     tokenCreationResults,
     provisionResults

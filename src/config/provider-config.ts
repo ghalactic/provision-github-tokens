@@ -1,5 +1,6 @@
 import { debug, getInput, info } from "@actions/core";
 import { normalizeAccountPattern } from "../account.js";
+import type { Context } from "../context.js";
 import { errorMessage } from "../error.js";
 import { normalizeGitHubPattern } from "../github-pattern.js";
 import {
@@ -13,20 +14,19 @@ import { validateProvider } from "./validation.js";
 import { parseYaml } from "./yaml.js";
 
 export async function readProviderConfig(
+  context: Context,
   octokitFactory: OctokitFactory,
-  repoName: string,
-  ref: string,
 ): Promise<ProviderConfig> {
-  const provider = repoRefFromName(repoName);
+  const provider = repoRefFromName(context.githubRepository);
   const configPath = getInput("configPath");
 
-  info(`Reading from ${repoName}/${configPath}`);
+  info(`Reading from ${context.githubRepository}/${configPath}`);
 
   const octokit = octokitFactory.actionOctokit();
   const res = await octokit.rest.repos.getContent({
     owner: provider.account,
     repo: provider.repo,
-    ref,
+    ref: context.githubRef,
     path: configPath,
     mediaType: { format: "raw" },
   });

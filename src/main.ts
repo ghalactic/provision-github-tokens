@@ -5,6 +5,7 @@ import { createAppRegistry } from "./app-registry.js";
 import { createAuthorizer } from "./authorizer.js";
 import { readAppsInput } from "./config/apps-input.js";
 import { readProviderConfig } from "./config/provider-config.js";
+import { type Context } from "./context.js";
 import { discoverApps } from "./discover-apps.js";
 import { discoverRequesters } from "./discover-requesters.js";
 import { createEncryptSecret } from "./encrypt-secret.js";
@@ -28,35 +29,49 @@ try {
 
   const githubRef = process.env.GITHUB_REF;
   const githubRepository = process.env.GITHUB_REPOSITORY;
+  const githubRunAttempt = process.env.GITHUB_RUN_ATTEMPT;
+  const githubRunId = process.env.GITHUB_RUN_ID;
   const githubServerUrl = process.env.GITHUB_SERVER_URL;
+
   /* istanbul ignore next - @preserve */
   if (!githubRef) {
     throw new Error("Invariant violation: GITHUB_REF isn't set");
   }
-
   /* istanbul ignore next - @preserve */
   if (!githubRepository) {
     throw new Error("Invariant violation: GITHUB_REPOSITORY isn't set");
   }
-
   /* istanbul ignore next - @preserve */
   if (!githubServerUrl) {
     throw new Error("Invariant violation: GITHUB_SERVER_URL isn't set");
   }
+  /* istanbul ignore next - @preserve */
+  if (!githubRunId) {
+    throw new Error("Invariant violation: GITHUB_RUN_ID isn't set");
+  }
+  /* istanbul ignore next - @preserve */
+  if (!githubRunAttempt) {
+    throw new Error("Invariant violation: GITHUB_RUN_ATTEMPT isn't set");
+  }
 
-  const githubActionRepository =
-    process.env.GITHUB_ACTION_REPOSITORY ?? githubRepository;
-  const actionUrl = `${githubServerUrl}/${githubActionRepository}`;
+  const githubRepositoryUrl = `${githubServerUrl}/${githubRepository}`;
+  const githubRunAttemptUrl = `${githubRepositoryUrl}/actions/runs/${githubRunId}/attempts/${githubRunAttempt}`;
+
+  const context: Context = {
+    githubRef,
+    githubRepository,
+    githubRepositoryUrl,
+    githubRunAttempt,
+    githubRunAttemptUrl,
+    githubRunId,
+    githubServerUrl,
+  };
 
   const appsInput = readAppsInput();
   const octokitFactory = createOctokitFactory();
 
   const config = await group("Reading config", async () => {
-    return await readProviderConfig(
-      octokitFactory,
-      githubRepository,
-      githubRef,
-    );
+    return await readProviderConfig(context, octokitFactory);
   });
 
   const appRegistry = createAppRegistry();
@@ -127,8 +142,7 @@ try {
   });
 
   const summaryMarkdown = renderSummary(
-    githubServerUrl,
-    actionUrl,
+    context,
     authorizeResult,
     tokenCreationResults,
     provisionResults,

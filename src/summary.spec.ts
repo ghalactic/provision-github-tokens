@@ -1,5 +1,6 @@
 import { join } from "node:path";
 import { expect, it } from "vitest";
+import { testContext } from "../test/context.js";
 import {
   createTestSecretDec,
   createTestTokenDec,
@@ -24,8 +25,6 @@ import type { TokenAuthResult } from "./type/token-auth-result.js";
 import type { TokenCreationResult } from "./type/token-creation-result.js";
 
 const fixturesPath = join(import.meta.dirname, "testdata/summary");
-const githubServerUrl = "https://github.example.com";
-const actionUrl = "https://github.example.com/test/action";
 
 it("renders a summary with all secrets provisioned", async () => {
   const accountAActionsTarget = createTestProvisionRequestTarget("actions");
@@ -137,8 +136,7 @@ it("renders a summary with all secrets provisioned", async () => {
 
   await expect(
     renderSummary(
-      githubServerUrl,
-      actionUrl,
+      testContext,
       authResult,
       tokenCreationResults,
       provisionResults,
@@ -258,8 +256,7 @@ it("renders a summary with some secrets denied", async () => {
 
   await expect(
     renderSummary(
-      githubServerUrl,
-      actionUrl,
+      testContext,
       authResult,
       tokenCreationResults,
       provisionResults,
@@ -335,8 +332,7 @@ it("renders a summary with all secrets denied", async () => {
 
   await expect(
     renderSummary(
-      githubServerUrl,
-      actionUrl,
+      testContext,
       authResult,
       tokenCreationResults,
       provisionResults,
@@ -359,8 +355,7 @@ it("renders a summary with no secrets requested", async () => {
 
   await expect(
     renderSummary(
-      githubServerUrl,
-      actionUrl,
+      testContext,
       authResult,
       tokenCreationResults,
       provisionResults,
@@ -437,8 +432,7 @@ it("renders a summary with environment targets", async () => {
 
   await expect(
     renderSummary(
-      githubServerUrl,
-      actionUrl,
+      testContext,
       authResult,
       tokenCreationResults,
       provisionResults,
@@ -556,8 +550,7 @@ it("renders a summary with multiple requesters", async () => {
 
   await expect(
     renderSummary(
-      githubServerUrl,
-      actionUrl,
+      testContext,
       authResult,
       tokenCreationResults,
       provisionResults,
@@ -662,8 +655,7 @@ it("renders a summary with a missing token declaration", async () => {
 
   await expect(
     renderSummary(
-      githubServerUrl,
-      actionUrl,
+      testContext,
       authResult,
       tokenCreationResults,
       provisionResults,
@@ -767,8 +759,7 @@ it("renders a summary with an unshared token declaration", async () => {
 
   await expect(
     renderSummary(
-      githubServerUrl,
-      actionUrl,
+      testContext,
       authResult,
       tokenCreationResults,
       provisionResults,
@@ -862,8 +853,7 @@ it("renders a summary with missing targets", async () => {
 
   await expect(
     renderSummary(
-      githubServerUrl,
-      actionUrl,
+      testContext,
       authResult,
       tokenCreationResults,
       provisionResults,
@@ -960,8 +950,7 @@ it("renders a summary with multiple distinct targets", async () => {
 
   await expect(
     renderSummary(
-      githubServerUrl,
-      actionUrl,
+      testContext,
       authResult,
       tokenCreationResults,
       provisionResults,
@@ -1015,8 +1004,7 @@ it("truncates rows beyond the limit and shows a notice", async () => {
 
   await expect(
     renderSummary(
-      githubServerUrl,
-      actionUrl,
+      testContext,
       authResult,
       tokenCreationResults,
       provisionResults,
@@ -1083,8 +1071,7 @@ it("renders a failure reason when tokens aren't allowed", async () => {
 
   await expect(
     renderSummary(
-      githubServerUrl,
-      actionUrl,
+      testContext,
       authResult,
       tokenCreationResults,
       provisionResults,
@@ -1150,8 +1137,7 @@ it("renders a failure reason when no suitable issuer is found", async () => {
 
   await expect(
     renderSummary(
-      githubServerUrl,
-      actionUrl,
+      testContext,
       authResult,
       tokenCreationResults,
       provisionResults,
@@ -1217,8 +1203,7 @@ it("renders a failure reason when token issuance fails", async () => {
 
   await expect(
     renderSummary(
-      githubServerUrl,
-      actionUrl,
+      testContext,
       authResult,
       tokenCreationResults,
       provisionResults,
@@ -1293,8 +1278,7 @@ it("renders a failure reason when no suitable provisioner is found", async () =>
 
   await expect(
     renderSummary(
-      githubServerUrl,
-      actionUrl,
+      testContext,
       authResult,
       tokenCreationResults,
       provisionResults,
@@ -1367,8 +1351,7 @@ it("renders a failure reason when provisioning has no target results", async () 
 
   await expect(
     renderSummary(
-      githubServerUrl,
-      actionUrl,
+      testContext,
       authResult,
       tokenCreationResults,
       provisionResults,
@@ -1457,8 +1440,7 @@ it("renders a failure reason when provisioning partially fails across targets", 
 
   await expect(
     renderSummary(
-      githubServerUrl,
-      actionUrl,
+      testContext,
       authResult,
       tokenCreationResults,
       provisionResults,
@@ -1533,8 +1515,7 @@ it("renders a failure reason when provisioning fails for all targets", async () 
 
   await expect(
     renderSummary(
-      githubServerUrl,
-      actionUrl,
+      testContext,
       authResult,
       tokenCreationResults,
       provisionResults,
