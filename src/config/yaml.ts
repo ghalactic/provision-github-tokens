@@ -1,4 +1,4 @@
-import { parseDocument } from "yaml";
+import { parseDocument, type YAMLError } from "yaml";
 
 export function parseYaml(
   emptyValue: unknown,
@@ -8,23 +8,33 @@ export function parseYaml(
   const doc = parseDocument(source, { logLevel: "error", prettyErrors: true });
 
   if (doc.errors.length > 0) {
-    throw new ParseYamlError(new AggregateError(doc.errors), filePath);
+    throw new ParseYamlError(
+      new AggregateError(doc.errors),
+      doc.errors,
+      filePath,
+    );
   }
 
   try {
     return doc.contents === null ? emptyValue : doc.toJS();
   } catch (cause) {
-    throw new ParseYamlError(cause, filePath);
+    throw new ParseYamlError(cause, [], filePath);
   }
 }
 
 export class ParseYamlError extends Error {
+  public readonly yamlErrors: YAMLError[];
   public readonly filePath?: string;
 
-  constructor(cause: unknown, filePath: string | undefined) {
+  constructor(
+    cause: unknown,
+    yamlErrors: YAMLError[],
+    filePath: string | undefined,
+  ) {
     super(filePath ? `Invalid YAML in ${filePath}` : "Invalid YAML", {
       cause,
     });
+    this.yamlErrors = yamlErrors;
     this.filePath = filePath;
   }
 }

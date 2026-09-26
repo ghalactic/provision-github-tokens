@@ -67000,20 +67000,26 @@ var import_yaml = __toESM(require_dist2(), 1);
 function parseYaml(emptyValue, source, filePath) {
   const doc = (0, import_yaml.parseDocument)(source, { logLevel: "error", prettyErrors: true });
   if (doc.errors.length > 0) {
-    throw new ParseYamlError(new AggregateError(doc.errors), filePath);
+    throw new ParseYamlError(
+      new AggregateError(doc.errors),
+      doc.errors,
+      filePath
+    );
   }
   try {
     return doc.contents === null ? emptyValue : doc.toJS();
   } catch (cause) {
-    throw new ParseYamlError(cause, filePath);
+    throw new ParseYamlError(cause, [], filePath);
   }
 }
 var ParseYamlError = class extends Error {
+  yamlErrors;
   filePath;
-  constructor(cause, filePath) {
+  constructor(cause, yamlErrors, filePath) {
     super(filePath ? `Invalid YAML in ${filePath}` : "Invalid YAML", {
       cause
     });
+    this.yamlErrors = yamlErrors;
     this.filePath = filePath;
   }
 };
