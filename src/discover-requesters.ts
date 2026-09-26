@@ -1,6 +1,7 @@
-import { debug, info, error as logError } from "@actions/core";
+import { debug, info, error as logError, warning } from "@actions/core";
 import type { AppRegistry } from "./app-registry.js";
 import { parseRequesterConfig } from "./config/requester-config.js";
+import { errorCause } from "./error.js";
 import { createRepoRef, type RepoReference } from "./github-reference.js";
 import { handleRequestError, type OctokitFactory } from "./octokit.js";
 import { pluralize } from "./pluralize.js";
@@ -11,7 +12,9 @@ const CONFIG_PATH = ".github/ghalactic/provision-github-tokens.yml";
 
 export type DiscoveredRequester = {
   requester: RepoReference;
-  config: RequesterConfig;
+  configPath: string;
+  config?: RequesterConfig;
+  configError?: Error;
 };
 
 export async function discoverRequesters(
@@ -20,6 +23,8 @@ export async function discoverRequesters(
   appsInput: AppInput[],
 ): Promise<Map<string, DiscoveredRequester>> {
   const discovered = new Map<string, DiscoveredRequester>();
+  let discoverCount = 0;
+  let configIssueCount = 0;
 
   for (const [, instReg] of appRegistry.provisioners) {
     const { installation, repos } = instReg;
@@ -68,8 +73,25 @@ export async function discoverRequesters(
 
       try {
         config = parseRequesterConfig(requester, CONFIG_PATH, configYaml);
-      } catch {
+      } catch (error) {
         logError(`Requester ${r.full_name} has invalid config`);
+
+        const cause = errorCause(error);
+
+        /* istanbul ignore next - parseRequesterConfig always throws with a cause - @preserve */
+        if (!cause) {
+          throw new Error(
+            "Invariant violation: Requester config error has no cause",
+            { cause: error },
+          );
+        }
+
+        ++configIssueCount;
+        discovered.set(r.full_name, {
+          requester,
+          configPath: CONFIG_PATH,
+          configError: cause,
+        });
 
         continue;
       }
@@ -96,11 +118,26 @@ export async function discoverRequesters(
           JSON.stringify(secretDecNames),
       );
 
-      discovered.set(r.full_name, { requester: requester, config });
+      ++discoverCount;
+      discovered.set(r.full_name, {
+        requester,
+        configPath: CONFIG_PATH,
+        config,
+      });
     }
   }
 
-  info(`Discovered ${pluralize(discovered.size, "requester", "requesters")}`);
+  info(`Discovered ${pluralize(discoverCount, "requester", "requesters")}`);
+
+  if (configIssueCount > 0) {
+    const pluralizedConfigIssues = pluralize(
+      configIssueCount,
+      "invalid requester config",
+      "invalid requester configs",
+    );
+
+    warning(`Found ${pluralizedConfigIssues}`);
+  }
 
   return discovered;
 }

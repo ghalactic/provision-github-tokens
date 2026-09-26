@@ -26,13 +26,15 @@ export function createAuthorizer(
 ): Authorizer {
   return {
     async authorize(requesters) {
-      for (const discovered of requesters.values()) {
-        for (const name in discovered.config.provision.secrets) {
+      for (const { config, requester } of requesters.values()) {
+        if (!config) continue;
+
+        for (const name in config.provision.secrets) {
           provisionAuthorizer.authorizeSecret(
             await createProvisionRequest(
-              discovered.requester,
+              requester,
               name,
-              discovered.config.provision.secrets[name],
+              config.provision.secrets[name],
             ),
           );
         }

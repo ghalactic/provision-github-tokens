@@ -12,6 +12,8 @@ import {
   createTestApps,
   createTestInstallationAccounts,
 } from "../test/github-api.js";
+import { ValidateError } from "./config/validation.js";
+import { ParseYamlError } from "./config/yaml.js";
 import {
   discoverRequesters,
   type DiscoveredRequester,
@@ -119,6 +121,7 @@ it("discovers requesters in a single account", async () => {
         "org-a/repo-a",
         {
           requester: { account: "org-a", repo: "repo-a" },
+          configPath: ".github/ghalactic/provision-github-tokens.yml",
           config: expect.objectContaining({}) as RequesterConfig,
         },
       ],
@@ -126,6 +129,7 @@ it("discovers requesters in a single account", async () => {
         "org-a/repo-c",
         {
           requester: { account: "org-a", repo: "repo-c" },
+          configPath: ".github/ghalactic/provision-github-tokens.yml",
           config: expect.objectContaining({}) as RequesterConfig,
         },
       ],
@@ -230,6 +234,7 @@ it("discovers requesters in multiple account", async () => {
         "org-a/repo-a",
         {
           requester: { account: "org-a", repo: "repo-a" },
+          configPath: ".github/ghalactic/provision-github-tokens.yml",
           config: expect.objectContaining({}) as RequesterConfig,
         },
       ],
@@ -237,6 +242,7 @@ it("discovers requesters in multiple account", async () => {
         "user-b/repo-c",
         {
           requester: { account: "user-b", repo: "repo-c" },
+          configPath: ".github/ghalactic/provision-github-tokens.yml",
           config: expect.objectContaining({}) as RequesterConfig,
         },
       ],
@@ -339,6 +345,7 @@ it("only discovers requesters once when multiple providers can access them", asy
         "org-a/repo-a",
         {
           requester: { account: "org-a", repo: "repo-a" },
+          configPath: ".github/ghalactic/provision-github-tokens.yml",
           config: expect.objectContaining({}) as RequesterConfig,
         },
       ],
@@ -346,6 +353,7 @@ it("only discovers requesters once when multiple providers can access them", asy
         "org-a/repo-b",
         {
           requester: { account: "org-a", repo: "repo-b" },
+          configPath: ".github/ghalactic/provision-github-tokens.yml",
           config: expect.objectContaining({}) as RequesterConfig,
         },
       ],
@@ -353,6 +361,7 @@ it("only discovers requesters once when multiple providers can access them", asy
         "org-a/repo-c",
         {
           requester: { account: "org-a", repo: "repo-c" },
+          configPath: ".github/ghalactic/provision-github-tokens.yml",
           config: expect.objectContaining({}) as RequesterConfig,
         },
       ],
@@ -450,6 +459,7 @@ it("skips requesters with invalid configuration", async () => {
     ::debug::Requester org-a/repo-c has 1 token declaration ["tokenB"]
     ::debug::Requester org-a/repo-c has 1 secret declaration ["SECRET_B"]
     Discovered 2 requesters
+    ::warning::Found 1 invalid requester config
     "
   `);
   expect(discovered).toEqual(
@@ -458,14 +468,107 @@ it("skips requesters with invalid configuration", async () => {
         "org-a/repo-a",
         {
           requester: { account: "org-a", repo: "repo-a" },
+          configPath: ".github/ghalactic/provision-github-tokens.yml",
           config: expect.objectContaining({}) as RequesterConfig,
+        },
+      ],
+      [
+        "org-a/repo-b",
+        {
+          requester: { account: "org-a", repo: "repo-b" },
+          configPath: ".github/ghalactic/provision-github-tokens.yml",
+          configError: expect.any(ValidateError) as Error,
         },
       ],
       [
         "org-a/repo-c",
         {
           requester: { account: "org-a", repo: "repo-c" },
+          configPath: ".github/ghalactic/provision-github-tokens.yml",
           config: expect.objectContaining({}) as RequesterConfig,
+        },
+      ],
+    ]),
+  );
+});
+
+it("skips requesters with invalid YAML configuration", async () => {
+  const [[orgA, [repoA, repoB]]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "org-a",
+    ["repo-a", "repo-b"],
+  ]);
+  const [[appA, [appAInstallationA]]] = createTestApps([
+    "App A",
+    {},
+    [[orgA, "selected"]],
+  ]);
+
+  const appRegistry = createTestAppRegistry({
+    app: appA,
+    provisioner: true,
+    installations: [[appAInstallationA, [repoA, repoB]]],
+  });
+
+  __setFiles([
+    [
+      repoA,
+      {
+        ".github/ghalactic/provision-github-tokens.yml": `
+          tokens:
+            tokenA:
+              repos: [repo-b]
+              permissions: { metadata: read }`,
+      },
+    ],
+    [
+      repoB,
+      {
+        ".github/ghalactic/provision-github-tokens.yml": `
+          tokens: [unclosed`,
+      },
+    ],
+  ]);
+
+  const octokitFactory = createOctokitFactory();
+
+  const discovered = await discoverRequesters(octokitFactory, appRegistry, [
+    {
+      appId: appA.id,
+      privateKey: appA.privateKey,
+      issuer: { enabled: false, roles: [] },
+      provisioner: { enabled: true },
+    },
+  ]);
+
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "::debug::Discovered requester org-a/repo-a
+    ::debug::Requester org-a/repo-a has 1 token declaration ["tokenA"]
+    ::debug::Requester org-a/repo-a has 0 secret declarations []
+    ::debug::Discovered requester org-a/repo-b
+    ::debug::Parsing of requester configuration failed: Invalid YAML in org-a/repo-b/.github/ghalactic/provision-github-tokens.yml
+    ::error::Requester org-a/repo-b has invalid config
+    Discovered 1 requester
+    ::warning::Found 1 invalid requester config
+    "
+  `);
+  expect(discovered).toEqual(
+    new Map([
+      [
+        "org-a/repo-a",
+        {
+          requester: { account: "org-a", repo: "repo-a" },
+          configPath: ".github/ghalactic/provision-github-tokens.yml",
+          config: expect.objectContaining({}) as RequesterConfig,
+        },
+      ],
+      [
+        "org-a/repo-b",
+        {
+          requester: { account: "org-a", repo: "repo-b" },
+          configPath: ".github/ghalactic/provision-github-tokens.yml",
+          configError: expect.any(ParseYamlError) as Error,
         },
       ],
     ]),

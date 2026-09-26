@@ -1,5 +1,6 @@
 import { expect, it } from "vitest";
 import { createTestTokenDec } from "../test/declaration.js";
+import { ValidateError } from "./config/validation.js";
 import type { DiscoveredRequester } from "./discover-requesters.js";
 import { registerTokenDeclarations } from "./register-token-declarations.js";
 import { createTokenDeclarationRegistry } from "./token-declaration-registry.js";
@@ -29,6 +30,7 @@ it("registers token declarations from discovered requesters", () => {
       "account-a/repo-a",
       {
         requester: { account: "account-a", repo: "repo-a" },
+        configPath: ".github/ghalactic/provision-github-tokens.yml",
         config: {
           $schema:
             "https://ghalactic.github.io/provision-github-tokens/schema/requester.v1.schema.json",
@@ -42,6 +44,7 @@ it("registers token declarations from discovered requesters", () => {
       "account-b/repo-b",
       {
         requester: { account: "account-b", repo: "repo-b" },
+        configPath: ".github/ghalactic/provision-github-tokens.yml",
         config: {
           $schema:
             "https://ghalactic.github.io/provision-github-tokens/schema/requester.v1.schema.json",
@@ -49,6 +52,14 @@ it("registers token declarations from discovered requesters", () => {
           tokens: { tokenC: declarationC },
           provision: { secrets: {} },
         },
+      },
+    ],
+    [
+      "account-c/repo-c",
+      {
+        requester: { account: "account-c", repo: "repo-c" },
+        configPath: ".github/ghalactic/provision-github-tokens.yml",
+        configError: new ValidateError("<error>", []),
       },
     ],
   ]);

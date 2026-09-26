@@ -65182,13 +65182,14 @@ function createTextTokenAuthExplainer() {
 function createAuthorizer(createProvisionRequest, provisionAuthorizer, tokenAuthorizer) {
   return {
     async authorize(requesters) {
-      for (const discovered of requesters.values()) {
-        for (const name in discovered.config.provision.secrets) {
+      for (const { config, requester } of requesters.values()) {
+        if (!config) continue;
+        for (const name in config.provision.secrets) {
           provisionAuthorizer.authorizeSecret(
             await createProvisionRequest(
-              discovered.requester,
+              requester,
               name,
-              discovered.config.provision.secrets[name]
+              config.provision.secrets[name]
             )
           );
         }
@@ -65226,6 +65227,9 @@ Token #${i2}:
 }
 
 // src/error.ts
+function errorCause(error2) {
+  return error2 instanceof Error && error2.cause instanceof Error ? error2.cause : void 0;
+}
 function errorMessage(error2) {
   return (error2 instanceof Error ? error2.message : String(error2)).trim();
 }
@@ -72850,6 +72854,8 @@ function normalizeRequesterConfig(definingRepo, config) {
 var CONFIG_PATH = ".github/ghalactic/provision-github-tokens.yml";
 async function discoverRequesters(octokitFactory, appRegistry, appsInput) {
   const discovered = /* @__PURE__ */ new Map();
+  let discoverCount = 0;
+  let configIssueCount = 0;
   for (const [, instReg] of appRegistry.provisioners) {
     const { installation, repos } = instReg;
     const octokit = octokitFactory.installationOctokit(
@@ -72886,8 +72892,21 @@ async function discoverRequesters(octokitFactory, appRegistry, appsInput) {
       let config;
       try {
         config = parseRequesterConfig(requester, CONFIG_PATH, configYaml);
-      } catch {
+      } catch (error2) {
         error(`Requester ${r2.full_name} has invalid config`);
+        const cause = errorCause(error2);
+        if (!cause) {
+          throw new Error(
+            "Invariant violation: Requester config error has no cause",
+            { cause: error2 }
+          );
+        }
+        ++configIssueCount;
+        discovered.set(r2.full_name, {
+          requester,
+          configPath: CONFIG_PATH,
+          configError: cause
+        });
         continue;
       }
       const tokenDecNames = Object.keys(config.tokens);
@@ -72908,10 +72927,23 @@ async function discoverRequesters(octokitFactory, appRegistry, appsInput) {
       debug(
         `Requester ${r2.full_name} has ${secretDecs} ` + JSON.stringify(secretDecNames)
       );
-      discovered.set(r2.full_name, { requester, config });
+      ++discoverCount;
+      discovered.set(r2.full_name, {
+        requester,
+        configPath: CONFIG_PATH,
+        config
+      });
     }
   }
-  info(`Discovered ${pluralize(discovered.size, "requester", "requesters")}`);
+  info(`Discovered ${pluralize(discoverCount, "requester", "requesters")}`);
+  if (configIssueCount > 0) {
+    const pluralizedConfigIssues = pluralize(
+      configIssueCount,
+      "invalid requester config",
+      "invalid requester configs"
+    );
+    warning(`Found ${pluralizedConfigIssues}`);
+  }
   return discovered;
 }
 
@@ -120383,7 +120415,8 @@ Secret #${i2}:
 
 // src/register-token-declarations.ts
 function registerTokenDeclarations(declarationRegistry, requesters) {
-  for (const [, { requester, config }] of requesters) {
+  for (const { requester, config } of requesters.values()) {
+    if (!config) continue;
     for (const [name, declaration] of Object.entries(config.tokens)) {
       declarationRegistry.registerDeclaration(requester, name, declaration);
     }
@@ -121218,6 +121251,7 @@ try {
 /* istanbul ignore next - never seen errors be nullish - @preserve */
 /* istanbul ignore next - never seen without an account login - @preserve */
 /* istanbul ignore next - Header guarantees string data - @preserve */
+/* istanbul ignore next - parseRequesterConfig always throws with a cause - @preserve */
 /* istanbul ignore else - @preserve */
 /* istanbul ignore file - TODO: remove coverage ignore - @preserve */
 /*! Bundled license information:

@@ -17,6 +17,7 @@ import {
 } from "../test/provision-request.js";
 import { createTestTokenRequestFactory } from "../test/token-request.js";
 import { createAuthorizer, type AuthorizeResult } from "./authorizer.js";
+import { ValidateError } from "./config/validation.js";
 import { createProvisionAuthorizer } from "./provision-authorizer.js";
 import { createProvisionRequestFactory } from "./provision-request.js";
 import { createTokenAuthorizer } from "./token-authorizer.js";
@@ -139,6 +140,7 @@ it("authorizes all requests and outputs the results", async () => {
   const result = await authorizer.authorize([
     {
       requester: { account: "account-a", repo: "repo-a" },
+      configPath: ".github/ghalactic/provision-github-tokens.yml",
       config: {
         $schema: "",
         dashboard: { enabled: true },
@@ -350,6 +352,7 @@ it("handles empty token requests", async () => {
   const result = await authorizer.authorize([
     {
       requester: { account: "account-a", repo: "repo-a" },
+      configPath: ".github/ghalactic/provision-github-tokens.yml",
       config: {
         $schema: "",
         dashboard: { enabled: true },
@@ -428,6 +431,50 @@ it("handles empty provision requests", async () => {
   );
 
   const result = await authorizer.authorize([]);
+
+  expect(result).toEqual({
+    provisionResults: [],
+    tokenResults: [],
+  } satisfies AuthorizeResult);
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "
+    ::warning::⚠️ No secrets were authorized
+
+    ::warning::⚠️ No tokens were authorized
+
+    "
+  `);
+});
+
+it("handles requester configs that can't be parsed", async () => {
+  const declarationRegistry = createTokenDeclarationRegistry();
+  const appRegistry = createTestAppRegistry();
+  const environmentResolver = createTestEnvironmentResolver();
+  const createProvisionRequest = createProvisionRequestFactory(
+    declarationRegistry,
+    appRegistry,
+    environmentResolver,
+  );
+  const createTokenRequest = createTestTokenRequestFactory();
+  const tokenAuthorizer = createTokenAuthorizer({ rules: [] });
+  const provisionAuthorizer = createProvisionAuthorizer(
+    createTokenRequest,
+    tokenAuthorizer,
+    { rules: { secrets: [] } },
+  );
+  const authorizer = createAuthorizer(
+    createProvisionRequest,
+    provisionAuthorizer,
+    tokenAuthorizer,
+  );
+
+  const result = await authorizer.authorize([
+    {
+      requester: { account: "account-a", repo: "repo-a" },
+      configPath: ".github/ghalactic/provision-github-tokens.yml",
+      configError: new ValidateError("<error>", []),
+    },
+  ]);
 
   expect(result).toEqual({
     provisionResults: [],

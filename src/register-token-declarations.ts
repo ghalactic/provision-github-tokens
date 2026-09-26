@@ -5,7 +5,9 @@ export function registerTokenDeclarations(
   declarationRegistry: TokenDeclarationRegistry,
   requesters: Map<string, DiscoveredRequester>,
 ): void {
-  for (const [, { requester, config }] of requesters) {
+  for (const { requester, config } of requesters.values()) {
+    if (!config) continue;
+
     for (const [name, declaration] of Object.entries(config.tokens)) {
       declarationRegistry.registerDeclaration(requester, name, declaration);
     }
