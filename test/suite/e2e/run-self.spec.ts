@@ -18,7 +18,7 @@ const PROVIDER_WORKFLOW_ID = "run-action-for-ci.yml";
 const fixturesPath = join(import.meta.dirname, "testdata");
 
 it(
-  "provider workflow produces expected summary",
+  "produces well-formed summaries",
   { concurrent: false, timeout: E2E_TIMEOUT },
   async ({ onTestFinished }) => {
     const { owner, repo, sha, downloadArtifact } = ghaContext;
@@ -49,7 +49,7 @@ it(
 );
 
 it(
-  "consumer can use provisioned token",
+  "provisions tokens that can be used",
   { concurrent: false, timeout: E2E_TIMEOUT },
   async ({ onTestFinished }) => {
     const { fixturesOctokit } = ghaContext;
