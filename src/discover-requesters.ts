@@ -1,4 +1,4 @@
-import { debug, info, error as logError, warning } from "@actions/core";
+import { debug, info, warning } from "@actions/core";
 import type { AppRegistry } from "./app-registry.js";
 import { parseRequesterConfig } from "./config/requester-config.js";
 import { errorCause } from "./error.js";
@@ -25,7 +25,6 @@ export async function discoverRequesters(
 ): Promise<Map<string, DiscoveredRequester>> {
   const discovered = new Map<string, DiscoveredRequester>();
   let discoverCount = 0;
-  let configIssueCount = 0;
 
   for (const [, instReg] of appRegistry.provisioners) {
     const { installation, repos } = instReg;
@@ -93,7 +92,7 @@ export async function discoverRequesters(
       try {
         config = parseRequesterConfig(requester, CONFIG_PATH, configYaml);
       } catch (error) {
-        logError(`Requester ${r.full_name} has invalid config`);
+        warning(`Requester ${r.full_name} has invalid config`);
 
         const cause = errorCause(error);
 
@@ -105,7 +104,6 @@ export async function discoverRequesters(
           );
         }
 
-        ++configIssueCount;
         discovered.set(r.full_name, {
           requester,
           configPath: CONFIG_PATH,
@@ -149,16 +147,6 @@ export async function discoverRequesters(
   }
 
   info(`Discovered ${pluralize(discoverCount, "requester", "requesters")}`);
-
-  if (configIssueCount > 0) {
-    const pluralizedConfigIssues = pluralize(
-      configIssueCount,
-      "invalid requester config",
-      "invalid requester configs",
-    );
-
-    warning(`Found ${pluralizedConfigIssues}`);
-  }
 
   return discovered;
 }

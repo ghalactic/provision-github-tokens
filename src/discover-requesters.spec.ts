@@ -509,12 +509,11 @@ it("skips requesters with invalid configuration", async () => {
     ::debug::Discovered requester org-a/repo-b
     ::debug::Parsing of requester configuration failed: Invalid requester configuration:
     ::debug::  - must be boolean (/tokens/tokenA/shared)
-    ::error::Requester org-a/repo-b has invalid config
+    ::warning::Requester org-a/repo-b has invalid config
     ::debug::Discovered requester org-a/repo-c
     ::debug::Requester org-a/repo-c has 1 token declaration ["tokenB"]
     ::debug::Requester org-a/repo-c has 1 secret declaration ["SECRET_B"]
     Discovered 2 requesters
-    ::warning::Found 1 invalid requester config
     "
   `);
   expect(discovered).toEqual(
@@ -615,9 +614,8 @@ it("skips requesters with invalid YAML configuration", async () => {
     ::debug::Requester org-a/repo-a has 0 secret declarations []
     ::debug::Discovered requester org-a/repo-b
     ::debug::Parsing of requester configuration failed: Invalid YAML in org-a/repo-b/.github/ghalactic/provision-github-tokens.yml
-    ::error::Requester org-a/repo-b has invalid config
+    ::warning::Requester org-a/repo-b has invalid config
     Discovered 1 requester
-    ::warning::Found 1 invalid requester config
     "
   `);
   expect(discovered).toEqual(

@@ -72861,7 +72861,6 @@ var CONFIG_PATH = ".github/ghalactic/provision-github-tokens.yml";
 async function discoverRequesters(octokitFactory, appRegistry, appsInput) {
   const discovered = /* @__PURE__ */ new Map();
   let discoverCount = 0;
-  let configIssueCount = 0;
   for (const [, instReg] of appRegistry.provisioners) {
     const { installation, repos } = instReg;
     const octokit = octokitFactory.installationOctokit(
@@ -72912,7 +72911,7 @@ async function discoverRequesters(octokitFactory, appRegistry, appsInput) {
       try {
         config = parseRequesterConfig(requester, CONFIG_PATH, configYaml);
       } catch (error2) {
-        error(`Requester ${r2.full_name} has invalid config`);
+        warning(`Requester ${r2.full_name} has invalid config`);
         const cause = errorCause(error2);
         if (!cause) {
           throw new Error(
@@ -72920,7 +72919,6 @@ async function discoverRequesters(octokitFactory, appRegistry, appsInput) {
             { cause: error2 }
           );
         }
-        ++configIssueCount;
         discovered.set(r2.full_name, {
           requester,
           configPath: CONFIG_PATH,
@@ -72957,14 +72955,6 @@ async function discoverRequesters(octokitFactory, appRegistry, appsInput) {
     }
   }
   info(`Discovered ${pluralize(discoverCount, "requester", "requesters")}`);
-  if (configIssueCount > 0) {
-    const pluralizedConfigIssues = pluralize(
-      configIssueCount,
-      "invalid requester config",
-      "invalid requester configs"
-    );
-    warning(`Found ${pluralizedConfigIssues}`);
-  }
   return discovered;
 }
 
