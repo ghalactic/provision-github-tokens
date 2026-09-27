@@ -13,6 +13,7 @@ const CONFIG_PATH = ".github/ghalactic/provision-github-tokens.yml";
 export type DiscoveredRequester = {
   requester: RepoReference;
   configPath: string;
+  configSha: string;
   config?: RequesterConfig;
   configError?: Error;
 };
@@ -38,6 +39,23 @@ export async function discoverRequesters(
       if (discovered.has(r.full_name)) continue;
 
       const requester = createRepoRef(r.owner.login, r.name);
+
+      const commits = await octokit.rest.repos.listCommits({
+        owner: requester.account,
+        repo: requester.repo,
+        path: CONFIG_PATH,
+        per_page: 1,
+      });
+
+      const head = commits.data[0];
+
+      if (!head) {
+        debug(`Repo ${r.full_name} isn't a requester`);
+
+        continue;
+      }
+
+      const configSha = head.sha;
       let configYaml: string;
 
       try {
@@ -45,6 +63,7 @@ export async function discoverRequesters(
           owner: requester.account,
           repo: requester.repo,
           path: CONFIG_PATH,
+          ref: configSha,
           mediaType: { format: "raw" },
         });
 
@@ -90,6 +109,7 @@ export async function discoverRequesters(
         discovered.set(r.full_name, {
           requester,
           configPath: CONFIG_PATH,
+          configSha,
           configError: cause,
         });
 
@@ -123,6 +143,7 @@ export async function discoverRequesters(
         requester,
         configPath: CONFIG_PATH,
         config,
+        configSha,
       });
     }
   }

@@ -54,7 +54,12 @@ it("reads comprehensive provider config", async () => {
   });
   const { octokitFactory } = createTestOctokitFactory(appRegistry);
 
-  __setFiles([[repoA, { "path/to/provider-config.yml": yaml }]]);
+  __setFiles(repoA.full_name, {
+    "path/to/provider-config.yml": {
+      content: yaml,
+      sha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    },
+  });
 
   expect(
     await readProviderConfig(

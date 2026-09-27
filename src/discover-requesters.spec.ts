@@ -5,11 +5,13 @@ import {
 } from "../__mocks__/@actions/core.js";
 import {
   __reset as __resetOctokit,
+  __setCommits,
   __setFiles,
 } from "../__mocks__/@octokit/action.js";
 import { createTestAppRegistry } from "../test/app-registry.js";
 import {
   createTestApps,
+  createTestCommit,
   createTestInstallationAccounts,
 } from "../test/github-api.js";
 import { ValidateError } from "./config/validation.js";
@@ -48,11 +50,20 @@ it("discovers requesters in a single account", async () => {
     installations: [[appAInstallationA, [repoA, repoB, repoC]]],
   });
 
-  __setFiles([
-    [
-      repoA,
-      {
-        ".github/ghalactic/provision-github-tokens.yml": `
+  __setCommits(repoA.full_name, [
+    createTestCommit("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "Add config", [
+      ".github/ghalactic/provision-github-tokens.yml",
+    ]),
+  ]);
+  __setCommits(repoC.full_name, [
+    createTestCommit("cccccccccccccccccccccccccccccccccccccccc", "Add config", [
+      ".github/ghalactic/provision-github-tokens.yml",
+    ]),
+  ]);
+
+  __setFiles(repoA.full_name, {
+    ".github/ghalactic/provision-github-tokens.yml": {
+      content: `
           tokens:
             tokenA:
               repos: [repo-b]
@@ -64,12 +75,12 @@ it("discovers requesters in a single account", async () => {
                 github:
                   account:
                     actions: true`,
-      },
-    ],
-    [
-      repoC,
-      {
-        ".github/ghalactic/provision-github-tokens.yml": `
+      sha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    },
+  });
+  __setFiles(repoC.full_name, {
+    ".github/ghalactic/provision-github-tokens.yml": {
+      content: `
           tokens:
             tokenB:
               repos: [repo-a, repo-b]
@@ -89,9 +100,9 @@ it("discovers requesters in a single account", async () => {
                 github:
                   repo:
                     dependabot: true`,
-      },
-    ],
-  ]);
+      sha: "cccccccccccccccccccccccccccccccccccccccc",
+    },
+  });
 
   const octokitFactory = createOctokitFactory();
 
@@ -122,6 +133,7 @@ it("discovers requesters in a single account", async () => {
         {
           requester: { account: "org-a", repo: "repo-a" },
           configPath: ".github/ghalactic/provision-github-tokens.yml",
+          configSha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
           config: expect.objectContaining({}) as RequesterConfig,
         },
       ],
@@ -130,6 +142,7 @@ it("discovers requesters in a single account", async () => {
         {
           requester: { account: "org-a", repo: "repo-c" },
           configPath: ".github/ghalactic/provision-github-tokens.yml",
+          configSha: "cccccccccccccccccccccccccccccccccccccccc",
           config: expect.objectContaining({}) as RequesterConfig,
         },
       ],
@@ -162,11 +175,20 @@ it("discovers requesters in multiple account", async () => {
     },
   );
 
-  __setFiles([
-    [
-      repoA,
-      {
-        ".github/ghalactic/provision-github-tokens.yml": `
+  __setCommits(repoA.full_name, [
+    createTestCommit("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "Add config", [
+      ".github/ghalactic/provision-github-tokens.yml",
+    ]),
+  ]);
+  __setCommits(repoC.full_name, [
+    createTestCommit("cccccccccccccccccccccccccccccccccccccccc", "Add config", [
+      ".github/ghalactic/provision-github-tokens.yml",
+    ]),
+  ]);
+
+  __setFiles(repoA.full_name, {
+    ".github/ghalactic/provision-github-tokens.yml": {
+      content: `
           tokens:
             tokenA:
               repos: [repo-b]
@@ -178,12 +200,12 @@ it("discovers requesters in multiple account", async () => {
                 github:
                   account:
                     actions: true`,
-      },
-    ],
-    [
-      repoC,
-      {
-        ".github/ghalactic/provision-github-tokens.yml": `
+      sha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    },
+  });
+  __setFiles(repoC.full_name, {
+    ".github/ghalactic/provision-github-tokens.yml": {
+      content: `
           tokens:
             tokenA:
               repos: [repo-d]
@@ -195,9 +217,9 @@ it("discovers requesters in multiple account", async () => {
                 github:
                   account:
                     actions: true`,
-      },
-    ],
-  ]);
+      sha: "cccccccccccccccccccccccccccccccccccccccc",
+    },
+  });
 
   const octokitFactory = createOctokitFactory();
 
@@ -235,6 +257,7 @@ it("discovers requesters in multiple account", async () => {
         {
           requester: { account: "org-a", repo: "repo-a" },
           configPath: ".github/ghalactic/provision-github-tokens.yml",
+          configSha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
           config: expect.objectContaining({}) as RequesterConfig,
         },
       ],
@@ -243,6 +266,7 @@ it("discovers requesters in multiple account", async () => {
         {
           requester: { account: "user-b", repo: "repo-c" },
           configPath: ".github/ghalactic/provision-github-tokens.yml",
+          configSha: "cccccccccccccccccccccccccccccccccccccccc",
           config: expect.objectContaining({}) as RequesterConfig,
         },
       ],
@@ -276,38 +300,52 @@ it("only discovers requesters once when multiple providers can access them", asy
     },
   );
 
-  __setFiles([
-    [
-      repoA,
-      {
-        ".github/ghalactic/provision-github-tokens.yml": `
+  __setCommits(repoA.full_name, [
+    createTestCommit("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "Add config", [
+      ".github/ghalactic/provision-github-tokens.yml",
+    ]),
+  ]);
+  __setCommits(repoB.full_name, [
+    createTestCommit("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", "Add config", [
+      ".github/ghalactic/provision-github-tokens.yml",
+    ]),
+  ]);
+  __setCommits(repoC.full_name, [
+    createTestCommit("cccccccccccccccccccccccccccccccccccccccc", "Add config", [
+      ".github/ghalactic/provision-github-tokens.yml",
+    ]),
+  ]);
+
+  __setFiles(repoA.full_name, {
+    ".github/ghalactic/provision-github-tokens.yml": {
+      content: `
           tokens:
             tokenA:
               repos: [repo-b]
               permissions: { metadata: read }`,
-      },
-    ],
-    [
-      repoB,
-      {
-        ".github/ghalactic/provision-github-tokens.yml": `
+      sha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    },
+  });
+  __setFiles(repoB.full_name, {
+    ".github/ghalactic/provision-github-tokens.yml": {
+      content: `
           tokens:
             tokenB:
               repos: [repo-a, repo-c]
               permissions: { metadata: read }`,
-      },
-    ],
-    [
-      repoC,
-      {
-        ".github/ghalactic/provision-github-tokens.yml": `
+      sha: "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    },
+  });
+  __setFiles(repoC.full_name, {
+    ".github/ghalactic/provision-github-tokens.yml": {
+      content: `
           tokens:
             tokenC:
               repos: [repo-b]
               permissions: { metadata: read }`,
-      },
-    ],
-  ]);
+      sha: "cccccccccccccccccccccccccccccccccccccccc",
+    },
+  });
 
   const octokitFactory = createOctokitFactory();
 
@@ -346,6 +384,7 @@ it("only discovers requesters once when multiple providers can access them", asy
         {
           requester: { account: "org-a", repo: "repo-a" },
           configPath: ".github/ghalactic/provision-github-tokens.yml",
+          configSha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
           config: expect.objectContaining({}) as RequesterConfig,
         },
       ],
@@ -354,6 +393,7 @@ it("only discovers requesters once when multiple providers can access them", asy
         {
           requester: { account: "org-a", repo: "repo-b" },
           configPath: ".github/ghalactic/provision-github-tokens.yml",
+          configSha: "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
           config: expect.objectContaining({}) as RequesterConfig,
         },
       ],
@@ -362,6 +402,7 @@ it("only discovers requesters once when multiple providers can access them", asy
         {
           requester: { account: "org-a", repo: "repo-c" },
           configPath: ".github/ghalactic/provision-github-tokens.yml",
+          configSha: "cccccccccccccccccccccccccccccccccccccccc",
           config: expect.objectContaining({}) as RequesterConfig,
         },
       ],
@@ -388,11 +429,25 @@ it("skips requesters with invalid configuration", async () => {
     installations: [[appAInstallationA, [repoA, repoB, repoC]]],
   });
 
-  __setFiles([
-    [
-      repoA,
-      {
-        ".github/ghalactic/provision-github-tokens.yml": `
+  __setCommits(repoA.full_name, [
+    createTestCommit("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "Add config", [
+      ".github/ghalactic/provision-github-tokens.yml",
+    ]),
+  ]);
+  __setCommits(repoB.full_name, [
+    createTestCommit("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", "Add config", [
+      ".github/ghalactic/provision-github-tokens.yml",
+    ]),
+  ]);
+  __setCommits(repoC.full_name, [
+    createTestCommit("cccccccccccccccccccccccccccccccccccccccc", "Add config", [
+      ".github/ghalactic/provision-github-tokens.yml",
+    ]),
+  ]);
+
+  __setFiles(repoA.full_name, {
+    ".github/ghalactic/provision-github-tokens.yml": {
+      content: `
             tokens:
               tokenA:
                 repos: [repo-b]
@@ -404,23 +459,23 @@ it("skips requesters with invalid configuration", async () => {
                   github:
                     account:
                       actions: true`,
-      },
-    ],
-    [
-      repoB,
-      {
-        ".github/ghalactic/provision-github-tokens.yml": `
+      sha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    },
+  });
+  __setFiles(repoB.full_name, {
+    ".github/ghalactic/provision-github-tokens.yml": {
+      content: `
           tokens:
             tokenA:
               repos: [repo-b]
               permissions: { metadata: read }
               shared: yes`,
-      },
-    ],
-    [
-      repoC,
-      {
-        ".github/ghalactic/provision-github-tokens.yml": `
+      sha: "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    },
+  });
+  __setFiles(repoC.full_name, {
+    ".github/ghalactic/provision-github-tokens.yml": {
+      content: `
           tokens:
             tokenB:
               repos: [repo-a, repo-b]
@@ -432,9 +487,9 @@ it("skips requesters with invalid configuration", async () => {
                 github:
                   repo:
                     codespaces: true`,
-      },
-    ],
-  ]);
+      sha: "cccccccccccccccccccccccccccccccccccccccc",
+    },
+  });
 
   const octokitFactory = createOctokitFactory();
 
@@ -469,6 +524,7 @@ it("skips requesters with invalid configuration", async () => {
         {
           requester: { account: "org-a", repo: "repo-a" },
           configPath: ".github/ghalactic/provision-github-tokens.yml",
+          configSha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
           config: expect.objectContaining({}) as RequesterConfig,
         },
       ],
@@ -477,6 +533,7 @@ it("skips requesters with invalid configuration", async () => {
         {
           requester: { account: "org-a", repo: "repo-b" },
           configPath: ".github/ghalactic/provision-github-tokens.yml",
+          configSha: "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
           configError: expect.any(ValidateError) as Error,
         },
       ],
@@ -485,6 +542,7 @@ it("skips requesters with invalid configuration", async () => {
         {
           requester: { account: "org-a", repo: "repo-c" },
           configPath: ".github/ghalactic/provision-github-tokens.yml",
+          configSha: "cccccccccccccccccccccccccccccccccccccccc",
           config: expect.objectContaining({}) as RequesterConfig,
         },
       ],
@@ -511,25 +569,34 @@ it("skips requesters with invalid YAML configuration", async () => {
     installations: [[appAInstallationA, [repoA, repoB]]],
   });
 
-  __setFiles([
-    [
-      repoA,
-      {
-        ".github/ghalactic/provision-github-tokens.yml": `
+  __setCommits(repoA.full_name, [
+    createTestCommit("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "Add config", [
+      ".github/ghalactic/provision-github-tokens.yml",
+    ]),
+  ]);
+  __setCommits(repoB.full_name, [
+    createTestCommit("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", "Add config", [
+      ".github/ghalactic/provision-github-tokens.yml",
+    ]),
+  ]);
+
+  __setFiles(repoA.full_name, {
+    ".github/ghalactic/provision-github-tokens.yml": {
+      content: `
           tokens:
             tokenA:
               repos: [repo-b]
               permissions: { metadata: read }`,
-      },
-    ],
-    [
-      repoB,
-      {
-        ".github/ghalactic/provision-github-tokens.yml": `
+      sha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    },
+  });
+  __setFiles(repoB.full_name, {
+    ".github/ghalactic/provision-github-tokens.yml": {
+      content: `
           tokens: [unclosed`,
-      },
-    ],
-  ]);
+      sha: "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    },
+  });
 
   const octokitFactory = createOctokitFactory();
 
@@ -560,6 +627,7 @@ it("skips requesters with invalid YAML configuration", async () => {
         {
           requester: { account: "org-a", repo: "repo-a" },
           configPath: ".github/ghalactic/provision-github-tokens.yml",
+          configSha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
           config: expect.objectContaining({}) as RequesterConfig,
         },
       ],
@@ -568,9 +636,56 @@ it("skips requesters with invalid YAML configuration", async () => {
         {
           requester: { account: "org-a", repo: "repo-b" },
           configPath: ".github/ghalactic/provision-github-tokens.yml",
+          configSha: "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
           configError: expect.any(ParseYamlError) as Error,
         },
       ],
     ]),
   );
+});
+
+it("skips requesters whose config no longer exists", async () => {
+  const [[orgA, [repoA]]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "org-a",
+    ["repo-a"],
+  ]);
+  const [[appA, [appAInstallationA]]] = createTestApps([
+    "App A",
+    {},
+    [[orgA, "selected"]],
+  ]);
+
+  const appRegistry = createTestAppRegistry({
+    app: appA,
+    provisioner: true,
+    installations: [[appAInstallationA, [repoA]]],
+  });
+
+  __setCommits(repoA.full_name, [
+    createTestCommit(
+      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "Delete config",
+      [".github/ghalactic/provision-github-tokens.yml"],
+    ),
+  ]);
+
+  const octokitFactory = createOctokitFactory();
+
+  const discovered = await discoverRequesters(octokitFactory, appRegistry, [
+    {
+      appId: appA.id,
+      privateKey: appA.privateKey,
+      issuer: { enabled: false, roles: [] },
+      provisioner: { enabled: true },
+    },
+  ]);
+
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "::debug::Repo org-a/repo-a isn't a requester
+    Discovered 0 requesters
+    "
+  `);
+  expect(discovered).toEqual(new Map());
 });

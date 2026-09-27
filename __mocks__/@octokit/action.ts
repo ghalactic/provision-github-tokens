@@ -4,6 +4,7 @@ import type { RestEndpointMethodTypes } from "@octokit/action";
 import { RequestError } from "@octokit/request-error";
 import stringify from "fast-json-stable-stringify";
 import type {
+  Commit,
   Environment,
   Installation,
   Issue,
@@ -25,7 +26,8 @@ let installationTokens: {
   permissions: Record<string, string>;
 }[];
 let environments: Record<string, Environment[]>;
-let files: Record<string, Record<string, string>>;
+let files: Record<string, Record<string, { content: string; sha: string }>>;
+let commits: Record<string, Commit[]>;
 let orgKeys: Record<
   string,
   { actions?: TestKeyPair; codespaces?: TestKeyPair; dependabot?: TestKeyPair }
@@ -67,6 +69,7 @@ export function __reset() {
   installationTokens = [];
   environments = {};
   files = {};
+  commits = {};
   orgKeys = {};
   repoKeys = {};
   repoIssueLabels = {};
@@ -106,10 +109,14 @@ export function __setEnvironments(
 }
 
 export function __setFiles(
-  newFiles: [repo: Repo, files: Record<string, string>][],
+  repo: string,
+  newFiles: Record<string, { content: string; sha: string }>,
 ) {
-  files = {};
-  for (const [repo, f] of newFiles) files[repo.full_name] = f;
+  files[repo] = newFiles;
+}
+
+export function __setCommits(repo: string, newCommits: Commit[]) {
+  commits[repo] = newCommits;
 }
 
 export function __setOrgKeys(
@@ -615,8 +622,42 @@ export function Octokit({
 
               const file = files[r.full_name]?.[path];
 
-              if (typeof file === "string") return { data: file };
+              if (file) return { data: file.content };
               throw new TestRequestError(404);
+            }
+          }
+
+          throw new TestRequestError(404);
+        },
+
+        listCommits: async ({
+          owner,
+          repo,
+          path,
+        }: RestEndpointMethodTypes["repos"]["listCommits"]["parameters"]) => {
+          throwIfEndpointError("repos.listCommits");
+
+          for (const [installation, repos] of installations) {
+            if (appId != null && installation.app_id !== appId) {
+              continue;
+            }
+            if (installationId != null && installation.id !== installationId) {
+              continue;
+            }
+
+            for (const r of repos) {
+              if (r.full_name !== `${owner}/${repo}`) continue;
+
+              const per_page = 2;
+              const repoCommits = commits[r.full_name] ?? [];
+              const matching =
+                path == null
+                  ? repoCommits
+                  : repoCommits.filter((c) =>
+                      c.files?.some((f) => f.filename === path),
+                    );
+
+              return { data: matching.slice(0, per_page) };
             }
           }
 

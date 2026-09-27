@@ -31,6 +31,7 @@ it("registers token declarations from discovered requesters", () => {
       {
         requester: { account: "account-a", repo: "repo-a" },
         configPath: ".github/ghalactic/provision-github-tokens.yml",
+        configSha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
         config: {
           $schema:
             "https://ghalactic.github.io/provision-github-tokens/schema/requester.v1.schema.json",
@@ -45,6 +46,7 @@ it("registers token declarations from discovered requesters", () => {
       {
         requester: { account: "account-b", repo: "repo-b" },
         configPath: ".github/ghalactic/provision-github-tokens.yml",
+        configSha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
         config: {
           $schema:
             "https://ghalactic.github.io/provision-github-tokens/schema/requester.v1.schema.json",
@@ -59,6 +61,7 @@ it("registers token declarations from discovered requesters", () => {
       {
         requester: { account: "account-c", repo: "repo-c" },
         configPath: ".github/ghalactic/provision-github-tokens.yml",
+        configSha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
         configError: new ValidateError("<error>", []),
       },
     ],

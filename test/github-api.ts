@@ -5,6 +5,7 @@ import { createHash } from "node:crypto";
 import openapiSampler from "openapi-sampler";
 import type {
   App,
+  Commit,
   Environment,
   Installation,
   InstallationAccount,
@@ -50,6 +51,12 @@ const sampleIssue = openapiSampler.sample(
     "/repos/{owner}/{repo}/issues/{issue_number}"
   ].get.responses["200"].content["application/json"].schema,
 ) as Issue;
+
+const sampleCommit = openapiSampler.sample(
+  openapi.schemas["api.github.com.deref"].paths[
+    "/repos/{owner}/{repo}/commits/{ref}"
+  ].get.responses["200"].content["application/json"].schema,
+) as Commit;
 
 export type TestApp = App & {
   privateKey: string;
@@ -199,6 +206,28 @@ export function createTestIssue(
     title,
     body,
     labels: labels.map((name) => ({ name })),
+  };
+}
+
+export function createTestCommit(
+  sha: string,
+  message: string,
+  filenames: string[] = [],
+): Commit {
+  const sampleFile = sampleCommit.files?.[0];
+
+  if (!sampleFile) {
+    throw new Error("Invariant violation: sampleCommit has no files");
+  }
+
+  return {
+    ...sampleCommit,
+    sha,
+    commit: { ...sampleCommit.commit, message },
+    files: filenames.map((filename) => ({
+      ...sampleFile,
+      filename,
+    })),
   };
 }
 

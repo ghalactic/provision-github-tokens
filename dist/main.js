@@ -72872,12 +72872,25 @@ async function discoverRequesters(octokitFactory, appRegistry, appsInput) {
     for (const r2 of repos) {
       if (discovered.has(r2.full_name)) continue;
       const requester = createRepoRef(r2.owner.login, r2.name);
+      const commits = await octokit.rest.repos.listCommits({
+        owner: requester.account,
+        repo: requester.repo,
+        path: CONFIG_PATH,
+        per_page: 1
+      });
+      const head = commits.data[0];
+      if (!head) {
+        debug(`Repo ${r2.full_name} isn't a requester`);
+        continue;
+      }
+      const configSha = head.sha;
       let configYaml;
       try {
         const res = await octokit.rest.repos.getContent({
           owner: requester.account,
           repo: requester.repo,
           path: CONFIG_PATH,
+          ref: configSha,
           mediaType: { format: "raw" }
         });
         if (typeof res.data !== "string") {
@@ -72911,6 +72924,7 @@ async function discoverRequesters(octokitFactory, appRegistry, appsInput) {
         discovered.set(r2.full_name, {
           requester,
           configPath: CONFIG_PATH,
+          configSha,
           configError: cause
         });
         continue;
@@ -72937,7 +72951,8 @@ async function discoverRequesters(octokitFactory, appRegistry, appsInput) {
       discovered.set(r2.full_name, {
         requester,
         configPath: CONFIG_PATH,
-        config
+        config,
+        configSha
       });
     }
   }
