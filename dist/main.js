@@ -24954,12 +24954,12 @@ var require_core = __commonJS({
           return this;
         }
         keywordMetaschema.call(this, def);
-        const definition2 = {
+        const definition3 = {
           ...def,
           type: (0, dataType_1.getJSONTypes)(def.type),
           schemaType: (0, dataType_1.getJSONTypes)(def.schemaType)
         };
-        (0, util_1.eachItem)(keyword, definition2.type.length === 0 ? (k2) => addRule.call(this, k2, definition2) : (k2) => definition2.type.forEach((t2) => addRule.call(this, k2, definition2, t2)));
+        (0, util_1.eachItem)(keyword, definition3.type.length === 0 ? (k2) => addRule.call(this, k2, definition3) : (k2) => definition3.type.forEach((t2) => addRule.call(this, k2, definition3, t2)));
         return this;
       }
       getKeyword(keyword) {
@@ -25152,9 +25152,9 @@ var require_core = __commonJS({
         throw new Error('$data keyword must have "code" or "validate" function');
       }
     }
-    function addRule(keyword, definition2, dataType) {
+    function addRule(keyword, definition3, dataType) {
       var _a2;
-      const post = definition2 === null || definition2 === void 0 ? void 0 : definition2.post;
+      const post = definition3 === null || definition3 === void 0 ? void 0 : definition3.post;
       if (dataType && post)
         throw new Error('keyword with "post" flag cannot have "type"');
       const { RULES } = this;
@@ -25164,22 +25164,22 @@ var require_core = __commonJS({
         RULES.rules.push(ruleGroup);
       }
       RULES.keywords[keyword] = true;
-      if (!definition2)
+      if (!definition3)
         return;
       const rule = {
         keyword,
         definition: {
-          ...definition2,
-          type: (0, dataType_1.getJSONTypes)(definition2.type),
-          schemaType: (0, dataType_1.getJSONTypes)(definition2.schemaType)
+          ...definition3,
+          type: (0, dataType_1.getJSONTypes)(definition3.type),
+          schemaType: (0, dataType_1.getJSONTypes)(definition3.schemaType)
         }
       };
-      if (definition2.before)
-        addBeforeRule.call(this, ruleGroup, rule, definition2.before);
+      if (definition3.before)
+        addBeforeRule.call(this, ruleGroup, rule, definition3.before);
       else
         ruleGroup.rules.push(rule);
       RULES.all[keyword] = rule;
-      (_a2 = definition2.implements) === null || _a2 === void 0 ? void 0 : _a2.forEach((kwd) => this.addKeyword(kwd));
+      (_a2 = definition3.implements) === null || _a2 === void 0 ? void 0 : _a2.forEach((kwd) => this.addKeyword(kwd));
     }
     function addBeforeRule(ruleGroup, rule, before) {
       const i2 = ruleGroup.rules.findIndex((_rule) => _rule.keyword === before);
@@ -64910,6 +64910,15 @@ function toMarkdown2(children) {
 function blockquote2(...children) {
   return { type: "blockquote", children };
 }
+function definition2(identifier, url) {
+  return {
+    type: "definition",
+    identifier,
+    label: identifier,
+    url: url.toString(),
+    title: null
+  };
+}
 function emphasis2(...children) {
   return { type: "emphasis", children };
 }
@@ -64922,8 +64931,14 @@ function heading2(depth, ...children) {
 function inlineCode2(code2) {
   return { type: "inlineCode", value: code2 };
 }
-function link2(url, ...children) {
-  return { type: "link", url: url.toString(), children };
+function linkReference2(referenceType, identifier, ...children) {
+  return {
+    type: "linkReference",
+    identifier,
+    label: identifier,
+    referenceType,
+    children
+  };
 }
 function paragraph2(...children) {
   return { type: "paragraph", children };
@@ -120489,12 +120504,13 @@ function renderSummary(context, authResult, tokenCreationResults, provisionResul
         "TIP",
         paragraph2(
           text2("Need help getting started? See the "),
-          link2(
-            "https://github.com/ghalactic/provision-github-tokens#readme",
-            text2("docs")
-          ),
+          linkReference2("shortcut", "docs", text2("docs")),
           text2(".")
         )
+      ),
+      definition2(
+        "docs",
+        "https://github.com/ghalactic/provision-github-tokens#readme"
       )
     ];
   }
@@ -120629,26 +120645,14 @@ function renderSummary(context, authResult, tokenCreationResults, provisionResul
     );
     const ast = [];
     for (const [identifier, url] of entries) {
-      ast.push({
-        type: "definition",
-        identifier,
-        label: identifier,
-        url,
-        title: null
-      });
+      ast.push(definition2(identifier, url));
     }
     return ast;
   }
   function accountOrRepoLinkRef(accountOrRepo) {
     const slug = accountOrRepoRefToString(accountOrRepo);
     const identifier = `${LINK_REF_PREFIX}${slug}`.toLowerCase();
-    return {
-      type: "linkReference",
-      identifier,
-      label: identifier,
-      referenceType: "full",
-      children: [text2(slug)]
-    };
+    return linkReference2("full", identifier, text2(slug));
   }
   function addAccountOrRepoDef(accountOrRepo) {
     const slug = accountOrRepoRefToString(accountOrRepo).toLowerCase();

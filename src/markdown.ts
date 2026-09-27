@@ -3,10 +3,11 @@ import type {
   BlockContent,
   Blockquote,
   Code,
+  Definition,
   Emphasis,
   Heading,
   InlineCode,
-  Link,
+  LinkReference,
   List,
   ListItem,
   Paragraph,
@@ -46,6 +47,16 @@ export function details(
   ];
 }
 
+export function definition(identifier: string, url: string | URL): Definition {
+  return {
+    type: "definition",
+    identifier,
+    label: identifier,
+    url: url.toString(),
+    title: null,
+  };
+}
+
 export function emphasis(...children: Emphasis["children"]): Emphasis {
   return { type: "emphasis", children };
 }
@@ -76,8 +87,18 @@ export function inlineCode(code: string): InlineCode {
   return { type: "inlineCode", value: code };
 }
 
-export function link(url: string | URL, ...children: Link["children"]): Link {
-  return { type: "link", url: url.toString(), children };
+export function linkReference(
+  referenceType: "full" | "shortcut",
+  identifier: string,
+  ...children: LinkReference["children"]
+): LinkReference {
+  return {
+    type: "linkReference",
+    identifier,
+    label: identifier,
+    referenceType,
+    children,
+  };
 }
 
 export function paragraph(...children: Paragraph["children"]): Paragraph {

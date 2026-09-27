@@ -8,11 +8,12 @@ import {
 import { FAIL_ICON, PASS_ICON } from "./icon.js";
 import { isFullyProvisioned } from "./is-fully-provisioned.js";
 import {
+  definition,
   emphasis,
   gfmAlert,
   heading,
   inlineCode,
-  link,
+  linkReference,
   paragraph,
   table,
   text,
@@ -93,12 +94,13 @@ export function renderSummary(
         "TIP",
         paragraph(
           text("Need help getting started? See the "),
-          link(
-            "https://github.com/ghalactic/provision-github-tokens#readme",
-            text("docs"),
-          ),
+          linkReference("shortcut", "docs", text("docs")),
           text("."),
         ),
+      ),
+      definition(
+        "docs",
+        "https://github.com/ghalactic/provision-github-tokens#readme",
       ),
     ];
   }
@@ -286,13 +288,7 @@ export function renderSummary(
     const ast: RootContent[] = [];
 
     for (const [identifier, url] of entries) {
-      ast.push({
-        type: "definition",
-        identifier,
-        label: identifier,
-        url,
-        title: null,
-      });
+      ast.push(definition(identifier, url));
     }
 
     return ast;
@@ -304,13 +300,7 @@ export function renderSummary(
     const slug = accountOrRepoRefToString(accountOrRepo);
     const identifier = `${LINK_REF_PREFIX}${slug}`.toLowerCase();
 
-    return {
-      type: "linkReference",
-      identifier,
-      label: identifier,
-      referenceType: "full",
-      children: [text(slug)],
-    };
+    return linkReference("full", identifier, text(slug));
   }
 
   function addAccountOrRepoDef(accountOrRepo: AccountOrRepoReference): string {
