@@ -229,7 +229,12 @@ export function Octokit({
           return listIssuesForRepo(
             appId,
             installationId,
-            params as { owner: string; repo: string; state?: string },
+            params as {
+              owner: string;
+              repo: string;
+              state?: string;
+              labels?: string | string[];
+            },
           );
         }
 
@@ -831,11 +836,23 @@ async function* getAllEnvironments(appId: number, installationId: number) {
 async function* listIssuesForRepo(
   appId: number,
   installationId: number,
-  options: { owner: string; repo: string; state?: string },
+  options: {
+    owner: string;
+    repo: string;
+    state?: string;
+    labels?: string | string[];
+  },
 ) {
   throwIfEndpointError("issues.listForRepo");
 
   const per_page = 2;
+  const labels =
+    options.labels == null
+      ? undefined
+      : (Array.isArray(options.labels)
+          ? options.labels
+          : options.labels.split(",")
+        ).map((label) => label.trim());
   let page = [];
 
   for (const [installation, repos] of installations) {
@@ -849,6 +866,10 @@ async function* listIssuesForRepo(
       for (const issue of issues[r.full_name] ?? []) {
         if (options.state != null && issue.state !== options.state) continue;
 
+        if (labels != null && !labels.every((l) => issueHasLabel(issue, l))) {
+          continue;
+        }
+
         page.push(issue);
 
         if (page.length >= per_page) {
@@ -860,6 +881,12 @@ async function* listIssuesForRepo(
   }
 
   yield { data: page };
+}
+
+function issueHasLabel(issue: Issue, label: string): boolean {
+  return issue.labels.some((l) =>
+    typeof l === "string" ? l === label : l.name === label,
+  );
 }
 
 async function* listInstallations(appId: number) {
