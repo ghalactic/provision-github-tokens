@@ -1,0 +1,60 @@
+name: Run action
+
+on:
+  workflow_call:
+
+jobs:
+  run:
+    name: Run action
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Run action
+        id: action
+        continue-on-error: true
+        uses: ./
+        with:
+          apps: |
+            - appId: ${{ toJSON(vars.ISSUER_APP_A_ID) }}
+              privateKey: ${{ toJSON(secrets.ISSUER_APP_A_PK) }}
+              issuer:
+                enabled: true
+                roles:
+                  - role-a
+                  - role-b
+            - appId: ${{ toJSON(vars.PROVISIONER_APP_A_ID) }}
+              privateKey: ${{ toJSON(secrets.PROVISIONER_APP_A_PK) }}
+              provisioner:
+                enabled: true
+            - appId: ${{ toJSON(vars.ISSUER_APP_B_ID) }}
+              privateKey: ${{ toJSON(secrets.ISSUER_APP_B_PK) }}
+              issuer:
+                enabled: true
+                roles:
+                  - role-b
+            - appId: ${{ toJSON(vars.PROVISIONER_APP_B_ID) }}
+              privateKey: ${{ toJSON(secrets.PROVISIONER_APP_B_PK) }}
+              provisioner:
+                enabled: true
+            - appId: ${{ toJSON(vars.ISSUER_APP_C_ID) }}
+              privateKey: ${{ toJSON(secrets.ISSUER_APP_C_PK) }}
+              issuer:
+                enabled: true
+            - appId: ${{ toJSON(vars.PROVISIONER_APP_C_ID) }}
+              privateKey: ${{ toJSON(secrets.PROVISIONER_APP_C_PK) }}
+              provisioner:
+                enabled: true
+
+      - name: Write summary
+        env:
+          SUMMARY: ${{ steps.action.outputs.summary }}
+        run: printf '%s' "$SUMMARY" > summary.md
+
+      - name: Upload summary
+        uses: actions/upload-artifact@v7
+        with:
+          path: summary.md
+          archive: false

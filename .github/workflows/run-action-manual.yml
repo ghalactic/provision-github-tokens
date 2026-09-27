@@ -1,0 +1,11 @@
+name: Run action manually
+run-name: Run action manually
+
+on:
+  workflow_dispatch:
+
+jobs:
+  run:
+    name: Run action manually
+    uses: ./.github/workflows/internal-run-action.yml
+    secrets: inherit
