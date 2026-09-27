@@ -450,6 +450,22 @@ export function Octokit({
 
           const repoName = `${owner}/${repo}`;
           const repoIssues = issues[repoName] ?? (issues[repoName] = []);
+          const repoLabels = repoIssueLabels[repoName] ?? [];
+
+          for (const label of labels as string[]) {
+            if (!repoLabels.includes(label)) {
+              throw new TestRequestError(422, {
+                errors: [
+                  {
+                    resource: "Issue",
+                    code: "invalid",
+                    field: "labels",
+                    value: "nonexistent-label",
+                  },
+                ],
+              });
+            }
+          }
 
           const issue = createTestIssue(
             owner,
@@ -544,9 +560,25 @@ export function Octokit({
           }
 
           const repoIssues = issues[`${owner}/${repo}`] ?? [];
+          const repoLabels = repoIssueLabels[`${owner}/${repo}`] ?? [];
           const issue = repoIssues.find((i) => i.number === issue_number);
 
           if (!issue) throw new TestRequestError(404);
+
+          for (const label of labels as string[]) {
+            if (!repoLabels.includes(label)) {
+              throw new TestRequestError(422, {
+                errors: [
+                  {
+                    resource: "Issue",
+                    code: "invalid",
+                    field: "labels",
+                    value: "nonexistent-label",
+                  },
+                ],
+              });
+            }
+          }
 
           if (typeof title === "string") issue.title = title;
           if (typeof body === "string") issue.body = body;
