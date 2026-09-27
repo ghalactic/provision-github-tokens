@@ -199,6 +199,10 @@ export function Octokit({
   auth?: { appId?: number; privateKey?: string; installationId?: number };
 } = {}) {
   return {
+    request: {
+      defaults: () => ({}),
+    },
+
     paginate: {
       iterator: (endpoint: string, params?: object) => {
         if (appId == null) {

@@ -1,12 +1,13 @@
 import type { Endpoints } from "@octokit/types";
 import { Octokit } from "octokit";
+import { withApiVersion } from "../src/octokit.js";
 
 export type TestOctokit = InstanceType<typeof Octokit>;
 
 export function createTestOctokit(
   auth: string | undefined = process.env.GITHUB_TOKEN,
 ): TestOctokit {
-  return new Octokit({ auth });
+  return withApiVersion(new Octokit({ auth }));
 }
 
 export type Reference =

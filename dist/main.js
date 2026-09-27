@@ -72597,6 +72597,7 @@ function retry(octokit, octokitOptions) {
 retry.VERSION = VERSION12;
 
 // src/octokit.ts
+var GITHUB_API_VERSION = "2026-03-10";
 var CustomOctokit = Octokit2.plugin(retry);
 function createOctokitFactory() {
   let actionOctokit;
@@ -72604,26 +72605,30 @@ function createOctokitFactory() {
   const installationOctokits = {};
   return {
     actionOctokit: () => {
-      return actionOctokit ??= new CustomOctokit();
+      return actionOctokit ??= withApiVersion(new CustomOctokit());
     },
     appOctokit: (appsInput, appId) => {
       const key = JSON.stringify({ appId });
-      appOctokits[key] ??= new CustomOctokit({
-        authStrategy: createAppAuth,
-        auth: { appId, privateKey: findPrivateKey(appsInput, appId) }
-      });
+      appOctokits[key] ??= withApiVersion(
+        new CustomOctokit({
+          authStrategy: createAppAuth,
+          auth: { appId, privateKey: findPrivateKey(appsInput, appId) }
+        })
+      );
       return appOctokits[key];
     },
     installationOctokit: (appsInput, appId, installationId) => {
       const key = JSON.stringify({ appId, installationId });
-      installationOctokits[key] ??= new CustomOctokit({
-        authStrategy: createAppAuth,
-        auth: {
-          appId,
-          installationId,
-          privateKey: findPrivateKey(appsInput, appId)
-        }
-      });
+      installationOctokits[key] ??= withApiVersion(
+        new CustomOctokit({
+          authStrategy: createAppAuth,
+          auth: {
+            appId,
+            installationId,
+            privateKey: findPrivateKey(appsInput, appId)
+          }
+        })
+      );
       return installationOctokits[key];
     }
   };
@@ -72633,6 +72638,13 @@ function createOctokitFactory() {
     }
     throw new Error(`Unable to find app input for ID ${appId}`);
   }
+}
+function withApiVersion(octokit) {
+  return Object.assign(octokit, {
+    request: octokit.request.defaults({
+      headers: { "x-github-api-version": GITHUB_API_VERSION }
+    })
+  });
 }
 function handleRequestError(error2, handlers = {}) {
   if (!(error2 instanceof RequestError)) throw error2;

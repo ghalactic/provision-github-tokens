@@ -4,6 +4,8 @@ import { retry } from "@octokit/plugin-retry";
 import { RequestError } from "@octokit/request-error";
 import type { AppInput } from "./type/input.js";
 
+const GITHUB_API_VERSION = "2026-03-10";
+
 // eslint-disable-next-line @typescript-eslint/naming-convention -- class constructor
 const CustomOctokit = OctokitAction.plugin(retry);
 
@@ -26,29 +28,33 @@ export function createOctokitFactory(): OctokitFactory {
 
   return {
     actionOctokit: () => {
-      return (actionOctokit ??= new CustomOctokit());
+      return (actionOctokit ??= withApiVersion(new CustomOctokit()));
     },
 
     appOctokit: (appsInput, appId) => {
       const key = JSON.stringify({ appId });
-      appOctokits[key] ??= new CustomOctokit({
-        authStrategy: createAppAuth,
-        auth: { appId, privateKey: findPrivateKey(appsInput, appId) },
-      });
+      appOctokits[key] ??= withApiVersion(
+        new CustomOctokit({
+          authStrategy: createAppAuth,
+          auth: { appId, privateKey: findPrivateKey(appsInput, appId) },
+        }),
+      );
 
       return appOctokits[key];
     },
 
     installationOctokit: (appsInput, appId, installationId) => {
       const key = JSON.stringify({ appId, installationId });
-      installationOctokits[key] ??= new CustomOctokit({
-        authStrategy: createAppAuth,
-        auth: {
-          appId,
-          installationId,
-          privateKey: findPrivateKey(appsInput, appId),
-        },
-      });
+      installationOctokits[key] ??= withApiVersion(
+        new CustomOctokit({
+          authStrategy: createAppAuth,
+          auth: {
+            appId,
+            installationId,
+            privateKey: findPrivateKey(appsInput, appId),
+          },
+        }),
+      );
 
       return installationOctokits[key];
     },
@@ -61,6 +67,16 @@ export function createOctokitFactory(): OctokitFactory {
 
     throw new Error(`Unable to find app input for ID ${appId}`);
   }
+}
+
+export function withApiVersion<T extends { request: Octokit["request"] }>(
+  octokit: T,
+): T {
+  return Object.assign(octokit, {
+    request: octokit.request.defaults({
+      headers: { "x-github-api-version": GITHUB_API_VERSION },
+    }),
+  });
 }
 
 export function handleRequestError(
