@@ -72642,7 +72642,7 @@ function createOctokitFactory() {
 function withApiVersion(octokit) {
   return Object.assign(octokit, {
     request: octokit.request.defaults({
-      headers: { "x-github-api-version": GITHUB_API_VERSION }
+      headers: { "X-GitHub-Api-Version": GITHUB_API_VERSION }
     })
   });
 }
