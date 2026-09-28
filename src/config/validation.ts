@@ -1,5 +1,6 @@
-import ajvModule, { ErrorObject } from "ajv";
+import ajvModule, { type ErrorObject } from "ajv";
 import ajvErrorsModule from "ajv-errors";
+import betterAjvErrors from "better-ajv-errors";
 import appsSchema from "../schema/apps.v1.schema.json" with { type: "json" };
 import providerRulePermissionsSchema from "../schema/generated.provider-rule-permissions.v1.schema.json" with { type: "json" };
 import requesterTokenPermissionsSchema from "../schema/generated.requester-token-permissions.v1.schema.json" with { type: "json" };
@@ -43,12 +44,12 @@ export const validateRequester = createValidate<PartialRequesterConfig>(
 );
 
 export class ValidateError extends Error {
-  public errors: ErrorObject[];
+  public details: string;
 
-  constructor(message: string, errors: ErrorObject[]) {
+  constructor(message: string, details: string) {
     super(message);
 
-    this.errors = errors;
+    this.details = details;
   }
 }
 
@@ -64,6 +65,11 @@ function createValidate<T>(
       throw new Error(`Invariant violation: Undefined schema ${schemaId}`);
     }
 
+    // Capture the value before validation so that defaults applied by AJV don't
+    // show up in the rendered config.
+    const config = structuredClone(value);
+    const json = JSON.stringify(config, null, 2);
+
     if (validator(value)) return value as T;
 
     /* istanbul ignore next - never seen errors be nullish - @preserve */
@@ -71,12 +77,29 @@ function createValidate<T>(
 
     const error = new ValidateError(
       `Invalid ${label}:\n${renderErrors(errors)}`,
-      errors,
+      renderDetails(validator.schema, config, errors, json),
     );
 
     throw error;
   };
 }
+
+function renderDetails(
+  schema: unknown,
+  config: unknown,
+  errors: ErrorObject[],
+  json: string,
+): string {
+  const rendered = betterAjvErrors(schema, config, errors, {
+    format: "cli",
+    json,
+  });
+
+  return rendered.replaceAll(ANSI_SGR_PATTERN, "").trim();
+}
+
+// eslint-disable-next-line no-control-regex -- matches ANSI SGR escape sequences
+const ANSI_SGR_PATTERN = /\u001B\[[0-9;]*m/g;
 
 function renderErrors(errors: ErrorObject[]): string {
   return `  - ${errors.map(renderError).join("\n  - ")}\n`;

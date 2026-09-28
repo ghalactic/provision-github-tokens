@@ -15,7 +15,7 @@ import {
   createTestProvisionAuthTargetResult,
   createTestTokenAuthResult,
 } from "../test/result.js";
-import { ValidateError } from "./config/validation.js";
+import { ValidateError, validateRequester } from "./config/validation.js";
 import { parseYaml } from "./config/yaml.js";
 import {
   CONFIG_ISSUE_DASHBOARD_TITLE,
@@ -33,6 +33,19 @@ import type { TokenAuthResult } from "./type/token-auth-result.js";
 import type { TokenCreationResult } from "./type/token-creation-result.js";
 
 const fixturesPath = join(import.meta.dirname, "testdata/dashboard");
+
+function configError(yaml: string): ValidateError {
+  try {
+    validateRequester(parseYaml({}, yaml));
+  } catch (error) {
+    if (error instanceof ValidateError) return error;
+
+    throw error;
+  }
+
+  /* istanbul ignore next - @preserve */
+  throw new Error("Invariant violation: Invalid requester config was valid");
+}
 
 it("renders a failure dashboard for a secret that failed to create", async () => {
   const accountAActionsTarget = createTestProvisionRequestTarget("actions");
@@ -221,14 +234,7 @@ it("renders a config issue dashboard for root-level errors", async () => {
     requester: { account: "account-x", repo: "repo-x" },
     configPath: ".github/ghalactic/provision-github-tokens.yml",
     configSha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-    configError: new ValidateError("Invalid requester configuration", [
-      {
-        instancePath: "",
-        schemaPath: "#",
-        keyword: "type",
-        params: { type: "object" },
-      },
-    ]),
+    configError: configError("foo: bar\n"),
   });
 
   expect(issue.title).toBe(CONFIG_ISSUE_DASHBOARD_TITLE);
@@ -366,40 +372,24 @@ it("renders a config issue dashboard", async () => {
     requester: { account: "account-x", repo: "repo-x" },
     configPath: ".github/ghalactic/provision-github-tokens.yml",
     configSha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-    configError: new ValidateError("Invalid requester configuration", [
-      {
-        instancePath: "",
-        schemaPath: "#/additionalProperties",
-        keyword: "additionalProperties",
-        params: {
-          additionalProperty: "foo",
-        },
-        message: "must NOT have additional properties",
-      },
-      {
-        instancePath: "/tokens/token-a",
-        schemaPath: "#/properties/tokens/additionalProperties",
-        keyword: "additionalProperties",
-        params: {
-          additionalProperty: "missing-roles",
-        },
-        message: "must NOT have additional properties",
-      },
-      {
-        instancePath: "/provision/secrets/SECRET_A/github",
-        schemaPath: "#/definitions/requesterGithub/additionalProperties",
-        keyword: "additionalProperties",
-        params: { additionalProperty: "repositories" },
-        message: "must NOT have additional properties",
-      },
-      {
-        instancePath: "/provision/secrets",
-        schemaPath: "#/properties/provision/required",
-        keyword: "required",
-        params: { missingProperty: "secrets" },
-        message: "must have required property 'secrets'",
-      },
-    ]),
+    configError: configError(
+      [
+        "foo: bar",
+        "tokens:",
+        "  token-a:",
+        "    repos: all",
+        "    permissions:",
+        "      contents: reed",
+        "    missing-roles: true",
+        "provision:",
+        "  secrets:",
+        "    SECRET_A:",
+        "      token: token-a",
+        "      github:",
+        "        repositories: true",
+        "",
+      ].join("\n"),
+    ),
   });
 
   expect(issue.title).toBe(CONFIG_ISSUE_DASHBOARD_TITLE);

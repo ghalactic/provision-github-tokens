@@ -21337,7 +21337,7 @@ var require_codegen = __commonJS({
             return e instanceof _If ? e : e.nodes;
           if (this.nodes.length)
             return this;
-          return new _If(not(cond), e instanceof _If ? [e] : e.nodes);
+          return new _If(not2(cond), e instanceof _If ? [e] : e.nodes);
         }
         if (cond === false || !this.nodes.length)
           return void 0;
@@ -21789,10 +21789,10 @@ var require_codegen = __commonJS({
       for (const n2 in from)
         names[n2] = (names[n2] || 0) - (from[n2] || 0);
     }
-    function not(x2) {
+    function not2(x2) {
       return typeof x2 == "boolean" || typeof x2 == "number" || x2 === null ? !x2 : (0, code_1._)`!${par(x2)}`;
     }
-    exports.not = not;
+    exports.not = not2;
     var andCode = mappend(exports.operators.AND);
     function and(...args) {
       return args.reduce(andCode);
@@ -24339,24 +24339,24 @@ var require_fast_uri = __commonJS({
     function normalize(uri, options) {
       if (typeof uri === "string") {
         uri = /** @type {T} */
-        serialize2(parse3(uri, options), options);
+        serialize2(parse4(uri, options), options);
       } else if (typeof uri === "object") {
         uri = /** @type {T} */
-        parse3(serialize2(uri, options), options);
+        parse4(serialize2(uri, options), options);
       }
       return uri;
     }
     function resolve(baseURI, relativeURI, options) {
       const schemelessOptions = options ? Object.assign({ scheme: "null" }, options) : { scheme: "null" };
-      const resolved = resolveComponent(parse3(baseURI, schemelessOptions), parse3(relativeURI, schemelessOptions), schemelessOptions, true);
+      const resolved = resolveComponent(parse4(baseURI, schemelessOptions), parse4(relativeURI, schemelessOptions), schemelessOptions, true);
       schemelessOptions.skipEscape = true;
       return serialize2(resolved, schemelessOptions);
     }
     function resolveComponent(base, relative, options, skipNormalization) {
       const target = {};
       if (!skipNormalization) {
-        base = parse3(serialize2(base, options), options);
-        relative = parse3(serialize2(relative, options), options);
+        base = parse4(serialize2(base, options), options);
+        relative = parse4(serialize2(relative, options), options);
       }
       options = options || {};
       if (!options.tolerant && relative.scheme) {
@@ -24408,13 +24408,13 @@ var require_fast_uri = __commonJS({
     function equal(uriA, uriB, options) {
       if (typeof uriA === "string") {
         uriA = unescape(uriA);
-        uriA = serialize2(normalizeComponentEncoding(parse3(uriA, options), true), { ...options, skipEscape: true });
+        uriA = serialize2(normalizeComponentEncoding(parse4(uriA, options), true), { ...options, skipEscape: true });
       } else if (typeof uriA === "object") {
         uriA = serialize2(normalizeComponentEncoding(uriA, true), { ...options, skipEscape: true });
       }
       if (typeof uriB === "string") {
         uriB = unescape(uriB);
-        uriB = serialize2(normalizeComponentEncoding(parse3(uriB, options), true), { ...options, skipEscape: true });
+        uriB = serialize2(normalizeComponentEncoding(parse4(uriB, options), true), { ...options, skipEscape: true });
       } else if (typeof uriB === "object") {
         uriB = serialize2(normalizeComponentEncoding(uriB, true), { ...options, skipEscape: true });
       }
@@ -24483,7 +24483,7 @@ var require_fast_uri = __commonJS({
       return uriTokens.join("");
     }
     var URI_PARSE = /^(?:([^#/:?]+):)?(?:\/\/((?:([^#/?@]*)@)?(\[[^#/?\]]+\]|[^#/:?]*)(?::(\d*))?))?([^#?]*)(?:\?([^#]*))?(?:#((?:.|[\n\r])*))?/u;
-    function parse3(uri, opts) {
+    function parse4(uri, opts) {
       const options = Object.assign({}, opts);
       const parsed = {
         scheme: void 0,
@@ -24577,7 +24577,7 @@ var require_fast_uri = __commonJS({
       resolveComponent,
       equal,
       serialize: serialize2,
-      parse: parse3
+      parse: parse4
     };
     module2.exports = fastUri;
     module2.exports.default = fastUri;
@@ -27522,6 +27522,2892 @@ var require_dist = __commonJS({
     exports.default = ajvErrors2;
     module2.exports = ajvErrors2;
     module2.exports.default = ajvErrors2;
+  }
+});
+
+// node_modules/.pnpm/@humanwhocodes+momoa@2.0.4/node_modules/@humanwhocodes/momoa/api.js
+var require_api2 = __commonJS({
+  "node_modules/.pnpm/@humanwhocodes+momoa@2.0.4/node_modules/@humanwhocodes/momoa/api.js"(exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var LBRACKET = "[";
+    var RBRACKET = "]";
+    var LBRACE = "{";
+    var RBRACE = "}";
+    var COLON = ":";
+    var COMMA2 = ",";
+    var TRUE = "true";
+    var FALSE = "false";
+    var NULL = "null";
+    var QUOTE = '"';
+    var expectedKeywords = /* @__PURE__ */ new Map([
+      ["t", TRUE],
+      ["f", FALSE],
+      ["n", NULL]
+    ]);
+    var escapeToChar = /* @__PURE__ */ new Map([
+      [QUOTE, QUOTE],
+      ["\\", "\\"],
+      ["/", "/"],
+      ["b", "\b"],
+      ["n", "\n"],
+      ["f", "\f"],
+      ["r", "\r"],
+      ["t", "	"]
+    ]);
+    var knownTokenTypes = /* @__PURE__ */ new Map([
+      [LBRACKET, "Punctuator"],
+      [RBRACKET, "Punctuator"],
+      [LBRACE, "Punctuator"],
+      [RBRACE, "Punctuator"],
+      [COLON, "Punctuator"],
+      [COMMA2, "Punctuator"],
+      [TRUE, "Boolean"],
+      [FALSE, "Boolean"],
+      [NULL, "Null"]
+    ]);
+    var ErrorWithLocation = class extends Error {
+      /**
+       * 
+       * @param {string} message The error message to report. 
+       * @param {int} loc.line The line on which the error occurred.
+       * @param {int} loc.column The column in the line where the error occurrred.
+       * @param {int} loc.index The index in the string where the error occurred.
+       */
+      constructor(message, { line, column, index }) {
+        super(`${message} (${line}:${column})`);
+        this.line = line;
+        this.column = column;
+        this.index = index;
+      }
+    };
+    var UnexpectedChar = class extends ErrorWithLocation {
+      /**
+       * Creates a new instance.
+       * @param {string} unexpected The character that was found.
+       * @param {Object} loc The location information for the found character.
+       */
+      constructor(unexpected, loc) {
+        super(`Unexpected character ${unexpected} found.`, loc);
+      }
+    };
+    var UnexpectedToken = class extends ErrorWithLocation {
+      /**
+       * Creates a new instance.
+       * @param {string} expected The character that was expected. 
+       * @param {string} unexpected The character that was found.
+       * @param {Object} loc The location information for the found character.
+       */
+      constructor(token) {
+        super(`Unexpected token ${token.type}(${token.value}) found.`, token.loc.start);
+      }
+    };
+    var UnexpectedEOF = class extends ErrorWithLocation {
+      /**
+       * Creates a new instance.
+       * @param {Object} loc The location information for the found character.
+       */
+      constructor(loc) {
+        super("Unexpected end of input found.", loc);
+      }
+    };
+    var QUOTE$1 = '"';
+    var SLASH = "/";
+    var STAR = "*";
+    var DEFAULT_OPTIONS = {
+      comments: false,
+      ranges: false
+    };
+    function isWhitespace(c2) {
+      return /[\s\n]/.test(c2);
+    }
+    function isDigit(c2) {
+      return c2 >= "0" && c2 <= "9";
+    }
+    function isHexDigit(c2) {
+      return isDigit(c2) || /[a-f]/i.test(c2);
+    }
+    function isPositiveDigit(c2) {
+      return c2 >= "1" && c2 <= "9";
+    }
+    function isKeywordStart(c2) {
+      return /[tfn]/.test(c2);
+    }
+    function isNumberStart(c2) {
+      return isDigit(c2) || c2 === "." || c2 === "-";
+    }
+    function tokenize(text3, options) {
+      options = Object.freeze({
+        ...DEFAULT_OPTIONS,
+        ...options
+      });
+      let offset = -1;
+      let line = 1;
+      let column = 0;
+      let newLine = false;
+      const tokens = [];
+      function createToken(tokenType, value, startLoc, endLoc) {
+        const endOffset = startLoc.offset + value.length;
+        let range = options.ranges ? {
+          range: [startLoc.offset, endOffset]
+        } : void 0;
+        return {
+          type: tokenType,
+          value,
+          loc: {
+            start: startLoc,
+            end: endLoc || {
+              line: startLoc.line,
+              column: startLoc.column + value.length,
+              offset: endOffset
+            }
+          },
+          ...range
+        };
+      }
+      function next() {
+        let c3 = text3.charAt(++offset);
+        if (newLine) {
+          line++;
+          column = 1;
+          newLine = false;
+        } else {
+          column++;
+        }
+        if (c3 === "\r") {
+          newLine = true;
+          if (text3.charAt(offset + 1) === "\n") {
+            offset++;
+          }
+        } else if (c3 === "\n") {
+          newLine = true;
+        }
+        return c3;
+      }
+      function locate() {
+        return {
+          line,
+          column,
+          offset
+        };
+      }
+      function readKeyword(c3) {
+        let value = expectedKeywords.get(c3);
+        if (text3.slice(offset, offset + value.length) === value) {
+          offset += value.length - 1;
+          column += value.length - 1;
+          return { value, c: next() };
+        }
+        for (let j2 = 1; j2 < value.length; j2++) {
+          if (value[j2] !== text3.charAt(offset + j2)) {
+            unexpected(next());
+          }
+        }
+      }
+      function readString(c3) {
+        let value = c3;
+        c3 = next();
+        while (c3 && c3 !== QUOTE$1) {
+          if (c3 === "\\") {
+            value += c3;
+            c3 = next();
+            if (escapeToChar.has(c3)) {
+              value += c3;
+            } else if (c3 === "u") {
+              value += c3;
+              for (let i2 = 0; i2 < 4; i2++) {
+                c3 = next();
+                if (isHexDigit(c3)) {
+                  value += c3;
+                } else {
+                  unexpected(c3);
+                }
+              }
+            } else {
+              unexpected(c3);
+            }
+          } else {
+            value += c3;
+          }
+          c3 = next();
+        }
+        if (!c3) {
+          unexpectedEOF();
+        }
+        value += c3;
+        return { value, c: next() };
+      }
+      function readNumber(c3) {
+        let value = "";
+        if (c3 === "-") {
+          value += c3;
+          c3 = next();
+          if (!isDigit(c3)) {
+            unexpected(c3);
+          }
+        }
+        if (c3 === "0") {
+          value += c3;
+          c3 = next();
+          if (isDigit(c3)) {
+            unexpected(c3);
+          }
+        } else {
+          if (!isPositiveDigit(c3)) {
+            unexpected(c3);
+          }
+          do {
+            value += c3;
+            c3 = next();
+          } while (isDigit(c3));
+        }
+        if (c3 === ".") {
+          do {
+            value += c3;
+            c3 = next();
+          } while (isDigit(c3));
+        }
+        if (c3 === "e" || c3 === "E") {
+          value += c3;
+          c3 = next();
+          if (c3 === "+" || c3 === "-") {
+            value += c3;
+            c3 = next();
+          }
+          if (!isDigit(c3)) {
+            unexpected(c3);
+          }
+          while (isDigit(c3)) {
+            value += c3;
+            c3 = next();
+          }
+        }
+        return { value, c: c3 };
+      }
+      function readComment(c3) {
+        let value = c3;
+        c3 = next();
+        if (c3 === "/") {
+          do {
+            value += c3;
+            c3 = next();
+          } while (c3 && c3 !== "\r" && c3 !== "\n");
+          return { value, c: c3 };
+        }
+        if (c3 === STAR) {
+          while (c3) {
+            value += c3;
+            c3 = next();
+            if (c3 === STAR) {
+              value += c3;
+              c3 = next();
+              if (c3 === SLASH) {
+                value += c3;
+                c3 = next();
+                return { value, c: c3 };
+              }
+            }
+          }
+          unexpectedEOF();
+        }
+        unexpected(c3);
+      }
+      function unexpected(c3) {
+        throw new UnexpectedChar(c3, locate());
+      }
+      function unexpectedEOF() {
+        throw new UnexpectedEOF(locate());
+      }
+      let c2 = next();
+      while (offset < text3.length) {
+        while (isWhitespace(c2)) {
+          c2 = next();
+        }
+        if (!c2) {
+          break;
+        }
+        const start = locate();
+        if (knownTokenTypes.has(c2)) {
+          tokens.push(createToken(knownTokenTypes.get(c2), c2, start));
+          c2 = next();
+        } else if (isKeywordStart(c2)) {
+          const result = readKeyword(c2);
+          let value = result.value;
+          c2 = result.c;
+          tokens.push(createToken(knownTokenTypes.get(value), value, start));
+        } else if (isNumberStart(c2)) {
+          const result = readNumber(c2);
+          let value = result.value;
+          c2 = result.c;
+          tokens.push(createToken("Number", value, start));
+        } else if (c2 === QUOTE$1) {
+          const result = readString(c2);
+          let value = result.value;
+          c2 = result.c;
+          tokens.push(createToken("String", value, start));
+        } else if (c2 === SLASH && options.comments) {
+          const result = readComment(c2);
+          let value = result.value;
+          c2 = result.c;
+          tokens.push(createToken(value.startsWith("//") ? "LineComment" : "BlockComment", value, start, locate()));
+        } else {
+          unexpected(c2);
+        }
+      }
+      return tokens;
+    }
+    var types = {
+      document(body, parts = {}) {
+        return {
+          type: "Document",
+          body,
+          ...parts
+        };
+      },
+      string(value, parts = {}) {
+        return {
+          type: "String",
+          value,
+          ...parts
+        };
+      },
+      number(value, parts = {}) {
+        return {
+          type: "Number",
+          value,
+          ...parts
+        };
+      },
+      boolean(value, parts = {}) {
+        return {
+          type: "Boolean",
+          value,
+          ...parts
+        };
+      },
+      null(parts = {}) {
+        return {
+          type: "Null",
+          value: "null",
+          ...parts
+        };
+      },
+      array(elements, parts = {}) {
+        return {
+          type: "Array",
+          elements,
+          ...parts
+        };
+      },
+      object(members, parts = {}) {
+        return {
+          type: "Object",
+          members,
+          ...parts
+        };
+      },
+      member(name, value, parts = {}) {
+        return {
+          type: "Member",
+          name,
+          value,
+          ...parts
+        };
+      }
+    };
+    var DEFAULT_OPTIONS$1 = {
+      tokens: false,
+      comments: false,
+      ranges: false
+    };
+    function getStringValue(token) {
+      let value = token.value.slice(1, -1);
+      let result = "";
+      let escapeIndex = value.indexOf("\\");
+      let lastIndex = 0;
+      while (escapeIndex >= 0) {
+        result += value.slice(lastIndex, escapeIndex);
+        const escapeChar = value.charAt(escapeIndex + 1);
+        if (escapeToChar.has(escapeChar)) {
+          result += escapeToChar.get(escapeChar);
+          lastIndex = escapeIndex + 2;
+        } else if (escapeChar === "u") {
+          const hexCode = value.slice(escapeIndex + 2, escapeIndex + 6);
+          if (hexCode.length < 4 || /[^0-9a-f]/i.test(hexCode)) {
+            throw new ErrorWithLocation(
+              `Invalid unicode escape \\u${hexCode}.`,
+              {
+                line: token.loc.start.line,
+                column: token.loc.start.column + escapeIndex,
+                offset: token.loc.start.offset + escapeIndex
+              }
+            );
+          }
+          result += String.fromCharCode(parseInt(hexCode, 16));
+          lastIndex = escapeIndex + 6;
+        } else {
+          throw new ErrorWithLocation(
+            `Invalid escape \\${escapeChar}.`,
+            {
+              line: token.loc.start.line,
+              column: token.loc.start.column + escapeIndex,
+              offset: token.loc.start.offset + escapeIndex
+            }
+          );
+        }
+        escapeIndex = value.indexOf("\\", lastIndex);
+      }
+      result += value.slice(lastIndex);
+      return result;
+    }
+    function getLiteralValue(token) {
+      switch (token.type) {
+        case "Boolean":
+          return token.value === "true";
+        case "Number":
+          return Number(token.value);
+        case "Null":
+          return null;
+        case "String":
+          return getStringValue(token);
+      }
+    }
+    function parse4(text3, options) {
+      options = Object.freeze({
+        ...DEFAULT_OPTIONS$1,
+        ...options
+      });
+      const tokens = tokenize(text3, {
+        comments: !!options.comments,
+        ranges: !!options.ranges
+      });
+      let tokenIndex = 0;
+      function nextNoComments() {
+        return tokens[tokenIndex++];
+      }
+      function nextSkipComments() {
+        const nextToken = tokens[tokenIndex++];
+        if (nextToken && nextToken.type.endsWith("Comment")) {
+          return nextSkipComments();
+        }
+        return nextToken;
+      }
+      const next = options.comments ? nextSkipComments : nextNoComments;
+      function assertTokenValue(token, value) {
+        if (!token || token.value !== value) {
+          throw new UnexpectedToken(token);
+        }
+      }
+      function assertTokenType(token, type) {
+        if (!token || token.type !== type) {
+          throw new UnexpectedToken(token);
+        }
+      }
+      function createRange(start, end) {
+        return options.ranges ? {
+          range: [start.offset, end.offset]
+        } : void 0;
+      }
+      function createLiteralNode(token) {
+        const range = createRange(token.loc.start, token.loc.end);
+        return {
+          type: token.type,
+          value: getLiteralValue(token),
+          loc: {
+            start: {
+              ...token.loc.start
+            },
+            end: {
+              ...token.loc.end
+            }
+          },
+          ...range
+        };
+      }
+      function parseProperty(token) {
+        assertTokenType(token, "String");
+        const name = createLiteralNode(token);
+        token = next();
+        assertTokenValue(token, ":");
+        const value = parseValue();
+        const range = createRange(name.loc.start, value.loc.end);
+        return types.member(name, value, {
+          loc: {
+            start: {
+              ...name.loc.start
+            },
+            end: {
+              ...value.loc.end
+            }
+          },
+          ...range
+        });
+      }
+      function parseObject(firstToken) {
+        assertTokenValue(firstToken, "{");
+        const members = [];
+        let token = next();
+        if (token && token.value !== "}") {
+          do {
+            members.push(parseProperty(token));
+            token = next();
+            if (token.value === ",") {
+              token = next();
+            } else {
+              break;
+            }
+          } while (token);
+        }
+        assertTokenValue(token, "}");
+        const range = createRange(firstToken.loc.start, token.loc.end);
+        return types.object(members, {
+          loc: {
+            start: {
+              ...firstToken.loc.start
+            },
+            end: {
+              ...token.loc.end
+            }
+          },
+          ...range
+        });
+      }
+      function parseArray(firstToken) {
+        assertTokenValue(firstToken, "[");
+        const elements = [];
+        let token = next();
+        if (token && token.value !== "]") {
+          do {
+            elements.push(parseValue(token));
+            token = next();
+            if (token.value === ",") {
+              token = next();
+            } else {
+              break;
+            }
+          } while (token);
+        }
+        assertTokenValue(token, "]");
+        const range = createRange(firstToken.loc.start, token.loc.end);
+        return types.array(elements, {
+          type: "Array",
+          elements,
+          loc: {
+            start: {
+              ...firstToken.loc.start
+            },
+            end: {
+              ...token.loc.end
+            }
+          },
+          ...range
+        });
+      }
+      function parseValue(token) {
+        token = token || next();
+        switch (token.type) {
+          case "String":
+          case "Boolean":
+          case "Number":
+          case "Null":
+            return createLiteralNode(token);
+          case "Punctuator":
+            if (token.value === "{") {
+              return parseObject(token);
+            } else if (token.value === "[") {
+              return parseArray(token);
+            }
+          /*falls through*/
+          default:
+            throw new UnexpectedToken(token);
+        }
+      }
+      const docBody = parseValue();
+      const unexpectedToken = next();
+      if (unexpectedToken) {
+        throw new UnexpectedToken(unexpectedToken);
+      }
+      const docParts = {
+        loc: {
+          start: {
+            line: 1,
+            column: 1,
+            offset: 0
+          },
+          end: {
+            ...docBody.loc.end
+          }
+        }
+      };
+      if (options.tokens) {
+        docParts.tokens = tokens;
+      }
+      if (options.ranges) {
+        docParts.range = createRange(docParts.loc.start, docParts.loc.end);
+      }
+      return types.document(docBody, docParts);
+    }
+    var childKeys = /* @__PURE__ */ new Map([
+      ["Document", ["body"]],
+      ["Object", ["members"]],
+      ["Member", ["name", "value"]],
+      ["Array", ["elements"]],
+      ["String", []],
+      ["Number", []],
+      ["Boolean", []],
+      ["Null", []]
+    ]);
+    function isObject(value) {
+      return value && typeof value === "object";
+    }
+    function isNode(value) {
+      return isObject(value) && typeof value.type === "string";
+    }
+    function traverse(root3, visitor) {
+      function visitNode(node2, parent) {
+        if (typeof visitor.enter === "function") {
+          visitor.enter(node2, parent);
+        }
+        for (const key of childKeys.get(node2.type)) {
+          const value = node2[key];
+          if (isObject(value)) {
+            if (Array.isArray(value)) {
+              value.forEach((child) => visitNode(child, node2));
+            } else if (isNode(value)) {
+              visitNode(value, node2);
+            }
+          }
+        }
+        if (typeof visitor.exit === "function") {
+          visitor.exit(node2, parent);
+        }
+      }
+      visitNode(root3);
+    }
+    function iterator2(root3, filter = () => true) {
+      const traversal = [];
+      traverse(root3, {
+        enter(node2, parent) {
+          traversal.push({ node: node2, parent, phase: "enter" });
+        },
+        exit(node2, parent) {
+          traversal.push({ node: node2, parent, phase: "exit" });
+        }
+      });
+      return traversal.filter(filter).values();
+    }
+    function evaluate(node2) {
+      switch (node2.type) {
+        case "String":
+        case "Number":
+        case "Boolean":
+          return node2.value;
+        case "Null":
+          return null;
+        case "Array":
+          return node2.elements.map(evaluate);
+        case "Object": {
+          const object = {};
+          node2.members.forEach((member) => {
+            object[evaluate(member.name)] = evaluate(member.value);
+          });
+          return object;
+        }
+        case "Document":
+          return evaluate(node2.body);
+        case "Property":
+          throw new Error("Cannot evaluate object property outside of an object.");
+        default:
+          throw new Error(`Unknown node type ${node2.type}.`);
+      }
+    }
+    function print(node2, { indent = 0 } = {}) {
+      const value = evaluate(node2);
+      return JSON.stringify(value, null, indent);
+    }
+    exports.evaluate = evaluate;
+    exports.iterator = iterator2;
+    exports.parse = parse4;
+    exports.print = print;
+    exports.tokenize = tokenize;
+    exports.traverse = traverse;
+    exports.types = types;
+  }
+});
+
+// node_modules/.pnpm/color-name@1.1.4/node_modules/color-name/index.js
+var require_color_name = __commonJS({
+  "node_modules/.pnpm/color-name@1.1.4/node_modules/color-name/index.js"(exports, module2) {
+    "use strict";
+    module2.exports = {
+      "aliceblue": [240, 248, 255],
+      "antiquewhite": [250, 235, 215],
+      "aqua": [0, 255, 255],
+      "aquamarine": [127, 255, 212],
+      "azure": [240, 255, 255],
+      "beige": [245, 245, 220],
+      "bisque": [255, 228, 196],
+      "black": [0, 0, 0],
+      "blanchedalmond": [255, 235, 205],
+      "blue": [0, 0, 255],
+      "blueviolet": [138, 43, 226],
+      "brown": [165, 42, 42],
+      "burlywood": [222, 184, 135],
+      "cadetblue": [95, 158, 160],
+      "chartreuse": [127, 255, 0],
+      "chocolate": [210, 105, 30],
+      "coral": [255, 127, 80],
+      "cornflowerblue": [100, 149, 237],
+      "cornsilk": [255, 248, 220],
+      "crimson": [220, 20, 60],
+      "cyan": [0, 255, 255],
+      "darkblue": [0, 0, 139],
+      "darkcyan": [0, 139, 139],
+      "darkgoldenrod": [184, 134, 11],
+      "darkgray": [169, 169, 169],
+      "darkgreen": [0, 100, 0],
+      "darkgrey": [169, 169, 169],
+      "darkkhaki": [189, 183, 107],
+      "darkmagenta": [139, 0, 139],
+      "darkolivegreen": [85, 107, 47],
+      "darkorange": [255, 140, 0],
+      "darkorchid": [153, 50, 204],
+      "darkred": [139, 0, 0],
+      "darksalmon": [233, 150, 122],
+      "darkseagreen": [143, 188, 143],
+      "darkslateblue": [72, 61, 139],
+      "darkslategray": [47, 79, 79],
+      "darkslategrey": [47, 79, 79],
+      "darkturquoise": [0, 206, 209],
+      "darkviolet": [148, 0, 211],
+      "deeppink": [255, 20, 147],
+      "deepskyblue": [0, 191, 255],
+      "dimgray": [105, 105, 105],
+      "dimgrey": [105, 105, 105],
+      "dodgerblue": [30, 144, 255],
+      "firebrick": [178, 34, 34],
+      "floralwhite": [255, 250, 240],
+      "forestgreen": [34, 139, 34],
+      "fuchsia": [255, 0, 255],
+      "gainsboro": [220, 220, 220],
+      "ghostwhite": [248, 248, 255],
+      "gold": [255, 215, 0],
+      "goldenrod": [218, 165, 32],
+      "gray": [128, 128, 128],
+      "green": [0, 128, 0],
+      "greenyellow": [173, 255, 47],
+      "grey": [128, 128, 128],
+      "honeydew": [240, 255, 240],
+      "hotpink": [255, 105, 180],
+      "indianred": [205, 92, 92],
+      "indigo": [75, 0, 130],
+      "ivory": [255, 255, 240],
+      "khaki": [240, 230, 140],
+      "lavender": [230, 230, 250],
+      "lavenderblush": [255, 240, 245],
+      "lawngreen": [124, 252, 0],
+      "lemonchiffon": [255, 250, 205],
+      "lightblue": [173, 216, 230],
+      "lightcoral": [240, 128, 128],
+      "lightcyan": [224, 255, 255],
+      "lightgoldenrodyellow": [250, 250, 210],
+      "lightgray": [211, 211, 211],
+      "lightgreen": [144, 238, 144],
+      "lightgrey": [211, 211, 211],
+      "lightpink": [255, 182, 193],
+      "lightsalmon": [255, 160, 122],
+      "lightseagreen": [32, 178, 170],
+      "lightskyblue": [135, 206, 250],
+      "lightslategray": [119, 136, 153],
+      "lightslategrey": [119, 136, 153],
+      "lightsteelblue": [176, 196, 222],
+      "lightyellow": [255, 255, 224],
+      "lime": [0, 255, 0],
+      "limegreen": [50, 205, 50],
+      "linen": [250, 240, 230],
+      "magenta": [255, 0, 255],
+      "maroon": [128, 0, 0],
+      "mediumaquamarine": [102, 205, 170],
+      "mediumblue": [0, 0, 205],
+      "mediumorchid": [186, 85, 211],
+      "mediumpurple": [147, 112, 219],
+      "mediumseagreen": [60, 179, 113],
+      "mediumslateblue": [123, 104, 238],
+      "mediumspringgreen": [0, 250, 154],
+      "mediumturquoise": [72, 209, 204],
+      "mediumvioletred": [199, 21, 133],
+      "midnightblue": [25, 25, 112],
+      "mintcream": [245, 255, 250],
+      "mistyrose": [255, 228, 225],
+      "moccasin": [255, 228, 181],
+      "navajowhite": [255, 222, 173],
+      "navy": [0, 0, 128],
+      "oldlace": [253, 245, 230],
+      "olive": [128, 128, 0],
+      "olivedrab": [107, 142, 35],
+      "orange": [255, 165, 0],
+      "orangered": [255, 69, 0],
+      "orchid": [218, 112, 214],
+      "palegoldenrod": [238, 232, 170],
+      "palegreen": [152, 251, 152],
+      "paleturquoise": [175, 238, 238],
+      "palevioletred": [219, 112, 147],
+      "papayawhip": [255, 239, 213],
+      "peachpuff": [255, 218, 185],
+      "peru": [205, 133, 63],
+      "pink": [255, 192, 203],
+      "plum": [221, 160, 221],
+      "powderblue": [176, 224, 230],
+      "purple": [128, 0, 128],
+      "rebeccapurple": [102, 51, 153],
+      "red": [255, 0, 0],
+      "rosybrown": [188, 143, 143],
+      "royalblue": [65, 105, 225],
+      "saddlebrown": [139, 69, 19],
+      "salmon": [250, 128, 114],
+      "sandybrown": [244, 164, 96],
+      "seagreen": [46, 139, 87],
+      "seashell": [255, 245, 238],
+      "sienna": [160, 82, 45],
+      "silver": [192, 192, 192],
+      "skyblue": [135, 206, 235],
+      "slateblue": [106, 90, 205],
+      "slategray": [112, 128, 144],
+      "slategrey": [112, 128, 144],
+      "snow": [255, 250, 250],
+      "springgreen": [0, 255, 127],
+      "steelblue": [70, 130, 180],
+      "tan": [210, 180, 140],
+      "teal": [0, 128, 128],
+      "thistle": [216, 191, 216],
+      "tomato": [255, 99, 71],
+      "turquoise": [64, 224, 208],
+      "violet": [238, 130, 238],
+      "wheat": [245, 222, 179],
+      "white": [255, 255, 255],
+      "whitesmoke": [245, 245, 245],
+      "yellow": [255, 255, 0],
+      "yellowgreen": [154, 205, 50]
+    };
+  }
+});
+
+// node_modules/.pnpm/color-convert@2.0.1/node_modules/color-convert/conversions.js
+var require_conversions = __commonJS({
+  "node_modules/.pnpm/color-convert@2.0.1/node_modules/color-convert/conversions.js"(exports, module2) {
+    var cssKeywords = require_color_name();
+    var reverseKeywords = {};
+    for (const key of Object.keys(cssKeywords)) {
+      reverseKeywords[cssKeywords[key]] = key;
+    }
+    var convert2 = {
+      rgb: { channels: 3, labels: "rgb" },
+      hsl: { channels: 3, labels: "hsl" },
+      hsv: { channels: 3, labels: "hsv" },
+      hwb: { channels: 3, labels: "hwb" },
+      cmyk: { channels: 4, labels: "cmyk" },
+      xyz: { channels: 3, labels: "xyz" },
+      lab: { channels: 3, labels: "lab" },
+      lch: { channels: 3, labels: "lch" },
+      hex: { channels: 1, labels: ["hex"] },
+      keyword: { channels: 1, labels: ["keyword"] },
+      ansi16: { channels: 1, labels: ["ansi16"] },
+      ansi256: { channels: 1, labels: ["ansi256"] },
+      hcg: { channels: 3, labels: ["h", "c", "g"] },
+      apple: { channels: 3, labels: ["r16", "g16", "b16"] },
+      gray: { channels: 1, labels: ["gray"] }
+    };
+    module2.exports = convert2;
+    for (const model of Object.keys(convert2)) {
+      if (!("channels" in convert2[model])) {
+        throw new Error("missing channels property: " + model);
+      }
+      if (!("labels" in convert2[model])) {
+        throw new Error("missing channel labels property: " + model);
+      }
+      if (convert2[model].labels.length !== convert2[model].channels) {
+        throw new Error("channel and label counts mismatch: " + model);
+      }
+      const { channels, labels } = convert2[model];
+      delete convert2[model].channels;
+      delete convert2[model].labels;
+      Object.defineProperty(convert2[model], "channels", { value: channels });
+      Object.defineProperty(convert2[model], "labels", { value: labels });
+    }
+    convert2.rgb.hsl = function(rgb) {
+      const r2 = rgb[0] / 255;
+      const g2 = rgb[1] / 255;
+      const b2 = rgb[2] / 255;
+      const min = Math.min(r2, g2, b2);
+      const max = Math.max(r2, g2, b2);
+      const delta = max - min;
+      let h2;
+      let s2;
+      if (max === min) {
+        h2 = 0;
+      } else if (r2 === max) {
+        h2 = (g2 - b2) / delta;
+      } else if (g2 === max) {
+        h2 = 2 + (b2 - r2) / delta;
+      } else if (b2 === max) {
+        h2 = 4 + (r2 - g2) / delta;
+      }
+      h2 = Math.min(h2 * 60, 360);
+      if (h2 < 0) {
+        h2 += 360;
+      }
+      const l2 = (min + max) / 2;
+      if (max === min) {
+        s2 = 0;
+      } else if (l2 <= 0.5) {
+        s2 = delta / (max + min);
+      } else {
+        s2 = delta / (2 - max - min);
+      }
+      return [h2, s2 * 100, l2 * 100];
+    };
+    convert2.rgb.hsv = function(rgb) {
+      let rdif;
+      let gdif;
+      let bdif;
+      let h2;
+      let s2;
+      const r2 = rgb[0] / 255;
+      const g2 = rgb[1] / 255;
+      const b2 = rgb[2] / 255;
+      const v2 = Math.max(r2, g2, b2);
+      const diff = v2 - Math.min(r2, g2, b2);
+      const diffc = function(c2) {
+        return (v2 - c2) / 6 / diff + 1 / 2;
+      };
+      if (diff === 0) {
+        h2 = 0;
+        s2 = 0;
+      } else {
+        s2 = diff / v2;
+        rdif = diffc(r2);
+        gdif = diffc(g2);
+        bdif = diffc(b2);
+        if (r2 === v2) {
+          h2 = bdif - gdif;
+        } else if (g2 === v2) {
+          h2 = 1 / 3 + rdif - bdif;
+        } else if (b2 === v2) {
+          h2 = 2 / 3 + gdif - rdif;
+        }
+        if (h2 < 0) {
+          h2 += 1;
+        } else if (h2 > 1) {
+          h2 -= 1;
+        }
+      }
+      return [
+        h2 * 360,
+        s2 * 100,
+        v2 * 100
+      ];
+    };
+    convert2.rgb.hwb = function(rgb) {
+      const r2 = rgb[0];
+      const g2 = rgb[1];
+      let b2 = rgb[2];
+      const h2 = convert2.rgb.hsl(rgb)[0];
+      const w2 = 1 / 255 * Math.min(r2, Math.min(g2, b2));
+      b2 = 1 - 1 / 255 * Math.max(r2, Math.max(g2, b2));
+      return [h2, w2 * 100, b2 * 100];
+    };
+    convert2.rgb.cmyk = function(rgb) {
+      const r2 = rgb[0] / 255;
+      const g2 = rgb[1] / 255;
+      const b2 = rgb[2] / 255;
+      const k2 = Math.min(1 - r2, 1 - g2, 1 - b2);
+      const c2 = (1 - r2 - k2) / (1 - k2) || 0;
+      const m2 = (1 - g2 - k2) / (1 - k2) || 0;
+      const y2 = (1 - b2 - k2) / (1 - k2) || 0;
+      return [c2 * 100, m2 * 100, y2 * 100, k2 * 100];
+    };
+    function comparativeDistance(x2, y2) {
+      return (x2[0] - y2[0]) ** 2 + (x2[1] - y2[1]) ** 2 + (x2[2] - y2[2]) ** 2;
+    }
+    convert2.rgb.keyword = function(rgb) {
+      const reversed = reverseKeywords[rgb];
+      if (reversed) {
+        return reversed;
+      }
+      let currentClosestDistance = Infinity;
+      let currentClosestKeyword;
+      for (const keyword of Object.keys(cssKeywords)) {
+        const value = cssKeywords[keyword];
+        const distance = comparativeDistance(rgb, value);
+        if (distance < currentClosestDistance) {
+          currentClosestDistance = distance;
+          currentClosestKeyword = keyword;
+        }
+      }
+      return currentClosestKeyword;
+    };
+    convert2.keyword.rgb = function(keyword) {
+      return cssKeywords[keyword];
+    };
+    convert2.rgb.xyz = function(rgb) {
+      let r2 = rgb[0] / 255;
+      let g2 = rgb[1] / 255;
+      let b2 = rgb[2] / 255;
+      r2 = r2 > 0.04045 ? ((r2 + 0.055) / 1.055) ** 2.4 : r2 / 12.92;
+      g2 = g2 > 0.04045 ? ((g2 + 0.055) / 1.055) ** 2.4 : g2 / 12.92;
+      b2 = b2 > 0.04045 ? ((b2 + 0.055) / 1.055) ** 2.4 : b2 / 12.92;
+      const x2 = r2 * 0.4124 + g2 * 0.3576 + b2 * 0.1805;
+      const y2 = r2 * 0.2126 + g2 * 0.7152 + b2 * 0.0722;
+      const z2 = r2 * 0.0193 + g2 * 0.1192 + b2 * 0.9505;
+      return [x2 * 100, y2 * 100, z2 * 100];
+    };
+    convert2.rgb.lab = function(rgb) {
+      const xyz = convert2.rgb.xyz(rgb);
+      let x2 = xyz[0];
+      let y2 = xyz[1];
+      let z2 = xyz[2];
+      x2 /= 95.047;
+      y2 /= 100;
+      z2 /= 108.883;
+      x2 = x2 > 8856e-6 ? x2 ** (1 / 3) : 7.787 * x2 + 16 / 116;
+      y2 = y2 > 8856e-6 ? y2 ** (1 / 3) : 7.787 * y2 + 16 / 116;
+      z2 = z2 > 8856e-6 ? z2 ** (1 / 3) : 7.787 * z2 + 16 / 116;
+      const l2 = 116 * y2 - 16;
+      const a2 = 500 * (x2 - y2);
+      const b2 = 200 * (y2 - z2);
+      return [l2, a2, b2];
+    };
+    convert2.hsl.rgb = function(hsl) {
+      const h2 = hsl[0] / 360;
+      const s2 = hsl[1] / 100;
+      const l2 = hsl[2] / 100;
+      let t2;
+      let t3;
+      let val;
+      if (s2 === 0) {
+        val = l2 * 255;
+        return [val, val, val];
+      }
+      if (l2 < 0.5) {
+        t2 = l2 * (1 + s2);
+      } else {
+        t2 = l2 + s2 - l2 * s2;
+      }
+      const t1 = 2 * l2 - t2;
+      const rgb = [0, 0, 0];
+      for (let i2 = 0; i2 < 3; i2++) {
+        t3 = h2 + 1 / 3 * -(i2 - 1);
+        if (t3 < 0) {
+          t3++;
+        }
+        if (t3 > 1) {
+          t3--;
+        }
+        if (6 * t3 < 1) {
+          val = t1 + (t2 - t1) * 6 * t3;
+        } else if (2 * t3 < 1) {
+          val = t2;
+        } else if (3 * t3 < 2) {
+          val = t1 + (t2 - t1) * (2 / 3 - t3) * 6;
+        } else {
+          val = t1;
+        }
+        rgb[i2] = val * 255;
+      }
+      return rgb;
+    };
+    convert2.hsl.hsv = function(hsl) {
+      const h2 = hsl[0];
+      let s2 = hsl[1] / 100;
+      let l2 = hsl[2] / 100;
+      let smin = s2;
+      const lmin = Math.max(l2, 0.01);
+      l2 *= 2;
+      s2 *= l2 <= 1 ? l2 : 2 - l2;
+      smin *= lmin <= 1 ? lmin : 2 - lmin;
+      const v2 = (l2 + s2) / 2;
+      const sv = l2 === 0 ? 2 * smin / (lmin + smin) : 2 * s2 / (l2 + s2);
+      return [h2, sv * 100, v2 * 100];
+    };
+    convert2.hsv.rgb = function(hsv) {
+      const h2 = hsv[0] / 60;
+      const s2 = hsv[1] / 100;
+      let v2 = hsv[2] / 100;
+      const hi = Math.floor(h2) % 6;
+      const f2 = h2 - Math.floor(h2);
+      const p2 = 255 * v2 * (1 - s2);
+      const q2 = 255 * v2 * (1 - s2 * f2);
+      const t2 = 255 * v2 * (1 - s2 * (1 - f2));
+      v2 *= 255;
+      switch (hi) {
+        case 0:
+          return [v2, t2, p2];
+        case 1:
+          return [q2, v2, p2];
+        case 2:
+          return [p2, v2, t2];
+        case 3:
+          return [p2, q2, v2];
+        case 4:
+          return [t2, p2, v2];
+        case 5:
+          return [v2, p2, q2];
+      }
+    };
+    convert2.hsv.hsl = function(hsv) {
+      const h2 = hsv[0];
+      const s2 = hsv[1] / 100;
+      const v2 = hsv[2] / 100;
+      const vmin = Math.max(v2, 0.01);
+      let sl;
+      let l2;
+      l2 = (2 - s2) * v2;
+      const lmin = (2 - s2) * vmin;
+      sl = s2 * vmin;
+      sl /= lmin <= 1 ? lmin : 2 - lmin;
+      sl = sl || 0;
+      l2 /= 2;
+      return [h2, sl * 100, l2 * 100];
+    };
+    convert2.hwb.rgb = function(hwb) {
+      const h2 = hwb[0] / 360;
+      let wh = hwb[1] / 100;
+      let bl = hwb[2] / 100;
+      const ratio = wh + bl;
+      let f2;
+      if (ratio > 1) {
+        wh /= ratio;
+        bl /= ratio;
+      }
+      const i2 = Math.floor(6 * h2);
+      const v2 = 1 - bl;
+      f2 = 6 * h2 - i2;
+      if ((i2 & 1) !== 0) {
+        f2 = 1 - f2;
+      }
+      const n2 = wh + f2 * (v2 - wh);
+      let r2;
+      let g2;
+      let b2;
+      switch (i2) {
+        default:
+        case 6:
+        case 0:
+          r2 = v2;
+          g2 = n2;
+          b2 = wh;
+          break;
+        case 1:
+          r2 = n2;
+          g2 = v2;
+          b2 = wh;
+          break;
+        case 2:
+          r2 = wh;
+          g2 = v2;
+          b2 = n2;
+          break;
+        case 3:
+          r2 = wh;
+          g2 = n2;
+          b2 = v2;
+          break;
+        case 4:
+          r2 = n2;
+          g2 = wh;
+          b2 = v2;
+          break;
+        case 5:
+          r2 = v2;
+          g2 = wh;
+          b2 = n2;
+          break;
+      }
+      return [r2 * 255, g2 * 255, b2 * 255];
+    };
+    convert2.cmyk.rgb = function(cmyk) {
+      const c2 = cmyk[0] / 100;
+      const m2 = cmyk[1] / 100;
+      const y2 = cmyk[2] / 100;
+      const k2 = cmyk[3] / 100;
+      const r2 = 1 - Math.min(1, c2 * (1 - k2) + k2);
+      const g2 = 1 - Math.min(1, m2 * (1 - k2) + k2);
+      const b2 = 1 - Math.min(1, y2 * (1 - k2) + k2);
+      return [r2 * 255, g2 * 255, b2 * 255];
+    };
+    convert2.xyz.rgb = function(xyz) {
+      const x2 = xyz[0] / 100;
+      const y2 = xyz[1] / 100;
+      const z2 = xyz[2] / 100;
+      let r2;
+      let g2;
+      let b2;
+      r2 = x2 * 3.2406 + y2 * -1.5372 + z2 * -0.4986;
+      g2 = x2 * -0.9689 + y2 * 1.8758 + z2 * 0.0415;
+      b2 = x2 * 0.0557 + y2 * -0.204 + z2 * 1.057;
+      r2 = r2 > 31308e-7 ? 1.055 * r2 ** (1 / 2.4) - 0.055 : r2 * 12.92;
+      g2 = g2 > 31308e-7 ? 1.055 * g2 ** (1 / 2.4) - 0.055 : g2 * 12.92;
+      b2 = b2 > 31308e-7 ? 1.055 * b2 ** (1 / 2.4) - 0.055 : b2 * 12.92;
+      r2 = Math.min(Math.max(0, r2), 1);
+      g2 = Math.min(Math.max(0, g2), 1);
+      b2 = Math.min(Math.max(0, b2), 1);
+      return [r2 * 255, g2 * 255, b2 * 255];
+    };
+    convert2.xyz.lab = function(xyz) {
+      let x2 = xyz[0];
+      let y2 = xyz[1];
+      let z2 = xyz[2];
+      x2 /= 95.047;
+      y2 /= 100;
+      z2 /= 108.883;
+      x2 = x2 > 8856e-6 ? x2 ** (1 / 3) : 7.787 * x2 + 16 / 116;
+      y2 = y2 > 8856e-6 ? y2 ** (1 / 3) : 7.787 * y2 + 16 / 116;
+      z2 = z2 > 8856e-6 ? z2 ** (1 / 3) : 7.787 * z2 + 16 / 116;
+      const l2 = 116 * y2 - 16;
+      const a2 = 500 * (x2 - y2);
+      const b2 = 200 * (y2 - z2);
+      return [l2, a2, b2];
+    };
+    convert2.lab.xyz = function(lab) {
+      const l2 = lab[0];
+      const a2 = lab[1];
+      const b2 = lab[2];
+      let x2;
+      let y2;
+      let z2;
+      y2 = (l2 + 16) / 116;
+      x2 = a2 / 500 + y2;
+      z2 = y2 - b2 / 200;
+      const y22 = y2 ** 3;
+      const x22 = x2 ** 3;
+      const z22 = z2 ** 3;
+      y2 = y22 > 8856e-6 ? y22 : (y2 - 16 / 116) / 7.787;
+      x2 = x22 > 8856e-6 ? x22 : (x2 - 16 / 116) / 7.787;
+      z2 = z22 > 8856e-6 ? z22 : (z2 - 16 / 116) / 7.787;
+      x2 *= 95.047;
+      y2 *= 100;
+      z2 *= 108.883;
+      return [x2, y2, z2];
+    };
+    convert2.lab.lch = function(lab) {
+      const l2 = lab[0];
+      const a2 = lab[1];
+      const b2 = lab[2];
+      let h2;
+      const hr2 = Math.atan2(b2, a2);
+      h2 = hr2 * 360 / 2 / Math.PI;
+      if (h2 < 0) {
+        h2 += 360;
+      }
+      const c2 = Math.sqrt(a2 * a2 + b2 * b2);
+      return [l2, c2, h2];
+    };
+    convert2.lch.lab = function(lch) {
+      const l2 = lch[0];
+      const c2 = lch[1];
+      const h2 = lch[2];
+      const hr2 = h2 / 360 * 2 * Math.PI;
+      const a2 = c2 * Math.cos(hr2);
+      const b2 = c2 * Math.sin(hr2);
+      return [l2, a2, b2];
+    };
+    convert2.rgb.ansi16 = function(args, saturation = null) {
+      const [r2, g2, b2] = args;
+      let value = saturation === null ? convert2.rgb.hsv(args)[2] : saturation;
+      value = Math.round(value / 50);
+      if (value === 0) {
+        return 30;
+      }
+      let ansi = 30 + (Math.round(b2 / 255) << 2 | Math.round(g2 / 255) << 1 | Math.round(r2 / 255));
+      if (value === 2) {
+        ansi += 60;
+      }
+      return ansi;
+    };
+    convert2.hsv.ansi16 = function(args) {
+      return convert2.rgb.ansi16(convert2.hsv.rgb(args), args[2]);
+    };
+    convert2.rgb.ansi256 = function(args) {
+      const r2 = args[0];
+      const g2 = args[1];
+      const b2 = args[2];
+      if (r2 === g2 && g2 === b2) {
+        if (r2 < 8) {
+          return 16;
+        }
+        if (r2 > 248) {
+          return 231;
+        }
+        return Math.round((r2 - 8) / 247 * 24) + 232;
+      }
+      const ansi = 16 + 36 * Math.round(r2 / 255 * 5) + 6 * Math.round(g2 / 255 * 5) + Math.round(b2 / 255 * 5);
+      return ansi;
+    };
+    convert2.ansi16.rgb = function(args) {
+      let color2 = args % 10;
+      if (color2 === 0 || color2 === 7) {
+        if (args > 50) {
+          color2 += 3.5;
+        }
+        color2 = color2 / 10.5 * 255;
+        return [color2, color2, color2];
+      }
+      const mult = (~~(args > 50) + 1) * 0.5;
+      const r2 = (color2 & 1) * mult * 255;
+      const g2 = (color2 >> 1 & 1) * mult * 255;
+      const b2 = (color2 >> 2 & 1) * mult * 255;
+      return [r2, g2, b2];
+    };
+    convert2.ansi256.rgb = function(args) {
+      if (args >= 232) {
+        const c2 = (args - 232) * 10 + 8;
+        return [c2, c2, c2];
+      }
+      args -= 16;
+      let rem;
+      const r2 = Math.floor(args / 36) / 5 * 255;
+      const g2 = Math.floor((rem = args % 36) / 6) / 5 * 255;
+      const b2 = rem % 6 / 5 * 255;
+      return [r2, g2, b2];
+    };
+    convert2.rgb.hex = function(args) {
+      const integer = ((Math.round(args[0]) & 255) << 16) + ((Math.round(args[1]) & 255) << 8) + (Math.round(args[2]) & 255);
+      const string = integer.toString(16).toUpperCase();
+      return "000000".substring(string.length) + string;
+    };
+    convert2.hex.rgb = function(args) {
+      const match = args.toString(16).match(/[a-f0-9]{6}|[a-f0-9]{3}/i);
+      if (!match) {
+        return [0, 0, 0];
+      }
+      let colorString = match[0];
+      if (match[0].length === 3) {
+        colorString = colorString.split("").map((char) => {
+          return char + char;
+        }).join("");
+      }
+      const integer = parseInt(colorString, 16);
+      const r2 = integer >> 16 & 255;
+      const g2 = integer >> 8 & 255;
+      const b2 = integer & 255;
+      return [r2, g2, b2];
+    };
+    convert2.rgb.hcg = function(rgb) {
+      const r2 = rgb[0] / 255;
+      const g2 = rgb[1] / 255;
+      const b2 = rgb[2] / 255;
+      const max = Math.max(Math.max(r2, g2), b2);
+      const min = Math.min(Math.min(r2, g2), b2);
+      const chroma = max - min;
+      let grayscale;
+      let hue;
+      if (chroma < 1) {
+        grayscale = min / (1 - chroma);
+      } else {
+        grayscale = 0;
+      }
+      if (chroma <= 0) {
+        hue = 0;
+      } else if (max === r2) {
+        hue = (g2 - b2) / chroma % 6;
+      } else if (max === g2) {
+        hue = 2 + (b2 - r2) / chroma;
+      } else {
+        hue = 4 + (r2 - g2) / chroma;
+      }
+      hue /= 6;
+      hue %= 1;
+      return [hue * 360, chroma * 100, grayscale * 100];
+    };
+    convert2.hsl.hcg = function(hsl) {
+      const s2 = hsl[1] / 100;
+      const l2 = hsl[2] / 100;
+      const c2 = l2 < 0.5 ? 2 * s2 * l2 : 2 * s2 * (1 - l2);
+      let f2 = 0;
+      if (c2 < 1) {
+        f2 = (l2 - 0.5 * c2) / (1 - c2);
+      }
+      return [hsl[0], c2 * 100, f2 * 100];
+    };
+    convert2.hsv.hcg = function(hsv) {
+      const s2 = hsv[1] / 100;
+      const v2 = hsv[2] / 100;
+      const c2 = s2 * v2;
+      let f2 = 0;
+      if (c2 < 1) {
+        f2 = (v2 - c2) / (1 - c2);
+      }
+      return [hsv[0], c2 * 100, f2 * 100];
+    };
+    convert2.hcg.rgb = function(hcg) {
+      const h2 = hcg[0] / 360;
+      const c2 = hcg[1] / 100;
+      const g2 = hcg[2] / 100;
+      if (c2 === 0) {
+        return [g2 * 255, g2 * 255, g2 * 255];
+      }
+      const pure = [0, 0, 0];
+      const hi = h2 % 1 * 6;
+      const v2 = hi % 1;
+      const w2 = 1 - v2;
+      let mg = 0;
+      switch (Math.floor(hi)) {
+        case 0:
+          pure[0] = 1;
+          pure[1] = v2;
+          pure[2] = 0;
+          break;
+        case 1:
+          pure[0] = w2;
+          pure[1] = 1;
+          pure[2] = 0;
+          break;
+        case 2:
+          pure[0] = 0;
+          pure[1] = 1;
+          pure[2] = v2;
+          break;
+        case 3:
+          pure[0] = 0;
+          pure[1] = w2;
+          pure[2] = 1;
+          break;
+        case 4:
+          pure[0] = v2;
+          pure[1] = 0;
+          pure[2] = 1;
+          break;
+        default:
+          pure[0] = 1;
+          pure[1] = 0;
+          pure[2] = w2;
+      }
+      mg = (1 - c2) * g2;
+      return [
+        (c2 * pure[0] + mg) * 255,
+        (c2 * pure[1] + mg) * 255,
+        (c2 * pure[2] + mg) * 255
+      ];
+    };
+    convert2.hcg.hsv = function(hcg) {
+      const c2 = hcg[1] / 100;
+      const g2 = hcg[2] / 100;
+      const v2 = c2 + g2 * (1 - c2);
+      let f2 = 0;
+      if (v2 > 0) {
+        f2 = c2 / v2;
+      }
+      return [hcg[0], f2 * 100, v2 * 100];
+    };
+    convert2.hcg.hsl = function(hcg) {
+      const c2 = hcg[1] / 100;
+      const g2 = hcg[2] / 100;
+      const l2 = g2 * (1 - c2) + 0.5 * c2;
+      let s2 = 0;
+      if (l2 > 0 && l2 < 0.5) {
+        s2 = c2 / (2 * l2);
+      } else if (l2 >= 0.5 && l2 < 1) {
+        s2 = c2 / (2 * (1 - l2));
+      }
+      return [hcg[0], s2 * 100, l2 * 100];
+    };
+    convert2.hcg.hwb = function(hcg) {
+      const c2 = hcg[1] / 100;
+      const g2 = hcg[2] / 100;
+      const v2 = c2 + g2 * (1 - c2);
+      return [hcg[0], (v2 - c2) * 100, (1 - v2) * 100];
+    };
+    convert2.hwb.hcg = function(hwb) {
+      const w2 = hwb[1] / 100;
+      const b2 = hwb[2] / 100;
+      const v2 = 1 - b2;
+      const c2 = v2 - w2;
+      let g2 = 0;
+      if (c2 < 1) {
+        g2 = (v2 - c2) / (1 - c2);
+      }
+      return [hwb[0], c2 * 100, g2 * 100];
+    };
+    convert2.apple.rgb = function(apple) {
+      return [apple[0] / 65535 * 255, apple[1] / 65535 * 255, apple[2] / 65535 * 255];
+    };
+    convert2.rgb.apple = function(rgb) {
+      return [rgb[0] / 255 * 65535, rgb[1] / 255 * 65535, rgb[2] / 255 * 65535];
+    };
+    convert2.gray.rgb = function(args) {
+      return [args[0] / 100 * 255, args[0] / 100 * 255, args[0] / 100 * 255];
+    };
+    convert2.gray.hsl = function(args) {
+      return [0, 0, args[0]];
+    };
+    convert2.gray.hsv = convert2.gray.hsl;
+    convert2.gray.hwb = function(gray) {
+      return [0, 100, gray[0]];
+    };
+    convert2.gray.cmyk = function(gray) {
+      return [0, 0, 0, gray[0]];
+    };
+    convert2.gray.lab = function(gray) {
+      return [gray[0], 0, 0];
+    };
+    convert2.gray.hex = function(gray) {
+      const val = Math.round(gray[0] / 100 * 255) & 255;
+      const integer = (val << 16) + (val << 8) + val;
+      const string = integer.toString(16).toUpperCase();
+      return "000000".substring(string.length) + string;
+    };
+    convert2.rgb.gray = function(rgb) {
+      const val = (rgb[0] + rgb[1] + rgb[2]) / 3;
+      return [val / 255 * 100];
+    };
+  }
+});
+
+// node_modules/.pnpm/color-convert@2.0.1/node_modules/color-convert/route.js
+var require_route = __commonJS({
+  "node_modules/.pnpm/color-convert@2.0.1/node_modules/color-convert/route.js"(exports, module2) {
+    var conversions = require_conversions();
+    function buildGraph() {
+      const graph = {};
+      const models = Object.keys(conversions);
+      for (let len = models.length, i2 = 0; i2 < len; i2++) {
+        graph[models[i2]] = {
+          // http://jsperf.com/1-vs-infinity
+          // micro-opt, but this is simple.
+          distance: -1,
+          parent: null
+        };
+      }
+      return graph;
+    }
+    function deriveBFS(fromModel) {
+      const graph = buildGraph();
+      const queue = [fromModel];
+      graph[fromModel].distance = 0;
+      while (queue.length) {
+        const current = queue.pop();
+        const adjacents = Object.keys(conversions[current]);
+        for (let len = adjacents.length, i2 = 0; i2 < len; i2++) {
+          const adjacent = adjacents[i2];
+          const node2 = graph[adjacent];
+          if (node2.distance === -1) {
+            node2.distance = graph[current].distance + 1;
+            node2.parent = current;
+            queue.unshift(adjacent);
+          }
+        }
+      }
+      return graph;
+    }
+    function link2(from, to) {
+      return function(args) {
+        return to(from(args));
+      };
+    }
+    function wrapConversion(toModel, graph) {
+      const path = [graph[toModel].parent, toModel];
+      let fn = conversions[graph[toModel].parent][toModel];
+      let cur = graph[toModel].parent;
+      while (graph[cur].parent) {
+        path.unshift(graph[cur].parent);
+        fn = link2(conversions[graph[cur].parent][cur], fn);
+        cur = graph[cur].parent;
+      }
+      fn.conversion = path;
+      return fn;
+    }
+    module2.exports = function(fromModel) {
+      const graph = deriveBFS(fromModel);
+      const conversion = {};
+      const models = Object.keys(graph);
+      for (let len = models.length, i2 = 0; i2 < len; i2++) {
+        const toModel = models[i2];
+        const node2 = graph[toModel];
+        if (node2.parent === null) {
+          continue;
+        }
+        conversion[toModel] = wrapConversion(toModel, graph);
+      }
+      return conversion;
+    };
+  }
+});
+
+// node_modules/.pnpm/color-convert@2.0.1/node_modules/color-convert/index.js
+var require_color_convert = __commonJS({
+  "node_modules/.pnpm/color-convert@2.0.1/node_modules/color-convert/index.js"(exports, module2) {
+    var conversions = require_conversions();
+    var route = require_route();
+    var convert2 = {};
+    var models = Object.keys(conversions);
+    function wrapRaw(fn) {
+      const wrappedFn = function(...args) {
+        const arg0 = args[0];
+        if (arg0 === void 0 || arg0 === null) {
+          return arg0;
+        }
+        if (arg0.length > 1) {
+          args = arg0;
+        }
+        return fn(args);
+      };
+      if ("conversion" in fn) {
+        wrappedFn.conversion = fn.conversion;
+      }
+      return wrappedFn;
+    }
+    function wrapRounded(fn) {
+      const wrappedFn = function(...args) {
+        const arg0 = args[0];
+        if (arg0 === void 0 || arg0 === null) {
+          return arg0;
+        }
+        if (arg0.length > 1) {
+          args = arg0;
+        }
+        const result = fn(args);
+        if (typeof result === "object") {
+          for (let len = result.length, i2 = 0; i2 < len; i2++) {
+            result[i2] = Math.round(result[i2]);
+          }
+        }
+        return result;
+      };
+      if ("conversion" in fn) {
+        wrappedFn.conversion = fn.conversion;
+      }
+      return wrappedFn;
+    }
+    models.forEach((fromModel) => {
+      convert2[fromModel] = {};
+      Object.defineProperty(convert2[fromModel], "channels", { value: conversions[fromModel].channels });
+      Object.defineProperty(convert2[fromModel], "labels", { value: conversions[fromModel].labels });
+      const routes = route(fromModel);
+      const routeModels = Object.keys(routes);
+      routeModels.forEach((toModel) => {
+        const fn = routes[toModel];
+        convert2[fromModel][toModel] = wrapRounded(fn);
+        convert2[fromModel][toModel].raw = wrapRaw(fn);
+      });
+    });
+    module2.exports = convert2;
+  }
+});
+
+// node_modules/.pnpm/ansi-styles@4.3.0/node_modules/ansi-styles/index.js
+var require_ansi_styles = __commonJS({
+  "node_modules/.pnpm/ansi-styles@4.3.0/node_modules/ansi-styles/index.js"(exports, module2) {
+    "use strict";
+    var wrapAnsi16 = (fn, offset) => (...args) => {
+      const code3 = fn(...args);
+      return `\x1B[${code3 + offset}m`;
+    };
+    var wrapAnsi256 = (fn, offset) => (...args) => {
+      const code3 = fn(...args);
+      return `\x1B[${38 + offset};5;${code3}m`;
+    };
+    var wrapAnsi16m = (fn, offset) => (...args) => {
+      const rgb = fn(...args);
+      return `\x1B[${38 + offset};2;${rgb[0]};${rgb[1]};${rgb[2]}m`;
+    };
+    var ansi2ansi = (n2) => n2;
+    var rgb2rgb = (r2, g2, b2) => [r2, g2, b2];
+    var setLazyProperty = (object, property, get2) => {
+      Object.defineProperty(object, property, {
+        get: () => {
+          const value = get2();
+          Object.defineProperty(object, property, {
+            value,
+            enumerable: true,
+            configurable: true
+          });
+          return value;
+        },
+        enumerable: true,
+        configurable: true
+      });
+    };
+    var colorConvert;
+    var makeDynamicStyles = (wrap, targetSpace, identity, isBackground) => {
+      if (colorConvert === void 0) {
+        colorConvert = require_color_convert();
+      }
+      const offset = isBackground ? 10 : 0;
+      const styles = {};
+      for (const [sourceSpace, suite] of Object.entries(colorConvert)) {
+        const name = sourceSpace === "ansi16" ? "ansi" : sourceSpace;
+        if (sourceSpace === targetSpace) {
+          styles[name] = wrap(identity, offset);
+        } else if (typeof suite === "object") {
+          styles[name] = wrap(suite[targetSpace], offset);
+        }
+      }
+      return styles;
+    };
+    function assembleStyles() {
+      const codes = /* @__PURE__ */ new Map();
+      const styles = {
+        modifier: {
+          reset: [0, 0],
+          // 21 isn't widely supported and 22 does the same thing
+          bold: [1, 22],
+          dim: [2, 22],
+          italic: [3, 23],
+          underline: [4, 24],
+          inverse: [7, 27],
+          hidden: [8, 28],
+          strikethrough: [9, 29]
+        },
+        color: {
+          black: [30, 39],
+          red: [31, 39],
+          green: [32, 39],
+          yellow: [33, 39],
+          blue: [34, 39],
+          magenta: [35, 39],
+          cyan: [36, 39],
+          white: [37, 39],
+          // Bright color
+          blackBright: [90, 39],
+          redBright: [91, 39],
+          greenBright: [92, 39],
+          yellowBright: [93, 39],
+          blueBright: [94, 39],
+          magentaBright: [95, 39],
+          cyanBright: [96, 39],
+          whiteBright: [97, 39]
+        },
+        bgColor: {
+          bgBlack: [40, 49],
+          bgRed: [41, 49],
+          bgGreen: [42, 49],
+          bgYellow: [43, 49],
+          bgBlue: [44, 49],
+          bgMagenta: [45, 49],
+          bgCyan: [46, 49],
+          bgWhite: [47, 49],
+          // Bright color
+          bgBlackBright: [100, 49],
+          bgRedBright: [101, 49],
+          bgGreenBright: [102, 49],
+          bgYellowBright: [103, 49],
+          bgBlueBright: [104, 49],
+          bgMagentaBright: [105, 49],
+          bgCyanBright: [106, 49],
+          bgWhiteBright: [107, 49]
+        }
+      };
+      styles.color.gray = styles.color.blackBright;
+      styles.bgColor.bgGray = styles.bgColor.bgBlackBright;
+      styles.color.grey = styles.color.blackBright;
+      styles.bgColor.bgGrey = styles.bgColor.bgBlackBright;
+      for (const [groupName, group2] of Object.entries(styles)) {
+        for (const [styleName, style] of Object.entries(group2)) {
+          styles[styleName] = {
+            open: `\x1B[${style[0]}m`,
+            close: `\x1B[${style[1]}m`
+          };
+          group2[styleName] = styles[styleName];
+          codes.set(style[0], style[1]);
+        }
+        Object.defineProperty(styles, groupName, {
+          value: group2,
+          enumerable: false
+        });
+      }
+      Object.defineProperty(styles, "codes", {
+        value: codes,
+        enumerable: false
+      });
+      styles.color.close = "\x1B[39m";
+      styles.bgColor.close = "\x1B[49m";
+      setLazyProperty(styles.color, "ansi", () => makeDynamicStyles(wrapAnsi16, "ansi16", ansi2ansi, false));
+      setLazyProperty(styles.color, "ansi256", () => makeDynamicStyles(wrapAnsi256, "ansi256", ansi2ansi, false));
+      setLazyProperty(styles.color, "ansi16m", () => makeDynamicStyles(wrapAnsi16m, "rgb", rgb2rgb, false));
+      setLazyProperty(styles.bgColor, "ansi", () => makeDynamicStyles(wrapAnsi16, "ansi16", ansi2ansi, true));
+      setLazyProperty(styles.bgColor, "ansi256", () => makeDynamicStyles(wrapAnsi256, "ansi256", ansi2ansi, true));
+      setLazyProperty(styles.bgColor, "ansi16m", () => makeDynamicStyles(wrapAnsi16m, "rgb", rgb2rgb, true));
+      return styles;
+    }
+    Object.defineProperty(module2, "exports", {
+      enumerable: true,
+      get: assembleStyles
+    });
+  }
+});
+
+// node_modules/.pnpm/has-flag@4.0.0/node_modules/has-flag/index.js
+var require_has_flag = __commonJS({
+  "node_modules/.pnpm/has-flag@4.0.0/node_modules/has-flag/index.js"(exports, module2) {
+    "use strict";
+    module2.exports = (flag, argv = process.argv) => {
+      const prefix = flag.startsWith("-") ? "" : flag.length === 1 ? "-" : "--";
+      const position = argv.indexOf(prefix + flag);
+      const terminatorPosition = argv.indexOf("--");
+      return position !== -1 && (terminatorPosition === -1 || position < terminatorPosition);
+    };
+  }
+});
+
+// node_modules/.pnpm/supports-color@7.2.0/node_modules/supports-color/index.js
+var require_supports_color = __commonJS({
+  "node_modules/.pnpm/supports-color@7.2.0/node_modules/supports-color/index.js"(exports, module2) {
+    "use strict";
+    var os5 = __require("os");
+    var tty = __require("tty");
+    var hasFlag = require_has_flag();
+    var { env } = process;
+    var forceColor;
+    if (hasFlag("no-color") || hasFlag("no-colors") || hasFlag("color=false") || hasFlag("color=never")) {
+      forceColor = 0;
+    } else if (hasFlag("color") || hasFlag("colors") || hasFlag("color=true") || hasFlag("color=always")) {
+      forceColor = 1;
+    }
+    if ("FORCE_COLOR" in env) {
+      if (env.FORCE_COLOR === "true") {
+        forceColor = 1;
+      } else if (env.FORCE_COLOR === "false") {
+        forceColor = 0;
+      } else {
+        forceColor = env.FORCE_COLOR.length === 0 ? 1 : Math.min(parseInt(env.FORCE_COLOR, 10), 3);
+      }
+    }
+    function translateLevel(level) {
+      if (level === 0) {
+        return false;
+      }
+      return {
+        level,
+        hasBasic: true,
+        has256: level >= 2,
+        has16m: level >= 3
+      };
+    }
+    function supportsColor(haveStream, streamIsTTY) {
+      if (forceColor === 0) {
+        return 0;
+      }
+      if (hasFlag("color=16m") || hasFlag("color=full") || hasFlag("color=truecolor")) {
+        return 3;
+      }
+      if (hasFlag("color=256")) {
+        return 2;
+      }
+      if (haveStream && !streamIsTTY && forceColor === void 0) {
+        return 0;
+      }
+      const min = forceColor || 0;
+      if (env.TERM === "dumb") {
+        return min;
+      }
+      if (process.platform === "win32") {
+        const osRelease = os5.release().split(".");
+        if (Number(osRelease[0]) >= 10 && Number(osRelease[2]) >= 10586) {
+          return Number(osRelease[2]) >= 14931 ? 3 : 2;
+        }
+        return 1;
+      }
+      if ("CI" in env) {
+        if (["TRAVIS", "CIRCLECI", "APPVEYOR", "GITLAB_CI", "GITHUB_ACTIONS", "BUILDKITE"].some((sign) => sign in env) || env.CI_NAME === "codeship") {
+          return 1;
+        }
+        return min;
+      }
+      if ("TEAMCITY_VERSION" in env) {
+        return /^(9\.(0*[1-9]\d*)\.|\d{2,}\.)/.test(env.TEAMCITY_VERSION) ? 1 : 0;
+      }
+      if (env.COLORTERM === "truecolor") {
+        return 3;
+      }
+      if ("TERM_PROGRAM" in env) {
+        const version = parseInt((env.TERM_PROGRAM_VERSION || "").split(".")[0], 10);
+        switch (env.TERM_PROGRAM) {
+          case "iTerm.app":
+            return version >= 3 ? 3 : 2;
+          case "Apple_Terminal":
+            return 2;
+        }
+      }
+      if (/-256(color)?$/i.test(env.TERM)) {
+        return 2;
+      }
+      if (/^screen|^xterm|^vt100|^vt220|^rxvt|color|ansi|cygwin|linux/i.test(env.TERM)) {
+        return 1;
+      }
+      if ("COLORTERM" in env) {
+        return 1;
+      }
+      return min;
+    }
+    function getSupportLevel(stream) {
+      const level = supportsColor(stream, stream && stream.isTTY);
+      return translateLevel(level);
+    }
+    module2.exports = {
+      supportsColor: getSupportLevel,
+      stdout: translateLevel(supportsColor(true, tty.isatty(1))),
+      stderr: translateLevel(supportsColor(true, tty.isatty(2)))
+    };
+  }
+});
+
+// node_modules/.pnpm/chalk@4.1.2/node_modules/chalk/source/util.js
+var require_util11 = __commonJS({
+  "node_modules/.pnpm/chalk@4.1.2/node_modules/chalk/source/util.js"(exports, module2) {
+    "use strict";
+    var stringReplaceAll = (string, substring, replacer) => {
+      let index = string.indexOf(substring);
+      if (index === -1) {
+        return string;
+      }
+      const substringLength = substring.length;
+      let endIndex = 0;
+      let returnValue = "";
+      do {
+        returnValue += string.substr(endIndex, index - endIndex) + substring + replacer;
+        endIndex = index + substringLength;
+        index = string.indexOf(substring, endIndex);
+      } while (index !== -1);
+      returnValue += string.substr(endIndex);
+      return returnValue;
+    };
+    var stringEncaseCRLFWithFirstIndex = (string, prefix, postfix, index) => {
+      let endIndex = 0;
+      let returnValue = "";
+      do {
+        const gotCR = string[index - 1] === "\r";
+        returnValue += string.substr(endIndex, (gotCR ? index - 1 : index) - endIndex) + prefix + (gotCR ? "\r\n" : "\n") + postfix;
+        endIndex = index + 1;
+        index = string.indexOf("\n", endIndex);
+      } while (index !== -1);
+      returnValue += string.substr(endIndex);
+      return returnValue;
+    };
+    module2.exports = {
+      stringReplaceAll,
+      stringEncaseCRLFWithFirstIndex
+    };
+  }
+});
+
+// node_modules/.pnpm/chalk@4.1.2/node_modules/chalk/source/templates.js
+var require_templates = __commonJS({
+  "node_modules/.pnpm/chalk@4.1.2/node_modules/chalk/source/templates.js"(exports, module2) {
+    "use strict";
+    var TEMPLATE_REGEX = /(?:\\(u(?:[a-f\d]{4}|\{[a-f\d]{1,6}\})|x[a-f\d]{2}|.))|(?:\{(~)?(\w+(?:\([^)]*\))?(?:\.\w+(?:\([^)]*\))?)*)(?:[ \t]|(?=\r?\n)))|(\})|((?:.|[\r\n\f])+?)/gi;
+    var STYLE_REGEX = /(?:^|\.)(\w+)(?:\(([^)]*)\))?/g;
+    var STRING_REGEX = /^(['"])((?:\\.|(?!\1)[^\\])*)\1$/;
+    var ESCAPE_REGEX = /\\(u(?:[a-f\d]{4}|{[a-f\d]{1,6}})|x[a-f\d]{2}|.)|([^\\])/gi;
+    var ESCAPES = /* @__PURE__ */ new Map([
+      ["n", "\n"],
+      ["r", "\r"],
+      ["t", "	"],
+      ["b", "\b"],
+      ["f", "\f"],
+      ["v", "\v"],
+      ["0", "\0"],
+      ["\\", "\\"],
+      ["e", "\x1B"],
+      ["a", "\x07"]
+    ]);
+    function unescape2(c2) {
+      const u2 = c2[0] === "u";
+      const bracket = c2[1] === "{";
+      if (u2 && !bracket && c2.length === 5 || c2[0] === "x" && c2.length === 3) {
+        return String.fromCharCode(parseInt(c2.slice(1), 16));
+      }
+      if (u2 && bracket) {
+        return String.fromCodePoint(parseInt(c2.slice(2, -1), 16));
+      }
+      return ESCAPES.get(c2) || c2;
+    }
+    function parseArguments(name, arguments_) {
+      const results = [];
+      const chunks = arguments_.trim().split(/\s*,\s*/g);
+      let matches;
+      for (const chunk of chunks) {
+        const number = Number(chunk);
+        if (!Number.isNaN(number)) {
+          results.push(number);
+        } else if (matches = chunk.match(STRING_REGEX)) {
+          results.push(matches[2].replace(ESCAPE_REGEX, (m2, escape2, character) => escape2 ? unescape2(escape2) : character));
+        } else {
+          throw new Error(`Invalid Chalk template style argument: ${chunk} (in style '${name}')`);
+        }
+      }
+      return results;
+    }
+    function parseStyle(style) {
+      STYLE_REGEX.lastIndex = 0;
+      const results = [];
+      let matches;
+      while ((matches = STYLE_REGEX.exec(style)) !== null) {
+        const name = matches[1];
+        if (matches[2]) {
+          const args = parseArguments(name, matches[2]);
+          results.push([name].concat(args));
+        } else {
+          results.push([name]);
+        }
+      }
+      return results;
+    }
+    function buildStyle(chalk5, styles) {
+      const enabled = {};
+      for (const layer of styles) {
+        for (const style of layer.styles) {
+          enabled[style[0]] = layer.inverse ? null : style.slice(1);
+        }
+      }
+      let current = chalk5;
+      for (const [styleName, styles2] of Object.entries(enabled)) {
+        if (!Array.isArray(styles2)) {
+          continue;
+        }
+        if (!(styleName in current)) {
+          throw new Error(`Unknown Chalk style: ${styleName}`);
+        }
+        current = styles2.length > 0 ? current[styleName](...styles2) : current[styleName];
+      }
+      return current;
+    }
+    module2.exports = (chalk5, temporary) => {
+      const styles = [];
+      const chunks = [];
+      let chunk = [];
+      temporary.replace(TEMPLATE_REGEX, (m2, escapeCharacter, inverse, style, close, character) => {
+        if (escapeCharacter) {
+          chunk.push(unescape2(escapeCharacter));
+        } else if (style) {
+          const string = chunk.join("");
+          chunk = [];
+          chunks.push(styles.length === 0 ? string : buildStyle(chalk5, styles)(string));
+          styles.push({ inverse, styles: parseStyle(style) });
+        } else if (close) {
+          if (styles.length === 0) {
+            throw new Error("Found extraneous } in Chalk template literal");
+          }
+          chunks.push(buildStyle(chalk5, styles)(chunk.join("")));
+          chunk = [];
+          styles.pop();
+        } else {
+          chunk.push(character);
+        }
+      });
+      chunks.push(chunk.join(""));
+      if (styles.length > 0) {
+        const errMessage = `Chalk template literal is missing ${styles.length} closing bracket${styles.length === 1 ? "" : "s"} (\`}\`)`;
+        throw new Error(errMessage);
+      }
+      return chunks.join("");
+    };
+  }
+});
+
+// node_modules/.pnpm/chalk@4.1.2/node_modules/chalk/source/index.js
+var require_source = __commonJS({
+  "node_modules/.pnpm/chalk@4.1.2/node_modules/chalk/source/index.js"(exports, module2) {
+    "use strict";
+    var ansiStyles = require_ansi_styles();
+    var { stdout: stdoutColor, stderr: stderrColor } = require_supports_color();
+    var {
+      stringReplaceAll,
+      stringEncaseCRLFWithFirstIndex
+    } = require_util11();
+    var { isArray } = Array;
+    var levelMapping = [
+      "ansi",
+      "ansi",
+      "ansi256",
+      "ansi16m"
+    ];
+    var styles = /* @__PURE__ */ Object.create(null);
+    var applyOptions = (object, options = {}) => {
+      if (options.level && !(Number.isInteger(options.level) && options.level >= 0 && options.level <= 3)) {
+        throw new Error("The `level` option should be an integer from 0 to 3");
+      }
+      const colorLevel = stdoutColor ? stdoutColor.level : 0;
+      object.level = options.level === void 0 ? colorLevel : options.level;
+    };
+    var ChalkClass = class {
+      constructor(options) {
+        return chalkFactory(options);
+      }
+    };
+    var chalkFactory = (options) => {
+      const chalk6 = {};
+      applyOptions(chalk6, options);
+      chalk6.template = (...arguments_) => chalkTag(chalk6.template, ...arguments_);
+      Object.setPrototypeOf(chalk6, Chalk.prototype);
+      Object.setPrototypeOf(chalk6.template, chalk6);
+      chalk6.template.constructor = () => {
+        throw new Error("`chalk.constructor()` is deprecated. Use `new chalk.Instance()` instead.");
+      };
+      chalk6.template.Instance = ChalkClass;
+      return chalk6.template;
+    };
+    function Chalk(options) {
+      return chalkFactory(options);
+    }
+    for (const [styleName, style] of Object.entries(ansiStyles)) {
+      styles[styleName] = {
+        get() {
+          const builder = createBuilder(this, createStyler(style.open, style.close, this._styler), this._isEmpty);
+          Object.defineProperty(this, styleName, { value: builder });
+          return builder;
+        }
+      };
+    }
+    styles.visible = {
+      get() {
+        const builder = createBuilder(this, this._styler, true);
+        Object.defineProperty(this, "visible", { value: builder });
+        return builder;
+      }
+    };
+    var usedModels = ["rgb", "hex", "keyword", "hsl", "hsv", "hwb", "ansi", "ansi256"];
+    for (const model of usedModels) {
+      styles[model] = {
+        get() {
+          const { level } = this;
+          return function(...arguments_) {
+            const styler = createStyler(ansiStyles.color[levelMapping[level]][model](...arguments_), ansiStyles.color.close, this._styler);
+            return createBuilder(this, styler, this._isEmpty);
+          };
+        }
+      };
+    }
+    for (const model of usedModels) {
+      const bgModel = "bg" + model[0].toUpperCase() + model.slice(1);
+      styles[bgModel] = {
+        get() {
+          const { level } = this;
+          return function(...arguments_) {
+            const styler = createStyler(ansiStyles.bgColor[levelMapping[level]][model](...arguments_), ansiStyles.bgColor.close, this._styler);
+            return createBuilder(this, styler, this._isEmpty);
+          };
+        }
+      };
+    }
+    var proto = Object.defineProperties(() => {
+    }, {
+      ...styles,
+      level: {
+        enumerable: true,
+        get() {
+          return this._generator.level;
+        },
+        set(level) {
+          this._generator.level = level;
+        }
+      }
+    });
+    var createStyler = (open2, close, parent) => {
+      let openAll;
+      let closeAll;
+      if (parent === void 0) {
+        openAll = open2;
+        closeAll = close;
+      } else {
+        openAll = parent.openAll + open2;
+        closeAll = close + parent.closeAll;
+      }
+      return {
+        open: open2,
+        close,
+        openAll,
+        closeAll,
+        parent
+      };
+    };
+    var createBuilder = (self2, _styler, _isEmpty) => {
+      const builder = (...arguments_) => {
+        if (isArray(arguments_[0]) && isArray(arguments_[0].raw)) {
+          return applyStyle(builder, chalkTag(builder, ...arguments_));
+        }
+        return applyStyle(builder, arguments_.length === 1 ? "" + arguments_[0] : arguments_.join(" "));
+      };
+      Object.setPrototypeOf(builder, proto);
+      builder._generator = self2;
+      builder._styler = _styler;
+      builder._isEmpty = _isEmpty;
+      return builder;
+    };
+    var applyStyle = (self2, string) => {
+      if (self2.level <= 0 || !string) {
+        return self2._isEmpty ? "" : string;
+      }
+      let styler = self2._styler;
+      if (styler === void 0) {
+        return string;
+      }
+      const { openAll, closeAll } = styler;
+      if (string.indexOf("\x1B") !== -1) {
+        while (styler !== void 0) {
+          string = stringReplaceAll(string, styler.close, styler.open);
+          styler = styler.parent;
+        }
+      }
+      const lfIndex = string.indexOf("\n");
+      if (lfIndex !== -1) {
+        string = stringEncaseCRLFWithFirstIndex(string, closeAll, openAll, lfIndex);
+      }
+      return openAll + string + closeAll;
+    };
+    var template;
+    var chalkTag = (chalk6, ...strings) => {
+      const [firstString] = strings;
+      if (!isArray(firstString) || !isArray(firstString.raw)) {
+        return strings.join(" ");
+      }
+      const arguments_ = strings.slice(1);
+      const parts = [firstString.raw[0]];
+      for (let i2 = 1; i2 < firstString.length; i2++) {
+        parts.push(
+          String(arguments_[i2 - 1]).replace(/[{}\\]/g, "\\$&"),
+          String(firstString.raw[i2])
+        );
+      }
+      if (template === void 0) {
+        template = require_templates();
+      }
+      return template(chalk6, parts.join(""));
+    };
+    Object.defineProperties(Chalk.prototype, styles);
+    var chalk5 = Chalk();
+    chalk5.supportsColor = stdoutColor;
+    chalk5.stderr = Chalk({ level: stderrColor ? stderrColor.level : 0 });
+    chalk5.stderr.supportsColor = stderrColor;
+    module2.exports = chalk5;
+  }
+});
+
+// node_modules/.pnpm/picocolors@1.1.1/node_modules/picocolors/picocolors.js
+var require_picocolors = __commonJS({
+  "node_modules/.pnpm/picocolors@1.1.1/node_modules/picocolors/picocolors.js"(exports, module2) {
+    var p2 = process || {};
+    var argv = p2.argv || [];
+    var env = p2.env || {};
+    var isColorSupported = !(!!env.NO_COLOR || argv.includes("--no-color")) && (!!env.FORCE_COLOR || argv.includes("--color") || p2.platform === "win32" || (p2.stdout || {}).isTTY && env.TERM !== "dumb" || !!env.CI);
+    var formatter = (open2, close, replace = open2) => (input) => {
+      let string = "" + input, index = string.indexOf(close, open2.length);
+      return ~index ? open2 + replaceClose(string, close, replace, index) + close : open2 + string + close;
+    };
+    var replaceClose = (string, close, replace, index) => {
+      let result = "", cursor = 0;
+      do {
+        result += string.substring(cursor, index) + replace;
+        cursor = index + close.length;
+        index = string.indexOf(close, cursor);
+      } while (~index);
+      return result + string.substring(cursor);
+    };
+    var createColors = (enabled = isColorSupported) => {
+      let f2 = enabled ? formatter : () => String;
+      return {
+        isColorSupported: enabled,
+        reset: f2("\x1B[0m", "\x1B[0m"),
+        bold: f2("\x1B[1m", "\x1B[22m", "\x1B[22m\x1B[1m"),
+        dim: f2("\x1B[2m", "\x1B[22m", "\x1B[22m\x1B[2m"),
+        italic: f2("\x1B[3m", "\x1B[23m"),
+        underline: f2("\x1B[4m", "\x1B[24m"),
+        inverse: f2("\x1B[7m", "\x1B[27m"),
+        hidden: f2("\x1B[8m", "\x1B[28m"),
+        strikethrough: f2("\x1B[9m", "\x1B[29m"),
+        black: f2("\x1B[30m", "\x1B[39m"),
+        red: f2("\x1B[31m", "\x1B[39m"),
+        green: f2("\x1B[32m", "\x1B[39m"),
+        yellow: f2("\x1B[33m", "\x1B[39m"),
+        blue: f2("\x1B[34m", "\x1B[39m"),
+        magenta: f2("\x1B[35m", "\x1B[39m"),
+        cyan: f2("\x1B[36m", "\x1B[39m"),
+        white: f2("\x1B[37m", "\x1B[39m"),
+        gray: f2("\x1B[90m", "\x1B[39m"),
+        bgBlack: f2("\x1B[40m", "\x1B[49m"),
+        bgRed: f2("\x1B[41m", "\x1B[49m"),
+        bgGreen: f2("\x1B[42m", "\x1B[49m"),
+        bgYellow: f2("\x1B[43m", "\x1B[49m"),
+        bgBlue: f2("\x1B[44m", "\x1B[49m"),
+        bgMagenta: f2("\x1B[45m", "\x1B[49m"),
+        bgCyan: f2("\x1B[46m", "\x1B[49m"),
+        bgWhite: f2("\x1B[47m", "\x1B[49m"),
+        blackBright: f2("\x1B[90m", "\x1B[39m"),
+        redBright: f2("\x1B[91m", "\x1B[39m"),
+        greenBright: f2("\x1B[92m", "\x1B[39m"),
+        yellowBright: f2("\x1B[93m", "\x1B[39m"),
+        blueBright: f2("\x1B[94m", "\x1B[39m"),
+        magentaBright: f2("\x1B[95m", "\x1B[39m"),
+        cyanBright: f2("\x1B[96m", "\x1B[39m"),
+        whiteBright: f2("\x1B[97m", "\x1B[39m"),
+        bgBlackBright: f2("\x1B[100m", "\x1B[49m"),
+        bgRedBright: f2("\x1B[101m", "\x1B[49m"),
+        bgGreenBright: f2("\x1B[102m", "\x1B[49m"),
+        bgYellowBright: f2("\x1B[103m", "\x1B[49m"),
+        bgBlueBright: f2("\x1B[104m", "\x1B[49m"),
+        bgMagentaBright: f2("\x1B[105m", "\x1B[49m"),
+        bgCyanBright: f2("\x1B[106m", "\x1B[49m"),
+        bgWhiteBright: f2("\x1B[107m", "\x1B[49m")
+      };
+    };
+    module2.exports = createColors();
+    module2.exports.createColors = createColors;
+  }
+});
+
+// node_modules/.pnpm/js-tokens@4.0.0/node_modules/js-tokens/index.js
+var require_js_tokens = __commonJS({
+  "node_modules/.pnpm/js-tokens@4.0.0/node_modules/js-tokens/index.js"(exports) {
+    Object.defineProperty(exports, "__esModule", {
+      value: true
+    });
+    exports.default = /((['"])(?:(?!\2|\\).|\\(?:\r\n|[\s\S]))*(\2)?|`(?:[^`\\$]|\\[\s\S]|\$(?!\{)|\$\{(?:[^{}]|\{[^}]*\}?)*\}?)*(`)?)|(\/\/.*)|(\/\*(?:[^*]|\*(?!\/))*(\*\/)?)|(\/(?!\*)(?:\[(?:(?![\]\\]).|\\.)*\]|(?![\/\]\\]).|\\.)+\/(?:(?!\s*(?:\b|[\u0080-\uFFFF$\\'"~({]|[+\-!](?!=)|\.?\d))|[gmiyus]{1,6}\b(?![\u0080-\uFFFF$\\]|\s*(?:[+\-*%&|^<>!=?({]|\/(?![\/*])))))|(0[xX][\da-fA-F]+|0[oO][0-7]+|0[bB][01]+|(?:\d*\.\d+|\d+\.?)(?:[eE][+-]?\d+)?)|((?!\d)(?:(?!\s)[$\w\u0080-\uFFFF]|\\u[\da-fA-F]{4}|\\u\{[\da-fA-F]+\})+)|(--|\+\+|&&|\|\||=>|\.{3}|(?:[+\-\/%&|^]|\*{1,2}|<{1,2}|>{1,3}|!=?|={1,2})=?|[?~.,:;[\](){}])|(\s+)|(^$|[\s\S])/g;
+    exports.matchToToken = function(match) {
+      var token = { type: "invalid", value: match[0], closed: void 0 };
+      if (match[1]) token.type = "string", token.closed = !!(match[3] || match[4]);
+      else if (match[5]) token.type = "comment";
+      else if (match[6]) token.type = "comment", token.closed = !!match[7];
+      else if (match[8]) token.type = "regex";
+      else if (match[9]) token.type = "number";
+      else if (match[10]) token.type = "name";
+      else if (match[11]) token.type = "punctuator";
+      else if (match[12]) token.type = "whitespace";
+      return token;
+    };
+  }
+});
+
+// node_modules/.pnpm/@babel+helper-validator-identifier@7.29.7/node_modules/@babel/helper-validator-identifier/lib/identifier.js
+var require_identifier = __commonJS({
+  "node_modules/.pnpm/@babel+helper-validator-identifier@7.29.7/node_modules/@babel/helper-validator-identifier/lib/identifier.js"(exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", {
+      value: true
+    });
+    exports.isIdentifierChar = isIdentifierChar;
+    exports.isIdentifierName = isIdentifierName;
+    exports.isIdentifierStart = isIdentifierStart;
+    var nonASCIIidentifierStartChars = "\xAA\xB5\xBA\xC0-\xD6\xD8-\xF6\xF8-\u02C1\u02C6-\u02D1\u02E0-\u02E4\u02EC\u02EE\u0370-\u0374\u0376\u0377\u037A-\u037D\u037F\u0386\u0388-\u038A\u038C\u038E-\u03A1\u03A3-\u03F5\u03F7-\u0481\u048A-\u052F\u0531-\u0556\u0559\u0560-\u0588\u05D0-\u05EA\u05EF-\u05F2\u0620-\u064A\u066E\u066F\u0671-\u06D3\u06D5\u06E5\u06E6\u06EE\u06EF\u06FA-\u06FC\u06FF\u0710\u0712-\u072F\u074D-\u07A5\u07B1\u07CA-\u07EA\u07F4\u07F5\u07FA\u0800-\u0815\u081A\u0824\u0828\u0840-\u0858\u0860-\u086A\u0870-\u0887\u0889-\u088F\u08A0-\u08C9\u0904-\u0939\u093D\u0950\u0958-\u0961\u0971-\u0980\u0985-\u098C\u098F\u0990\u0993-\u09A8\u09AA-\u09B0\u09B2\u09B6-\u09B9\u09BD\u09CE\u09DC\u09DD\u09DF-\u09E1\u09F0\u09F1\u09FC\u0A05-\u0A0A\u0A0F\u0A10\u0A13-\u0A28\u0A2A-\u0A30\u0A32\u0A33\u0A35\u0A36\u0A38\u0A39\u0A59-\u0A5C\u0A5E\u0A72-\u0A74\u0A85-\u0A8D\u0A8F-\u0A91\u0A93-\u0AA8\u0AAA-\u0AB0\u0AB2\u0AB3\u0AB5-\u0AB9\u0ABD\u0AD0\u0AE0\u0AE1\u0AF9\u0B05-\u0B0C\u0B0F\u0B10\u0B13-\u0B28\u0B2A-\u0B30\u0B32\u0B33\u0B35-\u0B39\u0B3D\u0B5C\u0B5D\u0B5F-\u0B61\u0B71\u0B83\u0B85-\u0B8A\u0B8E-\u0B90\u0B92-\u0B95\u0B99\u0B9A\u0B9C\u0B9E\u0B9F\u0BA3\u0BA4\u0BA8-\u0BAA\u0BAE-\u0BB9\u0BD0\u0C05-\u0C0C\u0C0E-\u0C10\u0C12-\u0C28\u0C2A-\u0C39\u0C3D\u0C58-\u0C5A\u0C5C\u0C5D\u0C60\u0C61\u0C80\u0C85-\u0C8C\u0C8E-\u0C90\u0C92-\u0CA8\u0CAA-\u0CB3\u0CB5-\u0CB9\u0CBD\u0CDC-\u0CDE\u0CE0\u0CE1\u0CF1\u0CF2\u0D04-\u0D0C\u0D0E-\u0D10\u0D12-\u0D3A\u0D3D\u0D4E\u0D54-\u0D56\u0D5F-\u0D61\u0D7A-\u0D7F\u0D85-\u0D96\u0D9A-\u0DB1\u0DB3-\u0DBB\u0DBD\u0DC0-\u0DC6\u0E01-\u0E30\u0E32\u0E33\u0E40-\u0E46\u0E81\u0E82\u0E84\u0E86-\u0E8A\u0E8C-\u0EA3\u0EA5\u0EA7-\u0EB0\u0EB2\u0EB3\u0EBD\u0EC0-\u0EC4\u0EC6\u0EDC-\u0EDF\u0F00\u0F40-\u0F47\u0F49-\u0F6C\u0F88-\u0F8C\u1000-\u102A\u103F\u1050-\u1055\u105A-\u105D\u1061\u1065\u1066\u106E-\u1070\u1075-\u1081\u108E\u10A0-\u10C5\u10C7\u10CD\u10D0-\u10FA\u10FC-\u1248\u124A-\u124D\u1250-\u1256\u1258\u125A-\u125D\u1260-\u1288\u128A-\u128D\u1290-\u12B0\u12B2-\u12B5\u12B8-\u12BE\u12C0\u12C2-\u12C5\u12C8-\u12D6\u12D8-\u1310\u1312-\u1315\u1318-\u135A\u1380-\u138F\u13A0-\u13F5\u13F8-\u13FD\u1401-\u166C\u166F-\u167F\u1681-\u169A\u16A0-\u16EA\u16EE-\u16F8\u1700-\u1711\u171F-\u1731\u1740-\u1751\u1760-\u176C\u176E-\u1770\u1780-\u17B3\u17D7\u17DC\u1820-\u1878\u1880-\u18A8\u18AA\u18B0-\u18F5\u1900-\u191E\u1950-\u196D\u1970-\u1974\u1980-\u19AB\u19B0-\u19C9\u1A00-\u1A16\u1A20-\u1A54\u1AA7\u1B05-\u1B33\u1B45-\u1B4C\u1B83-\u1BA0\u1BAE\u1BAF\u1BBA-\u1BE5\u1C00-\u1C23\u1C4D-\u1C4F\u1C5A-\u1C7D\u1C80-\u1C8A\u1C90-\u1CBA\u1CBD-\u1CBF\u1CE9-\u1CEC\u1CEE-\u1CF3\u1CF5\u1CF6\u1CFA\u1D00-\u1DBF\u1E00-\u1F15\u1F18-\u1F1D\u1F20-\u1F45\u1F48-\u1F4D\u1F50-\u1F57\u1F59\u1F5B\u1F5D\u1F5F-\u1F7D\u1F80-\u1FB4\u1FB6-\u1FBC\u1FBE\u1FC2-\u1FC4\u1FC6-\u1FCC\u1FD0-\u1FD3\u1FD6-\u1FDB\u1FE0-\u1FEC\u1FF2-\u1FF4\u1FF6-\u1FFC\u2071\u207F\u2090-\u209C\u2102\u2107\u210A-\u2113\u2115\u2118-\u211D\u2124\u2126\u2128\u212A-\u2139\u213C-\u213F\u2145-\u2149\u214E\u2160-\u2188\u2C00-\u2CE4\u2CEB-\u2CEE\u2CF2\u2CF3\u2D00-\u2D25\u2D27\u2D2D\u2D30-\u2D67\u2D6F\u2D80-\u2D96\u2DA0-\u2DA6\u2DA8-\u2DAE\u2DB0-\u2DB6\u2DB8-\u2DBE\u2DC0-\u2DC6\u2DC8-\u2DCE\u2DD0-\u2DD6\u2DD8-\u2DDE\u3005-\u3007\u3021-\u3029\u3031-\u3035\u3038-\u303C\u3041-\u3096\u309B-\u309F\u30A1-\u30FA\u30FC-\u30FF\u3105-\u312F\u3131-\u318E\u31A0-\u31BF\u31F0-\u31FF\u3400-\u4DBF\u4E00-\uA48C\uA4D0-\uA4FD\uA500-\uA60C\uA610-\uA61F\uA62A\uA62B\uA640-\uA66E\uA67F-\uA69D\uA6A0-\uA6EF\uA717-\uA71F\uA722-\uA788\uA78B-\uA7DC\uA7F1-\uA801\uA803-\uA805\uA807-\uA80A\uA80C-\uA822\uA840-\uA873\uA882-\uA8B3\uA8F2-\uA8F7\uA8FB\uA8FD\uA8FE\uA90A-\uA925\uA930-\uA946\uA960-\uA97C\uA984-\uA9B2\uA9CF\uA9E0-\uA9E4\uA9E6-\uA9EF\uA9FA-\uA9FE\uAA00-\uAA28\uAA40-\uAA42\uAA44-\uAA4B\uAA60-\uAA76\uAA7A\uAA7E-\uAAAF\uAAB1\uAAB5\uAAB6\uAAB9-\uAABD\uAAC0\uAAC2\uAADB-\uAADD\uAAE0-\uAAEA\uAAF2-\uAAF4\uAB01-\uAB06\uAB09-\uAB0E\uAB11-\uAB16\uAB20-\uAB26\uAB28-\uAB2E\uAB30-\uAB5A\uAB5C-\uAB69\uAB70-\uABE2\uAC00-\uD7A3\uD7B0-\uD7C6\uD7CB-\uD7FB\uF900-\uFA6D\uFA70-\uFAD9\uFB00-\uFB06\uFB13-\uFB17\uFB1D\uFB1F-\uFB28\uFB2A-\uFB36\uFB38-\uFB3C\uFB3E\uFB40\uFB41\uFB43\uFB44\uFB46-\uFBB1\uFBD3-\uFD3D\uFD50-\uFD8F\uFD92-\uFDC7\uFDF0-\uFDFB\uFE70-\uFE74\uFE76-\uFEFC\uFF21-\uFF3A\uFF41-\uFF5A\uFF66-\uFFBE\uFFC2-\uFFC7\uFFCA-\uFFCF\uFFD2-\uFFD7\uFFDA-\uFFDC";
+    var nonASCIIidentifierChars = "\xB7\u0300-\u036F\u0387\u0483-\u0487\u0591-\u05BD\u05BF\u05C1\u05C2\u05C4\u05C5\u05C7\u0610-\u061A\u064B-\u0669\u0670\u06D6-\u06DC\u06DF-\u06E4\u06E7\u06E8\u06EA-\u06ED\u06F0-\u06F9\u0711\u0730-\u074A\u07A6-\u07B0\u07C0-\u07C9\u07EB-\u07F3\u07FD\u0816-\u0819\u081B-\u0823\u0825-\u0827\u0829-\u082D\u0859-\u085B\u0897-\u089F\u08CA-\u08E1\u08E3-\u0903\u093A-\u093C\u093E-\u094F\u0951-\u0957\u0962\u0963\u0966-\u096F\u0981-\u0983\u09BC\u09BE-\u09C4\u09C7\u09C8\u09CB-\u09CD\u09D7\u09E2\u09E3\u09E6-\u09EF\u09FE\u0A01-\u0A03\u0A3C\u0A3E-\u0A42\u0A47\u0A48\u0A4B-\u0A4D\u0A51\u0A66-\u0A71\u0A75\u0A81-\u0A83\u0ABC\u0ABE-\u0AC5\u0AC7-\u0AC9\u0ACB-\u0ACD\u0AE2\u0AE3\u0AE6-\u0AEF\u0AFA-\u0AFF\u0B01-\u0B03\u0B3C\u0B3E-\u0B44\u0B47\u0B48\u0B4B-\u0B4D\u0B55-\u0B57\u0B62\u0B63\u0B66-\u0B6F\u0B82\u0BBE-\u0BC2\u0BC6-\u0BC8\u0BCA-\u0BCD\u0BD7\u0BE6-\u0BEF\u0C00-\u0C04\u0C3C\u0C3E-\u0C44\u0C46-\u0C48\u0C4A-\u0C4D\u0C55\u0C56\u0C62\u0C63\u0C66-\u0C6F\u0C81-\u0C83\u0CBC\u0CBE-\u0CC4\u0CC6-\u0CC8\u0CCA-\u0CCD\u0CD5\u0CD6\u0CE2\u0CE3\u0CE6-\u0CEF\u0CF3\u0D00-\u0D03\u0D3B\u0D3C\u0D3E-\u0D44\u0D46-\u0D48\u0D4A-\u0D4D\u0D57\u0D62\u0D63\u0D66-\u0D6F\u0D81-\u0D83\u0DCA\u0DCF-\u0DD4\u0DD6\u0DD8-\u0DDF\u0DE6-\u0DEF\u0DF2\u0DF3\u0E31\u0E34-\u0E3A\u0E47-\u0E4E\u0E50-\u0E59\u0EB1\u0EB4-\u0EBC\u0EC8-\u0ECE\u0ED0-\u0ED9\u0F18\u0F19\u0F20-\u0F29\u0F35\u0F37\u0F39\u0F3E\u0F3F\u0F71-\u0F84\u0F86\u0F87\u0F8D-\u0F97\u0F99-\u0FBC\u0FC6\u102B-\u103E\u1040-\u1049\u1056-\u1059\u105E-\u1060\u1062-\u1064\u1067-\u106D\u1071-\u1074\u1082-\u108D\u108F-\u109D\u135D-\u135F\u1369-\u1371\u1712-\u1715\u1732-\u1734\u1752\u1753\u1772\u1773\u17B4-\u17D3\u17DD\u17E0-\u17E9\u180B-\u180D\u180F-\u1819\u18A9\u1920-\u192B\u1930-\u193B\u1946-\u194F\u19D0-\u19DA\u1A17-\u1A1B\u1A55-\u1A5E\u1A60-\u1A7C\u1A7F-\u1A89\u1A90-\u1A99\u1AB0-\u1ABD\u1ABF-\u1ADD\u1AE0-\u1AEB\u1B00-\u1B04\u1B34-\u1B44\u1B50-\u1B59\u1B6B-\u1B73\u1B80-\u1B82\u1BA1-\u1BAD\u1BB0-\u1BB9\u1BE6-\u1BF3\u1C24-\u1C37\u1C40-\u1C49\u1C50-\u1C59\u1CD0-\u1CD2\u1CD4-\u1CE8\u1CED\u1CF4\u1CF7-\u1CF9\u1DC0-\u1DFF\u200C\u200D\u203F\u2040\u2054\u20D0-\u20DC\u20E1\u20E5-\u20F0\u2CEF-\u2CF1\u2D7F\u2DE0-\u2DFF\u302A-\u302F\u3099\u309A\u30FB\uA620-\uA629\uA66F\uA674-\uA67D\uA69E\uA69F\uA6F0\uA6F1\uA802\uA806\uA80B\uA823-\uA827\uA82C\uA880\uA881\uA8B4-\uA8C5\uA8D0-\uA8D9\uA8E0-\uA8F1\uA8FF-\uA909\uA926-\uA92D\uA947-\uA953\uA980-\uA983\uA9B3-\uA9C0\uA9D0-\uA9D9\uA9E5\uA9F0-\uA9F9\uAA29-\uAA36\uAA43\uAA4C\uAA4D\uAA50-\uAA59\uAA7B-\uAA7D\uAAB0\uAAB2-\uAAB4\uAAB7\uAAB8\uAABE\uAABF\uAAC1\uAAEB-\uAAEF\uAAF5\uAAF6\uABE3-\uABEA\uABEC\uABED\uABF0-\uABF9\uFB1E\uFE00-\uFE0F\uFE20-\uFE2F\uFE33\uFE34\uFE4D-\uFE4F\uFF10-\uFF19\uFF3F\uFF65";
+    var nonASCIIidentifierStart = new RegExp("[" + nonASCIIidentifierStartChars + "]");
+    var nonASCIIidentifier = new RegExp("[" + nonASCIIidentifierStartChars + nonASCIIidentifierChars + "]");
+    nonASCIIidentifierStartChars = nonASCIIidentifierChars = null;
+    var astralIdentifierStartCodes = [0, 11, 2, 25, 2, 18, 2, 1, 2, 14, 3, 13, 35, 122, 70, 52, 268, 28, 4, 48, 48, 31, 14, 29, 6, 37, 11, 29, 3, 35, 5, 7, 2, 4, 43, 157, 19, 35, 5, 35, 5, 39, 9, 51, 13, 10, 2, 14, 2, 6, 2, 1, 2, 10, 2, 14, 2, 6, 2, 1, 4, 51, 13, 310, 10, 21, 11, 7, 25, 5, 2, 41, 2, 8, 70, 5, 3, 0, 2, 43, 2, 1, 4, 0, 3, 22, 11, 22, 10, 30, 66, 18, 2, 1, 11, 21, 11, 25, 7, 25, 39, 55, 7, 1, 65, 0, 16, 3, 2, 2, 2, 28, 43, 28, 4, 28, 36, 7, 2, 27, 28, 53, 11, 21, 11, 18, 14, 17, 111, 72, 56, 50, 14, 50, 14, 35, 39, 27, 10, 22, 251, 41, 7, 1, 17, 5, 57, 28, 11, 0, 9, 21, 43, 17, 47, 20, 28, 22, 13, 52, 58, 1, 3, 0, 14, 44, 33, 24, 27, 35, 30, 0, 3, 0, 9, 34, 4, 0, 13, 47, 15, 3, 22, 0, 2, 0, 36, 17, 2, 24, 20, 1, 64, 6, 2, 0, 2, 3, 2, 14, 2, 9, 8, 46, 39, 7, 3, 1, 3, 21, 2, 6, 2, 1, 2, 4, 4, 0, 19, 0, 13, 4, 31, 9, 2, 0, 3, 0, 2, 37, 2, 0, 26, 0, 2, 0, 45, 52, 19, 3, 21, 2, 31, 47, 21, 1, 2, 0, 185, 46, 42, 3, 37, 47, 21, 0, 60, 42, 14, 0, 72, 26, 38, 6, 186, 43, 117, 63, 32, 7, 3, 0, 3, 7, 2, 1, 2, 23, 16, 0, 2, 0, 95, 7, 3, 38, 17, 0, 2, 0, 29, 0, 11, 39, 8, 0, 22, 0, 12, 45, 20, 0, 19, 72, 200, 32, 32, 8, 2, 36, 18, 0, 50, 29, 113, 6, 2, 1, 2, 37, 22, 0, 26, 5, 2, 1, 2, 31, 15, 0, 24, 43, 261, 18, 16, 0, 2, 12, 2, 33, 125, 0, 80, 921, 103, 110, 18, 195, 2637, 96, 16, 1071, 18, 5, 26, 3994, 6, 582, 6842, 29, 1763, 568, 8, 30, 18, 78, 18, 29, 19, 47, 17, 3, 32, 20, 6, 18, 433, 44, 212, 63, 33, 24, 3, 24, 45, 74, 6, 0, 67, 12, 65, 1, 2, 0, 15, 4, 10, 7381, 42, 31, 98, 114, 8702, 3, 2, 6, 2, 1, 2, 290, 16, 0, 30, 2, 3, 0, 15, 3, 9, 395, 2309, 106, 6, 12, 4, 8, 8, 9, 5991, 84, 2, 70, 2, 1, 3, 0, 3, 1, 3, 3, 2, 11, 2, 0, 2, 6, 2, 64, 2, 3, 3, 7, 2, 6, 2, 27, 2, 3, 2, 4, 2, 0, 4, 6, 2, 339, 3, 24, 2, 24, 2, 30, 2, 24, 2, 30, 2, 24, 2, 30, 2, 24, 2, 30, 2, 24, 2, 7, 1845, 30, 7, 5, 262, 61, 147, 44, 11, 6, 17, 0, 322, 29, 19, 43, 485, 27, 229, 29, 3, 0, 208, 30, 2, 2, 2, 1, 2, 6, 3, 4, 10, 1, 225, 6, 2, 3, 2, 1, 2, 14, 2, 196, 60, 67, 8, 0, 1205, 3, 2, 26, 2, 1, 2, 0, 3, 0, 2, 9, 2, 3, 2, 0, 2, 0, 7, 0, 5, 0, 2, 0, 2, 0, 2, 2, 2, 1, 2, 0, 3, 0, 2, 0, 2, 0, 2, 0, 2, 0, 2, 1, 2, 0, 3, 3, 2, 6, 2, 3, 2, 3, 2, 0, 2, 9, 2, 16, 6, 2, 2, 4, 2, 16, 4421, 42719, 33, 4381, 3, 5773, 3, 7472, 16, 621, 2467, 541, 1507, 4938, 6, 8489];
+    var astralIdentifierCodes = [509, 0, 227, 0, 150, 4, 294, 9, 1368, 2, 2, 1, 6, 3, 41, 2, 5, 0, 166, 1, 574, 3, 9, 9, 7, 9, 32, 4, 318, 1, 78, 5, 71, 10, 50, 3, 123, 2, 54, 14, 32, 10, 3, 1, 11, 3, 46, 10, 8, 0, 46, 9, 7, 2, 37, 13, 2, 9, 6, 1, 45, 0, 13, 2, 49, 13, 9, 3, 2, 11, 83, 11, 7, 0, 3, 0, 158, 11, 6, 9, 7, 3, 56, 1, 2, 6, 3, 1, 3, 2, 10, 0, 11, 1, 3, 6, 4, 4, 68, 8, 2, 0, 3, 0, 2, 3, 2, 4, 2, 0, 15, 1, 83, 17, 10, 9, 5, 0, 82, 19, 13, 9, 214, 6, 3, 8, 28, 1, 83, 16, 16, 9, 82, 12, 9, 9, 7, 19, 58, 14, 5, 9, 243, 14, 166, 9, 71, 5, 2, 1, 3, 3, 2, 0, 2, 1, 13, 9, 120, 6, 3, 6, 4, 0, 29, 9, 41, 6, 2, 3, 9, 0, 10, 10, 47, 15, 199, 7, 137, 9, 54, 7, 2, 7, 17, 9, 57, 21, 2, 13, 123, 5, 4, 0, 2, 1, 2, 6, 2, 0, 9, 9, 49, 4, 2, 1, 2, 4, 9, 9, 55, 9, 266, 3, 10, 1, 2, 0, 49, 6, 4, 4, 14, 10, 5350, 0, 7, 14, 11465, 27, 2343, 9, 87, 9, 39, 4, 60, 6, 26, 9, 535, 9, 470, 0, 2, 54, 8, 3, 82, 0, 12, 1, 19628, 1, 4178, 9, 519, 45, 3, 22, 543, 4, 4, 5, 9, 7, 3, 6, 31, 3, 149, 2, 1418, 49, 513, 54, 5, 49, 9, 0, 15, 0, 23, 4, 2, 14, 1361, 6, 2, 16, 3, 6, 2, 1, 2, 4, 101, 0, 161, 6, 10, 9, 357, 0, 62, 13, 499, 13, 245, 1, 2, 9, 233, 0, 3, 0, 8, 1, 6, 0, 475, 6, 110, 6, 6, 9, 4759, 9, 787719, 239];
+    function isInAstralSet(code3, set2) {
+      let pos = 65536;
+      for (let i2 = 0, length = set2.length; i2 < length; i2 += 2) {
+        pos += set2[i2];
+        if (pos > code3) return false;
+        pos += set2[i2 + 1];
+        if (pos >= code3) return true;
+      }
+      return false;
+    }
+    function isIdentifierStart(code3) {
+      if (code3 < 65) return code3 === 36;
+      if (code3 <= 90) return true;
+      if (code3 < 97) return code3 === 95;
+      if (code3 <= 122) return true;
+      if (code3 <= 65535) {
+        return code3 >= 170 && nonASCIIidentifierStart.test(String.fromCharCode(code3));
+      }
+      return isInAstralSet(code3, astralIdentifierStartCodes);
+    }
+    function isIdentifierChar(code3) {
+      if (code3 < 48) return code3 === 36;
+      if (code3 < 58) return true;
+      if (code3 < 65) return false;
+      if (code3 <= 90) return true;
+      if (code3 < 97) return code3 === 95;
+      if (code3 <= 122) return true;
+      if (code3 <= 65535) {
+        return code3 >= 170 && nonASCIIidentifier.test(String.fromCharCode(code3));
+      }
+      return isInAstralSet(code3, astralIdentifierStartCodes) || isInAstralSet(code3, astralIdentifierCodes);
+    }
+    function isIdentifierName(name) {
+      let isFirst = true;
+      for (let i2 = 0; i2 < name.length; i2++) {
+        let cp = name.charCodeAt(i2);
+        if ((cp & 64512) === 55296 && i2 + 1 < name.length) {
+          const trail = name.charCodeAt(++i2);
+          if ((trail & 64512) === 56320) {
+            cp = 65536 + ((cp & 1023) << 10) + (trail & 1023);
+          }
+        }
+        if (isFirst) {
+          isFirst = false;
+          if (!isIdentifierStart(cp)) {
+            return false;
+          }
+        } else if (!isIdentifierChar(cp)) {
+          return false;
+        }
+      }
+      return !isFirst;
+    }
+  }
+});
+
+// node_modules/.pnpm/@babel+helper-validator-identifier@7.29.7/node_modules/@babel/helper-validator-identifier/lib/keyword.js
+var require_keyword2 = __commonJS({
+  "node_modules/.pnpm/@babel+helper-validator-identifier@7.29.7/node_modules/@babel/helper-validator-identifier/lib/keyword.js"(exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", {
+      value: true
+    });
+    exports.isKeyword = isKeyword;
+    exports.isReservedWord = isReservedWord;
+    exports.isStrictBindOnlyReservedWord = isStrictBindOnlyReservedWord;
+    exports.isStrictBindReservedWord = isStrictBindReservedWord;
+    exports.isStrictReservedWord = isStrictReservedWord;
+    var reservedWords = {
+      keyword: ["break", "case", "catch", "continue", "debugger", "default", "do", "else", "finally", "for", "function", "if", "return", "switch", "throw", "try", "var", "const", "while", "with", "new", "this", "super", "class", "extends", "export", "import", "null", "true", "false", "in", "instanceof", "typeof", "void", "delete"],
+      strict: ["implements", "interface", "let", "package", "private", "protected", "public", "static", "yield"],
+      strictBind: ["eval", "arguments"]
+    };
+    var keywords = new Set(reservedWords.keyword);
+    var reservedWordsStrictSet = new Set(reservedWords.strict);
+    var reservedWordsStrictBindSet = new Set(reservedWords.strictBind);
+    function isReservedWord(word, inModule) {
+      return inModule && word === "await" || word === "enum";
+    }
+    function isStrictReservedWord(word, inModule) {
+      return isReservedWord(word, inModule) || reservedWordsStrictSet.has(word);
+    }
+    function isStrictBindOnlyReservedWord(word) {
+      return reservedWordsStrictBindSet.has(word);
+    }
+    function isStrictBindReservedWord(word, inModule) {
+      return isStrictReservedWord(word, inModule) || isStrictBindOnlyReservedWord(word);
+    }
+    function isKeyword(word) {
+      return keywords.has(word);
+    }
+  }
+});
+
+// node_modules/.pnpm/@babel+helper-validator-identifier@7.29.7/node_modules/@babel/helper-validator-identifier/lib/index.js
+var require_lib = __commonJS({
+  "node_modules/.pnpm/@babel+helper-validator-identifier@7.29.7/node_modules/@babel/helper-validator-identifier/lib/index.js"(exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", {
+      value: true
+    });
+    Object.defineProperty(exports, "isIdentifierChar", {
+      enumerable: true,
+      get: function() {
+        return _identifier.isIdentifierChar;
+      }
+    });
+    Object.defineProperty(exports, "isIdentifierName", {
+      enumerable: true,
+      get: function() {
+        return _identifier.isIdentifierName;
+      }
+    });
+    Object.defineProperty(exports, "isIdentifierStart", {
+      enumerable: true,
+      get: function() {
+        return _identifier.isIdentifierStart;
+      }
+    });
+    Object.defineProperty(exports, "isKeyword", {
+      enumerable: true,
+      get: function() {
+        return _keyword.isKeyword;
+      }
+    });
+    Object.defineProperty(exports, "isReservedWord", {
+      enumerable: true,
+      get: function() {
+        return _keyword.isReservedWord;
+      }
+    });
+    Object.defineProperty(exports, "isStrictBindOnlyReservedWord", {
+      enumerable: true,
+      get: function() {
+        return _keyword.isStrictBindOnlyReservedWord;
+      }
+    });
+    Object.defineProperty(exports, "isStrictBindReservedWord", {
+      enumerable: true,
+      get: function() {
+        return _keyword.isStrictBindReservedWord;
+      }
+    });
+    Object.defineProperty(exports, "isStrictReservedWord", {
+      enumerable: true,
+      get: function() {
+        return _keyword.isStrictReservedWord;
+      }
+    });
+    var _identifier = require_identifier();
+    var _keyword = require_keyword2();
+  }
+});
+
+// node_modules/.pnpm/@babel+code-frame@7.29.7/node_modules/@babel/code-frame/lib/index.js
+var require_lib2 = __commonJS({
+  "node_modules/.pnpm/@babel+code-frame@7.29.7/node_modules/@babel/code-frame/lib/index.js"(exports) {
+    "use strict";
+    Object.defineProperty(exports, "__esModule", { value: true });
+    var picocolors = require_picocolors();
+    var jsTokens = require_js_tokens();
+    var helperValidatorIdentifier = require_lib();
+    function isColorSupported() {
+      return typeof process === "object" && (process.env.FORCE_COLOR === "0" || process.env.FORCE_COLOR === "false") ? false : picocolors.isColorSupported;
+    }
+    var compose = (f2, g2) => (v2) => f2(g2(v2));
+    function buildDefs(colors) {
+      return {
+        keyword: colors.cyan,
+        capitalized: colors.yellow,
+        jsxIdentifier: colors.yellow,
+        punctuator: colors.yellow,
+        number: colors.magenta,
+        string: colors.green,
+        regex: colors.magenta,
+        comment: colors.gray,
+        invalid: compose(compose(colors.white, colors.bgRed), colors.bold),
+        gutter: colors.gray,
+        marker: compose(colors.red, colors.bold),
+        message: compose(colors.red, colors.bold),
+        reset: colors.reset
+      };
+    }
+    var defsOn = buildDefs(picocolors.createColors(true));
+    var defsOff = buildDefs(picocolors.createColors(false));
+    function getDefs(enabled) {
+      return enabled ? defsOn : defsOff;
+    }
+    var sometimesKeywords = /* @__PURE__ */ new Set(["as", "async", "from", "get", "of", "set"]);
+    var NEWLINE$1 = /\r\n|[\n\r\u2028\u2029]/;
+    var BRACKET = /^[()[\]{}]$/;
+    var tokenize;
+    var JSX_TAG = /^[a-z][\w-]*$/i;
+    var getTokenType = function(token, offset, text3) {
+      if (token.type === "name") {
+        const tokenValue = token.value;
+        if (helperValidatorIdentifier.isKeyword(tokenValue) || helperValidatorIdentifier.isStrictReservedWord(tokenValue, true) || sometimesKeywords.has(tokenValue)) {
+          return "keyword";
+        }
+        if (JSX_TAG.test(tokenValue) && (text3[offset - 1] === "<" || text3.slice(offset - 2, offset) === "</")) {
+          return "jsxIdentifier";
+        }
+        const firstChar = String.fromCodePoint(tokenValue.codePointAt(0));
+        if (firstChar !== firstChar.toLowerCase()) {
+          return "capitalized";
+        }
+      }
+      if (token.type === "punctuator" && BRACKET.test(token.value)) {
+        return "bracket";
+      }
+      if (token.type === "invalid" && (token.value === "@" || token.value === "#")) {
+        return "punctuator";
+      }
+      return token.type;
+    };
+    tokenize = function* (text3) {
+      let match;
+      while (match = jsTokens.default.exec(text3)) {
+        const token = jsTokens.matchToToken(match);
+        yield {
+          type: getTokenType(token, match.index, text3),
+          value: token.value
+        };
+      }
+    };
+    function highlight(text3) {
+      if (text3 === "") return "";
+      const defs = getDefs(true);
+      let highlighted = "";
+      for (const {
+        type,
+        value
+      } of tokenize(text3)) {
+        if (type in defs) {
+          highlighted += value.split(NEWLINE$1).map((str) => defs[type](str)).join("\n");
+        } else {
+          highlighted += value;
+        }
+      }
+      return highlighted;
+    }
+    var deprecationWarningShown = false;
+    var NEWLINE = /\r\n|[\n\r\u2028\u2029]/;
+    function getMarkerLines(loc, source, opts, startLineBaseZero) {
+      const startLoc = Object.assign({
+        column: 0,
+        line: -1
+      }, loc.start);
+      const endLoc = Object.assign({}, startLoc, loc.end);
+      const {
+        linesAbove = 2,
+        linesBelow = 3
+      } = opts || {};
+      const startLine = startLoc.line - startLineBaseZero;
+      const startColumn = startLoc.column;
+      const endLine = endLoc.line - startLineBaseZero;
+      const endColumn = endLoc.column;
+      let start = Math.max(startLine - (linesAbove + 1), 0);
+      let end = Math.min(source.length, endLine + linesBelow);
+      if (startLine === -1) {
+        start = 0;
+      }
+      if (endLine === -1) {
+        end = source.length;
+      }
+      const lineDiff = endLine - startLine;
+      const markerLines = {};
+      if (lineDiff) {
+        for (let i2 = 0; i2 <= lineDiff; i2++) {
+          const lineNumber = i2 + startLine;
+          if (!startColumn) {
+            markerLines[lineNumber] = true;
+          } else if (i2 === 0) {
+            const sourceLength = source[lineNumber - 1].length;
+            markerLines[lineNumber] = [startColumn, sourceLength - startColumn + 1];
+          } else if (i2 === lineDiff) {
+            markerLines[lineNumber] = [0, endColumn];
+          } else {
+            const sourceLength = source[lineNumber - i2].length;
+            markerLines[lineNumber] = [0, sourceLength];
+          }
+        }
+      } else {
+        if (startColumn === endColumn) {
+          if (startColumn) {
+            markerLines[startLine] = [startColumn, 0];
+          } else {
+            markerLines[startLine] = true;
+          }
+        } else {
+          markerLines[startLine] = [startColumn, endColumn - startColumn];
+        }
+      }
+      return {
+        start,
+        end,
+        markerLines
+      };
+    }
+    function codeFrameColumns2(rawLines, loc, opts = {}) {
+      const shouldHighlight = opts.forceColor || isColorSupported() && opts.highlightCode;
+      const startLineBaseZero = (opts.startLine || 1) - 1;
+      const defs = getDefs(shouldHighlight);
+      const lines = rawLines.split(NEWLINE);
+      const {
+        start,
+        end,
+        markerLines
+      } = getMarkerLines(loc, lines, opts, startLineBaseZero);
+      const hasColumns = loc.start && typeof loc.start.column === "number";
+      const numberMaxWidth = String(end + startLineBaseZero).length;
+      const highlightedLines = shouldHighlight ? highlight(rawLines) : rawLines;
+      let frame = highlightedLines.split(NEWLINE, end).slice(start, end).map((line, index2) => {
+        const number = start + 1 + index2;
+        const paddedNumber = ` ${number + startLineBaseZero}`.slice(-numberMaxWidth);
+        const gutter = ` ${paddedNumber} |`;
+        const hasMarker = markerLines[number];
+        const lastMarkerLine = !markerLines[number + 1];
+        if (hasMarker) {
+          let markerLine = "";
+          if (Array.isArray(hasMarker)) {
+            const markerSpacing = line.slice(0, Math.max(hasMarker[0] - 1, 0)).replace(/[^\t]/g, " ");
+            const numberOfMarkers = hasMarker[1] || 1;
+            markerLine = ["\n ", defs.gutter(gutter.replace(/\d/g, " ")), " ", markerSpacing, defs.marker("^").repeat(numberOfMarkers)].join("");
+            if (lastMarkerLine && opts.message) {
+              markerLine += " " + defs.message(opts.message);
+            }
+          }
+          return [defs.marker(">"), defs.gutter(gutter), line.length > 0 ? ` ${line}` : "", markerLine].join("");
+        } else {
+          return ` ${defs.gutter(gutter)}${line.length > 0 ? ` ${line}` : ""}`;
+        }
+      }).join("\n");
+      if (opts.message && !hasColumns) {
+        frame = `${" ".repeat(numberMaxWidth + 1)}${opts.message}
+${frame}`;
+      }
+      if (shouldHighlight) {
+        return defs.reset(frame);
+      } else {
+        return frame;
+      }
+    }
+    function index(rawLines, lineNumber, colNumber, opts = {}) {
+      if (!deprecationWarningShown) {
+        deprecationWarningShown = true;
+        const message = "Passing lineNumber and colNumber is deprecated to @babel/code-frame. Please use `codeFrameColumns`.";
+        if (process.emitWarning) {
+          process.emitWarning(message, "DeprecationWarning");
+        } else {
+          const deprecationError = new Error(message);
+          deprecationError.name = "DeprecationWarning";
+          console.warn(new Error(message));
+        }
+      }
+      colNumber = Math.max(colNumber, 0);
+      const location = {
+        start: {
+          column: colNumber,
+          line: lineNumber
+        }
+      };
+      return codeFrameColumns2(rawLines, location, opts);
+    }
+    exports.codeFrameColumns = codeFrameColumns2;
+    exports.default = index;
+    exports.highlight = highlight;
+  }
+});
+
+// node_modules/.pnpm/leven@3.1.0/node_modules/leven/index.js
+var require_leven = __commonJS({
+  "node_modules/.pnpm/leven@3.1.0/node_modules/leven/index.js"(exports, module2) {
+    "use strict";
+    var array = [];
+    var charCodeCache = [];
+    var leven2 = (left, right) => {
+      if (left === right) {
+        return 0;
+      }
+      const swap = left;
+      if (left.length > right.length) {
+        left = right;
+        right = swap;
+      }
+      let leftLength = left.length;
+      let rightLength = right.length;
+      while (leftLength > 0 && left.charCodeAt(~-leftLength) === right.charCodeAt(~-rightLength)) {
+        leftLength--;
+        rightLength--;
+      }
+      let start = 0;
+      while (start < leftLength && left.charCodeAt(start) === right.charCodeAt(start)) {
+        start++;
+      }
+      leftLength -= start;
+      rightLength -= start;
+      if (leftLength === 0) {
+        return rightLength;
+      }
+      let bCharCode;
+      let result;
+      let temp;
+      let temp2;
+      let i2 = 0;
+      let j2 = 0;
+      while (i2 < leftLength) {
+        charCodeCache[i2] = left.charCodeAt(start + i2);
+        array[i2] = ++i2;
+      }
+      while (j2 < rightLength) {
+        bCharCode = right.charCodeAt(start + j2);
+        temp = j2++;
+        result = j2;
+        for (i2 = 0; i2 < leftLength; i2++) {
+          temp2 = bCharCode === charCodeCache[i2] ? temp : temp + 1;
+          temp = array[i2];
+          result = array[i2] = temp > result ? temp2 > result ? result + 1 : temp2 : temp2 > temp ? temp + 1 : temp2;
+        }
+      }
+      return result;
+    };
+    module2.exports = leven2;
+    module2.exports.default = leven2;
+  }
+});
+
+// node_modules/.pnpm/jsonpointer@5.0.1/node_modules/jsonpointer/jsonpointer.js
+var require_jsonpointer = __commonJS({
+  "node_modules/.pnpm/jsonpointer@5.0.1/node_modules/jsonpointer/jsonpointer.js"(exports) {
+    var hasExcape = /~/;
+    var escapeMatcher = /~[01]/g;
+    function escapeReplacer(m2) {
+      switch (m2) {
+        case "~1":
+          return "/";
+        case "~0":
+          return "~";
+      }
+      throw new Error("Invalid tilde escape: " + m2);
+    }
+    function untilde(str) {
+      if (!hasExcape.test(str)) return str;
+      return str.replace(escapeMatcher, escapeReplacer);
+    }
+    function setter(obj, pointer2, value) {
+      var part;
+      var hasNextPart;
+      for (var p2 = 1, len = pointer2.length; p2 < len; ) {
+        if (pointer2[p2] === "constructor" || pointer2[p2] === "prototype" || pointer2[p2] === "__proto__") return obj;
+        part = untilde(pointer2[p2++]);
+        hasNextPart = len > p2;
+        if (typeof obj[part] === "undefined") {
+          if (Array.isArray(obj) && part === "-") {
+            part = obj.length;
+          }
+          if (hasNextPart) {
+            if (pointer2[p2] !== "" && pointer2[p2] < Infinity || pointer2[p2] === "-") obj[part] = [];
+            else obj[part] = {};
+          }
+        }
+        if (!hasNextPart) break;
+        obj = obj[part];
+      }
+      var oldValue = obj[part];
+      if (value === void 0) delete obj[part];
+      else obj[part] = value;
+      return oldValue;
+    }
+    function compilePointer(pointer2) {
+      if (typeof pointer2 === "string") {
+        pointer2 = pointer2.split("/");
+        if (pointer2[0] === "") return pointer2;
+        throw new Error("Invalid JSON pointer.");
+      } else if (Array.isArray(pointer2)) {
+        for (const part of pointer2) {
+          if (typeof part !== "string" && typeof part !== "number") {
+            throw new Error("Invalid JSON pointer. Must be of type string or number.");
+          }
+        }
+        return pointer2;
+      }
+      throw new Error("Invalid JSON pointer.");
+    }
+    function get2(obj, pointer2) {
+      if (typeof obj !== "object") throw new Error("Invalid input object.");
+      pointer2 = compilePointer(pointer2);
+      var len = pointer2.length;
+      if (len === 1) return obj;
+      for (var p2 = 1; p2 < len; ) {
+        obj = obj[untilde(pointer2[p2++])];
+        if (len === p2) return obj;
+        if (typeof obj !== "object" || obj === null) return void 0;
+      }
+    }
+    function set2(obj, pointer2, value) {
+      if (typeof obj !== "object") throw new Error("Invalid input object.");
+      pointer2 = compilePointer(pointer2);
+      if (pointer2.length === 0) throw new Error("Invalid JSON pointer for set.");
+      return setter(obj, pointer2, value);
+    }
+    function compile(pointer2) {
+      var compiled = compilePointer(pointer2);
+      return {
+        get: function(object) {
+          return get2(object, compiled);
+        },
+        set: function(object, value) {
+          return set2(object, compiled, value);
+        }
+      };
+    }
+    exports.get = get2;
+    exports.set = set2;
+    exports.compile = compile;
   }
 });
 
@@ -31244,11 +34130,11 @@ var require_errors3 = __commonJS({
         if (end?.line === line && end.col > col) {
           count = Math.max(1, Math.min(end.col - col, 80 - ci));
         }
-        const pointer = " ".repeat(ci) + "^".repeat(count);
+        const pointer2 = " ".repeat(ci) + "^".repeat(count);
         error2.message += `:
 
 ${lineStr}
-${pointer}
+${pointer2}
 `;
       }
     };
@@ -34755,7 +37641,7 @@ var require_public_api = __commonJS({
       }
       return doc;
     }
-    function parse3(src, reviver, options) {
+    function parse4(src, reviver, options) {
       let _reviver = void 0;
       if (typeof reviver === "function") {
         _reviver = reviver;
@@ -34796,7 +37682,7 @@ var require_public_api = __commonJS({
         return value.toString(options);
       return new Document.Document(value, _replacer, options).toString(options);
     }
-    exports.parse = parse3;
+    exports.parse = parse4;
     exports.parseAllDocuments = parseAllDocuments;
     exports.parseDocument = parseDocument2;
     exports.stringify = stringify3;
@@ -35815,7 +38701,7 @@ var require_tree2 = __commonJS({
 });
 
 // node_modules/.pnpm/undici@7.18.2/node_modules/undici/lib/core/util.js
-var require_util11 = __commonJS({
+var require_util12 = __commonJS({
   "node_modules/.pnpm/undici@7.18.2/node_modules/undici/lib/core/util.js"(exports, module2) {
     "use strict";
     var assert = __require("node:assert");
@@ -36904,7 +39790,7 @@ var require_request3 = __commonJS({
       getServerName,
       normalizedMethodRecords,
       getProtocolFromUrlString
-    } = require_util11();
+    } = require_util12();
     var { channels } = require_diagnostics2();
     var { headerNameLowerCasedRecord } = require_constants6();
     var invalidPathRegex = /[^\u0021-\u00ff]/;
@@ -37343,7 +40229,7 @@ var require_dispatcher2 = __commonJS({
 var require_unwrap_handler = __commonJS({
   "node_modules/.pnpm/undici@7.18.2/node_modules/undici/lib/handler/unwrap-handler.js"(exports, module2) {
     "use strict";
-    var { parseHeaders } = require_util11();
+    var { parseHeaders } = require_util12();
     var { InvalidArgumentError } = require_errors4();
     var kResume = /* @__PURE__ */ Symbol("resume");
     var UnwrapController = class {
@@ -37559,7 +40445,7 @@ var require_connect2 = __commonJS({
     "use strict";
     var net = __require("node:net");
     var assert = __require("node:assert");
-    var util = require_util11();
+    var util = require_util12();
     var { InvalidArgumentError } = require_errors4();
     var tls;
     var SessionCache = class WeakSessionCache {
@@ -39689,7 +42575,7 @@ var require_webidl2 = __commonJS({
 });
 
 // node_modules/.pnpm/undici@7.18.2/node_modules/undici/lib/web/fetch/util.js
-var require_util12 = __commonJS({
+var require_util13 = __commonJS({
   "node_modules/.pnpm/undici@7.18.2/node_modules/undici/lib/web/fetch/util.js"(exports, module2) {
     "use strict";
     var { Transform } = __require("node:stream");
@@ -39698,7 +42584,7 @@ var require_util12 = __commonJS({
     var { getGlobalOrigin } = require_global3();
     var { collectAnHTTPQuotedString, parseMIMEType } = require_data_url2();
     var { performance: performance2 } = __require("node:perf_hooks");
-    var { ReadableStreamFrom, isValidHTTPToken, normalizedMethodRecordsBase } = require_util11();
+    var { ReadableStreamFrom, isValidHTTPToken, normalizedMethodRecordsBase } = require_util12();
     var assert = __require("node:assert");
     var { isUint8Array } = __require("node:util/types");
     var { webidl } = require_webidl2();
@@ -40447,8 +43333,8 @@ var require_util12 = __commonJS({
 var require_formdata2 = __commonJS({
   "node_modules/.pnpm/undici@7.18.2/node_modules/undici/lib/web/fetch/formdata.js"(exports, module2) {
     "use strict";
-    var { iteratorMixin } = require_util12();
-    var { kEnumerableProperty } = require_util11();
+    var { iteratorMixin } = require_util13();
+    var { kEnumerableProperty } = require_util12();
     var { webidl } = require_webidl2();
     var nodeUtil = __require("node:util");
     var FormData = class _FormData {
@@ -40609,7 +43495,7 @@ var require_formdata2 = __commonJS({
 var require_formdata_parser2 = __commonJS({
   "node_modules/.pnpm/undici@7.18.2/node_modules/undici/lib/web/fetch/formdata-parser.js"(exports, module2) {
     "use strict";
-    var { bufferToLowerCasedHeaderName } = require_util11();
+    var { bufferToLowerCasedHeaderName } = require_util12();
     var { HTTP_TOKEN_CODEPOINTS } = require_data_url2();
     var { makeEntry } = require_formdata2();
     var { webidl } = require_webidl2();
@@ -40952,13 +43838,13 @@ var require_promise = __commonJS({
 var require_body2 = __commonJS({
   "node_modules/.pnpm/undici@7.18.2/node_modules/undici/lib/web/fetch/body.js"(exports, module2) {
     "use strict";
-    var util = require_util11();
+    var util = require_util12();
     var {
       ReadableStreamFrom,
       readableStreamClose,
       fullyReadBody,
       extractMimeType
-    } = require_util12();
+    } = require_util13();
     var { FormData, setFormDataState } = require_formdata2();
     var { webidl } = require_webidl2();
     var assert = __require("node:assert");
@@ -41249,7 +44135,7 @@ var require_client_h12 = __commonJS({
   "node_modules/.pnpm/undici@7.18.2/node_modules/undici/lib/dispatcher/client-h1.js"(exports, module2) {
     "use strict";
     var assert = __require("node:assert");
-    var util = require_util11();
+    var util = require_util12();
     var { channels } = require_diagnostics2();
     var timers = require_timers2();
     var {
@@ -42409,7 +45295,7 @@ var require_client_h22 = __commonJS({
     "use strict";
     var assert = __require("node:assert");
     var { pipeline } = __require("node:stream");
-    var util = require_util11();
+    var util = require_util12();
     var {
       RequestContentLengthMismatchError,
       RequestAbortedError,
@@ -43088,7 +45974,7 @@ var require_client2 = __commonJS({
     var assert = __require("node:assert");
     var net = __require("node:net");
     var http = __require("node:http");
-    var util = require_util11();
+    var util = require_util12();
     var { ClientStats } = require_stats();
     var { channels } = require_diagnostics2();
     var Request = require_request3();
@@ -43831,7 +46717,7 @@ var require_pool2 = __commonJS({
     var {
       InvalidArgumentError
     } = require_errors4();
-    var util = require_util11();
+    var util = require_util12();
     var { kUrl } = require_symbols6();
     var buildConnector = require_connect2();
     var kOptions = /* @__PURE__ */ Symbol("options");
@@ -43935,7 +46821,7 @@ var require_balanced_pool2 = __commonJS({
     } = require_pool_base2();
     var Pool = require_pool2();
     var { kUrl } = require_symbols6();
-    var { parseOrigin } = require_util11();
+    var { parseOrigin } = require_util12();
     var kFactory = /* @__PURE__ */ Symbol("factory");
     var kOptions = /* @__PURE__ */ Symbol("options");
     var kGreatestCommonDivisor = /* @__PURE__ */ Symbol("kGreatestCommonDivisor");
@@ -44080,7 +46966,7 @@ var require_round_robin_pool = __commonJS({
     var {
       InvalidArgumentError
     } = require_errors4();
-    var util = require_util11();
+    var util = require_util12();
     var { kUrl } = require_symbols6();
     var buildConnector = require_connect2();
     var kOptions = /* @__PURE__ */ Symbol("options");
@@ -44190,7 +47076,7 @@ var require_agent2 = __commonJS({
     var DispatcherBase = require_dispatcher_base2();
     var Pool = require_pool2();
     var Client = require_client2();
-    var util = require_util11();
+    var util = require_util12();
     var kOnConnect = /* @__PURE__ */ Symbol("onConnect");
     var kOnDisconnect = /* @__PURE__ */ Symbol("onDisconnect");
     var kOnConnectionError = /* @__PURE__ */ Symbol("onConnectionError");
@@ -44684,7 +47570,7 @@ var require_retry_handler2 = __commonJS({
       isDisturbed,
       parseRangeHeader,
       wrapRequestBody
-    } = require_util11();
+    } = require_util12();
     function calculateRetryAfterHeader(retryAfter) {
       const retryTime = new Date(retryAfter).getTime();
       return isNaN(retryTime) ? 0 : retryTime - Date.now();
@@ -45066,8 +47952,8 @@ var require_readable2 = __commonJS({
     var assert = __require("node:assert");
     var { Readable } = __require("node:stream");
     var { RequestAbortedError, NotSupportedError, InvalidArgumentError, AbortError } = require_errors4();
-    var util = require_util11();
-    var { ReadableStreamFrom } = require_util11();
+    var util = require_util12();
+    var { ReadableStreamFrom } = require_util12();
     var kConsume = /* @__PURE__ */ Symbol("kConsume");
     var kReading = /* @__PURE__ */ Symbol("kReading");
     var kBody = /* @__PURE__ */ Symbol("kBody");
@@ -45469,7 +48355,7 @@ var require_api_request2 = __commonJS({
     var { AsyncResource } = __require("node:async_hooks");
     var { Readable } = require_readable2();
     var { InvalidArgumentError, RequestAbortedError } = require_errors4();
-    var util = require_util11();
+    var util = require_util12();
     function noop3() {
     }
     var RequestHandler = class extends AsyncResource {
@@ -45642,7 +48528,7 @@ var require_api_request2 = __commonJS({
 var require_abort_signal2 = __commonJS({
   "node_modules/.pnpm/undici@7.18.2/node_modules/undici/lib/api/abort-signal.js"(exports, module2) {
     "use strict";
-    var { addAbortListener } = require_util11();
+    var { addAbortListener } = require_util12();
     var { RequestAbortedError } = require_errors4();
     var kListener = /* @__PURE__ */ Symbol("kListener");
     var kSignal = /* @__PURE__ */ Symbol("kSignal");
@@ -45698,7 +48584,7 @@ var require_api_stream2 = __commonJS({
     var { finished } = __require("node:stream");
     var { AsyncResource } = __require("node:async_hooks");
     var { InvalidArgumentError, InvalidReturnValueError } = require_errors4();
-    var util = require_util11();
+    var util = require_util12();
     var { addSignal, removeSignal } = require_abort_signal2();
     function noop3() {
     }
@@ -45867,7 +48753,7 @@ var require_api_pipeline2 = __commonJS({
       InvalidReturnValueError,
       RequestAbortedError
     } = require_errors4();
-    var util = require_util11();
+    var util = require_util12();
     var { addSignal, removeSignal } = require_abort_signal2();
     function noop3() {
     }
@@ -46059,7 +48945,7 @@ var require_api_upgrade2 = __commonJS({
     var { InvalidArgumentError, SocketError } = require_errors4();
     var { AsyncResource } = __require("node:async_hooks");
     var assert = __require("node:assert");
-    var util = require_util11();
+    var util = require_util12();
     var { kHTTP2Stream } = require_symbols6();
     var { addSignal, removeSignal } = require_abort_signal2();
     var UpgradeHandler = class extends AsyncResource {
@@ -46153,7 +49039,7 @@ var require_api_connect2 = __commonJS({
     var assert = __require("node:assert");
     var { AsyncResource } = __require("node:async_hooks");
     var { InvalidArgumentError, SocketError } = require_errors4();
-    var util = require_util11();
+    var util = require_util12();
     var { addSignal, removeSignal } = require_abort_signal2();
     var ConnectHandler = class extends AsyncResource {
       constructor(opts, callback) {
@@ -46238,7 +49124,7 @@ var require_api_connect2 = __commonJS({
 });
 
 // node_modules/.pnpm/undici@7.18.2/node_modules/undici/lib/api/index.js
-var require_api2 = __commonJS({
+var require_api3 = __commonJS({
   "node_modules/.pnpm/undici@7.18.2/node_modules/undici/lib/api/index.js"(exports, module2) {
     "use strict";
     module2.exports.request = require_api_request2();
@@ -46323,7 +49209,7 @@ var require_mock_utils2 = __commonJS({
       kOrigin,
       kGetNetConnect
     } = require_mock_symbols2();
-    var { serializePathWithQuery } = require_util11();
+    var { serializePathWithQuery } = require_util12();
     var { STATUS_CODES } = __require("node:http");
     var {
       types: {
@@ -46668,7 +49554,7 @@ var require_mock_interceptor2 = __commonJS({
       kIgnoreTrailingSlash
     } = require_mock_symbols2();
     var { InvalidArgumentError } = require_errors4();
-    var { serializePathWithQuery } = require_util11();
+    var { serializePathWithQuery } = require_util12();
     var MockScope = class {
       constructor(mockDispatch) {
         this[kMockDispatch] = mockDispatch;
@@ -48218,7 +51104,7 @@ var require_decorator_handler2 = __commonJS({
 var require_redirect_handler2 = __commonJS({
   "node_modules/.pnpm/undici@7.18.2/node_modules/undici/lib/handler/redirect-handler.js"(exports, module2) {
     "use strict";
-    var util = require_util11();
+    var util = require_util12();
     var { kBodyUsed } = require_symbols6();
     var assert = __require("node:assert");
     var { InvalidArgumentError } = require_errors4();
@@ -48957,8 +51843,8 @@ var require_cache2 = __commonJS({
     var {
       safeHTTPMethods,
       pathHasQueryOrFragment
-    } = require_util11();
-    var { serializePathWithQuery } = require_util11();
+    } = require_util12();
+    var { serializePathWithQuery } = require_util12();
     function makeCacheKey(opts) {
       if (!opts.origin) {
         throw new Error("opts.origin is undefined");
@@ -49718,7 +52604,7 @@ var require_date = __commonJS({
 var require_cache_handler = __commonJS({
   "node_modules/.pnpm/undici@7.18.2/node_modules/undici/lib/handler/cache-handler.js"(exports, module2) {
     "use strict";
-    var util = require_util11();
+    var util = require_util12();
     var {
       parseCacheControlHeader,
       parseVaryHeader,
@@ -50329,7 +53215,7 @@ var require_cache3 = __commonJS({
     "use strict";
     var assert = __require("node:assert");
     var { Readable } = __require("node:stream");
-    var util = require_util11();
+    var util = require_util12();
     var CacheHandler = require_cache_handler();
     var MemoryCacheStore = require_memory_cache_store();
     var CacheRevalidationHandler = require_cache_revalidation_handler();
@@ -51042,7 +53928,7 @@ var require_deduplicate = __commonJS({
   "node_modules/.pnpm/undici@7.18.2/node_modules/undici/lib/interceptor/deduplicate.js"(exports, module2) {
     "use strict";
     var diagnosticsChannel = __require("node:diagnostics_channel");
-    var util = require_util11();
+    var util = require_util12();
     var DeduplicationHandler = require_deduplication_handler();
     var { normalizeHeaders, makeCacheKey, makeDeduplicationKey } = require_cache2();
     var pendingRequestsChannel = diagnosticsChannel.channel("undici:request:pending-requests");
@@ -51480,12 +54366,12 @@ var require_headers2 = __commonJS({
   "node_modules/.pnpm/undici@7.18.2/node_modules/undici/lib/web/fetch/headers.js"(exports, module2) {
     "use strict";
     var { kConstruct } = require_symbols6();
-    var { kEnumerableProperty } = require_util11();
+    var { kEnumerableProperty } = require_util12();
     var {
       iteratorMixin,
       isValidHeaderName,
       isValidHeaderValue
-    } = require_util12();
+    } = require_util13();
     var { webidl } = require_webidl2();
     var assert = __require("node:assert");
     var util = __require("node:util");
@@ -51942,7 +54828,7 @@ var require_response2 = __commonJS({
     "use strict";
     var { Headers: Headers2, HeadersList, fill, getHeadersGuard, setHeadersGuard, setHeadersList } = require_headers2();
     var { extractBody, cloneBody, mixinBody, streamRegistry, bodyUnusable } = require_body2();
-    var util = require_util11();
+    var util = require_util12();
     var nodeUtil = __require("node:util");
     var { kEnumerableProperty } = util;
     var {
@@ -51951,7 +54837,7 @@ var require_response2 = __commonJS({
       isAborted,
       isErrorLike,
       environmentSettingsObject: relevantRealm
-    } = require_util12();
+    } = require_util13();
     var {
       redirectStatusSet,
       nullBodyStatus
@@ -52364,13 +55250,13 @@ var require_request4 = __commonJS({
     "use strict";
     var { extractBody, mixinBody, cloneBody, bodyUnusable } = require_body2();
     var { Headers: Headers2, fill: fillHeaders, HeadersList, setHeadersGuard, getHeadersGuard, setHeadersList, getHeadersList } = require_headers2();
-    var util = require_util11();
+    var util = require_util12();
     var nodeUtil = __require("node:util");
     var {
       isValidHTTPToken,
       sameOrigin,
       environmentSettingsObject
-    } = require_util12();
+    } = require_util13();
     var {
       forbiddenMethodsSet,
       corsSafeListedMethodsSet,
@@ -53296,7 +56182,7 @@ var require_fetch2 = __commonJS({
       buildContentRange,
       createInflate,
       extractMimeType
-    } = require_util12();
+    } = require_util13();
     var assert = __require("node:assert");
     var { safelyExtractBody, extractBody } = require_body2();
     var {
@@ -53308,7 +56194,7 @@ var require_fetch2 = __commonJS({
     } = require_constants8();
     var EE = __require("node:events");
     var { Readable, pipeline, finished, isErrored, isReadable } = __require("node:stream");
-    var { addAbortListener, bufferToLowerCasedHeaderName } = require_util11();
+    var { addAbortListener, bufferToLowerCasedHeaderName } = require_util12();
     var { dataURLProcessor, serializeAMimeType, minimizeSupportedMimeType } = require_data_url2();
     var { getGlobalDispatcher } = require_global4();
     var { webidl } = require_webidl2();
@@ -54320,12 +57206,12 @@ var require_fetch2 = __commonJS({
 });
 
 // node_modules/.pnpm/undici@7.18.2/node_modules/undici/lib/web/cache/util.js
-var require_util13 = __commonJS({
+var require_util14 = __commonJS({
   "node_modules/.pnpm/undici@7.18.2/node_modules/undici/lib/web/cache/util.js"(exports, module2) {
     "use strict";
     var assert = __require("node:assert");
     var { URLSerializer } = require_data_url2();
-    var { isValidHeaderName } = require_util12();
+    var { isValidHeaderName } = require_util13();
     function urlEquals(A2, B2, excludeFragment = false) {
       const serializedA = URLSerializer(A2, excludeFragment);
       const serializedB = URLSerializer(B2, excludeFragment);
@@ -54355,13 +57241,13 @@ var require_cache4 = __commonJS({
     "use strict";
     var assert = __require("node:assert");
     var { kConstruct } = require_symbols6();
-    var { urlEquals, getFieldValues } = require_util13();
-    var { kEnumerableProperty, isDisturbed } = require_util11();
+    var { urlEquals, getFieldValues } = require_util14();
+    var { kEnumerableProperty, isDisturbed } = require_util12();
     var { webidl } = require_webidl2();
     var { cloneResponse, fromInnerResponse, getResponseState } = require_response2();
     var { Request, fromInnerRequest, getRequestState } = require_request4();
     var { fetching } = require_fetch2();
-    var { urlIsHttpHttpsScheme, readAllBytes } = require_util12();
+    var { urlIsHttpHttpsScheme, readAllBytes } = require_util13();
     var { createDeferredPromise } = require_promise();
     var Cache = class _Cache {
       /**
@@ -54904,7 +57790,7 @@ var require_cachestorage2 = __commonJS({
     "use strict";
     var { Cache } = require_cache4();
     var { webidl } = require_webidl2();
-    var { kEnumerableProperty } = require_util11();
+    var { kEnumerableProperty } = require_util12();
     var { kConstruct } = require_symbols6();
     var CacheStorage = class _CacheStorage {
       /**
@@ -55022,7 +57908,7 @@ var require_constants9 = __commonJS({
 });
 
 // node_modules/.pnpm/undici@7.18.2/node_modules/undici/lib/web/cookies/util.js
-var require_util14 = __commonJS({
+var require_util15 = __commonJS({
   "node_modules/.pnpm/undici@7.18.2/node_modules/undici/lib/web/cookies/util.js"(exports, module2) {
     "use strict";
     function isCTLExcludingHtab(value) {
@@ -55197,7 +58083,7 @@ var require_parse2 = __commonJS({
     "use strict";
     var { collectASequenceOfCodePointsFast } = require_infra();
     var { maxNameValuePairSize, maxAttributeValueSize } = require_constants9();
-    var { isCTLExcludingHtab } = require_util14();
+    var { isCTLExcludingHtab } = require_util15();
     var assert = __require("node:assert");
     var { unescape: qsUnescape } = __require("node:querystring");
     function parseSetCookie(header) {
@@ -55337,7 +58223,7 @@ var require_cookies2 = __commonJS({
   "node_modules/.pnpm/undici@7.18.2/node_modules/undici/lib/web/cookies/index.js"(exports, module2) {
     "use strict";
     var { parseSetCookie } = require_parse2();
-    var { stringify: stringify3 } = require_util14();
+    var { stringify: stringify3 } = require_util15();
     var { webidl } = require_webidl2();
     var { Headers: Headers2 } = require_headers2();
     var brandChecks = webidl.brandCheckMultiple([Headers2, globalThis.Headers].filter(Boolean));
@@ -55472,7 +58358,7 @@ var require_events2 = __commonJS({
   "node_modules/.pnpm/undici@7.18.2/node_modules/undici/lib/web/websocket/events.js"(exports, module2) {
     "use strict";
     var { webidl } = require_webidl2();
-    var { kEnumerableProperty } = require_util11();
+    var { kEnumerableProperty } = require_util12();
     var { kConstruct } = require_symbols6();
     var MessageEvent = class _MessageEvent extends Event {
       #eventInit;
@@ -55792,7 +58678,7 @@ var require_constants10 = __commonJS({
 });
 
 // node_modules/.pnpm/undici@7.18.2/node_modules/undici/lib/web/websocket/util.js
-var require_util15 = __commonJS({
+var require_util16 = __commonJS({
   "node_modules/.pnpm/undici@7.18.2/node_modules/undici/lib/web/websocket/util.js"(exports, module2) {
     "use strict";
     var { states, opcodes } = require_constants10();
@@ -56074,11 +58960,11 @@ var require_connection2 = __commonJS({
   "node_modules/.pnpm/undici@7.18.2/node_modules/undici/lib/web/websocket/connection.js"(exports, module2) {
     "use strict";
     var { uid, states, sentCloseFrameState, emptyBuffer, opcodes } = require_constants10();
-    var { parseExtensions, isClosed, isClosing, isEstablished, isConnecting, validateCloseCodeAndReason } = require_util15();
+    var { parseExtensions, isClosed, isClosing, isEstablished, isConnecting, validateCloseCodeAndReason } = require_util16();
     var { makeRequest } = require_request4();
     var { fetching } = require_fetch2();
     var { Headers: Headers2, getHeadersList } = require_headers2();
-    var { getDecodeSplit } = require_util12();
+    var { getDecodeSplit } = require_util13();
     var { WebsocketFrameSend } = require_frame2();
     var assert = __require("node:assert");
     var { runtimeFeatures } = require_runtime_features();
@@ -56229,7 +59115,7 @@ var require_permessage_deflate2 = __commonJS({
   "node_modules/.pnpm/undici@7.18.2/node_modules/undici/lib/web/websocket/permessage-deflate.js"(exports, module2) {
     "use strict";
     var { createInflateRaw, Z_DEFAULT_WINDOWBITS } = __require("node:zlib");
-    var { isValidClientWindowBits } = require_util15();
+    var { isValidClientWindowBits } = require_util16();
     var tail = Buffer.from([0, 0, 255, 255]);
     var kBuffer = /* @__PURE__ */ Symbol("kBuffer");
     var kLength = /* @__PURE__ */ Symbol("kLength");
@@ -56294,7 +59180,7 @@ var require_receiver2 = __commonJS({
       isControlFrame,
       isTextBinaryFrame,
       isContinuationFrame
-    } = require_util15();
+    } = require_util16();
     var { failWebsocketConnection } = require_connection2();
     var { WebsocketFrameSend } = require_frame2();
     var { PerMessageDeflate } = require_permessage_deflate2();
@@ -56685,7 +59571,7 @@ var require_websocket2 = __commonJS({
     var { isArrayBuffer } = __require("node:util/types");
     var { webidl } = require_webidl2();
     var { URLSerializer } = require_data_url2();
-    var { environmentSettingsObject } = require_util12();
+    var { environmentSettingsObject } = require_util13();
     var { staticPropertyDescriptors, states, sentCloseFrameState, sendHints, opcodes } = require_constants10();
     var {
       isConnecting,
@@ -56697,10 +59583,10 @@ var require_websocket2 = __commonJS({
       utf8Decode,
       toArrayBuffer,
       getURLRecord
-    } = require_util15();
+    } = require_util16();
     var { establishWebSocketConnection, closeWebSocketConnection, failWebsocketConnection } = require_connection2();
     var { ByteParser } = require_receiver2();
-    var { kEnumerableProperty } = require_util11();
+    var { kEnumerableProperty } = require_util12();
     var { getGlobalDispatcher } = require_global4();
     var { ErrorEvent, CloseEvent, createFastMessageEvent } = require_events2();
     var { SendQueue } = require_sender2();
@@ -57158,9 +60044,9 @@ var require_websocketerror = __commonJS({
   "node_modules/.pnpm/undici@7.18.2/node_modules/undici/lib/web/websocket/stream/websocketerror.js"(exports, module2) {
     "use strict";
     var { webidl } = require_webidl2();
-    var { validateCloseCodeAndReason } = require_util15();
+    var { validateCloseCodeAndReason } = require_util16();
     var { kConstruct } = require_symbols6();
-    var { kEnumerableProperty } = require_util11();
+    var { kEnumerableProperty } = require_util12();
     function createInheritableDOMException() {
       class Test extends DOMException {
         get reason() {
@@ -57238,16 +60124,16 @@ var require_websocketstream = __commonJS({
   "node_modules/.pnpm/undici@7.18.2/node_modules/undici/lib/web/websocket/stream/websocketstream.js"(exports, module2) {
     "use strict";
     var { createDeferredPromise } = require_promise();
-    var { environmentSettingsObject } = require_util12();
+    var { environmentSettingsObject } = require_util13();
     var { states, opcodes, sentCloseFrameState } = require_constants10();
     var { webidl } = require_webidl2();
-    var { getURLRecord, isValidSubprotocol, isEstablished, utf8Decode } = require_util15();
+    var { getURLRecord, isValidSubprotocol, isEstablished, utf8Decode } = require_util16();
     var { establishWebSocketConnection, failWebsocketConnection, closeWebSocketConnection } = require_connection2();
     var { channels } = require_diagnostics2();
     var { WebsocketFrameSend } = require_frame2();
     var { ByteParser } = require_receiver2();
     var { WebSocketError, createUnvalidatedWebSocketError } = require_websocketerror();
-    var { kEnumerableProperty } = require_util11();
+    var { kEnumerableProperty } = require_util12();
     var { utf8DecodeBytes } = require_encoding2();
     var emittedExperimentalWarning = false;
     var WebSocketStream = class {
@@ -57546,7 +60432,7 @@ var require_websocketstream = __commonJS({
 });
 
 // node_modules/.pnpm/undici@7.18.2/node_modules/undici/lib/web/eventsource/util.js
-var require_util16 = __commonJS({
+var require_util17 = __commonJS({
   "node_modules/.pnpm/undici@7.18.2/node_modules/undici/lib/web/eventsource/util.js"(exports, module2) {
     "use strict";
     function isValidLastEventId(value) {
@@ -57571,7 +60457,7 @@ var require_eventsource_stream2 = __commonJS({
   "node_modules/.pnpm/undici@7.18.2/node_modules/undici/lib/web/eventsource/eventsource-stream.js"(exports, module2) {
     "use strict";
     var { Transform } = __require("node:stream");
-    var { isASCIINumber, isValidLastEventId } = require_util16();
+    var { isASCIINumber, isValidLastEventId } = require_util17();
     var BOM = [239, 187, 191];
     var LF = 10;
     var CR = 13;
@@ -57809,8 +60695,8 @@ var require_eventsource2 = __commonJS({
     var { parseMIMEType } = require_data_url2();
     var { createFastMessageEvent } = require_events2();
     var { isNetworkError } = require_response2();
-    var { kEnumerableProperty } = require_util11();
-    var { environmentSettingsObject } = require_util12();
+    var { kEnumerableProperty } = require_util12();
+    var { environmentSettingsObject } = require_util13();
     var experimentalWarned = false;
     var defaultReconnectionTime = 3e3;
     var CONNECTING = 0;
@@ -58129,9 +61015,9 @@ var require_undici2 = __commonJS({
     var RetryAgent = require_retry_agent2();
     var H2CClient = require_h2c_client();
     var errors = require_errors4();
-    var util = require_util11();
+    var util = require_util12();
     var { InvalidArgumentError } = errors;
-    var api = require_api2();
+    var api = require_api3();
     var buildConnector = require_connect2();
     var MockClient = require_mock_client2();
     var { MockCallHistory, MockCallHistoryLog } = require_mock_call_history();
@@ -65297,6 +68183,376 @@ function errorStack(error2) {
 var import_ajv = __toESM(require_ajv(), 1);
 var import_ajv_errors = __toESM(require_dist(), 1);
 
+// node_modules/.pnpm/better-ajv-errors@2.0.3_ajv@8.20.0/node_modules/better-ajv-errors/lib/esm/index.mjs
+var import_momoa = __toESM(require_api2(), 1);
+
+// node_modules/.pnpm/better-ajv-errors@2.0.3_ajv@8.20.0/node_modules/better-ajv-errors/lib/esm/utils.mjs
+var eq = (x2) => (y2) => x2 === y2;
+var not = (fn) => (x2) => !fn(x2);
+var getValues = (
+  /*::<Obj: Object>*/
+  ((o2) => Object.values(o2))
+);
+var notUndefined = (x2) => x2 !== void 0;
+var isXError = (x2) => (error2) => error2.keyword === x2;
+var isRequiredError = isXError("required");
+var isAnyOfError = isXError("anyOf");
+var isEnumError = isXError("enum");
+var getErrors = (node2) => node2 && node2.errors ? node2.errors.map(
+  (e) => e.keyword === "errorMessage" ? { ...e.params.errors[0], message: e.message } : e
+) : [];
+var getChildren = (node2) => node2 && getValues(node2.children) || [];
+var getSiblings = (parent) => (node2) => getChildren(parent).filter(not(eq(node2)));
+var concatAll = (
+  /*::<T>*/
+  ((xs) => (ys) => ys.reduce((zs, z2) => zs.concat(z2), xs))
+);
+
+// node_modules/.pnpm/better-ajv-errors@2.0.3_ajv@8.20.0/node_modules/better-ajv-errors/lib/esm/validation-errors/required.mjs
+var import_chalk = __toESM(require_source(), 1);
+
+// node_modules/.pnpm/better-ajv-errors@2.0.3_ajv@8.20.0/node_modules/better-ajv-errors/lib/esm/validation-errors/base.mjs
+var import_code_frame = __toESM(require_lib2(), 1);
+
+// node_modules/.pnpm/better-ajv-errors@2.0.3_ajv@8.20.0/node_modules/better-ajv-errors/lib/esm/json/utils.mjs
+var getPointers = (dataPath) => {
+  return dataPath.split("/").slice(1).map((pointer2) => pointer2.split("~1").join("/").split("~0").join("~"));
+};
+
+// node_modules/.pnpm/better-ajv-errors@2.0.3_ajv@8.20.0/node_modules/better-ajv-errors/lib/esm/json/get-meta-from-path.mjs
+function getMetaFromPath(jsonAst, dataPath, includeIdentifierLocation) {
+  const pointers = getPointers(dataPath);
+  const lastPointerIndex = pointers.length - 1;
+  return pointers.reduce((obj, pointer2, idx) => {
+    switch (obj.type) {
+      case "Object": {
+        const filtered = obj.members.filter(
+          (child) => child.name.value === pointer2
+        );
+        if (filtered.length !== 1) {
+          throw new Error(`Couldn't find property ${pointer2} of ${dataPath}`);
+        }
+        const { name, value } = filtered[0];
+        return includeIdentifierLocation && idx === lastPointerIndex ? name : value;
+      }
+      case "Array":
+        return obj.elements[pointer2];
+      default:
+        console.log(obj);
+    }
+  }, jsonAst.body);
+}
+
+// node_modules/.pnpm/better-ajv-errors@2.0.3_ajv@8.20.0/node_modules/better-ajv-errors/lib/esm/json/get-decorated-data-path.mjs
+function getDecoratedDataPath(jsonAst, dataPath) {
+  let decoratedPath = "";
+  getPointers(dataPath).reduce((obj, pointer2) => {
+    switch (obj.type) {
+      case "Object": {
+        decoratedPath += `/${pointer2}`;
+        const filtered = obj.members.filter(
+          (child) => child.name.value === pointer2
+        );
+        if (filtered.length !== 1) {
+          throw new Error(`Couldn't find property ${pointer2} of ${dataPath}`);
+        }
+        return filtered[0].value;
+      }
+      case "Array": {
+        decoratedPath += `/${pointer2}${getTypeName(obj.elements[pointer2])}`;
+        return obj.elements[pointer2];
+      }
+      default:
+        console.log(obj);
+    }
+  }, jsonAst.body);
+  return decoratedPath;
+}
+function getTypeName(obj) {
+  if (!obj || !obj.elements) {
+    return "";
+  }
+  const type = obj.elements.filter(
+    (child) => child && child.name && child.name.value === "type"
+  );
+  if (!type.length) {
+    return "";
+  }
+  return type[0].value && `:${type[0].value.value}` || "";
+}
+
+// node_modules/.pnpm/better-ajv-errors@2.0.3_ajv@8.20.0/node_modules/better-ajv-errors/lib/esm/validation-errors/base.mjs
+var BaseValidationError = class {
+  constructor(options = { isIdentifierLocation: false }, { data, schema, jsonAst, jsonRaw }) {
+    this.options = options;
+    this.data = data;
+    this.schema = schema;
+    this.jsonAst = jsonAst;
+    this.jsonRaw = jsonRaw;
+  }
+  getLocation(dataPath = this.instancePath) {
+    const { isIdentifierLocation, isSkipEndLocation } = this.options;
+    const { loc } = getMetaFromPath(
+      this.jsonAst,
+      dataPath,
+      isIdentifierLocation
+    );
+    return {
+      start: loc.start,
+      end: isSkipEndLocation ? void 0 : loc.end
+    };
+  }
+  getDecoratedPath(dataPath = this.instancePath) {
+    const decoratedPath = getDecoratedDataPath(this.jsonAst, dataPath);
+    return decoratedPath;
+  }
+  getCodeFrame(message, dataPath = this.instancePath) {
+    return (0, import_code_frame.codeFrameColumns)(this.jsonRaw, this.getLocation(dataPath), {
+      highlightCode: true,
+      message
+    });
+  }
+  /**
+   * @return {string}
+   */
+  get instancePath() {
+    return typeof this.options.instancePath !== "undefined" ? this.options.instancePath : this.options.dataPath;
+  }
+  print() {
+    throw new Error(
+      `Implement the 'print' method inside ${this.constructor.name}!`
+    );
+  }
+  getError() {
+    throw new Error(
+      `Implement the 'getError' method inside ${this.constructor.name}!`
+    );
+  }
+};
+
+// node_modules/.pnpm/better-ajv-errors@2.0.3_ajv@8.20.0/node_modules/better-ajv-errors/lib/esm/validation-errors/required.mjs
+var RequiredValidationError = class extends BaseValidationError {
+  getLocation(dataPath = this.instancePath) {
+    const { start } = super.getLocation(dataPath);
+    return { start };
+  }
+  print() {
+    const { message, params } = this.options;
+    const output = [import_chalk.default`{red {bold REQUIRED} ${message}}\n`];
+    return output.concat(
+      this.getCodeFrame(
+        import_chalk.default`☹️  {magentaBright ${params.missingProperty}} is missing here!`
+      )
+    );
+  }
+  getError() {
+    const { message } = this.options;
+    return {
+      ...this.getLocation(),
+      error: `${this.getDecoratedPath()} ${message}`,
+      path: this.instancePath
+    };
+  }
+};
+
+// node_modules/.pnpm/better-ajv-errors@2.0.3_ajv@8.20.0/node_modules/better-ajv-errors/lib/esm/validation-errors/additional-prop.mjs
+var import_chalk2 = __toESM(require_source(), 1);
+var AdditionalPropValidationError = class extends BaseValidationError {
+  constructor(...args) {
+    super(...args);
+    this.options.isIdentifierLocation = true;
+  }
+  print() {
+    const { message, params } = this.options;
+    const output = [import_chalk2.default`{red {bold ADDTIONAL PROPERTY} ${message}}\n`];
+    return output.concat(
+      this.getCodeFrame(
+        import_chalk2.default`😲  {magentaBright ${params.additionalProperty}} is not expected to be here!`,
+        `${this.instancePath}/${params.additionalProperty}`
+      )
+    );
+  }
+  getError() {
+    const { params } = this.options;
+    return {
+      ...this.getLocation(`${this.instancePath}/${params.additionalProperty}`),
+      error: `${this.getDecoratedPath()} Property ${params.additionalProperty} is not expected to be here`,
+      path: this.instancePath
+    };
+  }
+};
+
+// node_modules/.pnpm/better-ajv-errors@2.0.3_ajv@8.20.0/node_modules/better-ajv-errors/lib/esm/validation-errors/enum.mjs
+var import_chalk3 = __toESM(require_source(), 1);
+var import_leven = __toESM(require_leven(), 1);
+var import_jsonpointer = __toESM(require_jsonpointer(), 1);
+var EnumValidationError = class extends BaseValidationError {
+  print() {
+    const {
+      message,
+      params: { allowedValues }
+    } = this.options;
+    const bestMatch = this.findBestMatch();
+    const output = [
+      import_chalk3.default`{red {bold ENUM} ${message}}`,
+      import_chalk3.default`{red (${allowedValues.join(", ")})}\n`
+    ];
+    return output.concat(
+      this.getCodeFrame(
+        bestMatch !== null ? import_chalk3.default`👈🏽  Did you mean {magentaBright ${bestMatch}} here?` : import_chalk3.default`👈🏽  Unexpected value, should be equal to one of the allowed values`
+      )
+    );
+  }
+  getError() {
+    const { message, params } = this.options;
+    const bestMatch = this.findBestMatch();
+    const allowedValues = params.allowedValues.join(", ");
+    const output = {
+      ...this.getLocation(),
+      error: `${this.getDecoratedPath()} ${message}: ${allowedValues}`,
+      path: this.instancePath
+    };
+    if (bestMatch !== null) {
+      output.suggestion = `Did you mean ${bestMatch}?`;
+    }
+    return output;
+  }
+  findBestMatch() {
+    const {
+      params: { allowedValues }
+    } = this.options;
+    const currentValue = this.instancePath === "" ? this.data : import_jsonpointer.default.get(this.data, this.instancePath);
+    if (!currentValue) {
+      return null;
+    }
+    const bestMatch = allowedValues.map((value) => ({
+      value,
+      weight: (0, import_leven.default)(value, currentValue.toString())
+    })).sort(
+      (x2, y2) => x2.weight > y2.weight ? 1 : x2.weight < y2.weight ? -1 : 0
+    )[0];
+    return allowedValues.length === 1 || bestMatch.weight < bestMatch.value.length ? bestMatch.value : null;
+  }
+};
+
+// node_modules/.pnpm/better-ajv-errors@2.0.3_ajv@8.20.0/node_modules/better-ajv-errors/lib/esm/validation-errors/default.mjs
+var import_chalk4 = __toESM(require_source(), 1);
+var DefaultValidationError = class extends BaseValidationError {
+  print() {
+    const { keyword, message } = this.options;
+    const output = [import_chalk4.default`{red {bold ${keyword.toUpperCase()}} ${message}}\n`];
+    return output.concat(
+      this.getCodeFrame(import_chalk4.default`👈🏽  {magentaBright ${keyword}} ${message}`)
+    );
+  }
+  getError() {
+    const { keyword, message } = this.options;
+    return {
+      ...this.getLocation(),
+      error: `${this.getDecoratedPath()}: ${keyword} ${message}`,
+      path: this.instancePath
+    };
+  }
+};
+
+// node_modules/.pnpm/better-ajv-errors@2.0.3_ajv@8.20.0/node_modules/better-ajv-errors/lib/esm/helpers.mjs
+var JSON_POINTERS_REGEX = /\/[\w_-]+(\/\d+)?/g;
+function makeTree(ajvErrors2 = []) {
+  const root3 = { children: {} };
+  ajvErrors2.forEach((ajvError) => {
+    const instancePath = typeof ajvError.instancePath !== "undefined" ? ajvError.instancePath : ajvError.dataPath;
+    const paths = instancePath === "" ? [""] : instancePath.match(JSON_POINTERS_REGEX);
+    paths && paths.reduce((obj, path, i2) => {
+      obj.children[path] = obj.children[path] || { children: {}, errors: [] };
+      if (i2 === paths.length - 1) {
+        obj.children[path].errors.push(ajvError);
+      }
+      return obj.children[path];
+    }, root3);
+  });
+  return root3;
+}
+function filterRedundantErrors(root3, parent, key) {
+  getErrors(root3).forEach((error2) => {
+    if (isRequiredError(error2)) {
+      root3.errors = [error2];
+      root3.children = {};
+    }
+  });
+  if (getErrors(root3).some(isAnyOfError)) {
+    if (Object.keys(root3.children).length > 0) {
+      delete root3.errors;
+    }
+  }
+  if (root3.errors && root3.errors.length && getErrors(root3).every(isEnumError)) {
+    if (getSiblings(parent)(root3).filter(notUndefined).some(getErrors)) {
+      delete parent.children[key];
+    }
+  }
+  Object.entries(root3.children).forEach(
+    ([key2, child]) => filterRedundantErrors(child, root3, key2)
+  );
+}
+function createErrorInstances(root3, options) {
+  const errors = getErrors(root3);
+  if (errors.length && errors.every(isEnumError)) {
+    const uniqueValues = new Set(
+      concatAll([])(errors.map((e) => e.params.allowedValues))
+    );
+    const allowedValues = [...uniqueValues];
+    const error2 = errors[0];
+    return [
+      new EnumValidationError(
+        {
+          ...error2,
+          params: { allowedValues }
+        },
+        options
+      )
+    ];
+  } else {
+    return concatAll(
+      errors.reduce((ret, error2) => {
+        switch (error2.keyword) {
+          case "additionalProperties":
+            return ret.concat(
+              new AdditionalPropValidationError(error2, options)
+            );
+          case "required":
+            return ret.concat(new RequiredValidationError(error2, options));
+          default:
+            return ret.concat(new DefaultValidationError(error2, options));
+        }
+      }, [])
+    )(getChildren(root3).map((child) => createErrorInstances(child, options)));
+  }
+}
+var helpers_default = (ajvErrors2, options) => {
+  const tree = makeTree(ajvErrors2 || []);
+  filterRedundantErrors(tree);
+  return createErrorInstances(tree, options);
+};
+
+// node_modules/.pnpm/better-ajv-errors@2.0.3_ajv@8.20.0/node_modules/better-ajv-errors/lib/esm/index.mjs
+var index_default = (schema, data, errors, options = {}) => {
+  const { format = "cli", indent = null, json = null } = options;
+  const jsonRaw = json || JSON.stringify(data, null, indent);
+  const jsonAst = (0, import_momoa.parse)(jsonRaw);
+  const customErrorToText = (error2) => error2.print().join("\n");
+  const customErrorToStructure = (error2) => error2.getError();
+  const customErrors = helpers_default(errors, {
+    data,
+    schema,
+    jsonAst,
+    jsonRaw
+  });
+  if (format === "cli") {
+    return customErrors.map(customErrorToText).join("\n\n");
+  } else {
+    return customErrors.map(customErrorToStructure);
+  }
+};
+
 // src/schema/apps.v1.schema.json
 var apps_v1_schema_default = {
   $schema: "http://json-schema.org/draft-07/schema#",
@@ -67019,10 +70275,10 @@ var validateRequester = createValidate(
   "requester configuration"
 );
 var ValidateError = class extends Error {
-  errors;
-  constructor(message, errors) {
+  details;
+  constructor(message, details2) {
     super(message);
-    this.errors = errors;
+    this.details = details2;
   }
 };
 function createValidate(schemaId, label) {
@@ -67031,16 +70287,26 @@ function createValidate(schemaId, label) {
     if (!validator) {
       throw new Error(`Invariant violation: Undefined schema ${schemaId}`);
     }
+    const config = structuredClone(value);
+    const json = JSON.stringify(config, null, 2);
     if (validator(value)) return value;
     const errors = validator.errors ?? [];
     const error2 = new ValidateError(
       `Invalid ${label}:
 ${renderErrors(errors)}`,
-      errors
+      renderDetails(validator.schema, config, errors, json)
     );
     throw error2;
   };
 }
+function renderDetails(schema, config, errors, json) {
+  const rendered = index_default(schema, config, errors, {
+    format: "cli",
+    json
+  });
+  return rendered.replaceAll(ANSI_SGR_PATTERN, "").trim();
+}
+var ANSI_SGR_PATTERN = /\u001B\[[0-9;]*m/g;
 function renderErrors(errors) {
   return `  - ${errors.map(renderError).join("\n  - ")}
 `;
@@ -67490,7 +70756,7 @@ function isDefined(value) {
 function isKeyOperator(operator) {
   return operator === ";" || operator === "&" || operator === "?";
 }
-function getValues(context, operator, key, modifier) {
+function getValues2(context, operator, key, modifier) {
   var value = context[key], result = [];
   if (isDefined(value) && value !== "") {
     if (typeof value === "string" || typeof value === "number" || typeof value === "bigint" || typeof value === "boolean") {
@@ -67569,7 +70835,7 @@ function expand(template, context) {
         }
         expression.split(/,/g).forEach(function(variable) {
           var tmp = /([^:\*]*)(?::(\d+)|(\*))?/.exec(variable);
-          values.push(getValues(context, operator, tmp[1], tmp[2] || tmp[3]));
+          values.push(getValues2(context, operator, tmp[1], tmp[2] || tmp[3]));
         });
         if (operator && operator !== "+") {
           var separator = ",";
@@ -67593,7 +70859,7 @@ function expand(template, context) {
     return template.replace(/\/$/, "");
   }
 }
-function parse(options) {
+function parse2(options) {
   let method = options.method.toUpperCase();
   let url = (options.url || "/").replace(/:([a-z]\w+)/g, "{$1}");
   let headers = Object.assign({}, options.headers);
@@ -67657,7 +70923,7 @@ function parse(options) {
   );
 }
 function endpointWithDefaults(defaults, route, options) {
-  return parse(merge(defaults, route, options));
+  return parse2(merge(defaults, route, options));
 }
 function withDefaults(oldDefaults, newDefaults) {
   const DEFAULTS22 = merge(oldDefaults, newDefaults);
@@ -67666,7 +70932,7 @@ function withDefaults(oldDefaults, newDefaults) {
     DEFAULTS: DEFAULTS22,
     defaults: withDefaults.bind(null, DEFAULTS22),
     merge: merge.bind(null, DEFAULTS22),
-    parse
+    parse: parse2
   });
 }
 var endpoint = withDefaults(null, DEFAULTS);
@@ -67678,7 +70944,7 @@ var NullObject = /* @__PURE__ */ (() => {
   C2.prototype = /* @__PURE__ */ Object.create(null);
   return C2;
 })();
-function parse2(header, options) {
+function parse3(header, options) {
   const stopChar = options?.comma === true ? COMMA : 65536;
   const len = header.length;
   let index = skipOWS(header, options?.start ?? 0, len);
@@ -68268,7 +71534,7 @@ async function getResponseData(response) {
   if (!contentType) {
     return response.text().catch(noop);
   }
-  const mimetype = parse2(contentType);
+  const mimetype = parse3(contentType);
   if (isJSONResponse(mimetype)) {
     let text3 = "";
     try {
@@ -121386,23 +124652,8 @@ function renderConfigIssueDashboard(context, discovered) {
         linkReference2("shortcut", "requester-config", text2("config")),
         text2(" is not valid:")
       ),
-      list3(...error2.errors.map((error3) => listItem2(ajvErrorDetails(error3))))
+      code2("txt", error2.details)
     ];
-  }
-  function ajvErrorDetails(error2) {
-    if (error2.keyword !== "additionalProperties") {
-      return paragraph2(
-        inlineCode2(error2.instancePath || "/"),
-        text2(` ${error2.message ?? "is invalid"}`)
-      );
-    }
-    const { additionalProperty } = error2.params;
-    return paragraph2(
-      inlineCode2(error2.instancePath || "/"),
-      text2(` ${error2.message} (`),
-      inlineCode2(String(additionalProperty)),
-      text2(")")
-    );
   }
 }
 

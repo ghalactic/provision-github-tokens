@@ -62,7 +62,7 @@ it("registers token declarations from discovered requesters", () => {
         requester: { account: "account-c", repo: "repo-c" },
         configPath: ".github/ghalactic/provision-github-tokens.yml",
         configSha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-        configError: new ValidateError("<error>", []),
+        configError: new ValidateError("<error>", ""),
       },
     ],
   ]);

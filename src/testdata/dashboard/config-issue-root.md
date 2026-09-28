@@ -10,4 +10,11 @@
 
 Your [config][requester-config] is not valid:
 
-- `/` is invalid
+```txt
+ADDTIONAL PROPERTY must NOT have additional properties
+
+  1 | {
+> 2 |   "foo": "bar"
+    |   ^^^^^ 😲  foo is not expected to be here!
+  3 | }
+```

@@ -475,7 +475,7 @@ it("handles requester configs that can't be parsed", async () => {
       requester: { account: "account-a", repo: "repo-a" },
       configPath: ".github/ghalactic/provision-github-tokens.yml",
       configSha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-      configError: new ValidateError("<error>", []),
+      configError: new ValidateError("<error>", ""),
     },
   ]);
 

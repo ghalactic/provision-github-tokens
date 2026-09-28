@@ -81,15 +81,10 @@ it("creates a dashboard when there are config issues", async () => {
         requester: createRepoRef("org-a", "repo-a"),
         configPath: ".github/ghalactic/provision-github-tokens.yml",
         configSha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-        configError: new ValidateError("Invalid requester configuration", [
-          {
-            instancePath: "/tokens/token-a/shared",
-            schemaPath: "#/properties/tokens/additionalProperties",
-            keyword: "additionalProperties",
-            params: { additionalProperty: "shared" },
-            message: "must NOT have additional properties",
-          },
-        ]),
+        configError: new ValidateError(
+          "Invalid requester configuration",
+          "/tokens/token-a Property shared is not expected to be here",
+        ),
       },
     ],
   ]);

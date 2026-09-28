@@ -1,5 +1,4 @@
-import type { ErrorObject } from "ajv";
-import type { Paragraph, RootContent } from "mdast";
+import type { RootContent } from "mdast";
 import { ValidateError } from "./config/validation.js";
 import { ParseYamlError } from "./config/yaml.js";
 import type { Context } from "./context.js";
@@ -14,8 +13,6 @@ import {
   heading,
   inlineCode,
   linkReference,
-  list,
-  listItem,
   paragraph,
   text,
 } from "./markdown.js";
@@ -251,27 +248,7 @@ export function renderConfigIssueDashboard(
         linkReference("shortcut", "requester-config", text("config")),
         text(" is not valid:"),
       ),
-      list(...error.errors.map((error) => listItem(ajvErrorDetails(error)))),
+      code("txt", error.details),
     ];
-  }
-
-  function ajvErrorDetails(error: ErrorObject): Paragraph {
-    if (error.keyword !== "additionalProperties") {
-      return paragraph(
-        inlineCode(error.instancePath || "/"),
-        text(` ${error.message ?? "is invalid"}`),
-      );
-    }
-
-    const { additionalProperty } = error.params as {
-      additionalProperty: string;
-    };
-
-    return paragraph(
-      inlineCode(error.instancePath || "/"),
-      text(` ${error.message} (`),
-      inlineCode(String(additionalProperty)),
-      text(")"),
-    );
   }
 }
