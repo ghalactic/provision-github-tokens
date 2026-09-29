@@ -58,6 +58,21 @@ it("supports self-repo targets", async () => {
         "SECRET_A",
         createTestSecretDec({
           token: normalizeTokenReference(repoA, "token-a"),
+          github: { repo: { agents: true } },
+        }),
+      )
+    )?.to,
+  ).toStrictEqual([
+    createTestProvisionRequestTarget("agents", "account-a", "repo-a"),
+  ] satisfies ProvisionRequestTarget[]);
+
+  expect(
+    (
+      await createProvisionRequest(
+        repoA,
+        "SECRET_A",
+        createTestSecretDec({
+          token: normalizeTokenReference(repoA, "token-a"),
           github: { repo: { codespaces: true } },
         }),
       )
@@ -129,6 +144,22 @@ it("supports pattern-matched repo targets", async () => {
   ).toStrictEqual([
     createTestProvisionRequestTarget("actions", "account-a", "repo-a-1"),
     createTestProvisionRequestTarget("actions", "account-a", "repo-a-2"),
+  ] satisfies ProvisionRequestTarget[]);
+
+  expect(
+    (
+      await createProvisionRequest(
+        repoARef,
+        "SECRET_A",
+        createTestSecretDec({
+          token: normalizeTokenReference(repoARef, "token-a"),
+          github: { repos: { "account-a/repo-a-*": { agents: true } } },
+        }),
+      )
+    )?.to,
+  ).toStrictEqual([
+    createTestProvisionRequestTarget("agents", "account-a", "repo-a-1"),
+    createTestProvisionRequestTarget("agents", "account-a", "repo-a-2"),
   ] satisfies ProvisionRequestTarget[]);
 
   expect(

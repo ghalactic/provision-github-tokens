@@ -4,6 +4,10 @@
     - ✅ Account `account-a` was **allowed** access to token `#1`
     - ✅  **Can** provision secret based on 1 rule:
       - ✅ **Allowed** by rule `#1`
+  * ✅ **Can** provision token to **GitHub Agents** secret in `account-a`:
+    - ✅ Account `account-a` was **allowed** access to token `#1`
+    - ✅  **Can** provision secret based on 1 rule:
+      - ✅ **Allowed** by rule `#1`
   * ✅ **Can** provision token to **GitHub Codespaces** secret in `account-a`:
     - ✅ Account `account-a` was **allowed** access to token `#1`
     - ✅  **Can** provision secret based on 1 rule:

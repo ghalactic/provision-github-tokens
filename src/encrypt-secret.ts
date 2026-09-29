@@ -4,6 +4,7 @@ import {
   isEnvRef,
   isRepoRef,
 } from "./github-reference.js";
+import { createAgentsOctokit } from "./octokit-agents.js";
 import type { Octokit } from "./octokit.js";
 import type { ProvisionRequestTarget } from "./provision-request.js";
 import type { FindProvisionerOctokit } from "./provisioner-octokit.js";
@@ -74,6 +75,21 @@ export function createEncryptSecret(
           org: target.account,
         })
       ).data;
+    }
+
+    if (type === "agents") {
+      const agents = createAgentsOctokit(octokit);
+
+      if (isRepoRef(target)) {
+        return (
+          await agents.getRepoPublicKey({
+            owner: target.account,
+            repo: target.repo,
+          })
+        ).data;
+      }
+
+      return (await agents.getOrgPublicKey({ org: target.account })).data;
     }
 
     if (type === "codespaces") {

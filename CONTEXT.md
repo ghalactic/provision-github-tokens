@@ -118,7 +118,7 @@ a secret is provisioned.
 target.
 
 **Secret type**: The kind of secret a provision target holds: `actions`,
-`codespaces`, `dependabot`, or `environment`.
+`agents`, `codespaces`, `dependabot`, or `environment`.
 
 **Token creation result**: The result of trying to create an access token after
 authorization passes.

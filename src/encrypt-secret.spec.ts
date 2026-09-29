@@ -43,21 +43,25 @@ it("can encrypt secrets for all secret types", async () => {
   const { findProvisionerOctokit } = createTestOctokitFactory(appRegistry);
 
   const orgAActionsKey = await createTestKeyPair("1111");
+  const orgAAgentsKey = await createTestKeyPair("9999");
   const orgACodespacesKey = await createTestKeyPair("2222");
   const orgADependabotKey = await createTestKeyPair("3333");
   __setOrgKeys("org-a", {
     actions: orgAActionsKey,
+    agents: orgAAgentsKey,
     codespaces: orgACodespacesKey,
     dependabot: orgADependabotKey,
   });
 
   const repoAActionsKey = await createTestKeyPair("4444");
+  const repoAAgentsKey = await createTestKeyPair("0000");
   const repoACodespacesKey = await createTestKeyPair("5555");
   const repoADependabotKey = await createTestKeyPair("6666");
   const envAKey = await createTestKeyPair("7777");
   const envBKey = await createTestKeyPair("8888");
   __setRepoKeys("org-a", "repo-a", {
     actions: repoAActionsKey,
+    agents: repoAAgentsKey,
     codespaces: repoACodespacesKey,
     dependabot: repoADependabotKey,
     environments: {
@@ -75,6 +79,14 @@ it("can encrypt secrets for all secret types", async () => {
 
   expect(await decrypt(orgAActionsKey, forOrgAActions[0])).toBe("<plaintext>");
   expect(forOrgAActions[1]).toBe("1111");
+
+  const forOrgAAgents = await encryptSecret(
+    createTestProvisionRequestTarget("agents", "org-a"),
+    "<plaintext>",
+  );
+
+  expect(await decrypt(orgAAgentsKey, forOrgAAgents[0])).toBe("<plaintext>");
+  expect(forOrgAAgents[1]).toBe("9999");
 
   const forOrgACodespaces = await encryptSecret(
     createTestProvisionRequestTarget("codespaces", "org-a"),
@@ -105,6 +117,14 @@ it("can encrypt secrets for all secret types", async () => {
     "<plaintext>",
   );
   expect(forRepoAActions[1]).toBe("4444");
+
+  const forRepoAAgents = await encryptSecret(
+    createTestProvisionRequestTarget("agents", "org-a", "repo-a"),
+    "<plaintext>",
+  );
+
+  expect(await decrypt(repoAAgentsKey, forRepoAAgents[0])).toBe("<plaintext>");
+  expect(forRepoAAgents[1]).toBe("0000");
 
   const forRepoACodespaces = await encryptSecret(
     createTestProvisionRequestTarget("codespaces", "org-a", "repo-a"),

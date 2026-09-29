@@ -125,6 +125,7 @@ provision:
       github:
         account:
           actions: true
+          agents: true
           codespaces: true
           dependabot: true
         accounts:
@@ -132,10 +133,12 @@ provision:
             actions: true
           account-b:
             actions: true
+            agents: true
             codespaces: true
             dependabot: true
         repo:
           actions: true
+          agents: true
           codespaces: true
           dependabot: true
           environments: [env-a, env-b]
@@ -144,6 +147,7 @@ provision:
             actions: true
           account-a/repo-a:
             actions: true
+            agents: true
             codespaces: true
             dependabot: true
             environments: [env-a, env-b]
@@ -156,21 +160,25 @@ provision:
       github:
         account:
           actions: false
+          agents: false
           codespaces: false
           dependabot: false
         accounts:
           "*":
             actions: false
+            agents: false
             codespaces: false
             dependabot: false
         repo:
           actions: false
+          agents: false
           codespaces: false
           dependabot: false
           environments: []
         repos:
           "*/*":
             actions: false
+            agents: false
             codespaces: false
             dependabot: false
             environments: []

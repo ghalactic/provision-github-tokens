@@ -32,6 +32,7 @@ provision:
           github:
             repo:
               actions: allow
+              agents: allow
               codespaces: allow
               dependabot: allow
               environments:

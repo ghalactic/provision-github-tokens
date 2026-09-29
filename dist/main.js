@@ -64996,6 +64996,8 @@ function secretTypeText(target) {
   switch (target.type) {
     case "actions":
       return "GitHub Actions";
+    case "agents":
+      return "GitHub Agents";
     case "codespaces":
       return "GitHub Codespaces";
     case "dependabot":
@@ -65012,6 +65014,8 @@ function secretTypeMdast(target) {
   switch (target.type) {
     case "actions":
       return [strong2(text2("GitHub Actions"))];
+    case "agents":
+      return [strong2(text2("GitHub Agents"))];
     case "codespaces":
       return [strong2(text2("GitHub Codespaces"))];
     case "dependabot":
@@ -66672,6 +66676,11 @@ var provider_v1_schema_default = {
           type: "string",
           enum: ["allow", "deny"]
         },
+        agents: {
+          description: "Whether to allow provisioning to GitHub Agents secrets.",
+          type: "string",
+          enum: ["allow", "deny"]
+        },
         codespaces: {
           description: "Whether to allow provisioning to GitHub Codespaces secrets.",
           type: "string",
@@ -66690,6 +66699,11 @@ var provider_v1_schema_default = {
       properties: {
         actions: {
           description: "Whether to allow provisioning to GitHub Actions secrets.",
+          type: "string",
+          enum: ["allow", "deny"]
+        },
+        agents: {
+          description: "Whether to allow provisioning to GitHub Agents secrets.",
           type: "string",
           enum: ["allow", "deny"]
         },
@@ -66949,6 +66963,10 @@ var requester_v1_schema_default = {
           description: "Whether to provision to GitHub Actions secrets.",
           type: "boolean"
         },
+        agents: {
+          description: "Whether to provision to GitHub Agents secrets.",
+          type: "boolean"
+        },
         codespaces: {
           description: "Whether to provision to GitHub Codespaces secrets.",
           type: "boolean"
@@ -66965,6 +66983,10 @@ var requester_v1_schema_default = {
       properties: {
         actions: {
           description: "Whether to provision to GitHub Actions secrets.",
+          type: "boolean"
+        },
+        agents: {
+          description: "Whether to provision to GitHub Agents secrets.",
           type: "boolean"
         },
         codespaces: {
@@ -119859,6 +119881,32 @@ B.prototype.to_Uint8Array = function() {
 }, t.add = o, t.base64_variants = m, t.compare = l, t.from_base64 = x, t.from_hex = b, t.from_string = v, t.increment = p, t.is_zero = h, t.memcmp = i, t.memzero = y, t.output_formats = T, t.pad = u, t.unpad = d, t.ready = s, t.symbols = c, t.to_base64 = E, t.to_hex = f, t.to_string = g;
 var libsodium_wrappers_default = t;
 
+// src/octokit-agents.ts
+function createAgentsOctokit(octokit) {
+  return {
+    getOrgPublicKey: async (parameters) => await octokit.request(
+      "GET /orgs/{org}/agents/secrets/public-key",
+      parameters
+    ),
+    getRepoPublicKey: async (parameters) => await octokit.request(
+      "GET /repos/{owner}/{repo}/agents/secrets/public-key",
+      parameters
+    ),
+    createOrUpdateOrgSecret: async (parameters) => {
+      await octokit.request(
+        "PUT /orgs/{org}/agents/secrets/{secret_name}",
+        parameters
+      );
+    },
+    createOrUpdateRepoSecret: async (parameters) => {
+      await octokit.request(
+        "PUT /repos/{owner}/{repo}/agents/secrets/{secret_name}",
+        parameters
+      );
+    }
+  };
+}
+
 // src/encrypt-secret.ts
 function createEncryptSecret(findProvisionerOctokit) {
   const keys = {};
@@ -119903,6 +119951,16 @@ function createEncryptSecret(findProvisionerOctokit) {
       return (await octokit.rest.actions.getOrgPublicKey({
         org: target.account
       })).data;
+    }
+    if (type === "agents") {
+      const agents = createAgentsOctokit(octokit);
+      if (isRepoRef(target)) {
+        return (await agents.getRepoPublicKey({
+          owner: target.account,
+          repo: target.repo
+        })).data;
+      }
+      return (await agents.getOrgPublicKey({ org: target.account })).data;
     }
     if (type === "codespaces") {
       if (isRepoRef(target)) {
@@ -120139,6 +120197,8 @@ function createProvisionAuthorizer(createTokenRequest, tokenAuthorizer, config) 
     switch (type) {
       case "actions":
         return types.actions;
+      case "agents":
+        return types.agents;
       case "codespaces":
         return types.codespaces;
       case "dependabot":
@@ -120161,7 +120221,7 @@ function createProvisionAuthorizer(createTokenRequest, tokenAuthorizer, config) 
 }
 
 // src/provision-request.ts
-var SECRET_TYPES = ["actions", "codespaces", "dependabot"];
+var SECRET_TYPES = ["actions", "agents", "codespaces", "dependabot"];
 function createProvisionRequestFactory(declarationRegistry, appRegistry, environmentResolver) {
   return async (requester, name, secretDec) => {
     const [tokenDec, tokenDecIsRegistered] = declarationRegistry.findDeclarationForRequester(
@@ -120441,6 +120501,27 @@ Secret #${i2}:
         });
       } else {
         await octokit.rest.actions.createOrUpdateOrgSecret({
+          org: target.account,
+          secret_name: name,
+          encrypted_value: encrypted,
+          key_id: keyId,
+          visibility: "all"
+        });
+      }
+      return;
+    }
+    if (type === "agents") {
+      const agents = createAgentsOctokit(octokit);
+      if (isRepoRef(target)) {
+        await agents.createOrUpdateRepoSecret({
+          owner: target.account,
+          repo: target.repo,
+          secret_name: name,
+          encrypted_value: encrypted,
+          key_id: keyId
+        });
+      } else {
+        await agents.createOrUpdateOrgSecret({
           org: target.account,
           secret_name: name,
           encrypted_value: encrypted,

@@ -8,6 +8,8 @@ export function secretTypeText(target: ProvisionRequestTarget): string {
   switch (target.type) {
     case "actions":
       return "GitHub Actions";
+    case "agents":
+      return "GitHub Agents";
     case "codespaces":
       return "GitHub Codespaces";
     case "dependabot":
@@ -30,6 +32,8 @@ export function secretTypeMdast(
   switch (target.type) {
     case "actions":
       return [strong(text("GitHub Actions"))];
+    case "agents":
+      return [strong(text("GitHub Agents"))];
     case "codespaces":
       return [strong(text("GitHub Codespaces"))];
     case "dependabot":

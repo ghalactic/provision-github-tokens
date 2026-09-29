@@ -14,6 +14,7 @@ export type ProvisionSecretsRule = {
 
 export type ProviderConfigGitHubSecretTypes = {
   actions?: "allow" | "deny";
+  agents?: "allow" | "deny";
   codespaces?: "allow" | "deny";
   dependabot?: "allow" | "deny";
 };

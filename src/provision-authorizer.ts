@@ -245,6 +245,8 @@ export function createProvisionAuthorizer(
     switch (type) {
       case "actions":
         return types.actions;
+      case "agents":
+        return types.agents;
       case "codespaces":
         return types.codespaces;
       case "dependabot":
