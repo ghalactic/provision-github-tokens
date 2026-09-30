@@ -1,8 +1,5 @@
 /*
- * TODO: Delete this module once Octokit exposes an `agents` REST namespace. No
- * released version of `octokit`, `@octokit/action`, or
- * `@octokit/plugin-rest-endpoint-methods` provides `octokit.rest.agents`, so
- * these wrappers call the raw routes directly.
+ * TODO: Delete this module once Octokit exposes an `agents` REST namespace.
  */
 import type { Endpoints } from "@octokit/types";
 import type { Octokit } from "./octokit.js";
