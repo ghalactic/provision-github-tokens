@@ -32,18 +32,22 @@ it("allows GitHub environment secrets that should be allowed", async () => {
             requesters: ["account-x/repo-x", "account-y-*/repo-y-*"],
             to: {
               github: {
-                account: {},
+                account: { types: {} },
                 accounts: {},
-                repo: { environments: {} },
+                repo: { types: { environments: {} } },
                 repos: {
                   "account-a/repo-a": {
-                    environments: {
-                      "env-a": "allow",
+                    types: {
+                      environments: {
+                        "env-a": "allow",
+                      },
                     },
                   },
                   "account-b-*/repo-b-*": {
-                    environments: {
-                      "env-b-*": "allow",
+                    types: {
+                      environments: {
+                        "env-b-*": "allow",
+                      },
                     },
                   },
                 },
@@ -124,12 +128,14 @@ it("allows GitHub environment secrets that should be allowed within the requesti
             requesters: ["account-a/repo-a", "account-b-*/repo-b-*"],
             to: {
               github: {
-                account: {},
+                account: { types: {} },
                 accounts: {},
                 repo: {
-                  environments: {
-                    "env-a": "allow",
-                    "env-b-*": "allow",
+                  types: {
+                    environments: {
+                      "env-a": "allow",
+                      "env-b-*": "allow",
+                    },
                   },
                 },
                 repos: {},
@@ -209,18 +215,22 @@ it("allows GitHub environment secrets that should be allowed within the requesti
             requesters: ["account-a/repo-a", "account-b-*/repo-b-*"],
             to: {
               github: {
-                account: {},
+                account: { types: {} },
                 accounts: {},
                 repo: {
-                  environments: {
-                    "env-a": "allow",
-                    "env-b-*": "allow",
+                  types: {
+                    environments: {
+                      "env-a": "allow",
+                      "env-b-*": "allow",
+                    },
                   },
                 },
                 repos: {
                   "*/*": {
-                    environments: {
-                      "*": "deny",
+                    types: {
+                      environments: {
+                        "*": "deny",
+                      },
                     },
                   },
                 },
@@ -300,13 +310,15 @@ it("doesn't allow GitHub environment secrets for unauthorized requesters", async
             requesters: ["account-x/repo-x"],
             to: {
               github: {
-                account: {},
+                account: { types: {} },
                 accounts: {},
-                repo: { environments: {} },
+                repo: { types: { environments: {} } },
                 repos: {
                   "account-a/repo-a": {
-                    environments: {
-                      "env-a": "allow",
+                    types: {
+                      environments: {
+                        "env-a": "allow",
+                      },
                     },
                   },
                 },
@@ -362,11 +374,13 @@ it("doesn't allow GitHub environment secrets within the requesting repo for unau
             requesters: ["account-x/repo-x"],
             to: {
               github: {
-                account: {},
+                account: { types: {} },
                 accounts: {},
                 repo: {
-                  environments: {
-                    "env-x": "allow",
+                  types: {
+                    environments: {
+                      "env-x": "allow",
+                    },
                   },
                 },
                 repos: {},
@@ -503,17 +517,21 @@ it("doesn't allow GitHub environment secrets within the requesting repo when den
             requesters: ["account-a/repo-a"],
             to: {
               github: {
-                account: {},
+                account: { types: {} },
                 accounts: {},
                 repo: {
-                  environments: {
-                    "env-a": "deny",
+                  types: {
+                    environments: {
+                      "env-a": "deny",
+                    },
                   },
                 },
                 repos: {
                   "account-a/repo-a": {
-                    environments: {
-                      "env-a": "allow",
+                    types: {
+                      environments: {
+                        "env-a": "allow",
+                      },
                     },
                   },
                 },
@@ -569,14 +587,16 @@ it("doesn't allow GitHub environment secrets when two environment patterns match
             requesters: ["account-x/repo-x"],
             to: {
               github: {
-                account: {},
+                account: { types: {} },
                 accounts: {},
-                repo: { environments: {} },
+                repo: { types: { environments: {} } },
                 repos: {
                   "account-a/repo-a": {
-                    environments: {
-                      "*": "deny",
-                      "env-a": "allow",
+                    types: {
+                      environments: {
+                        "*": "deny",
+                        "env-a": "allow",
+                      },
                     },
                   },
                 },

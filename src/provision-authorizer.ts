@@ -74,10 +74,13 @@ export function createProvisionAuthorizer(
                 target.type === "environment" && isEnvRef(target.target)
                   ? applyEnvPatterns(
                       target.target.environment,
-                      rule.to.github.repos[repo].environments,
+                      rule.to.github.repos[repo].types.environments,
                       envPatterns,
                     )
-                  : selectBySecretType(rule.to.github.repos[repo], target.type);
+                  : selectBySecretType(
+                      rule.to.github.repos[repo].types,
+                      target.type,
+                    );
 
               if (repoPatternHave) ruleHave = repoPatternHave;
 
@@ -89,10 +92,10 @@ export function createProvisionAuthorizer(
                 target.type === "environment" && isEnvRef(target.target)
                   ? applyEnvPatterns(
                       target.target.environment,
-                      rule.to.github.repo.environments,
+                      rule.to.github.repo.types.environments,
                       targetPatterns[i].selfRepoEnvs,
                     )
-                  : selectBySecretType(rule.to.github.repo, target.type);
+                  : selectBySecretType(rule.to.github.repo.types, target.type);
 
               if (selfHave) ruleHave = selfHave;
             }
@@ -103,7 +106,7 @@ export function createProvisionAuthorizer(
               if (!accountPattern.test(targetName)) continue;
 
               const accountPatternHave = selectBySecretType(
-                rule.to.github.accounts[account],
+                rule.to.github.accounts[account].types,
                 target.type,
               );
 
@@ -114,7 +117,7 @@ export function createProvisionAuthorizer(
 
             if (isSelfAccount) {
               const selfHave = selectBySecretType(
-                rule.to.github.account,
+                rule.to.github.account.types,
                 target.type,
               );
 
@@ -222,14 +225,16 @@ export function createProvisionAuthorizer(
 
     for (const repo of Object.keys(rule.to.github.repos)) {
       const envPatterns: [string, Pattern][] = [];
-      for (const env of Object.keys(rule.to.github.repos[repo].environments)) {
+      for (const env of Object.keys(
+        rule.to.github.repos[repo].types.environments,
+      )) {
         envPatterns.push([env, createNamePattern(env)]);
       }
 
       targetPatterns.repos.push([repo, createGitHubPattern(repo), envPatterns]);
     }
 
-    for (const env of Object.keys(rule.to.github.repo.environments)) {
+    for (const env of Object.keys(rule.to.github.repo.types.environments)) {
       targetPatterns.selfRepoEnvs.push([env, createNamePattern(env)]);
     }
 

@@ -6,7 +6,7 @@ import requesterTokenPermissionsSchema from "../schema/generated.requester-token
 import providerSchema from "../schema/provider.v1.schema.json" with { type: "json" };
 import requesterSchema from "../schema/requester.v1.schema.json" with { type: "json" };
 import type { RawAppInput } from "../type/input.js";
-import type { ProviderConfig } from "../type/provider-config.js";
+import type { PartialProviderConfig } from "../type/provider-config.js";
 import type { PartialRequesterConfig } from "../type/requester-config.js";
 
 // see https://github.com/ajv-validator/ajv/issues/2132
@@ -32,7 +32,7 @@ export const validateApps = createValidate<RawAppInput[]>(
   "apps input",
 );
 
-export const validateProvider = createValidate<ProviderConfig>(
+export const validateProvider = createValidate<PartialProviderConfig>(
   providerSchema.$id,
   "provider configuration",
 );

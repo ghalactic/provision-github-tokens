@@ -66461,22 +66461,30 @@ var provider_v1_schema_default = {
                       default: false
                     },
                     selectedRepos: {
-                      description: "A list of patterns to match against repos when applying the rule.",
-                      type: "array",
-                      default: [],
-                      items: {
-                        description: "A pattern which matches repos without their account prefix.",
-                        type: "string",
-                        minLength: 1,
-                        pattern: "^[*a-zA-Z0-9-_.]+$",
-                        errorMessage: "must only contain alphanumeric characters, hyphens, underscores, periods, or asterisks",
-                        examples: [
-                          "repo-a",
-                          "*",
-                          "with-prefix-*",
-                          "*-with-suffix",
-                          "with-*-infix"
-                        ]
+                      description: "The repos to match when applying the rule.",
+                      type: "object",
+                      additionalProperties: false,
+                      required: ["repos"],
+                      properties: {
+                        repos: {
+                          description: "A list of patterns to match against repos when applying the rule.",
+                          type: "array",
+                          minItems: 1,
+                          items: {
+                            description: "A pattern which matches repos without their account prefix.",
+                            type: "string",
+                            minLength: 1,
+                            pattern: "^[*a-zA-Z0-9-_.]+$",
+                            errorMessage: "must only contain alphanumeric characters, hyphens, underscores, periods, or asterisks",
+                            examples: [
+                              "repo-a",
+                              "*",
+                              "with-prefix-*",
+                              "*-with-suffix",
+                              "with-*-infix"
+                            ]
+                          }
+                        }
                       }
                     }
                   }
@@ -66599,8 +66607,10 @@ var provider_v1_schema_default = {
                         properties: {
                           account: {
                             description: "Which types of secrets to allow provisioning to in the requesting repo's GitHub account.",
-                            $ref: "#/definitions/provisionGithubAccountSecretTypes",
-                            default: {}
+                            $ref: "#/definitions/provisionGithubAccountTarget",
+                            default: {
+                              types: {}
+                            }
                           },
                           accounts: {
                             description: "Which types of secrets to allow provisioning to in other GitHub accounts.",
@@ -66622,13 +66632,15 @@ var provider_v1_schema_default = {
                             },
                             additionalProperties: {
                               description: "Which types of secrets to allow provisioning to in the specified GitHub account.",
-                              $ref: "#/definitions/provisionGithubAccountSecretTypes"
+                              $ref: "#/definitions/provisionGithubAccountTarget"
                             }
                           },
                           repo: {
                             description: "Which types of secrets to allow provisioning to in the requesting repo.",
-                            $ref: "#/definitions/provisionGithubRepoSecretTypes",
-                            default: {}
+                            $ref: "#/definitions/provisionGithubRepoTarget",
+                            default: {
+                              types: {}
+                            }
                           },
                           repos: {
                             description: "Which types of secrets to allow provisioning to in other repos.",
@@ -66652,7 +66664,7 @@ var provider_v1_schema_default = {
                             },
                             additionalProperties: {
                               description: "Which types of secrets to allow provisioning to in the specified repo.",
-                              $ref: "#/definitions/provisionGithubRepoSecretTypes"
+                              $ref: "#/definitions/provisionGithubRepoTarget"
                             }
                           }
                         }
@@ -66668,6 +66680,28 @@ var provider_v1_schema_default = {
     }
   },
   definitions: {
+    provisionGithubAccountTarget: {
+      description: "Which types of secrets to allow provisioning to in a GitHub account.",
+      type: "object",
+      additionalProperties: false,
+      required: ["types"],
+      properties: {
+        types: {
+          $ref: "#/definitions/provisionGithubAccountSecretTypes"
+        }
+      }
+    },
+    provisionGithubRepoTarget: {
+      description: "Which types of secrets to allow provisioning to in a GitHub repo.",
+      type: "object",
+      additionalProperties: false,
+      required: ["types"],
+      properties: {
+        types: {
+          $ref: "#/definitions/provisionGithubRepoSecretTypes"
+        }
+      }
+    },
     provisionGithubAccountSecretTypes: {
       type: "object",
       additionalProperties: false,
@@ -67230,38 +67264,67 @@ function parseProviderConfig(definingRepo, configPath, configYaml) {
   return normalizeProviderConfig(definingRepo, config);
 }
 function normalizeProviderConfig(definingRepo, config) {
+  const rules = [];
   for (let i2 = 0; i2 < config.permissions.rules.length; ++i2) {
     const rule = config.permissions.rules[i2];
+    const resources = [];
     for (let j2 = 0; j2 < rule.resources.length; ++j2) {
-      for (let k2 = 0; k2 < rule.resources[j2].accounts.length; ++k2) {
-        rule.resources[j2].accounts[k2] = normalizeAccountPattern(
-          definingRepo,
-          rule.resources[j2].accounts[k2]
+      const criteria = rule.resources[j2];
+      const accounts = [];
+      for (let k2 = 0; k2 < criteria.accounts.length; ++k2) {
+        accounts.push(
+          normalizeAccountPattern(definingRepo, criteria.accounts[k2])
         );
       }
+      resources.push({
+        accounts,
+        noRepos: criteria.noRepos,
+        allRepos: criteria.allRepos,
+        selectedRepos: criteria.selectedRepos?.repos ?? []
+      });
     }
+    const consumers = [];
     for (let j2 = 0; j2 < rule.consumers.length; ++j2) {
-      rule.consumers[j2] = normalizeGitHubPattern(
-        definingRepo,
-        rule.consumers[j2]
-      );
+      consumers.push(normalizeGitHubPattern(definingRepo, rule.consumers[j2]));
     }
+    rules.push({
+      description: rule.description,
+      resources,
+      consumers,
+      permissions: rule.permissions
+    });
   }
+  const secrets = [];
   for (let i2 = 0; i2 < config.provision.rules.secrets.length; ++i2) {
     const rule = config.provision.rules.secrets[i2];
+    const requesters = [];
     for (let j2 = 0; j2 < rule.requesters.length; ++j2) {
-      rule.requesters[j2] = normalizeGitHubPattern(
-        definingRepo,
-        rule.requesters[j2]
-      );
+      requesters.push(normalizeGitHubPattern(definingRepo, rule.requesters[j2]));
     }
     const repos = {};
     for (const pattern in rule.to.github.repos) {
       repos[normalizeGitHubPattern(definingRepo, pattern)] = rule.to.github.repos[pattern];
     }
-    rule.to.github.repos = repos;
+    secrets.push({
+      description: rule.description,
+      secrets: rule.secrets,
+      requesters,
+      to: {
+        github: {
+          account: rule.to.github.account,
+          accounts: rule.to.github.accounts,
+          repo: rule.to.github.repo,
+          repos
+        }
+      }
+    });
   }
-  return config;
+  return {
+    $schema: config.$schema,
+    dashboards: config.dashboards,
+    permissions: { rules },
+    provision: { rules: { secrets } }
+  };
 }
 
 // node_modules/.pnpm/universal-user-agent@7.0.3/node_modules/universal-user-agent/index.js
@@ -120078,18 +120141,21 @@ function createProvisionAuthorizer(repoRegistry, createTokenRequest, tokenAuthor
               if (!repoPattern.test(targetName)) continue;
               const repoPatternHave = target.type === "environment" && isEnvRef(target.target) ? applyEnvPatterns(
                 target.target.environment,
-                rule.to.github.repos[repo].environments,
+                rule.to.github.repos[repo].types.environments,
                 envPatterns
-              ) : selectBySecretType(rule.to.github.repos[repo], target.type);
+              ) : selectBySecretType(
+                rule.to.github.repos[repo].types,
+                target.type
+              );
               if (repoPatternHave) ruleHave = repoPatternHave;
               if (ruleHave === "deny") break;
             }
             if (isSelfRepo) {
               const selfHave = target.type === "environment" && isEnvRef(target.target) ? applyEnvPatterns(
                 target.target.environment,
-                rule.to.github.repo.environments,
+                rule.to.github.repo.types.environments,
                 targetPatterns[i2].selfRepoEnvs
-              ) : selectBySecretType(rule.to.github.repo, target.type);
+              ) : selectBySecretType(rule.to.github.repo.types, target.type);
               if (selfHave) ruleHave = selfHave;
             }
           } else {
@@ -120097,7 +120163,7 @@ function createProvisionAuthorizer(repoRegistry, createTokenRequest, tokenAuthor
               const [account, accountPattern] = targetPatterns[i2].accounts[j2];
               if (!accountPattern.test(targetName)) continue;
               const accountPatternHave = selectBySecretType(
-                rule.to.github.accounts[account],
+                rule.to.github.accounts[account].types,
                 target.type
               );
               if (accountPatternHave) ruleHave = accountPatternHave;
@@ -120105,7 +120171,7 @@ function createProvisionAuthorizer(repoRegistry, createTokenRequest, tokenAuthor
             }
             if (isSelfAccount) {
               const selfHave = selectBySecretType(
-                rule.to.github.account,
+                rule.to.github.account.types,
                 target.type
               );
               if (selfHave) ruleHave = selfHave;
@@ -120181,12 +120247,14 @@ function createProvisionAuthorizer(repoRegistry, createTokenRequest, tokenAuthor
     }
     for (const repo of Object.keys(rule.to.github.repos)) {
       const envPatterns = [];
-      for (const env of Object.keys(rule.to.github.repos[repo].environments)) {
+      for (const env of Object.keys(
+        rule.to.github.repos[repo].types.environments
+      )) {
         envPatterns.push([env, createNamePattern(env)]);
       }
       targetPatterns2.repos.push([repo, createGitHubPattern(repo), envPatterns]);
     }
-    for (const env of Object.keys(rule.to.github.repo.environments)) {
+    for (const env of Object.keys(rule.to.github.repo.types.environments)) {
       targetPatterns2.selfRepoEnvs.push([env, createNamePattern(env)]);
     }
     for (const requester of rule.requesters) {

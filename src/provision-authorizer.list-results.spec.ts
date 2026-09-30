@@ -21,13 +21,15 @@ it("can list all processed requests and their results", () => {
             requesters: ["account-x/repo-x"],
             to: {
               github: {
-                account: {},
+                account: { types: {} },
                 accounts: {
                   "account-a": {
-                    actions: "allow",
+                    types: {
+                      actions: "allow",
+                    },
                   },
                 },
-                repo: { environments: {} },
+                repo: { types: { environments: {} } },
                 repos: {},
               },
             },

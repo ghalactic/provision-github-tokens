@@ -36,13 +36,15 @@ it("supports multiple secrets per rule", async () => {
             requesters: ["account-x/repo-x"],
             to: {
               github: {
-                account: {},
+                account: { types: {} },
                 accounts: {
                   "account-a": {
-                    actions: "allow",
+                    types: {
+                      actions: "allow",
+                    },
                   },
                 },
-                repo: { environments: {} },
+                repo: { types: { environments: {} } },
                 repos: {},
               },
             },
@@ -108,15 +110,17 @@ it("supports multiple targets in requests", async () => {
             requesters: ["account-x/repo-x"],
             to: {
               github: {
-                account: {},
+                account: { types: {} },
                 accounts: {
                   "account-a": {
-                    actions: "allow",
-                    agents: "allow",
-                    codespaces: "allow",
+                    types: {
+                      actions: "allow",
+                      agents: "allow",
+                      codespaces: "allow",
+                    },
                   },
                 },
-                repo: { environments: {} },
+                repo: { types: { environments: {} } },
                 repos: {},
               },
             },
@@ -177,13 +181,15 @@ it("supports wildcards in secret names", async () => {
             requesters: ["account-x/repo-x"],
             to: {
               github: {
-                account: {},
+                account: { types: {} },
                 accounts: {
                   "account-a": {
-                    actions: "allow",
+                    types: {
+                      actions: "allow",
+                    },
                   },
                 },
-                repo: { environments: {} },
+                repo: { types: { environments: {} } },
                 repos: {},
               },
             },
@@ -250,13 +256,15 @@ it("supports rule descriptions", async () => {
             requesters: ["account-x/repo-x"],
             to: {
               github: {
-                account: {},
+                account: { types: {} },
                 accounts: {
                   "account-a": {
-                    actions: "allow",
+                    types: {
+                      actions: "allow",
+                    },
                   },
                 },
-                repo: { environments: {} },
+                repo: { types: { environments: {} } },
                 repos: {},
               },
             },
@@ -304,17 +312,21 @@ it("allows secrets when a later rule allows access that a previous rule denied",
             requesters: ["account-x/repo-x"],
             to: {
               github: {
-                account: {},
+                account: { types: {} },
                 accounts: {
                   "*": {
-                    actions: "deny",
+                    types: {
+                      actions: "deny",
+                    },
                   },
                 },
-                repo: { environments: {} },
+                repo: { types: { environments: {} } },
                 repos: {
                   "*/*": {
-                    actions: "deny",
-                    environments: {},
+                    types: {
+                      actions: "deny",
+                      environments: {},
+                    },
                   },
                 },
               },
@@ -325,17 +337,21 @@ it("allows secrets when a later rule allows access that a previous rule denied",
             requesters: ["account-x/repo-x"],
             to: {
               github: {
-                account: {},
+                account: { types: {} },
                 accounts: {
                   "*": {
-                    actions: "allow",
+                    types: {
+                      actions: "allow",
+                    },
                   },
                 },
-                repo: { environments: {} },
+                repo: { types: { environments: {} } },
                 repos: {
                   "*/*": {
-                    actions: "allow",
-                    environments: {},
+                    types: {
+                      actions: "allow",
+                      environments: {},
+                    },
                   },
                 },
               },
@@ -404,17 +420,21 @@ it("doesn't allow secrets when a later rule denies access that a previous rule a
             requesters: ["account-x/repo-x"],
             to: {
               github: {
-                account: {},
+                account: { types: {} },
                 accounts: {
                   "*": {
-                    actions: "allow",
+                    types: {
+                      actions: "allow",
+                    },
                   },
                 },
-                repo: { environments: {} },
+                repo: { types: { environments: {} } },
                 repos: {
                   "*/*": {
-                    actions: "allow",
-                    environments: {},
+                    types: {
+                      actions: "allow",
+                      environments: {},
+                    },
                   },
                 },
               },
@@ -425,17 +445,21 @@ it("doesn't allow secrets when a later rule denies access that a previous rule a
             requesters: ["account-x/repo-x"],
             to: {
               github: {
-                account: {},
+                account: { types: {} },
                 accounts: {
                   "*": {
-                    actions: "deny",
+                    types: {
+                      actions: "deny",
+                    },
                   },
                 },
-                repo: { environments: {} },
+                repo: { types: { environments: {} } },
                 repos: {
                   "*/*": {
-                    actions: "deny",
-                    environments: {},
+                    types: {
+                      actions: "deny",
+                      environments: {},
+                    },
                   },
                 },
               },
@@ -504,17 +528,21 @@ it("doesn't allow secrets when no rule matches the secret name", async () => {
             requesters: ["account-x/repo-x"],
             to: {
               github: {
-                account: {},
+                account: { types: {} },
                 accounts: {
                   "*": {
-                    actions: "allow",
+                    types: {
+                      actions: "allow",
+                    },
                   },
                 },
-                repo: { environments: {} },
+                repo: { types: { environments: {} } },
                 repos: {
                   "*/*": {
-                    actions: "allow",
-                    environments: {},
+                    types: {
+                      actions: "allow",
+                      environments: {},
+                    },
                   },
                 },
               },
@@ -563,16 +591,20 @@ it("doesn't allow secrets when two account patterns match but one allows and one
             requesters: ["account-x/repo-x"],
             to: {
               github: {
-                account: {},
+                account: { types: {} },
                 accounts: {
                   "*": {
-                    actions: "deny",
+                    types: {
+                      actions: "deny",
+                    },
                   },
                   "account-a": {
-                    actions: "allow",
+                    types: {
+                      actions: "allow",
+                    },
                   },
                 },
-                repo: { environments: {} },
+                repo: { types: { environments: {} } },
                 repos: {},
               },
             },
@@ -620,17 +652,21 @@ it("doesn't allow secrets when two repo patterns match but one allows and one de
             requesters: ["account-x/repo-x"],
             to: {
               github: {
-                account: {},
+                account: { types: {} },
                 accounts: {},
-                repo: { environments: {} },
+                repo: { types: { environments: {} } },
                 repos: {
                   "*/*": {
-                    actions: "deny",
-                    environments: {},
+                    types: {
+                      actions: "deny",
+                      environments: {},
+                    },
                   },
                   "account-a/repo-a": {
-                    actions: "allow",
-                    environments: {},
+                    types: {
+                      actions: "allow",
+                      environments: {},
+                    },
                   },
                 },
               },
@@ -680,16 +716,18 @@ it("doesn't allow secrets when some targets aren't allowed", async () => {
             requesters: ["account-x/repo-x"],
             to: {
               github: {
-                account: {},
+                account: { types: {} },
                 accounts: {
                   "account-a": {
-                    actions: "allow",
-                    codespaces: "deny",
-                    dependabot: "allow",
-                    agents: "allow",
+                    types: {
+                      actions: "allow",
+                      codespaces: "deny",
+                      dependabot: "allow",
+                      agents: "allow",
+                    },
                   },
                 },
-                repo: { environments: {} },
+                repo: { types: { environments: {} } },
                 repos: {},
               },
             },
@@ -755,9 +793,9 @@ it("doesn't allow secrets when no targets are specified", async () => {
             requesters: ["account-x/repo-x"],
             to: {
               github: {
-                account: {},
+                account: { types: {} },
                 accounts: {},
-                repo: { environments: {} },
+                repo: { types: { environments: {} } },
                 repos: {},
               },
             },
@@ -803,10 +841,12 @@ it("doesn't allow secrets when the token isn't allowed for a target", async () =
             requesters: ["*/*"],
             to: {
               github: {
-                account: {},
-                accounts: { "*": { actions: "allow" } },
-                repo: { environments: {} },
-                repos: { "*/*": { actions: "allow", environments: {} } },
+                account: { types: {} },
+                accounts: { "*": { types: { actions: "allow" } } },
+                repo: { types: { environments: {} } },
+                repos: {
+                  "*/*": { types: { actions: "allow", environments: {} } },
+                },
               },
             },
           },
@@ -862,13 +902,15 @@ it("doesn't allow secrets for unshared token declarations", async () => {
             requesters: ["account-x/repo-x"],
             to: {
               github: {
-                account: {},
+                account: { types: {} },
                 accounts: {
                   "account-a": {
-                    actions: "allow",
+                    types: {
+                      actions: "allow",
+                    },
                   },
                 },
-                repo: { environments: {} },
+                repo: { types: { environments: {} } },
                 repos: {},
               },
             },
@@ -918,13 +960,15 @@ it("doesn't allow secrets for undefined token declarations", async () => {
             requesters: ["account-x/repo-x"],
             to: {
               github: {
-                account: {},
+                account: { types: {} },
                 accounts: {
                   "account-a": {
-                    actions: "allow",
+                    types: {
+                      actions: "allow",
+                    },
                   },
                 },
-                repo: { environments: {} },
+                repo: { types: { environments: {} } },
                 repos: {},
               },
             },
@@ -974,13 +1018,15 @@ it("doesn't allow secrets when the account matches but the secret type isn't all
             requesters: ["account-x/repo-x"],
             to: {
               github: {
-                account: {},
+                account: { types: {} },
                 accounts: {
                   "account-a": {
-                    codespaces: "allow",
+                    types: {
+                      codespaces: "allow",
+                    },
                   },
                 },
-                repo: { environments: {} },
+                repo: { types: { environments: {} } },
                 repos: {},
               },
             },

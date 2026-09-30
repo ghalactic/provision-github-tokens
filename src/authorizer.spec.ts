@@ -113,10 +113,10 @@ it("authorizes all requests and outputs the results", async () => {
     requesters: ["*/*"],
     to: {
       github: {
-        account: {},
-        accounts: { "*": { actions: "allow" } },
-        repo: { environments: {} },
-        repos: { "*/*": { actions: "allow", environments: {} } },
+        account: { types: {} },
+        accounts: { "*": { types: { actions: "allow" } } },
+        repo: { types: { environments: {} } },
+        repos: { "*/*": { types: { actions: "allow", environments: {} } } },
       },
     },
   };
@@ -333,10 +333,10 @@ it("handles empty token requests", async () => {
     requesters: ["*/*"],
     to: {
       github: {
-        account: {},
-        accounts: { "*": { actions: "allow" } },
-        repo: { environments: {} },
-        repos: { "*/*": { actions: "allow", environments: {} } },
+        account: { types: {} },
+        accounts: { "*": { types: { actions: "allow" } } },
+        repo: { types: { environments: {} } },
+        repos: { "*/*": { types: { actions: "allow", environments: {} } } },
       },
     },
   };

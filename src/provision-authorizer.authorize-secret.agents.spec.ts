@@ -32,16 +32,20 @@ it("allows GitHub Agents account secrets that should be allowed", async () => {
             requesters: ["account-x/repo-x", "account-y-*/repo-y-*"],
             to: {
               github: {
-                account: {},
+                account: { types: {} },
                 accounts: {
                   "account-a": {
-                    agents: "allow",
+                    types: {
+                      agents: "allow",
+                    },
                   },
                   "account-b-*": {
-                    agents: "allow",
+                    types: {
+                      agents: "allow",
+                    },
                   },
                 },
-                repo: { environments: {} },
+                repo: { types: { environments: {} } },
                 repos: {},
               },
             },
@@ -107,10 +111,12 @@ it("allows GitHub Agents account secrets that should be allowed within the reque
             to: {
               github: {
                 account: {
-                  agents: "allow",
+                  types: {
+                    agents: "allow",
+                  },
                 },
                 accounts: {},
-                repo: { environments: {} },
+                repo: { types: { environments: {} } },
                 repos: {},
               },
             },
@@ -175,14 +181,18 @@ it("allows GitHub Agents account secrets that should be allowed within the reque
             to: {
               github: {
                 account: {
-                  agents: "allow",
+                  types: {
+                    agents: "allow",
+                  },
                 },
                 accounts: {
                   "account-a": {
-                    agents: "deny",
+                    types: {
+                      agents: "deny",
+                    },
                   },
                 },
-                repo: { environments: {} },
+                repo: { types: { environments: {} } },
                 repos: {},
               },
             },
@@ -229,17 +239,21 @@ it("allows GitHub Agents repo secrets that should be allowed", async () => {
             requesters: ["account-x/repo-x", "account-y-*/repo-y-*"],
             to: {
               github: {
-                account: {},
+                account: { types: {} },
                 accounts: {},
-                repo: { environments: {} },
+                repo: { types: { environments: {} } },
                 repos: {
                   "account-a/repo-a": {
-                    agents: "allow",
-                    environments: {},
+                    types: {
+                      agents: "allow",
+                      environments: {},
+                    },
                   },
                   "account-b-*/repo-b-*": {
-                    agents: "allow",
-                    environments: {},
+                    types: {
+                      agents: "allow",
+                      environments: {},
+                    },
                   },
                 },
               },
@@ -307,11 +321,13 @@ it("allows GitHub Agents repo secrets that should be allowed within the requesti
             requesters: ["account-a/repo-a", "account-b-*/repo-b-*"],
             to: {
               github: {
-                account: {},
+                account: { types: {} },
                 accounts: {},
                 repo: {
-                  agents: "allow",
-                  environments: {},
+                  types: {
+                    agents: "allow",
+                    environments: {},
+                  },
                 },
                 repos: {},
               },
@@ -378,16 +394,20 @@ it("allows GitHub Agents repo secrets that should be allowed within the requesti
             requesters: ["account-a/repo-a", "account-b-*/repo-b-*"],
             to: {
               github: {
-                account: {},
+                account: { types: {} },
                 accounts: {},
                 repo: {
-                  agents: "allow",
-                  environments: {},
+                  types: {
+                    agents: "allow",
+                    environments: {},
+                  },
                 },
                 repos: {
                   "account-a/repo-a": {
-                    agents: "deny",
-                    environments: {},
+                    types: {
+                      agents: "deny",
+                      environments: {},
+                    },
                   },
                 },
               },
@@ -454,13 +474,15 @@ it("doesn't allow GitHub Agents account secrets for unauthorized requesters", as
             requesters: ["account-x/repo-x"],
             to: {
               github: {
-                account: {},
+                account: { types: {} },
                 accounts: {
                   "account-a": {
-                    agents: "allow",
+                    types: {
+                      agents: "allow",
+                    },
                   },
                 },
-                repo: { environments: {} },
+                repo: { types: { environments: {} } },
                 repos: {},
               },
             },
@@ -508,10 +530,12 @@ it("doesn't allow GitHub Agents account secrets within the requesting account fo
             to: {
               github: {
                 account: {
-                  agents: "allow",
+                  types: {
+                    agents: "allow",
+                  },
                 },
                 accounts: {},
-                repo: { environments: {} },
+                repo: { types: { environments: {} } },
                 repos: {},
               },
             },
@@ -591,14 +615,18 @@ it("doesn't allow GitHub Agents account secrets within the requesting account wh
             to: {
               github: {
                 account: {
-                  agents: "deny",
+                  types: {
+                    agents: "deny",
+                  },
                 },
                 accounts: {
                   "account-a": {
-                    agents: "allow",
+                    types: {
+                      agents: "allow",
+                    },
                   },
                 },
-                repo: { environments: {} },
+                repo: { types: { environments: {} } },
                 repos: {},
               },
             },
@@ -645,13 +673,15 @@ it("doesn't allow GitHub Agents repo secrets for unauthorized requesters", async
             requesters: ["account-x/repo-x"],
             to: {
               github: {
-                account: {},
+                account: { types: {} },
                 accounts: {},
-                repo: { environments: {} },
+                repo: { types: { environments: {} } },
                 repos: {
                   "account-a/repo-a": {
-                    agents: "allow",
-                    environments: {},
+                    types: {
+                      agents: "allow",
+                      environments: {},
+                    },
                   },
                 },
               },
@@ -699,11 +729,13 @@ it("doesn't allow GitHub Agents repo secrets within the requesting repo for unau
             requesters: ["account-x/repo-x"],
             to: {
               github: {
-                account: {},
+                account: { types: {} },
                 accounts: {},
                 repo: {
-                  agents: "allow",
-                  environments: {},
+                  types: {
+                    agents: "allow",
+                    environments: {},
+                  },
                 },
                 repos: {},
               },
@@ -783,16 +815,20 @@ it("doesn't allow GitHub Agents repo secrets within the requesting repo when den
             requesters: ["account-a/repo-a"],
             to: {
               github: {
-                account: {},
+                account: { types: {} },
                 accounts: {},
                 repo: {
-                  agents: "deny",
-                  environments: {},
+                  types: {
+                    agents: "deny",
+                    environments: {},
+                  },
                 },
                 repos: {
                   "account-a/repo-a": {
-                    agents: "allow",
-                    environments: {},
+                    types: {
+                      agents: "allow",
+                      environments: {},
+                    },
                   },
                 },
               },

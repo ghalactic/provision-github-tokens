@@ -1,5 +1,15 @@
-import type { PermissionsRule } from "./permissions-rule.js";
+import type {
+  PartialPermissionsRule,
+  PermissionsRule,
+} from "./permissions-rule.js";
 import type { ProvisionSecretsRule } from "./provision-rule.js";
+
+export type PartialProviderConfig = {
+  $schema?: string;
+  dashboards: ProviderDashboardsConfig;
+  permissions: PartialProviderPermissionsConfig;
+  provision: ProviderProvisionConfig;
+};
 
 export type ProviderConfig = {
   $schema?: string;
@@ -14,6 +24,10 @@ export type ProviderDashboardsConfig = {
 
 export type ProviderPermissionsConfig = {
   rules: PermissionsRule[];
+};
+
+export type PartialProviderPermissionsConfig = {
+  rules: PartialPermissionsRule[];
 };
 
 export type ProviderProvisionConfig = {

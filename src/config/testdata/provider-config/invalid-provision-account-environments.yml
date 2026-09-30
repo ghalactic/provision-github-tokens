@@ -5,9 +5,10 @@ provision:
   rules:
     secrets:
       - secrets: ["*"]
-        requesters: [repo-x]
+        requesters: ["*/*"]
         to:
           github:
-            repo:
+            account:
               types:
-                actions: allow
+                environments:
+                  "*": allow

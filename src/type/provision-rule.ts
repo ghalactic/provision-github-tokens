@@ -4,12 +4,20 @@ export type ProvisionSecretsRule = {
   requesters: string[];
   to: {
     github: {
-      account: ProviderConfigGitHubSecretTypes;
-      accounts: Record<string, ProviderConfigGitHubSecretTypes>;
-      repo: ProviderConfigGitHubRepoSecretTypes;
-      repos: Record<string, ProviderConfigGitHubRepoSecretTypes>;
+      account: ProviderConfigGitHubAccountTarget;
+      accounts: Record<string, ProviderConfigGitHubAccountTarget>;
+      repo: ProviderConfigGitHubRepoTarget;
+      repos: Record<string, ProviderConfigGitHubRepoTarget>;
     };
   };
+};
+
+export type ProviderConfigGitHubAccountTarget = {
+  types: ProviderConfigGitHubSecretTypes;
+};
+
+export type ProviderConfigGitHubRepoTarget = {
+  types: ProviderConfigGitHubRepoSecretTypes;
 };
 
 export type ProviderConfigGitHubSecretTypes = {
@@ -19,6 +27,7 @@ export type ProviderConfigGitHubSecretTypes = {
   dependabot?: "allow" | "deny";
 };
 
-type ProviderConfigGitHubRepoSecretTypes = ProviderConfigGitHubSecretTypes & {
-  environments: Record<string, "allow" | "deny">;
-};
+export type ProviderConfigGitHubRepoSecretTypes =
+  ProviderConfigGitHubSecretTypes & {
+    environments: Record<string, "allow" | "deny">;
+  };

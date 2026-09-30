@@ -32,16 +32,20 @@ it("allows GitHub Codespaces account secrets that should be allowed", async () =
             requesters: ["account-x/repo-x", "account-y-*/repo-y-*"],
             to: {
               github: {
-                account: {},
+                account: { types: {} },
                 accounts: {
                   "account-a": {
-                    codespaces: "allow",
+                    types: {
+                      codespaces: "allow",
+                    },
                   },
                   "account-b-*": {
-                    codespaces: "allow",
+                    types: {
+                      codespaces: "allow",
+                    },
                   },
                 },
-                repo: { environments: {} },
+                repo: { types: { environments: {} } },
                 repos: {},
               },
             },
@@ -107,10 +111,12 @@ it("allows GitHub Codespaces account secrets that should be allowed within the r
             to: {
               github: {
                 account: {
-                  codespaces: "allow",
+                  types: {
+                    codespaces: "allow",
+                  },
                 },
                 accounts: {},
-                repo: { environments: {} },
+                repo: { types: { environments: {} } },
                 repos: {},
               },
             },
@@ -175,14 +181,18 @@ it("allows GitHub Codespaces account secrets that should be allowed within the r
             to: {
               github: {
                 account: {
-                  codespaces: "allow",
+                  types: {
+                    codespaces: "allow",
+                  },
                 },
                 accounts: {
                   "account-a": {
-                    codespaces: "deny",
+                    types: {
+                      codespaces: "deny",
+                    },
                   },
                 },
-                repo: { environments: {} },
+                repo: { types: { environments: {} } },
                 repos: {},
               },
             },
@@ -229,17 +239,21 @@ it("allows GitHub Codespaces repo secrets that should be allowed", async () => {
             requesters: ["account-x/repo-x", "account-y-*/repo-y-*"],
             to: {
               github: {
-                account: {},
+                account: { types: {} },
                 accounts: {},
-                repo: { environments: {} },
+                repo: { types: { environments: {} } },
                 repos: {
                   "account-a/repo-a": {
-                    codespaces: "allow",
-                    environments: {},
+                    types: {
+                      codespaces: "allow",
+                      environments: {},
+                    },
                   },
                   "account-b-*/repo-b-*": {
-                    codespaces: "allow",
-                    environments: {},
+                    types: {
+                      codespaces: "allow",
+                      environments: {},
+                    },
                   },
                 },
               },
@@ -313,11 +327,13 @@ it("allows GitHub Codespaces repo secrets that should be allowed within the requ
             requesters: ["account-a/repo-a", "account-b-*/repo-b-*"],
             to: {
               github: {
-                account: {},
+                account: { types: {} },
                 accounts: {},
                 repo: {
-                  codespaces: "allow",
-                  environments: {},
+                  types: {
+                    codespaces: "allow",
+                    environments: {},
+                  },
                 },
                 repos: {},
               },
@@ -390,16 +406,20 @@ it("allows GitHub Codespaces repo secrets that should be allowed within the requ
             requesters: ["account-a/repo-a", "account-b-*/repo-b-*"],
             to: {
               github: {
-                account: {},
+                account: { types: {} },
                 accounts: {},
                 repo: {
-                  codespaces: "allow",
-                  environments: {},
+                  types: {
+                    codespaces: "allow",
+                    environments: {},
+                  },
                 },
                 repos: {
                   "account-a/repo-a": {
-                    codespaces: "deny",
-                    environments: {},
+                    types: {
+                      codespaces: "deny",
+                      environments: {},
+                    },
                   },
                 },
               },
@@ -472,13 +492,15 @@ it("doesn't allow GitHub Codespaces account secrets for unauthorized requesters"
             requesters: ["account-x/repo-x"],
             to: {
               github: {
-                account: {},
+                account: { types: {} },
                 accounts: {
                   "account-a": {
-                    codespaces: "allow",
+                    types: {
+                      codespaces: "allow",
+                    },
                   },
                 },
-                repo: { environments: {} },
+                repo: { types: { environments: {} } },
                 repos: {},
               },
             },
@@ -526,10 +548,12 @@ it("doesn't allow GitHub Codespaces account secrets within the requesting accoun
             to: {
               github: {
                 account: {
-                  codespaces: "allow",
+                  types: {
+                    codespaces: "allow",
+                  },
                 },
                 accounts: {},
-                repo: { environments: {} },
+                repo: { types: { environments: {} } },
                 repos: {},
               },
             },
@@ -609,14 +633,18 @@ it("doesn't allow GitHub Codespaces account secrets within the requesting accoun
             to: {
               github: {
                 account: {
-                  codespaces: "deny",
+                  types: {
+                    codespaces: "deny",
+                  },
                 },
                 accounts: {
                   "account-a": {
-                    codespaces: "allow",
+                    types: {
+                      codespaces: "allow",
+                    },
                   },
                 },
-                repo: { environments: {} },
+                repo: { types: { environments: {} } },
                 repos: {},
               },
             },
@@ -663,13 +691,15 @@ it("doesn't allow GitHub Codespaces repo secrets for unauthorized requesters", a
             requesters: ["account-x/repo-x"],
             to: {
               github: {
-                account: {},
+                account: { types: {} },
                 accounts: {},
-                repo: { environments: {} },
+                repo: { types: { environments: {} } },
                 repos: {
                   "account-a/repo-a": {
-                    codespaces: "allow",
-                    environments: {},
+                    types: {
+                      codespaces: "allow",
+                      environments: {},
+                    },
                   },
                 },
               },
@@ -719,11 +749,13 @@ it("doesn't allow GitHub Codespaces repo secrets within the requesting repo for 
             requesters: ["account-x/repo-x"],
             to: {
               github: {
-                account: {},
+                account: { types: {} },
                 accounts: {},
                 repo: {
-                  codespaces: "allow",
-                  environments: {},
+                  types: {
+                    codespaces: "allow",
+                    environments: {},
+                  },
                 },
                 repos: {},
               },
@@ -809,16 +841,20 @@ it("doesn't allow GitHub Codespaces repo secrets within the requesting repo when
             requesters: ["account-a/repo-a"],
             to: {
               github: {
-                account: {},
+                account: { types: {} },
                 accounts: {},
                 repo: {
-                  codespaces: "deny",
-                  environments: {},
+                  types: {
+                    codespaces: "deny",
+                    environments: {},
+                  },
                 },
                 repos: {
                   "account-a/repo-a": {
-                    codespaces: "allow",
-                    environments: {},
+                    types: {
+                      codespaces: "allow",
+                      environments: {},
+                    },
                   },
                 },
               },

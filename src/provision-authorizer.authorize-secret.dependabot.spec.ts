@@ -32,16 +32,20 @@ it("allows GitHub Dependabot account secrets that should be allowed", async () =
             requesters: ["account-x/repo-x", "account-y-*/repo-y-*"],
             to: {
               github: {
-                account: {},
+                account: { types: {} },
                 accounts: {
                   "account-a": {
-                    dependabot: "allow",
+                    types: {
+                      dependabot: "allow",
+                    },
                   },
                   "account-b-*": {
-                    dependabot: "allow",
+                    types: {
+                      dependabot: "allow",
+                    },
                   },
                 },
-                repo: { environments: {} },
+                repo: { types: { environments: {} } },
                 repos: {},
               },
             },
@@ -107,10 +111,12 @@ it("allows GitHub Dependabot account secrets that should be allowed within the r
             to: {
               github: {
                 account: {
-                  dependabot: "allow",
+                  types: {
+                    dependabot: "allow",
+                  },
                 },
                 accounts: {},
-                repo: { environments: {} },
+                repo: { types: { environments: {} } },
                 repos: {},
               },
             },
@@ -175,14 +181,18 @@ it("allows GitHub Dependabot account secrets that should be allowed within the r
             to: {
               github: {
                 account: {
-                  dependabot: "allow",
+                  types: {
+                    dependabot: "allow",
+                  },
                 },
                 accounts: {
                   "account-a": {
-                    dependabot: "deny",
+                    types: {
+                      dependabot: "deny",
+                    },
                   },
                 },
-                repo: { environments: {} },
+                repo: { types: { environments: {} } },
                 repos: {},
               },
             },
@@ -229,17 +239,21 @@ it("allows GitHub Dependabot repo secrets that should be allowed", async () => {
             requesters: ["account-x/repo-x", "account-y-*/repo-y-*"],
             to: {
               github: {
-                account: {},
+                account: { types: {} },
                 accounts: {},
-                repo: { environments: {} },
+                repo: { types: { environments: {} } },
                 repos: {
                   "account-a/repo-a": {
-                    dependabot: "allow",
-                    environments: {},
+                    types: {
+                      dependabot: "allow",
+                      environments: {},
+                    },
                   },
                   "account-b-*/repo-b-*": {
-                    dependabot: "allow",
-                    environments: {},
+                    types: {
+                      dependabot: "allow",
+                      environments: {},
+                    },
                   },
                 },
               },
@@ -313,11 +327,13 @@ it("allows GitHub Dependabot repo secrets that should be allowed within the requ
             requesters: ["account-a/repo-a", "account-b-*/repo-b-*"],
             to: {
               github: {
-                account: {},
+                account: { types: {} },
                 accounts: {},
                 repo: {
-                  dependabot: "allow",
-                  environments: {},
+                  types: {
+                    dependabot: "allow",
+                    environments: {},
+                  },
                 },
                 repos: {},
               },
@@ -390,16 +406,20 @@ it("allows GitHub Dependabot repo secrets that should be allowed within the requ
             requesters: ["account-a/repo-a", "account-b-*/repo-b-*"],
             to: {
               github: {
-                account: {},
+                account: { types: {} },
                 accounts: {},
                 repo: {
-                  dependabot: "allow",
-                  environments: {},
+                  types: {
+                    dependabot: "allow",
+                    environments: {},
+                  },
                 },
                 repos: {
                   "account-a/repo-a": {
-                    dependabot: "deny",
-                    environments: {},
+                    types: {
+                      dependabot: "deny",
+                      environments: {},
+                    },
                   },
                 },
               },
@@ -472,13 +492,15 @@ it("doesn't allow GitHub Dependabot account secrets for unauthorized requesters"
             requesters: ["account-x/repo-x"],
             to: {
               github: {
-                account: {},
+                account: { types: {} },
                 accounts: {
                   "account-a": {
-                    dependabot: "allow",
+                    types: {
+                      dependabot: "allow",
+                    },
                   },
                 },
-                repo: { environments: {} },
+                repo: { types: { environments: {} } },
                 repos: {},
               },
             },
@@ -526,10 +548,12 @@ it("doesn't allow GitHub Dependabot account secrets within the requesting accoun
             to: {
               github: {
                 account: {
-                  dependabot: "allow",
+                  types: {
+                    dependabot: "allow",
+                  },
                 },
                 accounts: {},
-                repo: { environments: {} },
+                repo: { types: { environments: {} } },
                 repos: {},
               },
             },
@@ -609,14 +633,18 @@ it("doesn't allow GitHub Dependabot account secrets within the requesting accoun
             to: {
               github: {
                 account: {
-                  dependabot: "deny",
+                  types: {
+                    dependabot: "deny",
+                  },
                 },
                 accounts: {
                   "account-a": {
-                    dependabot: "allow",
+                    types: {
+                      dependabot: "allow",
+                    },
                   },
                 },
-                repo: { environments: {} },
+                repo: { types: { environments: {} } },
                 repos: {},
               },
             },
@@ -663,13 +691,15 @@ it("doesn't allow GitHub Dependabot repo secrets for unauthorized requesters", a
             requesters: ["account-x/repo-x"],
             to: {
               github: {
-                account: {},
+                account: { types: {} },
                 accounts: {},
-                repo: { environments: {} },
+                repo: { types: { environments: {} } },
                 repos: {
                   "account-a/repo-a": {
-                    dependabot: "allow",
-                    environments: {},
+                    types: {
+                      dependabot: "allow",
+                      environments: {},
+                    },
                   },
                 },
               },
@@ -719,11 +749,13 @@ it("doesn't allow GitHub Dependabot repo secrets within the requesting repo for 
             requesters: ["account-x/repo-x"],
             to: {
               github: {
-                account: {},
+                account: { types: {} },
                 accounts: {},
                 repo: {
-                  dependabot: "allow",
-                  environments: {},
+                  types: {
+                    dependabot: "allow",
+                    environments: {},
+                  },
                 },
                 repos: {},
               },
@@ -809,16 +841,20 @@ it("doesn't allow GitHub Dependabot repo secrets within the requesting repo when
             requesters: ["account-a/repo-a"],
             to: {
               github: {
-                account: {},
+                account: { types: {} },
                 accounts: {},
                 repo: {
-                  dependabot: "deny",
-                  environments: {},
+                  types: {
+                    dependabot: "deny",
+                    environments: {},
+                  },
                 },
                 repos: {
                   "account-a/repo-a": {
-                    dependabot: "allow",
-                    environments: {},
+                    types: {
+                      dependabot: "allow",
+                      environments: {},
+                    },
                   },
                 },
               },

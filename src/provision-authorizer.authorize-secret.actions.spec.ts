@@ -32,16 +32,20 @@ it("allows GitHub Actions account secrets that should be allowed", async () => {
             requesters: ["account-x/repo-x", "account-y-*/repo-y-*"],
             to: {
               github: {
-                account: {},
+                account: { types: {} },
                 accounts: {
                   "account-a": {
-                    actions: "allow",
+                    types: {
+                      actions: "allow",
+                    },
                   },
                   "account-b-*": {
-                    actions: "allow",
+                    types: {
+                      actions: "allow",
+                    },
                   },
                 },
-                repo: { environments: {} },
+                repo: { types: { environments: {} } },
                 repos: {},
               },
             },
@@ -106,10 +110,12 @@ it("allows GitHub Actions account secrets that should be allowed within the requ
             to: {
               github: {
                 account: {
-                  actions: "allow",
+                  types: {
+                    actions: "allow",
+                  },
                 },
                 accounts: {},
-                repo: { environments: {} },
+                repo: { types: { environments: {} } },
                 repos: {},
               },
             },
@@ -170,14 +176,18 @@ it("allows GitHub Actions account secrets that should be allowed within the requ
             to: {
               github: {
                 account: {
-                  actions: "allow",
+                  types: {
+                    actions: "allow",
+                  },
                 },
                 accounts: {
                   "account-a": {
-                    actions: "deny",
+                    types: {
+                      actions: "deny",
+                    },
                   },
                 },
-                repo: { environments: {} },
+                repo: { types: { environments: {} } },
                 repos: {},
               },
             },
@@ -220,17 +230,21 @@ it("allows GitHub Actions repo secrets that should be allowed", async () => {
             requesters: ["account-x/repo-x", "account-y-*/repo-y-*"],
             to: {
               github: {
-                account: {},
+                account: { types: {} },
                 accounts: {},
-                repo: { environments: {} },
+                repo: { types: { environments: {} } },
                 repos: {
                   "account-a/repo-a": {
-                    actions: "allow",
-                    environments: {},
+                    types: {
+                      actions: "allow",
+                      environments: {},
+                    },
                   },
                   "account-b-*/repo-b-*": {
-                    actions: "allow",
-                    environments: {},
+                    types: {
+                      actions: "allow",
+                      environments: {},
+                    },
                   },
                 },
               },
@@ -298,11 +312,13 @@ it("allows GitHub Actions repo secrets that should be allowed within the request
             requesters: ["account-a/repo-a", "account-b-*/repo-b-*"],
             to: {
               github: {
-                account: {},
+                account: { types: {} },
                 accounts: {},
                 repo: {
-                  actions: "allow",
-                  environments: {},
+                  types: {
+                    actions: "allow",
+                    environments: {},
+                  },
                 },
                 repos: {},
               },
@@ -369,16 +385,20 @@ it("allows GitHub Actions repo secrets that should be allowed within the request
             requesters: ["account-a/repo-a", "account-b-*/repo-b-*"],
             to: {
               github: {
-                account: {},
+                account: { types: {} },
                 accounts: {},
                 repo: {
-                  actions: "allow",
-                  environments: {},
+                  types: {
+                    actions: "allow",
+                    environments: {},
+                  },
                 },
                 repos: {
                   "account-a/repo-a": {
-                    actions: "deny",
-                    environments: {},
+                    types: {
+                      actions: "deny",
+                      environments: {},
+                    },
                   },
                 },
               },
@@ -445,13 +465,15 @@ it("doesn't allow GitHub Actions account secrets for unauthorized requesters", a
             requesters: ["account-x/repo-x"],
             to: {
               github: {
-                account: {},
+                account: { types: {} },
                 accounts: {
                   "account-a": {
-                    actions: "allow",
+                    types: {
+                      actions: "allow",
+                    },
                   },
                 },
-                repo: { environments: {} },
+                repo: { types: { environments: {} } },
                 repos: {},
               },
             },
@@ -498,10 +520,12 @@ it("doesn't allow GitHub Actions account secrets within the requesting account f
             to: {
               github: {
                 account: {
-                  actions: "allow",
+                  types: {
+                    actions: "allow",
+                  },
                 },
                 accounts: {},
-                repo: { environments: {} },
+                repo: { types: { environments: {} } },
                 repos: {},
               },
             },
@@ -581,14 +605,18 @@ it("doesn't allow GitHub Actions account secrets within the requesting account w
             to: {
               github: {
                 account: {
-                  actions: "deny",
+                  types: {
+                    actions: "deny",
+                  },
                 },
                 accounts: {
                   "account-a": {
-                    actions: "allow",
+                    types: {
+                      actions: "allow",
+                    },
                   },
                 },
-                repo: { environments: {} },
+                repo: { types: { environments: {} } },
                 repos: {},
               },
             },
@@ -631,13 +659,15 @@ it("doesn't allow GitHub Actions repo secrets for unauthorized requesters", asyn
             requesters: ["account-x/repo-x"],
             to: {
               github: {
-                account: {},
+                account: { types: {} },
                 accounts: {},
-                repo: { environments: {} },
+                repo: { types: { environments: {} } },
                 repos: {
                   "account-a/repo-a": {
-                    actions: "allow",
-                    environments: {},
+                    types: {
+                      actions: "allow",
+                      environments: {},
+                    },
                   },
                 },
               },
@@ -685,11 +715,13 @@ it("doesn't allow GitHub Actions repo secrets within the requesting repo for una
             requesters: ["account-x/repo-x"],
             to: {
               github: {
-                account: {},
+                account: { types: {} },
                 accounts: {},
                 repo: {
-                  actions: "allow",
-                  environments: {},
+                  types: {
+                    actions: "allow",
+                    environments: {},
+                  },
                 },
                 repos: {},
               },
@@ -769,16 +801,20 @@ it("doesn't allow GitHub Actions repo secrets within the requesting repo when de
             requesters: ["account-a/repo-a"],
             to: {
               github: {
-                account: {},
+                account: { types: {} },
                 accounts: {},
                 repo: {
-                  actions: "deny",
-                  environments: {},
+                  types: {
+                    actions: "deny",
+                    environments: {},
+                  },
                 },
                 repos: {
                   "account-a/repo-a": {
-                    actions: "allow",
-                    environments: {},
+                    types: {
+                      actions: "allow",
+                      environments: {},
+                    },
                   },
                 },
               },
