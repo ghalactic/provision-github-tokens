@@ -95,7 +95,6 @@ it("discovers requesters in a single account", async () => {
                 github:
                   repo:
                     codespaces: true
-                    agents: true
               SECRET_C:
                 token: tokenC
                 github:
@@ -487,8 +486,7 @@ it("skips requesters with invalid configuration", async () => {
                 token: tokenB
                 github:
                   repo:
-                    codespaces: true
-                    agents: true`,
+                    codespaces: true`,
       sha: "cccccccccccccccccccccccccccccccccccccccc",
     },
   });
