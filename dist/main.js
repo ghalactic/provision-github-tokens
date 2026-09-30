@@ -65205,8 +65205,13 @@ function createTextTokenAuthExplainer() {
     return `
   ${icon(isMatched)} ${repoPatterns} matched ${repos}`;
   }
-  function explainResourceRepo(resource, want, { isSufficient, rules }) {
-    return explainBasedOnRules(isSufficient, `repo ${resource}`, want, rules);
+  function explainResourceRepo(resource, want, { isSufficient, visibility, rules }) {
+    return explainBasedOnRules(
+      isSufficient,
+      `${visibility} repo ${resource}`,
+      want,
+      rules
+    );
   }
   function explainBasedOnRules(isSufficient, accessTo, want, rules) {
     const ruleCount = rules.length;
@@ -66484,6 +66489,10 @@ var provider_v1_schema_default = {
                               "with-*-infix"
                             ]
                           }
+                        },
+                        visibility: {
+                          $ref: "#/definitions/visibility",
+                          default: "private"
                         }
                       }
                     }
@@ -66680,6 +66689,11 @@ var provider_v1_schema_default = {
     }
   },
   definitions: {
+    visibility: {
+      description: "A repo visibility level.",
+      type: "string",
+      enum: ["private", "internal", "public"]
+    },
     provisionGithubAccountTarget: {
       description: "Which types of secrets to allow provisioning to in a GitHub account.",
       type: "object",
@@ -67280,7 +67294,10 @@ function normalizeProviderConfig(definingRepo, config) {
         accounts,
         noRepos: criteria.noRepos,
         allRepos: criteria.allRepos,
-        selectedRepos: criteria.selectedRepos?.repos ?? []
+        selectedRepos: criteria.selectedRepos ? {
+          repos: criteria.selectedRepos.repos,
+          visibility: criteria.selectedRepos.visibility
+        } : void 0
       });
     }
     const consumers = [];
@@ -121095,10 +121112,10 @@ function createMarkdownTokenAuthExplainer() {
       paragraph2(text2(`${icon(isMatched)} ${repoPatterns} matched ${repos}`))
     ];
   }
-  function explainResourceRepo(resource, want, { isSufficient, rules }) {
+  function explainResourceRepo(resource, want, { isSufficient, visibility, rules }) {
     return explainBasedOnRules(
       isSufficient,
-      [text2("repo "), inlineCode2(resource)],
+      [strong2(text2(visibility)), text2(" repo "), inlineCode2(resource)],
       want,
       rules
     );
@@ -122010,6 +122027,16 @@ function renderSummary(context, authResult, tokenCreationResults, provisionResul
   }
 }
 
+// src/visibility.ts
+function isVisibilityWithin(target, allowed) {
+  return VISIBILITY_RANK[target] <= VISIBILITY_RANK[allowed];
+}
+var VISIBILITY_RANK = {
+  private: 0,
+  internal: 1,
+  public: 2
+};
+
 // src/token-authorizer.ts
 function createTokenAuthorizer(repoRegistry, config) {
   const [resourcePatterns, consumerPatterns, permissionPatterns] = patternsForRules(config.rules);
@@ -122135,9 +122162,9 @@ function createTokenAuthorizer(repoRegistry, config) {
     let isSufficient = true;
     const resourceResults = {};
     for (const reqRepo of request2.repos) {
-      const reqResource = repoRefToString(
-        createRepoRef(request2.tokenDec.account, reqRepo)
-      );
+      const ref = createRepoRef(request2.tokenDec.account, reqRepo);
+      const reqResource = repoRefToString(ref);
+      const targetVisibility = repoRegistry.find(ref).visibility;
       const ruleResults = [];
       const have = {};
       let isResourceSufficient = false;
@@ -122145,8 +122172,8 @@ function createTokenAuthorizer(repoRegistry, config) {
         const rule = config.rules[i2];
         let isRelevant = false;
         for (let j2 = 0; j2 < rule.resources.length; ++j2) {
-          const { accounts, repos } = resourcePatterns[i2][j2];
-          isRelevant = anyPatternMatches(accounts, request2.tokenDec.account) && anyPatternMatches(repos, reqRepo);
+          const { accounts, repos, visibility } = resourcePatterns[i2][j2];
+          isRelevant = anyPatternMatches(accounts, request2.tokenDec.account) && anyPatternMatches(repos, reqRepo) && isVisibilityWithin(targetVisibility, visibility);
           if (isRelevant) break;
         }
         if (!isRelevant) continue;
@@ -122170,7 +122197,8 @@ function createTokenAuthorizer(repoRegistry, config) {
       resourceResults[reqResource] = {
         rules: ruleResults,
         have,
-        isSufficient: isResourceSufficient
+        isSufficient: isResourceSufficient,
+        visibility: targetVisibility
       };
     }
     const maxWant = maxAccess(request2.tokenDec.permissions);
@@ -122228,10 +122256,14 @@ function createTokenAuthorizer(repoRegistry, config) {
     for (const pattern of criteria.accounts) {
       accounts.push(createNamePattern(pattern));
     }
-    for (const pattern of criteria.selectedRepos) {
+    for (const pattern of criteria.selectedRepos?.repos ?? []) {
       repos.push(createNamePattern(pattern));
     }
-    return { accounts, repos };
+    return {
+      accounts,
+      repos,
+      visibility: criteria.selectedRepos?.visibility ?? "private"
+    };
   }
   function rulesForConsumer(consumer) {
     const consumerName = accountOrRepoRefToString(consumer);

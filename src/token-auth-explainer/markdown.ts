@@ -16,8 +16,8 @@ import { pluralize } from "../pluralize.js";
 import type { PermissionsRule } from "../type/permissions-rule.js";
 import type { Permissions } from "../type/permissions.js";
 import type {
-  TokenAuthResourceResult,
   TokenAuthResourceResultRuleResult,
+  TokenAuthResourceResultWithVisibility,
   TokenAuthResult,
   TokenAuthResultAllRepos,
   TokenAuthResultExplainer,
@@ -192,11 +192,11 @@ export function createMarkdownTokenAuthExplainer(): TokenAuthResultExplainer<
   function explainResourceRepo(
     resource: string,
     want: Permissions,
-    { isSufficient, rules }: TokenAuthResourceResult,
+    { isSufficient, visibility, rules }: TokenAuthResourceResultWithVisibility,
   ): ListItem["children"] {
     return explainBasedOnRules(
       isSufficient,
-      [text("repo "), inlineCode(resource)],
+      [strong(text(visibility)), text(" repo "), inlineCode(resource)],
       want,
       rules,
     );
@@ -234,11 +234,6 @@ export function createMarkdownTokenAuthExplainer(): TokenAuthResultExplainer<
     want: Permissions,
     { index, rule, have, isSufficient }: TokenAuthResourceResultRuleResult,
   ): ListItem["children"] {
-    // return (
-    //   `\n    ${icon(isSufficient)} Rule ${renderRule(index, rule)} ` +
-    //   `gave ${isSufficient ? "sufficient" : "insufficient"} access:` +
-    //   renderPermissionComparison("      ", have, want)
-    // );
     return [
       paragraph(
         text(`${icon(isSufficient)} Rule `),

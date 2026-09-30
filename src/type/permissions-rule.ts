@@ -1,4 +1,5 @@
 import type { Permissions } from "./permissions.js";
+import type { Visibility } from "./visibility.js";
 
 export type PermissionsRule = {
   description?: string;
@@ -11,23 +12,10 @@ export type PermissionsRuleResourceCriteria = {
   accounts: string[];
   noRepos: boolean;
   allRepos: boolean;
-  selectedRepos: string[];
+  selectedRepos?: PermissionsRuleSelectedReposCriteria;
 };
 
-export type PartialPermissionsRule = {
-  description?: string;
-  resources: PartialPermissionsRuleResourceCriteria[];
-  consumers: string[];
-  permissions: Permissions;
-};
-
-export type PartialPermissionsRuleResourceCriteria = {
-  accounts: string[];
-  noRepos: boolean;
-  allRepos: boolean;
-  selectedRepos?: PartialSelectedReposCriteria;
-};
-
-export type PartialSelectedReposCriteria = {
+export type PermissionsRuleSelectedReposCriteria = {
   repos: string[];
+  visibility: Visibility;
 };

@@ -100,7 +100,7 @@ it("authorizes all requests and outputs the results", async () => {
         accounts: ["*"],
         allRepos: true,
         noRepos: true,
-        selectedRepos: ["*"],
+        selectedRepos: { repos: ["*"], visibility: "private" },
       },
     ],
   };

@@ -88,7 +88,7 @@ it("reads comprehensive provider config", async () => {
               accounts: ["*"],
               noRepos: true,
               allRepos: true,
-              selectedRepos: ["*"],
+              selectedRepos: { repos: ["*"], visibility: "private" },
             },
           ],
           consumers: ["*", "*/*"],
@@ -107,7 +107,6 @@ it("reads comprehensive provider config", async () => {
               accounts: ["account-a"],
               allRepos: false,
               noRepos: true,
-              selectedRepos: [],
             },
           ],
           permissions: {
@@ -122,7 +121,6 @@ it("reads comprehensive provider config", async () => {
               accounts: ["account-a"],
               allRepos: true,
               noRepos: false,
-              selectedRepos: [],
             },
           ],
           consumers: ["*", "*/*"],
@@ -138,7 +136,10 @@ it("reads comprehensive provider config", async () => {
               accounts: ["account-a"],
               allRepos: false,
               noRepos: false,
-              selectedRepos: ["repo-a", "repo-*"],
+              selectedRepos: {
+                repos: ["repo-a", "repo-*"],
+                visibility: "internal",
+              },
             },
           ],
           consumers: ["*", "*/*"],
@@ -153,7 +154,6 @@ it("reads comprehensive provider config", async () => {
               accounts: ["account-a"],
               allRepos: false,
               noRepos: true,
-              selectedRepos: [],
             },
           ],
           consumers: ["account-a"],
@@ -169,7 +169,6 @@ it("reads comprehensive provider config", async () => {
               accounts: ["*"],
               allRepos: false,
               noRepos: true,
-              selectedRepos: [],
             },
           ],
           consumers: ["<account>"],
@@ -185,7 +184,7 @@ it("reads comprehensive provider config", async () => {
               accounts: ["*"],
               allRepos: false,
               noRepos: false,
-              selectedRepos: ["*"],
+              selectedRepos: { repos: ["*"], visibility: "private" },
             },
           ],
           consumers: ["*/<repo>"],
@@ -200,7 +199,7 @@ it("reads comprehensive provider config", async () => {
               accounts: ["*"],
               allRepos: false,
               noRepos: false,
-              selectedRepos: ["*"],
+              selectedRepos: { repos: ["*"], visibility: "private" },
             },
           ],
           consumers: ["<account>/<repo>"],
@@ -216,7 +215,7 @@ it("reads comprehensive provider config", async () => {
               accounts: ["*"],
               allRepos: false,
               noRepos: false,
-              selectedRepos: ["repo-a"],
+              selectedRepos: { repos: ["repo-a"], visibility: "private" },
             },
           ],
           consumers: ["*", "*/*"],
@@ -231,7 +230,7 @@ it("reads comprehensive provider config", async () => {
               accounts: ["account-self"],
               allRepos: false,
               noRepos: false,
-              selectedRepos: ["repo-a"],
+              selectedRepos: { repos: ["repo-a"], visibility: "private" },
             },
           ],
           consumers: ["account-self/repo-b"],
@@ -246,7 +245,6 @@ it("reads comprehensive provider config", async () => {
               accounts: ["account-self"],
               allRepos: true,
               noRepos: false,
-              selectedRepos: [],
             },
           ],
           consumers: ["account-self/repo-a"],
@@ -261,7 +259,7 @@ it("reads comprehensive provider config", async () => {
               accounts: ["account-a"],
               allRepos: false,
               noRepos: false,
-              selectedRepos: ["repo-a"],
+              selectedRepos: { repos: ["repo-a"], visibility: "private" },
             },
           ],
           consumers: ["account-b/repo-b"],
@@ -277,7 +275,7 @@ it("reads comprehensive provider config", async () => {
               accounts: ["account-self"],
               allRepos: false,
               noRepos: false,
-              selectedRepos: ["repo-a"],
+              selectedRepos: { repos: ["repo-a"], visibility: "private" },
             },
           ],
           permissions: {
@@ -291,7 +289,7 @@ it("reads comprehensive provider config", async () => {
               accounts: ["account-self"],
               allRepos: false,
               noRepos: false,
-              selectedRepos: ["repo-a"],
+              selectedRepos: { repos: ["repo-a"], visibility: "private" },
             },
           ],
           consumers: ["account-self/repo-b"],
@@ -306,7 +304,7 @@ it("reads comprehensive provider config", async () => {
               accounts: ["account-self"],
               allRepos: false,
               noRepos: false,
-              selectedRepos: ["repo-a"],
+              selectedRepos: { repos: ["repo-a"], visibility: "private" },
             },
           ],
           consumers: ["account-self/repo-b"],
@@ -321,13 +319,19 @@ it("reads comprehensive provider config", async () => {
               accounts: ["account-a", "account-b"],
               allRepos: false,
               noRepos: false,
-              selectedRepos: ["repo-a", "repo-b"],
+              selectedRepos: {
+                repos: ["repo-a", "repo-b"],
+                visibility: "private",
+              },
             },
             {
               accounts: ["account-c", "account-d"],
               allRepos: false,
               noRepos: false,
-              selectedRepos: ["repo-c", "repo-d"],
+              selectedRepos: {
+                repos: ["repo-c", "repo-d"],
+                visibility: "private",
+              },
             },
           ],
           consumers: ["account-e", "account-f/repo-f", "account-g/repo-g"],
@@ -342,7 +346,7 @@ it("reads comprehensive provider config", async () => {
               accounts: ["account-*"],
               allRepos: false,
               noRepos: false,
-              selectedRepos: ["repo-*"],
+              selectedRepos: { repos: ["repo-*"], visibility: "private" },
             },
           ],
           consumers: ["*-account", "*-account/*-repo"],
@@ -357,7 +361,7 @@ it("reads comprehensive provider config", async () => {
               accounts: ["account-self"],
               allRepos: true,
               noRepos: true,
-              selectedRepos: ["*"],
+              selectedRepos: { repos: ["*"], visibility: "private" },
             },
           ],
           consumers: ["account-self/repo-b"],
@@ -964,6 +968,29 @@ it("throws when selectedRepos has an empty repos list", async () => {
 
     Caused by: Invalid provider configuration:
       - must NOT have fewer than 1 items (/permissions/rules/0/resources/0/selectedRepos/repos)"
+  `);
+});
+
+it("throws when selectedRepos has an unknown visibility", async () => {
+  const fixturePath = join(
+    fixturesPath,
+    "invalid-selected-repos-visibility.yml",
+  );
+  const yaml = await readFile(fixturePath, "utf-8");
+
+  expect(
+    throws(() =>
+      parseProviderConfig(
+        { account: "account-self", repo: "repo-self" },
+        "path/to/config.yml",
+        yaml,
+      ),
+    ),
+  ).toMatchInlineSnapshot(`
+    "Parsing of provider configuration failed
+
+    Caused by: Invalid provider configuration:
+      - must be equal to one of the allowed values (/permissions/rules/0/resources/0/selectedRepos/visibility)"
   `);
 });
 

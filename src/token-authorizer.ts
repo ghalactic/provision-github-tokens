@@ -21,11 +21,13 @@ import type {
 } from "./type/permissions-rule.js";
 import type { PermissionAccess, Permissions } from "./type/permissions.js";
 import type { ProviderPermissionsConfig } from "./type/provider-config.js";
-import {
-  type TokenAuthResourceResult,
-  type TokenAuthResourceResultRuleResult,
-  type TokenAuthResult,
+import type {
+  TokenAuthResourceResultRuleResult,
+  TokenAuthResourceResultWithVisibility,
+  TokenAuthResult,
 } from "./type/token-auth-result.js";
+import type { Visibility } from "./type/visibility.js";
+import { isVisibilityWithin } from "./visibility.js";
 
 export type TokenAuthorizer = {
   authorizeToken: (request: TokenRequest) => TokenAuthResult;
@@ -196,12 +198,15 @@ export function createTokenAuthorizer(
     const rules = rulesForConsumer(request.consumer);
     let isSufficient = true;
 
-    const resourceResults: Record<string, TokenAuthResourceResult> = {};
+    const resourceResults: Record<
+      string,
+      TokenAuthResourceResultWithVisibility
+    > = {};
 
     for (const reqRepo of request.repos) {
-      const reqResource = repoRefToString(
-        createRepoRef(request.tokenDec.account, reqRepo),
-      );
+      const ref = createRepoRef(request.tokenDec.account, reqRepo);
+      const reqResource = repoRefToString(ref);
+      const targetVisibility = repoRegistry.find(ref).visibility as Visibility;
       const ruleResults: TokenAuthResourceResultRuleResult[] = [];
       const have: Permissions = {};
       let isResourceSufficient = false;
@@ -211,10 +216,11 @@ export function createTokenAuthorizer(
         let isRelevant = false;
 
         for (let j = 0; j < rule.resources.length; ++j) {
-          const { accounts, repos } = resourcePatterns[i][j];
+          const { accounts, repos, visibility } = resourcePatterns[i][j];
           isRelevant =
             anyPatternMatches(accounts, request.tokenDec.account) &&
-            anyPatternMatches(repos, reqRepo);
+            anyPatternMatches(repos, reqRepo) &&
+            isVisibilityWithin(targetVisibility, visibility);
 
           if (isRelevant) break;
         }
@@ -247,6 +253,7 @@ export function createTokenAuthorizer(
         rules: ruleResults,
         have,
         isSufficient: isResourceSufficient,
+        visibility: targetVisibility,
       };
     }
 
@@ -329,11 +336,15 @@ export function createTokenAuthorizer(
     for (const pattern of criteria.accounts) {
       accounts.push(createNamePattern(pattern));
     }
-    for (const pattern of criteria.selectedRepos) {
+    for (const pattern of criteria.selectedRepos?.repos ?? []) {
       repos.push(createNamePattern(pattern));
     }
 
-    return { accounts, repos };
+    return {
+      accounts,
+      repos,
+      visibility: criteria.selectedRepos?.visibility ?? "private",
+    };
   }
 
   function rulesForConsumer(consumer: AccountOrRepoReference): number[] {
@@ -400,6 +411,7 @@ export function createTokenAuthorizer(
 type ResourceCriteriaPatterns = {
   accounts: Pattern[];
   repos: Pattern[];
+  visibility: Visibility;
 };
 
 type PermissionPatterns = {

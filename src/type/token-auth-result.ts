@@ -1,6 +1,7 @@
 import type { TokenRequest } from "../token-request.js";
 import type { PermissionsRule } from "./permissions-rule.js";
 import type { PermissionAccess, Permissions } from "./permissions.js";
+import type { Visibility } from "./visibility.js";
 
 export type TokenAuthResultExplainer<T> = (result: TokenAuthResult) => T;
 
@@ -17,7 +18,7 @@ export type TokenAuthResultNoRepos = TokenAuthResultCommon &
 
 export type TokenAuthResultSelectedRepos = TokenAuthResultCommon & {
   type: "SELECTED_REPOS";
-  results: Record<string, TokenAuthResourceResult>;
+  results: Record<string, TokenAuthResourceResultWithVisibility>;
   isMatched: boolean;
 };
 
@@ -25,6 +26,10 @@ export type TokenAuthResourceResult = {
   rules: TokenAuthResourceResultRuleResult[];
   have: Permissions;
   isSufficient: boolean;
+};
+
+export type TokenAuthResourceResultWithVisibility = TokenAuthResourceResult & {
+  visibility: Visibility;
 };
 
 export type TokenAuthResourceResultRuleResult = {

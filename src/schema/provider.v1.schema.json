@@ -116,6 +116,10 @@
                               "with-*-infix"
                             ]
                           }
+                        },
+                        "visibility": {
+                          "$ref": "#/definitions/visibility",
+                          "default": "private"
                         }
                       }
                     }
@@ -312,6 +316,11 @@
     }
   },
   "definitions": {
+    "visibility": {
+      "description": "A repo visibility level.",
+      "type": "string",
+      "enum": ["private", "internal", "public"]
+    },
     "provisionGithubAccountTarget": {
       "description": "Which types of secrets to allow provisioning to in a GitHub account.",
       "type": "object",

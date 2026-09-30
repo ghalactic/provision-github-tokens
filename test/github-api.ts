@@ -190,6 +190,20 @@ export function createTestInstallationRepos(
   }));
 }
 
+export function createTestRepo(
+  account: string,
+  name: string,
+  visibility: string,
+): InstallationRepo {
+  return {
+    ...sampleInstallationRepo,
+    name,
+    full_name: `${account}/${name}`,
+    owner: { ...sampleInstallationRepo.owner, login: account },
+    visibility,
+  };
+}
+
 export function createTestIssue(
   owner: string,
   repo: string,

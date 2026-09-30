@@ -42,7 +42,7 @@ permissions:
         - accounts: [account-a]
           noRepos: false
           allRepos: false
-          selectedRepos: { repos: [repo-a, repo-*] }
+          selectedRepos: { repos: [repo-a, repo-*], visibility: internal }
       consumers: ["*", "*/*"]
       permissions:
         contents: write

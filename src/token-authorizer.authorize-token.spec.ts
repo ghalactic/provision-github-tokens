@@ -1,7 +1,7 @@
 import { expect, it } from "vitest";
 import { createTestTokenDec } from "../test/declaration.js";
 import { throws } from "../test/error.js";
-import { createRepoRegistry } from "./repo-registry.js";
+import { createTestRepoRegistry } from "../test/repo-registry.js";
 import { createTextTokenAuthExplainer } from "./token-auth-explainer/text.js";
 import { createTokenAuthorizer } from "./token-authorizer.js";
 import type { TokenRequest } from "./token-request.js";
@@ -9,7 +9,7 @@ import type { TokenRequest } from "./token-request.js";
 const toText = createTextTokenAuthExplainer();
 
 it("supports wildcard account consumers", () => {
-  const authorizer = createTokenAuthorizer(createRepoRegistry(), {
+  const authorizer = createTokenAuthorizer(createTestRepoRegistry(), {
     rules: [
       {
         resources: [
@@ -17,7 +17,6 @@ it("supports wildcard account consumers", () => {
             accounts: ["account-a"],
             noRepos: false,
             allRepos: true,
-            selectedRepos: [],
           },
         ],
         consumers: ["account-*"],
@@ -59,7 +58,7 @@ it("supports wildcard account consumers", () => {
 });
 
 it("supports wildcard repo consumers", () => {
-  const authorizer = createTokenAuthorizer(createRepoRegistry(), {
+  const authorizer = createTokenAuthorizer(createTestRepoRegistry(), {
     rules: [
       {
         resources: [
@@ -67,7 +66,6 @@ it("supports wildcard repo consumers", () => {
             accounts: ["account-a"],
             noRepos: false,
             allRepos: true,
-            selectedRepos: [],
           },
         ],
         consumers: ["account-*/repo-*"],
@@ -109,22 +107,24 @@ it("supports wildcard repo consumers", () => {
 });
 
 it("re-uses the same result for the same request", () => {
-  const authorizer = createTokenAuthorizer(createRepoRegistry(), {
-    rules: [
-      {
-        resources: [
-          {
-            accounts: ["account-a"],
-            noRepos: false,
-            allRepos: true,
-            selectedRepos: [],
-          },
-        ],
-        consumers: ["account-x", "account-x/repo-x"],
-        permissions: { contents: "write", metadata: "read" },
-      },
-    ],
-  });
+  const authorizer = createTokenAuthorizer(
+    createTestRepoRegistry(["account-a", "repo-a"], ["account-a", "repo-b"]),
+    {
+      rules: [
+        {
+          resources: [
+            {
+              accounts: ["account-a"],
+              noRepos: false,
+              allRepos: true,
+            },
+          ],
+          consumers: ["account-x", "account-x/repo-x"],
+          permissions: { contents: "write", metadata: "read" },
+        },
+      ],
+    },
+  );
 
   const request: TokenRequest = {
     consumer: { account: "account-x" },
@@ -142,7 +142,7 @@ it("re-uses the same result for the same request", () => {
 });
 
 it("doesn't re-use results for different requests", () => {
-  const authorizer = createTokenAuthorizer(createRepoRegistry(), {
+  const authorizer = createTokenAuthorizer(createTestRepoRegistry(), {
     rules: [
       {
         resources: [
@@ -150,7 +150,6 @@ it("doesn't re-use results for different requests", () => {
             accounts: ["account-a"],
             noRepos: false,
             allRepos: true,
-            selectedRepos: [],
           },
         ],
         consumers: ["account-x", "account-x/repo-x"],
@@ -182,7 +181,9 @@ it("doesn't re-use results for different requests", () => {
 });
 
 it("rejects empty requested permissions", () => {
-  const authorizer = createTokenAuthorizer(createRepoRegistry(), { rules: [] });
+  const authorizer = createTokenAuthorizer(createTestRepoRegistry(), {
+    rules: [],
+  });
 
   expect(
     throws(() =>
@@ -235,7 +236,9 @@ it("rejects empty requested permissions", () => {
 });
 
 it('rejects requests where all permissions are "none"', () => {
-  const authorizer = createTokenAuthorizer(createRepoRegistry(), { rules: [] });
+  const authorizer = createTokenAuthorizer(createTestRepoRegistry(), {
+    rules: [],
+  });
 
   expect(
     throws(() =>

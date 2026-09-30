@@ -13,7 +13,6 @@ it("can list all processed results", () => {
             accounts: ["account-a"],
             noRepos: false,
             allRepos: true,
-            selectedRepos: [],
           },
         ],
         consumers: ["account-x", "account-x/repo-x"],

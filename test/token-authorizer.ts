@@ -17,7 +17,7 @@ export function createTestTokenAuthorizer(
             accounts: ["*"],
             noRepos: true,
             allRepos: true,
-            selectedRepos: ["*"],
+            selectedRepos: { repos: ["*"], visibility: "private" },
           },
         ],
         consumers: ["*", "*/*"],

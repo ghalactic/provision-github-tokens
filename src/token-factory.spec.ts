@@ -369,8 +369,18 @@ it("creates selected-repos tokens", async () => {
       repos: ["repo-a", "repo-b"],
     },
     results: {
-      "repo-a": { rules: [], have: { metadata: "read" }, isSufficient: true },
-      "repo-b": { rules: [], have: { metadata: "read" }, isSufficient: true },
+      "repo-a": {
+        rules: [],
+        have: { metadata: "read" },
+        isSufficient: true,
+        visibility: "private",
+      },
+      "repo-b": {
+        rules: [],
+        have: { metadata: "read" },
+        isSufficient: true,
+        visibility: "private",
+      },
     },
     isMatched: true,
   });
@@ -974,7 +984,12 @@ it("creates separate tokens when requested repository access is different", asyn
       repos: ["repo-a"],
     },
     results: {
-      "repo-a": { rules: [], have: { metadata: "read" }, isSufficient: true },
+      "repo-a": {
+        rules: [],
+        have: { metadata: "read" },
+        isSufficient: true,
+        visibility: "private",
+      },
     },
     isMatched: true,
   });
@@ -1312,7 +1327,12 @@ it("explains failures caused by GitHub API errors", async () => {
       repos: ["repo-a"],
     },
     results: {
-      "repo-a": { rules: [], have: { metadata: "read" }, isSufficient: true },
+      "repo-a": {
+        rules: [],
+        have: { metadata: "read" },
+        isSufficient: true,
+        visibility: "private",
+      },
     },
     isMatched: true,
   });

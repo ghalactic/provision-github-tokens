@@ -13,10 +13,7 @@ import type {
   PermissionsRule,
   PermissionsRuleResourceCriteria,
 } from "../type/permissions-rule.js";
-import type {
-  PartialProviderConfig,
-  ProviderConfig,
-} from "../type/provider-config.js";
+import type { ProviderConfig } from "../type/provider-config.js";
 import type {
   ProviderConfigGitHubRepoTarget,
   ProvisionSecretsRule,
@@ -54,7 +51,7 @@ export function parseProviderConfig(
   configPath: string,
   configYaml: string,
 ): ProviderConfig {
-  let config: PartialProviderConfig;
+  let config: ProviderConfig;
 
   try {
     config = validateProvider(
@@ -74,7 +71,7 @@ export function parseProviderConfig(
 
 function normalizeProviderConfig(
   definingRepo: RepoReference,
-  config: PartialProviderConfig,
+  config: ProviderConfig,
 ): ProviderConfig {
   const rules: PermissionsRule[] = [];
 
@@ -96,7 +93,12 @@ function normalizeProviderConfig(
         accounts,
         noRepos: criteria.noRepos,
         allRepos: criteria.allRepos,
-        selectedRepos: criteria.selectedRepos?.repos ?? [],
+        selectedRepos: criteria.selectedRepos
+          ? {
+              repos: criteria.selectedRepos.repos,
+              visibility: criteria.selectedRepos.visibility,
+            }
+          : undefined,
       });
     }
 
