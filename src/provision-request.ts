@@ -18,7 +18,7 @@ import type {
   SecretDeclarationGitHubRepoSecretTypes,
 } from "./type/secret-declaration.js";
 
-const SECRET_TYPES = ["actions", "codespaces", "dependabot"] as const;
+const SECRET_TYPES = ["actions", "agents", "codespaces", "dependabot"] as const;
 
 export type ProvisionRequest = {
   requester: RepoReference;
@@ -31,6 +31,7 @@ export type ProvisionRequest = {
 
 export type ProvisionRequestTarget =
   | GitHubActionsProvisionRequestTarget
+  | GitHubAgentsProvisionRequestTarget
   | GitHubCodespacesProvisionRequestTarget
   | GitHubDependabotProvisionRequestTarget
   | GitHubEnvironmentProvisionRequestTarget;
@@ -38,6 +39,12 @@ export type ProvisionRequestTarget =
 export type GitHubActionsProvisionRequestTarget = {
   platform: "github";
   type: "actions";
+  target: AccountOrRepoReference;
+};
+
+export type GitHubAgentsProvisionRequestTarget = {
+  platform: "github";
+  type: "agents";
   target: AccountOrRepoReference;
 };
 

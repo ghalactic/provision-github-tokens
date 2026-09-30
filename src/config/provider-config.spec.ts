@@ -430,6 +430,7 @@ it("reads comprehensive provider config", async () => {
                 accounts: {},
                 repo: {
                   actions: "allow",
+                  agents: "allow",
                   codespaces: "allow",
                   dependabot: "allow",
                   environments: {
@@ -449,6 +450,7 @@ it("reads comprehensive provider config", async () => {
               github: {
                 account: {
                   actions: "allow",
+                  agents: "allow",
                   codespaces: "allow",
                   dependabot: "allow",
                 },
@@ -517,10 +519,12 @@ it("reads comprehensive provider config", async () => {
                 },
                 repos: {
                   "account-self/repo-b": {
+                    agents: "allow",
                     codespaces: "allow",
                     environments: {},
                   },
                   "account-b/repo-c": {
+                    agents: "allow",
                     codespaces: "allow",
                     environments: {},
                   },
@@ -566,6 +570,7 @@ it("reads comprehensive provider config", async () => {
                 repos: {
                   "*/*": {
                     actions: "allow",
+                    agents: "allow",
                     codespaces: "allow",
                     dependabot: "allow",
                     environments: {
@@ -643,6 +648,7 @@ it("reads comprehensive provider config", async () => {
                 accounts: {
                   "*": {
                     actions: "deny",
+                    agents: "deny",
                     codespaces: "deny",
                     dependabot: "deny",
                   },
@@ -653,6 +659,7 @@ it("reads comprehensive provider config", async () => {
                 repos: {
                   "*/*": {
                     actions: "deny",
+                    agents: "deny",
                     codespaces: "deny",
                     dependabot: "deny",
                     environments: {
@@ -674,6 +681,7 @@ it("reads comprehensive provider config", async () => {
                 accounts: {},
                 repo: {
                   actions: "deny",
+                  agents: "deny",
                   codespaces: "deny",
                   dependabot: "deny",
                   environments: {
@@ -695,6 +703,7 @@ it("reads comprehensive provider config", async () => {
                 accounts: {},
                 repo: {
                   actions: "allow",
+                  agents: "deny",
                   codespaces: "deny",
                   dependabot: "allow",
                   environments: {

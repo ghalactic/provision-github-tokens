@@ -215,6 +215,10 @@
           "description": "Whether to provision to GitHub Actions secrets.",
           "type": "boolean"
         },
+        "agents": {
+          "description": "Whether to provision to GitHub Agents secrets.",
+          "type": "boolean"
+        },
         "codespaces": {
           "description": "Whether to provision to GitHub Codespaces secrets.",
           "type": "boolean"
@@ -231,6 +235,10 @@
       "properties": {
         "actions": {
           "description": "Whether to provision to GitHub Actions secrets.",
+          "type": "boolean"
+        },
+        "agents": {
+          "description": "Whether to provision to GitHub Agents secrets.",
           "type": "boolean"
         },
         "codespaces": {

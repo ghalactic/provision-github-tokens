@@ -274,6 +274,7 @@ it("can provision org-level Actions secrets", async () => {
 
   expect(__getOrgSecrets("account-a")).toEqual({
     actions: { SECRET_A: "<token-a>" },
+    agents: {},
     codespaces: {},
     dependabot: {},
   });
@@ -542,6 +543,7 @@ it("can provision repo-level Actions secrets", async () => {
 
   expect(__getRepoSecrets("account-a", "repo-a")).toEqual({
     actions: { SECRET_A: "<token-a>" },
+    agents: {},
     codespaces: {},
     dependabot: {},
   });

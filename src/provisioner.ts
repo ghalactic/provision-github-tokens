@@ -2,6 +2,7 @@ import { info, warning } from "@actions/core";
 import { RequestError } from "@octokit/request-error";
 import type { EncryptSecret } from "./encrypt-secret.js";
 import { isRepoRef } from "./github-reference.js";
+import { createAgentsOctokit } from "./octokit-agents.js";
 import type { Octokit } from "./octokit.js";
 import { createTextProvisionExplainer } from "./provision-explainer/text.js";
 import type { ProvisionRequestTarget } from "./provision-request.js";
@@ -151,6 +152,30 @@ export function createProvisioner(
         });
       } else {
         await octokit.rest.actions.createOrUpdateOrgSecret({
+          org: target.account,
+          secret_name: name,
+          encrypted_value: encrypted,
+          key_id: keyId,
+          visibility: "all",
+        });
+      }
+
+      return;
+    }
+
+    if (type === "agents") {
+      const agents = createAgentsOctokit(octokit);
+
+      if (isRepoRef(target)) {
+        await agents.createOrUpdateRepoSecret({
+          owner: target.account,
+          repo: target.repo,
+          secret_name: name,
+          encrypted_value: encrypted,
+          key_id: keyId,
+        });
+      } else {
+        await agents.createOrUpdateOrgSecret({
           org: target.account,
           secret_name: name,
           encrypted_value: encrypted,

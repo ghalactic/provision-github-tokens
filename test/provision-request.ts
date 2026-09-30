@@ -1,5 +1,6 @@
 import type {
   GitHubActionsProvisionRequestTarget,
+  GitHubAgentsProvisionRequestTarget,
   GitHubCodespacesProvisionRequestTarget,
   GitHubDependabotProvisionRequestTarget,
   GitHubEnvironmentProvisionRequestTarget,
@@ -27,6 +28,11 @@ export function createTestProvisionRequestTarget(
   account?: string,
   repo?: string,
 ): GitHubActionsProvisionRequestTarget;
+export function createTestProvisionRequestTarget(
+  type: "agents",
+  account?: string,
+  repo?: string,
+): GitHubAgentsProvisionRequestTarget;
 export function createTestProvisionRequestTarget(
   type: "codespaces",
   account?: string,

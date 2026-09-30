@@ -109,6 +109,7 @@ it("supports multiple targets in requests", async () => {
                 accounts: {
                   "account-a": {
                     actions: "allow",
+                    agents: "allow",
                     codespaces: "allow",
                   },
                 },
@@ -128,6 +129,7 @@ it("supports multiple targets in requests", async () => {
       secretDec: createTestSecretDec({ token: "account-y/repo-y.token-y" }),
       to: [
         createTestProvisionRequestTarget("actions"),
+        createTestProvisionRequestTarget("agents"),
         createTestProvisionRequestTarget("codespaces"),
       ],
     }),
@@ -140,6 +142,10 @@ it("supports multiple targets in requests", async () => {
     "✅ Repo account-x/repo-x was allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-y/repo-y.token-y
       ✅ Can provision token to GitHub Actions secret in account-a:
+        ✅ Account account-a was allowed access to token #1
+        ✅ Can provision secret based on 1 rule:
+          ✅ Allowed by rule #1
+      ✅ Can provision token to GitHub Agents secret in account-a:
         ✅ Account account-a was allowed access to token #1
         ✅ Can provision secret based on 1 rule:
           ✅ Allowed by rule #1
@@ -669,6 +675,7 @@ it("doesn't allow secrets when some targets aren't allowed", async () => {
                     actions: "allow",
                     codespaces: "deny",
                     dependabot: "allow",
+                    agents: "allow",
                   },
                 },
                 repo: { environments: {} },
@@ -687,6 +694,7 @@ it("doesn't allow secrets when some targets aren't allowed", async () => {
       secretDec: createTestSecretDec({ token: "account-y/repo-y.token-y" }),
       to: [
         createTestProvisionRequestTarget("actions"),
+        createTestProvisionRequestTarget("agents"),
         createTestProvisionRequestTarget("codespaces"),
         createTestProvisionRequestTarget("dependabot"),
       ],
@@ -700,6 +708,10 @@ it("doesn't allow secrets when some targets aren't allowed", async () => {
     "❌ Repo account-x/repo-x wasn't allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-y/repo-y.token-y
       ✅ Can provision token to GitHub Actions secret in account-a:
+        ✅ Account account-a was allowed access to token #1
+        ✅ Can provision secret based on 1 rule:
+          ✅ Allowed by rule #1
+      ✅ Can provision token to GitHub Agents secret in account-a:
         ✅ Account account-a was allowed access to token #1
         ✅ Can provision secret based on 1 rule:
           ✅ Allowed by rule #1

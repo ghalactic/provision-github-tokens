@@ -153,7 +153,7 @@ across your repositories.
   <dt>Secret type</dt>
   <dd>
     The kind of GitHub secret within a provision target:
-    <code>actions</code>, <code>codespaces</code>,
+    <code>actions</code>, <code>agents</code>, <code>codespaces</code>,
     <code>dependabot</code>, or <code>environment</code>.
   </dd>
 </dl>

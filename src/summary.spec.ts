@@ -864,6 +864,8 @@ it("renders a summary with missing targets", async () => {
 it("renders a summary with multiple distinct targets", async () => {
   const accountAActionsTarget = createTestProvisionRequestTarget("actions");
 
+  const accountAAgentsTarget = createTestProvisionRequestTarget("agents");
+
   const accountACodespacesTarget =
     createTestProvisionRequestTarget("codespaces");
 
@@ -893,6 +895,11 @@ it("renders a summary with multiple distinct targets", async () => {
   });
 
   const targetResultA2 = createTestProvisionAuthTargetResult({
+    target: accountAAgentsTarget,
+    tokenAuthResult: tokenAuthResultA,
+  });
+
+  const targetResultA3 = createTestProvisionAuthTargetResult({
     target: accountACodespacesTarget,
     tokenAuthResult: tokenAuthResultA,
   });
@@ -912,11 +919,12 @@ it("renders a summary with multiple distinct targets", async () => {
       }),
       to: [
         accountAActionsTarget,
+        accountAAgentsTarget,
         accountACodespacesTarget,
         accountBActionsTarget,
       ],
     }),
-    results: [targetResultA, targetResultA2, targetResultB],
+    results: [targetResultA, targetResultA2, targetResultA3, targetResultB],
   });
 
   const authResult: AuthorizeResult = {
@@ -943,6 +951,7 @@ it("renders a summary with multiple distinct targets", async () => {
       new Map<ProvisionAuthTargetResult, ProvisionResult>([
         [targetResultA, { type: "PROVISIONED" }],
         [targetResultA2, { type: "PROVISIONED" }],
+        [targetResultA3, { type: "PROVISIONED" }],
         [targetResultB, { type: "PROVISIONED" }],
       ]),
     ],

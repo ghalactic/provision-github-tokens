@@ -10,12 +10,14 @@ export type SecretDeclaration = {
 
 export type SecretDeclarationGitHubAccountSecretTypes = {
   actions?: boolean;
+  agents?: boolean;
   codespaces?: boolean;
   dependabot?: boolean;
 };
 
 export type SecretDeclarationGitHubRepoSecretTypes = {
   actions?: boolean;
+  agents?: boolean;
   codespaces?: boolean;
   dependabot?: boolean;
   environments: string[];

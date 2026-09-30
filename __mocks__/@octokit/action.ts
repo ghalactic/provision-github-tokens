@@ -30,12 +30,18 @@ let files: Record<string, Record<string, { content: string; sha: string }>>;
 let commits: Record<string, Commit[]>;
 let orgKeys: Record<
   string,
-  { actions?: TestKeyPair; codespaces?: TestKeyPair; dependabot?: TestKeyPair }
+  {
+    actions?: TestKeyPair;
+    agents?: TestKeyPair;
+    codespaces?: TestKeyPair;
+    dependabot?: TestKeyPair;
+  }
 >;
 let repoKeys: Record<
   string,
   {
     actions?: TestKeyPair;
+    agents?: TestKeyPair;
     codespaces?: TestKeyPair;
     dependabot?: TestKeyPair;
     environments: Record<string, TestKeyPair>;
@@ -46,6 +52,7 @@ let orgSecrets: Record<
   string,
   {
     actions: Record<string, string>;
+    agents: Record<string, string>;
     codespaces: Record<string, string>;
     dependabot: Record<string, string>;
   }
@@ -54,6 +61,7 @@ let repoSecrets: Record<
   string,
   {
     actions: Record<string, string>;
+    agents: Record<string, string>;
     codespaces: Record<string, string>;
     dependabot: Record<string, string>;
   }
@@ -123,6 +131,7 @@ export function __setOrgKeys(
   org: string,
   keys: {
     actions?: TestKeyPair;
+    agents?: TestKeyPair;
     codespaces?: TestKeyPair;
     dependabot?: TestKeyPair;
   },
@@ -135,11 +144,13 @@ export function __setRepoKeys(
   repo: string,
   {
     actions,
+    agents,
     codespaces,
     dependabot,
     environments = {},
   }: {
     actions?: TestKeyPair;
+    agents?: TestKeyPair;
     codespaces?: TestKeyPair;
     dependabot?: TestKeyPair;
     environments?: Record<string, TestKeyPair>;
@@ -147,6 +158,7 @@ export function __setRepoKeys(
 ) {
   repoKeys[`${owner}/${repo}`] = {
     actions,
+    agents,
     codespaces,
     dependabot,
     environments,
@@ -198,10 +210,42 @@ export function Octokit({
 }: {
   auth?: { appId?: number; privateKey?: string; installationId?: number };
 } = {}) {
+  const request = async (
+    route: string,
+    parameters?: Record<string, unknown>,
+  ) => {
+    switch (route) {
+      case "GET /orgs/{org}/agents/secrets/public-key":
+        return await getOrgPublicKey("agents", parameters as { org: string });
+
+      case "GET /repos/{owner}/{repo}/agents/secrets/public-key":
+        return await getRepoPublicKey(
+          "agents",
+          parameters as {
+            owner: string;
+            repo: string;
+          },
+        );
+
+      case "PUT /orgs/{org}/agents/secrets/{secret_name}":
+        return await createOrUpdateOrgSecret(
+          "agents",
+          parameters as Parameters<typeof createOrUpdateOrgSecret>[1],
+        );
+
+      case "PUT /repos/{owner}/{repo}/agents/secrets/{secret_name}":
+        return await createOrUpdateRepoSecret(
+          "agents",
+          parameters as Parameters<typeof createOrUpdateRepoSecret>[1],
+        );
+
+      default:
+        throw new Error(`Not implemented: ${route}`);
+    }
+  };
+
   return {
-    request: {
-      defaults: () => ({}),
-    },
+    request: Object.assign(request, { defaults: () => request }),
 
     paginate: {
       iterator: (endpoint: string, params?: object) => {
@@ -677,7 +721,7 @@ export function Octokit({
   };
 
   async function createOrUpdateOrgSecret(
-    secretType: "actions" | "codespaces" | "dependabot",
+    secretType: "actions" | "agents" | "codespaces" | "dependabot",
     {
       org,
       secret_name,
@@ -712,7 +756,12 @@ export function Octokit({
 
     try {
       const decrypted = await decrypt(key, encrypted_value);
-      orgSecrets[org] ??= { actions: {}, codespaces: {}, dependabot: {} };
+      orgSecrets[org] ??= {
+        actions: {},
+        agents: {},
+        codespaces: {},
+        dependabot: {},
+      };
       orgSecrets[org][secretType][secret_name] = decrypted;
     } catch {
       throw new TestRequestError(400);
@@ -720,7 +769,7 @@ export function Octokit({
   }
 
   async function createOrUpdateRepoSecret(
-    secretType: "actions" | "codespaces" | "dependabot",
+    secretType: "actions" | "agents" | "codespaces" | "dependabot",
     {
       owner,
       repo,
@@ -754,7 +803,12 @@ export function Octokit({
 
     try {
       const decrypted = await decrypt(key, encrypted_value);
-      repoSecrets[repoName] ??= { actions: {}, codespaces: {}, dependabot: {} };
+      repoSecrets[repoName] ??= {
+        actions: {},
+        agents: {},
+        codespaces: {},
+        dependabot: {},
+      };
       repoSecrets[repoName][secretType][secret_name] = decrypted;
     } catch {
       throw new TestRequestError(400);
@@ -762,7 +816,7 @@ export function Octokit({
   }
 
   async function getOrgPublicKey(
-    secretType: "actions" | "codespaces" | "dependabot",
+    secretType: "actions" | "agents" | "codespaces" | "dependabot",
     { org }: { org: string },
   ) {
     const endpoint = `${secretType}.getOrgPublicKey`;
@@ -781,7 +835,7 @@ export function Octokit({
   }
 
   async function getRepoPublicKey(
-    secretType: "actions" | "codespaces" | "dependabot",
+    secretType: "actions" | "agents" | "codespaces" | "dependabot",
     { owner, repo }: { owner: string; repo: string },
   ) {
     const endpoint = `${secretType}.getRepoPublicKey`;

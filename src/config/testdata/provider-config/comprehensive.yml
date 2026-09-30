@@ -251,6 +251,7 @@ provision:
           github:
             repo:
               actions: allow
+              agents: allow
               codespaces: allow
               dependabot: allow
               environments:
@@ -263,6 +264,7 @@ provision:
           github:
             account:
               actions: allow
+              agents: allow
               codespaces: allow
               dependabot: allow
 
@@ -293,8 +295,10 @@ provision:
           github:
             repos:
               ./repo-b:
+                agents: allow
                 codespaces: allow
               account-b/repo-c:
+                agents: allow
                 codespaces: allow
 
       - description: A specific repo can provision to specific secrets of specific environments in another repo
@@ -316,6 +320,7 @@ provision:
             repos:
               "*/*":
                 actions: allow
+                agents: allow
                 codespaces: allow
                 dependabot: allow
                 environments:
@@ -358,11 +363,13 @@ provision:
             accounts:
               "*":
                 actions: deny
+                agents: deny
                 codespaces: deny
                 dependabot: deny
             repos:
               "*/*":
                 actions: deny
+                agents: deny
                 codespaces: deny
                 dependabot: deny
                 environments:
@@ -375,6 +382,7 @@ provision:
           github:
             repo:
               actions: deny
+              agents: deny
               codespaces: deny
               dependabot: deny
               environments:
@@ -387,6 +395,7 @@ provision:
           github:
             repo:
               actions: allow
+              agents: deny
               codespaces: deny
               dependabot: allow
               environments:

@@ -131,11 +131,13 @@ it("sorts account targets by type", () => {
   const targets: ProvisionRequestTarget[] = [
     createTestProvisionRequestTarget("codespaces"),
     createTestProvisionRequestTarget("dependabot"),
+    createTestProvisionRequestTarget("agents"),
     createTestProvisionRequestTarget("actions"),
   ];
 
   expect(targets.toSorted(compareProvisionRequestTarget)).toEqual([
     createTestProvisionRequestTarget("actions"),
+    createTestProvisionRequestTarget("agents"),
     createTestProvisionRequestTarget("codespaces"),
     createTestProvisionRequestTarget("dependabot"),
   ]);
@@ -145,11 +147,13 @@ it("sorts repo targets by type", () => {
   const targets: ProvisionRequestTarget[] = [
     createTestProvisionRequestTarget("codespaces", "account-a", "repo-a"),
     createTestProvisionRequestTarget("dependabot", "account-a", "repo-a"),
+    createTestProvisionRequestTarget("agents", "account-a", "repo-a"),
     createTestProvisionRequestTarget("actions", "account-a", "repo-a"),
   ];
 
   expect(targets.toSorted(compareProvisionRequestTarget)).toEqual([
     createTestProvisionRequestTarget("actions", "account-a", "repo-a"),
+    createTestProvisionRequestTarget("agents", "account-a", "repo-a"),
     createTestProvisionRequestTarget("codespaces", "account-a", "repo-a"),
     createTestProvisionRequestTarget("dependabot", "account-a", "repo-a"),
   ]);

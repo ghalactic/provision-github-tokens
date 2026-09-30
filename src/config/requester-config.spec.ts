@@ -199,19 +199,26 @@ it("parses comprehensive requester config", async () => {
         TO_EVERYWHERE: {
           token: "other-account/repo.tokenC",
           github: {
-            account: { actions: true, codespaces: true, dependabot: true },
+            account: {
+              actions: true,
+              agents: true,
+              codespaces: true,
+              dependabot: true,
+            },
             accounts: {
               "account-a": {
                 actions: true,
               },
               "account-b": {
                 actions: true,
+                agents: true,
                 codespaces: true,
                 dependabot: true,
               },
             },
             repo: {
               actions: true,
+              agents: true,
               codespaces: true,
               dependabot: true,
               environments: ["env-a", "env-b"],
@@ -223,6 +230,7 @@ it("parses comprehensive requester config", async () => {
               },
               "account-a/repo-a": {
                 actions: true,
+                agents: true,
                 codespaces: true,
                 dependabot: true,
                 environments: ["env-a", "env-b"],
@@ -248,18 +256,21 @@ it("parses comprehensive requester config", async () => {
           github: {
             repo: {
               dependabot: false,
+              agents: false,
               codespaces: false,
               actions: false,
               environments: [],
             },
             account: {
               dependabot: false,
+              agents: false,
               codespaces: false,
               actions: false,
             },
             accounts: {
               "*": {
                 dependabot: false,
+                agents: false,
                 codespaces: false,
                 actions: false,
               },
@@ -267,6 +278,7 @@ it("parses comprehensive requester config", async () => {
             repos: {
               "*/*": {
                 dependabot: false,
+                agents: false,
                 codespaces: false,
                 actions: false,
                 environments: [],

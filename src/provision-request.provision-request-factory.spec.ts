@@ -118,18 +118,21 @@ it("supports provisioning to multiple targets", async () => {
           github: {
             account: {
               actions: true,
+              agents: true,
               codespaces: true,
               dependabot: true,
             },
             accounts: {
               "*": {
                 actions: true,
+                agents: true,
                 codespaces: true,
                 dependabot: true,
               },
             },
             repo: {
               actions: true,
+              agents: true,
               codespaces: true,
               dependabot: true,
               environments: ["*"],
@@ -137,6 +140,7 @@ it("supports provisioning to multiple targets", async () => {
             repos: {
               "*/*": {
                 actions: true,
+                agents: true,
                 codespaces: true,
                 dependabot: true,
                 environments: ["*"],
@@ -148,12 +152,15 @@ it("supports provisioning to multiple targets", async () => {
     )?.to,
   ).toStrictEqual([
     createTestProvisionRequestTarget("actions"),
+    createTestProvisionRequestTarget("agents"),
     createTestProvisionRequestTarget("codespaces"),
     createTestProvisionRequestTarget("dependabot"),
     createTestProvisionRequestTarget("actions", "account-b"),
+    createTestProvisionRequestTarget("agents", "account-b"),
     createTestProvisionRequestTarget("codespaces", "account-b"),
     createTestProvisionRequestTarget("dependabot", "account-b"),
     createTestProvisionRequestTarget("actions", "account-a", "repo-a"),
+    createTestProvisionRequestTarget("agents", "account-a", "repo-a"),
     createTestProvisionRequestTarget("codespaces", "account-a", "repo-a"),
     createTestProvisionRequestTarget("dependabot", "account-a", "repo-a"),
     createTestProvisionRequestTarget(
@@ -169,6 +176,7 @@ it("supports provisioning to multiple targets", async () => {
       "env-b",
     ),
     createTestProvisionRequestTarget("actions", "account-a", "repo-b"),
+    createTestProvisionRequestTarget("agents", "account-a", "repo-b"),
     createTestProvisionRequestTarget("codespaces", "account-a", "repo-b"),
     createTestProvisionRequestTarget("dependabot", "account-a", "repo-b"),
     createTestProvisionRequestTarget(
@@ -178,6 +186,7 @@ it("supports provisioning to multiple targets", async () => {
       "env-a",
     ),
     createTestProvisionRequestTarget("actions", "account-b", "repo-a"),
+    createTestProvisionRequestTarget("agents", "account-b", "repo-a"),
     createTestProvisionRequestTarget("codespaces", "account-b", "repo-a"),
     createTestProvisionRequestTarget("dependabot", "account-b", "repo-a"),
   ] satisfies ProvisionRequestTarget[]);

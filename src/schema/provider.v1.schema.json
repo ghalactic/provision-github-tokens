@@ -309,6 +309,11 @@
           "type": "string",
           "enum": ["allow", "deny"]
         },
+        "agents": {
+          "description": "Whether to allow provisioning to GitHub Agents secrets.",
+          "type": "string",
+          "enum": ["allow", "deny"]
+        },
         "codespaces": {
           "description": "Whether to allow provisioning to GitHub Codespaces secrets.",
           "type": "string",
@@ -327,6 +332,11 @@
       "properties": {
         "actions": {
           "description": "Whether to allow provisioning to GitHub Actions secrets.",
+          "type": "string",
+          "enum": ["allow", "deny"]
+        },
+        "agents": {
+          "description": "Whether to allow provisioning to GitHub Agents secrets.",
           "type": "string",
           "enum": ["allow", "deny"]
         },
