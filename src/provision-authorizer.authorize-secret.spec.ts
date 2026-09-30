@@ -129,8 +129,8 @@ it("supports multiple targets in requests", async () => {
       secretDec: createTestSecretDec({ token: "account-y/repo-y.token-y" }),
       to: [
         createTestProvisionRequestTarget("actions"),
-        createTestProvisionRequestTarget("codespaces"),
         createTestProvisionRequestTarget("agents"),
+        createTestProvisionRequestTarget("codespaces"),
       ],
     }),
   );
@@ -694,9 +694,9 @@ it("doesn't allow secrets when some targets aren't allowed", async () => {
       secretDec: createTestSecretDec({ token: "account-y/repo-y.token-y" }),
       to: [
         createTestProvisionRequestTarget("actions"),
+        createTestProvisionRequestTarget("agents"),
         createTestProvisionRequestTarget("codespaces"),
         createTestProvisionRequestTarget("dependabot"),
-        createTestProvisionRequestTarget("agents"),
       ],
     }),
   );
