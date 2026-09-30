@@ -9,6 +9,7 @@ import {
   type AppRegistration,
   type InstallationRegistration,
 } from "./app-registry.js";
+import { createRepoRegistry } from "./repo-registry.js";
 
 it("finds provisioners for accounts", () => {
   const [[orgA], [orgB]] = createTestInstallationAccounts(
@@ -43,7 +44,7 @@ it("finds provisioners for accounts", () => {
     repos: [],
   };
 
-  const appRegistry = createAppRegistry();
+  const appRegistry = createAppRegistry(createRepoRegistry());
   appRegistry.registerApp(appA);
   appRegistry.registerInstallation(appAInstallationA);
   appRegistry.registerApp(appB);
@@ -91,7 +92,7 @@ it("finds provisioners for repos", () => {
     repos: [repoB, repoC],
   };
 
-  const appRegistry = createAppRegistry();
+  const appRegistry = createAppRegistry(createRepoRegistry());
   appRegistry.registerApp(appA);
   appRegistry.registerInstallation(appAInstallationA);
   appRegistry.registerApp(appB);
@@ -132,7 +133,7 @@ it("finds provisioners for the correct account when there are multiple installat
     repos: [],
   };
 
-  const appRegistry = createAppRegistry();
+  const appRegistry = createAppRegistry(createRepoRegistry());
   appRegistry.registerApp(appA);
   appRegistry.registerInstallation(appAInstallationA);
   appRegistry.registerInstallation(appAInstallationB);
@@ -161,7 +162,7 @@ it("doesn't find provisioners for an unknown account", () => {
     repos: [],
   };
 
-  const appRegistry = createAppRegistry();
+  const appRegistry = createAppRegistry(createRepoRegistry());
   appRegistry.registerApp(appA);
   appRegistry.registerInstallation(appAInstallationA);
 
@@ -186,7 +187,7 @@ it("doesn't find provisioners from non-provisioner apps", () => {
     repos: [],
   };
 
-  const appRegistry = createAppRegistry();
+  const appRegistry = createAppRegistry(createRepoRegistry());
   appRegistry.registerApp(appA);
   appRegistry.registerInstallation(appAInstallationA);
 

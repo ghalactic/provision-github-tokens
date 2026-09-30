@@ -20,6 +20,7 @@ import { createAuthorizer, type AuthorizeResult } from "./authorizer.js";
 import { ValidateError } from "./config/validation.js";
 import { createProvisionAuthorizer } from "./provision-authorizer.js";
 import { createProvisionRequestFactory } from "./provision-request.js";
+import { createRepoRegistry } from "./repo-registry.js";
 import { createTokenAuthorizer } from "./token-authorizer.js";
 import { createTokenDeclarationRegistry } from "./token-declaration-registry.js";
 import type { TokenDeclaration } from "./token-declaration.js";
@@ -103,7 +104,9 @@ it("authorizes all requests and outputs the results", async () => {
       },
     ],
   };
-  const tokenAuthorizer = createTokenAuthorizer({ rules: [permissionsRuleA] });
+  const tokenAuthorizer = createTokenAuthorizer(createRepoRegistry(), {
+    rules: [permissionsRuleA],
+  });
 
   const secretsRuleA: ProvisionSecretsRule = {
     secrets: ["*"],
@@ -118,6 +121,7 @@ it("authorizes all requests and outputs the results", async () => {
     },
   };
   const provisionAuthorizer = createProvisionAuthorizer(
+    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     { rules: { secrets: [secretsRuleA] } },
@@ -320,7 +324,9 @@ it("handles empty token requests", async () => {
   );
   const createTokenRequest = createTestTokenRequestFactory();
 
-  const tokenAuthorizer = createTokenAuthorizer({ rules: [] });
+  const tokenAuthorizer = createTokenAuthorizer(createRepoRegistry(), {
+    rules: [],
+  });
 
   const secretsRuleA: ProvisionSecretsRule = {
     secrets: ["*"],
@@ -335,6 +341,7 @@ it("handles empty token requests", async () => {
     },
   };
   const provisionAuthorizer = createProvisionAuthorizer(
+    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     { rules: { secrets: [secretsRuleA] } },
@@ -420,8 +427,11 @@ it("handles empty provision requests", async () => {
     environmentResolver,
   );
   const createTokenRequest = createTestTokenRequestFactory();
-  const tokenAuthorizer = createTokenAuthorizer({ rules: [] });
+  const tokenAuthorizer = createTokenAuthorizer(createRepoRegistry(), {
+    rules: [],
+  });
   const provisionAuthorizer = createProvisionAuthorizer(
+    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     { rules: { secrets: [] } },
@@ -458,8 +468,11 @@ it("handles requester configs that can't be parsed", async () => {
     environmentResolver,
   );
   const createTokenRequest = createTestTokenRequestFactory();
-  const tokenAuthorizer = createTokenAuthorizer({ rules: [] });
+  const tokenAuthorizer = createTokenAuthorizer(createRepoRegistry(), {
+    rules: [],
+  });
   const provisionAuthorizer = createProvisionAuthorizer(
+    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     { rules: { secrets: [] } },

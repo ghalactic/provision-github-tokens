@@ -60333,7 +60333,7 @@ function effectivePermissions(permissions) {
 }
 
 // src/app-registry.ts
-function createAppRegistry() {
+function createAppRegistry(repoRegistry) {
   const apps = /* @__PURE__ */ new Map();
   const appsByInstallation = /* @__PURE__ */ new Map();
   const installations = /* @__PURE__ */ new Map();
@@ -60362,6 +60362,7 @@ function createAppRegistry() {
       const account = installationAccount(registration.installation);
       installations.set(registration.installation.id, registration);
       appsByInstallation.set(registration, appReg);
+      for (const r2 of registration.repos) repoRegistry.register(r2);
       if (appReg.issuer.enabled) {
         issuers.set(registration.installation.id, registration);
         issuerAccounts.add(account);
@@ -120051,7 +120052,7 @@ function createFindIssuerOctokit(octokitFactory, appRegistry, appsInput) {
 }
 
 // src/provision-authorizer.ts
-function createProvisionAuthorizer(createTokenRequest, tokenAuthorizer, config) {
+function createProvisionAuthorizer(repoRegistry, createTokenRequest, tokenAuthorizer, config) {
   const [namePatterns, targetPatterns, requesterPatterns] = patternsForRules(
     config.rules.secrets
   );
@@ -121714,6 +121715,30 @@ function registerTokenDeclarations(declarationRegistry, requesters) {
   }
 }
 
+// src/repo-registry.ts
+function createRepoRegistry() {
+  const repos = /* @__PURE__ */ new Map();
+  return {
+    register: (repo) => {
+      if (typeof repo.visibility !== "string") {
+        throw new Error(
+          `Invariant violation: Repo ${repo.full_name} doesn't have a visibility`
+        );
+      }
+      repos.set(repo.full_name, repo);
+    },
+    find: (reference) => {
+      const repo = repos.get(repoRefToString(reference));
+      if (!repo) {
+        throw new Error(
+          `Invariant violation: Repo ${repoRefToString(reference)} hasn't been registered`
+        );
+      }
+      return repo;
+    }
+  };
+}
+
 // src/summary.ts
 var LINK_REF_PREFIX = "gh/";
 var MAX_ROWS = 1e3;
@@ -121918,7 +121943,7 @@ function renderSummary(context, authResult, tokenCreationResults, provisionResul
 }
 
 // src/token-authorizer.ts
-function createTokenAuthorizer(config) {
+function createTokenAuthorizer(repoRegistry, config) {
   const [resourcePatterns, consumerPatterns, permissionPatterns] = patternsForRules(config.rules);
   const results = /* @__PURE__ */ new Map();
   return {
@@ -122433,7 +122458,8 @@ try {
   const config = await group("Reading config", async () => {
     return await readProviderConfig(context, octokitFactory);
   });
-  const appRegistry = createAppRegistry();
+  const repoRegistry = createRepoRegistry();
+  const appRegistry = createAppRegistry(repoRegistry);
   const findIssuerOctokit = createFindIssuerOctokit(
     octokitFactory,
     appRegistry,
@@ -122452,8 +122478,12 @@ try {
     environmentResolver
   );
   const createTokenRequest = createTokenRequestFactory(appRegistry);
-  const tokenAuthorizer = createTokenAuthorizer(config.permissions);
+  const tokenAuthorizer = createTokenAuthorizer(
+    repoRegistry,
+    config.permissions
+  );
   const provisionAuthorizer = createProvisionAuthorizer(
+    repoRegistry,
     createTokenRequest,
     tokenAuthorizer,
     config.provision
@@ -122524,6 +122554,8 @@ try {
 /* istanbul ignore next - parseRequesterConfig always throws with a cause - @preserve */
 /* istanbul ignore else - @preserve */
 /* istanbul ignore next - only called for requesters with a config error - @preserve */
+/* istanbul ignore next - never seen without a visibility - @preserve */
+/* istanbul ignore next - prevented by discovery - @preserve */
 /* istanbul ignore file - TODO: remove coverage ignore - @preserve */
 /*! Bundled license information:
 

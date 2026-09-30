@@ -10,6 +10,7 @@ import { toMarkdown } from "./markdown.js";
 import { createMarkdownProvisionAuthExplainer } from "./provision-auth-explainer/markdown.js";
 import { createTextProvisionAuthExplainer } from "./provision-auth-explainer/text.js";
 import { createProvisionAuthorizer } from "./provision-authorizer.js";
+import { createRepoRegistry } from "./repo-registry.js";
 
 const fixturesPath = join(
   import.meta.dirname,
@@ -20,6 +21,7 @@ it("allows GitHub Dependabot account secrets that should be allowed", async () =
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
+    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     {
@@ -93,6 +95,7 @@ it("allows GitHub Dependabot account secrets that should be allowed within the r
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
+    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     {
@@ -160,6 +163,7 @@ it("allows GitHub Dependabot account secrets that should be allowed within the r
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
+    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     {
@@ -214,6 +218,7 @@ it("allows GitHub Dependabot repo secrets that should be allowed", async () => {
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
+    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     {
@@ -297,6 +302,7 @@ it("allows GitHub Dependabot repo secrets that should be allowed within the requ
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
+    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     {
@@ -373,6 +379,7 @@ it("allows GitHub Dependabot repo secrets that should be allowed within the requ
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
+    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     {
@@ -454,6 +461,7 @@ it("doesn't allow GitHub Dependabot account secrets for unauthorized requesters"
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
+    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     {
@@ -506,6 +514,7 @@ it("doesn't allow GitHub Dependabot account secrets within the requesting accoun
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
+    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     {
@@ -588,6 +597,7 @@ it("doesn't allow GitHub Dependabot account secrets within the requesting accoun
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
+    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     {
@@ -642,6 +652,7 @@ it("doesn't allow GitHub Dependabot repo secrets for unauthorized requesters", a
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
+    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     {
@@ -697,6 +708,7 @@ it("doesn't allow GitHub Dependabot repo secrets within the requesting repo for 
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
+    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     {
@@ -786,6 +798,7 @@ it("doesn't allow GitHub Dependabot repo secrets within the requesting repo when
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
+    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     {

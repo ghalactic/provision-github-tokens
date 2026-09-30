@@ -3,11 +3,13 @@ import { createTestProvisionRequest } from "../test/provision-request.js";
 import { createTestTokenAuthorizer } from "../test/token-authorizer.js";
 import { createTestTokenRequestFactory } from "../test/token-request.js";
 import { createProvisionAuthorizer } from "./provision-authorizer.js";
+import { createRepoRegistry } from "./repo-registry.js";
 
 it("can list all processed requests and their results", () => {
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
+    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     {

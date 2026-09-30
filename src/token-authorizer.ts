@@ -13,6 +13,7 @@ import {
 import { createNamePattern } from "./name-pattern.js";
 import { anyPatternMatches, type Pattern } from "./pattern.js";
 import { isEmptyPermissions, isSufficientPermissions } from "./permissions.js";
+import type { RepoRegistry } from "./repo-registry.js";
 import { type TokenRequest } from "./token-request.js";
 import type {
   PermissionsRule,
@@ -32,6 +33,7 @@ export type TokenAuthorizer = {
 };
 
 export function createTokenAuthorizer(
+  repoRegistry: RepoRegistry,
   config: ProviderPermissionsConfig,
 ): TokenAuthorizer {
   const [resourcePatterns, consumerPatterns, permissionPatterns] =

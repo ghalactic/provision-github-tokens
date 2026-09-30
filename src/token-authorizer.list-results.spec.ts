@@ -1,10 +1,11 @@
 import { expect, it } from "vitest";
 import { createTestTokenDec } from "../test/declaration.js";
 import { createTestTokenRequestFactory } from "../test/token-request.js";
+import { createRepoRegistry } from "./repo-registry.js";
 import { createTokenAuthorizer } from "./token-authorizer.js";
 
 it("can list all processed results", () => {
-  const authorizer = createTokenAuthorizer({
+  const authorizer = createTokenAuthorizer(createRepoRegistry(), {
     rules: [
       {
         resources: [

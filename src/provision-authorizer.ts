@@ -8,6 +8,7 @@ import {
 import { createNamePattern } from "./name-pattern.js";
 import { anyPatternMatches, type Pattern } from "./pattern.js";
 import type { ProvisionRequest } from "./provision-request.js";
+import type { RepoRegistry } from "./repo-registry.js";
 import type { TokenAuthorizer } from "./token-authorizer.js";
 import type { TokenRequestFactory } from "./token-request.js";
 import type { ProviderProvisionConfig } from "./type/provider-config.js";
@@ -28,6 +29,7 @@ export type ProvisionAuthorizer = {
 };
 
 export function createProvisionAuthorizer(
+  repoRegistry: RepoRegistry,
   createTokenRequest: TokenRequestFactory,
   tokenAuthorizer: TokenAuthorizer,
   config: ProviderProvisionConfig,

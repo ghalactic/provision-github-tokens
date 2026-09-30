@@ -10,6 +10,7 @@ import {
   type InstallationRegistration,
 } from "./app-registry.js";
 import { createGitHubPattern } from "./github-pattern.js";
+import { createRepoRegistry } from "./repo-registry.js";
 
 it("resolves a list of repo patterns into a list of issuer-accessible repos", () => {
   const [[accountA, [repoA, repoB]], [accountB, [repoC, repoD]]] =
@@ -31,7 +32,7 @@ it("resolves a list of repo patterns into a list of issuer-accessible repos", ()
     repos: [repoC, repoD],
   };
 
-  const appRegistry = createAppRegistry();
+  const appRegistry = createAppRegistry(createRepoRegistry());
   appRegistry.registerApp(appA);
   appRegistry.registerInstallation(appAInstallationRegA);
   appRegistry.registerInstallation(appAInstallationRegB);
@@ -80,7 +81,7 @@ it("doesn't resolve repos accessible only to non-issuer apps", () => {
     repos: [repoB],
   };
 
-  const appRegistry = createAppRegistry();
+  const appRegistry = createAppRegistry(createRepoRegistry());
   appRegistry.registerApp(appA);
   appRegistry.registerInstallation(appAInstallationRegA);
   appRegistry.registerApp(appB);

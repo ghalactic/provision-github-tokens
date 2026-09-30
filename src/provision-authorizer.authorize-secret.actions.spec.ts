@@ -10,6 +10,7 @@ import { toMarkdown } from "./markdown.js";
 import { createMarkdownProvisionAuthExplainer } from "./provision-auth-explainer/markdown.js";
 import { createTextProvisionAuthExplainer } from "./provision-auth-explainer/text.js";
 import { createProvisionAuthorizer } from "./provision-authorizer.js";
+import { createRepoRegistry } from "./repo-registry.js";
 
 const fixturesPath = join(
   import.meta.dirname,
@@ -20,6 +21,7 @@ it("allows GitHub Actions account secrets that should be allowed", async () => {
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
+    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     {
@@ -92,6 +94,7 @@ it("allows GitHub Actions account secrets that should be allowed within the requ
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
+    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     {
@@ -155,6 +158,7 @@ it("allows GitHub Actions account secrets that should be allowed within the requ
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
+    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     {
@@ -205,6 +209,7 @@ it("allows GitHub Actions repo secrets that should be allowed", async () => {
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
+    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     {
@@ -282,6 +287,7 @@ it("allows GitHub Actions repo secrets that should be allowed within the request
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
+    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     {
@@ -352,6 +358,7 @@ it("allows GitHub Actions repo secrets that should be allowed within the request
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
+    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     {
@@ -427,6 +434,7 @@ it("doesn't allow GitHub Actions account secrets for unauthorized requesters", a
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
+    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     {
@@ -478,6 +486,7 @@ it("doesn't allow GitHub Actions account secrets within the requesting account f
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
+    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     {
@@ -560,6 +569,7 @@ it("doesn't allow GitHub Actions account secrets within the requesting account w
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
+    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     {
@@ -610,6 +620,7 @@ it("doesn't allow GitHub Actions repo secrets for unauthorized requesters", asyn
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
+    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     {
@@ -663,6 +674,7 @@ it("doesn't allow GitHub Actions repo secrets within the requesting repo for una
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
+    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     {
@@ -746,6 +758,7 @@ it("doesn't allow GitHub Actions repo secrets within the requesting repo when de
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
+    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     {

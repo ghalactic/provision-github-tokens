@@ -2,6 +2,7 @@ import { join } from "node:path";
 import { expect, it } from "vitest";
 import { createTestTokenDec } from "../test/declaration.js";
 import { toMarkdown } from "./markdown.js";
+import { createRepoRegistry } from "./repo-registry.js";
 import { createMarkdownTokenAuthExplainer } from "./token-auth-explainer/markdown.js";
 import { createTextTokenAuthExplainer } from "./token-auth-explainer/text.js";
 import { createTokenAuthorizer } from "./token-authorizer.js";
@@ -15,7 +16,7 @@ const toText = createTextTokenAuthExplainer();
 const toMdast = createMarkdownTokenAuthExplainer();
 
 it("allows tokens that should be allowed", async () => {
-  const authorizer = createTokenAuthorizer({
+  const authorizer = createTokenAuthorizer(createRepoRegistry(), {
     rules: [
       {
         resources: [
@@ -168,7 +169,7 @@ it("allows tokens that should be allowed", async () => {
 });
 
 it("allows tokens when allowed by a wildcard rule", async () => {
-  const authorizer = createTokenAuthorizer({
+  const authorizer = createTokenAuthorizer(createRepoRegistry(), {
     rules: [
       {
         resources: [
@@ -261,7 +262,7 @@ it("allows tokens when allowed by a wildcard rule", async () => {
 });
 
 it("allows tokens when the actual access level is higher than requested", async () => {
-  const authorizer = createTokenAuthorizer({
+  const authorizer = createTokenAuthorizer(createRepoRegistry(), {
     rules: [
       {
         resources: [
@@ -324,7 +325,7 @@ it("allows tokens when the actual access level is higher than requested", async 
 });
 
 it("allows tokens when a later rule allows access that a previous rule denied", async () => {
-  const authorizer = createTokenAuthorizer({
+  const authorizer = createTokenAuthorizer(createRepoRegistry(), {
     rules: [
       {
         resources: [
@@ -405,7 +406,7 @@ it("allows tokens when a later rule allows access that a previous rule denied", 
 });
 
 it("allows tokens when a later unrelated rule denies access to the requested permission", async () => {
-  const authorizer = createTokenAuthorizer({
+  const authorizer = createTokenAuthorizer(createRepoRegistry(), {
     rules: [
       {
         resources: [
@@ -492,7 +493,7 @@ it("allows tokens when a later unrelated rule denies access to the requested per
 });
 
 it("allows read-only tokens without a role", async () => {
-  const authorizer = createTokenAuthorizer({
+  const authorizer = createTokenAuthorizer(createRepoRegistry(), {
     rules: [
       {
         resources: [
@@ -553,7 +554,7 @@ it("allows read-only tokens without a role", async () => {
 });
 
 it("supports rule descriptions", async () => {
-  const authorizer = createTokenAuthorizer({
+  const authorizer = createTokenAuthorizer(createRepoRegistry(), {
     rules: [
       {
         description: "<description>",
@@ -607,7 +608,7 @@ it("supports rule descriptions", async () => {
 });
 
 it("sorts repos and permissions in the explanation", async () => {
-  const authorizer = createTokenAuthorizer({
+  const authorizer = createTokenAuthorizer(createRepoRegistry(), {
     rules: [
       {
         resources: [
@@ -678,7 +679,7 @@ it("sorts repos and permissions in the explanation", async () => {
 });
 
 it("doesn't allow tokens for unauthorized consumers", async () => {
-  const authorizer = createTokenAuthorizer({
+  const authorizer = createTokenAuthorizer(createRepoRegistry(), {
     rules: [
       {
         resources: [
@@ -755,7 +756,7 @@ it("doesn't allow tokens for unauthorized consumers", async () => {
 });
 
 it("doesn't allow tokens for unauthorized resource repos", async () => {
-  const authorizer = createTokenAuthorizer({
+  const authorizer = createTokenAuthorizer(createRepoRegistry(), {
     rules: [
       {
         resources: [
@@ -850,7 +851,7 @@ it("doesn't allow tokens for unauthorized resource repos", async () => {
 });
 
 it("doesn't allow tokens where only some of the resources are authorized", async () => {
-  const authorizer = createTokenAuthorizer({
+  const authorizer = createTokenAuthorizer(createRepoRegistry(), {
     rules: [
       {
         resources: [
@@ -919,7 +920,7 @@ it("doesn't allow tokens where only some of the resources are authorized", async
 });
 
 it("doesn't allow tokens for unauthorized permissions", async () => {
-  const authorizer = createTokenAuthorizer({
+  const authorizer = createTokenAuthorizer(createRepoRegistry(), {
     rules: [
       {
         resources: [
@@ -980,7 +981,7 @@ it("doesn't allow tokens for unauthorized permissions", async () => {
 });
 
 it("doesn't allow tokens where only some of the permissions are authorized", async () => {
-  const authorizer = createTokenAuthorizer({
+  const authorizer = createTokenAuthorizer(createRepoRegistry(), {
     rules: [
       {
         resources: [
@@ -1043,7 +1044,7 @@ it("doesn't allow tokens where only some of the permissions are authorized", asy
 });
 
 it("doesn't allow tokens that are denied by a wildcard rule", async () => {
-  const authorizer = createTokenAuthorizer({
+  const authorizer = createTokenAuthorizer(createRepoRegistry(), {
     rules: [
       {
         resources: [
@@ -1168,7 +1169,7 @@ it("doesn't allow tokens that are denied by a wildcard rule", async () => {
 });
 
 it("doesn't allow tokens when the actual access level is lower than requested", async () => {
-  const authorizer = createTokenAuthorizer({
+  const authorizer = createTokenAuthorizer(createRepoRegistry(), {
     rules: [
       {
         resources: [
@@ -1229,7 +1230,7 @@ it("doesn't allow tokens when the actual access level is lower than requested", 
 });
 
 it("doesn't allow tokens when a later rule denies access that a previous rule allowed", async () => {
-  const authorizer = createTokenAuthorizer({
+  const authorizer = createTokenAuthorizer(createRepoRegistry(), {
     rules: [
       {
         resources: [
@@ -1306,7 +1307,7 @@ it("doesn't allow tokens when a later rule denies access that a previous rule al
 });
 
 it("doesn't allow tokens when a later rule removes access that a previous rule allowed", async () => {
-  const authorizer = createTokenAuthorizer({
+  const authorizer = createTokenAuthorizer(createRepoRegistry(), {
     rules: [
       {
         resources: [
@@ -1383,7 +1384,7 @@ it("doesn't allow tokens when a later rule removes access that a previous rule a
 });
 
 it("doesn't allow write tokens if no role is specified", async () => {
-  const authorizer = createTokenAuthorizer({
+  const authorizer = createTokenAuthorizer(createRepoRegistry(), {
     rules: [
       {
         resources: [
@@ -1499,7 +1500,7 @@ it("doesn't allow write tokens if no role is specified", async () => {
 });
 
 it("doesn't allow tokens when no repos are matched by the declaration repo patterns", async () => {
-  const authorizer = createTokenAuthorizer({
+  const authorizer = createTokenAuthorizer(createRepoRegistry(), {
     rules: [
       {
         resources: [

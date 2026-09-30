@@ -14,6 +14,7 @@ import { toMarkdown } from "./markdown.js";
 import { createMarkdownProvisionAuthExplainer } from "./provision-auth-explainer/markdown.js";
 import { createTextProvisionAuthExplainer } from "./provision-auth-explainer/text.js";
 import { createProvisionAuthorizer } from "./provision-authorizer.js";
+import { createRepoRegistry } from "./repo-registry.js";
 
 const fixturesPath = join(
   import.meta.dirname,
@@ -24,6 +25,7 @@ it("supports multiple secrets per rule", async () => {
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
+    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     {
@@ -95,6 +97,7 @@ it("supports multiple targets in requests", async () => {
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
+    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     {
@@ -163,6 +166,7 @@ it("supports wildcards in secret names", async () => {
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
+    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     {
@@ -234,6 +238,7 @@ it("supports rule descriptions", async () => {
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
+    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     {
@@ -288,6 +293,7 @@ it("allows secrets when a later rule allows access that a previous rule denied",
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
+    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     {
@@ -387,6 +393,7 @@ it("doesn't allow secrets when a later rule denies access that a previous rule a
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
+    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     {
@@ -486,6 +493,7 @@ it("doesn't allow secrets when no rule matches the secret name", async () => {
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
+    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     {
@@ -544,6 +552,7 @@ it("doesn't allow secrets when two account patterns match but one allows and one
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
+    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     {
@@ -600,6 +609,7 @@ it("doesn't allow secrets when two repo patterns match but one allows and one de
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
+    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     {
@@ -659,6 +669,7 @@ it("doesn't allow secrets when some targets aren't allowed", async () => {
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
+    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     {
@@ -733,6 +744,7 @@ it("doesn't allow secrets when no targets are specified", async () => {
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
+    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     {
@@ -780,6 +792,7 @@ it("doesn't allow secrets when the token isn't allowed for a target", async () =
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({});
   const authorizer = createProvisionAuthorizer(
+    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     {
@@ -838,6 +851,7 @@ it("doesn't allow secrets for unshared token declarations", async () => {
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
+    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     {
@@ -893,6 +907,7 @@ it("doesn't allow secrets for undefined token declarations", async () => {
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
+    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     {
@@ -948,6 +963,7 @@ it("doesn't allow secrets when the account matches but the secret type isn't all
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
+    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     {

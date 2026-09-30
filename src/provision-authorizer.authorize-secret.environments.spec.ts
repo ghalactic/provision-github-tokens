@@ -10,6 +10,7 @@ import { toMarkdown } from "./markdown.js";
 import { createMarkdownProvisionAuthExplainer } from "./provision-auth-explainer/markdown.js";
 import { createTextProvisionAuthExplainer } from "./provision-auth-explainer/text.js";
 import { createProvisionAuthorizer } from "./provision-authorizer.js";
+import { createRepoRegistry } from "./repo-registry.js";
 
 const fixturesPath = join(
   import.meta.dirname,
@@ -20,6 +21,7 @@ it("allows GitHub environment secrets that should be allowed", async () => {
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
+    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     {
@@ -111,6 +113,7 @@ it("allows GitHub environment secrets that should be allowed within the requesti
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
+    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     {
@@ -195,6 +198,7 @@ it("allows GitHub environment secrets that should be allowed within the requesti
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
+    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     {
@@ -285,6 +289,7 @@ it("doesn't allow GitHub environment secrets for unauthorized requesters", async
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
+    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     {
@@ -346,6 +351,7 @@ it("doesn't allow GitHub environment secrets within the requesting repo for unau
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
+    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     {
@@ -486,6 +492,7 @@ it("doesn't allow GitHub environment secrets within the requesting repo when den
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
+    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     {
@@ -551,6 +558,7 @@ it("doesn't allow GitHub environment secrets when two environment patterns match
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
+    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     {
