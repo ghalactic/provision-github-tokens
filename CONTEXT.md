@@ -80,6 +80,10 @@ provision a secret to a given target.
 **Provision rule**: A provider-config rule controlling where requesters can
 provision secrets.
 
+**Repo visibility**: A repository's GitHub classification: `private`,
+`internal`, or `public`, ordered most to least restricted. A rule naming a
+visibility matches repos at or below that rank.
+
 **Repository scope**: The scope of a token request, one of three categories: all
 repos (a single permission set covering current and future repos), selected
 repos (every repo must be individually authorized), or no repos (account-level
