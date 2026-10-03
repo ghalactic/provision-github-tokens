@@ -7,8 +7,8 @@ import {
   createTestTokenDec,
 } from "../test/declaration.js";
 import {
+  createTestAccountProvisionRequestTarget,
   createTestProvisionRequest,
-  createTestProvisionRequestTarget,
 } from "../test/provision-request.js";
 import {
   createTestProvisionAuthResult,
@@ -35,7 +35,10 @@ import type { TokenCreationResult } from "./type/token-creation-result.js";
 const fixturesPath = join(import.meta.dirname, "testdata/dashboard");
 
 it("renders a failure dashboard for a secret that failed to create", async () => {
-  const accountAActionsTarget = createTestProvisionRequestTarget("actions");
+  const accountAActionsTarget = createTestAccountProvisionRequestTarget(
+    "actions",
+    "account-a",
+  );
 
   const tokenAuthResult = createTestTokenAuthResult({
     request: {
@@ -100,8 +103,11 @@ it("renders a failure dashboard for a secret that failed to create", async () =>
 });
 
 it("renders a failure dashboard with multiple secrets and request errors", async () => {
-  const accountAActionsTarget = createTestProvisionRequestTarget("actions");
-  const accountBActionsTarget = createTestProvisionRequestTarget(
+  const accountAActionsTarget = createTestAccountProvisionRequestTarget(
+    "actions",
+    "account-a",
+  );
+  const accountBActionsTarget = createTestAccountProvisionRequestTarget(
     "actions",
     "account-b",
   );
@@ -238,7 +244,10 @@ it("renders a config issue dashboard for root-level errors", async () => {
 });
 
 it("skips the token creation section for a token not created this run", async () => {
-  const accountAActionsTarget = createTestProvisionRequestTarget("actions");
+  const accountAActionsTarget = createTestAccountProvisionRequestTarget(
+    "actions",
+    "account-a",
+  );
 
   const tokenAuthResult = createTestTokenAuthResult({
     request: {
@@ -309,7 +318,10 @@ it("skips the token creation section for a token not created this run", async ()
 });
 
 it("omits the provision section for a secret missing from the provision results", async () => {
-  const accountAActionsTarget = createTestProvisionRequestTarget("actions");
+  const accountAActionsTarget = createTestAccountProvisionRequestTarget(
+    "actions",
+    "account-a",
+  );
 
   const tokenAuthResult = createTestTokenAuthResult({
     request: {
@@ -491,7 +503,10 @@ it("renders invalid YAML without parse errors", async () => {
 });
 
 it("omits token sections when authorization has no token result", () => {
-  const target = createTestProvisionRequestTarget("actions");
+  const target = createTestAccountProvisionRequestTarget(
+    "actions",
+    "account-a",
+  );
   const targetResult: ProvisionAuthTargetResult = {
     ...createTestProvisionAuthTargetResult({ target }),
     tokenAuthResult: undefined,

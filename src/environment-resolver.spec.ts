@@ -13,6 +13,7 @@ import {
   createTestInstallationAccounts,
 } from "../test/github-api.js";
 import { createTestOctokitFactory } from "../test/octokit-factory.js";
+import { createTestRepoRegistry } from "../test/repo-registry.js";
 import { createEnvironmentResolver } from "./environment-resolver.js";
 import { createNamePattern } from "./name-pattern.js";
 
@@ -38,7 +39,7 @@ it("resolves environment names for a repo", async () => {
     [[accountA, "selected"]],
   ]);
 
-  const appRegistry = createTestAppRegistry({
+  const appRegistry = createTestAppRegistry(createTestRepoRegistry(), {
     app: appA,
     provisioner: true,
     installations: [[appAInstallationA, [repoA]]],
@@ -97,7 +98,7 @@ it("throws if no provisioner is found", async () => {
     [[accountA, "selected"]],
   ]);
 
-  const appRegistry = createTestAppRegistry({
+  const appRegistry = createTestAppRegistry(createTestRepoRegistry(), {
     app: appA,
     issuer: [],
     installations: [[appAInstallationA, [repoA]]],

@@ -1,7 +1,7 @@
 import { expect, it } from "vitest";
 import {
+  createTestAccountProvisionRequestTarget,
   createTestProvisionRequest,
-  createTestProvisionRequestTarget,
 } from "../test/provision-request.js";
 import { compareProvisionRequest } from "./compare-provision-request.js";
 import type { RepoReference } from "./github-reference.js";
@@ -78,22 +78,22 @@ it("sorts requests by targets", () => {
   const requestA: ProvisionRequest = createTestProvisionRequest({
     ...common,
     to: [
-      createTestProvisionRequestTarget("actions", "account-b"),
-      createTestProvisionRequestTarget("actions", "account-c"),
-      createTestProvisionRequestTarget("actions"),
+      createTestAccountProvisionRequestTarget("actions", "account-b"),
+      createTestAccountProvisionRequestTarget("actions", "account-c"),
+      createTestAccountProvisionRequestTarget("actions", "account-a"),
     ],
   });
   const requestB: ProvisionRequest = createTestProvisionRequest({
     ...common,
     to: [
-      createTestProvisionRequestTarget("actions", "account-d"),
-      createTestProvisionRequestTarget("actions", "account-b"),
-      createTestProvisionRequestTarget("actions", "account-c"),
+      createTestAccountProvisionRequestTarget("actions", "account-d"),
+      createTestAccountProvisionRequestTarget("actions", "account-b"),
+      createTestAccountProvisionRequestTarget("actions", "account-c"),
     ],
   });
   const requestC: ProvisionRequest = createTestProvisionRequest({
     ...common,
-    to: [createTestProvisionRequestTarget("actions", "account-b")],
+    to: [createTestAccountProvisionRequestTarget("actions", "account-b")],
   });
 
   const requests: ProvisionRequest[] = [

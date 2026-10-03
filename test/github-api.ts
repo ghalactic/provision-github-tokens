@@ -14,6 +14,7 @@ import type {
   Issue,
 } from "../src/type/github-api.js";
 import type { Permissions } from "../src/type/permissions.js";
+import type { Visibility } from "../src/type/visibility.js";
 
 const sampleApp = openapiSampler.sample(
   openapi.schemas["api.github.com.deref"].paths["/app"].get.responses["200"]
@@ -144,7 +145,12 @@ export function createTestInstallationAccounts(
     type: "Organization" | "User",
     id: number,
     login: string,
-    repos?: (string | [name: string, environments: string[]])[],
+    repos?: (
+      | string
+      | [name: string]
+      | [name: string, environments: string[]]
+      | [name: string, environments: string[], visibility: Visibility]
+    )[],
   ][]
 ): [InstallationAccount, InstallationRepo[], Environment[][]][] {
   return specs.map(([type, id, login, repoSpecs = []]) => {
@@ -155,24 +161,30 @@ export function createTestInstallationAccounts(
       id,
     };
 
-    const repoNames: string[] = [];
-    const envsByRepo: Environment[][] = [];
+    const repoSpecsNormalized = repoSpecs.map((spec) =>
+      typeof spec === "string"
+        ? ([spec, [], "private"] as [string, string[], Visibility])
+        : ([spec[0], spec[1] ?? [], spec[2] ?? "private"] as [
+            string,
+            string[],
+            Visibility,
+          ]),
+    );
 
-    for (const repoNameOrSpec of repoSpecs) {
-      const [repoName, envNames] =
-        typeof repoNameOrSpec === "string"
-          ? [repoNameOrSpec, []]
-          : repoNameOrSpec;
-
-      repoNames.push(repoName);
-      envsByRepo.push(envNames.map((name) => ({ ...sampleEnvironment, name })));
-    }
+    const envsByRepo: Environment[][] = repoSpecsNormalized.map(
+      ([, envNames]) =>
+        envNames.map((name) => ({ ...sampleEnvironment, name })),
+    );
 
     return [
       account,
-      repoNames.length > 0
-        ? createTestInstallationRepos(account, ...repoNames)
-        : [],
+      createTestInstallationRepos(
+        account,
+        ...repoSpecsNormalized.map(
+          ([repoName, , visibility]) =>
+            [repoName, visibility] as [string, Visibility],
+        ),
+      ),
       envsByRepo,
     ];
   });
@@ -180,13 +192,14 @@ export function createTestInstallationAccounts(
 
 export function createTestInstallationRepos(
   account: InstallationAccount,
-  ...names: string[]
+  ...repos: [name: string, visibility: Visibility][]
 ): InstallationRepo[] {
-  return names.map((name) => ({
+  return repos.map(([name, visibility]) => ({
     ...sampleInstallationRepo,
     name,
     full_name: `${account.login}/${name}`,
     owner: { ...sampleInstallationRepo.owner, login: account.login },
+    visibility,
   }));
 }
 

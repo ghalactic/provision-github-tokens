@@ -12,9 +12,11 @@ import {
   createTestInstallationAccounts,
 } from "../test/github-api.js";
 import {
+  createTestAccountProvisionRequestTarget,
   createTestProvisionRequest,
-  createTestProvisionRequestTarget,
+  createTestRepoProvisionRequestTarget,
 } from "../test/provision-request.js";
+import { createTestRepoRegistry } from "../test/repo-registry.js";
 import { createTestTokenRequestFactory } from "../test/token-request.js";
 import { createAuthorizer, type AuthorizeResult } from "./authorizer.js";
 import { ValidateError } from "./config/validation.js";
@@ -77,7 +79,8 @@ it("authorizes all requests and outputs the results", async () => {
     tokenDecB,
   );
 
-  const appRegistry = createTestAppRegistry({
+  const repoRegistry = createTestRepoRegistry();
+  const appRegistry = createTestAppRegistry(repoRegistry, {
     app: appA,
     issuer: [],
     provisioner: true,
@@ -88,6 +91,7 @@ it("authorizes all requests and outputs the results", async () => {
   const createProvisionRequest = createProvisionRequestFactory(
     declarationRegistry,
     appRegistry,
+    repoRegistry,
     environmentResolver,
   );
   const createTokenRequest = createTestTokenRequestFactory();
@@ -115,13 +119,17 @@ it("authorizes all requests and outputs the results", async () => {
       github: {
         account: { types: {} },
         accounts: { "*": { types: { actions: "allow" } } },
-        repo: { types: { environments: {} } },
-        repos: { "*/*": { types: { actions: "allow", environments: {} } } },
+        repo: { visibility: "private", types: { environments: {} } },
+        repos: {
+          "*/*": {
+            visibility: "private",
+            types: { actions: "allow", environments: {} },
+          },
+        },
       },
     },
   };
   const provisionAuthorizer = createProvisionAuthorizer(
-    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     { rules: { secrets: [secretsRuleA] } },
@@ -214,7 +222,10 @@ it("authorizes all requests and outputs the results", async () => {
         }),
         results: [
           {
-            target: createTestProvisionRequestTarget("actions"),
+            target: createTestAccountProvisionRequestTarget(
+              "actions",
+              "account-a",
+            ),
             have: "allow",
             isAllowed: true,
             isProvisionAllowed: true,
@@ -231,16 +242,22 @@ it("authorizes all requests and outputs the results", async () => {
           name: "SECRET_B",
           secretDec: secretDecB,
           to: [
-            createTestProvisionRequestTarget("actions", "account-a", "repo-a"),
+            createTestRepoProvisionRequestTarget(
+              "actions",
+              "account-a",
+              "repo-a",
+              "private",
+            ),
           ],
           tokenDec: tokenDecB,
         }),
         results: [
           {
-            target: createTestProvisionRequestTarget(
+            target: createTestRepoProvisionRequestTarget(
               "actions",
               "account-a",
               "repo-a",
+              "private",
             ),
             have: "allow",
             isAllowed: true,
@@ -260,7 +277,7 @@ it("authorizes all requests and outputs the results", async () => {
 
     ✅ Repo account-a/repo-a was allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
-      ✅ Can provision token to GitHub Actions secret in account-a:
+      ✅ Can provision token to GitHub Actions secret in account account-a:
         ✅ Account account-a was allowed access to token #1
         ✅ Can provision secret based on 1 rule:
           ✅ Allowed by rule #1
@@ -269,7 +286,7 @@ it("authorizes all requests and outputs the results", async () => {
 
     ✅ Repo account-a/repo-a was allowed to provision secret SECRET_B:
       ✅ Can use token declaration account-a/repo-a.tokenB
-      ✅ Can provision token to GitHub Actions secret in account-a/repo-a:
+      ✅ Can provision token to GitHub Actions secret in private repo account-a/repo-a:
         ✅ Repo account-a/repo-a was allowed access to token #2
         ✅ Can provision secret based on 1 rule:
           ✅ Allowed by rule #1
@@ -309,7 +326,8 @@ it("handles empty token requests", async () => {
 
   const declarationRegistry = createTokenDeclarationRegistry();
 
-  const appRegistry = createTestAppRegistry({
+  const repoRegistry = createTestRepoRegistry();
+  const appRegistry = createTestAppRegistry(repoRegistry, {
     app: appA,
     issuer: [],
     provisioner: true,
@@ -320,6 +338,7 @@ it("handles empty token requests", async () => {
   const createProvisionRequest = createProvisionRequestFactory(
     declarationRegistry,
     appRegistry,
+    repoRegistry,
     environmentResolver,
   );
   const createTokenRequest = createTestTokenRequestFactory();
@@ -335,13 +354,17 @@ it("handles empty token requests", async () => {
       github: {
         account: { types: {} },
         accounts: { "*": { types: { actions: "allow" } } },
-        repo: { types: { environments: {} } },
-        repos: { "*/*": { types: { actions: "allow", environments: {} } } },
+        repo: { visibility: "private", types: { environments: {} } },
+        repos: {
+          "*/*": {
+            visibility: "private",
+            types: { actions: "allow", environments: {} },
+          },
+        },
       },
     },
   };
   const provisionAuthorizer = createProvisionAuthorizer(
-    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     { rules: { secrets: [secretsRuleA] } },
@@ -387,7 +410,10 @@ it("handles empty token requests", async () => {
         }),
         results: [
           {
-            target: createTestProvisionRequestTarget("actions"),
+            target: createTestAccountProvisionRequestTarget(
+              "actions",
+              "account-a",
+            ),
             have: "allow",
             isAllowed: false,
             isProvisionAllowed: true,
@@ -406,7 +432,7 @@ it("handles empty token requests", async () => {
 
     ❌ Repo account-a/repo-a wasn't allowed to provision secret SECRET_A:
       ❌ Can't use token declaration account-a/repo-a.tokenA because it doesn't exist
-      ❌ Can't provision token to GitHub Actions secret in account-a:
+      ❌ Can't provision token to GitHub Actions secret in account account-a:
         ❌ Token can't be authorized without a declaration
         ✅ Can provision secret based on 1 rule:
           ✅ Allowed by rule #1
@@ -419,11 +445,13 @@ it("handles empty token requests", async () => {
 
 it("handles empty provision requests", async () => {
   const declarationRegistry = createTokenDeclarationRegistry();
-  const appRegistry = createTestAppRegistry();
+  const repoRegistry = createTestRepoRegistry();
+  const appRegistry = createTestAppRegistry(repoRegistry);
   const environmentResolver = createTestEnvironmentResolver();
   const createProvisionRequest = createProvisionRequestFactory(
     declarationRegistry,
     appRegistry,
+    repoRegistry,
     environmentResolver,
   );
   const createTokenRequest = createTestTokenRequestFactory();
@@ -431,7 +459,6 @@ it("handles empty provision requests", async () => {
     rules: [],
   });
   const provisionAuthorizer = createProvisionAuthorizer(
-    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     { rules: { secrets: [] } },
@@ -460,11 +487,13 @@ it("handles empty provision requests", async () => {
 
 it("handles requester configs that can't be parsed", async () => {
   const declarationRegistry = createTokenDeclarationRegistry();
-  const appRegistry = createTestAppRegistry();
+  const repoRegistry = createTestRepoRegistry();
+  const appRegistry = createTestAppRegistry(repoRegistry);
   const environmentResolver = createTestEnvironmentResolver();
   const createProvisionRequest = createProvisionRequestFactory(
     declarationRegistry,
     appRegistry,
+    repoRegistry,
     environmentResolver,
   );
   const createTokenRequest = createTestTokenRequestFactory();
@@ -472,7 +501,6 @@ it("handles requester configs that can't be parsed", async () => {
     rules: [],
   });
   const provisionAuthorizer = createProvisionAuthorizer(
-    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     { rules: { secrets: [] } },

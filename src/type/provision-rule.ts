@@ -1,3 +1,5 @@
+import type { Visibility } from "./visibility.js";
+
 export type ProvisionSecretsRule = {
   description?: string;
   secrets: string[];
@@ -17,6 +19,7 @@ export type ProviderConfigGitHubAccountTarget = {
 };
 
 export type ProviderConfigGitHubRepoTarget = {
+  visibility: Visibility;
   types: ProviderConfigGitHubRepoSecretTypes;
 };
 

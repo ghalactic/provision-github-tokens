@@ -9,7 +9,8 @@ import {
   createTestApps,
   createTestInstallationAccounts,
 } from "../test/github-api.js";
-import { createTestProvisionRequestTarget } from "../test/provision-request.js";
+import { createTestEnvironmentProvisionRequestTarget } from "../test/provision-request.js";
+import { createTestRepoRegistry } from "../test/repo-registry.js";
 import { type RepoReference } from "./github-reference.js";
 import {
   createProvisionRequestFactory,
@@ -25,11 +26,28 @@ it("supports self-repo environment targets", async () => {
   const repoA: RepoReference = { account: "account-a", repo: "repo-a" };
 
   const declarationRegistry = createTokenDeclarationRegistry();
-  const appRegistry = createTestAppRegistry();
+  const [[accountA, reposA]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "account-a",
+    ["repo-a"],
+  ]);
+  const [[appA, [appAInstallationA]]] = createTestApps([
+    "App A",
+    {},
+    [[accountA, "selected"]],
+  ]);
+  const repoRegistry = createTestRepoRegistry();
+  const appRegistry = createTestAppRegistry(repoRegistry, {
+    app: appA,
+    provisioner: true,
+    installations: [[appAInstallationA, reposA]],
+  });
   const environmentResolver = createTestEnvironmentResolver();
   const createProvisionRequest = createProvisionRequestFactory(
     declarationRegistry,
     appRegistry,
+    repoRegistry,
     environmentResolver,
   );
 
@@ -55,23 +73,23 @@ it("supports self-repo environment targets", async () => {
       )
     )?.to,
   ).toStrictEqual([
-    createTestProvisionRequestTarget(
-      "environment",
+    createTestEnvironmentProvisionRequestTarget(
       "account-a",
       "repo-a",
       "env-a-1",
+      "private",
     ),
-    createTestProvisionRequestTarget(
-      "environment",
+    createTestEnvironmentProvisionRequestTarget(
       "account-a",
       "repo-a",
       "env-a-2",
+      "private",
     ),
-    createTestProvisionRequestTarget(
-      "environment",
+    createTestEnvironmentProvisionRequestTarget(
       "account-a",
       "repo-a",
       "env-b",
+      "private",
     ),
   ] satisfies ProvisionRequestTarget[]);
 });
@@ -80,11 +98,28 @@ it("doesn't match the same environment twice for self-repos", async () => {
   const repoA: RepoReference = { account: "account-a", repo: "repo-a" };
 
   const declarationRegistry = createTokenDeclarationRegistry();
-  const appRegistry = createTestAppRegistry();
+  const [[accountA, reposA]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "account-a",
+    ["repo-a"],
+  ]);
+  const [[appA, [appAInstallationA]]] = createTestApps([
+    "App A",
+    {},
+    [[accountA, "selected"]],
+  ]);
+  const repoRegistry = createTestRepoRegistry();
+  const appRegistry = createTestAppRegistry(repoRegistry, {
+    app: appA,
+    provisioner: true,
+    installations: [[appAInstallationA, reposA]],
+  });
   const environmentResolver = createTestEnvironmentResolver();
   const createProvisionRequest = createProvisionRequestFactory(
     declarationRegistry,
     appRegistry,
+    repoRegistry,
     environmentResolver,
   );
 
@@ -105,17 +140,17 @@ it("doesn't match the same environment twice for self-repos", async () => {
       )
     )?.to,
   ).toStrictEqual([
-    createTestProvisionRequestTarget(
-      "environment",
+    createTestEnvironmentProvisionRequestTarget(
       "account-a",
       "repo-a",
       "env-a",
+      "private",
     ),
-    createTestProvisionRequestTarget(
-      "environment",
+    createTestEnvironmentProvisionRequestTarget(
       "account-a",
       "repo-a",
       "env-b",
+      "private",
     ),
   ] satisfies ProvisionRequestTarget[]);
 });
@@ -141,7 +176,8 @@ it("supports pattern-matched repo environment targets", async () => {
     [[accountA, "selected"]],
   ]);
 
-  const appRegistry = createTestAppRegistry({
+  const repoRegistry = createTestRepoRegistry();
+  const appRegistry = createTestAppRegistry(repoRegistry, {
     app: appA,
     provisioner: true,
     installations: [[appAInstallationA, [repoA]]],
@@ -150,6 +186,7 @@ it("supports pattern-matched repo environment targets", async () => {
   const createProvisionRequest = createProvisionRequestFactory(
     declarationRegistry,
     appRegistry,
+    repoRegistry,
     environmentResolver,
   );
 
@@ -176,23 +213,23 @@ it("supports pattern-matched repo environment targets", async () => {
       )
     )?.to,
   ).toStrictEqual([
-    createTestProvisionRequestTarget(
-      "environment",
+    createTestEnvironmentProvisionRequestTarget(
       "account-a",
       "repo-a",
       "env-a-1",
+      "private",
     ),
-    createTestProvisionRequestTarget(
-      "environment",
+    createTestEnvironmentProvisionRequestTarget(
       "account-a",
       "repo-a",
       "env-a-2",
+      "private",
     ),
-    createTestProvisionRequestTarget(
-      "environment",
+    createTestEnvironmentProvisionRequestTarget(
       "account-a",
       "repo-a",
       "env-b",
+      "private",
     ),
   ] satisfies ProvisionRequestTarget[]);
 });
@@ -218,7 +255,8 @@ it("doesn't match the same environment twice for pattern-matched repos", async (
     [[accountA, "selected"]],
   ]);
 
-  const appRegistry = createTestAppRegistry({
+  const repoRegistry = createTestRepoRegistry();
+  const appRegistry = createTestAppRegistry(repoRegistry, {
     app: appA,
     provisioner: true,
     installations: [[appAInstallationA, [repoA]]],
@@ -227,6 +265,7 @@ it("doesn't match the same environment twice for pattern-matched repos", async (
   const createProvisionRequest = createProvisionRequestFactory(
     declarationRegistry,
     appRegistry,
+    repoRegistry,
     environmentResolver,
   );
 
@@ -249,17 +288,17 @@ it("doesn't match the same environment twice for pattern-matched repos", async (
       )
     )?.to,
   ).toStrictEqual([
-    createTestProvisionRequestTarget(
-      "environment",
+    createTestEnvironmentProvisionRequestTarget(
       "account-a",
       "repo-a",
       "env-a",
+      "private",
     ),
-    createTestProvisionRequestTarget(
-      "environment",
+    createTestEnvironmentProvisionRequestTarget(
       "account-a",
       "repo-a",
       "env-b",
+      "private",
     ),
   ] satisfies ProvisionRequestTarget[]);
 });
@@ -285,7 +324,8 @@ it("doesn't enable an environment target for a repo unless all matching repo pat
     [[accountA, "selected"]],
   ]);
 
-  const appRegistry = createTestAppRegistry({
+  const repoRegistry = createTestRepoRegistry();
+  const appRegistry = createTestAppRegistry(repoRegistry, {
     app: appA,
     provisioner: true,
     installations: [[appAInstallationA, [repoA]]],
@@ -294,6 +334,7 @@ it("doesn't enable an environment target for a repo unless all matching repo pat
   const createProvisionRequest = createProvisionRequestFactory(
     declarationRegistry,
     appRegistry,
+    repoRegistry,
     environmentResolver,
   );
 
@@ -321,17 +362,17 @@ it("doesn't enable an environment target for a repo unless all matching repo pat
       )
     )?.to,
   ).toStrictEqual([
-    createTestProvisionRequestTarget(
-      "environment",
+    createTestEnvironmentProvisionRequestTarget(
       "account-a",
       "repo-a",
       "env-b",
+      "private",
     ),
-    createTestProvisionRequestTarget(
-      "environment",
+    createTestEnvironmentProvisionRequestTarget(
       "account-a",
       "repo-a",
       "env-c",
+      "private",
     ),
   ] satisfies ProvisionRequestTarget[]);
 });
@@ -358,7 +399,8 @@ it("combines self-repo environment targets with pattern-matched repo environment
     [[accountA, "selected"]],
   ]);
 
-  const appRegistry = createTestAppRegistry({
+  const repoRegistry = createTestRepoRegistry();
+  const appRegistry = createTestAppRegistry(repoRegistry, {
     app: appA,
     provisioner: true,
     installations: [[appAInstallationA, [repoA, repoB]]],
@@ -367,6 +409,7 @@ it("combines self-repo environment targets with pattern-matched repo environment
   const createProvisionRequest = createProvisionRequestFactory(
     declarationRegistry,
     appRegistry,
+    repoRegistry,
     environmentResolver,
   );
 
@@ -398,35 +441,35 @@ it("combines self-repo environment targets with pattern-matched repo environment
       )
     )?.to,
   ).toStrictEqual([
-    createTestProvisionRequestTarget(
-      "environment",
+    createTestEnvironmentProvisionRequestTarget(
       "account-a",
       "repo-a",
       "env-b",
+      "private",
     ),
-    createTestProvisionRequestTarget(
-      "environment",
+    createTestEnvironmentProvisionRequestTarget(
       "account-a",
       "repo-a",
       "env-c",
+      "private",
     ),
-    createTestProvisionRequestTarget(
-      "environment",
+    createTestEnvironmentProvisionRequestTarget(
       "account-a",
       "repo-a",
       "env-a",
+      "private",
     ),
-    createTestProvisionRequestTarget(
-      "environment",
+    createTestEnvironmentProvisionRequestTarget(
       "account-a",
       "repo-b",
       "env-b",
+      "private",
     ),
-    createTestProvisionRequestTarget(
-      "environment",
+    createTestEnvironmentProvisionRequestTarget(
       "account-a",
       "repo-b",
       "env-c",
+      "private",
     ),
   ] satisfies ProvisionRequestTarget[]);
 });

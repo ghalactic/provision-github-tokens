@@ -9,7 +9,8 @@ import {
   createTestApps,
   createTestInstallationAccounts,
 } from "../test/github-api.js";
-import { createTestProvisionRequestTarget } from "../test/provision-request.js";
+import { createTestAccountProvisionRequestTarget } from "../test/provision-request.js";
+import { createTestRepoRegistry } from "../test/repo-registry.js";
 import { type RepoReference } from "./github-reference.js";
 import {
   createProvisionRequestFactory,
@@ -25,11 +26,28 @@ it("supports self-account targets", async () => {
   const repoA: RepoReference = { account: "account-a", repo: "repo-a" };
 
   const declarationRegistry = createTokenDeclarationRegistry();
-  const appRegistry = createTestAppRegistry();
+  const [[accountA, reposA]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "account-a",
+    ["repo-a"],
+  ]);
+  const [[appA, [appAInstallationA]]] = createTestApps([
+    "App A",
+    {},
+    [[accountA, "selected"]],
+  ]);
+  const repoRegistry = createTestRepoRegistry();
+  const appRegistry = createTestAppRegistry(repoRegistry, {
+    app: appA,
+    provisioner: true,
+    installations: [[appAInstallationA, reposA]],
+  });
   const environmentResolver = createTestEnvironmentResolver();
   const createProvisionRequest = createProvisionRequestFactory(
     declarationRegistry,
     appRegistry,
+    repoRegistry,
     environmentResolver,
   );
 
@@ -48,7 +66,7 @@ it("supports self-account targets", async () => {
       )
     )?.to,
   ).toStrictEqual([
-    createTestProvisionRequestTarget("actions"),
+    createTestAccountProvisionRequestTarget("actions", "account-a"),
   ] satisfies ProvisionRequestTarget[]);
 
   expect(
@@ -63,7 +81,7 @@ it("supports self-account targets", async () => {
       )
     )?.to,
   ).toStrictEqual([
-    createTestProvisionRequestTarget("agents"),
+    createTestAccountProvisionRequestTarget("agents", "account-a"),
   ] satisfies ProvisionRequestTarget[]);
 
   expect(
@@ -78,7 +96,7 @@ it("supports self-account targets", async () => {
       )
     )?.to,
   ).toStrictEqual([
-    createTestProvisionRequestTarget("codespaces"),
+    createTestAccountProvisionRequestTarget("codespaces", "account-a"),
   ] satisfies ProvisionRequestTarget[]);
 
   expect(
@@ -93,7 +111,7 @@ it("supports self-account targets", async () => {
       )
     )?.to,
   ).toStrictEqual([
-    createTestProvisionRequestTarget("dependabot"),
+    createTestAccountProvisionRequestTarget("dependabot", "account-a"),
   ] satisfies ProvisionRequestTarget[]);
 });
 
@@ -106,11 +124,12 @@ it("supports pattern-matched account targets", async () => {
   const tokenDecA = createTestTokenDec({ shared: true });
   declarationRegistry.registerDeclaration(repoA, "token-a", tokenDecA);
 
-  const [[accountA1], [accountA2], [accountB]] = createTestInstallationAccounts(
-    ["Organization", 100, "account-a-1"],
-    ["Organization", 200, "account-a-2"],
-    ["Organization", 300, "account-b"],
-  );
+  const [[accountA1, reposA1], [accountA2], [accountB]] =
+    createTestInstallationAccounts(
+      ["Organization", 100, "account-a-1", ["repo-a"]],
+      ["Organization", 200, "account-a-2"],
+      ["Organization", 300, "account-b"],
+    );
 
   const [[appA, [appAInstallationA1, appAInstallationA2, appAInstallationB]]] =
     createTestApps([
@@ -123,11 +142,12 @@ it("supports pattern-matched account targets", async () => {
       ],
     ]);
 
-  const appRegistry = createTestAppRegistry({
+  const repoRegistry = createTestRepoRegistry();
+  const appRegistry = createTestAppRegistry(repoRegistry, {
     app: appA,
     provisioner: true,
     installations: [
-      [appAInstallationA1, []],
+      [appAInstallationA1, reposA1],
       [appAInstallationA2, []],
       [appAInstallationB, []],
     ],
@@ -136,6 +156,7 @@ it("supports pattern-matched account targets", async () => {
   const createProvisionRequest = createProvisionRequestFactory(
     declarationRegistry,
     appRegistry,
+    repoRegistry,
     environmentResolver,
   );
 
@@ -151,8 +172,8 @@ it("supports pattern-matched account targets", async () => {
       )
     )?.to,
   ).toStrictEqual([
-    createTestProvisionRequestTarget("actions", "account-a-1"),
-    createTestProvisionRequestTarget("actions", "account-a-2"),
+    createTestAccountProvisionRequestTarget("actions", "account-a-1"),
+    createTestAccountProvisionRequestTarget("actions", "account-a-2"),
   ] satisfies ProvisionRequestTarget[]);
 
   expect(
@@ -167,8 +188,8 @@ it("supports pattern-matched account targets", async () => {
       )
     )?.to,
   ).toStrictEqual([
-    createTestProvisionRequestTarget("agents", "account-a-1"),
-    createTestProvisionRequestTarget("agents", "account-a-2"),
+    createTestAccountProvisionRequestTarget("agents", "account-a-1"),
+    createTestAccountProvisionRequestTarget("agents", "account-a-2"),
   ] satisfies ProvisionRequestTarget[]);
 
   expect(
@@ -183,8 +204,8 @@ it("supports pattern-matched account targets", async () => {
       )
     )?.to,
   ).toStrictEqual([
-    createTestProvisionRequestTarget("codespaces", "account-a-1"),
-    createTestProvisionRequestTarget("codespaces", "account-a-2"),
+    createTestAccountProvisionRequestTarget("codespaces", "account-a-1"),
+    createTestAccountProvisionRequestTarget("codespaces", "account-a-2"),
   ] satisfies ProvisionRequestTarget[]);
 
   expect(
@@ -199,8 +220,8 @@ it("supports pattern-matched account targets", async () => {
       )
     )?.to,
   ).toStrictEqual([
-    createTestProvisionRequestTarget("dependabot", "account-a-1"),
-    createTestProvisionRequestTarget("dependabot", "account-a-2"),
+    createTestAccountProvisionRequestTarget("dependabot", "account-a-1"),
+    createTestAccountProvisionRequestTarget("dependabot", "account-a-2"),
   ] satisfies ProvisionRequestTarget[]);
 });
 
@@ -213,8 +234,8 @@ it("doesn't match the same account twice", async () => {
   const tokenDecA = createTestTokenDec({ shared: true });
   declarationRegistry.registerDeclaration(repoA, "token-a", tokenDecA);
 
-  const [[accountA], [accountB]] = createTestInstallationAccounts(
-    ["Organization", 100, "account-a"],
+  const [[accountA, reposA], [accountB]] = createTestInstallationAccounts(
+    ["Organization", 100, "account-a", ["repo-a"]],
     ["Organization", 300, "account-b"],
   );
 
@@ -227,11 +248,12 @@ it("doesn't match the same account twice", async () => {
     ],
   ]);
 
-  const appRegistry = createTestAppRegistry({
+  const repoRegistry = createTestRepoRegistry();
+  const appRegistry = createTestAppRegistry(repoRegistry, {
     app: appA,
     provisioner: true,
     installations: [
-      [appAInstallationA, []],
+      [appAInstallationA, reposA],
       [appAInstallationB, []],
     ],
   });
@@ -239,6 +261,7 @@ it("doesn't match the same account twice", async () => {
   const createProvisionRequest = createProvisionRequestFactory(
     declarationRegistry,
     appRegistry,
+    repoRegistry,
     environmentResolver,
   );
 
@@ -259,8 +282,8 @@ it("doesn't match the same account twice", async () => {
       )
     )?.to,
   ).toStrictEqual([
-    createTestProvisionRequestTarget("actions"),
-    createTestProvisionRequestTarget("actions", "account-b"),
+    createTestAccountProvisionRequestTarget("actions", "account-a"),
+    createTestAccountProvisionRequestTarget("actions", "account-b"),
   ] satisfies ProvisionRequestTarget[]);
 });
 
@@ -273,8 +296,8 @@ it("doesn't enable a target for an account if any matching patterns disable the 
   const tokenDecA = createTestTokenDec({ shared: true });
   declarationRegistry.registerDeclaration(repoA, "token-a", tokenDecA);
 
-  const [[accountA], [accountB]] = createTestInstallationAccounts(
-    ["Organization", 100, "account-a"],
+  const [[accountA, reposA], [accountB]] = createTestInstallationAccounts(
+    ["Organization", 100, "account-a", ["repo-a"]],
     ["Organization", 300, "account-b"],
   );
 
@@ -287,11 +310,12 @@ it("doesn't enable a target for an account if any matching patterns disable the 
     ],
   ]);
 
-  const appRegistry = createTestAppRegistry({
+  const repoRegistry = createTestRepoRegistry();
+  const appRegistry = createTestAppRegistry(repoRegistry, {
     app: appA,
     provisioner: true,
     installations: [
-      [appAInstallationA, []],
+      [appAInstallationA, reposA],
       [appAInstallationB, []],
     ],
   });
@@ -299,6 +323,7 @@ it("doesn't enable a target for an account if any matching patterns disable the 
   const createProvisionRequest = createProvisionRequestFactory(
     declarationRegistry,
     appRegistry,
+    repoRegistry,
     environmentResolver,
   );
 
@@ -320,7 +345,7 @@ it("doesn't enable a target for an account if any matching patterns disable the 
       )
     )?.to,
   ).toStrictEqual([
-    createTestProvisionRequestTarget("actions"),
+    createTestAccountProvisionRequestTarget("actions", "account-a"),
   ] satisfies ProvisionRequestTarget[]);
 });
 
@@ -333,8 +358,8 @@ it("allows self-account targets to override pattern-matched account targets", as
   const tokenDecA = createTestTokenDec({ shared: true });
   declarationRegistry.registerDeclaration(repoA, "token-a", tokenDecA);
 
-  const [[accountA], [accountB]] = createTestInstallationAccounts(
-    ["Organization", 100, "account-a"],
+  const [[accountA, reposA], [accountB]] = createTestInstallationAccounts(
+    ["Organization", 100, "account-a", ["repo-a"]],
     ["Organization", 300, "account-b"],
   );
 
@@ -347,11 +372,12 @@ it("allows self-account targets to override pattern-matched account targets", as
     ],
   ]);
 
-  const appRegistry = createTestAppRegistry({
+  const repoRegistry = createTestRepoRegistry();
+  const appRegistry = createTestAppRegistry(repoRegistry, {
     app: appA,
     provisioner: true,
     installations: [
-      [appAInstallationA, []],
+      [appAInstallationA, reposA],
       [appAInstallationB, []],
     ],
   });
@@ -359,6 +385,7 @@ it("allows self-account targets to override pattern-matched account targets", as
   const createProvisionRequest = createProvisionRequestFactory(
     declarationRegistry,
     appRegistry,
+    repoRegistry,
     environmentResolver,
   );
 
@@ -379,8 +406,8 @@ it("allows self-account targets to override pattern-matched account targets", as
       )
     )?.to,
   ).toStrictEqual([
-    createTestProvisionRequestTarget("actions"),
-    createTestProvisionRequestTarget("codespaces"),
-    createTestProvisionRequestTarget("actions", "account-b"),
+    createTestAccountProvisionRequestTarget("actions", "account-a"),
+    createTestAccountProvisionRequestTarget("codespaces", "account-a"),
+    createTestAccountProvisionRequestTarget("actions", "account-b"),
   ] satisfies ProvisionRequestTarget[]);
 });

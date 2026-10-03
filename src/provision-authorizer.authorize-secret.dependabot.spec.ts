@@ -1,8 +1,9 @@
 import { join } from "node:path";
 import { expect, it } from "vitest";
 import {
+  createTestAccountProvisionRequestTarget,
   createTestProvisionRequest,
-  createTestProvisionRequestTarget,
+  createTestRepoProvisionRequestTarget,
 } from "../test/provision-request.js";
 import { createTestTokenAuthorizer } from "../test/token-authorizer.js";
 import { createTestTokenRequestFactory } from "../test/token-request.js";
@@ -10,7 +11,6 @@ import { toMarkdown } from "./markdown.js";
 import { createMarkdownProvisionAuthExplainer } from "./provision-auth-explainer/markdown.js";
 import { createTextProvisionAuthExplainer } from "./provision-auth-explainer/text.js";
 import { createProvisionAuthorizer } from "./provision-authorizer.js";
-import { createRepoRegistry } from "./repo-registry.js";
 
 const fixturesPath = join(
   import.meta.dirname,
@@ -21,7 +21,6 @@ it("allows GitHub Dependabot account secrets that should be allowed", async () =
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
-    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     {
@@ -45,7 +44,7 @@ it("allows GitHub Dependabot account secrets that should be allowed", async () =
                     },
                   },
                 },
-                repo: { types: { environments: {} } },
+                repo: { visibility: "private", types: { environments: {} } },
                 repos: {},
               },
             },
@@ -58,13 +57,15 @@ it("allows GitHub Dependabot account secrets that should be allowed", async () =
   const resultA = authorizer.authorizeSecret(
     createTestProvisionRequest({
       requester: { account: "account-x", repo: "repo-x" },
-      to: [createTestProvisionRequestTarget("dependabot")],
+      to: [createTestAccountProvisionRequestTarget("dependabot", "account-a")],
     }),
   );
   const resultB = authorizer.authorizeSecret(
     createTestProvisionRequest({
       requester: { account: "account-y-1", repo: "repo-y-1" },
-      to: [createTestProvisionRequestTarget("dependabot", "account-b-1")],
+      to: [
+        createTestAccountProvisionRequestTarget("dependabot", "account-b-1"),
+      ],
     }),
   );
 
@@ -74,7 +75,7 @@ it("allows GitHub Dependabot account secrets that should be allowed", async () =
   expect(toText(resultA)).toMatchInlineSnapshot(`
     "✅ Repo account-x/repo-x was allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
-      ✅ Can provision token to Dependabot secret in account-a:
+      ✅ Can provision token to Dependabot secret in account account-a:
         ✅ Account account-a was allowed access to token #1
         ✅ Can provision secret based on 1 rule:
           ✅ Allowed by rule #1"
@@ -85,7 +86,7 @@ it("allows GitHub Dependabot account secrets that should be allowed", async () =
   expect(toText(resultB)).toMatchInlineSnapshot(`
     "✅ Repo account-y-1/repo-y-1 was allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
-      ✅ Can provision token to Dependabot secret in account-b-1:
+      ✅ Can provision token to Dependabot secret in account account-b-1:
         ✅ Account account-b-1 was allowed access to token #2
         ✅ Can provision secret based on 1 rule:
           ✅ Allowed by rule #1"
@@ -99,7 +100,6 @@ it("allows GitHub Dependabot account secrets that should be allowed within the r
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
-    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     {
@@ -116,7 +116,7 @@ it("allows GitHub Dependabot account secrets that should be allowed within the r
                   },
                 },
                 accounts: {},
-                repo: { types: { environments: {} } },
+                repo: { visibility: "private", types: { environments: {} } },
                 repos: {},
               },
             },
@@ -128,13 +128,15 @@ it("allows GitHub Dependabot account secrets that should be allowed within the r
 
   const resultA = authorizer.authorizeSecret(
     createTestProvisionRequest({
-      to: [createTestProvisionRequestTarget("dependabot")],
+      to: [createTestAccountProvisionRequestTarget("dependabot", "account-a")],
     }),
   );
   const resultB = authorizer.authorizeSecret(
     createTestProvisionRequest({
       requester: { account: "account-b-1", repo: "repo-b-1" },
-      to: [createTestProvisionRequestTarget("dependabot", "account-b-1")],
+      to: [
+        createTestAccountProvisionRequestTarget("dependabot", "account-b-1"),
+      ],
     }),
   );
 
@@ -144,7 +146,7 @@ it("allows GitHub Dependabot account secrets that should be allowed within the r
   expect(toText(resultA)).toMatchInlineSnapshot(`
     "✅ Repo account-a/repo-a was allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
-      ✅ Can provision token to Dependabot secret in account-a:
+      ✅ Can provision token to Dependabot secret in account account-a:
         ✅ Account account-a was allowed access to token #1
         ✅ Can provision secret based on 1 rule:
           ✅ Allowed by rule #1"
@@ -155,7 +157,7 @@ it("allows GitHub Dependabot account secrets that should be allowed within the r
   expect(toText(resultB)).toMatchInlineSnapshot(`
     "✅ Repo account-b-1/repo-b-1 was allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
-      ✅ Can provision token to Dependabot secret in account-b-1:
+      ✅ Can provision token to Dependabot secret in account account-b-1:
         ✅ Account account-b-1 was allowed access to token #2
         ✅ Can provision secret based on 1 rule:
           ✅ Allowed by rule #1"
@@ -169,7 +171,6 @@ it("allows GitHub Dependabot account secrets that should be allowed within the r
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
-    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     {
@@ -192,7 +193,7 @@ it("allows GitHub Dependabot account secrets that should be allowed within the r
                     },
                   },
                 },
-                repo: { types: { environments: {} } },
+                repo: { visibility: "private", types: { environments: {} } },
                 repos: {},
               },
             },
@@ -204,7 +205,7 @@ it("allows GitHub Dependabot account secrets that should be allowed within the r
 
   const resultA = authorizer.authorizeSecret(
     createTestProvisionRequest({
-      to: [createTestProvisionRequestTarget("dependabot")],
+      to: [createTestAccountProvisionRequestTarget("dependabot", "account-a")],
     }),
   );
 
@@ -214,7 +215,7 @@ it("allows GitHub Dependabot account secrets that should be allowed within the r
   expect(toText(resultA)).toMatchInlineSnapshot(`
     "✅ Repo account-a/repo-a was allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
-      ✅ Can provision token to Dependabot secret in account-a:
+      ✅ Can provision token to Dependabot secret in account account-a:
         ✅ Account account-a was allowed access to token #1
         ✅ Can provision secret based on 1 rule:
           ✅ Allowed by rule #1"
@@ -228,7 +229,6 @@ it("allows GitHub Dependabot repo secrets that should be allowed", async () => {
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
-    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     {
@@ -241,15 +241,17 @@ it("allows GitHub Dependabot repo secrets that should be allowed", async () => {
               github: {
                 account: { types: {} },
                 accounts: {},
-                repo: { types: { environments: {} } },
+                repo: { visibility: "private", types: { environments: {} } },
                 repos: {
                   "account-a/repo-a": {
+                    visibility: "private",
                     types: {
                       dependabot: "allow",
                       environments: {},
                     },
                   },
                   "account-b-*/repo-b-*": {
+                    visibility: "private",
                     types: {
                       dependabot: "allow",
                       environments: {},
@@ -268,7 +270,12 @@ it("allows GitHub Dependabot repo secrets that should be allowed", async () => {
     createTestProvisionRequest({
       requester: { account: "account-x", repo: "repo-x" },
       to: [
-        createTestProvisionRequestTarget("dependabot", "account-a", "repo-a"),
+        createTestRepoProvisionRequestTarget(
+          "dependabot",
+          "account-a",
+          "repo-a",
+          "private",
+        ),
       ],
     }),
   );
@@ -276,10 +283,11 @@ it("allows GitHub Dependabot repo secrets that should be allowed", async () => {
     createTestProvisionRequest({
       requester: { account: "account-y-1", repo: "repo-y-1" },
       to: [
-        createTestProvisionRequestTarget(
+        createTestRepoProvisionRequestTarget(
           "dependabot",
           "account-b-1",
           "repo-b-1",
+          "private",
         ),
       ],
     }),
@@ -291,7 +299,7 @@ it("allows GitHub Dependabot repo secrets that should be allowed", async () => {
   expect(toText(resultA)).toMatchInlineSnapshot(`
     "✅ Repo account-x/repo-x was allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
-      ✅ Can provision token to Dependabot secret in account-a/repo-a:
+      ✅ Can provision token to Dependabot secret in private repo account-a/repo-a:
         ✅ Repo account-a/repo-a was allowed access to token #1
         ✅ Can provision secret based on 1 rule:
           ✅ Allowed by rule #1"
@@ -302,7 +310,7 @@ it("allows GitHub Dependabot repo secrets that should be allowed", async () => {
   expect(toText(resultB)).toMatchInlineSnapshot(`
     "✅ Repo account-y-1/repo-y-1 was allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
-      ✅ Can provision token to Dependabot secret in account-b-1/repo-b-1:
+      ✅ Can provision token to Dependabot secret in private repo account-b-1/repo-b-1:
         ✅ Repo account-b-1/repo-b-1 was allowed access to token #2
         ✅ Can provision secret based on 1 rule:
           ✅ Allowed by rule #1"
@@ -316,7 +324,6 @@ it("allows GitHub Dependabot repo secrets that should be allowed within the requ
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
-    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     {
@@ -330,6 +337,7 @@ it("allows GitHub Dependabot repo secrets that should be allowed within the requ
                 account: { types: {} },
                 accounts: {},
                 repo: {
+                  visibility: "private",
                   types: {
                     dependabot: "allow",
                     environments: {},
@@ -347,7 +355,12 @@ it("allows GitHub Dependabot repo secrets that should be allowed within the requ
   const resultA = authorizer.authorizeSecret(
     createTestProvisionRequest({
       to: [
-        createTestProvisionRequestTarget("dependabot", "account-a", "repo-a"),
+        createTestRepoProvisionRequestTarget(
+          "dependabot",
+          "account-a",
+          "repo-a",
+          "private",
+        ),
       ],
     }),
   );
@@ -355,10 +368,11 @@ it("allows GitHub Dependabot repo secrets that should be allowed within the requ
     createTestProvisionRequest({
       requester: { account: "account-b-1", repo: "repo-b-1" },
       to: [
-        createTestProvisionRequestTarget(
+        createTestRepoProvisionRequestTarget(
           "dependabot",
           "account-b-1",
           "repo-b-1",
+          "private",
         ),
       ],
     }),
@@ -370,7 +384,7 @@ it("allows GitHub Dependabot repo secrets that should be allowed within the requ
   expect(toText(resultA)).toMatchInlineSnapshot(`
     "✅ Repo account-a/repo-a was allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
-      ✅ Can provision token to Dependabot secret in account-a/repo-a:
+      ✅ Can provision token to Dependabot secret in private repo account-a/repo-a:
         ✅ Repo account-a/repo-a was allowed access to token #1
         ✅ Can provision secret based on 1 rule:
           ✅ Allowed by rule #1"
@@ -381,7 +395,7 @@ it("allows GitHub Dependabot repo secrets that should be allowed within the requ
   expect(toText(resultB)).toMatchInlineSnapshot(`
     "✅ Repo account-b-1/repo-b-1 was allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
-      ✅ Can provision token to Dependabot secret in account-b-1/repo-b-1:
+      ✅ Can provision token to Dependabot secret in private repo account-b-1/repo-b-1:
         ✅ Repo account-b-1/repo-b-1 was allowed access to token #2
         ✅ Can provision secret based on 1 rule:
           ✅ Allowed by rule #1"
@@ -395,7 +409,6 @@ it("allows GitHub Dependabot repo secrets that should be allowed within the requ
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
-    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     {
@@ -409,6 +422,7 @@ it("allows GitHub Dependabot repo secrets that should be allowed within the requ
                 account: { types: {} },
                 accounts: {},
                 repo: {
+                  visibility: "private",
                   types: {
                     dependabot: "allow",
                     environments: {},
@@ -416,6 +430,7 @@ it("allows GitHub Dependabot repo secrets that should be allowed within the requ
                 },
                 repos: {
                   "account-a/repo-a": {
+                    visibility: "private",
                     types: {
                       dependabot: "deny",
                       environments: {},
@@ -433,7 +448,12 @@ it("allows GitHub Dependabot repo secrets that should be allowed within the requ
   const resultA = authorizer.authorizeSecret(
     createTestProvisionRequest({
       to: [
-        createTestProvisionRequestTarget("dependabot", "account-a", "repo-a"),
+        createTestRepoProvisionRequestTarget(
+          "dependabot",
+          "account-a",
+          "repo-a",
+          "private",
+        ),
       ],
     }),
   );
@@ -441,10 +461,11 @@ it("allows GitHub Dependabot repo secrets that should be allowed within the requ
     createTestProvisionRequest({
       requester: { account: "account-b-1", repo: "repo-b-1" },
       to: [
-        createTestProvisionRequestTarget(
+        createTestRepoProvisionRequestTarget(
           "dependabot",
           "account-b-1",
           "repo-b-1",
+          "private",
         ),
       ],
     }),
@@ -456,7 +477,7 @@ it("allows GitHub Dependabot repo secrets that should be allowed within the requ
   expect(toText(resultA)).toMatchInlineSnapshot(`
     "✅ Repo account-a/repo-a was allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
-      ✅ Can provision token to Dependabot secret in account-a/repo-a:
+      ✅ Can provision token to Dependabot secret in private repo account-a/repo-a:
         ✅ Repo account-a/repo-a was allowed access to token #1
         ✅ Can provision secret based on 1 rule:
           ✅ Allowed by rule #1"
@@ -467,7 +488,7 @@ it("allows GitHub Dependabot repo secrets that should be allowed within the requ
   expect(toText(resultB)).toMatchInlineSnapshot(`
     "✅ Repo account-b-1/repo-b-1 was allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
-      ✅ Can provision token to Dependabot secret in account-b-1/repo-b-1:
+      ✅ Can provision token to Dependabot secret in private repo account-b-1/repo-b-1:
         ✅ Repo account-b-1/repo-b-1 was allowed access to token #2
         ✅ Can provision secret based on 1 rule:
           ✅ Allowed by rule #1"
@@ -481,7 +502,6 @@ it("doesn't allow GitHub Dependabot account secrets for unauthorized requesters"
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
-    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     {
@@ -500,7 +520,7 @@ it("doesn't allow GitHub Dependabot account secrets for unauthorized requesters"
                     },
                   },
                 },
-                repo: { types: { environments: {} } },
+                repo: { visibility: "private", types: { environments: {} } },
                 repos: {},
               },
             },
@@ -513,7 +533,7 @@ it("doesn't allow GitHub Dependabot account secrets for unauthorized requesters"
   const resultA = authorizer.authorizeSecret(
     createTestProvisionRequest({
       requester: { account: "account-y", repo: "repo-y" },
-      to: [createTestProvisionRequestTarget("dependabot")],
+      to: [createTestAccountProvisionRequestTarget("dependabot", "account-a")],
     }),
   );
 
@@ -523,7 +543,7 @@ it("doesn't allow GitHub Dependabot account secrets for unauthorized requesters"
   expect(toText(resultA)).toMatchInlineSnapshot(`
     "❌ Repo account-y/repo-y wasn't allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
-      ❌ Can't provision token to Dependabot secret in account-a:
+      ❌ Can't provision token to Dependabot secret in account account-a:
         ✅ Account account-a was allowed access to token #1
         ❌ Can't provision secret (no matching rules)"
   `);
@@ -536,7 +556,6 @@ it("doesn't allow GitHub Dependabot account secrets within the requesting accoun
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
-    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     {
@@ -553,7 +572,7 @@ it("doesn't allow GitHub Dependabot account secrets within the requesting accoun
                   },
                 },
                 accounts: {},
-                repo: { types: { environments: {} } },
+                repo: { visibility: "private", types: { environments: {} } },
                 repos: {},
               },
             },
@@ -566,19 +585,19 @@ it("doesn't allow GitHub Dependabot account secrets within the requesting accoun
   const resultA = authorizer.authorizeSecret(
     createTestProvisionRequest({
       requester: { account: "account-y", repo: "repo-y" },
-      to: [createTestProvisionRequestTarget("dependabot", "account-x")],
+      to: [createTestAccountProvisionRequestTarget("dependabot", "account-x")],
     }),
   );
   const resultB = authorizer.authorizeSecret(
     createTestProvisionRequest({
       requester: { account: "account-x", repo: "repo-y" },
-      to: [createTestProvisionRequestTarget("dependabot", "account-x")],
+      to: [createTestAccountProvisionRequestTarget("dependabot", "account-x")],
     }),
   );
   const resultC = authorizer.authorizeSecret(
     createTestProvisionRequest({
       requester: { account: "account-x", repo: "repo-x" },
-      to: [createTestProvisionRequestTarget("dependabot", "account-y")],
+      to: [createTestAccountProvisionRequestTarget("dependabot", "account-y")],
     }),
   );
 
@@ -588,7 +607,7 @@ it("doesn't allow GitHub Dependabot account secrets within the requesting accoun
   expect(toText(resultA)).toMatchInlineSnapshot(`
     "❌ Repo account-y/repo-y wasn't allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
-      ❌ Can't provision token to Dependabot secret in account-x:
+      ❌ Can't provision token to Dependabot secret in account account-x:
         ✅ Account account-x was allowed access to token #1
         ❌ Can't provision secret (no matching rules)"
   `);
@@ -598,7 +617,7 @@ it("doesn't allow GitHub Dependabot account secrets within the requesting accoun
   expect(toText(resultB)).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-y wasn't allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
-      ❌ Can't provision token to Dependabot secret in account-x:
+      ❌ Can't provision token to Dependabot secret in account account-x:
         ✅ Account account-x was allowed access to token #1
         ❌ Can't provision secret (no matching rules)"
   `);
@@ -608,7 +627,7 @@ it("doesn't allow GitHub Dependabot account secrets within the requesting accoun
   expect(toText(resultC)).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x wasn't allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
-      ❌ Can't provision token to Dependabot secret in account-y:
+      ❌ Can't provision token to Dependabot secret in account account-y:
         ✅ Account account-y was allowed access to token #2
         ❌ Can't provision secret (no matching rules)"
   `);
@@ -621,7 +640,6 @@ it("doesn't allow GitHub Dependabot account secrets within the requesting accoun
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
-    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     {
@@ -644,7 +662,7 @@ it("doesn't allow GitHub Dependabot account secrets within the requesting accoun
                     },
                   },
                 },
-                repo: { types: { environments: {} } },
+                repo: { visibility: "private", types: { environments: {} } },
                 repos: {},
               },
             },
@@ -656,7 +674,7 @@ it("doesn't allow GitHub Dependabot account secrets within the requesting accoun
 
   const resultA = authorizer.authorizeSecret(
     createTestProvisionRequest({
-      to: [createTestProvisionRequestTarget("dependabot")],
+      to: [createTestAccountProvisionRequestTarget("dependabot", "account-a")],
     }),
   );
 
@@ -666,7 +684,7 @@ it("doesn't allow GitHub Dependabot account secrets within the requesting accoun
   expect(toText(resultA)).toMatchInlineSnapshot(`
     "❌ Repo account-a/repo-a wasn't allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
-      ❌ Can't provision token to Dependabot secret in account-a:
+      ❌ Can't provision token to Dependabot secret in account account-a:
         ✅ Account account-a was allowed access to token #1
         ❌ Can't provision secret based on 1 rule:
           ❌ Denied by rule #1"
@@ -680,7 +698,6 @@ it("doesn't allow GitHub Dependabot repo secrets for unauthorized requesters", a
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
-    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     {
@@ -693,9 +710,10 @@ it("doesn't allow GitHub Dependabot repo secrets for unauthorized requesters", a
               github: {
                 account: { types: {} },
                 accounts: {},
-                repo: { types: { environments: {} } },
+                repo: { visibility: "private", types: { environments: {} } },
                 repos: {
                   "account-a/repo-a": {
+                    visibility: "private",
                     types: {
                       dependabot: "allow",
                       environments: {},
@@ -714,7 +732,12 @@ it("doesn't allow GitHub Dependabot repo secrets for unauthorized requesters", a
     createTestProvisionRequest({
       requester: { account: "account-y", repo: "repo-y" },
       to: [
-        createTestProvisionRequestTarget("dependabot", "account-a", "repo-a"),
+        createTestRepoProvisionRequestTarget(
+          "dependabot",
+          "account-a",
+          "repo-a",
+          "private",
+        ),
       ],
     }),
   );
@@ -725,7 +748,7 @@ it("doesn't allow GitHub Dependabot repo secrets for unauthorized requesters", a
   expect(toText(resultA)).toMatchInlineSnapshot(`
     "❌ Repo account-y/repo-y wasn't allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
-      ❌ Can't provision token to Dependabot secret in account-a/repo-a:
+      ❌ Can't provision token to Dependabot secret in private repo account-a/repo-a:
         ✅ Repo account-a/repo-a was allowed access to token #1
         ❌ Can't provision secret (no matching rules)"
   `);
@@ -738,7 +761,6 @@ it("doesn't allow GitHub Dependabot repo secrets within the requesting repo for 
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
-    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     {
@@ -752,6 +774,7 @@ it("doesn't allow GitHub Dependabot repo secrets within the requesting repo for 
                 account: { types: {} },
                 accounts: {},
                 repo: {
+                  visibility: "private",
                   types: {
                     dependabot: "allow",
                     environments: {},
@@ -770,7 +793,12 @@ it("doesn't allow GitHub Dependabot repo secrets within the requesting repo for 
     createTestProvisionRequest({
       requester: { account: "account-y", repo: "repo-y" },
       to: [
-        createTestProvisionRequestTarget("dependabot", "account-x", "repo-x"),
+        createTestRepoProvisionRequestTarget(
+          "dependabot",
+          "account-x",
+          "repo-x",
+          "private",
+        ),
       ],
     }),
   );
@@ -778,7 +806,12 @@ it("doesn't allow GitHub Dependabot repo secrets within the requesting repo for 
     createTestProvisionRequest({
       requester: { account: "account-x", repo: "repo-y" },
       to: [
-        createTestProvisionRequestTarget("dependabot", "account-x", "repo-x"),
+        createTestRepoProvisionRequestTarget(
+          "dependabot",
+          "account-x",
+          "repo-x",
+          "private",
+        ),
       ],
     }),
   );
@@ -786,7 +819,12 @@ it("doesn't allow GitHub Dependabot repo secrets within the requesting repo for 
     createTestProvisionRequest({
       requester: { account: "account-x", repo: "repo-x" },
       to: [
-        createTestProvisionRequestTarget("dependabot", "account-x", "repo-y"),
+        createTestRepoProvisionRequestTarget(
+          "dependabot",
+          "account-x",
+          "repo-y",
+          "private",
+        ),
       ],
     }),
   );
@@ -797,7 +835,7 @@ it("doesn't allow GitHub Dependabot repo secrets within the requesting repo for 
   expect(toText(resultA)).toMatchInlineSnapshot(`
     "❌ Repo account-y/repo-y wasn't allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
-      ❌ Can't provision token to Dependabot secret in account-x/repo-x:
+      ❌ Can't provision token to Dependabot secret in private repo account-x/repo-x:
         ✅ Repo account-x/repo-x was allowed access to token #1
         ❌ Can't provision secret (no matching rules)"
   `);
@@ -807,7 +845,7 @@ it("doesn't allow GitHub Dependabot repo secrets within the requesting repo for 
   expect(toText(resultB)).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-y wasn't allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
-      ❌ Can't provision token to Dependabot secret in account-x/repo-x:
+      ❌ Can't provision token to Dependabot secret in private repo account-x/repo-x:
         ✅ Repo account-x/repo-x was allowed access to token #1
         ❌ Can't provision secret (no matching rules)"
   `);
@@ -817,7 +855,7 @@ it("doesn't allow GitHub Dependabot repo secrets within the requesting repo for 
   expect(toText(resultC)).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x wasn't allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
-      ❌ Can't provision token to Dependabot secret in account-x/repo-y:
+      ❌ Can't provision token to Dependabot secret in private repo account-x/repo-y:
         ✅ Repo account-x/repo-y was allowed access to token #2
         ❌ Can't provision secret (no matching rules)"
   `);
@@ -830,7 +868,6 @@ it("doesn't allow GitHub Dependabot repo secrets within the requesting repo when
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
-    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     {
@@ -844,6 +881,7 @@ it("doesn't allow GitHub Dependabot repo secrets within the requesting repo when
                 account: { types: {} },
                 accounts: {},
                 repo: {
+                  visibility: "private",
                   types: {
                     dependabot: "deny",
                     environments: {},
@@ -851,6 +889,7 @@ it("doesn't allow GitHub Dependabot repo secrets within the requesting repo when
                 },
                 repos: {
                   "account-a/repo-a": {
+                    visibility: "private",
                     types: {
                       dependabot: "allow",
                       environments: {},
@@ -868,7 +907,12 @@ it("doesn't allow GitHub Dependabot repo secrets within the requesting repo when
   const resultA = authorizer.authorizeSecret(
     createTestProvisionRequest({
       to: [
-        createTestProvisionRequestTarget("dependabot", "account-a", "repo-a"),
+        createTestRepoProvisionRequestTarget(
+          "dependabot",
+          "account-a",
+          "repo-a",
+          "private",
+        ),
       ],
     }),
   );
@@ -879,7 +923,7 @@ it("doesn't allow GitHub Dependabot repo secrets within the requesting repo when
   expect(toText(resultA)).toMatchInlineSnapshot(`
     "❌ Repo account-a/repo-a wasn't allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
-      ❌ Can't provision token to Dependabot secret in account-a/repo-a:
+      ❌ Can't provision token to Dependabot secret in private repo account-a/repo-a:
         ✅ Repo account-a/repo-a was allowed access to token #1
         ❌ Can't provision secret based on 1 rule:
           ❌ Denied by rule #1"

@@ -20,9 +20,10 @@ import {
 import { createTestKeyPair } from "../test/key.js";
 import { createTestOctokitFactory } from "../test/octokit-factory.js";
 import {
+  createTestEnvironmentProvisionRequestTarget,
   createTestProvisionRequest,
-  createTestProvisionRequestTarget,
 } from "../test/provision-request.js";
+import { createTestRepoRegistry } from "../test/repo-registry.js";
 import {
   createTestProvisionAuthTargetResult,
   createTestTokenAuthResult,
@@ -66,7 +67,7 @@ it("handles GitHub API errors when provisioning environment secrets", async () =
     environments: { "env-a": accountARepoAEnvAKey },
   });
 
-  const appRegistry = createTestAppRegistry({
+  const appRegistry = createTestAppRegistry(createTestRepoRegistry(), {
     app: appA,
     provisioner: true,
     installations: [[appAInstallationA, [repoA]]],
@@ -99,21 +100,21 @@ it("handles GitHub API errors when provisioning environment secrets", async () =
           github: { accounts: { "account-a": { actions: true } } },
         }),
         to: [
-          createTestProvisionRequestTarget(
-            "environment",
+          createTestEnvironmentProvisionRequestTarget(
             "account-a",
             "repo-a",
             "env-a",
+            "private",
           ),
         ],
       }),
       results: [
         createTestProvisionAuthTargetResult({
-          target: createTestProvisionRequestTarget(
-            "environment",
+          target: createTestEnvironmentProvisionRequestTarget(
             "account-a",
             "repo-a",
             "env-a",
+            "private",
           ),
           tokenAuthResult,
         }),
@@ -165,7 +166,7 @@ it("handles unexpected errors when provisioning environment secrets", async () =
   error.stack = "Error: <message>\n    at provisioner.ts:1:1";
   __setErrors("actions.createOrUpdateEnvironmentSecret", [error]);
 
-  const appRegistry = createTestAppRegistry({
+  const appRegistry = createTestAppRegistry(createTestRepoRegistry(), {
     app: appA,
     provisioner: true,
     installations: [[appAInstallationA, [repoA]]],
@@ -197,21 +198,21 @@ it("handles unexpected errors when provisioning environment secrets", async () =
           github: { accounts: { "account-a": { actions: true } } },
         }),
         to: [
-          createTestProvisionRequestTarget(
-            "environment",
+          createTestEnvironmentProvisionRequestTarget(
             "account-a",
             "repo-a",
             "env-a",
+            "private",
           ),
         ],
       }),
       results: [
         createTestProvisionAuthTargetResult({
-          target: createTestProvisionRequestTarget(
-            "environment",
+          target: createTestEnvironmentProvisionRequestTarget(
             "account-a",
             "repo-a",
             "env-a",
+            "private",
           ),
           tokenAuthResult,
         }),
@@ -260,7 +261,7 @@ it("can provision environment secrets", async () => {
     environments: { "env-a": accountARepoAEnvAKey },
   });
 
-  const appRegistry = createTestAppRegistry({
+  const appRegistry = createTestAppRegistry(createTestRepoRegistry(), {
     app: appA,
     provisioner: true,
     installations: [[appAInstallationA, [repoA]]],
@@ -292,21 +293,21 @@ it("can provision environment secrets", async () => {
           github: { accounts: { "account-a": { actions: true } } },
         }),
         to: [
-          createTestProvisionRequestTarget(
-            "environment",
+          createTestEnvironmentProvisionRequestTarget(
             "account-a",
             "repo-a",
             "env-a",
+            "private",
           ),
         ],
       }),
       results: [
         createTestProvisionAuthTargetResult({
-          target: createTestProvisionRequestTarget(
-            "environment",
+          target: createTestEnvironmentProvisionRequestTarget(
             "account-a",
             "repo-a",
             "env-a",
+            "private",
           ),
           tokenAuthResult,
         }),

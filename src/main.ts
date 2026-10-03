@@ -93,6 +93,7 @@ try {
   const createProvisionRequest = createProvisionRequestFactory(
     declarationRegistry,
     appRegistry,
+    repoRegistry,
     environmentResolver,
   );
   const createTokenRequest = createTokenRequestFactory(appRegistry);
@@ -101,7 +102,6 @@ try {
     config.permissions,
   );
   const provisionAuthorizer = createProvisionAuthorizer(
-    repoRegistry,
     createTokenRequest,
     tokenAuthorizer,
     config.provision,

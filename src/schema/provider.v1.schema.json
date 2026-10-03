@@ -338,6 +338,10 @@
       "additionalProperties": false,
       "required": ["types"],
       "properties": {
+        "visibility": {
+          "$ref": "#/definitions/visibility",
+          "default": "private"
+        },
         "types": {
           "$ref": "#/definitions/provisionGithubRepoSecretTypes"
         }

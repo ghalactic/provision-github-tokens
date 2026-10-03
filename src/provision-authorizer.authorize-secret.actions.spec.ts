@@ -1,8 +1,9 @@
 import { join } from "node:path";
 import { expect, it } from "vitest";
 import {
+  createTestAccountProvisionRequestTarget,
   createTestProvisionRequest,
-  createTestProvisionRequestTarget,
+  createTestRepoProvisionRequestTarget,
 } from "../test/provision-request.js";
 import { createTestTokenAuthorizer } from "../test/token-authorizer.js";
 import { createTestTokenRequestFactory } from "../test/token-request.js";
@@ -10,7 +11,6 @@ import { toMarkdown } from "./markdown.js";
 import { createMarkdownProvisionAuthExplainer } from "./provision-auth-explainer/markdown.js";
 import { createTextProvisionAuthExplainer } from "./provision-auth-explainer/text.js";
 import { createProvisionAuthorizer } from "./provision-authorizer.js";
-import { createRepoRegistry } from "./repo-registry.js";
 
 const fixturesPath = join(
   import.meta.dirname,
@@ -21,7 +21,6 @@ it("allows GitHub Actions account secrets that should be allowed", async () => {
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
-    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     {
@@ -45,7 +44,7 @@ it("allows GitHub Actions account secrets that should be allowed", async () => {
                     },
                   },
                 },
-                repo: { types: { environments: {} } },
+                repo: { visibility: "private", types: { environments: {} } },
                 repos: {},
               },
             },
@@ -63,7 +62,7 @@ it("allows GitHub Actions account secrets that should be allowed", async () => {
   const resultB = authorizer.authorizeSecret(
     createTestProvisionRequest({
       requester: { account: "account-y-1", repo: "repo-y-1" },
-      to: [createTestProvisionRequestTarget("actions", "account-b-1")],
+      to: [createTestAccountProvisionRequestTarget("actions", "account-b-1")],
     }),
   );
 
@@ -73,7 +72,7 @@ it("allows GitHub Actions account secrets that should be allowed", async () => {
   expect(toText(resultA)).toMatchInlineSnapshot(`
     "✅ Repo account-x/repo-x was allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
-      ✅ Can provision token to GitHub Actions secret in account-a:
+      ✅ Can provision token to GitHub Actions secret in account account-a:
         ✅ Account account-a was allowed access to token #1
         ✅ Can provision secret based on 1 rule:
           ✅ Allowed by rule #1"
@@ -84,7 +83,7 @@ it("allows GitHub Actions account secrets that should be allowed", async () => {
   expect(toText(resultB)).toMatchInlineSnapshot(`
     "✅ Repo account-y-1/repo-y-1 was allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
-      ✅ Can provision token to GitHub Actions secret in account-b-1:
+      ✅ Can provision token to GitHub Actions secret in account account-b-1:
         ✅ Account account-b-1 was allowed access to token #2
         ✅ Can provision secret based on 1 rule:
           ✅ Allowed by rule #1"
@@ -98,7 +97,6 @@ it("allows GitHub Actions account secrets that should be allowed within the requ
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
-    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     {
@@ -115,7 +113,7 @@ it("allows GitHub Actions account secrets that should be allowed within the requ
                   },
                 },
                 accounts: {},
-                repo: { types: { environments: {} } },
+                repo: { visibility: "private", types: { environments: {} } },
                 repos: {},
               },
             },
@@ -129,7 +127,7 @@ it("allows GitHub Actions account secrets that should be allowed within the requ
   const resultB = authorizer.authorizeSecret(
     createTestProvisionRequest({
       requester: { account: "account-b-1", repo: "repo-b-1" },
-      to: [createTestProvisionRequestTarget("actions", "account-b-1")],
+      to: [createTestAccountProvisionRequestTarget("actions", "account-b-1")],
     }),
   );
 
@@ -139,7 +137,7 @@ it("allows GitHub Actions account secrets that should be allowed within the requ
   expect(toText(resultA)).toMatchInlineSnapshot(`
     "✅ Repo account-a/repo-a was allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
-      ✅ Can provision token to GitHub Actions secret in account-a:
+      ✅ Can provision token to GitHub Actions secret in account account-a:
         ✅ Account account-a was allowed access to token #1
         ✅ Can provision secret based on 1 rule:
           ✅ Allowed by rule #1"
@@ -150,7 +148,7 @@ it("allows GitHub Actions account secrets that should be allowed within the requ
   expect(toText(resultB)).toMatchInlineSnapshot(`
     "✅ Repo account-b-1/repo-b-1 was allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
-      ✅ Can provision token to GitHub Actions secret in account-b-1:
+      ✅ Can provision token to GitHub Actions secret in account account-b-1:
         ✅ Account account-b-1 was allowed access to token #2
         ✅ Can provision secret based on 1 rule:
           ✅ Allowed by rule #1"
@@ -164,7 +162,6 @@ it("allows GitHub Actions account secrets that should be allowed within the requ
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
-    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     {
@@ -187,7 +184,7 @@ it("allows GitHub Actions account secrets that should be allowed within the requ
                     },
                   },
                 },
-                repo: { types: { environments: {} } },
+                repo: { visibility: "private", types: { environments: {} } },
                 repos: {},
               },
             },
@@ -205,7 +202,7 @@ it("allows GitHub Actions account secrets that should be allowed within the requ
   expect(toText(resultA)).toMatchInlineSnapshot(`
     "✅ Repo account-a/repo-a was allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
-      ✅ Can provision token to GitHub Actions secret in account-a:
+      ✅ Can provision token to GitHub Actions secret in account account-a:
         ✅ Account account-a was allowed access to token #1
         ✅ Can provision secret based on 1 rule:
           ✅ Allowed by rule #1"
@@ -219,7 +216,6 @@ it("allows GitHub Actions repo secrets that should be allowed", async () => {
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
-    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     {
@@ -232,15 +228,17 @@ it("allows GitHub Actions repo secrets that should be allowed", async () => {
               github: {
                 account: { types: {} },
                 accounts: {},
-                repo: { types: { environments: {} } },
+                repo: { visibility: "private", types: { environments: {} } },
                 repos: {
                   "account-a/repo-a": {
+                    visibility: "private",
                     types: {
                       actions: "allow",
                       environments: {},
                     },
                   },
                   "account-b-*/repo-b-*": {
+                    visibility: "private",
                     types: {
                       actions: "allow",
                       environments: {},
@@ -258,14 +256,26 @@ it("allows GitHub Actions repo secrets that should be allowed", async () => {
   const resultA = authorizer.authorizeSecret(
     createTestProvisionRequest({
       requester: { account: "account-x", repo: "repo-x" },
-      to: [createTestProvisionRequestTarget("actions", "account-a", "repo-a")],
+      to: [
+        createTestRepoProvisionRequestTarget(
+          "actions",
+          "account-a",
+          "repo-a",
+          "private",
+        ),
+      ],
     }),
   );
   const resultB = authorizer.authorizeSecret(
     createTestProvisionRequest({
       requester: { account: "account-y-1", repo: "repo-y-1" },
       to: [
-        createTestProvisionRequestTarget("actions", "account-b-1", "repo-b-1"),
+        createTestRepoProvisionRequestTarget(
+          "actions",
+          "account-b-1",
+          "repo-b-1",
+          "private",
+        ),
       ],
     }),
   );
@@ -276,7 +286,7 @@ it("allows GitHub Actions repo secrets that should be allowed", async () => {
   expect(toText(resultA)).toMatchInlineSnapshot(`
     "✅ Repo account-x/repo-x was allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
-      ✅ Can provision token to GitHub Actions secret in account-a/repo-a:
+      ✅ Can provision token to GitHub Actions secret in private repo account-a/repo-a:
         ✅ Repo account-a/repo-a was allowed access to token #1
         ✅ Can provision secret based on 1 rule:
           ✅ Allowed by rule #1"
@@ -287,7 +297,7 @@ it("allows GitHub Actions repo secrets that should be allowed", async () => {
   expect(toText(resultB)).toMatchInlineSnapshot(`
     "✅ Repo account-y-1/repo-y-1 was allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
-      ✅ Can provision token to GitHub Actions secret in account-b-1/repo-b-1:
+      ✅ Can provision token to GitHub Actions secret in private repo account-b-1/repo-b-1:
         ✅ Repo account-b-1/repo-b-1 was allowed access to token #2
         ✅ Can provision secret based on 1 rule:
           ✅ Allowed by rule #1"
@@ -301,7 +311,6 @@ it("allows GitHub Actions repo secrets that should be allowed within the request
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
-    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     {
@@ -315,6 +324,7 @@ it("allows GitHub Actions repo secrets that should be allowed within the request
                 account: { types: {} },
                 accounts: {},
                 repo: {
+                  visibility: "private",
                   types: {
                     actions: "allow",
                     environments: {},
@@ -331,14 +341,26 @@ it("allows GitHub Actions repo secrets that should be allowed within the request
 
   const resultA = authorizer.authorizeSecret(
     createTestProvisionRequest({
-      to: [createTestProvisionRequestTarget("actions", "account-a", "repo-a")],
+      to: [
+        createTestRepoProvisionRequestTarget(
+          "actions",
+          "account-a",
+          "repo-a",
+          "private",
+        ),
+      ],
     }),
   );
   const resultB = authorizer.authorizeSecret(
     createTestProvisionRequest({
       requester: { account: "account-b-1", repo: "repo-b-1" },
       to: [
-        createTestProvisionRequestTarget("actions", "account-b-1", "repo-b-1"),
+        createTestRepoProvisionRequestTarget(
+          "actions",
+          "account-b-1",
+          "repo-b-1",
+          "private",
+        ),
       ],
     }),
   );
@@ -349,7 +371,7 @@ it("allows GitHub Actions repo secrets that should be allowed within the request
   expect(toText(resultA)).toMatchInlineSnapshot(`
     "✅ Repo account-a/repo-a was allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
-      ✅ Can provision token to GitHub Actions secret in account-a/repo-a:
+      ✅ Can provision token to GitHub Actions secret in private repo account-a/repo-a:
         ✅ Repo account-a/repo-a was allowed access to token #1
         ✅ Can provision secret based on 1 rule:
           ✅ Allowed by rule #1"
@@ -360,7 +382,7 @@ it("allows GitHub Actions repo secrets that should be allowed within the request
   expect(toText(resultB)).toMatchInlineSnapshot(`
     "✅ Repo account-b-1/repo-b-1 was allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
-      ✅ Can provision token to GitHub Actions secret in account-b-1/repo-b-1:
+      ✅ Can provision token to GitHub Actions secret in private repo account-b-1/repo-b-1:
         ✅ Repo account-b-1/repo-b-1 was allowed access to token #2
         ✅ Can provision secret based on 1 rule:
           ✅ Allowed by rule #1"
@@ -374,7 +396,6 @@ it("allows GitHub Actions repo secrets that should be allowed within the request
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
-    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     {
@@ -388,6 +409,7 @@ it("allows GitHub Actions repo secrets that should be allowed within the request
                 account: { types: {} },
                 accounts: {},
                 repo: {
+                  visibility: "private",
                   types: {
                     actions: "allow",
                     environments: {},
@@ -395,6 +417,7 @@ it("allows GitHub Actions repo secrets that should be allowed within the request
                 },
                 repos: {
                   "account-a/repo-a": {
+                    visibility: "private",
                     types: {
                       actions: "deny",
                       environments: {},
@@ -411,14 +434,26 @@ it("allows GitHub Actions repo secrets that should be allowed within the request
 
   const resultA = authorizer.authorizeSecret(
     createTestProvisionRequest({
-      to: [createTestProvisionRequestTarget("actions", "account-a", "repo-a")],
+      to: [
+        createTestRepoProvisionRequestTarget(
+          "actions",
+          "account-a",
+          "repo-a",
+          "private",
+        ),
+      ],
     }),
   );
   const resultB = authorizer.authorizeSecret(
     createTestProvisionRequest({
       requester: { account: "account-b-1", repo: "repo-b-1" },
       to: [
-        createTestProvisionRequestTarget("actions", "account-b-1", "repo-b-1"),
+        createTestRepoProvisionRequestTarget(
+          "actions",
+          "account-b-1",
+          "repo-b-1",
+          "private",
+        ),
       ],
     }),
   );
@@ -429,7 +464,7 @@ it("allows GitHub Actions repo secrets that should be allowed within the request
   expect(toText(resultA)).toMatchInlineSnapshot(`
     "✅ Repo account-a/repo-a was allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
-      ✅ Can provision token to GitHub Actions secret in account-a/repo-a:
+      ✅ Can provision token to GitHub Actions secret in private repo account-a/repo-a:
         ✅ Repo account-a/repo-a was allowed access to token #1
         ✅ Can provision secret based on 1 rule:
           ✅ Allowed by rule #1"
@@ -440,7 +475,7 @@ it("allows GitHub Actions repo secrets that should be allowed within the request
   expect(toText(resultB)).toMatchInlineSnapshot(`
     "✅ Repo account-b-1/repo-b-1 was allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
-      ✅ Can provision token to GitHub Actions secret in account-b-1/repo-b-1:
+      ✅ Can provision token to GitHub Actions secret in private repo account-b-1/repo-b-1:
         ✅ Repo account-b-1/repo-b-1 was allowed access to token #2
         ✅ Can provision secret based on 1 rule:
           ✅ Allowed by rule #1"
@@ -454,7 +489,6 @@ it("doesn't allow GitHub Actions account secrets for unauthorized requesters", a
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
-    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     {
@@ -473,7 +507,7 @@ it("doesn't allow GitHub Actions account secrets for unauthorized requesters", a
                     },
                   },
                 },
-                repo: { types: { environments: {} } },
+                repo: { visibility: "private", types: { environments: {} } },
                 repos: {},
               },
             },
@@ -495,7 +529,7 @@ it("doesn't allow GitHub Actions account secrets for unauthorized requesters", a
   expect(toText(resultA)).toMatchInlineSnapshot(`
     "❌ Repo account-y/repo-y wasn't allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
-      ❌ Can't provision token to GitHub Actions secret in account-a:
+      ❌ Can't provision token to GitHub Actions secret in account account-a:
         ✅ Account account-a was allowed access to token #1
         ❌ Can't provision secret (no matching rules)"
   `);
@@ -508,7 +542,6 @@ it("doesn't allow GitHub Actions account secrets within the requesting account f
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
-    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     {
@@ -525,7 +558,7 @@ it("doesn't allow GitHub Actions account secrets within the requesting account f
                   },
                 },
                 accounts: {},
-                repo: { types: { environments: {} } },
+                repo: { visibility: "private", types: { environments: {} } },
                 repos: {},
               },
             },
@@ -538,19 +571,19 @@ it("doesn't allow GitHub Actions account secrets within the requesting account f
   const resultA = authorizer.authorizeSecret(
     createTestProvisionRequest({
       requester: { account: "account-y", repo: "repo-y" },
-      to: [createTestProvisionRequestTarget("actions", "account-x")],
+      to: [createTestAccountProvisionRequestTarget("actions", "account-x")],
     }),
   );
   const resultB = authorizer.authorizeSecret(
     createTestProvisionRequest({
       requester: { account: "account-x", repo: "repo-y" },
-      to: [createTestProvisionRequestTarget("actions", "account-x")],
+      to: [createTestAccountProvisionRequestTarget("actions", "account-x")],
     }),
   );
   const resultC = authorizer.authorizeSecret(
     createTestProvisionRequest({
       requester: { account: "account-x", repo: "repo-x" },
-      to: [createTestProvisionRequestTarget("actions", "account-y")],
+      to: [createTestAccountProvisionRequestTarget("actions", "account-y")],
     }),
   );
 
@@ -560,7 +593,7 @@ it("doesn't allow GitHub Actions account secrets within the requesting account f
   expect(toText(resultA)).toMatchInlineSnapshot(`
     "❌ Repo account-y/repo-y wasn't allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
-      ❌ Can't provision token to GitHub Actions secret in account-x:
+      ❌ Can't provision token to GitHub Actions secret in account account-x:
         ✅ Account account-x was allowed access to token #1
         ❌ Can't provision secret (no matching rules)"
   `);
@@ -570,7 +603,7 @@ it("doesn't allow GitHub Actions account secrets within the requesting account f
   expect(toText(resultB)).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-y wasn't allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
-      ❌ Can't provision token to GitHub Actions secret in account-x:
+      ❌ Can't provision token to GitHub Actions secret in account account-x:
         ✅ Account account-x was allowed access to token #1
         ❌ Can't provision secret (no matching rules)"
   `);
@@ -580,7 +613,7 @@ it("doesn't allow GitHub Actions account secrets within the requesting account f
   expect(toText(resultC)).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x wasn't allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
-      ❌ Can't provision token to GitHub Actions secret in account-y:
+      ❌ Can't provision token to GitHub Actions secret in account account-y:
         ✅ Account account-y was allowed access to token #2
         ❌ Can't provision secret (no matching rules)"
   `);
@@ -593,7 +626,6 @@ it("doesn't allow GitHub Actions account secrets within the requesting account w
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
-    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     {
@@ -616,7 +648,7 @@ it("doesn't allow GitHub Actions account secrets within the requesting account w
                     },
                   },
                 },
-                repo: { types: { environments: {} } },
+                repo: { visibility: "private", types: { environments: {} } },
                 repos: {},
               },
             },
@@ -634,7 +666,7 @@ it("doesn't allow GitHub Actions account secrets within the requesting account w
   expect(toText(resultA)).toMatchInlineSnapshot(`
     "❌ Repo account-a/repo-a wasn't allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
-      ❌ Can't provision token to GitHub Actions secret in account-a:
+      ❌ Can't provision token to GitHub Actions secret in account account-a:
         ✅ Account account-a was allowed access to token #1
         ❌ Can't provision secret based on 1 rule:
           ❌ Denied by rule #1"
@@ -648,7 +680,6 @@ it("doesn't allow GitHub Actions repo secrets for unauthorized requesters", asyn
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
-    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     {
@@ -661,9 +692,10 @@ it("doesn't allow GitHub Actions repo secrets for unauthorized requesters", asyn
               github: {
                 account: { types: {} },
                 accounts: {},
-                repo: { types: { environments: {} } },
+                repo: { visibility: "private", types: { environments: {} } },
                 repos: {
                   "account-a/repo-a": {
+                    visibility: "private",
                     types: {
                       actions: "allow",
                       environments: {},
@@ -681,7 +713,14 @@ it("doesn't allow GitHub Actions repo secrets for unauthorized requesters", asyn
   const resultA = authorizer.authorizeSecret(
     createTestProvisionRequest({
       requester: { account: "account-y", repo: "repo-y" },
-      to: [createTestProvisionRequestTarget("actions", "account-a", "repo-a")],
+      to: [
+        createTestRepoProvisionRequestTarget(
+          "actions",
+          "account-a",
+          "repo-a",
+          "private",
+        ),
+      ],
     }),
   );
 
@@ -691,7 +730,7 @@ it("doesn't allow GitHub Actions repo secrets for unauthorized requesters", asyn
   expect(toText(resultA)).toMatchInlineSnapshot(`
     "❌ Repo account-y/repo-y wasn't allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
-      ❌ Can't provision token to GitHub Actions secret in account-a/repo-a:
+      ❌ Can't provision token to GitHub Actions secret in private repo account-a/repo-a:
         ✅ Repo account-a/repo-a was allowed access to token #1
         ❌ Can't provision secret (no matching rules)"
   `);
@@ -704,7 +743,6 @@ it("doesn't allow GitHub Actions repo secrets within the requesting repo for una
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
-    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     {
@@ -718,6 +756,7 @@ it("doesn't allow GitHub Actions repo secrets within the requesting repo for una
                 account: { types: {} },
                 accounts: {},
                 repo: {
+                  visibility: "private",
                   types: {
                     actions: "allow",
                     environments: {},
@@ -735,19 +774,40 @@ it("doesn't allow GitHub Actions repo secrets within the requesting repo for una
   const resultA = authorizer.authorizeSecret(
     createTestProvisionRequest({
       requester: { account: "account-y", repo: "repo-y" },
-      to: [createTestProvisionRequestTarget("actions", "account-x", "repo-x")],
+      to: [
+        createTestRepoProvisionRequestTarget(
+          "actions",
+          "account-x",
+          "repo-x",
+          "private",
+        ),
+      ],
     }),
   );
   const resultB = authorizer.authorizeSecret(
     createTestProvisionRequest({
       requester: { account: "account-x", repo: "repo-y" },
-      to: [createTestProvisionRequestTarget("actions", "account-x", "repo-x")],
+      to: [
+        createTestRepoProvisionRequestTarget(
+          "actions",
+          "account-x",
+          "repo-x",
+          "private",
+        ),
+      ],
     }),
   );
   const resultC = authorizer.authorizeSecret(
     createTestProvisionRequest({
       requester: { account: "account-x", repo: "repo-x" },
-      to: [createTestProvisionRequestTarget("actions", "account-x", "repo-y")],
+      to: [
+        createTestRepoProvisionRequestTarget(
+          "actions",
+          "account-x",
+          "repo-y",
+          "private",
+        ),
+      ],
     }),
   );
 
@@ -757,7 +817,7 @@ it("doesn't allow GitHub Actions repo secrets within the requesting repo for una
   expect(toText(resultA)).toMatchInlineSnapshot(`
     "❌ Repo account-y/repo-y wasn't allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
-      ❌ Can't provision token to GitHub Actions secret in account-x/repo-x:
+      ❌ Can't provision token to GitHub Actions secret in private repo account-x/repo-x:
         ✅ Repo account-x/repo-x was allowed access to token #1
         ❌ Can't provision secret (no matching rules)"
   `);
@@ -767,7 +827,7 @@ it("doesn't allow GitHub Actions repo secrets within the requesting repo for una
   expect(toText(resultB)).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-y wasn't allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
-      ❌ Can't provision token to GitHub Actions secret in account-x/repo-x:
+      ❌ Can't provision token to GitHub Actions secret in private repo account-x/repo-x:
         ✅ Repo account-x/repo-x was allowed access to token #1
         ❌ Can't provision secret (no matching rules)"
   `);
@@ -777,7 +837,7 @@ it("doesn't allow GitHub Actions repo secrets within the requesting repo for una
   expect(toText(resultC)).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x wasn't allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
-      ❌ Can't provision token to GitHub Actions secret in account-x/repo-y:
+      ❌ Can't provision token to GitHub Actions secret in private repo account-x/repo-y:
         ✅ Repo account-x/repo-y was allowed access to token #2
         ❌ Can't provision secret (no matching rules)"
   `);
@@ -790,7 +850,6 @@ it("doesn't allow GitHub Actions repo secrets within the requesting repo when de
   const createTokenRequest = createTestTokenRequestFactory();
   const tokenAuthorizer = createTestTokenAuthorizer({ metadata: "read" });
   const authorizer = createProvisionAuthorizer(
-    createRepoRegistry(),
     createTokenRequest,
     tokenAuthorizer,
     {
@@ -804,6 +863,7 @@ it("doesn't allow GitHub Actions repo secrets within the requesting repo when de
                 account: { types: {} },
                 accounts: {},
                 repo: {
+                  visibility: "private",
                   types: {
                     actions: "deny",
                     environments: {},
@@ -811,6 +871,7 @@ it("doesn't allow GitHub Actions repo secrets within the requesting repo when de
                 },
                 repos: {
                   "account-a/repo-a": {
+                    visibility: "private",
                     types: {
                       actions: "allow",
                       environments: {},
@@ -827,7 +888,14 @@ it("doesn't allow GitHub Actions repo secrets within the requesting repo when de
 
   const resultA = authorizer.authorizeSecret(
     createTestProvisionRequest({
-      to: [createTestProvisionRequestTarget("actions", "account-a", "repo-a")],
+      to: [
+        createTestRepoProvisionRequestTarget(
+          "actions",
+          "account-a",
+          "repo-a",
+          "private",
+        ),
+      ],
     }),
   );
 
@@ -837,7 +905,7 @@ it("doesn't allow GitHub Actions repo secrets within the requesting repo when de
   expect(toText(resultA)).toMatchInlineSnapshot(`
     "❌ Repo account-a/repo-a wasn't allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
-      ❌ Can't provision token to GitHub Actions secret in account-a/repo-a:
+      ❌ Can't provision token to GitHub Actions secret in private repo account-a/repo-a:
         ✅ Repo account-a/repo-a was allowed access to token #1
         ❌ Can't provision secret based on 1 rule:
           ❌ Denied by rule #1"

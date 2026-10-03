@@ -6,7 +6,10 @@ import {
 } from "../github-reference.js";
 import { FAIL_ICON, PASS_ICON, icon } from "../icon.js";
 import { pluralize } from "../pluralize.js";
-import type { ProvisionRequestTarget } from "../provision-request.js";
+import {
+  isRepoProvisionRequestTarget,
+  type ProvisionRequestTarget,
+} from "../provision-request.js";
 import { secretTypeText } from "../secret-type.js";
 import { createSequencer } from "../sequencer.js";
 import type {
@@ -115,6 +118,9 @@ export function createTextProvisionAuthExplainer(): ProvisionAuthResultExplainer
   function explainSubject(target: ProvisionRequestTarget): string {
     return (
       `${secretTypeText(target)} secret in ` +
+      (isRepoProvisionRequestTarget(target)
+        ? `${target.visibility} repo `
+        : "account ") +
       `${accountOrRepoRefToString(target.target)}`
     );
   }

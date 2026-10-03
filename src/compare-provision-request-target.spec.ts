@@ -1,160 +1,254 @@
 import { expect, it } from "vitest";
-import { createTestProvisionRequestTarget } from "../test/provision-request.js";
+import {
+  createTestAccountProvisionRequestTarget,
+  createTestEnvironmentProvisionRequestTarget,
+  createTestRepoProvisionRequestTarget,
+} from "../test/provision-request.js";
 import { compareProvisionRequestTarget } from "./compare-provision-request-target.js";
 import type { ProvisionRequestTarget } from "./provision-request.js";
 
 it("sorts targets by account", () => {
   const targets: ProvisionRequestTarget[] = [
-    createTestProvisionRequestTarget("actions", "account-b"),
-    createTestProvisionRequestTarget("actions", "account-c"),
-    createTestProvisionRequestTarget("actions"),
+    createTestAccountProvisionRequestTarget("actions", "account-b"),
+    createTestAccountProvisionRequestTarget("actions", "account-c"),
+    createTestAccountProvisionRequestTarget("actions", "account-a"),
   ];
 
   expect(targets.toSorted(compareProvisionRequestTarget)).toEqual([
-    createTestProvisionRequestTarget("actions"),
-    createTestProvisionRequestTarget("actions", "account-b"),
-    createTestProvisionRequestTarget("actions", "account-c"),
+    createTestAccountProvisionRequestTarget("actions", "account-a"),
+    createTestAccountProvisionRequestTarget("actions", "account-b"),
+    createTestAccountProvisionRequestTarget("actions", "account-c"),
   ]);
 });
 
 it("sorts targets by repo", () => {
   const targets: ProvisionRequestTarget[] = [
-    createTestProvisionRequestTarget("actions", "account-a", "repo-b"),
-    createTestProvisionRequestTarget("actions", "account-a", "repo-c"),
-    createTestProvisionRequestTarget("actions", "account-a", "repo-a"),
+    createTestRepoProvisionRequestTarget(
+      "actions",
+      "account-a",
+      "repo-b",
+      "private",
+    ),
+    createTestRepoProvisionRequestTarget(
+      "actions",
+      "account-a",
+      "repo-c",
+      "private",
+    ),
+    createTestRepoProvisionRequestTarget(
+      "actions",
+      "account-a",
+      "repo-a",
+      "private",
+    ),
   ];
 
   expect(targets.toSorted(compareProvisionRequestTarget)).toEqual([
-    createTestProvisionRequestTarget("actions", "account-a", "repo-a"),
-    createTestProvisionRequestTarget("actions", "account-a", "repo-b"),
-    createTestProvisionRequestTarget("actions", "account-a", "repo-c"),
+    createTestRepoProvisionRequestTarget(
+      "actions",
+      "account-a",
+      "repo-a",
+      "private",
+    ),
+    createTestRepoProvisionRequestTarget(
+      "actions",
+      "account-a",
+      "repo-b",
+      "private",
+    ),
+    createTestRepoProvisionRequestTarget(
+      "actions",
+      "account-a",
+      "repo-c",
+      "private",
+    ),
   ]);
 });
 
 it("sorts targets by environment", () => {
   const targets: ProvisionRequestTarget[] = [
-    createTestProvisionRequestTarget(
-      "environment",
+    createTestEnvironmentProvisionRequestTarget(
       "account-a",
       "repo-a",
       "env-b",
+      "private",
     ),
-    createTestProvisionRequestTarget(
-      "environment",
+    createTestEnvironmentProvisionRequestTarget(
       "account-a",
       "repo-a",
       "env-a",
+      "private",
     ),
-    createTestProvisionRequestTarget(
-      "environment",
+    createTestEnvironmentProvisionRequestTarget(
       "account-a",
       "repo-a",
       "env-c",
+      "private",
     ),
-    createTestProvisionRequestTarget(
-      "environment",
+    createTestEnvironmentProvisionRequestTarget(
       "account-a",
       "repo-a",
       "env-a",
+      "private",
     ),
   ];
 
   expect(targets.toSorted(compareProvisionRequestTarget)).toEqual([
-    createTestProvisionRequestTarget(
-      "environment",
+    createTestEnvironmentProvisionRequestTarget(
       "account-a",
       "repo-a",
       "env-a",
+      "private",
     ),
-    createTestProvisionRequestTarget(
-      "environment",
+    createTestEnvironmentProvisionRequestTarget(
       "account-a",
       "repo-a",
       "env-a",
+      "private",
     ),
-    createTestProvisionRequestTarget(
-      "environment",
+    createTestEnvironmentProvisionRequestTarget(
       "account-a",
       "repo-a",
       "env-b",
+      "private",
     ),
-    createTestProvisionRequestTarget(
-      "environment",
+    createTestEnvironmentProvisionRequestTarget(
       "account-a",
       "repo-a",
       "env-c",
+      "private",
     ),
   ]);
 });
 
 it("sorts account targets, then repo targets, then environment targets", () => {
   const targets: ProvisionRequestTarget[] = [
-    createTestProvisionRequestTarget("actions", "account-a", "repo-b"),
-    createTestProvisionRequestTarget(
-      "environment",
+    createTestRepoProvisionRequestTarget(
+      "actions",
+      "account-a",
+      "repo-b",
+      "private",
+    ),
+    createTestEnvironmentProvisionRequestTarget(
       "account-a",
       "repo-a",
       "env-b",
+      "private",
     ),
-    createTestProvisionRequestTarget("actions", "account-b"),
-    createTestProvisionRequestTarget("actions"),
-    createTestProvisionRequestTarget("actions", "account-a", "repo-a"),
-    createTestProvisionRequestTarget(
-      "environment",
+    createTestAccountProvisionRequestTarget("actions", "account-b"),
+    createTestAccountProvisionRequestTarget("actions", "account-a"),
+    createTestRepoProvisionRequestTarget(
+      "actions",
+      "account-a",
+      "repo-a",
+      "private",
+    ),
+    createTestEnvironmentProvisionRequestTarget(
       "account-a",
       "repo-a",
       "env-a",
+      "private",
     ),
   ];
 
   expect(targets.toSorted(compareProvisionRequestTarget)).toEqual([
-    createTestProvisionRequestTarget("actions"),
-    createTestProvisionRequestTarget("actions", "account-a", "repo-a"),
-    createTestProvisionRequestTarget(
-      "environment",
+    createTestAccountProvisionRequestTarget("actions", "account-a"),
+    createTestRepoProvisionRequestTarget(
+      "actions",
+      "account-a",
+      "repo-a",
+      "private",
+    ),
+    createTestEnvironmentProvisionRequestTarget(
       "account-a",
       "repo-a",
       "env-a",
+      "private",
     ),
-    createTestProvisionRequestTarget(
-      "environment",
+    createTestEnvironmentProvisionRequestTarget(
       "account-a",
       "repo-a",
       "env-b",
+      "private",
     ),
-    createTestProvisionRequestTarget("actions", "account-a", "repo-b"),
-    createTestProvisionRequestTarget("actions", "account-b"),
+    createTestRepoProvisionRequestTarget(
+      "actions",
+      "account-a",
+      "repo-b",
+      "private",
+    ),
+    createTestAccountProvisionRequestTarget("actions", "account-b"),
   ]);
 });
 
 it("sorts account targets by type", () => {
   const targets: ProvisionRequestTarget[] = [
-    createTestProvisionRequestTarget("codespaces"),
-    createTestProvisionRequestTarget("dependabot"),
-    createTestProvisionRequestTarget("agents"),
-    createTestProvisionRequestTarget("actions"),
+    createTestAccountProvisionRequestTarget("codespaces", "account-a"),
+    createTestAccountProvisionRequestTarget("dependabot", "account-a"),
+    createTestAccountProvisionRequestTarget("agents", "account-a"),
+    createTestAccountProvisionRequestTarget("actions", "account-a"),
   ];
 
   expect(targets.toSorted(compareProvisionRequestTarget)).toEqual([
-    createTestProvisionRequestTarget("actions"),
-    createTestProvisionRequestTarget("agents"),
-    createTestProvisionRequestTarget("codespaces"),
-    createTestProvisionRequestTarget("dependabot"),
+    createTestAccountProvisionRequestTarget("actions", "account-a"),
+    createTestAccountProvisionRequestTarget("agents", "account-a"),
+    createTestAccountProvisionRequestTarget("codespaces", "account-a"),
+    createTestAccountProvisionRequestTarget("dependabot", "account-a"),
   ]);
 });
 
 it("sorts repo targets by type", () => {
   const targets: ProvisionRequestTarget[] = [
-    createTestProvisionRequestTarget("codespaces", "account-a", "repo-a"),
-    createTestProvisionRequestTarget("dependabot", "account-a", "repo-a"),
-    createTestProvisionRequestTarget("agents", "account-a", "repo-a"),
-    createTestProvisionRequestTarget("actions", "account-a", "repo-a"),
+    createTestRepoProvisionRequestTarget(
+      "codespaces",
+      "account-a",
+      "repo-a",
+      "private",
+    ),
+    createTestRepoProvisionRequestTarget(
+      "dependabot",
+      "account-a",
+      "repo-a",
+      "private",
+    ),
+    createTestRepoProvisionRequestTarget(
+      "agents",
+      "account-a",
+      "repo-a",
+      "private",
+    ),
+    createTestRepoProvisionRequestTarget(
+      "actions",
+      "account-a",
+      "repo-a",
+      "private",
+    ),
   ];
 
   expect(targets.toSorted(compareProvisionRequestTarget)).toEqual([
-    createTestProvisionRequestTarget("actions", "account-a", "repo-a"),
-    createTestProvisionRequestTarget("agents", "account-a", "repo-a"),
-    createTestProvisionRequestTarget("codespaces", "account-a", "repo-a"),
-    createTestProvisionRequestTarget("dependabot", "account-a", "repo-a"),
+    createTestRepoProvisionRequestTarget(
+      "actions",
+      "account-a",
+      "repo-a",
+      "private",
+    ),
+    createTestRepoProvisionRequestTarget(
+      "agents",
+      "account-a",
+      "repo-a",
+      "private",
+    ),
+    createTestRepoProvisionRequestTarget(
+      "codespaces",
+      "account-a",
+      "repo-a",
+      "private",
+    ),
+    createTestRepoProvisionRequestTarget(
+      "dependabot",
+      "account-a",
+      "repo-a",
+      "private",
+    ),
   ]);
 });

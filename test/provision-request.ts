@@ -1,12 +1,10 @@
 import type {
-  GitHubActionsProvisionRequestTarget,
-  GitHubAgentsProvisionRequestTarget,
-  GitHubCodespacesProvisionRequestTarget,
-  GitHubDependabotProvisionRequestTarget,
   GitHubEnvironmentProvisionRequestTarget,
+  GitHubRepoProvisionRequestTarget,
   ProvisionRequest,
   ProvisionRequestTarget,
 } from "../src/provision-request.js";
+import type { Visibility } from "../src/type/visibility.js";
 import { createTestSecretDec, createTestTokenDec } from "./declaration.js";
 
 export function createTestProvisionRequest(
@@ -18,56 +16,42 @@ export function createTestProvisionRequest(
     tokenDecIsRegistered: true,
     secretDec: createTestSecretDec(),
     name: "SECRET_A",
-    to: [createTestProvisionRequestTarget("actions")],
+    to: [createTestAccountProvisionRequestTarget("actions", "account-a")],
     ...result,
   };
 }
 
-export function createTestProvisionRequestTarget(
-  type: "actions",
-  account?: string,
-  repo?: string,
-): GitHubActionsProvisionRequestTarget;
-export function createTestProvisionRequestTarget(
-  type: "agents",
-  account?: string,
-  repo?: string,
-): GitHubAgentsProvisionRequestTarget;
-export function createTestProvisionRequestTarget(
-  type: "codespaces",
-  account?: string,
-  repo?: string,
-): GitHubCodespacesProvisionRequestTarget;
-export function createTestProvisionRequestTarget(
-  type: "dependabot",
-  account?: string,
-  repo?: string,
-): GitHubDependabotProvisionRequestTarget;
-export function createTestProvisionRequestTarget(
-  type: "environment",
+export function createTestAccountProvisionRequestTarget(
+  type: "actions" | "agents" | "codespaces" | "dependabot",
+  account: string,
+): ProvisionRequestTarget {
+  return { platform: "github", type, target: { account } };
+}
+
+export function createTestRepoProvisionRequestTarget(
+  type: "actions" | "agents" | "codespaces" | "dependabot",
   account: string,
   repo: string,
-  environment: string,
-): GitHubEnvironmentProvisionRequestTarget;
-export function createTestProvisionRequestTarget(
-  type: ProvisionRequestTarget["type"],
-  account = "account-a",
-  repo?: string,
-  environment?: string,
-): ProvisionRequestTarget {
-  if (type === "environment") {
-    if (!repo || !environment) throw new Error("Missing repo or environment");
-
-    return {
-      platform: "github",
-      type: "environment",
-      target: { account, repo, environment },
-    };
-  }
-
+  visibility: Visibility,
+): GitHubRepoProvisionRequestTarget {
   return {
     platform: "github",
     type,
-    target: repo ? { account, repo } : { account },
+    target: { account, repo },
+    visibility,
+  };
+}
+
+export function createTestEnvironmentProvisionRequestTarget(
+  account: string,
+  repo: string,
+  environment: string,
+  visibility: Visibility,
+): GitHubEnvironmentProvisionRequestTarget {
+  return {
+    platform: "github",
+    type: "environment",
+    target: { account, repo, environment },
+    visibility,
   };
 }

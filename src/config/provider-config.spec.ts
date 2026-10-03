@@ -17,6 +17,7 @@ import {
   createTestInstallationAccounts,
 } from "../../test/github-api.js";
 import { createTestOctokitFactory } from "../../test/octokit-factory.js";
+import { createTestRepoRegistry } from "../../test/repo-registry.js";
 import providerSchema from "../schema/provider.v1.schema.json" with { type: "json" };
 import type { ProviderConfig } from "../type/provider-config.js";
 import { parseProviderConfig, readProviderConfig } from "./provider-config.js";
@@ -48,7 +49,7 @@ it("reads comprehensive provider config", async () => {
     {},
     [[accountA, "selected"]],
   ]);
-  const appRegistry = createTestAppRegistry({
+  const appRegistry = createTestAppRegistry(createTestRepoRegistry(), {
     app: appA,
     installations: [[appAInstallationA, [repoA]]],
   });
@@ -433,6 +434,7 @@ it("reads comprehensive provider config", async () => {
                 account: { types: {} },
                 accounts: {},
                 repo: {
+                  visibility: "private",
                   types: {
                     actions: "allow",
                     agents: "allow",
@@ -464,6 +466,7 @@ it("reads comprehensive provider config", async () => {
                 },
                 accounts: {},
                 repo: {
+                  visibility: "private",
                   types: {
                     environments: {},
                   },
@@ -493,6 +496,7 @@ it("reads comprehensive provider config", async () => {
                   },
                 },
                 repo: {
+                  visibility: "private",
                   types: {
                     environments: {},
                   },
@@ -517,6 +521,7 @@ it("reads comprehensive provider config", async () => {
                   },
                 },
                 repo: {
+                  visibility: "private",
                   types: {
                     environments: {},
                   },
@@ -535,12 +540,14 @@ it("reads comprehensive provider config", async () => {
                 account: { types: {} },
                 accounts: {},
                 repo: {
+                  visibility: "private",
                   types: {
                     environments: {},
                   },
                 },
                 repos: {
                   "account-self/repo-b": {
+                    visibility: "private",
                     types: {
                       agents: "allow",
                       codespaces: "allow",
@@ -548,6 +555,7 @@ it("reads comprehensive provider config", async () => {
                     },
                   },
                   "account-b/repo-c": {
+                    visibility: "private",
                     types: {
                       agents: "allow",
                       codespaces: "allow",
@@ -568,12 +576,14 @@ it("reads comprehensive provider config", async () => {
                 account: { types: {} },
                 accounts: {},
                 repo: {
+                  visibility: "private",
                   types: {
                     environments: {},
                   },
                 },
                 repos: {
                   "account-self/repo-b": {
+                    visibility: "private",
                     types: {
                       environments: {
                         "env-a": "allow",
@@ -595,12 +605,14 @@ it("reads comprehensive provider config", async () => {
                 account: { types: {} },
                 accounts: {},
                 repo: {
+                  visibility: "private",
                   types: {
                     environments: {},
                   },
                 },
                 repos: {
                   "*/*": {
+                    visibility: "private",
                     types: {
                       actions: "allow",
                       agents: "allow",
@@ -625,12 +637,14 @@ it("reads comprehensive provider config", async () => {
                 account: { types: {} },
                 accounts: {},
                 repo: {
+                  visibility: "private",
                   types: {
                     environments: {},
                   },
                 },
                 repos: {
                   "account-b/*": {
+                    visibility: "private",
                     types: {
                       actions: "allow",
                       environments: {},
@@ -665,6 +679,7 @@ it("reads comprehensive provider config", async () => {
                   },
                 },
                 repo: {
+                  visibility: "private",
                   types: {
                     actions: "allow",
                     environments: {},
@@ -672,12 +687,14 @@ it("reads comprehensive provider config", async () => {
                 },
                 repos: {
                   "account-self/repo-a": {
+                    visibility: "private",
                     types: {
                       actions: "allow",
                       environments: {},
                     },
                   },
                   "account-a/repo-a": {
+                    visibility: "private",
                     types: {
                       actions: "allow",
                       environments: {},
@@ -706,12 +723,14 @@ it("reads comprehensive provider config", async () => {
                   },
                 },
                 repo: {
+                  visibility: "private",
                   types: {
                     environments: {},
                   },
                 },
                 repos: {
                   "*/*": {
+                    visibility: "private",
                     types: {
                       actions: "deny",
                       agents: "deny",
@@ -736,6 +755,7 @@ it("reads comprehensive provider config", async () => {
                 account: { types: {} },
                 accounts: {},
                 repo: {
+                  visibility: "private",
                   types: {
                     actions: "deny",
                     agents: "deny",
@@ -760,6 +780,7 @@ it("reads comprehensive provider config", async () => {
                 account: { types: {} },
                 accounts: {},
                 repo: {
+                  visibility: "private",
                   types: {
                     actions: "allow",
                     agents: "deny",
@@ -1015,6 +1036,25 @@ it("throws when an account provision target has environments", async () => {
     Caused by: Invalid provider configuration:
       - must NOT have additional properties (/provision/rules/secrets/0/to/github/account/types)"
   `);
+});
+
+it("defaults repo provision target visibility to private", async () => {
+  const fixturePath = join(
+    fixturesPath,
+    "provision-repo-target-visibility.yml",
+  );
+  const yaml = await readFile(fixturePath, "utf-8");
+
+  const config = parseProviderConfig(
+    { account: "account-self", repo: "repo-self" },
+    "path/to/config.yml",
+    yaml,
+  );
+
+  const targets = config.provision.rules.secrets[0].to.github.repos;
+
+  expect(targets["account-a/repo-default"].visibility).toBe("private");
+  expect(targets["account-a/repo-explicit"].visibility).toBe("internal");
 });
 
 it("throws when the YAML is invalid", () => {
