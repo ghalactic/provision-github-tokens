@@ -1,5 +1,9 @@
 import type { Visibility } from "./type/visibility.js";
 
+export function isVisibility(value: unknown): value is Visibility {
+  return value === "private" || value === "internal" || value === "public";
+}
+
 export function isVisibilityWithin(
   target: Visibility,
   allowed: Visibility,

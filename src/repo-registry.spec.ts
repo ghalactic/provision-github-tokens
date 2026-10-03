@@ -60,6 +60,24 @@ it("throws when registering a repo without a visibility", () => {
       repoRegistry.register({ ...repoA, visibility: undefined });
     }),
   ).toMatchInlineSnapshot(
-    `"Invariant violation: Repo account-a/repo-a doesn't have a visibility"`,
+    `"Invariant violation: Repo account-a/repo-a doesn't have a known visibility"`,
+  );
+});
+
+it("throws when registering a repo with an unknown visibility", () => {
+  const [[, [repoA]]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "account-a",
+    ["repo-a"],
+  ]);
+  const repoRegistry = createRepoRegistry();
+
+  expect(
+    throws(() => {
+      repoRegistry.register({ ...repoA, visibility: "secret" });
+    }),
+  ).toMatchInlineSnapshot(
+    `"Invariant violation: Repo account-a/repo-a doesn't have a known visibility"`,
   );
 });

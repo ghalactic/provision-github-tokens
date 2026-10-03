@@ -1,5 +1,6 @@
 import { repoRefToString, type RepoReference } from "./github-reference.js";
 import type { Repo } from "./type/github-api.js";
+import { isVisibility } from "./visibility.js";
 
 export type RepoRegistry = {
   register: (repo: Repo) => void;
@@ -11,11 +12,11 @@ export function createRepoRegistry(): RepoRegistry {
 
   return {
     register: (repo) => {
-      /* istanbul ignore next - never seen without a visibility - @preserve */
-      if (typeof repo.visibility !== "string") {
+      /* istanbul ignore next - GitHub always populates a known visibility - @preserve */
+      if (!isVisibility(repo.visibility)) {
         throw new Error(
           "Invariant violation: " +
-            `Repo ${repo.full_name} doesn't have a visibility`,
+            `Repo ${repo.full_name} doesn't have a known visibility`,
         );
       }
 

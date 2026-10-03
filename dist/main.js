@@ -120249,6 +120249,9 @@ function createFindIssuerOctokit(octokitFactory, appRegistry, appsInput) {
 }
 
 // src/visibility.ts
+function isVisibility(value) {
+  return value === "private" || value === "internal" || value === "public";
+}
 function isVisibilityWithin(target, allowed) {
   return VISIBILITY_RANK[target] <= VISIBILITY_RANK[allowed];
 }
@@ -121843,9 +121846,9 @@ function createRepoRegistry() {
   const repos = /* @__PURE__ */ new Map();
   return {
     register: (repo) => {
-      if (typeof repo.visibility !== "string") {
+      if (!isVisibility(repo.visibility)) {
         throw new Error(
-          `Invariant violation: Repo ${repo.full_name} doesn't have a visibility`
+          `Invariant violation: Repo ${repo.full_name} doesn't have a known visibility`
         );
       }
       repos.set(repo.full_name, repo);
@@ -122682,7 +122685,7 @@ try {
 /* istanbul ignore next - parseRequesterConfig always throws with a cause - @preserve */
 /* istanbul ignore else - @preserve */
 /* istanbul ignore next - only called for requesters with a config error - @preserve */
-/* istanbul ignore next - never seen without a visibility - @preserve */
+/* istanbul ignore next - GitHub always populates a known visibility - @preserve */
 /* istanbul ignore next - prevented by discovery - @preserve */
 /* istanbul ignore file - TODO: remove coverage ignore - @preserve */
 /*! Bundled license information:
