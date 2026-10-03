@@ -125,6 +125,14 @@ across your repositories.
     <code>none</code> &lt; <code>read</code> &lt; <code>write</code> &lt;
     <code>admin</code>.
   </dd>
+
+  <dt>Repository visibility</dt>
+  <dd>
+    A repository's GitHub classification: <code>private</code>,
+    <code>internal</code>, or <code>public</code>, ordered most to least
+    restricted. A rule that names a visibility matches that visibility and
+    every more restricted one.
+  </dd>
 </dl>
 
 <!-- vale Ghalactic.HeadingGerund = NO -->
