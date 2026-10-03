@@ -76,6 +76,167 @@ it.each([
   },
 );
 
+it.each([
+  ["private", "private", true],
+  ["private", "internal", false],
+  ["private", "public", false],
+  ["internal", "private", true],
+  ["internal", "internal", true],
+  ["internal", "public", false],
+  ["public", "private", true],
+  ["public", "internal", true],
+  ["public", "public", true],
+] as const)(
+  "gates a %s rule against a %s self-repo target",
+  (ruleVisibility, targetVisibility, expected) => {
+    const authorizer = createProvisionAuthorizer(
+      createTestTokenRequestFactory(),
+      createTestTokenAuthorizer({ metadata: "read" }),
+      {
+        rules: {
+          secrets: [
+            {
+              secrets: ["SECRET_A"],
+              requesters: ["account-a/repo-a"],
+              to: {
+                github: {
+                  account: { types: {} },
+                  accounts: {},
+                  repo: {
+                    visibility: ruleVisibility,
+                    types: { actions: "allow", environments: {} },
+                  },
+                  repos: {},
+                },
+              },
+            },
+          ],
+        },
+      },
+    );
+
+    const result = authorizer.authorizeSecret(
+      createTestProvisionRequest({
+        to: [
+          createTestRepoProvisionRequestTarget(
+            "actions",
+            "account-a",
+            "repo-a",
+            targetVisibility,
+          ),
+        ],
+      }),
+    );
+
+    expect(result.isAllowed).toBe(expected);
+  },
+);
+
+it.each([
+  ["private", "private", true],
+  ["private", "internal", false],
+  ["private", "public", false],
+  ["internal", "internal", true],
+  ["internal", "public", false],
+  ["public", "public", true],
+] as const)(
+  "gates a %s rule against a %s self-repo environment target",
+  (ruleVisibility, targetVisibility, expected) => {
+    const authorizer = createProvisionAuthorizer(
+      createTestTokenRequestFactory(),
+      createTestTokenAuthorizer({ metadata: "read" }),
+      {
+        rules: {
+          secrets: [
+            {
+              secrets: ["SECRET_A"],
+              requesters: ["account-a/repo-a"],
+              to: {
+                github: {
+                  account: { types: {} },
+                  accounts: {},
+                  repo: {
+                    visibility: ruleVisibility,
+                    types: {
+                      environments: {
+                        "env-a": "allow",
+                      },
+                    },
+                  },
+                  repos: {},
+                },
+              },
+            },
+          ],
+        },
+      },
+    );
+
+    const result = authorizer.authorizeSecret(
+      createTestProvisionRequest({
+        to: [
+          createTestEnvironmentProvisionRequestTarget(
+            "account-a",
+            "repo-a",
+            "env-a",
+            targetVisibility,
+          ),
+        ],
+      }),
+    );
+
+    expect(result.isAllowed).toBe(expected);
+  },
+);
+
+it("preserves a pattern-matched self repo whose self override is excluded", () => {
+  const authorizer = createProvisionAuthorizer(
+    createTestTokenRequestFactory(),
+    createTestTokenAuthorizer({ metadata: "read" }),
+    {
+      rules: {
+        secrets: [
+          {
+            secrets: ["SECRET_A"],
+            requesters: ["account-a/repo-a"],
+            to: {
+              github: {
+                account: { types: {} },
+                accounts: {},
+                repo: {
+                  visibility: "private",
+                  types: { actions: "deny", environments: {} },
+                },
+                repos: {
+                  "account-a/repo-a": {
+                    visibility: "public",
+                    types: { actions: "allow", environments: {} },
+                  },
+                },
+              },
+            },
+          },
+        ],
+      },
+    },
+  );
+
+  const result = authorizer.authorizeSecret(
+    createTestProvisionRequest({
+      to: [
+        createTestRepoProvisionRequestTarget(
+          "actions",
+          "account-a",
+          "repo-a",
+          "public",
+        ),
+      ],
+    }),
+  );
+
+  expect(result.isAllowed).toBe(true);
+});
+
 it("explains the visibility applied to an allowed repo target", async () => {
   const authorizer = createProvisionAuthorizer(
     createTestTokenRequestFactory(),
