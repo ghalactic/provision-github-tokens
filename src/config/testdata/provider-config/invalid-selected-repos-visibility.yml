@@ -1,0 +1,10 @@
+permissions:
+  rules:
+    - resources:
+        - accounts: [account-a]
+          selectedRepos:
+            repos: ["*"]
+            visibility: secret
+      consumers: ["*"]
+      permissions:
+        metadata: read

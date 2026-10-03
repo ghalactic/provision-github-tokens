@@ -1,8 +1,9 @@
 import { join } from "node:path";
 import { expect, it } from "vitest";
 import {
+  createTestAccountProvisionRequestTarget,
   createTestProvisionRequest,
-  createTestProvisionRequestTarget,
+  createTestRepoProvisionRequestTarget,
 } from "../test/provision-request.js";
 import { createTestTokenAuthorizer } from "../test/token-authorizer.js";
 import { createTestTokenRequestFactory } from "../test/token-request.js";
@@ -30,16 +31,20 @@ it("allows GitHub Codespaces account secrets that should be allowed", async () =
             requesters: ["account-x/repo-x", "account-y-*/repo-y-*"],
             to: {
               github: {
-                account: {},
+                account: { types: {} },
                 accounts: {
                   "account-a": {
-                    codespaces: "allow",
+                    types: {
+                      codespaces: "allow",
+                    },
                   },
                   "account-b-*": {
-                    codespaces: "allow",
+                    types: {
+                      codespaces: "allow",
+                    },
                   },
                 },
-                repo: { environments: {} },
+                repo: { visibility: "private", types: { environments: {} } },
                 repos: {},
               },
             },
@@ -52,13 +57,15 @@ it("allows GitHub Codespaces account secrets that should be allowed", async () =
   const resultA = authorizer.authorizeSecret(
     createTestProvisionRequest({
       requester: { account: "account-x", repo: "repo-x" },
-      to: [createTestProvisionRequestTarget("codespaces")],
+      to: [createTestAccountProvisionRequestTarget("codespaces", "account-a")],
     }),
   );
   const resultB = authorizer.authorizeSecret(
     createTestProvisionRequest({
       requester: { account: "account-y-1", repo: "repo-y-1" },
-      to: [createTestProvisionRequestTarget("codespaces", "account-b-1")],
+      to: [
+        createTestAccountProvisionRequestTarget("codespaces", "account-b-1"),
+      ],
     }),
   );
 
@@ -68,7 +75,7 @@ it("allows GitHub Codespaces account secrets that should be allowed", async () =
   expect(toText(resultA)).toMatchInlineSnapshot(`
     "✅ Repo account-x/repo-x was allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
-      ✅ Can provision token to GitHub Codespaces secret in account-a:
+      ✅ Can provision token to GitHub Codespaces secret in account account-a:
         ✅ Account account-a was allowed access to token #1
         ✅ Can provision secret based on 1 rule:
           ✅ Allowed by rule #1"
@@ -79,7 +86,7 @@ it("allows GitHub Codespaces account secrets that should be allowed", async () =
   expect(toText(resultB)).toMatchInlineSnapshot(`
     "✅ Repo account-y-1/repo-y-1 was allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
-      ✅ Can provision token to GitHub Codespaces secret in account-b-1:
+      ✅ Can provision token to GitHub Codespaces secret in account account-b-1:
         ✅ Account account-b-1 was allowed access to token #2
         ✅ Can provision secret based on 1 rule:
           ✅ Allowed by rule #1"
@@ -104,10 +111,12 @@ it("allows GitHub Codespaces account secrets that should be allowed within the r
             to: {
               github: {
                 account: {
-                  codespaces: "allow",
+                  types: {
+                    codespaces: "allow",
+                  },
                 },
                 accounts: {},
-                repo: { environments: {} },
+                repo: { visibility: "private", types: { environments: {} } },
                 repos: {},
               },
             },
@@ -119,13 +128,15 @@ it("allows GitHub Codespaces account secrets that should be allowed within the r
 
   const resultA = authorizer.authorizeSecret(
     createTestProvisionRequest({
-      to: [createTestProvisionRequestTarget("codespaces")],
+      to: [createTestAccountProvisionRequestTarget("codespaces", "account-a")],
     }),
   );
   const resultB = authorizer.authorizeSecret(
     createTestProvisionRequest({
       requester: { account: "account-b-1", repo: "repo-b-1" },
-      to: [createTestProvisionRequestTarget("codespaces", "account-b-1")],
+      to: [
+        createTestAccountProvisionRequestTarget("codespaces", "account-b-1"),
+      ],
     }),
   );
 
@@ -135,7 +146,7 @@ it("allows GitHub Codespaces account secrets that should be allowed within the r
   expect(toText(resultA)).toMatchInlineSnapshot(`
     "✅ Repo account-a/repo-a was allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
-      ✅ Can provision token to GitHub Codespaces secret in account-a:
+      ✅ Can provision token to GitHub Codespaces secret in account account-a:
         ✅ Account account-a was allowed access to token #1
         ✅ Can provision secret based on 1 rule:
           ✅ Allowed by rule #1"
@@ -146,7 +157,7 @@ it("allows GitHub Codespaces account secrets that should be allowed within the r
   expect(toText(resultB)).toMatchInlineSnapshot(`
     "✅ Repo account-b-1/repo-b-1 was allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
-      ✅ Can provision token to GitHub Codespaces secret in account-b-1:
+      ✅ Can provision token to GitHub Codespaces secret in account account-b-1:
         ✅ Account account-b-1 was allowed access to token #2
         ✅ Can provision secret based on 1 rule:
           ✅ Allowed by rule #1"
@@ -171,14 +182,18 @@ it("allows GitHub Codespaces account secrets that should be allowed within the r
             to: {
               github: {
                 account: {
-                  codespaces: "allow",
+                  types: {
+                    codespaces: "allow",
+                  },
                 },
                 accounts: {
                   "account-a": {
-                    codespaces: "deny",
+                    types: {
+                      codespaces: "deny",
+                    },
                   },
                 },
-                repo: { environments: {} },
+                repo: { visibility: "private", types: { environments: {} } },
                 repos: {},
               },
             },
@@ -190,7 +205,7 @@ it("allows GitHub Codespaces account secrets that should be allowed within the r
 
   const resultA = authorizer.authorizeSecret(
     createTestProvisionRequest({
-      to: [createTestProvisionRequestTarget("codespaces")],
+      to: [createTestAccountProvisionRequestTarget("codespaces", "account-a")],
     }),
   );
 
@@ -200,7 +215,7 @@ it("allows GitHub Codespaces account secrets that should be allowed within the r
   expect(toText(resultA)).toMatchInlineSnapshot(`
     "✅ Repo account-a/repo-a was allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
-      ✅ Can provision token to GitHub Codespaces secret in account-a:
+      ✅ Can provision token to GitHub Codespaces secret in account account-a:
         ✅ Account account-a was allowed access to token #1
         ✅ Can provision secret based on 1 rule:
           ✅ Allowed by rule #1"
@@ -224,17 +239,23 @@ it("allows GitHub Codespaces repo secrets that should be allowed", async () => {
             requesters: ["account-x/repo-x", "account-y-*/repo-y-*"],
             to: {
               github: {
-                account: {},
+                account: { types: {} },
                 accounts: {},
-                repo: { environments: {} },
+                repo: { visibility: "private", types: { environments: {} } },
                 repos: {
                   "account-a/repo-a": {
-                    codespaces: "allow",
-                    environments: {},
+                    visibility: "private",
+                    types: {
+                      codespaces: "allow",
+                      environments: {},
+                    },
                   },
                   "account-b-*/repo-b-*": {
-                    codespaces: "allow",
-                    environments: {},
+                    visibility: "private",
+                    types: {
+                      codespaces: "allow",
+                      environments: {},
+                    },
                   },
                 },
               },
@@ -249,7 +270,12 @@ it("allows GitHub Codespaces repo secrets that should be allowed", async () => {
     createTestProvisionRequest({
       requester: { account: "account-x", repo: "repo-x" },
       to: [
-        createTestProvisionRequestTarget("codespaces", "account-a", "repo-a"),
+        createTestRepoProvisionRequestTarget(
+          "codespaces",
+          "account-a",
+          "repo-a",
+          "private",
+        ),
       ],
     }),
   );
@@ -257,10 +283,11 @@ it("allows GitHub Codespaces repo secrets that should be allowed", async () => {
     createTestProvisionRequest({
       requester: { account: "account-y-1", repo: "repo-y-1" },
       to: [
-        createTestProvisionRequestTarget(
+        createTestRepoProvisionRequestTarget(
           "codespaces",
           "account-b-1",
           "repo-b-1",
+          "private",
         ),
       ],
     }),
@@ -272,7 +299,7 @@ it("allows GitHub Codespaces repo secrets that should be allowed", async () => {
   expect(toText(resultA)).toMatchInlineSnapshot(`
     "✅ Repo account-x/repo-x was allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
-      ✅ Can provision token to GitHub Codespaces secret in account-a/repo-a:
+      ✅ Can provision token to GitHub Codespaces secret in private repo account-a/repo-a:
         ✅ Repo account-a/repo-a was allowed access to token #1
         ✅ Can provision secret based on 1 rule:
           ✅ Allowed by rule #1"
@@ -283,7 +310,7 @@ it("allows GitHub Codespaces repo secrets that should be allowed", async () => {
   expect(toText(resultB)).toMatchInlineSnapshot(`
     "✅ Repo account-y-1/repo-y-1 was allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
-      ✅ Can provision token to GitHub Codespaces secret in account-b-1/repo-b-1:
+      ✅ Can provision token to GitHub Codespaces secret in private repo account-b-1/repo-b-1:
         ✅ Repo account-b-1/repo-b-1 was allowed access to token #2
         ✅ Can provision secret based on 1 rule:
           ✅ Allowed by rule #1"
@@ -307,11 +334,14 @@ it("allows GitHub Codespaces repo secrets that should be allowed within the requ
             requesters: ["account-a/repo-a", "account-b-*/repo-b-*"],
             to: {
               github: {
-                account: {},
+                account: { types: {} },
                 accounts: {},
                 repo: {
-                  codespaces: "allow",
-                  environments: {},
+                  visibility: "private",
+                  types: {
+                    codespaces: "allow",
+                    environments: {},
+                  },
                 },
                 repos: {},
               },
@@ -325,7 +355,12 @@ it("allows GitHub Codespaces repo secrets that should be allowed within the requ
   const resultA = authorizer.authorizeSecret(
     createTestProvisionRequest({
       to: [
-        createTestProvisionRequestTarget("codespaces", "account-a", "repo-a"),
+        createTestRepoProvisionRequestTarget(
+          "codespaces",
+          "account-a",
+          "repo-a",
+          "private",
+        ),
       ],
     }),
   );
@@ -333,10 +368,11 @@ it("allows GitHub Codespaces repo secrets that should be allowed within the requ
     createTestProvisionRequest({
       requester: { account: "account-b-1", repo: "repo-b-1" },
       to: [
-        createTestProvisionRequestTarget(
+        createTestRepoProvisionRequestTarget(
           "codespaces",
           "account-b-1",
           "repo-b-1",
+          "private",
         ),
       ],
     }),
@@ -348,7 +384,7 @@ it("allows GitHub Codespaces repo secrets that should be allowed within the requ
   expect(toText(resultA)).toMatchInlineSnapshot(`
     "✅ Repo account-a/repo-a was allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
-      ✅ Can provision token to GitHub Codespaces secret in account-a/repo-a:
+      ✅ Can provision token to GitHub Codespaces secret in private repo account-a/repo-a:
         ✅ Repo account-a/repo-a was allowed access to token #1
         ✅ Can provision secret based on 1 rule:
           ✅ Allowed by rule #1"
@@ -359,7 +395,7 @@ it("allows GitHub Codespaces repo secrets that should be allowed within the requ
   expect(toText(resultB)).toMatchInlineSnapshot(`
     "✅ Repo account-b-1/repo-b-1 was allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
-      ✅ Can provision token to GitHub Codespaces secret in account-b-1/repo-b-1:
+      ✅ Can provision token to GitHub Codespaces secret in private repo account-b-1/repo-b-1:
         ✅ Repo account-b-1/repo-b-1 was allowed access to token #2
         ✅ Can provision secret based on 1 rule:
           ✅ Allowed by rule #1"
@@ -383,16 +419,22 @@ it("allows GitHub Codespaces repo secrets that should be allowed within the requ
             requesters: ["account-a/repo-a", "account-b-*/repo-b-*"],
             to: {
               github: {
-                account: {},
+                account: { types: {} },
                 accounts: {},
                 repo: {
-                  codespaces: "allow",
-                  environments: {},
+                  visibility: "private",
+                  types: {
+                    codespaces: "allow",
+                    environments: {},
+                  },
                 },
                 repos: {
                   "account-a/repo-a": {
-                    codespaces: "deny",
-                    environments: {},
+                    visibility: "private",
+                    types: {
+                      codespaces: "deny",
+                      environments: {},
+                    },
                   },
                 },
               },
@@ -406,7 +448,12 @@ it("allows GitHub Codespaces repo secrets that should be allowed within the requ
   const resultA = authorizer.authorizeSecret(
     createTestProvisionRequest({
       to: [
-        createTestProvisionRequestTarget("codespaces", "account-a", "repo-a"),
+        createTestRepoProvisionRequestTarget(
+          "codespaces",
+          "account-a",
+          "repo-a",
+          "private",
+        ),
       ],
     }),
   );
@@ -414,10 +461,11 @@ it("allows GitHub Codespaces repo secrets that should be allowed within the requ
     createTestProvisionRequest({
       requester: { account: "account-b-1", repo: "repo-b-1" },
       to: [
-        createTestProvisionRequestTarget(
+        createTestRepoProvisionRequestTarget(
           "codespaces",
           "account-b-1",
           "repo-b-1",
+          "private",
         ),
       ],
     }),
@@ -429,7 +477,7 @@ it("allows GitHub Codespaces repo secrets that should be allowed within the requ
   expect(toText(resultA)).toMatchInlineSnapshot(`
     "✅ Repo account-a/repo-a was allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
-      ✅ Can provision token to GitHub Codespaces secret in account-a/repo-a:
+      ✅ Can provision token to GitHub Codespaces secret in private repo account-a/repo-a:
         ✅ Repo account-a/repo-a was allowed access to token #1
         ✅ Can provision secret based on 1 rule:
           ✅ Allowed by rule #1"
@@ -440,7 +488,7 @@ it("allows GitHub Codespaces repo secrets that should be allowed within the requ
   expect(toText(resultB)).toMatchInlineSnapshot(`
     "✅ Repo account-b-1/repo-b-1 was allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
-      ✅ Can provision token to GitHub Codespaces secret in account-b-1/repo-b-1:
+      ✅ Can provision token to GitHub Codespaces secret in private repo account-b-1/repo-b-1:
         ✅ Repo account-b-1/repo-b-1 was allowed access to token #2
         ✅ Can provision secret based on 1 rule:
           ✅ Allowed by rule #1"
@@ -464,13 +512,15 @@ it("doesn't allow GitHub Codespaces account secrets for unauthorized requesters"
             requesters: ["account-x/repo-x"],
             to: {
               github: {
-                account: {},
+                account: { types: {} },
                 accounts: {
                   "account-a": {
-                    codespaces: "allow",
+                    types: {
+                      codespaces: "allow",
+                    },
                   },
                 },
-                repo: { environments: {} },
+                repo: { visibility: "private", types: { environments: {} } },
                 repos: {},
               },
             },
@@ -483,7 +533,7 @@ it("doesn't allow GitHub Codespaces account secrets for unauthorized requesters"
   const resultA = authorizer.authorizeSecret(
     createTestProvisionRequest({
       requester: { account: "account-y", repo: "repo-y" },
-      to: [createTestProvisionRequestTarget("codespaces")],
+      to: [createTestAccountProvisionRequestTarget("codespaces", "account-a")],
     }),
   );
 
@@ -493,7 +543,7 @@ it("doesn't allow GitHub Codespaces account secrets for unauthorized requesters"
   expect(toText(resultA)).toMatchInlineSnapshot(`
     "❌ Repo account-y/repo-y wasn't allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
-      ❌ Can't provision token to GitHub Codespaces secret in account-a:
+      ❌ Can't provision token to GitHub Codespaces secret in account account-a:
         ✅ Account account-a was allowed access to token #1
         ❌ Can't provision secret (no matching rules)"
   `);
@@ -517,10 +567,12 @@ it("doesn't allow GitHub Codespaces account secrets within the requesting accoun
             to: {
               github: {
                 account: {
-                  codespaces: "allow",
+                  types: {
+                    codespaces: "allow",
+                  },
                 },
                 accounts: {},
-                repo: { environments: {} },
+                repo: { visibility: "private", types: { environments: {} } },
                 repos: {},
               },
             },
@@ -533,19 +585,19 @@ it("doesn't allow GitHub Codespaces account secrets within the requesting accoun
   const resultA = authorizer.authorizeSecret(
     createTestProvisionRequest({
       requester: { account: "account-y", repo: "repo-y" },
-      to: [createTestProvisionRequestTarget("codespaces", "account-x")],
+      to: [createTestAccountProvisionRequestTarget("codespaces", "account-x")],
     }),
   );
   const resultB = authorizer.authorizeSecret(
     createTestProvisionRequest({
       requester: { account: "account-x", repo: "repo-y" },
-      to: [createTestProvisionRequestTarget("codespaces", "account-x")],
+      to: [createTestAccountProvisionRequestTarget("codespaces", "account-x")],
     }),
   );
   const resultC = authorizer.authorizeSecret(
     createTestProvisionRequest({
       requester: { account: "account-x", repo: "repo-x" },
-      to: [createTestProvisionRequestTarget("codespaces", "account-y")],
+      to: [createTestAccountProvisionRequestTarget("codespaces", "account-y")],
     }),
   );
 
@@ -555,7 +607,7 @@ it("doesn't allow GitHub Codespaces account secrets within the requesting accoun
   expect(toText(resultA)).toMatchInlineSnapshot(`
     "❌ Repo account-y/repo-y wasn't allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
-      ❌ Can't provision token to GitHub Codespaces secret in account-x:
+      ❌ Can't provision token to GitHub Codespaces secret in account account-x:
         ✅ Account account-x was allowed access to token #1
         ❌ Can't provision secret (no matching rules)"
   `);
@@ -565,7 +617,7 @@ it("doesn't allow GitHub Codespaces account secrets within the requesting accoun
   expect(toText(resultB)).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-y wasn't allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
-      ❌ Can't provision token to GitHub Codespaces secret in account-x:
+      ❌ Can't provision token to GitHub Codespaces secret in account account-x:
         ✅ Account account-x was allowed access to token #1
         ❌ Can't provision secret (no matching rules)"
   `);
@@ -575,7 +627,7 @@ it("doesn't allow GitHub Codespaces account secrets within the requesting accoun
   expect(toText(resultC)).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x wasn't allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
-      ❌ Can't provision token to GitHub Codespaces secret in account-y:
+      ❌ Can't provision token to GitHub Codespaces secret in account account-y:
         ✅ Account account-y was allowed access to token #2
         ❌ Can't provision secret (no matching rules)"
   `);
@@ -599,14 +651,18 @@ it("doesn't allow GitHub Codespaces account secrets within the requesting accoun
             to: {
               github: {
                 account: {
-                  codespaces: "deny",
+                  types: {
+                    codespaces: "deny",
+                  },
                 },
                 accounts: {
                   "account-a": {
-                    codespaces: "allow",
+                    types: {
+                      codespaces: "allow",
+                    },
                   },
                 },
-                repo: { environments: {} },
+                repo: { visibility: "private", types: { environments: {} } },
                 repos: {},
               },
             },
@@ -618,7 +674,7 @@ it("doesn't allow GitHub Codespaces account secrets within the requesting accoun
 
   const resultA = authorizer.authorizeSecret(
     createTestProvisionRequest({
-      to: [createTestProvisionRequestTarget("codespaces")],
+      to: [createTestAccountProvisionRequestTarget("codespaces", "account-a")],
     }),
   );
 
@@ -628,7 +684,7 @@ it("doesn't allow GitHub Codespaces account secrets within the requesting accoun
   expect(toText(resultA)).toMatchInlineSnapshot(`
     "❌ Repo account-a/repo-a wasn't allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
-      ❌ Can't provision token to GitHub Codespaces secret in account-a:
+      ❌ Can't provision token to GitHub Codespaces secret in account account-a:
         ✅ Account account-a was allowed access to token #1
         ❌ Can't provision secret based on 1 rule:
           ❌ Denied by rule #1"
@@ -652,13 +708,16 @@ it("doesn't allow GitHub Codespaces repo secrets for unauthorized requesters", a
             requesters: ["account-x/repo-x"],
             to: {
               github: {
-                account: {},
+                account: { types: {} },
                 accounts: {},
-                repo: { environments: {} },
+                repo: { visibility: "private", types: { environments: {} } },
                 repos: {
                   "account-a/repo-a": {
-                    codespaces: "allow",
-                    environments: {},
+                    visibility: "private",
+                    types: {
+                      codespaces: "allow",
+                      environments: {},
+                    },
                   },
                 },
               },
@@ -673,7 +732,12 @@ it("doesn't allow GitHub Codespaces repo secrets for unauthorized requesters", a
     createTestProvisionRequest({
       requester: { account: "account-y", repo: "repo-y" },
       to: [
-        createTestProvisionRequestTarget("codespaces", "account-a", "repo-a"),
+        createTestRepoProvisionRequestTarget(
+          "codespaces",
+          "account-a",
+          "repo-a",
+          "private",
+        ),
       ],
     }),
   );
@@ -684,7 +748,7 @@ it("doesn't allow GitHub Codespaces repo secrets for unauthorized requesters", a
   expect(toText(resultA)).toMatchInlineSnapshot(`
     "❌ Repo account-y/repo-y wasn't allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
-      ❌ Can't provision token to GitHub Codespaces secret in account-a/repo-a:
+      ❌ Can't provision token to GitHub Codespaces secret in private repo account-a/repo-a:
         ✅ Repo account-a/repo-a was allowed access to token #1
         ❌ Can't provision secret (no matching rules)"
   `);
@@ -707,11 +771,14 @@ it("doesn't allow GitHub Codespaces repo secrets within the requesting repo for 
             requesters: ["account-x/repo-x"],
             to: {
               github: {
-                account: {},
+                account: { types: {} },
                 accounts: {},
                 repo: {
-                  codespaces: "allow",
-                  environments: {},
+                  visibility: "private",
+                  types: {
+                    codespaces: "allow",
+                    environments: {},
+                  },
                 },
                 repos: {},
               },
@@ -726,7 +793,12 @@ it("doesn't allow GitHub Codespaces repo secrets within the requesting repo for 
     createTestProvisionRequest({
       requester: { account: "account-y", repo: "repo-y" },
       to: [
-        createTestProvisionRequestTarget("codespaces", "account-x", "repo-x"),
+        createTestRepoProvisionRequestTarget(
+          "codespaces",
+          "account-x",
+          "repo-x",
+          "private",
+        ),
       ],
     }),
   );
@@ -734,7 +806,12 @@ it("doesn't allow GitHub Codespaces repo secrets within the requesting repo for 
     createTestProvisionRequest({
       requester: { account: "account-x", repo: "repo-y" },
       to: [
-        createTestProvisionRequestTarget("codespaces", "account-x", "repo-x"),
+        createTestRepoProvisionRequestTarget(
+          "codespaces",
+          "account-x",
+          "repo-x",
+          "private",
+        ),
       ],
     }),
   );
@@ -742,7 +819,12 @@ it("doesn't allow GitHub Codespaces repo secrets within the requesting repo for 
     createTestProvisionRequest({
       requester: { account: "account-x", repo: "repo-x" },
       to: [
-        createTestProvisionRequestTarget("codespaces", "account-x", "repo-y"),
+        createTestRepoProvisionRequestTarget(
+          "codespaces",
+          "account-x",
+          "repo-y",
+          "private",
+        ),
       ],
     }),
   );
@@ -753,7 +835,7 @@ it("doesn't allow GitHub Codespaces repo secrets within the requesting repo for 
   expect(toText(resultA)).toMatchInlineSnapshot(`
     "❌ Repo account-y/repo-y wasn't allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
-      ❌ Can't provision token to GitHub Codespaces secret in account-x/repo-x:
+      ❌ Can't provision token to GitHub Codespaces secret in private repo account-x/repo-x:
         ✅ Repo account-x/repo-x was allowed access to token #1
         ❌ Can't provision secret (no matching rules)"
   `);
@@ -763,7 +845,7 @@ it("doesn't allow GitHub Codespaces repo secrets within the requesting repo for 
   expect(toText(resultB)).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-y wasn't allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
-      ❌ Can't provision token to GitHub Codespaces secret in account-x/repo-x:
+      ❌ Can't provision token to GitHub Codespaces secret in private repo account-x/repo-x:
         ✅ Repo account-x/repo-x was allowed access to token #1
         ❌ Can't provision secret (no matching rules)"
   `);
@@ -773,7 +855,7 @@ it("doesn't allow GitHub Codespaces repo secrets within the requesting repo for 
   expect(toText(resultC)).toMatchInlineSnapshot(`
     "❌ Repo account-x/repo-x wasn't allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
-      ❌ Can't provision token to GitHub Codespaces secret in account-x/repo-y:
+      ❌ Can't provision token to GitHub Codespaces secret in private repo account-x/repo-y:
         ✅ Repo account-x/repo-y was allowed access to token #2
         ❌ Can't provision secret (no matching rules)"
   `);
@@ -796,16 +878,22 @@ it("doesn't allow GitHub Codespaces repo secrets within the requesting repo when
             requesters: ["account-a/repo-a"],
             to: {
               github: {
-                account: {},
+                account: { types: {} },
                 accounts: {},
                 repo: {
-                  codespaces: "deny",
-                  environments: {},
+                  visibility: "private",
+                  types: {
+                    codespaces: "deny",
+                    environments: {},
+                  },
                 },
                 repos: {
                   "account-a/repo-a": {
-                    codespaces: "allow",
-                    environments: {},
+                    visibility: "private",
+                    types: {
+                      codespaces: "allow",
+                      environments: {},
+                    },
                   },
                 },
               },
@@ -819,7 +907,12 @@ it("doesn't allow GitHub Codespaces repo secrets within the requesting repo when
   const resultA = authorizer.authorizeSecret(
     createTestProvisionRequest({
       to: [
-        createTestProvisionRequestTarget("codespaces", "account-a", "repo-a"),
+        createTestRepoProvisionRequestTarget(
+          "codespaces",
+          "account-a",
+          "repo-a",
+          "private",
+        ),
       ],
     }),
   );
@@ -830,7 +923,7 @@ it("doesn't allow GitHub Codespaces repo secrets within the requesting repo when
   expect(toText(resultA)).toMatchInlineSnapshot(`
     "❌ Repo account-a/repo-a wasn't allowed to provision secret SECRET_A:
       ✅ Can use token declaration account-a/repo-a.tokenA
-      ❌ Can't provision token to GitHub Codespaces secret in account-a/repo-a:
+      ❌ Can't provision token to GitHub Codespaces secret in private repo account-a/repo-a:
         ✅ Repo account-a/repo-a was allowed access to token #1
         ❌ Can't provision secret based on 1 rule:
           ❌ Denied by rule #1"

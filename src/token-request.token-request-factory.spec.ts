@@ -5,6 +5,7 @@ import {
   createTestApps,
   createTestInstallationAccounts,
 } from "../test/github-api.js";
+import { createTestRepoRegistry } from "../test/repo-registry.js";
 import type {
   AccountReference,
   EnvironmentReference,
@@ -15,7 +16,7 @@ import { createTokenRequestFactory } from "./token-request.js";
 vi.mock("@octokit/action");
 
 it("creates token requests from provision targets with token declarations for all repos", () => {
-  const appRegistry = createTestAppRegistry();
+  const appRegistry = createTestAppRegistry(createTestRepoRegistry());
   const createTokenRequest = createTokenRequestFactory(appRegistry);
   const tokenDec = createTestTokenDec({ repos: "all" });
 
@@ -47,7 +48,7 @@ it("creates token requests from provision targets with token declarations for se
     [[accountA]],
   ]);
 
-  const appRegistry = createTestAppRegistry({
+  const appRegistry = createTestAppRegistry(createTestRepoRegistry(), {
     app: appA,
     issuer: [],
     installations: [[appAInstallationA, [repoA1, repoA2, repoB, repoC]]],
@@ -84,7 +85,7 @@ it("creates normalized token requests", () => {
     [[accountA]],
   ]);
 
-  const appRegistry = createTestAppRegistry({
+  const appRegistry = createTestAppRegistry(createTestRepoRegistry(), {
     app: appA,
     issuer: [],
     installations: [[appAInstallationA, [repoC, repoB, repoA2, repoA1]]],
@@ -122,7 +123,7 @@ it("creates normalized token requests", () => {
 });
 
 it("de-duplicates equivalent token requests", () => {
-  const appRegistry = createTestAppRegistry();
+  const appRegistry = createTestAppRegistry(createTestRepoRegistry());
   const createTokenRequest = createTokenRequestFactory(appRegistry);
   const tokenDec = createTestTokenDec({ repos: "all" });
 

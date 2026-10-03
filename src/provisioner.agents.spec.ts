@@ -22,9 +22,11 @@ import {
 import { createTestKeyPair } from "../test/key.js";
 import { createTestOctokitFactory } from "../test/octokit-factory.js";
 import {
+  createTestAccountProvisionRequestTarget,
   createTestProvisionRequest,
-  createTestProvisionRequestTarget,
+  createTestRepoProvisionRequestTarget,
 } from "../test/provision-request.js";
+import { createTestRepoRegistry } from "../test/repo-registry.js";
 import {
   createTestProvisionAuthTargetResult,
   createTestTokenAuthResult,
@@ -61,7 +63,7 @@ it("handles GitHub API errors when provisioning org-level Agents secrets", async
   __setEnvironments([[repoA, [envA]]]);
   __setOrgKeys("account-a", { agents: accountAAgentsKey });
 
-  const appRegistry = createTestAppRegistry({
+  const appRegistry = createTestAppRegistry(createTestRepoRegistry(), {
     app: appA,
     provisioner: true,
     installations: [[appAInstallationA, [repoA]]],
@@ -93,11 +95,14 @@ it("handles GitHub API errors when provisioning org-level Agents secrets", async
         secretDec: createTestSecretDec({
           github: { accounts: { "account-a": { agents: true } } },
         }),
-        to: [createTestProvisionRequestTarget("agents")],
+        to: [createTestAccountProvisionRequestTarget("agents", "account-a")],
       }),
       results: [
         createTestProvisionAuthTargetResult({
-          target: createTestProvisionRequestTarget("agents"),
+          target: createTestAccountProvisionRequestTarget(
+            "agents",
+            "account-a",
+          ),
           tokenAuthResult,
         }),
       ],
@@ -144,7 +149,7 @@ it("handles unexpected errors when provisioning org-level Agents secrets", async
   error.stack = "Error: <message>\n    at provisioner.ts:1:1";
   __setErrors("agents.createOrUpdateOrgSecret", [error]);
 
-  const appRegistry = createTestAppRegistry({
+  const appRegistry = createTestAppRegistry(createTestRepoRegistry(), {
     app: appA,
     provisioner: true,
     installations: [[appAInstallationA, [repoA]]],
@@ -175,11 +180,14 @@ it("handles unexpected errors when provisioning org-level Agents secrets", async
         secretDec: createTestSecretDec({
           github: { accounts: { "account-a": { agents: true } } },
         }),
-        to: [createTestProvisionRequestTarget("agents")],
+        to: [createTestAccountProvisionRequestTarget("agents", "account-a")],
       }),
       results: [
         createTestProvisionAuthTargetResult({
-          target: createTestProvisionRequestTarget("agents"),
+          target: createTestAccountProvisionRequestTarget(
+            "agents",
+            "account-a",
+          ),
           tokenAuthResult,
         }),
       ],
@@ -223,7 +231,7 @@ it("can provision org-level Agents secrets", async () => {
   __setEnvironments([[repoA, [envA]]]);
   __setOrgKeys("account-a", { agents: accountAAgentsKey });
 
-  const appRegistry = createTestAppRegistry({
+  const appRegistry = createTestAppRegistry(createTestRepoRegistry(), {
     app: appA,
     provisioner: true,
     installations: [[appAInstallationA, [repoA]]],
@@ -254,11 +262,14 @@ it("can provision org-level Agents secrets", async () => {
         secretDec: createTestSecretDec({
           github: { accounts: { "account-a": { agents: true } } },
         }),
-        to: [createTestProvisionRequestTarget("agents")],
+        to: [createTestAccountProvisionRequestTarget("agents", "account-a")],
       }),
       results: [
         createTestProvisionAuthTargetResult({
-          target: createTestProvisionRequestTarget("agents"),
+          target: createTestAccountProvisionRequestTarget(
+            "agents",
+            "account-a",
+          ),
           tokenAuthResult,
         }),
       ],
@@ -310,7 +321,7 @@ it("handles GitHub API errors when provisioning repo-level Agents secrets", asyn
     agents: accountARepoAAgentsKey,
   });
 
-  const appRegistry = createTestAppRegistry({
+  const appRegistry = createTestAppRegistry(createTestRepoRegistry(), {
     app: appA,
     provisioner: true,
     installations: [[appAInstallationA, [repoA]]],
@@ -342,14 +353,22 @@ it("handles GitHub API errors when provisioning repo-level Agents secrets", asyn
         secretDec: createTestSecretDec({
           github: { accounts: { "account-a": { agents: true } } },
         }),
-        to: [createTestProvisionRequestTarget("agents", "account-a", "repo-a")],
-      }),
-      results: [
-        createTestProvisionAuthTargetResult({
-          target: createTestProvisionRequestTarget(
+        to: [
+          createTestRepoProvisionRequestTarget(
             "agents",
             "account-a",
             "repo-a",
+            "private",
+          ),
+        ],
+      }),
+      results: [
+        createTestProvisionAuthTargetResult({
+          target: createTestRepoProvisionRequestTarget(
+            "agents",
+            "account-a",
+            "repo-a",
+            "private",
           ),
           tokenAuthResult,
         }),
@@ -401,7 +420,7 @@ it("handles unexpected errors when provisioning repo-level Agents secrets", asyn
   error.stack = "Error: <message>\n    at provisioner.ts:1:1";
   __setErrors("agents.createOrUpdateRepoSecret", [error]);
 
-  const appRegistry = createTestAppRegistry({
+  const appRegistry = createTestAppRegistry(createTestRepoRegistry(), {
     app: appA,
     provisioner: true,
     installations: [[appAInstallationA, [repoA]]],
@@ -432,14 +451,22 @@ it("handles unexpected errors when provisioning repo-level Agents secrets", asyn
         secretDec: createTestSecretDec({
           github: { accounts: { "account-a": { agents: true } } },
         }),
-        to: [createTestProvisionRequestTarget("agents", "account-a", "repo-a")],
-      }),
-      results: [
-        createTestProvisionAuthTargetResult({
-          target: createTestProvisionRequestTarget(
+        to: [
+          createTestRepoProvisionRequestTarget(
             "agents",
             "account-a",
             "repo-a",
+            "private",
+          ),
+        ],
+      }),
+      results: [
+        createTestProvisionAuthTargetResult({
+          target: createTestRepoProvisionRequestTarget(
+            "agents",
+            "account-a",
+            "repo-a",
+            "private",
           ),
           tokenAuthResult,
         }),
@@ -488,7 +515,7 @@ it("can provision repo-level Agents secrets", async () => {
     agents: accountARepoAAgentsKey,
   });
 
-  const appRegistry = createTestAppRegistry({
+  const appRegistry = createTestAppRegistry(createTestRepoRegistry(), {
     app: appA,
     provisioner: true,
     installations: [[appAInstallationA, [repoA]]],
@@ -519,14 +546,22 @@ it("can provision repo-level Agents secrets", async () => {
         secretDec: createTestSecretDec({
           github: { accounts: { "account-a": { agents: true } } },
         }),
-        to: [createTestProvisionRequestTarget("agents", "account-a", "repo-a")],
-      }),
-      results: [
-        createTestProvisionAuthTargetResult({
-          target: createTestProvisionRequestTarget(
+        to: [
+          createTestRepoProvisionRequestTarget(
             "agents",
             "account-a",
             "repo-a",
+            "private",
+          ),
+        ],
+      }),
+      results: [
+        createTestProvisionAuthTargetResult({
+          target: createTestRepoProvisionRequestTarget(
+            "agents",
+            "account-a",
+            "repo-a",
+            "private",
           ),
           tokenAuthResult,
         }),

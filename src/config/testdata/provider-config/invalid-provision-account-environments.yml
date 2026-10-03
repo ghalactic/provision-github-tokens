@@ -1,0 +1,14 @@
+# yaml-language-server: $schema=https://ghalactic.github.io/provision-github-tokens/schema/provider.v1.schema.json
+$schema: https://ghalactic.github.io/provision-github-tokens/schema/provider.v1.schema.json
+
+provision:
+  rules:
+    secrets:
+      - secrets: ["*"]
+        requesters: ["*/*"]
+        to:
+          github:
+            account:
+              types:
+                environments:
+                  "*": allow

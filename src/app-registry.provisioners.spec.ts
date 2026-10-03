@@ -9,6 +9,7 @@ import {
   type AppRegistration,
   type InstallationRegistration,
 } from "./app-registry.js";
+import { createRepoRegistry } from "./repo-registry.js";
 
 it("has all of the provisioners", () => {
   const [[orgA]] = createTestInstallationAccounts([
@@ -44,7 +45,7 @@ it("has all of the provisioners", () => {
     repos: [],
   };
 
-  const appRegistry = createAppRegistry();
+  const appRegistry = createAppRegistry(createRepoRegistry());
   appRegistry.registerApp(appA);
   appRegistry.registerInstallation(appAInstallationA);
   appRegistry.registerApp(appB);

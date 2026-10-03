@@ -10,6 +10,7 @@ import {
   type InstallationRegistration,
 } from "./app-registry.js";
 import { createNamePattern } from "./name-pattern.js";
+import { createRepoRegistry } from "./repo-registry.js";
 
 it("resolves a list of account patterns into a list of issuer-accessible accounts", () => {
   const [[accountA], [accountB], [accountC]] = createTestInstallationAccounts(
@@ -35,7 +36,7 @@ it("resolves a list of account patterns into a list of issuer-accessible account
     repos: [],
   };
 
-  const appRegistry = createAppRegistry();
+  const appRegistry = createAppRegistry(createRepoRegistry());
   appRegistry.registerApp(appA);
   appRegistry.registerInstallation(appAInstallationRegA);
   appRegistry.registerInstallation(appAInstallationRegB);
@@ -84,7 +85,7 @@ it("doesn't resolve accounts accessible only to non-issuer apps", () => {
     repos: [],
   };
 
-  const appRegistry = createAppRegistry();
+  const appRegistry = createAppRegistry(createRepoRegistry());
   appRegistry.registerApp(appA);
   appRegistry.registerInstallation(appAInstallationRegA);
   appRegistry.registerApp(appB);

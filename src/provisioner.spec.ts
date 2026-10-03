@@ -27,9 +27,12 @@ import {
 import { createTestKeyPair } from "../test/key.js";
 import { createTestOctokitFactory } from "../test/octokit-factory.js";
 import {
+  createTestAccountProvisionRequestTarget,
+  createTestEnvironmentProvisionRequestTarget,
   createTestProvisionRequest,
-  createTestProvisionRequestTarget,
+  createTestRepoProvisionRequestTarget,
 } from "../test/provision-request.js";
+import { createTestRepoRegistry } from "../test/repo-registry.js";
 import {
   createTestProvisionAuthTargetResult,
   createTestTokenAuthResult,
@@ -66,7 +69,7 @@ it("handles secrets with no targets to provision to", async () => {
   __setEnvironments([[repoA, [envA]]]);
   __setOrgKeys("account-a", { actions: accountAActionsKey });
 
-  const appRegistry = createTestAppRegistry({
+  const appRegistry = createTestAppRegistry(createTestRepoRegistry(), {
     app: appA,
     provisioner: true,
     installations: [[appAInstallationA, [repoA]]],
@@ -138,7 +141,7 @@ it("doesn't provision secrets when provisioning isn't allowed", async () => {
   __setEnvironments([[repoA, [envA]]]);
   __setOrgKeys("account-a", { actions: accountAActionsKey });
 
-  const appRegistry = createTestAppRegistry({
+  const appRegistry = createTestAppRegistry(createTestRepoRegistry(), {
     app: appA,
     provisioner: true,
     installations: [[appAInstallationA, [repoA]]],
@@ -173,7 +176,10 @@ it("doesn't provision secrets when provisioning isn't allowed", async () => {
       results: [
         createTestProvisionAuthTargetResult({
           isAllowed: false,
-          target: createTestProvisionRequestTarget("actions"),
+          target: createTestAccountProvisionRequestTarget(
+            "actions",
+            "account-a",
+          ),
           tokenAuthResult,
         }),
       ],
@@ -225,7 +231,7 @@ it("doesn't provision secrets when the token wasn't created", async () => {
     environments: { "env-a": accountARepoAEnvAKey },
   });
 
-  const appRegistry = createTestAppRegistry({
+  const appRegistry = createTestAppRegistry(createTestRepoRegistry(), {
     app: appA,
     provisioner: true,
     installations: [[appAInstallationA, [repoA]]],
@@ -283,35 +289,44 @@ it("doesn't provision secrets when the token wasn't created", async () => {
           github: { accounts: { "account-a": { actions: true } } },
         }),
         to: [
-          createTestProvisionRequestTarget("actions"),
-          createTestProvisionRequestTarget("actions", "account-a", "repo-a"),
-          createTestProvisionRequestTarget(
-            "environment",
+          createTestAccountProvisionRequestTarget("actions", "account-a"),
+          createTestRepoProvisionRequestTarget(
+            "actions",
+            "account-a",
+            "repo-a",
+            "private",
+          ),
+          createTestEnvironmentProvisionRequestTarget(
             "account-a",
             "repo-a",
             "env-a",
+            "private",
           ),
         ],
       }),
       results: [
         createTestProvisionAuthTargetResult({
-          target: createTestProvisionRequestTarget("actions"),
+          target: createTestAccountProvisionRequestTarget(
+            "actions",
+            "account-a",
+          ),
           tokenAuthResult: tokenAuthResultNotAllowed,
         }),
         createTestProvisionAuthTargetResult({
-          target: createTestProvisionRequestTarget(
+          target: createTestRepoProvisionRequestTarget(
             "actions",
             "account-a",
             "repo-a",
+            "private",
           ),
           tokenAuthResult: tokenAuthResultRequestError,
         }),
         createTestProvisionAuthTargetResult({
-          target: createTestProvisionRequestTarget(
-            "environment",
+          target: createTestEnvironmentProvisionRequestTarget(
             "account-a",
             "repo-a",
             "env-a",
+            "private",
           ),
           tokenAuthResult: tokenAuthResultError,
         }),
@@ -356,7 +371,7 @@ it("doesn't provision secrets when no suitable provisioners are found", async ()
   __setEnvironments([[repoA, [envA]]]);
   __setOrgKeys("account-a", { actions: accountAActionsKey });
 
-  const appRegistry = createTestAppRegistry({
+  const appRegistry = createTestAppRegistry(createTestRepoRegistry(), {
     app: appA,
     provisioner: true,
     installations: [[appAInstallationA, [repoA]]],
@@ -387,11 +402,14 @@ it("doesn't provision secrets when no suitable provisioners are found", async ()
         secretDec: createTestSecretDec({
           github: { accounts: { "account-a": { actions: true } } },
         }),
-        to: [createTestProvisionRequestTarget("actions", "account-x")],
+        to: [createTestAccountProvisionRequestTarget("actions", "account-x")],
       }),
       results: [
         createTestProvisionAuthTargetResult({
-          target: createTestProvisionRequestTarget("actions", "account-x"),
+          target: createTestAccountProvisionRequestTarget(
+            "actions",
+            "account-x",
+          ),
           tokenAuthResult,
         }),
       ],
@@ -436,7 +454,7 @@ it("doesn't provision secrets when target provisioning fails with a GitHub API e
     new TestRequestError(403, { message: "Resource not accessible" }),
   ]);
 
-  const appRegistry = createTestAppRegistry({
+  const appRegistry = createTestAppRegistry(createTestRepoRegistry(), {
     app: appA,
     provisioner: true,
     installations: [[appAInstallationA, [repoA]]],
@@ -471,7 +489,10 @@ it("doesn't provision secrets when target provisioning fails with a GitHub API e
       }),
       results: [
         createTestProvisionAuthTargetResult({
-          target: createTestProvisionRequestTarget("actions"),
+          target: createTestAccountProvisionRequestTarget(
+            "actions",
+            "account-a",
+          ),
           tokenAuthResult,
         }),
       ],
@@ -520,7 +541,7 @@ it("doesn't provision secrets when target provisioning fails with an unexpected 
   error.stack = "Error: <message>\n    at provisioner.ts:1:1";
   __setErrors("actions.createOrUpdateOrgSecret", [error]);
 
-  const appRegistry = createTestAppRegistry({
+  const appRegistry = createTestAppRegistry(createTestRepoRegistry(), {
     app: appA,
     provisioner: true,
     installations: [[appAInstallationA, [repoA]]],
@@ -554,7 +575,10 @@ it("doesn't provision secrets when target provisioning fails with an unexpected 
       }),
       results: [
         createTestProvisionAuthTargetResult({
-          target: createTestProvisionRequestTarget("actions"),
+          target: createTestAccountProvisionRequestTarget(
+            "actions",
+            "account-a",
+          ),
           tokenAuthResult,
         }),
       ],
@@ -597,7 +621,7 @@ it("doesn't provision secrets when encryption fails with a GitHub API error", as
   __setEnvironments([[repoA, [envA]]]);
   __setOrgKeys("account-a", {});
 
-  const appRegistry = createTestAppRegistry({
+  const appRegistry = createTestAppRegistry(createTestRepoRegistry(), {
     app: appA,
     provisioner: true,
     installations: [[appAInstallationA, [repoA]]],
@@ -631,7 +655,10 @@ it("doesn't provision secrets when encryption fails with a GitHub API error", as
       }),
       results: [
         createTestProvisionAuthTargetResult({
-          target: createTestProvisionRequestTarget("actions"),
+          target: createTestAccountProvisionRequestTarget(
+            "actions",
+            "account-a",
+          ),
           tokenAuthResult,
         }),
       ],
@@ -678,7 +705,7 @@ it("doesn't provision secrets when encryption fails with an unexpected error", a
   error.stack = "Error: <message>\n    at encrypt.ts:1:1";
   __setErrors("actions.getOrgPublicKey", [error]);
 
-  const appRegistry = createTestAppRegistry({
+  const appRegistry = createTestAppRegistry(createTestRepoRegistry(), {
     app: appA,
     provisioner: true,
     installations: [[appAInstallationA, [repoA]]],
@@ -712,7 +739,10 @@ it("doesn't provision secrets when encryption fails with an unexpected error", a
       }),
       results: [
         createTestProvisionAuthTargetResult({
-          target: createTestProvisionRequestTarget("actions"),
+          target: createTestAccountProvisionRequestTarget(
+            "actions",
+            "account-a",
+          ),
           tokenAuthResult,
         }),
       ],
@@ -766,7 +796,7 @@ it("can provision multiple secrets of the same type", async () => {
     environments: { "env-a": accountARepoAEnvAKey },
   });
 
-  const appRegistry = createTestAppRegistry({
+  const appRegistry = createTestAppRegistry(createTestRepoRegistry(), {
     app: appA,
     provisioner: true,
     installations: [[appAInstallationA, [repoA]]],
@@ -807,35 +837,44 @@ it("can provision multiple secrets of the same type", async () => {
             github: { accounts: { "account-a": { actions: true } } },
           }),
           to: [
-            createTestProvisionRequestTarget("actions"),
-            createTestProvisionRequestTarget("actions", "account-a", "repo-a"),
-            createTestProvisionRequestTarget(
-              "environment",
+            createTestAccountProvisionRequestTarget("actions", "account-a"),
+            createTestRepoProvisionRequestTarget(
+              "actions",
+              "account-a",
+              "repo-a",
+              "private",
+            ),
+            createTestEnvironmentProvisionRequestTarget(
               "account-a",
               "repo-a",
               "env-a",
+              "private",
             ),
           ],
         }),
         results: [
           createTestProvisionAuthTargetResult({
-            target: createTestProvisionRequestTarget("actions"),
-            tokenAuthResult: tokenAuthResultA,
-          }),
-          createTestProvisionAuthTargetResult({
-            target: createTestProvisionRequestTarget(
+            target: createTestAccountProvisionRequestTarget(
               "actions",
               "account-a",
-              "repo-a",
             ),
             tokenAuthResult: tokenAuthResultA,
           }),
           createTestProvisionAuthTargetResult({
-            target: createTestProvisionRequestTarget(
-              "environment",
+            target: createTestRepoProvisionRequestTarget(
+              "actions",
+              "account-a",
+              "repo-a",
+              "private",
+            ),
+            tokenAuthResult: tokenAuthResultA,
+          }),
+          createTestProvisionAuthTargetResult({
+            target: createTestEnvironmentProvisionRequestTarget(
               "account-a",
               "repo-a",
               "env-a",
+              "private",
             ),
             tokenAuthResult: tokenAuthResultA,
           }),
@@ -851,35 +890,44 @@ it("can provision multiple secrets of the same type", async () => {
           }),
           name: "SECRET_B",
           to: [
-            createTestProvisionRequestTarget("actions"),
-            createTestProvisionRequestTarget("actions", "account-a", "repo-a"),
-            createTestProvisionRequestTarget(
-              "environment",
+            createTestAccountProvisionRequestTarget("actions", "account-a"),
+            createTestRepoProvisionRequestTarget(
+              "actions",
+              "account-a",
+              "repo-a",
+              "private",
+            ),
+            createTestEnvironmentProvisionRequestTarget(
               "account-a",
               "repo-a",
               "env-a",
+              "private",
             ),
           ],
         }),
         results: [
           createTestProvisionAuthTargetResult({
-            target: createTestProvisionRequestTarget("actions"),
-            tokenAuthResult: tokenAuthResultB,
-          }),
-          createTestProvisionAuthTargetResult({
-            target: createTestProvisionRequestTarget(
+            target: createTestAccountProvisionRequestTarget(
               "actions",
               "account-a",
-              "repo-a",
             ),
             tokenAuthResult: tokenAuthResultB,
           }),
           createTestProvisionAuthTargetResult({
-            target: createTestProvisionRequestTarget(
-              "environment",
+            target: createTestRepoProvisionRequestTarget(
+              "actions",
+              "account-a",
+              "repo-a",
+              "private",
+            ),
+            tokenAuthResult: tokenAuthResultB,
+          }),
+          createTestProvisionAuthTargetResult({
+            target: createTestEnvironmentProvisionRequestTarget(
               "account-a",
               "repo-a",
               "env-a",
+              "private",
             ),
             tokenAuthResult: tokenAuthResultB,
           }),
@@ -974,7 +1022,7 @@ it("can provision a secret to multiple targets", async () => {
     environments: { "env-a": accountARepoAEnvAKey },
   });
 
-  const appRegistry = createTestAppRegistry({
+  const appRegistry = createTestAppRegistry(createTestRepoRegistry(), {
     app: appA,
     provisioner: true,
     installations: [[appAInstallationA, [repoA]]],
@@ -1006,63 +1054,90 @@ it("can provision a secret to multiple targets", async () => {
           github: { accounts: { "account-a": { actions: true } } },
         }),
         to: [
-          createTestProvisionRequestTarget("actions"),
-          createTestProvisionRequestTarget("codespaces"),
-          createTestProvisionRequestTarget("dependabot"),
-          createTestProvisionRequestTarget("actions", "account-a", "repo-a"),
-          createTestProvisionRequestTarget("codespaces", "account-a", "repo-a"),
-          createTestProvisionRequestTarget("dependabot", "account-a", "repo-a"),
-          createTestProvisionRequestTarget(
-            "environment",
+          createTestAccountProvisionRequestTarget("actions", "account-a"),
+          createTestAccountProvisionRequestTarget("codespaces", "account-a"),
+          createTestAccountProvisionRequestTarget("dependabot", "account-a"),
+          createTestRepoProvisionRequestTarget(
+            "actions",
+            "account-a",
+            "repo-a",
+            "private",
+          ),
+          createTestRepoProvisionRequestTarget(
+            "codespaces",
+            "account-a",
+            "repo-a",
+            "private",
+          ),
+          createTestRepoProvisionRequestTarget(
+            "dependabot",
+            "account-a",
+            "repo-a",
+            "private",
+          ),
+          createTestEnvironmentProvisionRequestTarget(
             "account-a",
             "repo-a",
             "env-a",
+            "private",
           ),
         ],
       }),
       results: [
         createTestProvisionAuthTargetResult({
-          target: createTestProvisionRequestTarget("actions"),
+          target: createTestAccountProvisionRequestTarget(
+            "actions",
+            "account-a",
+          ),
           tokenAuthResult,
         }),
         createTestProvisionAuthTargetResult({
-          target: createTestProvisionRequestTarget("codespaces"),
+          target: createTestAccountProvisionRequestTarget(
+            "codespaces",
+            "account-a",
+          ),
           tokenAuthResult,
         }),
         createTestProvisionAuthTargetResult({
-          target: createTestProvisionRequestTarget("dependabot"),
+          target: createTestAccountProvisionRequestTarget(
+            "dependabot",
+            "account-a",
+          ),
           tokenAuthResult,
         }),
         createTestProvisionAuthTargetResult({
-          target: createTestProvisionRequestTarget(
+          target: createTestRepoProvisionRequestTarget(
             "actions",
             "account-a",
             "repo-a",
+            "private",
           ),
           tokenAuthResult,
         }),
         createTestProvisionAuthTargetResult({
-          target: createTestProvisionRequestTarget(
+          target: createTestRepoProvisionRequestTarget(
             "codespaces",
             "account-a",
             "repo-a",
+            "private",
           ),
           tokenAuthResult,
         }),
         createTestProvisionAuthTargetResult({
-          target: createTestProvisionRequestTarget(
+          target: createTestRepoProvisionRequestTarget(
             "dependabot",
             "account-a",
             "repo-a",
+            "private",
           ),
           tokenAuthResult,
         }),
         createTestProvisionAuthTargetResult({
-          target: createTestProvisionRequestTarget(
-            "environment",
+          target: createTestEnvironmentProvisionRequestTarget(
             "account-a",
             "repo-a",
             "env-a",
+            "private",
           ),
           tokenAuthResult,
         }),
@@ -1126,7 +1201,7 @@ it("doesn't stop provisioning when some targets fail", async () => {
   __setEnvironments([[repoA, [envA]]]);
   __setOrgKeys("account-a", { actions: accountAActionsKey });
 
-  const appRegistry = createTestAppRegistry({
+  const appRegistry = createTestAppRegistry(createTestRepoRegistry(), {
     app: appA,
     provisioner: true,
     installations: [[appAInstallationA, [repoA]]],
@@ -1164,7 +1239,10 @@ it("doesn't stop provisioning when some targets fail", async () => {
         results: [
           createTestProvisionAuthTargetResult({
             isAllowed: false,
-            target: createTestProvisionRequestTarget("actions"),
+            target: createTestAccountProvisionRequestTarget(
+              "actions",
+              "account-a",
+            ),
             tokenAuthResult: tokenAuthResultA,
           }),
         ],
@@ -1179,15 +1257,24 @@ it("doesn't stop provisioning when some targets fail", async () => {
         }),
         results: [
           createTestProvisionAuthTargetResult({
-            target: createTestProvisionRequestTarget("actions"),
+            target: createTestAccountProvisionRequestTarget(
+              "actions",
+              "account-a",
+            ),
             tokenAuthResult: tokenAuthResultB,
           }),
           createTestProvisionAuthTargetResult({
-            target: createTestProvisionRequestTarget("actions", "account-x"),
+            target: createTestAccountProvisionRequestTarget(
+              "actions",
+              "account-x",
+            ),
             tokenAuthResult: tokenAuthResultA,
           }),
           createTestProvisionAuthTargetResult({
-            target: createTestProvisionRequestTarget("actions"),
+            target: createTestAccountProvisionRequestTarget(
+              "actions",
+              "account-a",
+            ),
             tokenAuthResult: tokenAuthResultA,
           }),
         ],
@@ -1239,7 +1326,7 @@ it("warns when no auth results are provided", async () => {
   __setEnvironments([[repoA, [envA]]]);
   __setOrgKeys("account-a", { actions: accountAActionsKey });
 
-  const appRegistry = createTestAppRegistry({
+  const appRegistry = createTestAppRegistry(createTestRepoRegistry(), {
     app: appA,
     provisioner: true,
     installations: [[appAInstallationA, [repoA]]],

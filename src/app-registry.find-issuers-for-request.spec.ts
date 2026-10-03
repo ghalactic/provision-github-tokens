@@ -9,6 +9,7 @@ import {
   type AppRegistration,
   type InstallationRegistration,
 } from "./app-registry.js";
+import { createRepoRegistry } from "./repo-registry.js";
 
 it("finds issuers for all repos in an account with one permission", () => {
   const [[orgA]] = createTestInstallationAccounts([
@@ -26,7 +27,7 @@ it("finds issuers for all repos in an account with one permission", () => {
     repos: [],
   };
 
-  const appRegistry = createAppRegistry();
+  const appRegistry = createAppRegistry(createRepoRegistry());
   appRegistry.registerApp(appA);
   appRegistry.registerInstallation(appAInstallationA);
 
@@ -62,7 +63,7 @@ it("finds issuers for one selected repo with one permission", () => {
     repos: [repoA],
   };
 
-  const appRegistry = createAppRegistry();
+  const appRegistry = createAppRegistry(createRepoRegistry());
   appRegistry.registerApp(appA);
   appRegistry.registerInstallation(appAInstallationA);
 
@@ -101,7 +102,7 @@ it("finds issuers for multiple selected repos with multiple permissions", () => 
     repos: [repoA, repoB],
   };
 
-  const appRegistry = createAppRegistry();
+  const appRegistry = createAppRegistry(createRepoRegistry());
   appRegistry.registerApp(appA);
   appRegistry.registerInstallation(appAInstallationA);
 
@@ -136,7 +137,7 @@ it("finds issuers for no repos", () => {
     repos: [],
   };
 
-  const appRegistry = createAppRegistry();
+  const appRegistry = createAppRegistry(createRepoRegistry());
   appRegistry.registerApp(appA);
   appRegistry.registerInstallation(appAInstallationA);
 
@@ -178,7 +179,7 @@ it.each([
       repos: [repoA],
     };
 
-    const appRegistry = createAppRegistry();
+    const appRegistry = createAppRegistry(createRepoRegistry());
     appRegistry.registerApp(appA);
     appRegistry.registerInstallation(appAInstallationA);
 
@@ -217,7 +218,7 @@ it("finds issuers for the correct account when there are multiple installations"
     repos: [],
   };
 
-  const appRegistry = createAppRegistry();
+  const appRegistry = createAppRegistry(createRepoRegistry());
   appRegistry.registerApp(appA);
   appRegistry.registerInstallation(appAInstallationA);
   appRegistry.registerInstallation(appAInstallationB);
@@ -317,7 +318,7 @@ it("finds issuers by role", () => {
     repos: [repoB, repoC, repoD],
   };
 
-  const appRegistry = createAppRegistry();
+  const appRegistry = createAppRegistry(createRepoRegistry());
   appRegistry.registerApp(appA);
   appRegistry.registerInstallation(appAInstallationA);
   appRegistry.registerApp(appB);
@@ -422,7 +423,7 @@ it("finds issuers for read access when the role is undefined", () => {
     repos: [],
   };
 
-  const appRegistry = createAppRegistry();
+  const appRegistry = createAppRegistry(createRepoRegistry());
   appRegistry.registerApp(appA);
   appRegistry.registerInstallation(appAInstallationA);
   appRegistry.registerApp(appB);
@@ -475,7 +476,7 @@ it("doesn't find issuers for write or admin access when the role is undefined", 
     repos: [],
   };
 
-  const appRegistry = createAppRegistry();
+  const appRegistry = createAppRegistry(createRepoRegistry());
   appRegistry.registerApp(appA);
   appRegistry.registerInstallation(appAInstallationA);
 
@@ -524,7 +525,7 @@ it("doesn't find issuers when it can't access all repos in an account", () => {
     repos: [repoA],
   };
 
-  const appRegistry = createAppRegistry();
+  const appRegistry = createAppRegistry(createRepoRegistry());
   appRegistry.registerApp(appA);
   appRegistry.registerInstallation(appAInstallationA);
 
@@ -560,7 +561,7 @@ it("doesn't find issuers for an unknown account", () => {
     repos: [repoA],
   };
 
-  const appRegistry = createAppRegistry();
+  const appRegistry = createAppRegistry(createRepoRegistry());
   appRegistry.registerApp(appA);
   appRegistry.registerInstallation(appAInstallationA);
 
@@ -596,7 +597,7 @@ it("doesn't find issuers for an unknown repo", () => {
     repos: [repoA],
   };
 
-  const appRegistry = createAppRegistry();
+  const appRegistry = createAppRegistry(createRepoRegistry());
   appRegistry.registerApp(appA);
   appRegistry.registerInstallation(appAInstallationA);
 
@@ -632,7 +633,7 @@ it("doesn't find issuers that can't access all requested repos", () => {
     repos: [repoA],
   };
 
-  const appRegistry = createAppRegistry();
+  const appRegistry = createAppRegistry(createRepoRegistry());
   appRegistry.registerApp(appA);
   appRegistry.registerInstallation(appAInstallationA);
 
@@ -667,7 +668,7 @@ it("doesn't find issuers that don't have all permissions", () => {
     repos: [],
   };
 
-  const appRegistry = createAppRegistry();
+  const appRegistry = createAppRegistry(createRepoRegistry());
   appRegistry.registerApp(appA);
   appRegistry.registerInstallation(appAInstallationA);
 
@@ -708,7 +709,7 @@ it.each([
       repos: [],
     };
 
-    const appRegistry = createAppRegistry();
+    const appRegistry = createAppRegistry(createRepoRegistry());
     appRegistry.registerApp(appA);
     appRegistry.registerInstallation(appAInstallationA);
 
@@ -744,7 +745,7 @@ it("doesn't find issuers for no permissions", () => {
     repos: [],
   };
 
-  const appRegistry = createAppRegistry();
+  const appRegistry = createAppRegistry(createRepoRegistry());
   appRegistry.registerApp(appA);
   appRegistry.registerInstallation(appAInstallationA);
 
@@ -779,7 +780,7 @@ it("doesn't find issuers from non-issuer apps", () => {
     repos: [],
   };
 
-  const appRegistry = createAppRegistry();
+  const appRegistry = createAppRegistry(createRepoRegistry());
   appRegistry.registerApp(appA);
   appRegistry.registerInstallation(appAInstallationA);
 

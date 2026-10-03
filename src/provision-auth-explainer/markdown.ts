@@ -16,7 +16,10 @@ import {
   text,
 } from "../markdown.js";
 import { pluralize } from "../pluralize.js";
-import type { ProvisionRequestTarget } from "../provision-request.js";
+import {
+  isRepoProvisionRequestTarget,
+  type ProvisionRequestTarget,
+} from "../provision-request.js";
 import { secretTypeMdast } from "../secret-type.js";
 import { createSequencer } from "../sequencer.js";
 import type {
@@ -168,6 +171,9 @@ export function createMarkdownProvisionAuthExplainer(): ProvisionAuthResultExpla
     return [
       ...secretTypeMdast(target),
       text(" secret in "),
+      ...(isRepoProvisionRequestTarget(target)
+        ? [strong(text(target.visibility)), text(" repo ")]
+        : [text("account ")]),
       inlineCode(accountOrRepoRefToString(target.target)),
     ];
   }

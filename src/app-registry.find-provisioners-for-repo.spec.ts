@@ -9,6 +9,7 @@ import {
   type AppRegistration,
   type InstallationRegistration,
 } from "./app-registry.js";
+import { createRepoRegistry } from "./repo-registry.js";
 
 it("finds provisioners for repos", () => {
   const [[orgA, [repoA, repoB, repoC]]] = createTestInstallationAccounts([
@@ -45,7 +46,7 @@ it("finds provisioners for repos", () => {
     repos: [repoB, repoC],
   };
 
-  const appRegistry = createAppRegistry();
+  const appRegistry = createAppRegistry(createRepoRegistry());
   appRegistry.registerApp(appA);
   appRegistry.registerInstallation(appAInstallationA);
   appRegistry.registerApp(appB);
@@ -78,7 +79,7 @@ it("doesn't find provisioners from non-provisioner apps", () => {
     repos: [repoA],
   };
 
-  const appRegistry = createAppRegistry();
+  const appRegistry = createAppRegistry(createRepoRegistry());
   appRegistry.registerApp(appA);
   appRegistry.registerInstallation(appAInstallationA);
 

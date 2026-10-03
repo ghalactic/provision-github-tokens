@@ -6,8 +6,8 @@ import { pluralize } from "../pluralize.js";
 import type { PermissionsRule } from "../type/permissions-rule.js";
 import type { Permissions } from "../type/permissions.js";
 import type {
-  TokenAuthResourceResult,
   TokenAuthResourceResultRuleResult,
+  TokenAuthResourceResultWithVisibility,
   TokenAuthResult,
   TokenAuthResultAllRepos,
   TokenAuthResultExplainer,
@@ -126,9 +126,14 @@ export function createTextTokenAuthExplainer(): TokenAuthResultExplainer<string>
   function explainResourceRepo(
     resource: string,
     want: Permissions,
-    { isSufficient, rules }: TokenAuthResourceResult,
+    { isSufficient, visibility, rules }: TokenAuthResourceResultWithVisibility,
   ): string {
-    return explainBasedOnRules(isSufficient, `repo ${resource}`, want, rules);
+    return explainBasedOnRules(
+      isSufficient,
+      `${visibility} repo ${resource}`,
+      want,
+      rules,
+    );
   }
 
   function explainBasedOnRules(

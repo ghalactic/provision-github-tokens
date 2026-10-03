@@ -1,3 +1,4 @@
+import { createRepoRegistry } from "../src/repo-registry.js";
 import {
   createTokenAuthorizer,
   type TokenAuthorizer,
@@ -7,7 +8,7 @@ import type { Permissions } from "../src/type/permissions.js";
 export function createTestTokenAuthorizer(
   permissions: Permissions,
 ): TokenAuthorizer {
-  return createTokenAuthorizer({
+  return createTokenAuthorizer(createRepoRegistry(), {
     rules: [
       {
         description: "<description>",
@@ -16,7 +17,7 @@ export function createTestTokenAuthorizer(
             accounts: ["*"],
             noRepos: true,
             allRepos: true,
-            selectedRepos: ["*"],
+            selectedRepos: { repos: ["*"], visibility: "private" },
           },
         ],
         consumers: ["*", "*/*"],

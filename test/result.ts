@@ -57,6 +57,7 @@ export function createTestTokenAuthResult(
           rules: [],
           have: derivedHave,
           isSufficient: isAllowed,
+          visibility: "private",
         },
       },
       isMatched: true,

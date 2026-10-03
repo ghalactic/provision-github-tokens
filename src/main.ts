@@ -19,6 +19,7 @@ import { createFindProvisionerOctokit } from "./provisioner-octokit.js";
 import { createProvisioner } from "./provisioner.js";
 import { createReconcileDashboards } from "./reconcile-dashboards.js";
 import { registerTokenDeclarations } from "./register-token-declarations.js";
+import { createRepoRegistry } from "./repo-registry.js";
 import { renderSummary } from "./summary.js";
 import { createTokenAuthorizer } from "./token-authorizer.js";
 import { createTokenDeclarationRegistry } from "./token-declaration-registry.js";
@@ -75,7 +76,8 @@ try {
     return await readProviderConfig(context, octokitFactory);
   });
 
-  const appRegistry = createAppRegistry();
+  const repoRegistry = createRepoRegistry();
+  const appRegistry = createAppRegistry(repoRegistry);
   const findIssuerOctokit = createFindIssuerOctokit(
     octokitFactory,
     appRegistry,
@@ -91,10 +93,14 @@ try {
   const createProvisionRequest = createProvisionRequestFactory(
     declarationRegistry,
     appRegistry,
+    repoRegistry,
     environmentResolver,
   );
   const createTokenRequest = createTokenRequestFactory(appRegistry);
-  const tokenAuthorizer = createTokenAuthorizer(config.permissions);
+  const tokenAuthorizer = createTokenAuthorizer(
+    repoRegistry,
+    config.permissions,
+  );
   const provisionAuthorizer = createProvisionAuthorizer(
     createTokenRequest,
     tokenAuthorizer,

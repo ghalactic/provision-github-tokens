@@ -60333,7 +60333,7 @@ function effectivePermissions(permissions) {
 }
 
 // src/app-registry.ts
-function createAppRegistry() {
+function createAppRegistry(repoRegistry) {
   const apps = /* @__PURE__ */ new Map();
   const appsByInstallation = /* @__PURE__ */ new Map();
   const installations = /* @__PURE__ */ new Map();
@@ -60362,6 +60362,7 @@ function createAppRegistry() {
       const account = installationAccount(registration.installation);
       installations.set(registration.installation.id, registration);
       appsByInstallation.set(registration, appReg);
+      for (const r2 of registration.repos) repoRegistry.register(r2);
       if (appReg.issuer.enabled) {
         issuers.set(registration.installation.id, registration);
         issuerAccounts.add(account);
@@ -60592,6 +60593,184 @@ function icon(status) {
 // src/pluralize.ts
 function pluralize(amount, singular, plural) {
   return `${amount} ${amount === 1 ? singular : plural}`;
+}
+
+// src/name-pattern.ts
+function createNamePattern(pattern) {
+  if (!pattern) throw new Error("Pattern can't be empty");
+  if (pattern.includes("/")) {
+    throw new Error(`Pattern ${JSON.stringify(pattern)} can't contain /`);
+  }
+  const literals = pattern.split("*");
+  const expression = patternRegExp(literals);
+  return {
+    test: (string) => expression.test(string),
+    toString: () => pattern,
+    isLiteral: literals.length === 1
+  };
+}
+function patternRegExp(literals) {
+  let exp = "^";
+  for (let i2 = 0; i2 < literals.length; ++i2) {
+    if (i2) exp += "[^/]*";
+    exp += RegExp.escape(literals[i2]);
+  }
+  exp += "$";
+  return new RegExp(exp);
+}
+
+// src/github-pattern.ts
+function createGitHubPattern(pattern) {
+  const [accountPart, repoPart] = splitGitHubPattern(pattern);
+  const account = createNamePattern(accountPart);
+  const repo = repoPart ? createNamePattern(repoPart) : void 0;
+  return {
+    test: (string) => {
+      const parts = string.split("/");
+      if (parts.length === 1) return repo ? false : account.test(parts[0]);
+      if (parts.length !== 2 || !repo) return false;
+      return account.test(parts[0]) && repo.test(parts[1]);
+    },
+    toString: () => pattern,
+    isLiteral: account.isLiteral && (repo?.isLiteral ?? true)
+  };
+}
+function normalizeGitHubPattern(definingAccount, pattern) {
+  const [accountPart, repoPart] = splitGitHubPattern(pattern);
+  return accountPart === "." ? repoPart == null ? definingAccount.account : repoRefToString(createRepoRef(definingAccount.account, repoPart)) : pattern;
+}
+function splitGitHubPattern(pattern) {
+  const parts = pattern.split("/");
+  if (parts.length > 2) {
+    throw new Error(
+      `GitHub pattern ${JSON.stringify(pattern)} can't have more than one slash`
+    );
+  }
+  const [accountPart, repoPart] = parts;
+  if (!accountPart) {
+    throw new Error(
+      `GitHub pattern ${JSON.stringify(pattern)} account part can't be empty`
+    );
+  }
+  if (repoPart === "") {
+    throw new Error(
+      `GitHub pattern ${JSON.stringify(pattern)} repo part can't be empty`
+    );
+  }
+  return [accountPart, repoPart];
+}
+
+// src/provision-request.ts
+var SECRET_TYPES = ["actions", "agents", "codespaces", "dependabot"];
+function isRepoProvisionRequestTarget(target) {
+  return isRepoRef(target.target);
+}
+function isEnvironmentProvisionRequestTarget(target) {
+  return isEnvRef(target.target);
+}
+function createProvisionRequestFactory(declarationRegistry, appRegistry, repoRegistry, environmentResolver) {
+  return async (requester, name, secretDec) => {
+    const [tokenDec, tokenDecIsRegistered] = declarationRegistry.findDeclarationForRequester(
+      requester,
+      secretDec.token
+    );
+    const typesByAccount = {};
+    for (const accountPattern in secretDec.github.accounts) {
+      const accounts = appRegistry.resolveProvisionerAccounts([
+        createNamePattern(accountPattern)
+      ]);
+      const patternTypes = secretDec.github.accounts[accountPattern];
+      for (const account of accounts) {
+        combineTypes(typesByAccount[account] ??= {}, patternTypes);
+      }
+    }
+    overrideTypes(
+      typesByAccount[requester.account] ??= {},
+      secretDec.github.account
+    );
+    const typesByRepo = {};
+    for (const repoPattern in secretDec.github.repos) {
+      const repos = appRegistry.resolveProvisionerRepos([createGitHubPattern(repoPattern)]).map(repoRefFromName);
+      const patternTypes = secretDec.github.repos[repoPattern];
+      for (const repo of repos) {
+        const repoName = repoRefToString(repo);
+        let types = typesByRepo[repoName];
+        const isFirstRepo = !types;
+        typesByRepo[repoName] = types ??= { environments: [] };
+        combineTypes(types, patternTypes);
+        const envs = patternTypes.environments.length > 0 ? await environmentResolver.resolveEnvironments(
+          repo,
+          patternTypes.environments.map(createNamePattern)
+        ) : [];
+        if (isFirstRepo) {
+          types.environments = envs;
+        } else {
+          types.environments = types.environments.filter(
+            (env) => envs.includes(env)
+          );
+        }
+      }
+    }
+    const selfRepoTypes = typesByRepo[repoRefToString(requester)] ??= {
+      environments: []
+    };
+    overrideTypes(selfRepoTypes, secretDec.github.repo);
+    if (secretDec.github.repo.environments.length > 0) {
+      const envs = await environmentResolver.resolveEnvironments(
+        requester,
+        secretDec.github.repo.environments.map(createNamePattern)
+      );
+      selfRepoTypes.environments.push(
+        ...envs.filter((env) => !selfRepoTypes.environments.includes(env))
+      );
+    }
+    const platform2 = "github";
+    const targets = [];
+    for (const account in typesByAccount) {
+      const types = typesByAccount[account];
+      for (const type of SECRET_TYPES) {
+        if (types[type]) targets.push({ platform: platform2, type, target: { account } });
+      }
+    }
+    for (const repoName in typesByRepo) {
+      const types = typesByRepo[repoName];
+      const ref = repoRefFromName(repoName);
+      const visibility = repoRegistry.find(ref).visibility;
+      for (const type of SECRET_TYPES) {
+        if (types[type]) {
+          targets.push({ platform: platform2, type, target: ref, visibility });
+        }
+      }
+      for (const env of types.environments) {
+        targets.push({
+          platform: platform2,
+          type: "environment",
+          target: createEnvRef(ref.account, ref.repo, env),
+          visibility
+        });
+      }
+    }
+    return {
+      requester,
+      name,
+      secretDec,
+      tokenDec,
+      tokenDecIsRegistered,
+      to: targets
+    };
+  };
+  function combineTypes(base, additions) {
+    for (const type of SECRET_TYPES) {
+      if (base[type] !== false && additions[type] != null) {
+        base[type] = additions[type];
+      }
+    }
+  }
+  function overrideTypes(base, additions) {
+    for (const type of SECRET_TYPES) {
+      if (additions[type] != null) base[type] = additions[type];
+    }
+  }
 }
 
 // node_modules/.pnpm/micromark-util-character@2.1.1/node_modules/micromark-util-character/index.js
@@ -65102,7 +65281,7 @@ function createTextProvisionAuthExplainer() {
     ${icon(isTokenAllowed)} ${kind} ${name} was ${isTokenAllowed ? "allowed" : "denied"} access to token ${ref}`;
   }
   function explainSubject(target) {
-    return `${secretTypeText(target)} secret in ${accountOrRepoRefToString(target.target)}`;
+    return `${secretTypeText(target)} secret in ` + (isRepoProvisionRequestTarget(target) ? `${target.visibility} repo ` : "account ") + `${accountOrRepoRefToString(target.target)}`;
   }
   function explainBasedOnRules(isProvisionAllowed, rules) {
     const ruleCount = rules.length;
@@ -65204,8 +65383,13 @@ function createTextTokenAuthExplainer() {
     return `
   ${icon(isMatched)} ${repoPatterns} matched ${repos}`;
   }
-  function explainResourceRepo(resource, want, { isSufficient, rules }) {
-    return explainBasedOnRules(isSufficient, `repo ${resource}`, want, rules);
+  function explainResourceRepo(resource, want, { isSufficient, visibility, rules }) {
+    return explainBasedOnRules(
+      isSufficient,
+      `${visibility} repo ${resource}`,
+      want,
+      rules
+    );
   }
   function explainBasedOnRules(isSufficient, accessTo, want, rules) {
     const ruleCount = rules.length;
@@ -66460,22 +66644,34 @@ var provider_v1_schema_default = {
                       default: false
                     },
                     selectedRepos: {
-                      description: "A list of patterns to match against repos when applying the rule.",
-                      type: "array",
-                      default: [],
-                      items: {
-                        description: "A pattern which matches repos without their account prefix.",
-                        type: "string",
-                        minLength: 1,
-                        pattern: "^[*a-zA-Z0-9-_.]+$",
-                        errorMessage: "must only contain alphanumeric characters, hyphens, underscores, periods, or asterisks",
-                        examples: [
-                          "repo-a",
-                          "*",
-                          "with-prefix-*",
-                          "*-with-suffix",
-                          "with-*-infix"
-                        ]
+                      description: "The repos to match when applying the rule.",
+                      type: "object",
+                      additionalProperties: false,
+                      required: ["repos"],
+                      properties: {
+                        repos: {
+                          description: "A list of patterns to match against repos when applying the rule.",
+                          type: "array",
+                          minItems: 1,
+                          items: {
+                            description: "A pattern which matches repos without their account prefix.",
+                            type: "string",
+                            minLength: 1,
+                            pattern: "^[*a-zA-Z0-9-_.]+$",
+                            errorMessage: "must only contain alphanumeric characters, hyphens, underscores, periods, or asterisks",
+                            examples: [
+                              "repo-a",
+                              "*",
+                              "with-prefix-*",
+                              "*-with-suffix",
+                              "with-*-infix"
+                            ]
+                          }
+                        },
+                        visibility: {
+                          $ref: "#/definitions/visibility",
+                          default: "private"
+                        }
                       }
                     }
                   }
@@ -66598,8 +66794,10 @@ var provider_v1_schema_default = {
                         properties: {
                           account: {
                             description: "Which types of secrets to allow provisioning to in the requesting repo's GitHub account.",
-                            $ref: "#/definitions/provisionGithubAccountSecretTypes",
-                            default: {}
+                            $ref: "#/definitions/provisionGithubAccountTarget",
+                            default: {
+                              types: {}
+                            }
                           },
                           accounts: {
                             description: "Which types of secrets to allow provisioning to in other GitHub accounts.",
@@ -66621,13 +66819,15 @@ var provider_v1_schema_default = {
                             },
                             additionalProperties: {
                               description: "Which types of secrets to allow provisioning to in the specified GitHub account.",
-                              $ref: "#/definitions/provisionGithubAccountSecretTypes"
+                              $ref: "#/definitions/provisionGithubAccountTarget"
                             }
                           },
                           repo: {
                             description: "Which types of secrets to allow provisioning to in the requesting repo.",
-                            $ref: "#/definitions/provisionGithubRepoSecretTypes",
-                            default: {}
+                            $ref: "#/definitions/provisionGithubRepoTarget",
+                            default: {
+                              types: {}
+                            }
                           },
                           repos: {
                             description: "Which types of secrets to allow provisioning to in other repos.",
@@ -66651,7 +66851,7 @@ var provider_v1_schema_default = {
                             },
                             additionalProperties: {
                               description: "Which types of secrets to allow provisioning to in the specified repo.",
-                              $ref: "#/definitions/provisionGithubRepoSecretTypes"
+                              $ref: "#/definitions/provisionGithubRepoTarget"
                             }
                           }
                         }
@@ -66667,6 +66867,37 @@ var provider_v1_schema_default = {
     }
   },
   definitions: {
+    visibility: {
+      description: "A repo visibility level.",
+      type: "string",
+      enum: ["private", "internal", "public"]
+    },
+    provisionGithubAccountTarget: {
+      description: "Which types of secrets to allow provisioning to in a GitHub account.",
+      type: "object",
+      additionalProperties: false,
+      required: ["types"],
+      properties: {
+        types: {
+          $ref: "#/definitions/provisionGithubAccountSecretTypes"
+        }
+      }
+    },
+    provisionGithubRepoTarget: {
+      description: "Which types of secrets to allow provisioning to in a GitHub repo.",
+      type: "object",
+      additionalProperties: false,
+      required: ["types"],
+      properties: {
+        visibility: {
+          $ref: "#/definitions/visibility",
+          default: "private"
+        },
+        types: {
+          $ref: "#/definitions/provisionGithubRepoSecretTypes"
+        }
+      }
+    },
     provisionGithubAccountSecretTypes: {
       type: "object",
       additionalProperties: false,
@@ -67129,71 +67360,6 @@ function normalizeAccountPattern(definingAccount, pattern) {
   return pattern === "." ? definingAccount.account : pattern;
 }
 
-// src/name-pattern.ts
-function createNamePattern(pattern) {
-  if (!pattern) throw new Error("Pattern can't be empty");
-  if (pattern.includes("/")) {
-    throw new Error(`Pattern ${JSON.stringify(pattern)} can't contain /`);
-  }
-  const literals = pattern.split("*");
-  const expression = patternRegExp(literals);
-  return {
-    test: (string) => expression.test(string),
-    toString: () => pattern,
-    isLiteral: literals.length === 1
-  };
-}
-function patternRegExp(literals) {
-  let exp = "^";
-  for (let i2 = 0; i2 < literals.length; ++i2) {
-    if (i2) exp += "[^/]*";
-    exp += RegExp.escape(literals[i2]);
-  }
-  exp += "$";
-  return new RegExp(exp);
-}
-
-// src/github-pattern.ts
-function createGitHubPattern(pattern) {
-  const [accountPart, repoPart] = splitGitHubPattern(pattern);
-  const account = createNamePattern(accountPart);
-  const repo = repoPart ? createNamePattern(repoPart) : void 0;
-  return {
-    test: (string) => {
-      const parts = string.split("/");
-      if (parts.length === 1) return repo ? false : account.test(parts[0]);
-      if (parts.length !== 2 || !repo) return false;
-      return account.test(parts[0]) && repo.test(parts[1]);
-    },
-    toString: () => pattern,
-    isLiteral: account.isLiteral && (repo?.isLiteral ?? true)
-  };
-}
-function normalizeGitHubPattern(definingAccount, pattern) {
-  const [accountPart, repoPart] = splitGitHubPattern(pattern);
-  return accountPart === "." ? repoPart == null ? definingAccount.account : repoRefToString(createRepoRef(definingAccount.account, repoPart)) : pattern;
-}
-function splitGitHubPattern(pattern) {
-  const parts = pattern.split("/");
-  if (parts.length > 2) {
-    throw new Error(
-      `GitHub pattern ${JSON.stringify(pattern)} can't have more than one slash`
-    );
-  }
-  const [accountPart, repoPart] = parts;
-  if (!accountPart) {
-    throw new Error(
-      `GitHub pattern ${JSON.stringify(pattern)} account part can't be empty`
-    );
-  }
-  if (repoPart === "") {
-    throw new Error(
-      `GitHub pattern ${JSON.stringify(pattern)} repo part can't be empty`
-    );
-  }
-  return [accountPart, repoPart];
-}
-
 // src/config/provider-config.ts
 async function readProviderConfig(context, octokitFactory) {
   const provider = repoRefFromName(context.githubRepository);
@@ -67229,38 +67395,70 @@ function parseProviderConfig(definingRepo, configPath, configYaml) {
   return normalizeProviderConfig(definingRepo, config);
 }
 function normalizeProviderConfig(definingRepo, config) {
+  const rules = [];
   for (let i2 = 0; i2 < config.permissions.rules.length; ++i2) {
     const rule = config.permissions.rules[i2];
+    const resources = [];
     for (let j2 = 0; j2 < rule.resources.length; ++j2) {
-      for (let k2 = 0; k2 < rule.resources[j2].accounts.length; ++k2) {
-        rule.resources[j2].accounts[k2] = normalizeAccountPattern(
-          definingRepo,
-          rule.resources[j2].accounts[k2]
+      const criteria = rule.resources[j2];
+      const accounts = [];
+      for (let k2 = 0; k2 < criteria.accounts.length; ++k2) {
+        accounts.push(
+          normalizeAccountPattern(definingRepo, criteria.accounts[k2])
         );
       }
+      resources.push({
+        accounts,
+        noRepos: criteria.noRepos,
+        allRepos: criteria.allRepos,
+        selectedRepos: criteria.selectedRepos ? {
+          repos: criteria.selectedRepos.repos,
+          visibility: criteria.selectedRepos.visibility
+        } : void 0
+      });
     }
+    const consumers = [];
     for (let j2 = 0; j2 < rule.consumers.length; ++j2) {
-      rule.consumers[j2] = normalizeGitHubPattern(
-        definingRepo,
-        rule.consumers[j2]
-      );
+      consumers.push(normalizeGitHubPattern(definingRepo, rule.consumers[j2]));
     }
+    rules.push({
+      description: rule.description,
+      resources,
+      consumers,
+      permissions: rule.permissions
+    });
   }
+  const secrets = [];
   for (let i2 = 0; i2 < config.provision.rules.secrets.length; ++i2) {
     const rule = config.provision.rules.secrets[i2];
+    const requesters = [];
     for (let j2 = 0; j2 < rule.requesters.length; ++j2) {
-      rule.requesters[j2] = normalizeGitHubPattern(
-        definingRepo,
-        rule.requesters[j2]
-      );
+      requesters.push(normalizeGitHubPattern(definingRepo, rule.requesters[j2]));
     }
     const repos = {};
     for (const pattern in rule.to.github.repos) {
       repos[normalizeGitHubPattern(definingRepo, pattern)] = rule.to.github.repos[pattern];
     }
-    rule.to.github.repos = repos;
+    secrets.push({
+      description: rule.description,
+      secrets: rule.secrets,
+      requesters,
+      to: {
+        github: {
+          account: rule.to.github.account,
+          accounts: rule.to.github.accounts,
+          repo: rule.to.github.repo,
+          repos
+        }
+      }
+    });
   }
-  return config;
+  return {
+    $schema: config.$schema,
+    dashboards: config.dashboards,
+    permissions: { rules },
+    provision: { rules: { secrets } }
+  };
 }
 
 // node_modules/.pnpm/universal-user-agent@7.0.3/node_modules/universal-user-agent/index.js
@@ -120050,6 +120248,19 @@ function createFindIssuerOctokit(octokitFactory, appRegistry, appsInput) {
   };
 }
 
+// src/visibility.ts
+function isVisibility(value) {
+  return value === "private" || value === "internal" || value === "public";
+}
+function isVisibilityWithin(target, allowed) {
+  return VISIBILITY_RANK[target] <= VISIBILITY_RANK[allowed];
+}
+var VISIBILITY_RANK = {
+  private: 0,
+  internal: 1,
+  public: 2
+};
+
 // src/provision-authorizer.ts
 function createProvisionAuthorizer(createTokenRequest, tokenAuthorizer, config) {
   const [namePatterns, targetPatterns, requesterPatterns] = patternsForRules(
@@ -120071,24 +120282,35 @@ function createProvisionAuthorizer(createTokenRequest, tokenAuthorizer, config) 
           if (!anyPatternMatches(requesterPatterns[i2], requester)) continue;
           const rule = config.rules.secrets[i2];
           let ruleHave;
-          if (isRepoRef(target.target)) {
+          if (isRepoProvisionRequestTarget(target)) {
             for (let j2 = 0; j2 < targetPatterns[i2].repos.length; ++j2) {
-              const [repo, repoPattern, envPatterns] = targetPatterns[i2].repos[j2];
+              const [repo, repoPattern, envPatterns, repoVisibility] = targetPatterns[i2].repos[j2];
               if (!repoPattern.test(targetName)) continue;
-              const repoPatternHave = target.type === "environment" && isEnvRef(target.target) ? applyEnvPatterns(
+              if (!isVisibilityWithin(target.visibility, repoVisibility)) {
+                continue;
+              }
+              const repoPatternHave = isEnvironmentProvisionRequestTarget(
+                target
+              ) ? applyEnvPatterns(
                 target.target.environment,
-                rule.to.github.repos[repo].environments,
+                rule.to.github.repos[repo].types.environments,
                 envPatterns
-              ) : selectBySecretType(rule.to.github.repos[repo], target.type);
+              ) : selectBySecretType(
+                rule.to.github.repos[repo].types,
+                target.type
+              );
               if (repoPatternHave) ruleHave = repoPatternHave;
               if (ruleHave === "deny") break;
             }
-            if (isSelfRepo) {
-              const selfHave = target.type === "environment" && isEnvRef(target.target) ? applyEnvPatterns(
+            if (isSelfRepo && isVisibilityWithin(
+              target.visibility,
+              rule.to.github.repo.visibility
+            )) {
+              const selfHave = isEnvironmentProvisionRequestTarget(target) ? applyEnvPatterns(
                 target.target.environment,
-                rule.to.github.repo.environments,
+                rule.to.github.repo.types.environments,
                 targetPatterns[i2].selfRepoEnvs
-              ) : selectBySecretType(rule.to.github.repo, target.type);
+              ) : selectBySecretType(rule.to.github.repo.types, target.type);
               if (selfHave) ruleHave = selfHave;
             }
           } else {
@@ -120096,7 +120318,7 @@ function createProvisionAuthorizer(createTokenRequest, tokenAuthorizer, config) 
               const [account, accountPattern] = targetPatterns[i2].accounts[j2];
               if (!accountPattern.test(targetName)) continue;
               const accountPatternHave = selectBySecretType(
-                rule.to.github.accounts[account],
+                rule.to.github.accounts[account].types,
                 target.type
               );
               if (accountPatternHave) ruleHave = accountPatternHave;
@@ -120104,7 +120326,7 @@ function createProvisionAuthorizer(createTokenRequest, tokenAuthorizer, config) 
             }
             if (isSelfAccount) {
               const selfHave = selectBySecretType(
-                rule.to.github.account,
+                rule.to.github.account.types,
                 target.type
               );
               if (selfHave) ruleHave = selfHave;
@@ -120180,12 +120402,19 @@ function createProvisionAuthorizer(createTokenRequest, tokenAuthorizer, config) 
     }
     for (const repo of Object.keys(rule.to.github.repos)) {
       const envPatterns = [];
-      for (const env of Object.keys(rule.to.github.repos[repo].environments)) {
+      for (const env of Object.keys(
+        rule.to.github.repos[repo].types.environments
+      )) {
         envPatterns.push([env, createNamePattern(env)]);
       }
-      targetPatterns2.repos.push([repo, createGitHubPattern(repo), envPatterns]);
+      targetPatterns2.repos.push([
+        repo,
+        createGitHubPattern(repo),
+        envPatterns,
+        rule.to.github.repos[repo].visibility
+      ]);
     }
-    for (const env of Object.keys(rule.to.github.repo.environments)) {
+    for (const env of Object.keys(rule.to.github.repo.types.environments)) {
       targetPatterns2.selfRepoEnvs.push([env, createNamePattern(env)]);
     }
     for (const requester of rule.requesters) {
@@ -120217,109 +120446,6 @@ function createProvisionAuthorizer(createTokenRequest, tokenAuthorizer, config) 
       have = environments[env];
     }
     return have;
-  }
-}
-
-// src/provision-request.ts
-var SECRET_TYPES = ["actions", "agents", "codespaces", "dependabot"];
-function createProvisionRequestFactory(declarationRegistry, appRegistry, environmentResolver) {
-  return async (requester, name, secretDec) => {
-    const [tokenDec, tokenDecIsRegistered] = declarationRegistry.findDeclarationForRequester(
-      requester,
-      secretDec.token
-    );
-    const typesByAccount = {};
-    for (const accountPattern in secretDec.github.accounts) {
-      const accounts = appRegistry.resolveProvisionerAccounts([
-        createNamePattern(accountPattern)
-      ]);
-      const patternTypes = secretDec.github.accounts[accountPattern];
-      for (const account of accounts) {
-        combineTypes(typesByAccount[account] ??= {}, patternTypes);
-      }
-    }
-    overrideTypes(
-      typesByAccount[requester.account] ??= {},
-      secretDec.github.account
-    );
-    const typesByRepo = {};
-    for (const repoPattern in secretDec.github.repos) {
-      const repos = appRegistry.resolveProvisionerRepos([createGitHubPattern(repoPattern)]).map(repoRefFromName);
-      const patternTypes = secretDec.github.repos[repoPattern];
-      for (const repo of repos) {
-        const repoName = repoRefToString(repo);
-        let types = typesByRepo[repoName];
-        const isFirstRepo = !types;
-        typesByRepo[repoName] = types ??= { environments: [] };
-        combineTypes(types, patternTypes);
-        const envs = patternTypes.environments.length > 0 ? await environmentResolver.resolveEnvironments(
-          repo,
-          patternTypes.environments.map(createNamePattern)
-        ) : [];
-        if (isFirstRepo) {
-          types.environments = envs;
-        } else {
-          types.environments = types.environments.filter(
-            (env) => envs.includes(env)
-          );
-        }
-      }
-    }
-    const selfRepoTypes = typesByRepo[repoRefToString(requester)] ??= {
-      environments: []
-    };
-    overrideTypes(selfRepoTypes, secretDec.github.repo);
-    if (secretDec.github.repo.environments.length > 0) {
-      const envs = await environmentResolver.resolveEnvironments(
-        requester,
-        secretDec.github.repo.environments.map(createNamePattern)
-      );
-      selfRepoTypes.environments.push(
-        ...envs.filter((env) => !selfRepoTypes.environments.includes(env))
-      );
-    }
-    const platform2 = "github";
-    const targets = [];
-    for (const account in typesByAccount) {
-      const types = typesByAccount[account];
-      for (const type of SECRET_TYPES) {
-        if (types[type]) targets.push({ platform: platform2, type, target: { account } });
-      }
-    }
-    for (const repoName in typesByRepo) {
-      const types = typesByRepo[repoName];
-      const repo = repoRefFromName(repoName);
-      for (const type of SECRET_TYPES) {
-        if (types[type]) targets.push({ platform: platform2, type, target: repo });
-      }
-      for (const env of types.environments) {
-        targets.push({
-          platform: platform2,
-          type: "environment",
-          target: createEnvRef(repo.account, repo.repo, env)
-        });
-      }
-    }
-    return {
-      requester,
-      name,
-      secretDec,
-      tokenDec,
-      tokenDecIsRegistered,
-      to: targets
-    };
-  };
-  function combineTypes(base, additions) {
-    for (const type of SECRET_TYPES) {
-      if (base[type] !== false && additions[type] != null) {
-        base[type] = additions[type];
-      }
-    }
-  }
-  function overrideTypes(base, additions) {
-    for (const type of SECRET_TYPES) {
-      if (additions[type] != null) base[type] = additions[type];
-    }
   }
 }
 
@@ -120702,6 +120828,7 @@ function createMarkdownProvisionAuthExplainer() {
     return [
       ...secretTypeMdast(target),
       text2(" secret in "),
+      ...isRepoProvisionRequestTarget(target) ? [strong2(text2(target.visibility)), text2(" repo ")] : [text2("account ")],
       inlineCode2(accountOrRepoRefToString(target.target))
     ];
   }
@@ -121026,10 +121153,10 @@ function createMarkdownTokenAuthExplainer() {
       paragraph2(text2(`${icon(isMatched)} ${repoPatterns} matched ${repos}`))
     ];
   }
-  function explainResourceRepo(resource, want, { isSufficient, rules }) {
+  function explainResourceRepo(resource, want, { isSufficient, visibility, rules }) {
     return explainBasedOnRules(
       isSufficient,
-      [text2("repo "), inlineCode2(resource)],
+      [strong2(text2(visibility)), text2(" repo "), inlineCode2(resource)],
       want,
       rules
     );
@@ -121714,6 +121841,30 @@ function registerTokenDeclarations(declarationRegistry, requesters) {
   }
 }
 
+// src/repo-registry.ts
+function createRepoRegistry() {
+  const repos = /* @__PURE__ */ new Map();
+  return {
+    register: (repo) => {
+      if (!isVisibility(repo.visibility)) {
+        throw new Error(
+          `Invariant violation: Repo ${repo.full_name} doesn't have a known visibility`
+        );
+      }
+      repos.set(repo.full_name, repo);
+    },
+    find: (reference) => {
+      const repo = repos.get(repoRefToString(reference));
+      if (!repo) {
+        throw new Error(
+          `Invariant violation: Repo ${repoRefToString(reference)} hasn't been registered`
+        );
+      }
+      return repo;
+    }
+  };
+}
+
 // src/summary.ts
 var LINK_REF_PREFIX = "gh/";
 var MAX_ROWS = 1e3;
@@ -121918,7 +122069,7 @@ function renderSummary(context, authResult, tokenCreationResults, provisionResul
 }
 
 // src/token-authorizer.ts
-function createTokenAuthorizer(config) {
+function createTokenAuthorizer(repoRegistry, config) {
   const [resourcePatterns, consumerPatterns, permissionPatterns] = patternsForRules(config.rules);
   const results = /* @__PURE__ */ new Map();
   return {
@@ -122042,9 +122193,9 @@ function createTokenAuthorizer(config) {
     let isSufficient = true;
     const resourceResults = {};
     for (const reqRepo of request2.repos) {
-      const reqResource = repoRefToString(
-        createRepoRef(request2.tokenDec.account, reqRepo)
-      );
+      const ref = createRepoRef(request2.tokenDec.account, reqRepo);
+      const reqResource = repoRefToString(ref);
+      const targetVisibility = repoRegistry.find(ref).visibility;
       const ruleResults = [];
       const have = {};
       let isResourceSufficient = false;
@@ -122052,8 +122203,8 @@ function createTokenAuthorizer(config) {
         const rule = config.rules[i2];
         let isRelevant = false;
         for (let j2 = 0; j2 < rule.resources.length; ++j2) {
-          const { accounts, repos } = resourcePatterns[i2][j2];
-          isRelevant = anyPatternMatches(accounts, request2.tokenDec.account) && anyPatternMatches(repos, reqRepo);
+          const { accounts, repos, visibility } = resourcePatterns[i2][j2];
+          isRelevant = anyPatternMatches(accounts, request2.tokenDec.account) && anyPatternMatches(repos, reqRepo) && isVisibilityWithin(targetVisibility, visibility);
           if (isRelevant) break;
         }
         if (!isRelevant) continue;
@@ -122077,7 +122228,8 @@ function createTokenAuthorizer(config) {
       resourceResults[reqResource] = {
         rules: ruleResults,
         have,
-        isSufficient: isResourceSufficient
+        isSufficient: isResourceSufficient,
+        visibility: targetVisibility
       };
     }
     const maxWant = maxAccess(request2.tokenDec.permissions);
@@ -122135,10 +122287,14 @@ function createTokenAuthorizer(config) {
     for (const pattern of criteria.accounts) {
       accounts.push(createNamePattern(pattern));
     }
-    for (const pattern of criteria.selectedRepos) {
+    for (const pattern of criteria.selectedRepos?.repos ?? []) {
       repos.push(createNamePattern(pattern));
     }
-    return { accounts, repos };
+    return {
+      accounts,
+      repos,
+      visibility: criteria.selectedRepos?.visibility ?? "private"
+    };
   }
   function rulesForConsumer(consumer) {
     const consumerName = accountOrRepoRefToString(consumer);
@@ -122433,7 +122589,8 @@ try {
   const config = await group("Reading config", async () => {
     return await readProviderConfig(context, octokitFactory);
   });
-  const appRegistry = createAppRegistry();
+  const repoRegistry = createRepoRegistry();
+  const appRegistry = createAppRegistry(repoRegistry);
   const findIssuerOctokit = createFindIssuerOctokit(
     octokitFactory,
     appRegistry,
@@ -122449,10 +122606,14 @@ try {
   const createProvisionRequest = createProvisionRequestFactory(
     declarationRegistry,
     appRegistry,
+    repoRegistry,
     environmentResolver
   );
   const createTokenRequest = createTokenRequestFactory(appRegistry);
-  const tokenAuthorizer = createTokenAuthorizer(config.permissions);
+  const tokenAuthorizer = createTokenAuthorizer(
+    repoRegistry,
+    config.permissions
+  );
   const provisionAuthorizer = createProvisionAuthorizer(
     createTokenRequest,
     tokenAuthorizer,
@@ -122524,6 +122685,8 @@ try {
 /* istanbul ignore next - parseRequesterConfig always throws with a cause - @preserve */
 /* istanbul ignore else - @preserve */
 /* istanbul ignore next - only called for requesters with a config error - @preserve */
+/* istanbul ignore next - GitHub always populates a known visibility - @preserve */
+/* istanbul ignore next - prevented by discovery - @preserve */
 /* istanbul ignore file - TODO: remove coverage ignore - @preserve */
 /*! Bundled license information:
 

@@ -11,7 +11,7 @@ permissions:
         - accounts: ["*"]
           noRepos: true
           allRepos: true
-          selectedRepos: ["*"]
+          selectedRepos: { repos: ["*"] }
       consumers: ["*", "*/*"]
       permissions:
         contents: read
@@ -24,7 +24,6 @@ permissions:
         - accounts: [account-a]
           noRepos: true
           allRepos: false
-          selectedRepos: []
       consumers: ["*", "*/*"]
       permissions:
         metadata: read
@@ -34,7 +33,6 @@ permissions:
         - accounts: [account-a]
           noRepos: false
           allRepos: true
-          selectedRepos: []
       consumers: ["*", "*/*"]
       permissions:
         contents: write
@@ -44,7 +42,7 @@ permissions:
         - accounts: [account-a]
           noRepos: false
           allRepos: false
-          selectedRepos: [repo-a, repo-*]
+          selectedRepos: { repos: [repo-a, repo-*], visibility: internal }
       consumers: ["*", "*/*"]
       permissions:
         contents: write
@@ -54,7 +52,6 @@ permissions:
         - accounts: [account-a]
           noRepos: true
           allRepos: false
-          selectedRepos: []
       consumers: [account-a]
       permissions:
         metadata: read
@@ -64,7 +61,6 @@ permissions:
         - accounts: ["*"]
           noRepos: true
           allRepos: false
-          selectedRepos: []
       consumers: [<account>]
       permissions:
         metadata: read
@@ -74,7 +70,7 @@ permissions:
         - accounts: ["*"]
           noRepos: false
           allRepos: false
-          selectedRepos: ["*"]
+          selectedRepos: { repos: ["*"] }
       consumers: ["*/<repo>"]
       permissions:
         contents: write
@@ -84,7 +80,7 @@ permissions:
         - accounts: ["*"]
           noRepos: false
           allRepos: false
-          selectedRepos: ["*"]
+          selectedRepos: { repos: ["*"] }
       consumers: [<account>/<repo>]
       permissions:
         contents: write
@@ -94,7 +90,7 @@ permissions:
         - accounts: ["*"]
           noRepos: false
           allRepos: false
-          selectedRepos: [repo-a]
+          selectedRepos: { repos: [repo-a] }
       consumers: ["*", "*/*"]
       permissions:
         contents: write
@@ -104,7 +100,7 @@ permissions:
         - accounts: [.]
           noRepos: false
           allRepos: false
-          selectedRepos: [repo-a]
+          selectedRepos: { repos: [repo-a] }
       consumers: [./repo-b]
       permissions:
         contents: write
@@ -114,7 +110,6 @@ permissions:
         - accounts: [.]
           noRepos: false
           allRepos: true
-          selectedRepos: []
       consumers: [./repo-a]
       permissions:
         contents: write
@@ -124,7 +119,7 @@ permissions:
         - accounts: [account-a]
           noRepos: false
           allRepos: false
-          selectedRepos: [repo-a]
+          selectedRepos: { repos: [repo-a] }
       consumers: [account-b/repo-b]
       permissions:
         contents: write
@@ -134,7 +129,7 @@ permissions:
         - accounts: [.]
           noRepos: false
           allRepos: false
-          selectedRepos: [repo-a]
+          selectedRepos: { repos: [repo-a] }
       consumers: [./repo-b]
       permissions:
         contents: none
@@ -144,7 +139,7 @@ permissions:
         - accounts: [.]
           noRepos: false
           allRepos: false
-          selectedRepos: [repo-a]
+          selectedRepos: { repos: [repo-a] }
       consumers: [./repo-b]
       permissions:
         contents: write
@@ -154,7 +149,7 @@ permissions:
         - accounts: [.]
           noRepos: false
           allRepos: false
-          selectedRepos: [repo-a]
+          selectedRepos: { repos: [repo-a] }
       consumers: [./repo-b]
       permissions:
         contents: read
@@ -164,11 +159,11 @@ permissions:
         - accounts: [account-a, account-b]
           noRepos: false
           allRepos: false
-          selectedRepos: [repo-a, repo-b]
+          selectedRepos: { repos: [repo-a, repo-b] }
         - accounts: [account-c, account-d]
           noRepos: false
           allRepos: false
-          selectedRepos: [repo-c, repo-d]
+          selectedRepos: { repos: [repo-c, repo-d] }
       consumers: [account-e, account-f/repo-f, account-g/repo-g]
       permissions:
         contents: write
@@ -178,7 +173,7 @@ permissions:
         - accounts: [account-*]
           noRepos: false
           allRepos: false
-          selectedRepos: [repo-*]
+          selectedRepos: { repos: [repo-*] }
       consumers: ["*-account", "*-account/*-repo"]
       permissions:
         contents: write
@@ -188,7 +183,7 @@ permissions:
         - accounts: [.]
           noRepos: true
           allRepos: true
-          selectedRepos: ["*"]
+          selectedRepos: { repos: ["*"] }
       consumers: [./repo-b]
       permissions:
         actions: write
@@ -250,12 +245,13 @@ provision:
         to:
           github:
             repo:
-              actions: allow
-              agents: allow
-              codespaces: allow
-              dependabot: allow
-              environments:
-                "*": allow
+              types:
+                actions: allow
+                agents: allow
+                codespaces: allow
+                dependabot: allow
+                environments:
+                  "*": allow
 
       - description: Specific repos can provision to any secret of any kind in their own account
         secrets: ["*"]
@@ -263,10 +259,11 @@ provision:
         to:
           github:
             account:
-              actions: allow
-              agents: allow
-              codespaces: allow
-              dependabot: allow
+              types:
+                actions: allow
+                agents: allow
+                codespaces: allow
+                dependabot: allow
 
       - description: Specific repos can provision to dependabot secrets in specific accounts
         secrets: ["*"]
@@ -275,9 +272,11 @@ provision:
           github:
             accounts:
               account-a:
-                dependabot: allow
+                types:
+                  dependabot: allow
               account-b:
-                dependabot: allow
+                types:
+                  dependabot: allow
 
       - description: Specific repos can provision to dependabot secrets in any account
         secrets: ["*"]
@@ -286,7 +285,8 @@ provision:
           github:
             accounts:
               "*":
-                dependabot: allow
+                types:
+                  dependabot: allow
 
       - description: A specific repo can provision to a specific codespaces secret in other repos
         secrets: [SECRET_A]
@@ -295,11 +295,13 @@ provision:
           github:
             repos:
               ./repo-b:
-                agents: allow
-                codespaces: allow
+                types:
+                  agents: allow
+                  codespaces: allow
               account-b/repo-c:
-                agents: allow
-                codespaces: allow
+                types:
+                  agents: allow
+                  codespaces: allow
 
       - description: A specific repo can provision to specific secrets of specific environments in another repo
         secrets: [SECRET_A]
@@ -308,9 +310,10 @@ provision:
           github:
             repos:
               ./repo-b:
-                environments:
-                  env-a: allow
-                  env-b: allow
+                types:
+                  environments:
+                    env-a: allow
+                    env-b: allow
 
       - description: Specific repos can provision to a specific secret of any kind in any repo in any account
         secrets: [SECRET_A]
@@ -319,12 +322,13 @@ provision:
           github:
             repos:
               "*/*":
-                actions: allow
-                agents: allow
-                codespaces: allow
-                dependabot: allow
-                environments:
-                  "*": allow
+                types:
+                  actions: allow
+                  agents: allow
+                  codespaces: allow
+                  dependabot: allow
+                  environments:
+                    "*": allow
 
       - description: Specific repos can provision to a specific actions secret in any repo in a specific account
         secrets: [SECRET_A]
@@ -333,7 +337,8 @@ provision:
           github:
             repos:
               account-b/*:
-                actions: allow
+                types:
+                  actions: allow
 
       - description: Specific repos can provision any actions secret in the same repo or account, or specific other repos and accounts
         secrets: ["*"]
@@ -341,19 +346,25 @@ provision:
         to:
           github:
             account:
-              actions: allow
+              types:
+                actions: allow
             accounts:
               account-a:
-                actions: allow
+                types:
+                  actions: allow
               account-b:
-                actions: allow
+                types:
+                  actions: allow
             repo:
-              actions: allow
+              types:
+                actions: allow
             repos:
               ./repo-a:
-                actions: allow
+                types:
+                  actions: allow
               account-a/repo-a:
-                actions: allow
+                types:
+                  actions: allow
 
       - description: No repos can provision to a specific secret of any kind in any account or repo
         secrets: [SECRET_X]
@@ -362,18 +373,20 @@ provision:
           github:
             accounts:
               "*":
-                actions: deny
-                agents: deny
-                codespaces: deny
-                dependabot: deny
+                types:
+                  actions: deny
+                  agents: deny
+                  codespaces: deny
+                  dependabot: deny
             repos:
               "*/*":
-                actions: deny
-                agents: deny
-                codespaces: deny
-                dependabot: deny
-                environments:
-                  "*": deny
+                types:
+                  actions: deny
+                  agents: deny
+                  codespaces: deny
+                  dependabot: deny
+                  environments:
+                    "*": deny
 
       - description: Specific repos can't provision to a specific secret of any kind in the same repo
         secrets: [SECRET_X]
@@ -381,12 +394,13 @@ provision:
         to:
           github:
             repo:
-              actions: deny
-              agents: deny
-              codespaces: deny
-              dependabot: deny
-              environments:
-                "*": deny
+              types:
+                actions: deny
+                agents: deny
+                codespaces: deny
+                dependabot: deny
+                environments:
+                  "*": deny
 
       - description: Rules can have both allow and deny, but deny takes precedence
         secrets: [SECRET_A]
@@ -394,11 +408,12 @@ provision:
         to:
           github:
             repo:
-              actions: allow
-              agents: deny
-              codespaces: deny
-              dependabot: allow
-              environments:
-                "*": allow
-                env-a: deny
-                env-b: deny
+              types:
+                actions: allow
+                agents: deny
+                codespaces: deny
+                dependabot: allow
+                environments:
+                  "*": allow
+                  env-a: deny
+                  env-b: deny

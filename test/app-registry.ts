@@ -4,6 +4,7 @@ import {
   type AppRegistration,
   type AppRegistry,
 } from "../src/app-registry.js";
+import type { RepoRegistry } from "../src/repo-registry.js";
 import type { Installation, Repo } from "../src/type/github-api.js";
 import type { TestApp } from "./github-api.js";
 
@@ -16,6 +17,7 @@ export type TestAppRegistry = Omit<AppRegistry, "apps"> & {
 };
 
 export function createTestAppRegistry(
+  repoRegistry: RepoRegistry,
   ...entries: {
     app: TestApp;
     installations: [Installation, Repo[]][];
@@ -23,7 +25,7 @@ export function createTestAppRegistry(
     provisioner?: boolean;
   }[]
 ): TestAppRegistry {
-  const appRegistry = createAppRegistry();
+  const appRegistry = createAppRegistry(repoRegistry);
   const allApps: TestApp[] = [];
   const allInstallations: [Installation, Repo[]][] = [];
 

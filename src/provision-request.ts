@@ -3,13 +3,16 @@ import type { EnvironmentResolver } from "./environment-resolver.js";
 import { createGitHubPattern } from "./github-pattern.js";
 import {
   createEnvRef,
+  isEnvRef,
+  isRepoRef,
   repoRefFromName,
   repoRefToString,
-  type AccountOrRepoReference,
+  type AccountReference,
   type EnvironmentReference,
   type RepoReference,
 } from "./github-reference.js";
 import { createNamePattern } from "./name-pattern.js";
+import type { RepoRegistry } from "./repo-registry.js";
 import type { TokenDeclarationRegistry } from "./token-declaration-registry.js";
 import type { TokenDeclaration } from "./token-declaration.js";
 import type {
@@ -17,6 +20,7 @@ import type {
   SecretDeclarationGitHubAccountSecretTypes,
   SecretDeclarationGitHubRepoSecretTypes,
 } from "./type/secret-declaration.js";
+import type { Visibility } from "./type/visibility.js";
 
 const SECRET_TYPES = ["actions", "agents", "codespaces", "dependabot"] as const;
 
@@ -30,41 +34,42 @@ export type ProvisionRequest = {
 };
 
 export type ProvisionRequestTarget =
-  | GitHubActionsProvisionRequestTarget
-  | GitHubAgentsProvisionRequestTarget
-  | GitHubCodespacesProvisionRequestTarget
-  | GitHubDependabotProvisionRequestTarget
+  | GitHubAccountProvisionRequestTarget
+  | GitHubRepoProvisionRequestTarget
   | GitHubEnvironmentProvisionRequestTarget;
 
-export type GitHubActionsProvisionRequestTarget = {
+export type GitHubAccountProvisionRequestTarget = {
   platform: "github";
-  type: "actions";
-  target: AccountOrRepoReference;
+  type: "actions" | "agents" | "codespaces" | "dependabot";
+  target: AccountReference;
 };
 
-export type GitHubAgentsProvisionRequestTarget = {
+export type GitHubRepoProvisionRequestTarget = {
   platform: "github";
-  type: "agents";
-  target: AccountOrRepoReference;
-};
-
-export type GitHubCodespacesProvisionRequestTarget = {
-  platform: "github";
-  type: "codespaces";
-  target: AccountOrRepoReference;
-};
-
-export type GitHubDependabotProvisionRequestTarget = {
-  platform: "github";
-  type: "dependabot";
-  target: AccountOrRepoReference;
+  type: "actions" | "agents" | "codespaces" | "dependabot";
+  target: RepoReference;
+  visibility: Visibility;
 };
 
 export type GitHubEnvironmentProvisionRequestTarget = {
   platform: "github";
   type: "environment";
   target: EnvironmentReference;
+  visibility: Visibility;
 };
+
+export function isRepoProvisionRequestTarget(
+  target: ProvisionRequestTarget,
+): target is
+  GitHubRepoProvisionRequestTarget | GitHubEnvironmentProvisionRequestTarget {
+  return isRepoRef(target.target);
+}
+
+export function isEnvironmentProvisionRequestTarget(
+  target: ProvisionRequestTarget,
+): target is GitHubEnvironmentProvisionRequestTarget {
+  return isEnvRef(target.target);
+}
 
 export type ProvisionRequestFactory = (
   requester: RepoReference,
@@ -75,6 +80,7 @@ export type ProvisionRequestFactory = (
 export function createProvisionRequestFactory(
   declarationRegistry: TokenDeclarationRegistry,
   appRegistry: AppRegistry,
+  repoRegistry: RepoRegistry,
   environmentResolver: EnvironmentResolver,
 ): ProvisionRequestFactory {
   return async (requester, name, secretDec) => {
@@ -177,17 +183,21 @@ export function createProvisionRequestFactory(
 
     for (const repoName in typesByRepo) {
       const types = typesByRepo[repoName];
-      const repo = repoRefFromName(repoName);
+      const ref = repoRefFromName(repoName);
+      const visibility = repoRegistry.find(ref).visibility as Visibility;
 
       for (const type of SECRET_TYPES) {
-        if (types[type]) targets.push({ platform, type, target: repo });
+        if (types[type]) {
+          targets.push({ platform, type, target: ref, visibility });
+        }
       }
 
       for (const env of types.environments) {
         targets.push({
           platform,
           type: "environment",
-          target: createEnvRef(repo.account, repo.repo, env),
+          target: createEnvRef(ref.account, ref.repo, env),
+          visibility,
         });
       }
     }

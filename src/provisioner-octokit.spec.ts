@@ -11,6 +11,7 @@ import {
 } from "./app-registry.js";
 import { createOctokitFactory } from "./octokit.js";
 import { createFindProvisionerOctokit } from "./provisioner-octokit.js";
+import { createRepoRegistry } from "./repo-registry.js";
 import type { AppInput } from "./type/input.js";
 
 it("can find octokit instances for provisioners", () => {
@@ -36,7 +37,7 @@ it("can find octokit instances for provisioners", () => {
     installation: appAInstallationA,
     repos: [repoA],
   };
-  const appRegistry = createAppRegistry();
+  const appRegistry = createAppRegistry(createRepoRegistry());
   appRegistry.registerApp(appRegA);
   appRegistry.registerInstallation(appAInstallationRegA);
 
@@ -86,7 +87,7 @@ it("returns undefined if no matching installation is found", () => {
     installation: appAInstallationA,
     repos: [repoA],
   };
-  const appRegistry = createAppRegistry();
+  const appRegistry = createAppRegistry(createRepoRegistry());
   appRegistry.registerApp(appRegA);
   appRegistry.registerInstallation(appAInstallationRegA);
 

@@ -10,9 +10,12 @@ import {
   createTestInstallationAccounts,
 } from "../test/github-api.js";
 import {
+  createTestAccountProvisionRequestTarget,
+  createTestEnvironmentProvisionRequestTarget,
   createTestProvisionRequest,
-  createTestProvisionRequestTarget,
+  createTestRepoProvisionRequestTarget,
 } from "../test/provision-request.js";
+import { createTestRepoRegistry } from "../test/repo-registry.js";
 import { type RepoReference } from "./github-reference.js";
 import {
   createProvisionRequestFactory,
@@ -29,11 +32,34 @@ it("creates provision requests from secret declarations", async () => {
   const repoX: RepoReference = { account: "account-x", repo: "repo-x" };
 
   const declarationRegistry = createTokenDeclarationRegistry();
-  const appRegistry = createTestAppRegistry();
+
+  const [[accountA, reposA], [accountX, reposX]] =
+    createTestInstallationAccounts(
+      ["Organization", 100, "account-a", ["repo-a"]],
+      ["Organization", 200, "account-x", ["repo-x"]],
+    );
+  const [[appA, [appAInstallationA, appAInstallationX]]] = createTestApps([
+    "App A",
+    {},
+    [
+      [accountA, "selected"],
+      [accountX, "selected"],
+    ],
+  ]);
+  const repoRegistry = createTestRepoRegistry();
+  const appRegistry = createTestAppRegistry(repoRegistry, {
+    app: appA,
+    provisioner: true,
+    installations: [
+      [appAInstallationA, reposA],
+      [appAInstallationX, reposX],
+    ],
+  });
   const environmentResolver = createTestEnvironmentResolver();
   const createProvisionRequest = createProvisionRequestFactory(
     declarationRegistry,
     appRegistry,
+    repoRegistry,
     environmentResolver,
   );
 
@@ -90,7 +116,8 @@ it("supports provisioning to multiple targets", async () => {
     ],
   ]);
 
-  const appRegistry = createTestAppRegistry({
+  const repoRegistry = createTestRepoRegistry();
+  const appRegistry = createTestAppRegistry(repoRegistry, {
     app: appA,
     provisioner: true,
     installations: [
@@ -102,6 +129,7 @@ it("supports provisioning to multiple targets", async () => {
   const createProvisionRequest = createProvisionRequestFactory(
     declarationRegistry,
     appRegistry,
+    repoRegistry,
     environmentResolver,
   );
 
@@ -151,44 +179,104 @@ it("supports provisioning to multiple targets", async () => {
       )
     )?.to,
   ).toStrictEqual([
-    createTestProvisionRequestTarget("actions"),
-    createTestProvisionRequestTarget("agents"),
-    createTestProvisionRequestTarget("codespaces"),
-    createTestProvisionRequestTarget("dependabot"),
-    createTestProvisionRequestTarget("actions", "account-b"),
-    createTestProvisionRequestTarget("agents", "account-b"),
-    createTestProvisionRequestTarget("codespaces", "account-b"),
-    createTestProvisionRequestTarget("dependabot", "account-b"),
-    createTestProvisionRequestTarget("actions", "account-a", "repo-a"),
-    createTestProvisionRequestTarget("agents", "account-a", "repo-a"),
-    createTestProvisionRequestTarget("codespaces", "account-a", "repo-a"),
-    createTestProvisionRequestTarget("dependabot", "account-a", "repo-a"),
-    createTestProvisionRequestTarget(
-      "environment",
+    createTestAccountProvisionRequestTarget("actions", "account-a"),
+    createTestAccountProvisionRequestTarget("agents", "account-a"),
+    createTestAccountProvisionRequestTarget("codespaces", "account-a"),
+    createTestAccountProvisionRequestTarget("dependabot", "account-a"),
+    createTestAccountProvisionRequestTarget("actions", "account-b"),
+    createTestAccountProvisionRequestTarget("agents", "account-b"),
+    createTestAccountProvisionRequestTarget("codespaces", "account-b"),
+    createTestAccountProvisionRequestTarget("dependabot", "account-b"),
+    createTestRepoProvisionRequestTarget(
+      "actions",
+      "account-a",
+      "repo-a",
+      "private",
+    ),
+    createTestRepoProvisionRequestTarget(
+      "agents",
+      "account-a",
+      "repo-a",
+      "private",
+    ),
+    createTestRepoProvisionRequestTarget(
+      "codespaces",
+      "account-a",
+      "repo-a",
+      "private",
+    ),
+    createTestRepoProvisionRequestTarget(
+      "dependabot",
+      "account-a",
+      "repo-a",
+      "private",
+    ),
+    createTestEnvironmentProvisionRequestTarget(
       "account-a",
       "repo-a",
       "env-a",
+      "private",
     ),
-    createTestProvisionRequestTarget(
-      "environment",
+    createTestEnvironmentProvisionRequestTarget(
       "account-a",
       "repo-a",
       "env-b",
+      "private",
     ),
-    createTestProvisionRequestTarget("actions", "account-a", "repo-b"),
-    createTestProvisionRequestTarget("agents", "account-a", "repo-b"),
-    createTestProvisionRequestTarget("codespaces", "account-a", "repo-b"),
-    createTestProvisionRequestTarget("dependabot", "account-a", "repo-b"),
-    createTestProvisionRequestTarget(
-      "environment",
+    createTestRepoProvisionRequestTarget(
+      "actions",
+      "account-a",
+      "repo-b",
+      "private",
+    ),
+    createTestRepoProvisionRequestTarget(
+      "agents",
+      "account-a",
+      "repo-b",
+      "private",
+    ),
+    createTestRepoProvisionRequestTarget(
+      "codespaces",
+      "account-a",
+      "repo-b",
+      "private",
+    ),
+    createTestRepoProvisionRequestTarget(
+      "dependabot",
+      "account-a",
+      "repo-b",
+      "private",
+    ),
+    createTestEnvironmentProvisionRequestTarget(
       "account-a",
       "repo-b",
       "env-a",
+      "private",
     ),
-    createTestProvisionRequestTarget("actions", "account-b", "repo-a"),
-    createTestProvisionRequestTarget("agents", "account-b", "repo-a"),
-    createTestProvisionRequestTarget("codespaces", "account-b", "repo-a"),
-    createTestProvisionRequestTarget("dependabot", "account-b", "repo-a"),
+    createTestRepoProvisionRequestTarget(
+      "actions",
+      "account-b",
+      "repo-a",
+      "private",
+    ),
+    createTestRepoProvisionRequestTarget(
+      "agents",
+      "account-b",
+      "repo-a",
+      "private",
+    ),
+    createTestRepoProvisionRequestTarget(
+      "codespaces",
+      "account-b",
+      "repo-a",
+      "private",
+    ),
+    createTestRepoProvisionRequestTarget(
+      "dependabot",
+      "account-b",
+      "repo-a",
+      "private",
+    ),
   ] satisfies ProvisionRequestTarget[]);
 });
 
@@ -197,11 +285,34 @@ it("supports unshared token declarations", async () => {
   const repoX: RepoReference = { account: "account-x", repo: "repo-x" };
 
   const declarationRegistry = createTokenDeclarationRegistry();
-  const appRegistry = createTestAppRegistry();
+
+  const [[accountA, reposA], [accountX, reposX]] =
+    createTestInstallationAccounts(
+      ["Organization", 100, "account-a", ["repo-a"]],
+      ["Organization", 200, "account-x", ["repo-x"]],
+    );
+  const [[appA, [appAInstallationA, appAInstallationX]]] = createTestApps([
+    "App A",
+    {},
+    [
+      [accountA, "selected"],
+      [accountX, "selected"],
+    ],
+  ]);
+  const repoRegistry = createTestRepoRegistry();
+  const appRegistry = createTestAppRegistry(repoRegistry, {
+    app: appA,
+    provisioner: true,
+    installations: [
+      [appAInstallationA, reposA],
+      [appAInstallationX, reposX],
+    ],
+  });
   const environmentResolver = createTestEnvironmentResolver();
   const createProvisionRequest = createProvisionRequestFactory(
     declarationRegistry,
     appRegistry,
+    repoRegistry,
     environmentResolver,
   );
 
@@ -230,11 +341,34 @@ it("supports undefined token declarations", async () => {
   const repoX: RepoReference = { account: "account-x", repo: "repo-x" };
 
   const declarationRegistry = createTokenDeclarationRegistry();
-  const appRegistry = createTestAppRegistry();
+
+  const [[accountA, reposA], [accountX, reposX]] =
+    createTestInstallationAccounts(
+      ["Organization", 100, "account-a", ["repo-a"]],
+      ["Organization", 200, "account-x", ["repo-x"]],
+    );
+  const [[appA, [appAInstallationA, appAInstallationX]]] = createTestApps([
+    "App A",
+    {},
+    [
+      [accountA, "selected"],
+      [accountX, "selected"],
+    ],
+  ]);
+  const repoRegistry = createTestRepoRegistry();
+  const appRegistry = createTestAppRegistry(repoRegistry, {
+    app: appA,
+    provisioner: true,
+    installations: [
+      [appAInstallationA, reposA],
+      [appAInstallationX, reposX],
+    ],
+  });
   const environmentResolver = createTestEnvironmentResolver();
   const createProvisionRequest = createProvisionRequestFactory(
     declarationRegistry,
     appRegistry,
+    repoRegistry,
     environmentResolver,
   );
 

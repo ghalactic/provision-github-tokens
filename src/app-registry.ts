@@ -7,6 +7,7 @@ import {
 } from "./github-reference.js";
 import { anyPatternMatches, type Pattern } from "./pattern.js";
 import { isEmptyPermissions, permissionAccess } from "./permissions.js";
+import type { RepoRegistry } from "./repo-registry.js";
 import type { TokenRequest } from "./token-request.js";
 import type { App, Installation, Repo } from "./type/github-api.js";
 import type { AppInputIssuer, AppInputProvisioner } from "./type/input.js";
@@ -42,7 +43,7 @@ export type InstallationRegistration = {
   repos: Repo[];
 };
 
-export function createAppRegistry(): AppRegistry {
+export function createAppRegistry(repoRegistry: RepoRegistry): AppRegistry {
   const apps = new Map<number, AppRegistration>();
   const appsByInstallation = new Map<
     InstallationRegistration,
@@ -81,6 +82,8 @@ export function createAppRegistry(): AppRegistry {
 
       installations.set(registration.installation.id, registration);
       appsByInstallation.set(registration, appReg);
+
+      for (const r of registration.repos) repoRegistry.register(r);
 
       if (appReg.issuer.enabled) {
         issuers.set(registration.installation.id, registration);

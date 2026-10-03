@@ -22,9 +22,11 @@ import {
 import { createTestKeyPair } from "../test/key.js";
 import { createTestOctokitFactory } from "../test/octokit-factory.js";
 import {
+  createTestAccountProvisionRequestTarget,
   createTestProvisionRequest,
-  createTestProvisionRequestTarget,
+  createTestRepoProvisionRequestTarget,
 } from "../test/provision-request.js";
+import { createTestRepoRegistry } from "../test/repo-registry.js";
 import {
   createTestProvisionAuthTargetResult,
   createTestTokenAuthResult,
@@ -64,7 +66,7 @@ it("handles GitHub API errors when provisioning org-level Dependabot secrets", a
   __setEnvironments([[repoA, [envA]]]);
   __setOrgKeys("account-a", { dependabot: accountADependabotKey });
 
-  const appRegistry = createTestAppRegistry({
+  const appRegistry = createTestAppRegistry(createTestRepoRegistry(), {
     app: appA,
     provisioner: true,
     installations: [[appAInstallationA, [repoA]]],
@@ -96,11 +98,16 @@ it("handles GitHub API errors when provisioning org-level Dependabot secrets", a
         secretDec: createTestSecretDec({
           github: { accounts: { "account-a": { actions: true } } },
         }),
-        to: [createTestProvisionRequestTarget("dependabot")],
+        to: [
+          createTestAccountProvisionRequestTarget("dependabot", "account-a"),
+        ],
       }),
       results: [
         createTestProvisionAuthTargetResult({
-          target: createTestProvisionRequestTarget("dependabot"),
+          target: createTestAccountProvisionRequestTarget(
+            "dependabot",
+            "account-a",
+          ),
           tokenAuthResult,
         }),
       ],
@@ -147,7 +154,7 @@ it("handles unexpected errors when provisioning org-level Dependabot secrets", a
   error.stack = "Error: <message>\n    at provisioner.ts:1:1";
   __setErrors("dependabot.createOrUpdateOrgSecret", [error]);
 
-  const appRegistry = createTestAppRegistry({
+  const appRegistry = createTestAppRegistry(createTestRepoRegistry(), {
     app: appA,
     provisioner: true,
     installations: [[appAInstallationA, [repoA]]],
@@ -178,11 +185,16 @@ it("handles unexpected errors when provisioning org-level Dependabot secrets", a
         secretDec: createTestSecretDec({
           github: { accounts: { "account-a": { actions: true } } },
         }),
-        to: [createTestProvisionRequestTarget("dependabot")],
+        to: [
+          createTestAccountProvisionRequestTarget("dependabot", "account-a"),
+        ],
       }),
       results: [
         createTestProvisionAuthTargetResult({
-          target: createTestProvisionRequestTarget("dependabot"),
+          target: createTestAccountProvisionRequestTarget(
+            "dependabot",
+            "account-a",
+          ),
           tokenAuthResult,
         }),
       ],
@@ -226,7 +238,7 @@ it("can provision org-level Dependabot secrets", async () => {
   __setEnvironments([[repoA, [envA]]]);
   __setOrgKeys("account-a", { dependabot: accountADependabotKey });
 
-  const appRegistry = createTestAppRegistry({
+  const appRegistry = createTestAppRegistry(createTestRepoRegistry(), {
     app: appA,
     provisioner: true,
     installations: [[appAInstallationA, [repoA]]],
@@ -257,11 +269,16 @@ it("can provision org-level Dependabot secrets", async () => {
         secretDec: createTestSecretDec({
           github: { accounts: { "account-a": { actions: true } } },
         }),
-        to: [createTestProvisionRequestTarget("dependabot")],
+        to: [
+          createTestAccountProvisionRequestTarget("dependabot", "account-a"),
+        ],
       }),
       results: [
         createTestProvisionAuthTargetResult({
-          target: createTestProvisionRequestTarget("dependabot"),
+          target: createTestAccountProvisionRequestTarget(
+            "dependabot",
+            "account-a",
+          ),
           tokenAuthResult,
         }),
       ],
@@ -313,7 +330,7 @@ it("handles GitHub API errors when provisioning repo-level Dependabot secrets", 
     dependabot: accountARepoADependabotKey,
   });
 
-  const appRegistry = createTestAppRegistry({
+  const appRegistry = createTestAppRegistry(createTestRepoRegistry(), {
     app: appA,
     provisioner: true,
     installations: [[appAInstallationA, [repoA]]],
@@ -346,15 +363,21 @@ it("handles GitHub API errors when provisioning repo-level Dependabot secrets", 
           github: { accounts: { "account-a": { actions: true } } },
         }),
         to: [
-          createTestProvisionRequestTarget("dependabot", "account-a", "repo-a"),
+          createTestRepoProvisionRequestTarget(
+            "dependabot",
+            "account-a",
+            "repo-a",
+            "private",
+          ),
         ],
       }),
       results: [
         createTestProvisionAuthTargetResult({
-          target: createTestProvisionRequestTarget(
+          target: createTestRepoProvisionRequestTarget(
             "dependabot",
             "account-a",
             "repo-a",
+            "private",
           ),
           tokenAuthResult,
         }),
@@ -406,7 +429,7 @@ it("handles unexpected errors when provisioning repo-level Dependabot secrets", 
   error.stack = "Error: <message>\n    at provisioner.ts:1:1";
   __setErrors("dependabot.createOrUpdateRepoSecret", [error]);
 
-  const appRegistry = createTestAppRegistry({
+  const appRegistry = createTestAppRegistry(createTestRepoRegistry(), {
     app: appA,
     provisioner: true,
     installations: [[appAInstallationA, [repoA]]],
@@ -438,15 +461,21 @@ it("handles unexpected errors when provisioning repo-level Dependabot secrets", 
           github: { accounts: { "account-a": { actions: true } } },
         }),
         to: [
-          createTestProvisionRequestTarget("dependabot", "account-a", "repo-a"),
+          createTestRepoProvisionRequestTarget(
+            "dependabot",
+            "account-a",
+            "repo-a",
+            "private",
+          ),
         ],
       }),
       results: [
         createTestProvisionAuthTargetResult({
-          target: createTestProvisionRequestTarget(
+          target: createTestRepoProvisionRequestTarget(
             "dependabot",
             "account-a",
             "repo-a",
+            "private",
           ),
           tokenAuthResult,
         }),
@@ -495,7 +524,7 @@ it("can provision repo-level Dependabot secrets", async () => {
     dependabot: accountARepoADependabotKey,
   });
 
-  const appRegistry = createTestAppRegistry({
+  const appRegistry = createTestAppRegistry(createTestRepoRegistry(), {
     app: appA,
     provisioner: true,
     installations: [[appAInstallationA, [repoA]]],
@@ -527,15 +556,21 @@ it("can provision repo-level Dependabot secrets", async () => {
           github: { accounts: { "account-a": { actions: true } } },
         }),
         to: [
-          createTestProvisionRequestTarget("dependabot", "account-a", "repo-a"),
+          createTestRepoProvisionRequestTarget(
+            "dependabot",
+            "account-a",
+            "repo-a",
+            "private",
+          ),
         ],
       }),
       results: [
         createTestProvisionAuthTargetResult({
-          target: createTestProvisionRequestTarget(
+          target: createTestRepoProvisionRequestTarget(
             "dependabot",
             "account-a",
             "repo-a",
+            "private",
           ),
           tokenAuthResult,
         }),

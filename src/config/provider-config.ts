@@ -9,7 +9,15 @@ import {
   type RepoReference,
 } from "../github-reference.js";
 import type { OctokitFactory } from "../octokit.js";
+import type {
+  PermissionsRule,
+  PermissionsRuleResourceCriteria,
+} from "../type/permissions-rule.js";
 import type { ProviderConfig } from "../type/provider-config.js";
+import type {
+  ProviderConfigGitHubRepoTarget,
+  ProvisionSecretsRule,
+} from "../type/provision-rule.js";
 import { validateProvider } from "./validation.js";
 import { parseYaml } from "./yaml.js";
 
@@ -65,43 +73,85 @@ function normalizeProviderConfig(
   definingRepo: RepoReference,
   config: ProviderConfig,
 ): ProviderConfig {
+  const rules: PermissionsRule[] = [];
+
   for (let i = 0; i < config.permissions.rules.length; ++i) {
     const rule = config.permissions.rules[i];
+    const resources: PermissionsRuleResourceCriteria[] = [];
 
     for (let j = 0; j < rule.resources.length; ++j) {
-      for (let k = 0; k < rule.resources[j].accounts.length; ++k) {
-        rule.resources[j].accounts[k] = normalizeAccountPattern(
-          definingRepo,
-          rule.resources[j].accounts[k],
+      const criteria = rule.resources[j];
+      const accounts: string[] = [];
+
+      for (let k = 0; k < criteria.accounts.length; ++k) {
+        accounts.push(
+          normalizeAccountPattern(definingRepo, criteria.accounts[k]),
         );
       }
+
+      resources.push({
+        accounts,
+        noRepos: criteria.noRepos,
+        allRepos: criteria.allRepos,
+        selectedRepos: criteria.selectedRepos
+          ? {
+              repos: criteria.selectedRepos.repos,
+              visibility: criteria.selectedRepos.visibility,
+            }
+          : undefined,
+      });
     }
 
+    const consumers: string[] = [];
+
     for (let j = 0; j < rule.consumers.length; ++j) {
-      rule.consumers[j] = normalizeGitHubPattern(
-        definingRepo,
-        rule.consumers[j],
-      );
+      consumers.push(normalizeGitHubPattern(definingRepo, rule.consumers[j]));
     }
+
+    rules.push({
+      description: rule.description,
+      resources,
+      consumers,
+      permissions: rule.permissions,
+    });
   }
+
+  const secrets: ProvisionSecretsRule[] = [];
 
   for (let i = 0; i < config.provision.rules.secrets.length; ++i) {
     const rule = config.provision.rules.secrets[i];
+    const requesters: string[] = [];
 
     for (let j = 0; j < rule.requesters.length; ++j) {
-      rule.requesters[j] = normalizeGitHubPattern(
-        definingRepo,
-        rule.requesters[j],
-      );
+      requesters.push(normalizeGitHubPattern(definingRepo, rule.requesters[j]));
     }
 
-    const repos: typeof rule.to.github.repos = {};
+    const repos: Record<string, ProviderConfigGitHubRepoTarget> = {};
+
     for (const pattern in rule.to.github.repos) {
       repos[normalizeGitHubPattern(definingRepo, pattern)] =
         rule.to.github.repos[pattern];
     }
-    rule.to.github.repos = repos;
+
+    secrets.push({
+      description: rule.description,
+      secrets: rule.secrets,
+      requesters,
+      to: {
+        github: {
+          account: rule.to.github.account,
+          accounts: rule.to.github.accounts,
+          repo: rule.to.github.repo,
+          repos,
+        },
+      },
+    });
   }
 
-  return config;
+  return {
+    $schema: config.$schema,
+    dashboards: config.dashboards,
+    permissions: { rules },
+    provision: { rules: { secrets } },
+  };
 }

@@ -4,6 +4,7 @@ import {
   createTestInstallationAccounts,
 } from "../test/github-api.js";
 import { createAppRegistry } from "./app-registry.js";
+import { createRepoRegistry } from "./repo-registry.js";
 
 it("doesn't allow registering an installation of an app that isn't registered", () => {
   const [[accountA]] = createTestInstallationAccounts([
@@ -17,7 +18,7 @@ it("doesn't allow registering an installation of an app that isn't registered", 
     [[accountA, "selected"]],
   ]);
 
-  const appRegistry = createAppRegistry();
+  const appRegistry = createAppRegistry(createRepoRegistry());
 
   expect(() => {
     appRegistry.registerInstallation({

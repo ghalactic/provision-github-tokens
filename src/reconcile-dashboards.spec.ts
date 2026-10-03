@@ -22,6 +22,7 @@ import {
 } from "../test/github-api.js";
 import { createTestOctokitFactory } from "../test/octokit-factory.js";
 import { createTestProvisionRequest } from "../test/provision-request.js";
+import { createTestRepoRegistry } from "../test/repo-registry.js";
 import { createTestProvisionAuthResult } from "../test/result.js";
 import { ValidateError } from "./config/validation.js";
 import {
@@ -60,7 +61,7 @@ it("creates a dashboard when there are config issues", async () => {
     [[orgA, "selected"]],
   ]);
 
-  const appRegistry = createTestAppRegistry({
+  const appRegistry = createTestAppRegistry(createTestRepoRegistry(), {
     app: appA,
     provisioner: true,
     installations: [[appAInstallationA, [repoA]]],
@@ -133,7 +134,7 @@ it("creates a dashboard when provisioning fails", async () => {
     [[orgA, "selected"]],
   ]);
 
-  const appRegistry = createTestAppRegistry({
+  const appRegistry = createTestAppRegistry(createTestRepoRegistry(), {
     app: appA,
     provisioner: true,
     installations: [[appAInstallationA, [repoA]]],
@@ -217,7 +218,7 @@ it("updates a dashboard when its body is stale", async () => {
     [[orgA, "selected"]],
   ]);
 
-  const appRegistry = createTestAppRegistry({
+  const appRegistry = createTestAppRegistry(createTestRepoRegistry(), {
     app: appA,
     provisioner: true,
     installations: [[appAInstallationA, [repoA]]],
@@ -312,7 +313,7 @@ it("updates a dashboard on subsequent workflow runs", async () => {
     [[orgA, "selected"]],
   ]);
 
-  const appRegistry = createTestAppRegistry({
+  const appRegistry = createTestAppRegistry(createTestRepoRegistry(), {
     app: appA,
     provisioner: true,
     installations: [[appAInstallationA, [repoA]]],
@@ -406,7 +407,7 @@ it("closes all but the newest dashboard", async () => {
     [[orgA, "selected"]],
   ]);
 
-  const appRegistry = createTestAppRegistry({
+  const appRegistry = createTestAppRegistry(createTestRepoRegistry(), {
     app: appA,
     provisioner: true,
     installations: [[appAInstallationA, [repoA]]],
@@ -514,7 +515,7 @@ it("closes dashboards when nothing is failing", async () => {
     [[orgA, "selected"]],
   ]);
 
-  const appRegistry = createTestAppRegistry({
+  const appRegistry = createTestAppRegistry(createTestRepoRegistry(), {
     app: appA,
     provisioner: true,
     installations: [[appAInstallationA, [repoA]]],
@@ -608,7 +609,7 @@ it("closes dashboards when everything is provisioned", async () => {
     [[orgA, "selected"]],
   ]);
 
-  const appRegistry = createTestAppRegistry({
+  const appRegistry = createTestAppRegistry(createTestRepoRegistry(), {
     app: appA,
     provisioner: true,
     installations: [[appAInstallationA, [repoA]]],
@@ -700,7 +701,7 @@ it("closes dashboards when they're disabled by the provider", async () => {
     [[orgA, "selected"]],
   ]);
 
-  const appRegistry = createTestAppRegistry({
+  const appRegistry = createTestAppRegistry(createTestRepoRegistry(), {
     app: appA,
     provisioner: true,
     installations: [[appAInstallationA, [repoA]]],
@@ -792,7 +793,7 @@ it("closes dashboards when they're disabled by the requester", async () => {
     [[orgA, "selected"]],
   ]);
 
-  const appRegistry = createTestAppRegistry({
+  const appRegistry = createTestAppRegistry(createTestRepoRegistry(), {
     app: appA,
     provisioner: true,
     installations: [[appAInstallationA, [repoA]]],
@@ -884,7 +885,7 @@ it("doesn't create a dashboard when nothing is failing", async () => {
     [[orgA, "selected"]],
   ]);
 
-  const appRegistry = createTestAppRegistry({
+  const appRegistry = createTestAppRegistry(createTestRepoRegistry(), {
     app: appA,
     provisioner: true,
     installations: [[appAInstallationA, [repoA]]],
@@ -947,7 +948,7 @@ it("doesn't create a dashboard when they're disabled", async () => {
     [[orgA, "selected"]],
   ]);
 
-  const appRegistry = createTestAppRegistry({
+  const appRegistry = createTestAppRegistry(createTestRepoRegistry(), {
     app: appA,
     provisioner: true,
     installations: [[appAInstallationA, [repoA]]],
@@ -1022,7 +1023,7 @@ it("reuses the existing label when creating dashboards", async () => {
     [[orgA, "selected"]],
   ]);
 
-  const appRegistry = createTestAppRegistry({
+  const appRegistry = createTestAppRegistry(createTestRepoRegistry(), {
     app: appA,
     provisioner: true,
     installations: [[appAInstallationA, [repoA]]],
@@ -1100,7 +1101,7 @@ it("ignores provisioned secrets from other repos", async () => {
     [[orgA, "selected"]],
   ]);
 
-  const appRegistry = createTestAppRegistry({
+  const appRegistry = createTestAppRegistry(createTestRepoRegistry(), {
     app: appA,
     provisioner: true,
     installations: [[appAInstallationA, [repoA]]],
@@ -1191,7 +1192,7 @@ it("ignores open issues without the dashboard label", async () => {
     [[orgA, "selected"]],
   ]);
 
-  const appRegistry = createTestAppRegistry({
+  const appRegistry = createTestAppRegistry(createTestRepoRegistry(), {
     app: appA,
     provisioner: true,
     installations: [[appAInstallationA, [repoA]]],
@@ -1295,7 +1296,7 @@ it("reconciles each requester independently", async () => {
     [[orgA, "selected"]],
   ]);
 
-  const appRegistry = createTestAppRegistry({
+  const appRegistry = createTestAppRegistry(createTestRepoRegistry(), {
     app: appA,
     provisioner: true,
     installations: [[appAInstallationA, [repoA, repoB]]],
@@ -1386,7 +1387,7 @@ it("warns when listing open issues fails", async () => {
     [[orgA, "selected"]],
   ]);
 
-  const appRegistry = createTestAppRegistry({
+  const appRegistry = createTestAppRegistry(createTestRepoRegistry(), {
     app: appA,
     provisioner: true,
     installations: [[appAInstallationA, [repoA]]],
@@ -1462,7 +1463,7 @@ it("warns when failing to create the dashboard label", async () => {
     [[orgA, "selected"]],
   ]);
 
-  const appRegistry = createTestAppRegistry({
+  const appRegistry = createTestAppRegistry(createTestRepoRegistry(), {
     app: appA,
     provisioner: true,
     installations: [[appAInstallationA, [repoA]]],

@@ -6,8 +6,9 @@ import {
   createTestTokenDec,
 } from "../test/declaration.js";
 import {
+  createTestAccountProvisionRequestTarget,
+  createTestEnvironmentProvisionRequestTarget,
   createTestProvisionRequest,
-  createTestProvisionRequestTarget,
 } from "../test/provision-request.js";
 import {
   createTestProvisionAuthResult,
@@ -27,7 +28,10 @@ import type { TokenCreationResult } from "./type/token-creation-result.js";
 const fixturesPath = join(import.meta.dirname, "testdata/summary");
 
 it("renders a summary with all secrets provisioned", async () => {
-  const accountAActionsTarget = createTestProvisionRequestTarget("actions");
+  const accountAActionsTarget = createTestAccountProvisionRequestTarget(
+    "actions",
+    "account-a",
+  );
 
   const tokenAuthResultA = createTestTokenAuthResult({
     request: {
@@ -145,7 +149,10 @@ it("renders a summary with all secrets provisioned", async () => {
 });
 
 it("renders a summary with some secrets denied", async () => {
-  const accountAActionsTarget = createTestProvisionRequestTarget("actions");
+  const accountAActionsTarget = createTestAccountProvisionRequestTarget(
+    "actions",
+    "account-a",
+  );
 
   const tokenAuthResultA = createTestTokenAuthResult({
     request: {
@@ -265,7 +272,10 @@ it("renders a summary with some secrets denied", async () => {
 });
 
 it("renders a summary with all secrets denied", async () => {
-  const accountAActionsTarget = createTestProvisionRequestTarget("actions");
+  const accountAActionsTarget = createTestAccountProvisionRequestTarget(
+    "actions",
+    "account-a",
+  );
 
   const tokenAuthResultA = createTestTokenAuthResult({
     isAllowed: false,
@@ -364,12 +374,13 @@ it("renders a summary with no secrets requested", async () => {
 });
 
 it("renders a summary with environment targets", async () => {
-  const accountARepoAEnvironmentTarget = createTestProvisionRequestTarget(
-    "environment",
-    "account-a",
-    "repo-a",
-    "env-a",
-  );
+  const accountARepoAEnvironmentTarget =
+    createTestEnvironmentProvisionRequestTarget(
+      "account-a",
+      "repo-a",
+      "env-a",
+      "private",
+    );
 
   const tokenAuthResultA = createTestTokenAuthResult({
     request: {
@@ -441,7 +452,10 @@ it("renders a summary with environment targets", async () => {
 });
 
 it("renders a summary with multiple requesters", async () => {
-  const accountAActionsTarget = createTestProvisionRequestTarget("actions");
+  const accountAActionsTarget = createTestAccountProvisionRequestTarget(
+    "actions",
+    "account-a",
+  );
 
   const tokenAuthResultA = createTestTokenAuthResult({
     request: {
@@ -559,7 +573,10 @@ it("renders a summary with multiple requesters", async () => {
 });
 
 it("renders a summary with a missing token declaration", async () => {
-  const accountAActionsTarget = createTestProvisionRequestTarget("actions");
+  const accountAActionsTarget = createTestAccountProvisionRequestTarget(
+    "actions",
+    "account-a",
+  );
 
   const tokenAuthResultA = createTestTokenAuthResult({
     request: {
@@ -664,7 +681,10 @@ it("renders a summary with a missing token declaration", async () => {
 });
 
 it("renders a summary with an unshared token declaration", async () => {
-  const accountAActionsTarget = createTestProvisionRequestTarget("actions");
+  const accountAActionsTarget = createTestAccountProvisionRequestTarget(
+    "actions",
+    "account-a",
+  );
 
   const tokenAuthResultA = createTestTokenAuthResult({
     request: {
@@ -768,7 +788,10 @@ it("renders a summary with an unshared token declaration", async () => {
 });
 
 it("renders a summary with missing targets", async () => {
-  const accountAActionsTarget = createTestProvisionRequestTarget("actions");
+  const accountAActionsTarget = createTestAccountProvisionRequestTarget(
+    "actions",
+    "account-a",
+  );
 
   const tokenAuthResultA = createTestTokenAuthResult({
     request: {
@@ -862,14 +885,22 @@ it("renders a summary with missing targets", async () => {
 });
 
 it("renders a summary with multiple distinct targets", async () => {
-  const accountAActionsTarget = createTestProvisionRequestTarget("actions");
+  const accountAActionsTarget = createTestAccountProvisionRequestTarget(
+    "actions",
+    "account-a",
+  );
 
-  const accountAAgentsTarget = createTestProvisionRequestTarget("agents");
+  const accountAAgentsTarget = createTestAccountProvisionRequestTarget(
+    "agents",
+    "account-a",
+  );
 
-  const accountACodespacesTarget =
-    createTestProvisionRequestTarget("codespaces");
+  const accountACodespacesTarget = createTestAccountProvisionRequestTarget(
+    "codespaces",
+    "account-a",
+  );
 
-  const accountBActionsTarget = createTestProvisionRequestTarget(
+  const accountBActionsTarget = createTestAccountProvisionRequestTarget(
     "actions",
     "account-b",
   );
@@ -968,7 +999,10 @@ it("renders a summary with multiple distinct targets", async () => {
 });
 
 it("truncates rows beyond the limit and shows a notice", async () => {
-  const accountAActionsTarget = createTestProvisionRequestTarget("actions");
+  const accountAActionsTarget = createTestAccountProvisionRequestTarget(
+    "actions",
+    "account-a",
+  );
 
   const provisionAuthResults: ProvisionAuthResult[] = [];
   const provisionResults = new Map<
@@ -1022,7 +1056,10 @@ it("truncates rows beyond the limit and shows a notice", async () => {
 });
 
 it("renders a failure reason when tokens aren't allowed", async () => {
-  const accountAActionsTarget = createTestProvisionRequestTarget("actions");
+  const accountAActionsTarget = createTestAccountProvisionRequestTarget(
+    "actions",
+    "account-a",
+  );
 
   const tokenAuthResult = createTestTokenAuthResult({
     isAllowed: false,
@@ -1089,7 +1126,10 @@ it("renders a failure reason when tokens aren't allowed", async () => {
 });
 
 it("renders a failure reason when no suitable issuer is found", async () => {
-  const accountAActionsTarget = createTestProvisionRequestTarget("actions");
+  const accountAActionsTarget = createTestAccountProvisionRequestTarget(
+    "actions",
+    "account-a",
+  );
 
   const tokenAuthResult = createTestTokenAuthResult({
     request: {
@@ -1155,7 +1195,10 @@ it("renders a failure reason when no suitable issuer is found", async () => {
 });
 
 it("renders a failure reason when token issuance fails", async () => {
-  const accountAActionsTarget = createTestProvisionRequestTarget("actions");
+  const accountAActionsTarget = createTestAccountProvisionRequestTarget(
+    "actions",
+    "account-a",
+  );
 
   const tokenAuthResult = createTestTokenAuthResult({
     request: {
@@ -1221,7 +1264,10 @@ it("renders a failure reason when token issuance fails", async () => {
 });
 
 it("renders a failure reason when no suitable provisioner is found", async () => {
-  const accountAActionsTarget = createTestProvisionRequestTarget("actions");
+  const accountAActionsTarget = createTestAccountProvisionRequestTarget(
+    "actions",
+    "account-a",
+  );
 
   const tokenAuthResult = createTestTokenAuthResult({
     request: {
@@ -1296,7 +1342,10 @@ it("renders a failure reason when no suitable provisioner is found", async () =>
 });
 
 it("renders a failure reason when provisioning has no target results", async () => {
-  const accountAActionsTarget = createTestProvisionRequestTarget("actions");
+  const accountAActionsTarget = createTestAccountProvisionRequestTarget(
+    "actions",
+    "account-a",
+  );
 
   const tokenAuthResult = createTestTokenAuthResult({
     request: {
@@ -1371,9 +1420,12 @@ it("renders a failure reason when provisioning has no target results", async () 
 });
 
 it("renders a failure reason when provisioning partially fails across targets", async () => {
-  const accountAActionsTarget = createTestProvisionRequestTarget("actions");
+  const accountAActionsTarget = createTestAccountProvisionRequestTarget(
+    "actions",
+    "account-a",
+  );
 
-  const accountBActionsTarget = createTestProvisionRequestTarget(
+  const accountBActionsTarget = createTestAccountProvisionRequestTarget(
     "actions",
     "account-b",
   );
@@ -1458,7 +1510,10 @@ it("renders a failure reason when provisioning partially fails across targets", 
 });
 
 it("renders a failure reason when provisioning fails for all targets", async () => {
-  const accountAActionsTarget = createTestProvisionRequestTarget("actions");
+  const accountAActionsTarget = createTestAccountProvisionRequestTarget(
+    "actions",
+    "account-a",
+  );
 
   const tokenAuthResult = createTestTokenAuthResult({
     request: {

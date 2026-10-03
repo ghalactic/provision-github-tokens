@@ -1,6 +1,7 @@
 import { join } from "node:path";
 import { expect, it } from "vitest";
 import { createTestTokenDec } from "../test/declaration.js";
+import { createTestRepoRegistry } from "../test/repo-registry.js";
 import { toMarkdown } from "./markdown.js";
 import { createMarkdownTokenAuthExplainer } from "./token-auth-explainer/markdown.js";
 import { createTextTokenAuthExplainer } from "./token-auth-explainer/text.js";
@@ -15,22 +16,28 @@ const toText = createTextTokenAuthExplainer();
 const toMdast = createMarkdownTokenAuthExplainer();
 
 it("allows tokens that should be allowed", async () => {
-  const authorizer = createTokenAuthorizer({
-    rules: [
-      {
-        resources: [
-          {
-            accounts: ["account-a"],
-            noRepos: false,
-            allRepos: false,
-            selectedRepos: ["repo-a", "repo-b"],
-          },
-        ],
-        consumers: ["account-x", "account-x/repo-x"],
-        permissions: { contents: "write", metadata: "read" },
-      },
-    ],
-  });
+  const authorizer = createTokenAuthorizer(
+    createTestRepoRegistry(["account-a", "repo-a"], ["account-a", "repo-b"]),
+    {
+      rules: [
+        {
+          resources: [
+            {
+              accounts: ["account-a"],
+              noRepos: false,
+              allRepos: false,
+              selectedRepos: {
+                repos: ["repo-a", "repo-b"],
+                visibility: "private",
+              },
+            },
+          ],
+          consumers: ["account-x", "account-x/repo-x"],
+          permissions: { contents: "write", metadata: "read" },
+        },
+      ],
+    },
+  );
 
   const resultA = authorizer.authorizeToken({
     consumer: { account: "account-x" },
@@ -91,7 +98,7 @@ it("allows tokens that should be allowed", async () => {
     "✅ Account account-x was allowed access to a token:
       ✅ Write access to repos in account-a requested with role role-a
       ✅ 1 repo pattern matched 1 repo
-      ✅ Sufficient access to repo account-a/repo-a based on 1 rule:
+      ✅ Sufficient access to private repo account-a/repo-a based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ contents: have write, wanted write"
   `);
@@ -102,7 +109,7 @@ it("allows tokens that should be allowed", async () => {
     "✅ Account account-x was allowed access to a token:
       ✅ Write access to repos in account-a requested with role role-a
       ✅ 1 repo pattern matched 1 repo
-      ✅ Sufficient access to repo account-a/repo-b based on 1 rule:
+      ✅ Sufficient access to private repo account-a/repo-b based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ contents: have write, wanted write
           ✅ metadata: have read, wanted read"
@@ -114,11 +121,11 @@ it("allows tokens that should be allowed", async () => {
     "✅ Account account-x was allowed access to a token:
       ✅ Write access to repos in account-a requested with role role-a
       ✅ 1 repo pattern matched 2 repos
-      ✅ Sufficient access to repo account-a/repo-a based on 1 rule:
+      ✅ Sufficient access to private repo account-a/repo-a based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ contents: have write, wanted write
           ✅ metadata: have read, wanted read
-      ✅ Sufficient access to repo account-a/repo-b based on 1 rule:
+      ✅ Sufficient access to private repo account-a/repo-b based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ contents: have write, wanted write
           ✅ metadata: have read, wanted read"
@@ -130,7 +137,7 @@ it("allows tokens that should be allowed", async () => {
     "✅ Repo account-x/repo-x was allowed access to a token:
       ✅ Write access to repos in account-a requested with role role-a
       ✅ 1 repo pattern matched 1 repo
-      ✅ Sufficient access to repo account-a/repo-a based on 1 rule:
+      ✅ Sufficient access to private repo account-a/repo-a based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ contents: have write, wanted write"
   `);
@@ -141,7 +148,7 @@ it("allows tokens that should be allowed", async () => {
     "✅ Repo account-x/repo-x was allowed access to a token:
       ✅ Write access to repos in account-a requested with role role-a
       ✅ 1 repo pattern matched 1 repo
-      ✅ Sufficient access to repo account-a/repo-b based on 1 rule:
+      ✅ Sufficient access to private repo account-a/repo-b based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ contents: have write, wanted write
           ✅ metadata: have read, wanted read"
@@ -153,11 +160,11 @@ it("allows tokens that should be allowed", async () => {
     "✅ Repo account-x/repo-x was allowed access to a token:
       ✅ Write access to repos in account-a requested with role role-a
       ✅ 1 repo pattern matched 2 repos
-      ✅ Sufficient access to repo account-a/repo-a based on 1 rule:
+      ✅ Sufficient access to private repo account-a/repo-a based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ contents: have write, wanted write
           ✅ metadata: have read, wanted read
-      ✅ Sufficient access to repo account-a/repo-b based on 1 rule:
+      ✅ Sufficient access to private repo account-a/repo-b based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ contents: have write, wanted write
           ✅ metadata: have read, wanted read"
@@ -168,22 +175,28 @@ it("allows tokens that should be allowed", async () => {
 });
 
 it("allows tokens when allowed by a wildcard rule", async () => {
-  const authorizer = createTokenAuthorizer({
-    rules: [
-      {
-        resources: [
-          {
-            accounts: ["account-a", "account-*"],
-            noRepos: false,
-            allRepos: false,
-            selectedRepos: ["repo-b", "repo-*"],
-          },
-        ],
-        consumers: ["account-x", "account-x/repo-x"],
-        permissions: { metadata: "read" },
-      },
-    ],
-  });
+  const authorizer = createTokenAuthorizer(
+    createTestRepoRegistry(["account-a", "repo-a"], ["account-b", "repo-b"]),
+    {
+      rules: [
+        {
+          resources: [
+            {
+              accounts: ["account-a", "account-*"],
+              noRepos: false,
+              allRepos: false,
+              selectedRepos: {
+                repos: ["repo-b", "repo-*"],
+                visibility: "private",
+              },
+            },
+          ],
+          consumers: ["account-x", "account-x/repo-x"],
+          permissions: { metadata: "read" },
+        },
+      ],
+    },
+  );
 
   const resultA = authorizer.authorizeToken({
     consumer: { account: "account-x" },
@@ -218,7 +231,7 @@ it("allows tokens when allowed by a wildcard rule", async () => {
     "✅ Account account-x was allowed access to a token:
       ✅ Read access to repos in account-a requested with role role-a
       ✅ 1 repo pattern matched 1 repo
-      ✅ Sufficient access to repo account-a/repo-a based on 1 rule:
+      ✅ Sufficient access to private repo account-a/repo-a based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ metadata: have read, wanted read"
   `);
@@ -229,7 +242,7 @@ it("allows tokens when allowed by a wildcard rule", async () => {
     "✅ Account account-x was allowed access to a token:
       ✅ Read access to repos in account-b requested with role role-a
       ✅ 1 repo pattern matched 1 repo
-      ✅ Sufficient access to repo account-b/repo-b based on 1 rule:
+      ✅ Sufficient access to private repo account-b/repo-b based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ metadata: have read, wanted read"
   `);
@@ -240,7 +253,7 @@ it("allows tokens when allowed by a wildcard rule", async () => {
     "✅ Repo account-x/repo-x was allowed access to a token:
       ✅ Read access to repos in account-a requested with role role-a
       ✅ 1 repo pattern matched 1 repo
-      ✅ Sufficient access to repo account-a/repo-a based on 1 rule:
+      ✅ Sufficient access to private repo account-a/repo-a based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ metadata: have read, wanted read"
   `);
@@ -251,7 +264,7 @@ it("allows tokens when allowed by a wildcard rule", async () => {
     "✅ Repo account-x/repo-x was allowed access to a token:
       ✅ Read access to repos in account-b requested with role role-a
       ✅ 1 repo pattern matched 1 repo
-      ✅ Sufficient access to repo account-b/repo-b based on 1 rule:
+      ✅ Sufficient access to private repo account-b/repo-b based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ metadata: have read, wanted read"
   `);
@@ -261,22 +274,25 @@ it("allows tokens when allowed by a wildcard rule", async () => {
 });
 
 it("allows tokens when the actual access level is higher than requested", async () => {
-  const authorizer = createTokenAuthorizer({
-    rules: [
-      {
-        resources: [
-          {
-            accounts: ["account-a"],
-            noRepos: false,
-            allRepos: false,
-            selectedRepos: ["repo-a"],
-          },
-        ],
-        consumers: ["account-x", "account-x/repo-x"],
-        permissions: { metadata: "write", repository_projects: "admin" },
-      },
-    ],
-  });
+  const authorizer = createTokenAuthorizer(
+    createTestRepoRegistry(["account-a", "repo-a"]),
+    {
+      rules: [
+        {
+          resources: [
+            {
+              accounts: ["account-a"],
+              noRepos: false,
+              allRepos: false,
+              selectedRepos: { repos: ["repo-a"], visibility: "private" },
+            },
+          ],
+          consumers: ["account-x", "account-x/repo-x"],
+          permissions: { metadata: "write", repository_projects: "admin" },
+        },
+      ],
+    },
+  );
 
   const resultA = authorizer.authorizeToken({
     consumer: { account: "account-x" },
@@ -301,7 +317,7 @@ it("allows tokens when the actual access level is higher than requested", async 
     "✅ Account account-x was allowed access to a token:
       ✅ Write access to repos in account-a requested with role role-a
       ✅ 1 repo pattern matched 1 repo
-      ✅ Sufficient access to repo account-a/repo-a based on 1 rule:
+      ✅ Sufficient access to private repo account-a/repo-a based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ metadata: have write, wanted read
           ✅ repository_projects: have admin, wanted write"
@@ -313,7 +329,7 @@ it("allows tokens when the actual access level is higher than requested", async 
     "✅ Repo account-x/repo-x was allowed access to a token:
       ✅ Write access to repos in account-a requested with role role-a
       ✅ 1 repo pattern matched 1 repo
-      ✅ Sufficient access to repo account-a/repo-a based on 1 rule:
+      ✅ Sufficient access to private repo account-a/repo-a based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ metadata: have write, wanted read
           ✅ repository_projects: have admin, wanted write"
@@ -324,34 +340,37 @@ it("allows tokens when the actual access level is higher than requested", async 
 });
 
 it("allows tokens when a later rule allows access that a previous rule denied", async () => {
-  const authorizer = createTokenAuthorizer({
-    rules: [
-      {
-        resources: [
-          {
-            accounts: ["account-a"],
-            noRepos: false,
-            allRepos: false,
-            selectedRepos: ["repo-a"],
-          },
-        ],
-        consumers: ["account-x", "account-x/repo-x"],
-        permissions: { contents: "read", metadata: "read" },
-      },
-      {
-        resources: [
-          {
-            accounts: ["account-a"],
-            noRepos: false,
-            allRepos: false,
-            selectedRepos: ["repo-a"],
-          },
-        ],
-        consumers: ["account-x", "account-x/repo-x"],
-        permissions: { contents: "write" },
-      },
-    ],
-  });
+  const authorizer = createTokenAuthorizer(
+    createTestRepoRegistry(["account-a", "repo-a"]),
+    {
+      rules: [
+        {
+          resources: [
+            {
+              accounts: ["account-a"],
+              noRepos: false,
+              allRepos: false,
+              selectedRepos: { repos: ["repo-a"], visibility: "private" },
+            },
+          ],
+          consumers: ["account-x", "account-x/repo-x"],
+          permissions: { contents: "read", metadata: "read" },
+        },
+        {
+          resources: [
+            {
+              accounts: ["account-a"],
+              noRepos: false,
+              allRepos: false,
+              selectedRepos: { repos: ["repo-a"], visibility: "private" },
+            },
+          ],
+          consumers: ["account-x", "account-x/repo-x"],
+          permissions: { contents: "write" },
+        },
+      ],
+    },
+  );
 
   const resultA = authorizer.authorizeToken({
     consumer: { account: "account-x" },
@@ -376,7 +395,7 @@ it("allows tokens when a later rule allows access that a previous rule denied", 
     "✅ Account account-x was allowed access to a token:
       ✅ Write access to repos in account-a requested with role role-a
       ✅ 1 repo pattern matched 1 repo
-      ✅ Sufficient access to repo account-a/repo-a based on 2 rules:
+      ✅ Sufficient access to private repo account-a/repo-a based on 2 rules:
         ❌ Rule #1 gave insufficient access:
           ❌ contents: have read, wanted write
           ✅ metadata: have read, wanted read
@@ -391,7 +410,7 @@ it("allows tokens when a later rule allows access that a previous rule denied", 
     "✅ Repo account-x/repo-x was allowed access to a token:
       ✅ Write access to repos in account-a requested with role role-a
       ✅ 1 repo pattern matched 1 repo
-      ✅ Sufficient access to repo account-a/repo-a based on 2 rules:
+      ✅ Sufficient access to private repo account-a/repo-a based on 2 rules:
         ❌ Rule #1 gave insufficient access:
           ❌ contents: have read, wanted write
           ✅ metadata: have read, wanted read
@@ -405,46 +424,49 @@ it("allows tokens when a later rule allows access that a previous rule denied", 
 });
 
 it("allows tokens when a later unrelated rule denies access to the requested permission", async () => {
-  const authorizer = createTokenAuthorizer({
-    rules: [
-      {
-        resources: [
-          {
-            accounts: ["account-a"],
-            noRepos: false,
-            allRepos: false,
-            selectedRepos: ["repo-a"],
-          },
-        ],
-        consumers: ["account-x", "account-x/repo-x"],
-        permissions: { contents: "write", metadata: "read" },
-      },
-      {
-        resources: [
-          {
-            accounts: ["account-b"],
-            noRepos: false,
-            allRepos: false,
-            selectedRepos: ["repo-b"],
-          },
-        ],
-        consumers: ["account-x", "account-x/repo-x"],
-        permissions: { contents: "none" },
-      },
-      {
-        resources: [
-          {
-            accounts: ["account-b"],
-            noRepos: false,
-            allRepos: false,
-            selectedRepos: ["repo-b"],
-          },
-        ],
-        consumers: ["account-x", "account-x/repo-x"],
-        permissions: { metadata: "none" },
-      },
-    ],
-  });
+  const authorizer = createTokenAuthorizer(
+    createTestRepoRegistry(["account-a", "repo-a"]),
+    {
+      rules: [
+        {
+          resources: [
+            {
+              accounts: ["account-a"],
+              noRepos: false,
+              allRepos: false,
+              selectedRepos: { repos: ["repo-a"], visibility: "private" },
+            },
+          ],
+          consumers: ["account-x", "account-x/repo-x"],
+          permissions: { contents: "write", metadata: "read" },
+        },
+        {
+          resources: [
+            {
+              accounts: ["account-b"],
+              noRepos: false,
+              allRepos: false,
+              selectedRepos: { repos: ["repo-b"], visibility: "private" },
+            },
+          ],
+          consumers: ["account-x", "account-x/repo-x"],
+          permissions: { contents: "none" },
+        },
+        {
+          resources: [
+            {
+              accounts: ["account-b"],
+              noRepos: false,
+              allRepos: false,
+              selectedRepos: { repos: ["repo-b"], visibility: "private" },
+            },
+          ],
+          consumers: ["account-x", "account-x/repo-x"],
+          permissions: { metadata: "none" },
+        },
+      ],
+    },
+  );
 
   const resultA = authorizer.authorizeToken({
     consumer: { account: "account-x" },
@@ -469,7 +491,7 @@ it("allows tokens when a later unrelated rule denies access to the requested per
     "✅ Account account-x was allowed access to a token:
       ✅ Write access to repos in account-a requested with role role-a
       ✅ 1 repo pattern matched 1 repo
-      ✅ Sufficient access to repo account-a/repo-a based on 1 rule:
+      ✅ Sufficient access to private repo account-a/repo-a based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ contents: have write, wanted write
           ✅ metadata: have read, wanted read"
@@ -481,7 +503,7 @@ it("allows tokens when a later unrelated rule denies access to the requested per
     "✅ Repo account-x/repo-x was allowed access to a token:
       ✅ Write access to repos in account-a requested with role role-a
       ✅ 1 repo pattern matched 1 repo
-      ✅ Sufficient access to repo account-a/repo-a based on 1 rule:
+      ✅ Sufficient access to private repo account-a/repo-a based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ contents: have write, wanted write
           ✅ metadata: have read, wanted read"
@@ -492,22 +514,25 @@ it("allows tokens when a later unrelated rule denies access to the requested per
 });
 
 it("allows read-only tokens without a role", async () => {
-  const authorizer = createTokenAuthorizer({
-    rules: [
-      {
-        resources: [
-          {
-            accounts: ["account-a"],
-            noRepos: false,
-            allRepos: false,
-            selectedRepos: ["repo-a"],
-          },
-        ],
-        consumers: ["account-x", "account-x/repo-x"],
-        permissions: { contents: "write", metadata: "read" },
-      },
-    ],
-  });
+  const authorizer = createTokenAuthorizer(
+    createTestRepoRegistry(["account-a", "repo-a"]),
+    {
+      rules: [
+        {
+          resources: [
+            {
+              accounts: ["account-a"],
+              noRepos: false,
+              allRepos: false,
+              selectedRepos: { repos: ["repo-a"], visibility: "private" },
+            },
+          ],
+          consumers: ["account-x", "account-x/repo-x"],
+          permissions: { contents: "write", metadata: "read" },
+        },
+      ],
+    },
+  );
 
   const resultA = authorizer.authorizeToken({
     consumer: { account: "account-x" },
@@ -530,7 +555,7 @@ it("allows read-only tokens without a role", async () => {
     "✅ Account account-x was allowed access to a token:
       ✅ Read access to repos in account-a requested without a role
       ✅ 1 repo pattern matched 1 repo
-      ✅ Sufficient access to repo account-a/repo-a based on 1 rule:
+      ✅ Sufficient access to private repo account-a/repo-a based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ contents: have write, wanted read
           ✅ metadata: have read, wanted read"
@@ -542,7 +567,7 @@ it("allows read-only tokens without a role", async () => {
     "✅ Repo account-x/repo-x was allowed access to a token:
       ✅ Read access to repos in account-a requested without a role
       ✅ 1 repo pattern matched 1 repo
-      ✅ Sufficient access to repo account-a/repo-a based on 1 rule:
+      ✅ Sufficient access to private repo account-a/repo-a based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ contents: have write, wanted read
           ✅ metadata: have read, wanted read"
@@ -553,23 +578,26 @@ it("allows read-only tokens without a role", async () => {
 });
 
 it("supports rule descriptions", async () => {
-  const authorizer = createTokenAuthorizer({
-    rules: [
-      {
-        description: "<description>",
-        resources: [
-          {
-            accounts: ["account-a"],
-            noRepos: false,
-            allRepos: false,
-            selectedRepos: ["repo-a"],
-          },
-        ],
-        consumers: ["account-x", "account-x/repo-x"],
-        permissions: { metadata: "read" },
-      },
-    ],
-  });
+  const authorizer = createTokenAuthorizer(
+    createTestRepoRegistry(["account-a", "repo-a"]),
+    {
+      rules: [
+        {
+          description: "<description>",
+          resources: [
+            {
+              accounts: ["account-a"],
+              noRepos: false,
+              allRepos: false,
+              selectedRepos: { repos: ["repo-a"], visibility: "private" },
+            },
+          ],
+          consumers: ["account-x", "account-x/repo-x"],
+          permissions: { metadata: "read" },
+        },
+      ],
+    },
+  );
 
   const resultA = authorizer.authorizeToken({
     consumer: { account: "account-x" },
@@ -586,7 +614,7 @@ it("supports rule descriptions", async () => {
     "✅ Account account-x was allowed access to a token:
       ✅ Read access to repos in account-a requested with role role-a
       ✅ 1 repo pattern matched 1 repo
-      ✅ Sufficient access to repo account-a/repo-a based on 1 rule:
+      ✅ Sufficient access to private repo account-a/repo-a based on 1 rule:
         ✅ Rule #1: "<description>" gave sufficient access:
           ✅ metadata: have read, wanted read"
   `);
@@ -597,7 +625,7 @@ it("supports rule descriptions", async () => {
     "✅ Repo account-x/repo-x was allowed access to a token:
       ✅ Read access to repos in account-a requested with role role-a
       ✅ 1 repo pattern matched 1 repo
-      ✅ Sufficient access to repo account-a/repo-a based on 1 rule:
+      ✅ Sufficient access to private repo account-a/repo-a based on 1 rule:
         ✅ Rule #1: "<description>" gave sufficient access:
           ✅ metadata: have read, wanted read"
   `);
@@ -607,22 +635,28 @@ it("supports rule descriptions", async () => {
 });
 
 it("sorts repos and permissions in the explanation", async () => {
-  const authorizer = createTokenAuthorizer({
-    rules: [
-      {
-        resources: [
-          {
-            accounts: ["account-a"],
-            noRepos: false,
-            allRepos: false,
-            selectedRepos: ["repo-b", "repo-a"],
-          },
-        ],
-        consumers: ["account-x", "account-x/repo-x"],
-        permissions: { metadata: "read", contents: "write" },
-      },
-    ],
-  });
+  const authorizer = createTokenAuthorizer(
+    createTestRepoRegistry(["account-a", "repo-a"], ["account-a", "repo-b"]),
+    {
+      rules: [
+        {
+          resources: [
+            {
+              accounts: ["account-a"],
+              noRepos: false,
+              allRepos: false,
+              selectedRepos: {
+                repos: ["repo-b", "repo-a"],
+                visibility: "private",
+              },
+            },
+          ],
+          consumers: ["account-x", "account-x/repo-x"],
+          permissions: { metadata: "read", contents: "write" },
+        },
+      ],
+    },
+  );
 
   const resultA = authorizer.authorizeToken({
     consumer: { account: "account-x" },
@@ -647,11 +681,11 @@ it("sorts repos and permissions in the explanation", async () => {
     "✅ Account account-x was allowed access to a token:
       ✅ Write access to repos in account-a requested with role role-a
       ✅ 1 repo pattern matched 2 repos
-      ✅ Sufficient access to repo account-a/repo-a based on 1 rule:
+      ✅ Sufficient access to private repo account-a/repo-a based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ contents: have write, wanted write
           ✅ metadata: have read, wanted read
-      ✅ Sufficient access to repo account-a/repo-b based on 1 rule:
+      ✅ Sufficient access to private repo account-a/repo-b based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ contents: have write, wanted write
           ✅ metadata: have read, wanted read"
@@ -663,11 +697,11 @@ it("sorts repos and permissions in the explanation", async () => {
     "✅ Repo account-x/repo-x was allowed access to a token:
       ✅ Write access to repos in account-a requested with role role-a
       ✅ 1 repo pattern matched 2 repos
-      ✅ Sufficient access to repo account-a/repo-a based on 1 rule:
+      ✅ Sufficient access to private repo account-a/repo-a based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ contents: have write, wanted write
           ✅ metadata: have read, wanted read
-      ✅ Sufficient access to repo account-a/repo-b based on 1 rule:
+      ✅ Sufficient access to private repo account-a/repo-b based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ contents: have write, wanted write
           ✅ metadata: have read, wanted read"
@@ -678,22 +712,28 @@ it("sorts repos and permissions in the explanation", async () => {
 });
 
 it("doesn't allow tokens for unauthorized consumers", async () => {
-  const authorizer = createTokenAuthorizer({
-    rules: [
-      {
-        resources: [
-          {
-            accounts: ["account-a"],
-            noRepos: false,
-            allRepos: false,
-            selectedRepos: ["repo-a", "repo-b"],
-          },
-        ],
-        consumers: ["account-x", "account-x/repo-x"],
-        permissions: { contents: "write", metadata: "read" },
-      },
-    ],
-  });
+  const authorizer = createTokenAuthorizer(
+    createTestRepoRegistry(["account-a", "repo-a"]),
+    {
+      rules: [
+        {
+          resources: [
+            {
+              accounts: ["account-a"],
+              noRepos: false,
+              allRepos: false,
+              selectedRepos: {
+                repos: ["repo-a", "repo-b"],
+                visibility: "private",
+              },
+            },
+          ],
+          consumers: ["account-x", "account-x/repo-x"],
+          permissions: { contents: "write", metadata: "read" },
+        },
+      ],
+    },
+  );
 
   const resultA = authorizer.authorizeToken({
     consumer: { account: "account-y" },
@@ -720,7 +760,7 @@ it("doesn't allow tokens for unauthorized consumers", async () => {
     "❌ Account account-y was denied access to a token:
       ✅ Read access to repos in account-a requested with role role-a
       ✅ 1 repo pattern matched 1 repo
-      ❌ Insufficient access to repo account-a/repo-a (no matching rules)"
+      ❌ Insufficient access to private repo account-a/repo-a (no matching rules)"
   `);
   await expect(toMarkdown(toMdast(resultA))).toMatchFileSnapshot(
     join(fixturesPath, "denied-unauthed-consumer/a.md"),
@@ -729,7 +769,7 @@ it("doesn't allow tokens for unauthorized consumers", async () => {
     "❌ Repo account-y/repo-x was denied access to a token:
       ✅ Read access to repos in account-a requested with role role-a
       ✅ 1 repo pattern matched 1 repo
-      ❌ Insufficient access to repo account-a/repo-a (no matching rules)"
+      ❌ Insufficient access to private repo account-a/repo-a (no matching rules)"
   `);
   await expect(toMarkdown(toMdast(resultB))).toMatchFileSnapshot(
     join(fixturesPath, "denied-unauthed-consumer/b.md"),
@@ -738,7 +778,7 @@ it("doesn't allow tokens for unauthorized consumers", async () => {
     "❌ Repo account-x/repo-y was denied access to a token:
       ✅ Read access to repos in account-a requested with role role-a
       ✅ 1 repo pattern matched 1 repo
-      ❌ Insufficient access to repo account-a/repo-a (no matching rules)"
+      ❌ Insufficient access to private repo account-a/repo-a (no matching rules)"
   `);
   await expect(toMarkdown(toMdast(resultC))).toMatchFileSnapshot(
     join(fixturesPath, "denied-unauthed-consumer/c.md"),
@@ -747,7 +787,7 @@ it("doesn't allow tokens for unauthorized consumers", async () => {
     "❌ Repo account-y/repo-y was denied access to a token:
       ✅ Read access to repos in account-a requested with role role-a
       ✅ 1 repo pattern matched 1 repo
-      ❌ Insufficient access to repo account-a/repo-a (no matching rules)"
+      ❌ Insufficient access to private repo account-a/repo-a (no matching rules)"
   `);
   await expect(toMarkdown(toMdast(resultD))).toMatchFileSnapshot(
     join(fixturesPath, "denied-unauthed-consumer/d.md"),
@@ -755,22 +795,28 @@ it("doesn't allow tokens for unauthorized consumers", async () => {
 });
 
 it("doesn't allow tokens for unauthorized resource repos", async () => {
-  const authorizer = createTokenAuthorizer({
-    rules: [
-      {
-        resources: [
-          {
-            accounts: ["account-a"],
-            noRepos: false,
-            allRepos: false,
-            selectedRepos: ["repo-a", "repo-b"],
-          },
-        ],
-        consumers: ["account-x", "account-x/repo-x"],
-        permissions: { contents: "write", metadata: "read" },
-      },
-    ],
-  });
+  const authorizer = createTokenAuthorizer(
+    createTestRepoRegistry(["account-a", "repo-y"], ["account-y", "repo-a"]),
+    {
+      rules: [
+        {
+          resources: [
+            {
+              accounts: ["account-a"],
+              noRepos: false,
+              allRepos: false,
+              selectedRepos: {
+                repos: ["repo-a", "repo-b"],
+                visibility: "private",
+              },
+            },
+          ],
+          consumers: ["account-x", "account-x/repo-x"],
+          permissions: { contents: "write", metadata: "read" },
+        },
+      ],
+    },
+  );
 
   const resultA = authorizer.authorizeToken({
     consumer: { account: "account-x" },
@@ -815,7 +861,7 @@ it("doesn't allow tokens for unauthorized resource repos", async () => {
     "❌ Account account-x was denied access to a token:
       ✅ Write access to repos in account-a requested with role role-a
       ✅ 1 repo pattern matched 1 repo
-      ❌ Insufficient access to repo account-a/repo-y (no matching rules)"
+      ❌ Insufficient access to private repo account-a/repo-y (no matching rules)"
   `);
   await expect(toMarkdown(toMdast(resultA))).toMatchFileSnapshot(
     join(fixturesPath, "denied-unauthed-resource-repo/a.md"),
@@ -824,7 +870,7 @@ it("doesn't allow tokens for unauthorized resource repos", async () => {
     "❌ Account account-x was denied access to a token:
       ✅ Write access to repos in account-y requested with role role-a
       ✅ 1 repo pattern matched 1 repo
-      ❌ Insufficient access to repo account-y/repo-a (no matching rules)"
+      ❌ Insufficient access to private repo account-y/repo-a (no matching rules)"
   `);
   await expect(toMarkdown(toMdast(resultB))).toMatchFileSnapshot(
     join(fixturesPath, "denied-unauthed-resource-repo/b.md"),
@@ -833,7 +879,7 @@ it("doesn't allow tokens for unauthorized resource repos", async () => {
     "❌ Repo account-x/repo-x was denied access to a token:
       ✅ Write access to repos in account-a requested with role role-a
       ✅ 1 repo pattern matched 1 repo
-      ❌ Insufficient access to repo account-a/repo-y (no matching rules)"
+      ❌ Insufficient access to private repo account-a/repo-y (no matching rules)"
   `);
   await expect(toMarkdown(toMdast(resultC))).toMatchFileSnapshot(
     join(fixturesPath, "denied-unauthed-resource-repo/c.md"),
@@ -842,7 +888,7 @@ it("doesn't allow tokens for unauthorized resource repos", async () => {
     "❌ Repo account-x/repo-x was denied access to a token:
       ✅ Write access to repos in account-y requested with role role-a
       ✅ 1 repo pattern matched 1 repo
-      ❌ Insufficient access to repo account-y/repo-a (no matching rules)"
+      ❌ Insufficient access to private repo account-y/repo-a (no matching rules)"
   `);
   await expect(toMarkdown(toMdast(resultD))).toMatchFileSnapshot(
     join(fixturesPath, "denied-unauthed-resource-repo/d.md"),
@@ -850,22 +896,32 @@ it("doesn't allow tokens for unauthorized resource repos", async () => {
 });
 
 it("doesn't allow tokens where only some of the resources are authorized", async () => {
-  const authorizer = createTokenAuthorizer({
-    rules: [
-      {
-        resources: [
-          {
-            accounts: ["account-a"],
-            noRepos: false,
-            allRepos: false,
-            selectedRepos: ["repo-a", "repo-b"],
-          },
-        ],
-        consumers: ["account-x", "account-x/repo-x"],
-        permissions: { contents: "write", metadata: "read" },
-      },
-    ],
-  });
+  const authorizer = createTokenAuthorizer(
+    createTestRepoRegistry(
+      ["account-a", "repo-a"],
+      ["account-a", "repo-b"],
+      ["account-a", "repo-y"],
+    ),
+    {
+      rules: [
+        {
+          resources: [
+            {
+              accounts: ["account-a"],
+              noRepos: false,
+              allRepos: false,
+              selectedRepos: {
+                repos: ["repo-a", "repo-b"],
+                visibility: "private",
+              },
+            },
+          ],
+          consumers: ["account-x", "account-x/repo-x"],
+          permissions: { contents: "write", metadata: "read" },
+        },
+      ],
+    },
+  );
 
   const resultA = authorizer.authorizeToken({
     consumer: { account: "account-x" },
@@ -890,13 +946,13 @@ it("doesn't allow tokens where only some of the resources are authorized", async
     "❌ Account account-x was denied access to a token:
       ✅ Write access to repos in account-a requested with role role-a
       ✅ 1 repo pattern matched 3 repos
-      ✅ Sufficient access to repo account-a/repo-a based on 1 rule:
+      ✅ Sufficient access to private repo account-a/repo-a based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ contents: have write, wanted write
-      ✅ Sufficient access to repo account-a/repo-b based on 1 rule:
+      ✅ Sufficient access to private repo account-a/repo-b based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ contents: have write, wanted write
-      ❌ Insufficient access to repo account-a/repo-y (no matching rules)"
+      ❌ Insufficient access to private repo account-a/repo-y (no matching rules)"
   `);
   await expect(toMarkdown(toMdast(resultA))).toMatchFileSnapshot(
     join(fixturesPath, "denied-partial-resources/a.md"),
@@ -905,13 +961,13 @@ it("doesn't allow tokens where only some of the resources are authorized", async
     "❌ Repo account-x/repo-x was denied access to a token:
       ✅ Write access to repos in account-a requested with role role-a
       ✅ 1 repo pattern matched 3 repos
-      ✅ Sufficient access to repo account-a/repo-a based on 1 rule:
+      ✅ Sufficient access to private repo account-a/repo-a based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ contents: have write, wanted write
-      ✅ Sufficient access to repo account-a/repo-b based on 1 rule:
+      ✅ Sufficient access to private repo account-a/repo-b based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ contents: have write, wanted write
-      ❌ Insufficient access to repo account-a/repo-y (no matching rules)"
+      ❌ Insufficient access to private repo account-a/repo-y (no matching rules)"
   `);
   await expect(toMarkdown(toMdast(resultB))).toMatchFileSnapshot(
     join(fixturesPath, "denied-partial-resources/b.md"),
@@ -919,22 +975,25 @@ it("doesn't allow tokens where only some of the resources are authorized", async
 });
 
 it("doesn't allow tokens for unauthorized permissions", async () => {
-  const authorizer = createTokenAuthorizer({
-    rules: [
-      {
-        resources: [
-          {
-            accounts: ["account-a"],
-            noRepos: false,
-            allRepos: false,
-            selectedRepos: ["repo-a"],
-          },
-        ],
-        consumers: ["account-x", "account-x/repo-x"],
-        permissions: { metadata: "read" },
-      },
-    ],
-  });
+  const authorizer = createTokenAuthorizer(
+    createTestRepoRegistry(["account-a", "repo-a"]),
+    {
+      rules: [
+        {
+          resources: [
+            {
+              accounts: ["account-a"],
+              noRepos: false,
+              allRepos: false,
+              selectedRepos: { repos: ["repo-a"], visibility: "private" },
+            },
+          ],
+          consumers: ["account-x", "account-x/repo-x"],
+          permissions: { metadata: "read" },
+        },
+      ],
+    },
+  );
 
   const resultA = authorizer.authorizeToken({
     consumer: { account: "account-x" },
@@ -959,7 +1018,7 @@ it("doesn't allow tokens for unauthorized permissions", async () => {
     "❌ Account account-x was denied access to a token:
       ✅ Read access to repos in account-a requested with role role-a
       ✅ 1 repo pattern matched 1 repo
-      ❌ Insufficient access to repo account-a/repo-a based on 1 rule:
+      ❌ Insufficient access to private repo account-a/repo-a based on 1 rule:
         ❌ Rule #1 gave insufficient access:
           ❌ contents: have none, wanted read"
   `);
@@ -970,7 +1029,7 @@ it("doesn't allow tokens for unauthorized permissions", async () => {
     "❌ Repo account-x/repo-x was denied access to a token:
       ✅ Read access to repos in account-a requested with role role-a
       ✅ 1 repo pattern matched 1 repo
-      ❌ Insufficient access to repo account-a/repo-a based on 1 rule:
+      ❌ Insufficient access to private repo account-a/repo-a based on 1 rule:
         ❌ Rule #1 gave insufficient access:
           ❌ contents: have none, wanted read"
   `);
@@ -980,22 +1039,25 @@ it("doesn't allow tokens for unauthorized permissions", async () => {
 });
 
 it("doesn't allow tokens where only some of the permissions are authorized", async () => {
-  const authorizer = createTokenAuthorizer({
-    rules: [
-      {
-        resources: [
-          {
-            accounts: ["account-a"],
-            noRepos: false,
-            allRepos: false,
-            selectedRepos: ["repo-a"],
-          },
-        ],
-        consumers: ["account-x", "account-x/repo-x"],
-        permissions: { metadata: "read" },
-      },
-    ],
-  });
+  const authorizer = createTokenAuthorizer(
+    createTestRepoRegistry(["account-a", "repo-a"]),
+    {
+      rules: [
+        {
+          resources: [
+            {
+              accounts: ["account-a"],
+              noRepos: false,
+              allRepos: false,
+              selectedRepos: { repos: ["repo-a"], visibility: "private" },
+            },
+          ],
+          consumers: ["account-x", "account-x/repo-x"],
+          permissions: { metadata: "read" },
+        },
+      ],
+    },
+  );
 
   const resultA = authorizer.authorizeToken({
     consumer: { account: "account-x" },
@@ -1020,7 +1082,7 @@ it("doesn't allow tokens where only some of the permissions are authorized", asy
     "❌ Account account-x was denied access to a token:
       ✅ Read access to repos in account-a requested with role role-a
       ✅ 1 repo pattern matched 1 repo
-      ❌ Insufficient access to repo account-a/repo-a based on 1 rule:
+      ❌ Insufficient access to private repo account-a/repo-a based on 1 rule:
         ❌ Rule #1 gave insufficient access:
           ❌ contents: have none, wanted read
           ✅ metadata: have read, wanted read"
@@ -1032,7 +1094,7 @@ it("doesn't allow tokens where only some of the permissions are authorized", asy
     "❌ Repo account-x/repo-x was denied access to a token:
       ✅ Read access to repos in account-a requested with role role-a
       ✅ 1 repo pattern matched 1 repo
-      ❌ Insufficient access to repo account-a/repo-a based on 1 rule:
+      ❌ Insufficient access to private repo account-a/repo-a based on 1 rule:
         ❌ Rule #1 gave insufficient access:
           ❌ contents: have none, wanted read
           ✅ metadata: have read, wanted read"
@@ -1043,46 +1105,49 @@ it("doesn't allow tokens where only some of the permissions are authorized", asy
 });
 
 it("doesn't allow tokens that are denied by a wildcard rule", async () => {
-  const authorizer = createTokenAuthorizer({
-    rules: [
-      {
-        resources: [
-          {
-            accounts: ["account-a"],
-            noRepos: false,
-            allRepos: false,
-            selectedRepos: ["repo-a"],
-          },
-          {
-            accounts: ["account-b"],
-            noRepos: false,
-            allRepos: false,
-            selectedRepos: ["repo-b"],
-          },
-        ],
-        consumers: ["account-x", "account-x/repo-x"],
-        permissions: { metadata: "read" },
-      },
-      {
-        resources: [
-          {
-            accounts: ["account-a"],
-            noRepos: false,
-            allRepos: false,
-            selectedRepos: ["repo-*"],
-          },
-          {
-            accounts: ["account-*"],
-            noRepos: false,
-            allRepos: false,
-            selectedRepos: ["repo-b"],
-          },
-        ],
-        consumers: ["account-x", "account-x/repo-x"],
-        permissions: { metadata: "none" },
-      },
-    ],
-  });
+  const authorizer = createTokenAuthorizer(
+    createTestRepoRegistry(["account-a", "repo-a"], ["account-b", "repo-b"]),
+    {
+      rules: [
+        {
+          resources: [
+            {
+              accounts: ["account-a"],
+              noRepos: false,
+              allRepos: false,
+              selectedRepos: { repos: ["repo-a"], visibility: "private" },
+            },
+            {
+              accounts: ["account-b"],
+              noRepos: false,
+              allRepos: false,
+              selectedRepos: { repos: ["repo-b"], visibility: "private" },
+            },
+          ],
+          consumers: ["account-x", "account-x/repo-x"],
+          permissions: { metadata: "read" },
+        },
+        {
+          resources: [
+            {
+              accounts: ["account-a"],
+              noRepos: false,
+              allRepos: false,
+              selectedRepos: { repos: ["repo-*"], visibility: "private" },
+            },
+            {
+              accounts: ["account-*"],
+              noRepos: false,
+              allRepos: false,
+              selectedRepos: { repos: ["repo-b"], visibility: "private" },
+            },
+          ],
+          consumers: ["account-x", "account-x/repo-x"],
+          permissions: { metadata: "none" },
+        },
+      ],
+    },
+  );
 
   const resultA = authorizer.authorizeToken({
     consumer: { account: "account-x" },
@@ -1117,7 +1182,7 @@ it("doesn't allow tokens that are denied by a wildcard rule", async () => {
     "❌ Account account-x was denied access to a token:
       ✅ Read access to repos in account-a requested with role role-a
       ✅ 1 repo pattern matched 1 repo
-      ❌ Insufficient access to repo account-a/repo-a based on 2 rules:
+      ❌ Insufficient access to private repo account-a/repo-a based on 2 rules:
         ✅ Rule #1 gave sufficient access:
           ✅ metadata: have read, wanted read
         ❌ Rule #2 gave insufficient access:
@@ -1130,7 +1195,7 @@ it("doesn't allow tokens that are denied by a wildcard rule", async () => {
     "❌ Account account-x was denied access to a token:
       ✅ Read access to repos in account-b requested with role role-a
       ✅ 1 repo pattern matched 1 repo
-      ❌ Insufficient access to repo account-b/repo-b based on 2 rules:
+      ❌ Insufficient access to private repo account-b/repo-b based on 2 rules:
         ✅ Rule #1 gave sufficient access:
           ✅ metadata: have read, wanted read
         ❌ Rule #2 gave insufficient access:
@@ -1143,7 +1208,7 @@ it("doesn't allow tokens that are denied by a wildcard rule", async () => {
     "❌ Repo account-x/repo-x was denied access to a token:
       ✅ Read access to repos in account-a requested with role role-a
       ✅ 1 repo pattern matched 1 repo
-      ❌ Insufficient access to repo account-a/repo-a based on 2 rules:
+      ❌ Insufficient access to private repo account-a/repo-a based on 2 rules:
         ✅ Rule #1 gave sufficient access:
           ✅ metadata: have read, wanted read
         ❌ Rule #2 gave insufficient access:
@@ -1156,7 +1221,7 @@ it("doesn't allow tokens that are denied by a wildcard rule", async () => {
     "❌ Repo account-x/repo-x was denied access to a token:
       ✅ Read access to repos in account-b requested with role role-a
       ✅ 1 repo pattern matched 1 repo
-      ❌ Insufficient access to repo account-b/repo-b based on 2 rules:
+      ❌ Insufficient access to private repo account-b/repo-b based on 2 rules:
         ✅ Rule #1 gave sufficient access:
           ✅ metadata: have read, wanted read
         ❌ Rule #2 gave insufficient access:
@@ -1168,22 +1233,25 @@ it("doesn't allow tokens that are denied by a wildcard rule", async () => {
 });
 
 it("doesn't allow tokens when the actual access level is lower than requested", async () => {
-  const authorizer = createTokenAuthorizer({
-    rules: [
-      {
-        resources: [
-          {
-            accounts: ["account-a"],
-            noRepos: false,
-            allRepos: false,
-            selectedRepos: ["repo-a"],
-          },
-        ],
-        consumers: ["account-x", "account-x/repo-x"],
-        permissions: { repository_projects: "write" },
-      },
-    ],
-  });
+  const authorizer = createTokenAuthorizer(
+    createTestRepoRegistry(["account-a", "repo-a"]),
+    {
+      rules: [
+        {
+          resources: [
+            {
+              accounts: ["account-a"],
+              noRepos: false,
+              allRepos: false,
+              selectedRepos: { repos: ["repo-a"], visibility: "private" },
+            },
+          ],
+          consumers: ["account-x", "account-x/repo-x"],
+          permissions: { repository_projects: "write" },
+        },
+      ],
+    },
+  );
 
   const resultA = authorizer.authorizeToken({
     consumer: { account: "account-x" },
@@ -1208,7 +1276,7 @@ it("doesn't allow tokens when the actual access level is lower than requested", 
     "❌ Account account-x was denied access to a token:
       ✅ Admin access to repos in account-a requested with role role-a
       ✅ 1 repo pattern matched 1 repo
-      ❌ Insufficient access to repo account-a/repo-a based on 1 rule:
+      ❌ Insufficient access to private repo account-a/repo-a based on 1 rule:
         ❌ Rule #1 gave insufficient access:
           ❌ repository_projects: have write, wanted admin"
   `);
@@ -1219,7 +1287,7 @@ it("doesn't allow tokens when the actual access level is lower than requested", 
     "❌ Repo account-x/repo-x was denied access to a token:
       ✅ Admin access to repos in account-a requested with role role-a
       ✅ 1 repo pattern matched 1 repo
-      ❌ Insufficient access to repo account-a/repo-a based on 1 rule:
+      ❌ Insufficient access to private repo account-a/repo-a based on 1 rule:
         ❌ Rule #1 gave insufficient access:
           ❌ repository_projects: have write, wanted admin"
   `);
@@ -1229,34 +1297,37 @@ it("doesn't allow tokens when the actual access level is lower than requested", 
 });
 
 it("doesn't allow tokens when a later rule denies access that a previous rule allowed", async () => {
-  const authorizer = createTokenAuthorizer({
-    rules: [
-      {
-        resources: [
-          {
-            accounts: ["account-a"],
-            noRepos: false,
-            allRepos: false,
-            selectedRepos: ["repo-a"],
-          },
-        ],
-        consumers: ["account-x", "account-x/repo-x"],
-        permissions: { contents: "write" },
-      },
-      {
-        resources: [
-          {
-            accounts: ["account-a"],
-            noRepos: false,
-            allRepos: false,
-            selectedRepos: ["repo-a"],
-          },
-        ],
-        consumers: ["account-x", "account-x/repo-x"],
-        permissions: { contents: "read" },
-      },
-    ],
-  });
+  const authorizer = createTokenAuthorizer(
+    createTestRepoRegistry(["account-a", "repo-a"]),
+    {
+      rules: [
+        {
+          resources: [
+            {
+              accounts: ["account-a"],
+              noRepos: false,
+              allRepos: false,
+              selectedRepos: { repos: ["repo-a"], visibility: "private" },
+            },
+          ],
+          consumers: ["account-x", "account-x/repo-x"],
+          permissions: { contents: "write" },
+        },
+        {
+          resources: [
+            {
+              accounts: ["account-a"],
+              noRepos: false,
+              allRepos: false,
+              selectedRepos: { repos: ["repo-a"], visibility: "private" },
+            },
+          ],
+          consumers: ["account-x", "account-x/repo-x"],
+          permissions: { contents: "read" },
+        },
+      ],
+    },
+  );
 
   const resultA = authorizer.authorizeToken({
     consumer: { account: "account-x" },
@@ -1281,7 +1352,7 @@ it("doesn't allow tokens when a later rule denies access that a previous rule al
     "❌ Account account-x was denied access to a token:
       ✅ Write access to repos in account-a requested with role role-a
       ✅ 1 repo pattern matched 1 repo
-      ❌ Insufficient access to repo account-a/repo-a based on 2 rules:
+      ❌ Insufficient access to private repo account-a/repo-a based on 2 rules:
         ✅ Rule #1 gave sufficient access:
           ✅ contents: have write, wanted write
         ❌ Rule #2 gave insufficient access:
@@ -1294,7 +1365,7 @@ it("doesn't allow tokens when a later rule denies access that a previous rule al
     "❌ Repo account-x/repo-x was denied access to a token:
       ✅ Write access to repos in account-a requested with role role-a
       ✅ 1 repo pattern matched 1 repo
-      ❌ Insufficient access to repo account-a/repo-a based on 2 rules:
+      ❌ Insufficient access to private repo account-a/repo-a based on 2 rules:
         ✅ Rule #1 gave sufficient access:
           ✅ contents: have write, wanted write
         ❌ Rule #2 gave insufficient access:
@@ -1306,34 +1377,37 @@ it("doesn't allow tokens when a later rule denies access that a previous rule al
 });
 
 it("doesn't allow tokens when a later rule removes access that a previous rule allowed", async () => {
-  const authorizer = createTokenAuthorizer({
-    rules: [
-      {
-        resources: [
-          {
-            accounts: ["account-a"],
-            noRepos: false,
-            allRepos: false,
-            selectedRepos: ["repo-a"],
-          },
-        ],
-        consumers: ["account-x", "account-x/repo-x"],
-        permissions: { contents: "read" },
-      },
-      {
-        resources: [
-          {
-            accounts: ["account-a"],
-            noRepos: false,
-            allRepos: false,
-            selectedRepos: ["repo-a"],
-          },
-        ],
-        consumers: ["account-x", "account-x/repo-x"],
-        permissions: { contents: "none" },
-      },
-    ],
-  });
+  const authorizer = createTokenAuthorizer(
+    createTestRepoRegistry(["account-a", "repo-a"]),
+    {
+      rules: [
+        {
+          resources: [
+            {
+              accounts: ["account-a"],
+              noRepos: false,
+              allRepos: false,
+              selectedRepos: { repos: ["repo-a"], visibility: "private" },
+            },
+          ],
+          consumers: ["account-x", "account-x/repo-x"],
+          permissions: { contents: "read" },
+        },
+        {
+          resources: [
+            {
+              accounts: ["account-a"],
+              noRepos: false,
+              allRepos: false,
+              selectedRepos: { repos: ["repo-a"], visibility: "private" },
+            },
+          ],
+          consumers: ["account-x", "account-x/repo-x"],
+          permissions: { contents: "none" },
+        },
+      ],
+    },
+  );
 
   const resultA = authorizer.authorizeToken({
     consumer: { account: "account-x" },
@@ -1358,7 +1432,7 @@ it("doesn't allow tokens when a later rule removes access that a previous rule a
     "❌ Account account-x was denied access to a token:
       ✅ Read access to repos in account-a requested with role role-a
       ✅ 1 repo pattern matched 1 repo
-      ❌ Insufficient access to repo account-a/repo-a based on 2 rules:
+      ❌ Insufficient access to private repo account-a/repo-a based on 2 rules:
         ✅ Rule #1 gave sufficient access:
           ✅ contents: have read, wanted read
         ❌ Rule #2 gave insufficient access:
@@ -1371,7 +1445,7 @@ it("doesn't allow tokens when a later rule removes access that a previous rule a
     "❌ Repo account-x/repo-x was denied access to a token:
       ✅ Read access to repos in account-a requested with role role-a
       ✅ 1 repo pattern matched 1 repo
-      ❌ Insufficient access to repo account-a/repo-a based on 2 rules:
+      ❌ Insufficient access to private repo account-a/repo-a based on 2 rules:
         ✅ Rule #1 gave sufficient access:
           ✅ contents: have read, wanted read
         ❌ Rule #2 gave insufficient access:
@@ -1383,25 +1457,28 @@ it("doesn't allow tokens when a later rule removes access that a previous rule a
 });
 
 it("doesn't allow write tokens if no role is specified", async () => {
-  const authorizer = createTokenAuthorizer({
-    rules: [
-      {
-        resources: [
-          {
-            accounts: ["account-a"],
-            noRepos: false,
-            allRepos: false,
-            selectedRepos: ["repo-a"],
+  const authorizer = createTokenAuthorizer(
+    createTestRepoRegistry(["account-a", "repo-a"]),
+    {
+      rules: [
+        {
+          resources: [
+            {
+              accounts: ["account-a"],
+              noRepos: false,
+              allRepos: false,
+              selectedRepos: { repos: ["repo-a"], visibility: "private" },
+            },
+          ],
+          consumers: ["account-x", "account-x/repo-x"],
+          permissions: {
+            repository_hooks: "write",
+            repository_projects: "admin",
           },
-        ],
-        consumers: ["account-x", "account-x/repo-x"],
-        permissions: {
-          repository_hooks: "write",
-          repository_projects: "admin",
         },
-      },
-    ],
-  });
+      ],
+    },
+  );
 
   const resultA = authorizer.authorizeToken({
     consumer: { account: "account-x" },
@@ -1452,7 +1529,7 @@ it("doesn't allow write tokens if no role is specified", async () => {
     "❌ Account account-x was denied access to a token:
       ❌ Write access to repos in account-a requested without a role
       ✅ 1 repo pattern matched 1 repo
-      ✅ Sufficient access to repo account-a/repo-a based on 1 rule:
+      ✅ Sufficient access to private repo account-a/repo-a based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ repository_hooks: have write, wanted read
           ✅ repository_projects: have admin, wanted write"
@@ -1464,7 +1541,7 @@ it("doesn't allow write tokens if no role is specified", async () => {
     "❌ Account account-x was denied access to a token:
       ❌ Admin access to repos in account-a requested without a role
       ✅ 1 repo pattern matched 1 repo
-      ✅ Sufficient access to repo account-a/repo-a based on 1 rule:
+      ✅ Sufficient access to private repo account-a/repo-a based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ repository_hooks: have write, wanted write
           ✅ repository_projects: have admin, wanted admin"
@@ -1476,7 +1553,7 @@ it("doesn't allow write tokens if no role is specified", async () => {
     "❌ Repo account-x/repo-x was denied access to a token:
       ❌ Write access to repos in account-a requested without a role
       ✅ 1 repo pattern matched 1 repo
-      ✅ Sufficient access to repo account-a/repo-a based on 1 rule:
+      ✅ Sufficient access to private repo account-a/repo-a based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ repository_hooks: have write, wanted read
           ✅ repository_projects: have admin, wanted write"
@@ -1488,7 +1565,7 @@ it("doesn't allow write tokens if no role is specified", async () => {
     "❌ Repo account-x/repo-x was denied access to a token:
       ❌ Admin access to repos in account-a requested without a role
       ✅ 1 repo pattern matched 1 repo
-      ✅ Sufficient access to repo account-a/repo-a based on 1 rule:
+      ✅ Sufficient access to private repo account-a/repo-a based on 1 rule:
         ✅ Rule #1 gave sufficient access:
           ✅ repository_hooks: have write, wanted write
           ✅ repository_projects: have admin, wanted admin"
@@ -1499,7 +1576,7 @@ it("doesn't allow write tokens if no role is specified", async () => {
 });
 
 it("doesn't allow tokens when no repos are matched by the declaration repo patterns", async () => {
-  const authorizer = createTokenAuthorizer({
+  const authorizer = createTokenAuthorizer(createTestRepoRegistry(), {
     rules: [
       {
         resources: [
@@ -1507,7 +1584,7 @@ it("doesn't allow tokens when no repos are matched by the declaration repo patte
             accounts: ["*"],
             noRepos: true,
             allRepos: true,
-            selectedRepos: ["*"],
+            selectedRepos: { repos: ["*"], visibility: "private" },
           },
         ],
         consumers: ["*", "*/*"],

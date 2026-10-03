@@ -47,7 +47,7 @@
 
 - ✅ Repo `account-x/repo-x` **was allowed** to provision secret `SECRET_A`:
   - ✅ **Can** use token declaration `account-a/repo-a.token-a`
-  * ✅ **Can** provision token to **GitHub Actions** secret in `account-a`:
+  * ✅ **Can** provision token to **GitHub Actions** secret in account `account-a`:
     - ✅ Account `account-a` was **allowed** access to token `#1`
     - ✅  **Can** provision secret (no matching rules)
 
@@ -55,10 +55,10 @@
 
 - ✅ Repo `account-x/repo-x` **was allowed** to provision secret `SECRET_B`:
   - ✅ **Can** use token declaration `account-a/repo-a.token-b`
-  * ✅ **Can** provision token to **GitHub Actions** secret in `account-a`:
+  * ✅ **Can** provision token to **GitHub Actions** secret in account `account-a`:
     - ✅ Account `account-a` was **allowed** access to token `#1`
     - ✅  **Can** provision secret (no matching rules)
-  * ✅ **Can** provision token to **GitHub Actions** secret in `account-b`:
+  * ✅ **Can** provision token to **GitHub Actions** secret in account `account-b`:
     - ✅ Account `account-a` was **allowed** access to token `#1`
     - ✅  **Can** provision secret (no matching rules)
 

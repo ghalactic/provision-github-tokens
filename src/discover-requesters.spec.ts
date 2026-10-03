@@ -14,6 +14,7 @@ import {
   createTestCommit,
   createTestInstallationAccounts,
 } from "../test/github-api.js";
+import { createTestRepoRegistry } from "../test/repo-registry.js";
 import { ValidateError } from "./config/validation.js";
 import { ParseYamlError } from "./config/yaml.js";
 import {
@@ -44,7 +45,7 @@ it("discovers requesters in a single account", async () => {
     [[accountA, "selected"]],
   ]);
 
-  const appRegistry = createTestAppRegistry({
+  const appRegistry = createTestAppRegistry(createTestRepoRegistry(), {
     app: appA,
     provisioner: true,
     installations: [[appAInstallationA, [repoA, repoB, repoC]]],
@@ -163,6 +164,7 @@ it("discovers requesters in multiple account", async () => {
     );
 
   const appRegistry = createTestAppRegistry(
+    createTestRepoRegistry(),
     {
       app: appA,
       provisioner: true,
@@ -288,6 +290,7 @@ it("only discovers requesters once when multiple providers can access them", asy
     );
 
   const appRegistry = createTestAppRegistry(
+    createTestRepoRegistry(),
     {
       app: appA,
       provisioner: true,
@@ -423,7 +426,7 @@ it("skips requesters with invalid configuration", async () => {
     [[orgA, "selected"]],
   ]);
 
-  const appRegistry = createTestAppRegistry({
+  const appRegistry = createTestAppRegistry(createTestRepoRegistry(), {
     app: appA,
     provisioner: true,
     installations: [[appAInstallationA, [repoA, repoB, repoC]]],
@@ -562,7 +565,7 @@ it("skips requesters with invalid YAML configuration", async () => {
     [[orgA, "selected"]],
   ]);
 
-  const appRegistry = createTestAppRegistry({
+  const appRegistry = createTestAppRegistry(createTestRepoRegistry(), {
     app: appA,
     provisioner: true,
     installations: [[appAInstallationA, [repoA, repoB]]],
@@ -655,7 +658,7 @@ it("skips requesters whose config no longer exists", async () => {
     [[orgA, "selected"]],
   ]);
 
-  const appRegistry = createTestAppRegistry({
+  const appRegistry = createTestAppRegistry(createTestRepoRegistry(), {
     app: appA,
     provisioner: true,
     installations: [[appAInstallationA, [repoA]]],

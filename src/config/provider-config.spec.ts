@@ -17,6 +17,7 @@ import {
   createTestInstallationAccounts,
 } from "../../test/github-api.js";
 import { createTestOctokitFactory } from "../../test/octokit-factory.js";
+import { createTestRepoRegistry } from "../../test/repo-registry.js";
 import providerSchema from "../schema/provider.v1.schema.json" with { type: "json" };
 import type { ProviderConfig } from "../type/provider-config.js";
 import { parseProviderConfig, readProviderConfig } from "./provider-config.js";
@@ -48,7 +49,7 @@ it("reads comprehensive provider config", async () => {
     {},
     [[accountA, "selected"]],
   ]);
-  const appRegistry = createTestAppRegistry({
+  const appRegistry = createTestAppRegistry(createTestRepoRegistry(), {
     app: appA,
     installations: [[appAInstallationA, [repoA]]],
   });
@@ -88,7 +89,7 @@ it("reads comprehensive provider config", async () => {
               accounts: ["*"],
               noRepos: true,
               allRepos: true,
-              selectedRepos: ["*"],
+              selectedRepos: { repos: ["*"], visibility: "private" },
             },
           ],
           consumers: ["*", "*/*"],
@@ -107,7 +108,6 @@ it("reads comprehensive provider config", async () => {
               accounts: ["account-a"],
               allRepos: false,
               noRepos: true,
-              selectedRepos: [],
             },
           ],
           permissions: {
@@ -122,7 +122,6 @@ it("reads comprehensive provider config", async () => {
               accounts: ["account-a"],
               allRepos: true,
               noRepos: false,
-              selectedRepos: [],
             },
           ],
           consumers: ["*", "*/*"],
@@ -138,7 +137,10 @@ it("reads comprehensive provider config", async () => {
               accounts: ["account-a"],
               allRepos: false,
               noRepos: false,
-              selectedRepos: ["repo-a", "repo-*"],
+              selectedRepos: {
+                repos: ["repo-a", "repo-*"],
+                visibility: "internal",
+              },
             },
           ],
           consumers: ["*", "*/*"],
@@ -153,7 +155,6 @@ it("reads comprehensive provider config", async () => {
               accounts: ["account-a"],
               allRepos: false,
               noRepos: true,
-              selectedRepos: [],
             },
           ],
           consumers: ["account-a"],
@@ -169,7 +170,6 @@ it("reads comprehensive provider config", async () => {
               accounts: ["*"],
               allRepos: false,
               noRepos: true,
-              selectedRepos: [],
             },
           ],
           consumers: ["<account>"],
@@ -185,7 +185,7 @@ it("reads comprehensive provider config", async () => {
               accounts: ["*"],
               allRepos: false,
               noRepos: false,
-              selectedRepos: ["*"],
+              selectedRepos: { repos: ["*"], visibility: "private" },
             },
           ],
           consumers: ["*/<repo>"],
@@ -200,7 +200,7 @@ it("reads comprehensive provider config", async () => {
               accounts: ["*"],
               allRepos: false,
               noRepos: false,
-              selectedRepos: ["*"],
+              selectedRepos: { repos: ["*"], visibility: "private" },
             },
           ],
           consumers: ["<account>/<repo>"],
@@ -216,7 +216,7 @@ it("reads comprehensive provider config", async () => {
               accounts: ["*"],
               allRepos: false,
               noRepos: false,
-              selectedRepos: ["repo-a"],
+              selectedRepos: { repos: ["repo-a"], visibility: "private" },
             },
           ],
           consumers: ["*", "*/*"],
@@ -231,7 +231,7 @@ it("reads comprehensive provider config", async () => {
               accounts: ["account-self"],
               allRepos: false,
               noRepos: false,
-              selectedRepos: ["repo-a"],
+              selectedRepos: { repos: ["repo-a"], visibility: "private" },
             },
           ],
           consumers: ["account-self/repo-b"],
@@ -246,7 +246,6 @@ it("reads comprehensive provider config", async () => {
               accounts: ["account-self"],
               allRepos: true,
               noRepos: false,
-              selectedRepos: [],
             },
           ],
           consumers: ["account-self/repo-a"],
@@ -261,7 +260,7 @@ it("reads comprehensive provider config", async () => {
               accounts: ["account-a"],
               allRepos: false,
               noRepos: false,
-              selectedRepos: ["repo-a"],
+              selectedRepos: { repos: ["repo-a"], visibility: "private" },
             },
           ],
           consumers: ["account-b/repo-b"],
@@ -277,7 +276,7 @@ it("reads comprehensive provider config", async () => {
               accounts: ["account-self"],
               allRepos: false,
               noRepos: false,
-              selectedRepos: ["repo-a"],
+              selectedRepos: { repos: ["repo-a"], visibility: "private" },
             },
           ],
           permissions: {
@@ -291,7 +290,7 @@ it("reads comprehensive provider config", async () => {
               accounts: ["account-self"],
               allRepos: false,
               noRepos: false,
-              selectedRepos: ["repo-a"],
+              selectedRepos: { repos: ["repo-a"], visibility: "private" },
             },
           ],
           consumers: ["account-self/repo-b"],
@@ -306,7 +305,7 @@ it("reads comprehensive provider config", async () => {
               accounts: ["account-self"],
               allRepos: false,
               noRepos: false,
-              selectedRepos: ["repo-a"],
+              selectedRepos: { repos: ["repo-a"], visibility: "private" },
             },
           ],
           consumers: ["account-self/repo-b"],
@@ -321,13 +320,19 @@ it("reads comprehensive provider config", async () => {
               accounts: ["account-a", "account-b"],
               allRepos: false,
               noRepos: false,
-              selectedRepos: ["repo-a", "repo-b"],
+              selectedRepos: {
+                repos: ["repo-a", "repo-b"],
+                visibility: "private",
+              },
             },
             {
               accounts: ["account-c", "account-d"],
               allRepos: false,
               noRepos: false,
-              selectedRepos: ["repo-c", "repo-d"],
+              selectedRepos: {
+                repos: ["repo-c", "repo-d"],
+                visibility: "private",
+              },
             },
           ],
           consumers: ["account-e", "account-f/repo-f", "account-g/repo-g"],
@@ -342,7 +347,7 @@ it("reads comprehensive provider config", async () => {
               accounts: ["account-*"],
               allRepos: false,
               noRepos: false,
-              selectedRepos: ["repo-*"],
+              selectedRepos: { repos: ["repo-*"], visibility: "private" },
             },
           ],
           consumers: ["*-account", "*-account/*-repo"],
@@ -357,7 +362,7 @@ it("reads comprehensive provider config", async () => {
               accounts: ["account-self"],
               allRepos: true,
               noRepos: true,
-              selectedRepos: ["*"],
+              selectedRepos: { repos: ["*"], visibility: "private" },
             },
           ],
           consumers: ["account-self/repo-b"],
@@ -426,15 +431,18 @@ it("reads comprehensive provider config", async () => {
             secrets: ["*"],
             to: {
               github: {
-                account: {},
+                account: { types: {} },
                 accounts: {},
                 repo: {
-                  actions: "allow",
-                  agents: "allow",
-                  codespaces: "allow",
-                  dependabot: "allow",
-                  environments: {
-                    "*": "allow",
+                  visibility: "private",
+                  types: {
+                    actions: "allow",
+                    agents: "allow",
+                    codespaces: "allow",
+                    dependabot: "allow",
+                    environments: {
+                      "*": "allow",
+                    },
                   },
                 },
                 repos: {},
@@ -449,14 +457,19 @@ it("reads comprehensive provider config", async () => {
             to: {
               github: {
                 account: {
-                  actions: "allow",
-                  agents: "allow",
-                  codespaces: "allow",
-                  dependabot: "allow",
+                  types: {
+                    actions: "allow",
+                    agents: "allow",
+                    codespaces: "allow",
+                    dependabot: "allow",
+                  },
                 },
                 accounts: {},
                 repo: {
-                  environments: {},
+                  visibility: "private",
+                  types: {
+                    environments: {},
+                  },
                 },
                 repos: {},
               },
@@ -469,17 +482,24 @@ it("reads comprehensive provider config", async () => {
             requesters: ["account-self/repo-a", "account-self/repo-b"],
             to: {
               github: {
-                account: {},
+                account: { types: {} },
                 accounts: {
                   "account-a": {
-                    dependabot: "allow",
+                    types: {
+                      dependabot: "allow",
+                    },
                   },
                   "account-b": {
-                    dependabot: "allow",
+                    types: {
+                      dependabot: "allow",
+                    },
                   },
                 },
                 repo: {
-                  environments: {},
+                  visibility: "private",
+                  types: {
+                    environments: {},
+                  },
                 },
                 repos: {},
               },
@@ -492,14 +512,19 @@ it("reads comprehensive provider config", async () => {
             requesters: ["account-self/repo-a", "account-self/repo-b"],
             to: {
               github: {
-                account: {},
+                account: { types: {} },
                 accounts: {
                   "*": {
-                    dependabot: "allow",
+                    types: {
+                      dependabot: "allow",
+                    },
                   },
                 },
                 repo: {
-                  environments: {},
+                  visibility: "private",
+                  types: {
+                    environments: {},
+                  },
                 },
                 repos: {},
               },
@@ -512,21 +537,30 @@ it("reads comprehensive provider config", async () => {
             requesters: ["account-self/repo-a"],
             to: {
               github: {
-                account: {},
+                account: { types: {} },
                 accounts: {},
                 repo: {
-                  environments: {},
+                  visibility: "private",
+                  types: {
+                    environments: {},
+                  },
                 },
                 repos: {
                   "account-self/repo-b": {
-                    agents: "allow",
-                    codespaces: "allow",
-                    environments: {},
+                    visibility: "private",
+                    types: {
+                      agents: "allow",
+                      codespaces: "allow",
+                      environments: {},
+                    },
                   },
                   "account-b/repo-c": {
-                    agents: "allow",
-                    codespaces: "allow",
-                    environments: {},
+                    visibility: "private",
+                    types: {
+                      agents: "allow",
+                      codespaces: "allow",
+                      environments: {},
+                    },
                   },
                 },
               },
@@ -539,16 +573,22 @@ it("reads comprehensive provider config", async () => {
             requesters: ["account-self/repo-a"],
             to: {
               github: {
-                account: {},
+                account: { types: {} },
                 accounts: {},
                 repo: {
-                  environments: {},
+                  visibility: "private",
+                  types: {
+                    environments: {},
+                  },
                 },
                 repos: {
                   "account-self/repo-b": {
-                    environments: {
-                      "env-a": "allow",
-                      "env-b": "allow",
+                    visibility: "private",
+                    types: {
+                      environments: {
+                        "env-a": "allow",
+                        "env-b": "allow",
+                      },
                     },
                   },
                 },
@@ -562,19 +602,25 @@ it("reads comprehensive provider config", async () => {
             requesters: ["account-self/repo-a", "account-self/repo-b"],
             to: {
               github: {
-                account: {},
+                account: { types: {} },
                 accounts: {},
                 repo: {
-                  environments: {},
+                  visibility: "private",
+                  types: {
+                    environments: {},
+                  },
                 },
                 repos: {
                   "*/*": {
-                    actions: "allow",
-                    agents: "allow",
-                    codespaces: "allow",
-                    dependabot: "allow",
-                    environments: {
-                      "*": "allow",
+                    visibility: "private",
+                    types: {
+                      actions: "allow",
+                      agents: "allow",
+                      codespaces: "allow",
+                      dependabot: "allow",
+                      environments: {
+                        "*": "allow",
+                      },
                     },
                   },
                 },
@@ -588,15 +634,21 @@ it("reads comprehensive provider config", async () => {
             requesters: ["account-self/repo-a", "account-self/repo-b"],
             to: {
               github: {
-                account: {},
+                account: { types: {} },
                 accounts: {},
                 repo: {
-                  environments: {},
+                  visibility: "private",
+                  types: {
+                    environments: {},
+                  },
                 },
                 repos: {
                   "account-b/*": {
-                    actions: "allow",
-                    environments: {},
+                    visibility: "private",
+                    types: {
+                      actions: "allow",
+                      environments: {},
+                    },
                   },
                 },
               },
@@ -610,28 +662,43 @@ it("reads comprehensive provider config", async () => {
             to: {
               github: {
                 account: {
-                  actions: "allow",
+                  types: {
+                    actions: "allow",
+                  },
                 },
                 accounts: {
                   "account-a": {
-                    actions: "allow",
+                    types: {
+                      actions: "allow",
+                    },
                   },
                   "account-b": {
-                    actions: "allow",
+                    types: {
+                      actions: "allow",
+                    },
                   },
                 },
                 repo: {
-                  actions: "allow",
-                  environments: {},
-                },
-                repos: {
-                  "account-self/repo-a": {
+                  visibility: "private",
+                  types: {
                     actions: "allow",
                     environments: {},
                   },
+                },
+                repos: {
+                  "account-self/repo-a": {
+                    visibility: "private",
+                    types: {
+                      actions: "allow",
+                      environments: {},
+                    },
+                  },
                   "account-a/repo-a": {
-                    actions: "allow",
-                    environments: {},
+                    visibility: "private",
+                    types: {
+                      actions: "allow",
+                      environments: {},
+                    },
                   },
                 },
               },
@@ -644,26 +711,34 @@ it("reads comprehensive provider config", async () => {
             requesters: ["*/*"],
             to: {
               github: {
-                account: {},
+                account: { types: {} },
                 accounts: {
                   "*": {
-                    actions: "deny",
-                    agents: "deny",
-                    codespaces: "deny",
-                    dependabot: "deny",
+                    types: {
+                      actions: "deny",
+                      agents: "deny",
+                      codespaces: "deny",
+                      dependabot: "deny",
+                    },
                   },
                 },
                 repo: {
-                  environments: {},
+                  visibility: "private",
+                  types: {
+                    environments: {},
+                  },
                 },
                 repos: {
                   "*/*": {
-                    actions: "deny",
-                    agents: "deny",
-                    codespaces: "deny",
-                    dependabot: "deny",
-                    environments: {
-                      "*": "deny",
+                    visibility: "private",
+                    types: {
+                      actions: "deny",
+                      agents: "deny",
+                      codespaces: "deny",
+                      dependabot: "deny",
+                      environments: {
+                        "*": "deny",
+                      },
                     },
                   },
                 },
@@ -677,15 +752,18 @@ it("reads comprehensive provider config", async () => {
             requesters: ["account-self/repo-a", "account-self/repo-b"],
             to: {
               github: {
-                account: {},
+                account: { types: {} },
                 accounts: {},
                 repo: {
-                  actions: "deny",
-                  agents: "deny",
-                  codespaces: "deny",
-                  dependabot: "deny",
-                  environments: {
-                    "*": "deny",
+                  visibility: "private",
+                  types: {
+                    actions: "deny",
+                    agents: "deny",
+                    codespaces: "deny",
+                    dependabot: "deny",
+                    environments: {
+                      "*": "deny",
+                    },
                   },
                 },
                 repos: {},
@@ -699,17 +777,20 @@ it("reads comprehensive provider config", async () => {
             requesters: ["account-self/repo-a"],
             to: {
               github: {
-                account: {},
+                account: { types: {} },
                 accounts: {},
                 repo: {
-                  actions: "allow",
-                  agents: "deny",
-                  codespaces: "deny",
-                  dependabot: "allow",
-                  environments: {
-                    "*": "allow",
-                    "env-a": "deny",
-                    "env-b": "deny",
+                  visibility: "private",
+                  types: {
+                    actions: "allow",
+                    agents: "deny",
+                    codespaces: "deny",
+                    dependabot: "allow",
+                    environments: {
+                      "*": "allow",
+                      "env-a": "deny",
+                      "env-b": "deny",
+                    },
                   },
                 },
                 repos: {},
@@ -817,11 +898,11 @@ it("throws when an invalid pattern is used in /provision/rules/secrets/<n>/reque
       ),
     ),
   ).toMatchInlineSnapshot(`
-      "Parsing of provider configuration failed
+    "Parsing of provider configuration failed
 
-      Caused by: Invalid provider configuration:
-        - must be a repo pattern in the form of "account/repo", or "./repo" (/provision/rules/secrets/0/requesters/0)"
-    `);
+    Caused by: Invalid provider configuration:
+      - must be a repo pattern in the form of "account/repo", or "./repo" (/provision/rules/secrets/0/requesters/0)"
+  `);
 });
 
 it("throws when an invalid pattern is used in /provision/rules/secrets/<n>/to/github/repos/<pattern>", async () => {
@@ -840,12 +921,12 @@ it("throws when an invalid pattern is used in /provision/rules/secrets/<n>/to/gi
       ),
     ),
   ).toMatchInlineSnapshot(`
-      "Parsing of provider configuration failed
+    "Parsing of provider configuration failed
 
-      Caused by: Invalid provider configuration:
-        - must be a repo pattern in the form of "account/repo", or "./repo" (/provision/rules/secrets/0/to/github/repos)
-        - property name must be valid (/provision/rules/secrets/0/to/github/repos)"
-    `);
+    Caused by: Invalid provider configuration:
+      - must be a repo pattern in the form of "account/repo", or "./repo" (/provision/rules/secrets/0/to/github/repos)
+      - property name must be valid (/provision/rules/secrets/0/to/github/repos)"
+  `);
 });
 
 it("throws when there are additional properties", async () => {
@@ -866,6 +947,114 @@ it("throws when there are additional properties", async () => {
       Caused by: Invalid provider configuration:
         - must NOT have additional properties"
     `);
+});
+
+it("throws when selectedRepos has no repos", async () => {
+  const fixturePath = join(
+    fixturesPath,
+    "invalid-selected-repos-missing-repos.yml",
+  );
+  const yaml = await readFile(fixturePath, "utf-8");
+
+  expect(
+    throws(() =>
+      parseProviderConfig(
+        { account: "account-self", repo: "repo-self" },
+        "path/to/config.yml",
+        yaml,
+      ),
+    ),
+  ).toMatchInlineSnapshot(`
+    "Parsing of provider configuration failed
+
+    Caused by: Invalid provider configuration:
+      - must have required property 'repos' (/permissions/rules/0/resources/0/selectedRepos)"
+  `);
+});
+
+it("throws when selectedRepos has an empty repos list", async () => {
+  const fixturePath = join(fixturesPath, "invalid-selected-repos-empty.yml");
+  const yaml = await readFile(fixturePath, "utf-8");
+
+  expect(
+    throws(() =>
+      parseProviderConfig(
+        { account: "account-self", repo: "repo-self" },
+        "path/to/config.yml",
+        yaml,
+      ),
+    ),
+  ).toMatchInlineSnapshot(`
+    "Parsing of provider configuration failed
+
+    Caused by: Invalid provider configuration:
+      - must NOT have fewer than 1 items (/permissions/rules/0/resources/0/selectedRepos/repos)"
+  `);
+});
+
+it("throws when selectedRepos has an unknown visibility", async () => {
+  const fixturePath = join(
+    fixturesPath,
+    "invalid-selected-repos-visibility.yml",
+  );
+  const yaml = await readFile(fixturePath, "utf-8");
+
+  expect(
+    throws(() =>
+      parseProviderConfig(
+        { account: "account-self", repo: "repo-self" },
+        "path/to/config.yml",
+        yaml,
+      ),
+    ),
+  ).toMatchInlineSnapshot(`
+    "Parsing of provider configuration failed
+
+    Caused by: Invalid provider configuration:
+      - must be equal to one of the allowed values (/permissions/rules/0/resources/0/selectedRepos/visibility)"
+  `);
+});
+
+it("throws when an account provision target has environments", async () => {
+  const fixturePath = join(
+    fixturesPath,
+    "invalid-provision-account-environments.yml",
+  );
+  const yaml = await readFile(fixturePath, "utf-8");
+
+  expect(
+    throws(() =>
+      parseProviderConfig(
+        { account: "account-self", repo: "repo-self" },
+        "path/to/config.yml",
+        yaml,
+      ),
+    ),
+  ).toMatchInlineSnapshot(`
+    "Parsing of provider configuration failed
+
+    Caused by: Invalid provider configuration:
+      - must NOT have additional properties (/provision/rules/secrets/0/to/github/account/types)"
+  `);
+});
+
+it("defaults repo provision target visibility to private", async () => {
+  const fixturePath = join(
+    fixturesPath,
+    "provision-repo-target-visibility.yml",
+  );
+  const yaml = await readFile(fixturePath, "utf-8");
+
+  const config = parseProviderConfig(
+    { account: "account-self", repo: "repo-self" },
+    "path/to/config.yml",
+    yaml,
+  );
+
+  const targets = config.provision.rules.secrets[0].to.github.repos;
+
+  expect(targets["account-a/repo-default"].visibility).toBe("private");
+  expect(targets["account-a/repo-explicit"].visibility).toBe("internal");
 });
 
 it("throws when the YAML is invalid", () => {
