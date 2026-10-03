@@ -93,22 +93,34 @@
                       "default": false
                     },
                     "selectedRepos": {
-                      "description": "A list of patterns to match against repos when applying the rule.",
-                      "type": "array",
-                      "default": [],
-                      "items": {
-                        "description": "A pattern which matches repos without their account prefix.",
-                        "type": "string",
-                        "minLength": 1,
-                        "pattern": "^[*a-zA-Z0-9-_.]+$",
-                        "errorMessage": "must only contain alphanumeric characters, hyphens, underscores, periods, or asterisks",
-                        "examples": [
-                          "repo-a",
-                          "*",
-                          "with-prefix-*",
-                          "*-with-suffix",
-                          "with-*-infix"
-                        ]
+                      "description": "The repos to match when applying the rule.",
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": ["repos"],
+                      "properties": {
+                        "repos": {
+                          "description": "A list of patterns to match against repos when applying the rule.",
+                          "type": "array",
+                          "minItems": 1,
+                          "items": {
+                            "description": "A pattern which matches repos without their account prefix.",
+                            "type": "string",
+                            "minLength": 1,
+                            "pattern": "^[*a-zA-Z0-9-_.]+$",
+                            "errorMessage": "must only contain alphanumeric characters, hyphens, underscores, periods, or asterisks",
+                            "examples": [
+                              "repo-a",
+                              "*",
+                              "with-prefix-*",
+                              "*-with-suffix",
+                              "with-*-infix"
+                            ]
+                          }
+                        },
+                        "visibility": {
+                          "$ref": "#/definitions/visibility",
+                          "default": "private"
+                        }
                       }
                     }
                   }
@@ -231,8 +243,10 @@
                         "properties": {
                           "account": {
                             "description": "Which types of secrets to allow provisioning to in the requesting repo's GitHub account.",
-                            "$ref": "#/definitions/provisionGithubAccountSecretTypes",
-                            "default": {}
+                            "$ref": "#/definitions/provisionGithubAccountTarget",
+                            "default": {
+                              "types": {}
+                            }
                           },
                           "accounts": {
                             "description": "Which types of secrets to allow provisioning to in other GitHub accounts.",
@@ -254,13 +268,15 @@
                             },
                             "additionalProperties": {
                               "description": "Which types of secrets to allow provisioning to in the specified GitHub account.",
-                              "$ref": "#/definitions/provisionGithubAccountSecretTypes"
+                              "$ref": "#/definitions/provisionGithubAccountTarget"
                             }
                           },
                           "repo": {
                             "description": "Which types of secrets to allow provisioning to in the requesting repo.",
-                            "$ref": "#/definitions/provisionGithubRepoSecretTypes",
-                            "default": {}
+                            "$ref": "#/definitions/provisionGithubRepoTarget",
+                            "default": {
+                              "types": {}
+                            }
                           },
                           "repos": {
                             "description": "Which types of secrets to allow provisioning to in other repos.",
@@ -284,7 +300,7 @@
                             },
                             "additionalProperties": {
                               "description": "Which types of secrets to allow provisioning to in the specified repo.",
-                              "$ref": "#/definitions/provisionGithubRepoSecretTypes"
+                              "$ref": "#/definitions/provisionGithubRepoTarget"
                             }
                           }
                         }
@@ -300,6 +316,37 @@
     }
   },
   "definitions": {
+    "visibility": {
+      "description": "A repo visibility level.",
+      "type": "string",
+      "enum": ["private", "internal", "public"]
+    },
+    "provisionGithubAccountTarget": {
+      "description": "Which types of secrets to allow provisioning to in a GitHub account.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["types"],
+      "properties": {
+        "types": {
+          "$ref": "#/definitions/provisionGithubAccountSecretTypes"
+        }
+      }
+    },
+    "provisionGithubRepoTarget": {
+      "description": "Which types of secrets to allow provisioning to in a GitHub repo.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["types"],
+      "properties": {
+        "visibility": {
+          "$ref": "#/definitions/visibility",
+          "default": "private"
+        },
+        "types": {
+          "$ref": "#/definitions/provisionGithubRepoSecretTypes"
+        }
+      }
+    },
     "provisionGithubAccountSecretTypes": {
       "type": "object",
       "additionalProperties": false,
