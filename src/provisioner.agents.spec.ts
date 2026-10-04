@@ -93,15 +93,22 @@ it("handles GitHub API errors when provisioning org-level Agents secrets", async
     {
       request: createTestProvisionRequest({
         secretDec: createTestSecretDec({
-          github: { accounts: { "account-a": { agents: true } } },
+          github: { accounts: { "account-a": { agents: "private" } } },
         }),
-        to: [createTestAccountProvisionRequestTarget("agents", "account-a")],
+        to: [
+          createTestAccountProvisionRequestTarget(
+            "agents",
+            "account-a",
+            "private",
+          ),
+        ],
       }),
       results: [
         createTestProvisionAuthTargetResult({
           target: createTestAccountProvisionRequestTarget(
             "agents",
             "account-a",
+            "private",
           ),
           tokenAuthResult,
         }),
@@ -178,15 +185,22 @@ it("handles unexpected errors when provisioning org-level Agents secrets", async
     {
       request: createTestProvisionRequest({
         secretDec: createTestSecretDec({
-          github: { accounts: { "account-a": { agents: true } } },
+          github: { accounts: { "account-a": { agents: "private" } } },
         }),
-        to: [createTestAccountProvisionRequestTarget("agents", "account-a")],
+        to: [
+          createTestAccountProvisionRequestTarget(
+            "agents",
+            "account-a",
+            "private",
+          ),
+        ],
       }),
       results: [
         createTestProvisionAuthTargetResult({
           target: createTestAccountProvisionRequestTarget(
             "agents",
             "account-a",
+            "private",
           ),
           tokenAuthResult,
         }),
@@ -260,15 +274,22 @@ it("can provision org-level Agents secrets", async () => {
     {
       request: createTestProvisionRequest({
         secretDec: createTestSecretDec({
-          github: { accounts: { "account-a": { agents: true } } },
+          github: { accounts: { "account-a": { agents: "private" } } },
         }),
-        to: [createTestAccountProvisionRequestTarget("agents", "account-a")],
+        to: [
+          createTestAccountProvisionRequestTarget(
+            "agents",
+            "account-a",
+            "private",
+          ),
+        ],
       }),
       results: [
         createTestProvisionAuthTargetResult({
           target: createTestAccountProvisionRequestTarget(
             "agents",
             "account-a",
+            "private",
           ),
           tokenAuthResult,
         }),
@@ -351,7 +372,7 @@ it("handles GitHub API errors when provisioning repo-level Agents secrets", asyn
     {
       request: createTestProvisionRequest({
         secretDec: createTestSecretDec({
-          github: { accounts: { "account-a": { agents: true } } },
+          github: { repos: { "account-a/repo-a": { agents: true } } },
         }),
         to: [
           createTestRepoProvisionRequestTarget(
@@ -449,7 +470,7 @@ it("handles unexpected errors when provisioning repo-level Agents secrets", asyn
     {
       request: createTestProvisionRequest({
         secretDec: createTestSecretDec({
-          github: { accounts: { "account-a": { agents: true } } },
+          github: { repos: { "account-a/repo-a": { agents: true } } },
         }),
         to: [
           createTestRepoProvisionRequestTarget(
@@ -544,7 +565,7 @@ it("can provision repo-level Agents secrets", async () => {
     {
       request: createTestProvisionRequest({
         secretDec: createTestSecretDec({
-          github: { accounts: { "account-a": { agents: true } } },
+          github: { repos: { "account-a/repo-a": { agents: true } } },
         }),
         to: [
           createTestRepoProvisionRequestTarget(

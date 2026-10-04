@@ -190,7 +190,8 @@ it("parses comprehensive requester config", async () => {
             },
             repos: {},
             account: {
-              dependabot: true,
+              dependabot: "private",
+              actions: false,
             },
             accounts: {},
           },
@@ -200,20 +201,21 @@ it("parses comprehensive requester config", async () => {
           token: "other-account/repo.tokenC",
           github: {
             account: {
-              actions: true,
-              agents: true,
-              codespaces: true,
-              dependabot: true,
+              actions: "all",
+              agents: "private",
+              codespaces: ["repo-*"],
+              dependabot: false,
             },
             accounts: {
               "account-a": {
-                actions: true,
+                actions: "private",
+                agents: [],
               },
               "account-b": {
-                actions: true,
-                agents: true,
-                codespaces: true,
-                dependabot: true,
+                actions: "all",
+                agents: "private",
+                codespaces: ["repo-a", "repo-b"],
+                dependabot: false,
               },
             },
             repo: {
@@ -529,4 +531,24 @@ it("throws when the YAML is invalid", () => {
     {
      ^"
   `);
+});
+
+it("allows an empty selected repo list for an account secret type", () => {
+  const yaml = [
+    "provision:",
+    "  secrets:",
+    "    SECRET_A:",
+    "      token: tokenA",
+    "      github:",
+    "        account:",
+    "          actions: []",
+  ].join("\n");
+
+  expect(
+    parseRequesterConfig(
+      { account: "account-self", repo: "repo-self" },
+      "path/to/config.yml",
+      yaml,
+    ).provision.secrets.SECRET_A.github.account,
+  ).toEqual({ actions: [] });
 });

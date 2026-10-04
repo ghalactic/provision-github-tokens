@@ -12,12 +12,14 @@ import {
   type RepoReference,
 } from "./github-reference.js";
 import { createNamePattern } from "./name-pattern.js";
+import type { Pattern } from "./pattern.js";
 import type { RepoRegistry } from "./repo-registry.js";
 import type { TokenDeclarationRegistry } from "./token-declaration-registry.js";
 import type { TokenDeclaration } from "./token-declaration.js";
 import type {
   SecretDeclaration,
   SecretDeclarationGitHubAccountSecretTypes,
+  SecretDeclarationGitHubAccountSecretVisibility,
   SecretDeclarationGitHubRepoSecretTypes,
 } from "./type/secret-declaration.js";
 import type { Visibility } from "./type/visibility.js";
@@ -42,6 +44,7 @@ export type GitHubAccountProvisionRequestTarget = {
   platform: "github";
   type: "actions" | "agents" | "codespaces" | "dependabot";
   target: AccountReference;
+  visibility: "private" | "all" | number[];
 };
 
 export type GitHubRepoProvisionRequestTarget = {
@@ -102,12 +105,12 @@ export function createProvisionRequestFactory(
       const patternTypes = secretDec.github.accounts[accountPattern];
 
       for (const account of accounts) {
-        combineTypes((typesByAccount[account] ??= {}), patternTypes);
+        combineAccountTypes((typesByAccount[account] ??= {}), patternTypes);
       }
     }
 
     // Self-account types take precedence over pattern-matched types
-    overrideTypes(
+    overrideAccountTypes(
       (typesByAccount[requester.account] ??= {}),
       secretDec.github.account,
     );
@@ -128,7 +131,7 @@ export function createProvisionRequestFactory(
         const isFirstRepo = !types;
         typesByRepo[repoName] = types ??= { environments: [] };
 
-        combineTypes(types, patternTypes);
+        combineRepoTypes(types, patternTypes);
 
         const envs =
           patternTypes.environments.length > 0
@@ -156,7 +159,7 @@ export function createProvisionRequestFactory(
     });
 
     // Self-repo types take precedence over pattern-matched types
-    overrideTypes(selfRepoTypes, secretDec.github.repo);
+    overrideRepoTypes(selfRepoTypes, secretDec.github.repo);
 
     // Self-repo environments add to any pattern-matched environments
     if (secretDec.github.repo.environments.length > 0) {
@@ -177,7 +180,10 @@ export function createProvisionRequestFactory(
       const types = typesByAccount[account];
 
       for (const type of SECRET_TYPES) {
-        if (types[type]) targets.push({ platform, type, target: { account } });
+        const setting = types[type];
+        if (setting == null || setting === false) continue;
+
+        targets.push(createAccountTarget(platform, type, account, setting));
       }
     }
 
@@ -212,7 +218,7 @@ export function createProvisionRequestFactory(
     };
   };
 
-  function combineTypes(
+  function combineAccountTypes(
     base: SecretDeclarationGitHubAccountSecretTypes,
     additions: SecretDeclarationGitHubAccountSecretTypes,
   ): void {
@@ -223,12 +229,64 @@ export function createProvisionRequestFactory(
     }
   }
 
-  function overrideTypes(
+  function overrideAccountTypes(
     base: SecretDeclarationGitHubAccountSecretTypes,
     additions: SecretDeclarationGitHubAccountSecretTypes,
   ): void {
     for (const type of SECRET_TYPES) {
       if (additions[type] != null) base[type] = additions[type];
     }
+  }
+
+  function combineRepoTypes(
+    base: SecretDeclarationGitHubRepoSecretTypes,
+    additions: SecretDeclarationGitHubRepoSecretTypes,
+  ): void {
+    for (const type of SECRET_TYPES) {
+      if (base[type] !== false && additions[type] != null) {
+        base[type] = additions[type];
+      }
+    }
+  }
+
+  function overrideRepoTypes(
+    base: SecretDeclarationGitHubRepoSecretTypes,
+    additions: SecretDeclarationGitHubRepoSecretTypes,
+  ): void {
+    for (const type of SECRET_TYPES) {
+      if (additions[type] != null) base[type] = additions[type];
+    }
+  }
+
+  function createAccountTarget(
+    platform: "github",
+    type: (typeof SECRET_TYPES)[number],
+    account: string,
+    setting: SecretDeclarationGitHubAccountSecretVisibility,
+  ): GitHubAccountProvisionRequestTarget {
+    if (setting === "all" || setting === "private") {
+      return { platform, type, target: { account }, visibility: setting };
+    }
+
+    const patterns: Pattern[] = [];
+    for (const repoPattern of setting) {
+      patterns.push(createGitHubPattern(`${account}/${repoPattern}`));
+    }
+
+    const repos = appRegistry.resolveProvisionerRepos(patterns);
+
+    const selectedRepositoryIds: number[] = [];
+    for (const repo of repos) {
+      selectedRepositoryIds.push(
+        Number(repoRegistry.find(repoRefFromName(repo)).id),
+      );
+    }
+
+    return {
+      platform,
+      type,
+      target: { account },
+      visibility: selectedRepositoryIds,
+    };
   }
 }

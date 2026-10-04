@@ -16,7 +16,13 @@ export function createTestProvisionRequest(
     tokenDecIsRegistered: true,
     secretDec: createTestSecretDec(),
     name: "SECRET_A",
-    to: [createTestAccountProvisionRequestTarget("actions", "account-a")],
+    to: [
+      createTestAccountProvisionRequestTarget(
+        "actions",
+        "account-a",
+        "private",
+      ),
+    ],
     ...result,
   };
 }
@@ -24,8 +30,9 @@ export function createTestProvisionRequest(
 export function createTestAccountProvisionRequestTarget(
   type: "actions" | "agents" | "codespaces" | "dependabot",
   account: string,
+  visibility: "all" | "private" | number[],
 ): ProvisionRequestTarget {
-  return { platform: "github", type, target: { account } };
+  return { platform: "github", type, target: { account }, visibility };
 }
 
 export function createTestRepoProvisionRequestTarget(

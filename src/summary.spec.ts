@@ -31,6 +31,7 @@ it("renders a summary with all secrets provisioned", async () => {
   const accountAActionsTarget = createTestAccountProvisionRequestTarget(
     "actions",
     "account-a",
+    "private",
   );
 
   const tokenAuthResultA = createTestTokenAuthResult({
@@ -69,11 +70,7 @@ it("renders a summary with all secrets provisioned", async () => {
       tokenDec: tokenAuthResultA.request.tokenDec,
       secretDec: createTestSecretDec({
         token: "account-a/repo-a.token-a",
-        github: {
-          accounts: {
-            "account-a": { actions: true },
-          },
-        },
+        github: { accounts: { "account-a": { actions: "private" } } },
       }),
       to: [accountAActionsTarget],
     }),
@@ -86,11 +83,7 @@ it("renders a summary with all secrets provisioned", async () => {
       tokenDec: tokenAuthResultB.request.tokenDec,
       secretDec: createTestSecretDec({
         token: "account-a/repo-a.token-b",
-        github: {
-          accounts: {
-            "account-a": { actions: true },
-          },
-        },
+        github: { accounts: { "account-a": { actions: "private" } } },
       }),
       name: "SECRET_B",
       to: [accountAActionsTarget],
@@ -152,6 +145,7 @@ it("renders a summary with some secrets denied", async () => {
   const accountAActionsTarget = createTestAccountProvisionRequestTarget(
     "actions",
     "account-a",
+    "private",
   );
 
   const tokenAuthResultA = createTestTokenAuthResult({
@@ -191,11 +185,7 @@ it("renders a summary with some secrets denied", async () => {
       tokenDec: tokenAuthResultA.request.tokenDec,
       secretDec: createTestSecretDec({
         token: "account-a/repo-a.token-a",
-        github: {
-          accounts: {
-            "account-a": { actions: true },
-          },
-        },
+        github: { accounts: { "account-a": { actions: "private" } } },
       }),
       to: [accountAActionsTarget],
     }),
@@ -209,11 +199,7 @@ it("renders a summary with some secrets denied", async () => {
       tokenDec: tokenAuthResultB.request.tokenDec,
       secretDec: createTestSecretDec({
         token: "account-a/repo-a.token-b",
-        github: {
-          accounts: {
-            "account-a": { actions: true },
-          },
-        },
+        github: { accounts: { "account-a": { actions: "private" } } },
       }),
       name: "SECRET_B",
       to: [accountAActionsTarget],
@@ -275,6 +261,7 @@ it("renders a summary with all secrets denied", async () => {
   const accountAActionsTarget = createTestAccountProvisionRequestTarget(
     "actions",
     "account-a",
+    "private",
   );
 
   const tokenAuthResultA = createTestTokenAuthResult({
@@ -302,11 +289,7 @@ it("renders a summary with all secrets denied", async () => {
       tokenDec: tokenAuthResultA.request.tokenDec,
       secretDec: createTestSecretDec({
         token: "account-a/repo-a.token-a",
-        github: {
-          accounts: {
-            "account-a": { actions: true },
-          },
-        },
+        github: { accounts: { "account-a": { actions: "private" } } },
       }),
       to: [accountAActionsTarget],
     }),
@@ -403,11 +386,7 @@ it("renders a summary with environment targets", async () => {
       tokenDec: tokenAuthResultA.request.tokenDec,
       secretDec: createTestSecretDec({
         token: "account-a/repo-a.token-a",
-        github: {
-          repos: {
-            "account-a/repo-a": { environments: ["env-a"] },
-          },
-        },
+        github: { repos: { "account-a/repo-a": { environments: ["env-a"] } } },
       }),
       to: [accountARepoAEnvironmentTarget],
     }),
@@ -455,6 +434,7 @@ it("renders a summary with multiple requesters", async () => {
   const accountAActionsTarget = createTestAccountProvisionRequestTarget(
     "actions",
     "account-a",
+    "private",
   );
 
   const tokenAuthResultA = createTestTokenAuthResult({
@@ -493,11 +473,7 @@ it("renders a summary with multiple requesters", async () => {
       tokenDec: tokenAuthResultA.request.tokenDec,
       secretDec: createTestSecretDec({
         token: "account-a/repo-a.token-a",
-        github: {
-          accounts: {
-            "account-a": { actions: true },
-          },
-        },
+        github: { accounts: { "account-a": { actions: "private" } } },
       }),
       to: [accountAActionsTarget],
     }),
@@ -510,11 +486,7 @@ it("renders a summary with multiple requesters", async () => {
       tokenDec: tokenAuthResultB.request.tokenDec,
       secretDec: createTestSecretDec({
         token: "account-a/repo-a.token-b",
-        github: {
-          accounts: {
-            "account-a": { actions: true },
-          },
-        },
+        github: { accounts: { "account-a": { actions: "private" } } },
       }),
       name: "SECRET_B",
       to: [accountAActionsTarget],
@@ -576,6 +548,7 @@ it("renders a summary with a missing token declaration", async () => {
   const accountAActionsTarget = createTestAccountProvisionRequestTarget(
     "actions",
     "account-a",
+    "private",
   );
 
   const tokenAuthResultA = createTestTokenAuthResult({
@@ -606,11 +579,7 @@ it("renders a summary with a missing token declaration", async () => {
       tokenDec: tokenAuthResultA.request.tokenDec,
       secretDec: createTestSecretDec({
         token: "account-a/repo-a.token-a",
-        github: {
-          accounts: {
-            "account-a": { actions: true },
-          },
-        },
+        github: { accounts: { "account-a": { actions: "private" } } },
       }),
       to: [accountAActionsTarget],
     }),
@@ -625,11 +594,7 @@ it("renders a summary with a missing token declaration", async () => {
       tokenDecIsRegistered: false,
       secretDec: createTestSecretDec({
         token: "account-a/repo-a.missing-token",
-        github: {
-          accounts: {
-            "account-a": { actions: true },
-          },
-        },
+        github: { accounts: { "account-a": { actions: "private" } } },
       }),
       name: "SECRET_B",
       to: [accountAActionsTarget],
@@ -684,6 +649,7 @@ it("renders a summary with an unshared token declaration", async () => {
   const accountAActionsTarget = createTestAccountProvisionRequestTarget(
     "actions",
     "account-a",
+    "private",
   );
 
   const tokenAuthResultA = createTestTokenAuthResult({
@@ -714,11 +680,7 @@ it("renders a summary with an unshared token declaration", async () => {
       tokenDec: tokenAuthResultA.request.tokenDec,
       secretDec: createTestSecretDec({
         token: "account-a/repo-a.token-a",
-        github: {
-          accounts: {
-            "account-a": { actions: true },
-          },
-        },
+        github: { accounts: { "account-a": { actions: "private" } } },
       }),
       to: [accountAActionsTarget],
     }),
@@ -732,11 +694,7 @@ it("renders a summary with an unshared token declaration", async () => {
       tokenDec: undefined,
       secretDec: createTestSecretDec({
         token: "account-a/repo-a.unshared-token",
-        github: {
-          accounts: {
-            "account-a": { actions: true },
-          },
-        },
+        github: { accounts: { "account-a": { actions: "private" } } },
       }),
       name: "SECRET_B",
       to: [accountAActionsTarget],
@@ -791,6 +749,7 @@ it("renders a summary with missing targets", async () => {
   const accountAActionsTarget = createTestAccountProvisionRequestTarget(
     "actions",
     "account-a",
+    "private",
   );
 
   const tokenAuthResultA = createTestTokenAuthResult({
@@ -814,11 +773,7 @@ it("renders a summary with missing targets", async () => {
       tokenDec: tokenAuthResultA.request.tokenDec,
       secretDec: createTestSecretDec({
         token: "account-a/repo-a.token-a",
-        github: {
-          accounts: {
-            "account-a": { actions: true },
-          },
-        },
+        github: { accounts: { "account-a": { actions: "private" } } },
       }),
       to: [accountAActionsTarget],
     }),
@@ -832,9 +787,7 @@ it("renders a summary with missing targets", async () => {
       tokenDec: createTestTokenDec({ permissions: { contents: "write" } }),
       secretDec: createTestSecretDec({
         token: "account-a/repo-a.token-b",
-        github: {
-          accounts: {},
-        },
+        github: {},
       }),
       name: "SECRET_B",
       to: [],
@@ -888,21 +841,25 @@ it("renders a summary with multiple distinct targets", async () => {
   const accountAActionsTarget = createTestAccountProvisionRequestTarget(
     "actions",
     "account-a",
+    "private",
   );
 
   const accountAAgentsTarget = createTestAccountProvisionRequestTarget(
     "agents",
     "account-a",
+    "private",
   );
 
   const accountACodespacesTarget = createTestAccountProvisionRequestTarget(
     "codespaces",
     "account-a",
+    "private",
   );
 
   const accountBActionsTarget = createTestAccountProvisionRequestTarget(
     "actions",
     "account-b",
+    "private",
   );
 
   const tokenAuthResultA = createTestTokenAuthResult({
@@ -943,8 +900,12 @@ it("renders a summary with multiple distinct targets", async () => {
         token: "account-a/repo-a.token-a",
         github: {
           accounts: {
-            "account-a": { actions: true },
-            "account-b": { actions: true },
+            "account-a": {
+              actions: "private",
+              agents: "private",
+              codespaces: "private",
+            },
+            "account-b": { actions: "private" },
           },
         },
       }),
@@ -1002,6 +963,7 @@ it("truncates rows beyond the limit and shows a notice", async () => {
   const accountAActionsTarget = createTestAccountProvisionRequestTarget(
     "actions",
     "account-a",
+    "private",
   );
 
   const provisionAuthResults: ProvisionAuthResult[] = [];
@@ -1018,11 +980,7 @@ it("truncates rows beyond the limit and shows a notice", async () => {
         tokenDec: createTestTokenDec({ permissions: { metadata: "read" } }),
         secretDec: createTestSecretDec({
           token: "account-a/repo-a.token-a",
-          github: {
-            accounts: {
-              "account-a": { actions: true },
-            },
-          },
+          github: { accounts: { "account-a": { actions: "private" } } },
         }),
         name: `SECRET_${i.toString().padStart(4, "0")}`,
         to: [accountAActionsTarget],
@@ -1059,6 +1017,7 @@ it("renders a failure reason when tokens aren't allowed", async () => {
   const accountAActionsTarget = createTestAccountProvisionRequestTarget(
     "actions",
     "account-a",
+    "private",
   );
 
   const tokenAuthResult = createTestTokenAuthResult({
@@ -1084,11 +1043,7 @@ it("renders a failure reason when tokens aren't allowed", async () => {
       tokenDec: tokenAuthResult.request.tokenDec,
       secretDec: createTestSecretDec({
         token: "account-a/repo-a.token-not-allowed",
-        github: {
-          accounts: {
-            "account-a": { actions: true },
-          },
-        },
+        github: { accounts: { "account-a": { actions: "private" } } },
       }),
       name: "SECRET_TOKEN_NOT_ALLOWED",
       to: [accountAActionsTarget],
@@ -1129,6 +1084,7 @@ it("renders a failure reason when no suitable issuer is found", async () => {
   const accountAActionsTarget = createTestAccountProvisionRequestTarget(
     "actions",
     "account-a",
+    "private",
   );
 
   const tokenAuthResult = createTestTokenAuthResult({
@@ -1150,11 +1106,7 @@ it("renders a failure reason when no suitable issuer is found", async () => {
       tokenDec: tokenAuthResult.request.tokenDec,
       secretDec: createTestSecretDec({
         token: "account-a/repo-a.no-issuer",
-        github: {
-          accounts: {
-            "account-a": { actions: true },
-          },
-        },
+        github: { accounts: { "account-a": { actions: "private" } } },
       }),
       name: "SECRET_NO_ISSUER",
       to: [accountAActionsTarget],
@@ -1198,6 +1150,7 @@ it("renders a failure reason when token issuance fails", async () => {
   const accountAActionsTarget = createTestAccountProvisionRequestTarget(
     "actions",
     "account-a",
+    "private",
   );
 
   const tokenAuthResult = createTestTokenAuthResult({
@@ -1219,11 +1172,7 @@ it("renders a failure reason when token issuance fails", async () => {
       tokenDec: tokenAuthResult.request.tokenDec,
       secretDec: createTestSecretDec({
         token: "account-a/repo-a.issue-error",
-        github: {
-          accounts: {
-            "account-a": { actions: true },
-          },
-        },
+        github: { accounts: { "account-a": { actions: "private" } } },
       }),
       name: "SECRET_ISSUE_ERROR",
       to: [accountAActionsTarget],
@@ -1267,6 +1216,7 @@ it("renders a failure reason when no suitable provisioner is found", async () =>
   const accountAActionsTarget = createTestAccountProvisionRequestTarget(
     "actions",
     "account-a",
+    "private",
   );
 
   const tokenAuthResult = createTestTokenAuthResult({
@@ -1288,11 +1238,7 @@ it("renders a failure reason when no suitable provisioner is found", async () =>
       tokenDec: tokenAuthResult.request.tokenDec,
       secretDec: createTestSecretDec({
         token: "account-a/repo-a.no-provisioner",
-        github: {
-          accounts: {
-            "account-a": { actions: true },
-          },
-        },
+        github: { accounts: { "account-a": { actions: "private" } } },
       }),
       name: "SECRET_NO_PROVISIONER",
       to: [accountAActionsTarget],
@@ -1345,6 +1291,7 @@ it("renders a failure reason when provisioning has no target results", async () 
   const accountAActionsTarget = createTestAccountProvisionRequestTarget(
     "actions",
     "account-a",
+    "private",
   );
 
   const tokenAuthResult = createTestTokenAuthResult({
@@ -1366,11 +1313,7 @@ it("renders a failure reason when provisioning has no target results", async () 
       tokenDec: tokenAuthResult.request.tokenDec,
       secretDec: createTestSecretDec({
         token: "account-a/repo-a.failed-provision-empty",
-        github: {
-          accounts: {
-            "account-a": { actions: true },
-          },
-        },
+        github: { accounts: { "account-a": { actions: "private" } } },
       }),
       name: "SECRET_FAILED_PROVISION_EMPTY",
       to: [accountAActionsTarget],
@@ -1423,11 +1366,13 @@ it("renders a failure reason when provisioning partially fails across targets", 
   const accountAActionsTarget = createTestAccountProvisionRequestTarget(
     "actions",
     "account-a",
+    "private",
   );
 
   const accountBActionsTarget = createTestAccountProvisionRequestTarget(
     "actions",
     "account-b",
+    "private",
   );
 
   const tokenAuthResult = createTestTokenAuthResult({
@@ -1456,8 +1401,8 @@ it("renders a failure reason when provisioning partially fails across targets", 
         token: "account-a/repo-a.partial-failure",
         github: {
           accounts: {
-            "account-a": { actions: true },
-            "account-b": { actions: true },
+            "account-a": { actions: "private" },
+            "account-b": { actions: "private" },
           },
         },
       }),
@@ -1513,6 +1458,7 @@ it("renders a failure reason when provisioning fails for all targets", async () 
   const accountAActionsTarget = createTestAccountProvisionRequestTarget(
     "actions",
     "account-a",
+    "private",
   );
 
   const tokenAuthResult = createTestTokenAuthResult({
@@ -1534,11 +1480,7 @@ it("renders a failure reason when provisioning fails for all targets", async () 
       tokenDec: tokenAuthResult.request.tokenDec,
       secretDec: createTestSecretDec({
         token: "account-a/repo-a.failed-provision",
-        github: {
-          accounts: {
-            "account-a": { actions: true },
-          },
-        },
+        github: { accounts: { "account-a": { actions: "private" } } },
       }),
       name: "SECRET_FAILED_PROVISION",
       to: [accountAActionsTarget],

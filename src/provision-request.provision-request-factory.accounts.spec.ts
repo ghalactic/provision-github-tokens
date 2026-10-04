@@ -61,12 +61,12 @@ it("supports self-account targets", async () => {
         "SECRET_A",
         createTestSecretDec({
           token: normalizeTokenReference(repoA, "token-a"),
-          github: { account: { actions: true } },
+          github: { account: { actions: "all" } },
         }),
       )
     )?.to,
   ).toStrictEqual([
-    createTestAccountProvisionRequestTarget("actions", "account-a"),
+    createTestAccountProvisionRequestTarget("actions", "account-a", "all"),
   ] satisfies ProvisionRequestTarget[]);
 
   expect(
@@ -76,12 +76,12 @@ it("supports self-account targets", async () => {
         "SECRET_A",
         createTestSecretDec({
           token: normalizeTokenReference(repoA, "token-a"),
-          github: { account: { agents: true } },
+          github: { account: { agents: "all" } },
         }),
       )
     )?.to,
   ).toStrictEqual([
-    createTestAccountProvisionRequestTarget("agents", "account-a"),
+    createTestAccountProvisionRequestTarget("agents", "account-a", "all"),
   ] satisfies ProvisionRequestTarget[]);
 
   expect(
@@ -91,12 +91,12 @@ it("supports self-account targets", async () => {
         "SECRET_A",
         createTestSecretDec({
           token: normalizeTokenReference(repoA, "token-a"),
-          github: { account: { codespaces: true } },
+          github: { account: { codespaces: "all" } },
         }),
       )
     )?.to,
   ).toStrictEqual([
-    createTestAccountProvisionRequestTarget("codespaces", "account-a"),
+    createTestAccountProvisionRequestTarget("codespaces", "account-a", "all"),
   ] satisfies ProvisionRequestTarget[]);
 
   expect(
@@ -106,12 +106,12 @@ it("supports self-account targets", async () => {
         "SECRET_A",
         createTestSecretDec({
           token: normalizeTokenReference(repoA, "token-a"),
-          github: { account: { dependabot: true } },
+          github: { account: { dependabot: "all" } },
         }),
       )
     )?.to,
   ).toStrictEqual([
-    createTestAccountProvisionRequestTarget("dependabot", "account-a"),
+    createTestAccountProvisionRequestTarget("dependabot", "account-a", "all"),
   ] satisfies ProvisionRequestTarget[]);
 });
 
@@ -167,13 +167,13 @@ it("supports pattern-matched account targets", async () => {
         "SECRET_A",
         createTestSecretDec({
           token: normalizeTokenReference(repoA, "token-a"),
-          github: { accounts: { "account-a-*": { actions: true } } },
+          github: { accounts: { "account-a-*": { actions: "all" } } },
         }),
       )
     )?.to,
   ).toStrictEqual([
-    createTestAccountProvisionRequestTarget("actions", "account-a-1"),
-    createTestAccountProvisionRequestTarget("actions", "account-a-2"),
+    createTestAccountProvisionRequestTarget("actions", "account-a-1", "all"),
+    createTestAccountProvisionRequestTarget("actions", "account-a-2", "all"),
   ] satisfies ProvisionRequestTarget[]);
 
   expect(
@@ -183,13 +183,13 @@ it("supports pattern-matched account targets", async () => {
         "SECRET_A",
         createTestSecretDec({
           token: normalizeTokenReference(repoA, "token-a"),
-          github: { accounts: { "account-a-*": { agents: true } } },
+          github: { accounts: { "account-a-*": { agents: "all" } } },
         }),
       )
     )?.to,
   ).toStrictEqual([
-    createTestAccountProvisionRequestTarget("agents", "account-a-1"),
-    createTestAccountProvisionRequestTarget("agents", "account-a-2"),
+    createTestAccountProvisionRequestTarget("agents", "account-a-1", "all"),
+    createTestAccountProvisionRequestTarget("agents", "account-a-2", "all"),
   ] satisfies ProvisionRequestTarget[]);
 
   expect(
@@ -199,13 +199,13 @@ it("supports pattern-matched account targets", async () => {
         "SECRET_A",
         createTestSecretDec({
           token: normalizeTokenReference(repoA, "token-a"),
-          github: { accounts: { "account-a-*": { codespaces: true } } },
+          github: { accounts: { "account-a-*": { codespaces: "all" } } },
         }),
       )
     )?.to,
   ).toStrictEqual([
-    createTestAccountProvisionRequestTarget("codespaces", "account-a-1"),
-    createTestAccountProvisionRequestTarget("codespaces", "account-a-2"),
+    createTestAccountProvisionRequestTarget("codespaces", "account-a-1", "all"),
+    createTestAccountProvisionRequestTarget("codespaces", "account-a-2", "all"),
   ] satisfies ProvisionRequestTarget[]);
 
   expect(
@@ -215,13 +215,13 @@ it("supports pattern-matched account targets", async () => {
         "SECRET_A",
         createTestSecretDec({
           token: normalizeTokenReference(repoA, "token-a"),
-          github: { accounts: { "account-a-*": { dependabot: true } } },
+          github: { accounts: { "account-a-*": { dependabot: "all" } } },
         }),
       )
     )?.to,
   ).toStrictEqual([
-    createTestAccountProvisionRequestTarget("dependabot", "account-a-1"),
-    createTestAccountProvisionRequestTarget("dependabot", "account-a-2"),
+    createTestAccountProvisionRequestTarget("dependabot", "account-a-1", "all"),
+    createTestAccountProvisionRequestTarget("dependabot", "account-a-2", "all"),
   ] satisfies ProvisionRequestTarget[]);
 });
 
@@ -274,16 +274,16 @@ it("doesn't match the same account twice", async () => {
           token: normalizeTokenReference(repoA, "token-a"),
           github: {
             accounts: {
-              "*": { actions: true },
-              "account-*": { actions: true },
+              "*": { actions: "all" },
+              "account-*": { actions: "all" },
             },
           },
         }),
       )
     )?.to,
   ).toStrictEqual([
-    createTestAccountProvisionRequestTarget("actions", "account-a"),
-    createTestAccountProvisionRequestTarget("actions", "account-b"),
+    createTestAccountProvisionRequestTarget("actions", "account-a", "all"),
+    createTestAccountProvisionRequestTarget("actions", "account-b", "all"),
   ] satisfies ProvisionRequestTarget[]);
 });
 
@@ -337,15 +337,15 @@ it("doesn't enable a target for an account if any matching patterns disable the 
           github: {
             accounts: {
               "account-b": { actions: false },
-              "*": { actions: true, codespaces: false },
-              "account-a": { codespaces: true },
+              "*": { actions: "all", codespaces: false },
+              "account-a": { codespaces: "all" },
             },
           },
         }),
       )
     )?.to,
   ).toStrictEqual([
-    createTestAccountProvisionRequestTarget("actions", "account-a"),
+    createTestAccountProvisionRequestTarget("actions", "account-a", "all"),
   ] satisfies ProvisionRequestTarget[]);
 });
 
@@ -397,17 +397,143 @@ it("allows self-account targets to override pattern-matched account targets", as
         createTestSecretDec({
           token: normalizeTokenReference(repoA, "token-a"),
           github: {
-            account: { codespaces: true },
+            account: { actions: "private", codespaces: "private" },
             accounts: {
-              "*": { actions: true, codespaces: false },
+              "*": { actions: "all", codespaces: false },
             },
           },
         }),
       )
     )?.to,
   ).toStrictEqual([
-    createTestAccountProvisionRequestTarget("actions", "account-a"),
-    createTestAccountProvisionRequestTarget("codespaces", "account-a"),
-    createTestAccountProvisionRequestTarget("actions", "account-b"),
+    createTestAccountProvisionRequestTarget("actions", "account-a", "private"),
+    createTestAccountProvisionRequestTarget(
+      "codespaces",
+      "account-a",
+      "private",
+    ),
+    createTestAccountProvisionRequestTarget("actions", "account-b", "all"),
+  ] satisfies ProvisionRequestTarget[]);
+});
+
+it("keeps a target enabled when a matching pattern omits it", async () => {
+  const repoA: RepoReference = { account: "account-a", repo: "repo-a" };
+
+  const declarationRegistry = createTokenDeclarationRegistry();
+  const environmentResolver = createTestEnvironmentResolver();
+
+  const tokenDecA = createTestTokenDec({ shared: true });
+  declarationRegistry.registerDeclaration(repoA, "token-a", tokenDecA);
+
+  const [[accountA, reposA], [accountB]] = createTestInstallationAccounts(
+    ["Organization", 100, "account-a", ["repo-a"]],
+    ["Organization", 300, "account-b"],
+  );
+
+  const [[appA, [appAInstallationA, appAInstallationB]]] = createTestApps([
+    "App A",
+    {},
+    [
+      [accountA, "selected"],
+      [accountB, "selected"],
+    ],
+  ]);
+
+  const repoRegistry = createTestRepoRegistry();
+  const appRegistry = createTestAppRegistry(repoRegistry, {
+    app: appA,
+    provisioner: true,
+    installations: [
+      [appAInstallationA, reposA],
+      [appAInstallationB, []],
+    ],
+  });
+
+  const createProvisionRequest = createProvisionRequestFactory(
+    declarationRegistry,
+    appRegistry,
+    repoRegistry,
+    environmentResolver,
+  );
+
+  expect(
+    (
+      await createProvisionRequest(
+        repoA,
+        "SECRET_A",
+        createTestSecretDec({
+          token: normalizeTokenReference(repoA, "token-a"),
+          github: {
+            accounts: {
+              "account-b": {},
+              "*": { actions: "all" },
+              "account-a": { codespaces: "all" },
+            },
+          },
+        }),
+      )
+    )?.to,
+  ).toStrictEqual([
+    createTestAccountProvisionRequestTarget("actions", "account-b", "all"),
+    createTestAccountProvisionRequestTarget("actions", "account-a", "all"),
+    createTestAccountProvisionRequestTarget("codespaces", "account-a", "all"),
+  ] satisfies ProvisionRequestTarget[]);
+});
+
+it("supports selected-repo account targets", async () => {
+  const repoA: RepoReference = { account: "account-a", repo: "repo-a" };
+
+  const declarationRegistry = createTokenDeclarationRegistry();
+  const environmentResolver = createTestEnvironmentResolver();
+
+  const tokenDecA = createTestTokenDec({ shared: true });
+  declarationRegistry.registerDeclaration(repoA, "token-a", tokenDecA);
+
+  const [[accountA, reposA]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "account-a",
+    ["repo-a", "repo-b", "other"],
+  ]);
+
+  const [[appA, [appAInstallationA]]] = createTestApps([
+    "App A",
+    {},
+    [[accountA, "selected"]],
+  ]);
+
+  const repoRegistry = createTestRepoRegistry();
+  const appRegistry = createTestAppRegistry(repoRegistry, {
+    app: appA,
+    provisioner: true,
+    installations: [[appAInstallationA, reposA]],
+  });
+
+  const createProvisionRequest = createProvisionRequestFactory(
+    declarationRegistry,
+    appRegistry,
+    repoRegistry,
+    environmentResolver,
+  );
+
+  const selectedRepoIds = reposA
+    .filter((repo) => repo.name.startsWith("repo-"))
+    .map((repo) => Number(repo.id));
+
+  const request = await createProvisionRequest(
+    repoA,
+    "SECRET_A",
+    createTestSecretDec({
+      token: normalizeTokenReference(repoA, "token-a"),
+      github: { account: { actions: ["repo-*"] } },
+    }),
+  );
+
+  expect(request?.to).toStrictEqual([
+    createTestAccountProvisionRequestTarget(
+      "actions",
+      "account-a",
+      selectedRepoIds,
+    ),
   ] satisfies ProvisionRequestTarget[]);
 });

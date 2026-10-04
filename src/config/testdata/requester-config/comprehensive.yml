@@ -118,24 +118,26 @@ provision:
       token: ./other-repo.tokenB
       github:
         account:
-          dependabot: true
+          dependabot: private
+          actions: false
 
     TO_EVERYWHERE:
       token: other-account/repo.tokenC
       github:
         account:
-          actions: true
-          agents: true
-          codespaces: true
-          dependabot: true
+          actions: all
+          agents: private
+          codespaces: [repo-*]
+          dependabot: false
         accounts:
           account-a:
-            actions: true
+            actions: private
+            agents: []
           account-b:
-            actions: true
-            agents: true
-            codespaces: true
-            dependabot: true
+            actions: all
+            agents: private
+            codespaces: [repo-a, repo-b]
+            dependabot: false
         repo:
           actions: true
           agents: true

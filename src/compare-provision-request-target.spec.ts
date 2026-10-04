@@ -9,15 +9,15 @@ import type { ProvisionRequestTarget } from "./provision-request.js";
 
 it("sorts targets by account", () => {
   const targets: ProvisionRequestTarget[] = [
-    createTestAccountProvisionRequestTarget("actions", "account-b"),
-    createTestAccountProvisionRequestTarget("actions", "account-c"),
-    createTestAccountProvisionRequestTarget("actions", "account-a"),
+    createTestAccountProvisionRequestTarget("actions", "account-b", "private"),
+    createTestAccountProvisionRequestTarget("actions", "account-c", "private"),
+    createTestAccountProvisionRequestTarget("actions", "account-a", "private"),
   ];
 
   expect(targets.toSorted(compareProvisionRequestTarget)).toEqual([
-    createTestAccountProvisionRequestTarget("actions", "account-a"),
-    createTestAccountProvisionRequestTarget("actions", "account-b"),
-    createTestAccountProvisionRequestTarget("actions", "account-c"),
+    createTestAccountProvisionRequestTarget("actions", "account-a", "private"),
+    createTestAccountProvisionRequestTarget("actions", "account-b", "private"),
+    createTestAccountProvisionRequestTarget("actions", "account-c", "private"),
   ]);
 });
 
@@ -135,8 +135,8 @@ it("sorts account targets, then repo targets, then environment targets", () => {
       "env-b",
       "private",
     ),
-    createTestAccountProvisionRequestTarget("actions", "account-b"),
-    createTestAccountProvisionRequestTarget("actions", "account-a"),
+    createTestAccountProvisionRequestTarget("actions", "account-b", "private"),
+    createTestAccountProvisionRequestTarget("actions", "account-a", "private"),
     createTestRepoProvisionRequestTarget(
       "actions",
       "account-a",
@@ -152,7 +152,7 @@ it("sorts account targets, then repo targets, then environment targets", () => {
   ];
 
   expect(targets.toSorted(compareProvisionRequestTarget)).toEqual([
-    createTestAccountProvisionRequestTarget("actions", "account-a"),
+    createTestAccountProvisionRequestTarget("actions", "account-a", "private"),
     createTestRepoProvisionRequestTarget(
       "actions",
       "account-a",
@@ -177,23 +177,39 @@ it("sorts account targets, then repo targets, then environment targets", () => {
       "repo-b",
       "private",
     ),
-    createTestAccountProvisionRequestTarget("actions", "account-b"),
+    createTestAccountProvisionRequestTarget("actions", "account-b", "private"),
   ]);
 });
 
 it("sorts account targets by type", () => {
   const targets: ProvisionRequestTarget[] = [
-    createTestAccountProvisionRequestTarget("codespaces", "account-a"),
-    createTestAccountProvisionRequestTarget("dependabot", "account-a"),
-    createTestAccountProvisionRequestTarget("agents", "account-a"),
-    createTestAccountProvisionRequestTarget("actions", "account-a"),
+    createTestAccountProvisionRequestTarget(
+      "codespaces",
+      "account-a",
+      "private",
+    ),
+    createTestAccountProvisionRequestTarget(
+      "dependabot",
+      "account-a",
+      "private",
+    ),
+    createTestAccountProvisionRequestTarget("agents", "account-a", "private"),
+    createTestAccountProvisionRequestTarget("actions", "account-a", "private"),
   ];
 
   expect(targets.toSorted(compareProvisionRequestTarget)).toEqual([
-    createTestAccountProvisionRequestTarget("actions", "account-a"),
-    createTestAccountProvisionRequestTarget("agents", "account-a"),
-    createTestAccountProvisionRequestTarget("codespaces", "account-a"),
-    createTestAccountProvisionRequestTarget("dependabot", "account-a"),
+    createTestAccountProvisionRequestTarget("actions", "account-a", "private"),
+    createTestAccountProvisionRequestTarget("agents", "account-a", "private"),
+    createTestAccountProvisionRequestTarget(
+      "codespaces",
+      "account-a",
+      "private",
+    ),
+    createTestAccountProvisionRequestTarget(
+      "dependabot",
+      "account-a",
+      "private",
+    ),
   ]);
 });
 

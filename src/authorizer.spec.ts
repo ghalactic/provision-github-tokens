@@ -142,7 +142,7 @@ it("authorizes all requests and outputs the results", async () => {
   );
 
   const secretDecA = createTestSecretDec({
-    github: { accounts: { "account-a": { actions: true } } },
+    github: { accounts: { "account-a": { actions: "all" } } },
   });
   const secretDecB = createTestSecretDec({
     token: "account-a/repo-a.tokenB",
@@ -219,12 +219,20 @@ it("authorizes all requests and outputs the results", async () => {
         request: createTestProvisionRequest({
           tokenDec: tokenDecA,
           secretDec: secretDecA,
+          to: [
+            createTestAccountProvisionRequestTarget(
+              "actions",
+              "account-a",
+              "all",
+            ),
+          ],
         }),
         results: [
           {
             target: createTestAccountProvisionRequestTarget(
               "actions",
               "account-a",
+              "all",
             ),
             have: "allow",
             isAllowed: true,
@@ -377,7 +385,7 @@ it("handles empty token requests", async () => {
   );
 
   const secretDecA = createTestSecretDec({
-    github: { accounts: { "account-a": { actions: true } } },
+    github: { accounts: { "account-a": { actions: "all" } } },
   });
 
   const result = await authorizer.authorize([
@@ -407,12 +415,20 @@ it("handles empty token requests", async () => {
           secretDec: secretDecA,
           tokenDec: undefined,
           tokenDecIsRegistered: false,
+          to: [
+            createTestAccountProvisionRequestTarget(
+              "actions",
+              "account-a",
+              "all",
+            ),
+          ],
         }),
         results: [
           {
             target: createTestAccountProvisionRequestTarget(
               "actions",
               "account-a",
+              "all",
             ),
             have: "allow",
             isAllowed: false,

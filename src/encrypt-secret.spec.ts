@@ -78,7 +78,7 @@ it("can encrypt secrets for all secret types", async () => {
   const encryptSecret = createEncryptSecret(findProvisionerOctokit);
 
   const forOrgAActions = await encryptSecret(
-    createTestAccountProvisionRequestTarget("actions", "org-a"),
+    createTestAccountProvisionRequestTarget("actions", "org-a", "private"),
     "<plaintext>",
   );
 
@@ -86,7 +86,7 @@ it("can encrypt secrets for all secret types", async () => {
   expect(forOrgAActions[1]).toBe("1111");
 
   const forOrgAAgents = await encryptSecret(
-    createTestAccountProvisionRequestTarget("agents", "org-a"),
+    createTestAccountProvisionRequestTarget("agents", "org-a", "private"),
     "<plaintext>",
   );
 
@@ -94,7 +94,7 @@ it("can encrypt secrets for all secret types", async () => {
   expect(forOrgAAgents[1]).toBe("9999");
 
   const forOrgACodespaces = await encryptSecret(
-    createTestAccountProvisionRequestTarget("codespaces", "org-a"),
+    createTestAccountProvisionRequestTarget("codespaces", "org-a", "private"),
     "<plaintext>",
   );
 
@@ -104,7 +104,7 @@ it("can encrypt secrets for all secret types", async () => {
   expect(forOrgACodespaces[1]).toBe("2222");
 
   const forOrgADependabot = await encryptSecret(
-    createTestAccountProvisionRequestTarget("dependabot", "org-a"),
+    createTestAccountProvisionRequestTarget("dependabot", "org-a", "private"),
     "<plaintext>",
   );
 
@@ -205,7 +205,7 @@ it("throws if no provisioners are found for the target", async () => {
 
   await expect(
     encryptSecret(
-      createTestAccountProvisionRequestTarget("actions", "org-a"),
+      createTestAccountProvisionRequestTarget("actions", "org-a", "private"),
       "<plaintext>",
     ),
   ).rejects.toThrow("No provisioners found for target org-a");

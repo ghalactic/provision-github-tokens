@@ -97,7 +97,7 @@ it("handles GitHub API errors when provisioning org-level Actions secrets", asyn
     {
       request: createTestProvisionRequest({
         secretDec: createTestSecretDec({
-          github: { accounts: { "account-a": { actions: true } } },
+          github: { accounts: { "account-a": { actions: "private" } } },
         }),
       }),
       results: [
@@ -105,6 +105,7 @@ it("handles GitHub API errors when provisioning org-level Actions secrets", asyn
           target: createTestAccountProvisionRequestTarget(
             "actions",
             "account-a",
+            "private",
           ),
           tokenAuthResult,
         }),
@@ -183,7 +184,7 @@ it("handles unexpected errors when provisioning org-level Actions secrets", asyn
     {
       request: createTestProvisionRequest({
         secretDec: createTestSecretDec({
-          github: { accounts: { "account-a": { actions: true } } },
+          github: { accounts: { "account-a": { actions: "private" } } },
         }),
       }),
       results: [
@@ -191,6 +192,7 @@ it("handles unexpected errors when provisioning org-level Actions secrets", asyn
           target: createTestAccountProvisionRequestTarget(
             "actions",
             "account-a",
+            "private",
           ),
           tokenAuthResult,
         }),
@@ -264,7 +266,7 @@ it("can provision org-level Actions secrets", async () => {
     {
       request: createTestProvisionRequest({
         secretDec: createTestSecretDec({
-          github: { accounts: { "account-a": { actions: true } } },
+          github: { accounts: { "account-a": { actions: "private" } } },
         }),
       }),
       results: [
@@ -272,6 +274,7 @@ it("can provision org-level Actions secrets", async () => {
           target: createTestAccountProvisionRequestTarget(
             "actions",
             "account-a",
+            "private",
           ),
           tokenAuthResult,
         }),
@@ -352,7 +355,7 @@ it("handles GitHub API errors when provisioning repo-level Actions secrets", asy
     {
       request: createTestProvisionRequest({
         secretDec: createTestSecretDec({
-          github: { accounts: { "account-a": { actions: true } } },
+          github: { repos: { "account-a/repo-a": { actions: true } } },
         }),
         to: [
           createTestRepoProvisionRequestTarget(
@@ -448,7 +451,7 @@ it("handles unexpected errors when provisioning repo-level Actions secrets", asy
     {
       request: createTestProvisionRequest({
         secretDec: createTestSecretDec({
-          github: { accounts: { "account-a": { actions: true } } },
+          github: { repos: { "account-a/repo-a": { actions: true } } },
         }),
         to: [
           createTestRepoProvisionRequestTarget(
@@ -541,7 +544,7 @@ it("can provision repo-level Actions secrets", async () => {
     {
       request: createTestProvisionRequest({
         secretDec: createTestSecretDec({
-          github: { accounts: { "account-a": { actions: true } } },
+          github: { repos: { "account-a/repo-a": { actions: true } } },
         }),
         to: [
           createTestRepoProvisionRequestTarget(

@@ -60681,10 +60681,10 @@ function createProvisionRequestFactory(declarationRegistry, appRegistry, repoReg
       ]);
       const patternTypes = secretDec.github.accounts[accountPattern];
       for (const account of accounts) {
-        combineTypes(typesByAccount[account] ??= {}, patternTypes);
+        combineAccountTypes(typesByAccount[account] ??= {}, patternTypes);
       }
     }
-    overrideTypes(
+    overrideAccountTypes(
       typesByAccount[requester.account] ??= {},
       secretDec.github.account
     );
@@ -60697,7 +60697,7 @@ function createProvisionRequestFactory(declarationRegistry, appRegistry, repoReg
         let types = typesByRepo[repoName];
         const isFirstRepo = !types;
         typesByRepo[repoName] = types ??= { environments: [] };
-        combineTypes(types, patternTypes);
+        combineRepoTypes(types, patternTypes);
         const envs = patternTypes.environments.length > 0 ? await environmentResolver.resolveEnvironments(
           repo,
           patternTypes.environments.map(createNamePattern)
@@ -60714,7 +60714,7 @@ function createProvisionRequestFactory(declarationRegistry, appRegistry, repoReg
     const selfRepoTypes = typesByRepo[repoRefToString(requester)] ??= {
       environments: []
     };
-    overrideTypes(selfRepoTypes, secretDec.github.repo);
+    overrideRepoTypes(selfRepoTypes, secretDec.github.repo);
     if (secretDec.github.repo.environments.length > 0) {
       const envs = await environmentResolver.resolveEnvironments(
         requester,
@@ -60729,7 +60729,9 @@ function createProvisionRequestFactory(declarationRegistry, appRegistry, repoReg
     for (const account in typesByAccount) {
       const types = typesByAccount[account];
       for (const type of SECRET_TYPES) {
-        if (types[type]) targets.push({ platform: platform2, type, target: { account } });
+        const setting = types[type];
+        if (setting == null || setting === false) continue;
+        targets.push(createAccountTarget(platform2, type, account, setting));
       }
     }
     for (const repoName in typesByRepo) {
@@ -60759,17 +60761,51 @@ function createProvisionRequestFactory(declarationRegistry, appRegistry, repoReg
       to: targets
     };
   };
-  function combineTypes(base, additions) {
+  function combineAccountTypes(base, additions) {
     for (const type of SECRET_TYPES) {
       if (base[type] !== false && additions[type] != null) {
         base[type] = additions[type];
       }
     }
   }
-  function overrideTypes(base, additions) {
+  function overrideAccountTypes(base, additions) {
     for (const type of SECRET_TYPES) {
       if (additions[type] != null) base[type] = additions[type];
     }
+  }
+  function combineRepoTypes(base, additions) {
+    for (const type of SECRET_TYPES) {
+      if (base[type] !== false && additions[type] != null) {
+        base[type] = additions[type];
+      }
+    }
+  }
+  function overrideRepoTypes(base, additions) {
+    for (const type of SECRET_TYPES) {
+      if (additions[type] != null) base[type] = additions[type];
+    }
+  }
+  function createAccountTarget(platform2, type, account, setting) {
+    if (setting === "all" || setting === "private") {
+      return { platform: platform2, type, target: { account }, visibility: setting };
+    }
+    const patterns = [];
+    for (const repoPattern of setting) {
+      patterns.push(createGitHubPattern(`${account}/${repoPattern}`));
+    }
+    const repos = appRegistry.resolveProvisionerRepos(patterns);
+    const selectedRepositoryIds = [];
+    for (const repo of repos) {
+      selectedRepositoryIds.push(
+        Number(repoRegistry.find(repoRefFromName(repo)).id)
+      );
+    }
+    return {
+      platform: platform2,
+      type,
+      target: { account },
+      visibility: selectedRepositoryIds
+    };
   }
 }
 
@@ -67614,22 +67650,60 @@ var requester_v1_schema_default = {
       additionalProperties: false,
       properties: {
         actions: {
-          description: "Whether to provision to GitHub Actions secrets.",
-          type: "boolean"
+          description: "How to provision to GitHub Actions secrets.",
+          $ref: "#/definitions/provisionGithubAccountSecretSetting"
         },
         agents: {
-          description: "Whether to provision to GitHub Agents secrets.",
-          type: "boolean"
+          description: "How to provision to GitHub Agents secrets.",
+          $ref: "#/definitions/provisionGithubAccountSecretSetting"
         },
         codespaces: {
-          description: "Whether to provision to GitHub Codespaces secrets.",
-          type: "boolean"
+          description: "How to provision to GitHub Codespaces secrets.",
+          $ref: "#/definitions/provisionGithubAccountSecretSetting"
         },
         dependabot: {
-          description: "Whether to provision to Dependabot secrets.",
-          type: "boolean"
+          description: "How to provision to Dependabot secrets.",
+          $ref: "#/definitions/provisionGithubAccountSecretSetting"
         }
       }
+    },
+    provisionGithubAccountSecretSetting: {
+      description: "How to provision the account-level secret.",
+      oneOf: [
+        {
+          description: "Give access to all repos in the account, including those created after the secret is provisioned.",
+          type: "string",
+          const: "all"
+        },
+        {
+          description: "Give access to all private repos in the account.",
+          type: "string",
+          const: "private"
+        },
+        {
+          description: "Give access to a list of repos matching the specified name patterns.",
+          type: "array",
+          items: {
+            description: "A pattern which matches repos without their account prefix.",
+            type: "string",
+            minLength: 1,
+            pattern: "^[*a-zA-Z0-9-_.]+$",
+            errorMessage: "must only contain alphanumeric characters, hyphens, underscores, periods, or asterisks",
+            examples: [
+              "repo-a",
+              "*",
+              "with-prefix-*",
+              "*-with-suffix",
+              "with-*-infix"
+            ]
+          }
+        },
+        {
+          description: "Don't provision this secret type.",
+          type: "boolean",
+          const: false
+        }
+      ]
     },
     provisionGithubRepoSecretTypes: {
       type: "object",

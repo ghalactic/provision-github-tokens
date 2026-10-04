@@ -75,7 +75,7 @@ it("discovers requesters in a single account", async () => {
                 token: tokenA
                 github:
                   account:
-                    actions: true`,
+                    actions: private`,
       sha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
     },
   });
@@ -201,7 +201,7 @@ it("discovers requesters in multiple account", async () => {
                 token: tokenA
                 github:
                   account:
-                    actions: true`,
+                    actions: private`,
       sha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
     },
   });
@@ -218,7 +218,7 @@ it("discovers requesters in multiple account", async () => {
                 token: tokenA
                 github:
                   account:
-                    actions: true`,
+                    actions: private`,
       sha: "cccccccccccccccccccccccccccccccccccccccc",
     },
   });
@@ -461,7 +461,7 @@ it("skips requesters with invalid configuration", async () => {
                   token: tokenA
                   github:
                     account:
-                      actions: true`,
+                      actions: private`,
       sha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
     },
   });

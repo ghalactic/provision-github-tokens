@@ -96,10 +96,14 @@ it("handles GitHub API errors when provisioning org-level Codespaces secrets", a
     {
       request: createTestProvisionRequest({
         secretDec: createTestSecretDec({
-          github: { accounts: { "account-a": { actions: true } } },
+          github: { accounts: { "account-a": { codespaces: "private" } } },
         }),
         to: [
-          createTestAccountProvisionRequestTarget("codespaces", "account-a"),
+          createTestAccountProvisionRequestTarget(
+            "codespaces",
+            "account-a",
+            "private",
+          ),
         ],
       }),
       results: [
@@ -107,6 +111,7 @@ it("handles GitHub API errors when provisioning org-level Codespaces secrets", a
           target: createTestAccountProvisionRequestTarget(
             "codespaces",
             "account-a",
+            "private",
           ),
           tokenAuthResult,
         }),
@@ -183,10 +188,14 @@ it("handles unexpected errors when provisioning org-level Codespaces secrets", a
     {
       request: createTestProvisionRequest({
         secretDec: createTestSecretDec({
-          github: { accounts: { "account-a": { actions: true } } },
+          github: { accounts: { "account-a": { codespaces: "private" } } },
         }),
         to: [
-          createTestAccountProvisionRequestTarget("codespaces", "account-a"),
+          createTestAccountProvisionRequestTarget(
+            "codespaces",
+            "account-a",
+            "private",
+          ),
         ],
       }),
       results: [
@@ -194,6 +203,7 @@ it("handles unexpected errors when provisioning org-level Codespaces secrets", a
           target: createTestAccountProvisionRequestTarget(
             "codespaces",
             "account-a",
+            "private",
           ),
           tokenAuthResult,
         }),
@@ -267,10 +277,14 @@ it("can provision org-level Codespaces secrets", async () => {
     {
       request: createTestProvisionRequest({
         secretDec: createTestSecretDec({
-          github: { accounts: { "account-a": { actions: true } } },
+          github: { accounts: { "account-a": { codespaces: "private" } } },
         }),
         to: [
-          createTestAccountProvisionRequestTarget("codespaces", "account-a"),
+          createTestAccountProvisionRequestTarget(
+            "codespaces",
+            "account-a",
+            "private",
+          ),
         ],
       }),
       results: [
@@ -278,6 +292,7 @@ it("can provision org-level Codespaces secrets", async () => {
           target: createTestAccountProvisionRequestTarget(
             "codespaces",
             "account-a",
+            "private",
           ),
           tokenAuthResult,
         }),
@@ -360,7 +375,7 @@ it("handles GitHub API errors when provisioning repo-level Codespaces secrets", 
     {
       request: createTestProvisionRequest({
         secretDec: createTestSecretDec({
-          github: { accounts: { "account-a": { actions: true } } },
+          github: { repos: { "account-a/repo-a": { codespaces: true } } },
         }),
         to: [
           createTestRepoProvisionRequestTarget(
@@ -458,7 +473,7 @@ it("handles unexpected errors when provisioning repo-level Codespaces secrets", 
     {
       request: createTestProvisionRequest({
         secretDec: createTestSecretDec({
-          github: { accounts: { "account-a": { actions: true } } },
+          github: { repos: { "account-a/repo-a": { codespaces: true } } },
         }),
         to: [
           createTestRepoProvisionRequestTarget(
@@ -553,7 +568,7 @@ it("can provision repo-level Codespaces secrets", async () => {
     {
       request: createTestProvisionRequest({
         secretDec: createTestSecretDec({
-          github: { accounts: { "account-a": { actions: true } } },
+          github: { repos: { "account-a/repo-a": { codespaces: true } } },
         }),
         to: [
           createTestRepoProvisionRequestTarget(

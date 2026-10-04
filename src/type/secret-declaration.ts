@@ -9,11 +9,17 @@ export type SecretDeclaration = {
 };
 
 export type SecretDeclarationGitHubAccountSecretTypes = {
-  actions?: boolean;
-  agents?: boolean;
-  codespaces?: boolean;
-  dependabot?: boolean;
+  actions?: SecretDeclarationGitHubAccountSecretSetting;
+  agents?: SecretDeclarationGitHubAccountSecretSetting;
+  codespaces?: SecretDeclarationGitHubAccountSecretSetting;
+  dependabot?: SecretDeclarationGitHubAccountSecretSetting;
 };
+
+export type SecretDeclarationGitHubAccountSecretSetting =
+  SecretDeclarationGitHubAccountSecretVisibility | false;
+
+export type SecretDeclarationGitHubAccountSecretVisibility =
+  "private" | "all" | string[];
 
 export type SecretDeclarationGitHubRepoSecretTypes = {
   actions?: boolean;

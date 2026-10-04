@@ -57,14 +57,24 @@ it("allows GitHub Codespaces account secrets that should be allowed", async () =
   const resultA = authorizer.authorizeSecret(
     createTestProvisionRequest({
       requester: { account: "account-x", repo: "repo-x" },
-      to: [createTestAccountProvisionRequestTarget("codespaces", "account-a")],
+      to: [
+        createTestAccountProvisionRequestTarget(
+          "codespaces",
+          "account-a",
+          "private",
+        ),
+      ],
     }),
   );
   const resultB = authorizer.authorizeSecret(
     createTestProvisionRequest({
       requester: { account: "account-y-1", repo: "repo-y-1" },
       to: [
-        createTestAccountProvisionRequestTarget("codespaces", "account-b-1"),
+        createTestAccountProvisionRequestTarget(
+          "codespaces",
+          "account-b-1",
+          "private",
+        ),
       ],
     }),
   );
@@ -128,14 +138,24 @@ it("allows GitHub Codespaces account secrets that should be allowed within the r
 
   const resultA = authorizer.authorizeSecret(
     createTestProvisionRequest({
-      to: [createTestAccountProvisionRequestTarget("codespaces", "account-a")],
+      to: [
+        createTestAccountProvisionRequestTarget(
+          "codespaces",
+          "account-a",
+          "private",
+        ),
+      ],
     }),
   );
   const resultB = authorizer.authorizeSecret(
     createTestProvisionRequest({
       requester: { account: "account-b-1", repo: "repo-b-1" },
       to: [
-        createTestAccountProvisionRequestTarget("codespaces", "account-b-1"),
+        createTestAccountProvisionRequestTarget(
+          "codespaces",
+          "account-b-1",
+          "private",
+        ),
       ],
     }),
   );
@@ -205,7 +225,13 @@ it("allows GitHub Codespaces account secrets that should be allowed within the r
 
   const resultA = authorizer.authorizeSecret(
     createTestProvisionRequest({
-      to: [createTestAccountProvisionRequestTarget("codespaces", "account-a")],
+      to: [
+        createTestAccountProvisionRequestTarget(
+          "codespaces",
+          "account-a",
+          "private",
+        ),
+      ],
     }),
   );
 
@@ -533,7 +559,13 @@ it("doesn't allow GitHub Codespaces account secrets for unauthorized requesters"
   const resultA = authorizer.authorizeSecret(
     createTestProvisionRequest({
       requester: { account: "account-y", repo: "repo-y" },
-      to: [createTestAccountProvisionRequestTarget("codespaces", "account-a")],
+      to: [
+        createTestAccountProvisionRequestTarget(
+          "codespaces",
+          "account-a",
+          "private",
+        ),
+      ],
     }),
   );
 
@@ -585,19 +617,37 @@ it("doesn't allow GitHub Codespaces account secrets within the requesting accoun
   const resultA = authorizer.authorizeSecret(
     createTestProvisionRequest({
       requester: { account: "account-y", repo: "repo-y" },
-      to: [createTestAccountProvisionRequestTarget("codespaces", "account-x")],
+      to: [
+        createTestAccountProvisionRequestTarget(
+          "codespaces",
+          "account-x",
+          "private",
+        ),
+      ],
     }),
   );
   const resultB = authorizer.authorizeSecret(
     createTestProvisionRequest({
       requester: { account: "account-x", repo: "repo-y" },
-      to: [createTestAccountProvisionRequestTarget("codespaces", "account-x")],
+      to: [
+        createTestAccountProvisionRequestTarget(
+          "codespaces",
+          "account-x",
+          "private",
+        ),
+      ],
     }),
   );
   const resultC = authorizer.authorizeSecret(
     createTestProvisionRequest({
       requester: { account: "account-x", repo: "repo-x" },
-      to: [createTestAccountProvisionRequestTarget("codespaces", "account-y")],
+      to: [
+        createTestAccountProvisionRequestTarget(
+          "codespaces",
+          "account-y",
+          "private",
+        ),
+      ],
     }),
   );
 
@@ -674,7 +724,13 @@ it("doesn't allow GitHub Codespaces account secrets within the requesting accoun
 
   const resultA = authorizer.authorizeSecret(
     createTestProvisionRequest({
-      to: [createTestAccountProvisionRequestTarget("codespaces", "account-a")],
+      to: [
+        createTestAccountProvisionRequestTarget(
+          "codespaces",
+          "account-a",
+          "private",
+        ),
+      ],
     }),
   );
 

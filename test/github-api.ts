@@ -196,6 +196,7 @@ export function createTestInstallationRepos(
 ): InstallationRepo[] {
   return repos.map(([name, visibility]) => ({
     ...sampleInstallationRepo,
+    id: stableId(account.login, name),
     name,
     full_name: `${account.login}/${name}`,
     owner: { ...sampleInstallationRepo.owner, login: account.login },
@@ -210,6 +211,7 @@ export function createTestRepo(
 ): InstallationRepo {
   return {
     ...sampleInstallationRepo,
+    id: stableId(account, name),
     name,
     full_name: `${account}/${name}`,
     owner: { ...sampleInstallationRepo.owner, login: account },

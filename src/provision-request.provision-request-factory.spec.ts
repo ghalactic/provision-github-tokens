@@ -145,17 +145,17 @@ it("supports provisioning to multiple targets", async () => {
           token: normalizeTokenReference(repoAARef, "token-a"),
           github: {
             account: {
-              actions: true,
-              agents: true,
-              codespaces: true,
-              dependabot: true,
+              actions: "all",
+              agents: "all",
+              codespaces: "all",
+              dependabot: "all",
             },
             accounts: {
               "*": {
-                actions: true,
-                agents: true,
-                codespaces: true,
-                dependabot: true,
+                actions: "all",
+                agents: "all",
+                codespaces: "all",
+                dependabot: "all",
               },
             },
             repo: {
@@ -179,14 +179,14 @@ it("supports provisioning to multiple targets", async () => {
       )
     )?.to,
   ).toStrictEqual([
-    createTestAccountProvisionRequestTarget("actions", "account-a"),
-    createTestAccountProvisionRequestTarget("agents", "account-a"),
-    createTestAccountProvisionRequestTarget("codespaces", "account-a"),
-    createTestAccountProvisionRequestTarget("dependabot", "account-a"),
-    createTestAccountProvisionRequestTarget("actions", "account-b"),
-    createTestAccountProvisionRequestTarget("agents", "account-b"),
-    createTestAccountProvisionRequestTarget("codespaces", "account-b"),
-    createTestAccountProvisionRequestTarget("dependabot", "account-b"),
+    createTestAccountProvisionRequestTarget("actions", "account-a", "all"),
+    createTestAccountProvisionRequestTarget("agents", "account-a", "all"),
+    createTestAccountProvisionRequestTarget("codespaces", "account-a", "all"),
+    createTestAccountProvisionRequestTarget("dependabot", "account-a", "all"),
+    createTestAccountProvisionRequestTarget("actions", "account-b", "all"),
+    createTestAccountProvisionRequestTarget("agents", "account-b", "all"),
+    createTestAccountProvisionRequestTarget("codespaces", "account-b", "all"),
+    createTestAccountProvisionRequestTarget("dependabot", "account-b", "all"),
     createTestRepoProvisionRequestTarget(
       "actions",
       "account-a",

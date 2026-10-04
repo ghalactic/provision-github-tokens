@@ -133,9 +133,21 @@ it("supports multiple targets in requests", async () => {
       requester: { account: "account-x", repo: "repo-x" },
       secretDec: createTestSecretDec({ token: "account-y/repo-y.token-y" }),
       to: [
-        createTestAccountProvisionRequestTarget("actions", "account-a"),
-        createTestAccountProvisionRequestTarget("agents", "account-a"),
-        createTestAccountProvisionRequestTarget("codespaces", "account-a"),
+        createTestAccountProvisionRequestTarget(
+          "actions",
+          "account-a",
+          "private",
+        ),
+        createTestAccountProvisionRequestTarget(
+          "agents",
+          "account-a",
+          "private",
+        ),
+        createTestAccountProvisionRequestTarget(
+          "codespaces",
+          "account-a",
+          "private",
+        ),
       ],
     }),
   );
@@ -760,10 +772,26 @@ it("doesn't allow secrets when some targets aren't allowed", async () => {
       requester: { account: "account-x", repo: "repo-x" },
       secretDec: createTestSecretDec({ token: "account-y/repo-y.token-y" }),
       to: [
-        createTestAccountProvisionRequestTarget("actions", "account-a"),
-        createTestAccountProvisionRequestTarget("agents", "account-a"),
-        createTestAccountProvisionRequestTarget("codespaces", "account-a"),
-        createTestAccountProvisionRequestTarget("dependabot", "account-a"),
+        createTestAccountProvisionRequestTarget(
+          "actions",
+          "account-a",
+          "private",
+        ),
+        createTestAccountProvisionRequestTarget(
+          "agents",
+          "account-a",
+          "private",
+        ),
+        createTestAccountProvisionRequestTarget(
+          "codespaces",
+          "account-a",
+          "private",
+        ),
+        createTestAccountProvisionRequestTarget(
+          "dependabot",
+          "account-a",
+          "private",
+        ),
       ],
     }),
   );
@@ -880,7 +908,11 @@ it("doesn't allow secrets when the token isn't allowed for a target", async () =
       tokenDec: createTestTokenDec({ permissions: { contents: "write" } }),
       secretDec: createTestSecretDec({ token: "account-y/repo-y.token-y" }),
       to: [
-        createTestAccountProvisionRequestTarget("actions", "account-a"),
+        createTestAccountProvisionRequestTarget(
+          "actions",
+          "account-a",
+          "private",
+        ),
         createTestRepoProvisionRequestTarget(
           "actions",
           "account-a",

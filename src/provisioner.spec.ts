@@ -98,7 +98,7 @@ it("handles secrets with no targets to provision to", async () => {
     {
       request: createTestProvisionRequest({
         secretDec: createTestSecretDec({
-          github: { accounts: { "account-a": { actions: true } } },
+          github: {},
         }),
         to: [],
       }),
@@ -170,7 +170,7 @@ it("doesn't provision secrets when provisioning isn't allowed", async () => {
     {
       request: createTestProvisionRequest({
         secretDec: createTestSecretDec({
-          github: { accounts: { "account-a": { actions: true } } },
+          github: { accounts: { "account-a": { actions: "private" } } },
         }),
       }),
       results: [
@@ -179,6 +179,7 @@ it("doesn't provision secrets when provisioning isn't allowed", async () => {
           target: createTestAccountProvisionRequestTarget(
             "actions",
             "account-a",
+            "private",
           ),
           tokenAuthResult,
         }),
@@ -286,10 +287,19 @@ it("doesn't provision secrets when the token wasn't created", async () => {
     {
       request: createTestProvisionRequest({
         secretDec: createTestSecretDec({
-          github: { accounts: { "account-a": { actions: true } } },
+          github: {
+            accounts: { "account-a": { actions: "private" } },
+            repos: {
+              "account-a/repo-a": { actions: true, environments: ["env-a"] },
+            },
+          },
         }),
         to: [
-          createTestAccountProvisionRequestTarget("actions", "account-a"),
+          createTestAccountProvisionRequestTarget(
+            "actions",
+            "account-a",
+            "private",
+          ),
           createTestRepoProvisionRequestTarget(
             "actions",
             "account-a",
@@ -309,6 +319,7 @@ it("doesn't provision secrets when the token wasn't created", async () => {
           target: createTestAccountProvisionRequestTarget(
             "actions",
             "account-a",
+            "private",
           ),
           tokenAuthResult: tokenAuthResultNotAllowed,
         }),
@@ -400,15 +411,22 @@ it("doesn't provision secrets when no suitable provisioners are found", async ()
     {
       request: createTestProvisionRequest({
         secretDec: createTestSecretDec({
-          github: { accounts: { "account-a": { actions: true } } },
+          github: { accounts: { "account-x": { actions: "private" } } },
         }),
-        to: [createTestAccountProvisionRequestTarget("actions", "account-x")],
+        to: [
+          createTestAccountProvisionRequestTarget(
+            "actions",
+            "account-x",
+            "private",
+          ),
+        ],
       }),
       results: [
         createTestProvisionAuthTargetResult({
           target: createTestAccountProvisionRequestTarget(
             "actions",
             "account-x",
+            "private",
           ),
           tokenAuthResult,
         }),
@@ -484,7 +502,7 @@ it("doesn't provision secrets when target provisioning fails with a GitHub API e
     {
       request: createTestProvisionRequest({
         secretDec: createTestSecretDec({
-          github: { accounts: { "account-a": { actions: true } } },
+          github: { accounts: { "account-a": { actions: "private" } } },
         }),
       }),
       results: [
@@ -492,6 +510,7 @@ it("doesn't provision secrets when target provisioning fails with a GitHub API e
           target: createTestAccountProvisionRequestTarget(
             "actions",
             "account-a",
+            "private",
           ),
           tokenAuthResult,
         }),
@@ -570,7 +589,7 @@ it("doesn't provision secrets when target provisioning fails with an unexpected 
     {
       request: createTestProvisionRequest({
         secretDec: createTestSecretDec({
-          github: { accounts: { "account-a": { actions: true } } },
+          github: { accounts: { "account-a": { actions: "private" } } },
         }),
       }),
       results: [
@@ -578,6 +597,7 @@ it("doesn't provision secrets when target provisioning fails with an unexpected 
           target: createTestAccountProvisionRequestTarget(
             "actions",
             "account-a",
+            "private",
           ),
           tokenAuthResult,
         }),
@@ -650,7 +670,7 @@ it("doesn't provision secrets when encryption fails with a GitHub API error", as
     {
       request: createTestProvisionRequest({
         secretDec: createTestSecretDec({
-          github: { accounts: { "account-a": { actions: true } } },
+          github: { accounts: { "account-a": { actions: "private" } } },
         }),
       }),
       results: [
@@ -658,6 +678,7 @@ it("doesn't provision secrets when encryption fails with a GitHub API error", as
           target: createTestAccountProvisionRequestTarget(
             "actions",
             "account-a",
+            "private",
           ),
           tokenAuthResult,
         }),
@@ -734,7 +755,7 @@ it("doesn't provision secrets when encryption fails with an unexpected error", a
     {
       request: createTestProvisionRequest({
         secretDec: createTestSecretDec({
-          github: { accounts: { "account-a": { actions: true } } },
+          github: { accounts: { "account-a": { actions: "private" } } },
         }),
       }),
       results: [
@@ -742,6 +763,7 @@ it("doesn't provision secrets when encryption fails with an unexpected error", a
           target: createTestAccountProvisionRequestTarget(
             "actions",
             "account-a",
+            "private",
           ),
           tokenAuthResult,
         }),
@@ -834,10 +856,19 @@ it("can provision multiple secrets of the same type", async () => {
       {
         request: createTestProvisionRequest({
           secretDec: createTestSecretDec({
-            github: { accounts: { "account-a": { actions: true } } },
+            github: {
+              accounts: { "account-a": { actions: "private" } },
+              repos: {
+                "account-a/repo-a": { actions: true, environments: ["env-a"] },
+              },
+            },
           }),
           to: [
-            createTestAccountProvisionRequestTarget("actions", "account-a"),
+            createTestAccountProvisionRequestTarget(
+              "actions",
+              "account-a",
+              "private",
+            ),
             createTestRepoProvisionRequestTarget(
               "actions",
               "account-a",
@@ -857,6 +888,7 @@ it("can provision multiple secrets of the same type", async () => {
             target: createTestAccountProvisionRequestTarget(
               "actions",
               "account-a",
+              "private",
             ),
             tokenAuthResult: tokenAuthResultA,
           }),
@@ -886,11 +918,20 @@ it("can provision multiple secrets of the same type", async () => {
         request: createTestProvisionRequest({
           tokenDec: createTestTokenDec({ permissions: { contents: "write" } }),
           secretDec: createTestSecretDec({
-            github: { repos: { "account-a/repo-a": { codespaces: true } } },
+            github: {
+              accounts: { "account-a": { actions: "private" } },
+              repos: {
+                "account-a/repo-a": { actions: true, environments: ["env-a"] },
+              },
+            },
           }),
           name: "SECRET_B",
           to: [
-            createTestAccountProvisionRequestTarget("actions", "account-a"),
+            createTestAccountProvisionRequestTarget(
+              "actions",
+              "account-a",
+              "private",
+            ),
             createTestRepoProvisionRequestTarget(
               "actions",
               "account-a",
@@ -910,6 +951,7 @@ it("can provision multiple secrets of the same type", async () => {
             target: createTestAccountProvisionRequestTarget(
               "actions",
               "account-a",
+              "private",
             ),
             tokenAuthResult: tokenAuthResultB,
           }),
@@ -1051,12 +1093,40 @@ it("can provision a secret to multiple targets", async () => {
     {
       request: createTestProvisionRequest({
         secretDec: createTestSecretDec({
-          github: { accounts: { "account-a": { actions: true } } },
+          github: {
+            accounts: {
+              "account-a": {
+                actions: "private",
+                codespaces: "private",
+                dependabot: "private",
+              },
+            },
+            repos: {
+              "account-a/repo-a": {
+                actions: true,
+                codespaces: true,
+                dependabot: true,
+                environments: ["env-a"],
+              },
+            },
+          },
         }),
         to: [
-          createTestAccountProvisionRequestTarget("actions", "account-a"),
-          createTestAccountProvisionRequestTarget("codespaces", "account-a"),
-          createTestAccountProvisionRequestTarget("dependabot", "account-a"),
+          createTestAccountProvisionRequestTarget(
+            "actions",
+            "account-a",
+            "private",
+          ),
+          createTestAccountProvisionRequestTarget(
+            "codespaces",
+            "account-a",
+            "private",
+          ),
+          createTestAccountProvisionRequestTarget(
+            "dependabot",
+            "account-a",
+            "private",
+          ),
           createTestRepoProvisionRequestTarget(
             "actions",
             "account-a",
@@ -1088,6 +1158,7 @@ it("can provision a secret to multiple targets", async () => {
           target: createTestAccountProvisionRequestTarget(
             "actions",
             "account-a",
+            "private",
           ),
           tokenAuthResult,
         }),
@@ -1095,6 +1166,7 @@ it("can provision a secret to multiple targets", async () => {
           target: createTestAccountProvisionRequestTarget(
             "codespaces",
             "account-a",
+            "private",
           ),
           tokenAuthResult,
         }),
@@ -1102,6 +1174,7 @@ it("can provision a secret to multiple targets", async () => {
           target: createTestAccountProvisionRequestTarget(
             "dependabot",
             "account-a",
+            "private",
           ),
           tokenAuthResult,
         }),
@@ -1233,7 +1306,7 @@ it("doesn't stop provisioning when some targets fail", async () => {
       {
         request: createTestProvisionRequest({
           secretDec: createTestSecretDec({
-            github: { accounts: { "account-a": { actions: true } } },
+            github: { accounts: { "account-a": { actions: "private" } } },
           }),
         }),
         results: [
@@ -1242,6 +1315,7 @@ it("doesn't stop provisioning when some targets fail", async () => {
             target: createTestAccountProvisionRequestTarget(
               "actions",
               "account-a",
+              "private",
             ),
             tokenAuthResult: tokenAuthResultA,
           }),
@@ -1252,7 +1326,7 @@ it("doesn't stop provisioning when some targets fail", async () => {
       {
         request: createTestProvisionRequest({
           secretDec: createTestSecretDec({
-            github: { accounts: { "account-a": { actions: true } } },
+            github: { accounts: { "account-a": { actions: "private" } } },
           }),
         }),
         results: [
@@ -1260,6 +1334,7 @@ it("doesn't stop provisioning when some targets fail", async () => {
             target: createTestAccountProvisionRequestTarget(
               "actions",
               "account-a",
+              "private",
             ),
             tokenAuthResult: tokenAuthResultB,
           }),
@@ -1267,6 +1342,7 @@ it("doesn't stop provisioning when some targets fail", async () => {
             target: createTestAccountProvisionRequestTarget(
               "actions",
               "account-x",
+              "private",
             ),
             tokenAuthResult: tokenAuthResultA,
           }),
@@ -1274,6 +1350,7 @@ it("doesn't stop provisioning when some targets fail", async () => {
             target: createTestAccountProvisionRequestTarget(
               "actions",
               "account-a",
+              "private",
             ),
             tokenAuthResult: tokenAuthResultA,
           }),

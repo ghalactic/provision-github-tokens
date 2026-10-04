@@ -78,22 +78,52 @@ it("sorts requests by targets", () => {
   const requestA: ProvisionRequest = createTestProvisionRequest({
     ...common,
     to: [
-      createTestAccountProvisionRequestTarget("actions", "account-b"),
-      createTestAccountProvisionRequestTarget("actions", "account-c"),
-      createTestAccountProvisionRequestTarget("actions", "account-a"),
+      createTestAccountProvisionRequestTarget(
+        "actions",
+        "account-b",
+        "private",
+      ),
+      createTestAccountProvisionRequestTarget(
+        "actions",
+        "account-c",
+        "private",
+      ),
+      createTestAccountProvisionRequestTarget(
+        "actions",
+        "account-a",
+        "private",
+      ),
     ],
   });
   const requestB: ProvisionRequest = createTestProvisionRequest({
     ...common,
     to: [
-      createTestAccountProvisionRequestTarget("actions", "account-d"),
-      createTestAccountProvisionRequestTarget("actions", "account-b"),
-      createTestAccountProvisionRequestTarget("actions", "account-c"),
+      createTestAccountProvisionRequestTarget(
+        "actions",
+        "account-d",
+        "private",
+      ),
+      createTestAccountProvisionRequestTarget(
+        "actions",
+        "account-b",
+        "private",
+      ),
+      createTestAccountProvisionRequestTarget(
+        "actions",
+        "account-c",
+        "private",
+      ),
     ],
   });
   const requestC: ProvisionRequest = createTestProvisionRequest({
     ...common,
-    to: [createTestAccountProvisionRequestTarget("actions", "account-b")],
+    to: [
+      createTestAccountProvisionRequestTarget(
+        "actions",
+        "account-b",
+        "private",
+      ),
+    ],
   });
 
   const requests: ProvisionRequest[] = [

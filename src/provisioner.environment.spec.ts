@@ -97,7 +97,9 @@ it("handles GitHub API errors when provisioning environment secrets", async () =
     {
       request: createTestProvisionRequest({
         secretDec: createTestSecretDec({
-          github: { accounts: { "account-a": { actions: true } } },
+          github: {
+            repos: { "account-a/repo-a": { environments: ["env-a"] } },
+          },
         }),
         to: [
           createTestEnvironmentProvisionRequestTarget(
@@ -195,7 +197,9 @@ it("handles unexpected errors when provisioning environment secrets", async () =
     {
       request: createTestProvisionRequest({
         secretDec: createTestSecretDec({
-          github: { accounts: { "account-a": { actions: true } } },
+          github: {
+            repos: { "account-a/repo-a": { environments: ["env-a"] } },
+          },
         }),
         to: [
           createTestEnvironmentProvisionRequestTarget(
@@ -290,7 +294,9 @@ it("can provision environment secrets", async () => {
     {
       request: createTestProvisionRequest({
         secretDec: createTestSecretDec({
-          github: { accounts: { "account-a": { actions: true } } },
+          github: {
+            repos: { "account-a/repo-a": { environments: ["env-a"] } },
+          },
         }),
         to: [
           createTestEnvironmentProvisionRequestTarget(

@@ -120,6 +120,7 @@ export function createTestProvisionAuthTargetResult(
       platform: "github",
       type: "actions",
       target: { account: "account-a" },
+      visibility: "all",
     },
     rules: [],
     have: isProvisionAllowed ? "allow" : "deny",
@@ -150,7 +151,7 @@ export function createTestProvisionAuthResult(
       tokenDec: createTestTokenDec({ permissions: { metadata: "read" } }),
       tokenDecIsRegistered: true,
       secretDec: createTestSecretDec({
-        github: { accounts: { "account-a": { actions: true } } },
+        github: { accounts: { "account-a": { actions: "all" } } },
       }),
       name: "SECRET_A",
       to: results.map((targetResult) => targetResult.target),
