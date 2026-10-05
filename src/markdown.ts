@@ -41,7 +41,7 @@ export function details(
   ...children: BlockContent[]
 ): BlockContent[] {
   return [
-    { type: "html", value: `<details>\n<summary>${summary}</summary>\n` },
+    { type: "html", value: `<details>\n<summary>${summary}</summary>` },
     ...children,
     { type: "html", value: "\n</details>" },
   ];

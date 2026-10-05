@@ -3,4 +3,4 @@
   * ✅ 1 repo pattern matched 1 repo
   - ❌ **Insufficient** access to **private** repo `account-a/repo-a` based on 1 rule:
     - ❌ Rule `#1` gave insufficient access:
-      - ❌ _repository\_projects_: have `write`, wanted `admin`
+      - ❌ _repository_projects_: have `write`, wanted `admin`
