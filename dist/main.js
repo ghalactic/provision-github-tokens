@@ -65487,8 +65487,7 @@ function code3(language, content) {
 function details(summary2, ...children) {
   return [
     { type: "html", value: `<details>
-<summary>${summary2}</summary>
-` },
+<summary>${summary2}</summary>` },
     ...children,
     { type: "html", value: "\n</details>" }
   ];

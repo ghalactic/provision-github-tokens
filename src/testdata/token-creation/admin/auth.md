@@ -3,4 +3,4 @@
   - ✅ Has access to **all repos** in `account-a`
   - ✅ Has **2 permissions**:
     - ✅ _metadata_: `read`
-    - ✅ _organization\_administration_: `admin`
+    - ✅ _organization_administration_: `admin`
