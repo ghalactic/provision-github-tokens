@@ -61291,7 +61291,7 @@ function zwitch(key, options) {
   return one2;
 }
 
-// node_modules/.pnpm/mdast-util-to-markdown@2.1.3/node_modules/mdast-util-to-markdown/lib/configure.js
+// node_modules/.pnpm/mdast-util-to-markdown@2.2.0/node_modules/mdast-util-to-markdown/lib/configure.js
 var own2 = {}.hasOwnProperty;
 function configure(base, extension) {
   let index = -1;
@@ -61339,7 +61339,7 @@ function map(left, right) {
   }
 }
 
-// node_modules/.pnpm/mdast-util-to-markdown@2.1.3/node_modules/mdast-util-to-markdown/lib/handle/blockquote.js
+// node_modules/.pnpm/mdast-util-to-markdown@2.2.0/node_modules/mdast-util-to-markdown/lib/handle/blockquote.js
 function blockquote(node2, _2, state, info2) {
   const exit = state.enter("blockquote");
   const tracker = state.createTracker(info2);
@@ -61356,7 +61356,7 @@ function map2(line, _2, blank) {
   return ">" + (blank ? "" : " ") + line;
 }
 
-// node_modules/.pnpm/mdast-util-to-markdown@2.1.3/node_modules/mdast-util-to-markdown/lib/util/pattern-in-scope.js
+// node_modules/.pnpm/mdast-util-to-markdown@2.2.0/node_modules/mdast-util-to-markdown/lib/util/pattern-in-scope.js
 function patternInScope(stack, pattern) {
   return listInScope(stack, pattern.inConstruct, true) && !listInScope(stack, pattern.notInConstruct, false);
 }
@@ -61376,7 +61376,7 @@ function listInScope(stack, list4, none) {
   return false;
 }
 
-// node_modules/.pnpm/mdast-util-to-markdown@2.1.3/node_modules/mdast-util-to-markdown/lib/handle/break.js
+// node_modules/.pnpm/mdast-util-to-markdown@2.2.0/node_modules/mdast-util-to-markdown/lib/handle/break.js
 function hardBreak(_2, _1, state, info2) {
   let index = -1;
   while (++index < state.unsafe.length) {
@@ -61412,7 +61412,7 @@ function longestStreak(value, substring) {
   return max;
 }
 
-// node_modules/.pnpm/mdast-util-to-markdown@2.1.3/node_modules/mdast-util-to-markdown/lib/util/format-code-as-indented.js
+// node_modules/.pnpm/mdast-util-to-markdown@2.2.0/node_modules/mdast-util-to-markdown/lib/util/format-code-as-indented.js
 function formatCodeAsIndented(node2, state) {
   return Boolean(
     state.options.fences === false && node2.value && // If there’s no info…
@@ -61422,7 +61422,7 @@ function formatCodeAsIndented(node2, state) {
   );
 }
 
-// node_modules/.pnpm/mdast-util-to-markdown@2.1.3/node_modules/mdast-util-to-markdown/lib/util/check-fence.js
+// node_modules/.pnpm/mdast-util-to-markdown@2.2.0/node_modules/mdast-util-to-markdown/lib/util/check-fence.js
 function checkFence(state) {
   const marker = state.options.fence || "`";
   if (marker !== "`" && marker !== "~") {
@@ -61433,7 +61433,7 @@ function checkFence(state) {
   return marker;
 }
 
-// node_modules/.pnpm/mdast-util-to-markdown@2.1.3/node_modules/mdast-util-to-markdown/lib/handle/code.js
+// node_modules/.pnpm/mdast-util-to-markdown@2.2.0/node_modules/mdast-util-to-markdown/lib/handle/code.js
 function code(node2, _2, state, info2) {
   const marker = checkFence(state);
   const raw = node2.value || "";
@@ -61485,7 +61485,7 @@ function map3(line, _2, blank) {
   return (blank ? "" : "    ") + line;
 }
 
-// node_modules/.pnpm/mdast-util-to-markdown@2.1.3/node_modules/mdast-util-to-markdown/lib/util/check-quote.js
+// node_modules/.pnpm/mdast-util-to-markdown@2.2.0/node_modules/mdast-util-to-markdown/lib/util/check-quote.js
 function checkQuote(state) {
   const marker = state.options.quote || '"';
   if (marker !== '"' && marker !== "'") {
@@ -61496,7 +61496,7 @@ function checkQuote(state) {
   return marker;
 }
 
-// node_modules/.pnpm/mdast-util-to-markdown@2.1.3/node_modules/mdast-util-to-markdown/lib/handle/definition.js
+// node_modules/.pnpm/mdast-util-to-markdown@2.2.0/node_modules/mdast-util-to-markdown/lib/handle/definition.js
 function definition(node2, _2, state, info2) {
   const quote = checkQuote(state);
   const suffix = quote === '"' ? "Quote" : "Apostrophe";
@@ -61552,7 +61552,7 @@ function definition(node2, _2, state, info2) {
   return value;
 }
 
-// node_modules/.pnpm/mdast-util-to-markdown@2.1.3/node_modules/mdast-util-to-markdown/lib/util/check-emphasis.js
+// node_modules/.pnpm/mdast-util-to-markdown@2.2.0/node_modules/mdast-util-to-markdown/lib/util/check-emphasis.js
 function checkEmphasis(state) {
   const marker = state.options.emphasis || "*";
   if (marker !== "*" && marker !== "_") {
@@ -61563,7 +61563,7 @@ function checkEmphasis(state) {
   return marker;
 }
 
-// node_modules/.pnpm/mdast-util-to-markdown@2.1.3/node_modules/mdast-util-to-markdown/lib/handle/emphasis.js
+// node_modules/.pnpm/mdast-util-to-markdown@2.2.0/node_modules/mdast-util-to-markdown/lib/handle/emphasis.js
 emphasis.attention = attention;
 emphasis.peek = peek;
 function emphasis(node2, _2, state, info2) {
@@ -61584,7 +61584,7 @@ function peek(_2, _1, state) {
   return state.options.emphasis || "*";
 }
 
-// node_modules/.pnpm/mdast-util-to-markdown@2.1.3/node_modules/mdast-util-to-markdown/lib/util/encode-character-reference.js
+// node_modules/.pnpm/mdast-util-to-markdown@2.2.0/node_modules/mdast-util-to-markdown/lib/util/encode-character-reference.js
 function encodeCharacterReference(code4) {
   return "&#x" + code4.toString(16).toUpperCase() + ";";
 }
@@ -61648,7 +61648,7 @@ function node(value) {
   return Boolean(value && typeof value === "object");
 }
 
-// node_modules/.pnpm/mdast-util-to-markdown@2.1.3/node_modules/mdast-util-to-markdown/lib/util/format-heading-as-setext.js
+// node_modules/.pnpm/mdast-util-to-markdown@2.2.0/node_modules/mdast-util-to-markdown/lib/util/format-heading-as-setext.js
 function formatHeadingAsSetext(node2, state) {
   let literalWithBreak = false;
   visit(node2, function(node3) {
@@ -61662,7 +61662,7 @@ function formatHeadingAsSetext(node2, state) {
   );
 }
 
-// node_modules/.pnpm/mdast-util-to-markdown@2.1.3/node_modules/mdast-util-to-markdown/lib/handle/heading.js
+// node_modules/.pnpm/mdast-util-to-markdown@2.2.0/node_modules/mdast-util-to-markdown/lib/handle/heading.js
 function heading(node2, _2, state, info2) {
   const rank = Math.max(Math.min(6, node2.depth || 1), 1);
   const tracker = state.createTracker(info2);
@@ -61705,7 +61705,7 @@ function heading(node2, _2, state, info2) {
   return value;
 }
 
-// node_modules/.pnpm/mdast-util-to-markdown@2.1.3/node_modules/mdast-util-to-markdown/lib/handle/html.js
+// node_modules/.pnpm/mdast-util-to-markdown@2.2.0/node_modules/mdast-util-to-markdown/lib/handle/html.js
 html.peek = htmlPeek;
 function html(node2) {
   return node2.value || "";
@@ -61714,7 +61714,7 @@ function htmlPeek() {
   return "<";
 }
 
-// node_modules/.pnpm/mdast-util-to-markdown@2.1.3/node_modules/mdast-util-to-markdown/lib/handle/image.js
+// node_modules/.pnpm/mdast-util-to-markdown@2.2.0/node_modules/mdast-util-to-markdown/lib/handle/image.js
 image.peek = imagePeek;
 function image(node2, _2, state, info2) {
   const quote = checkQuote(state);
@@ -61771,7 +61771,7 @@ function imagePeek() {
   return "!";
 }
 
-// node_modules/.pnpm/mdast-util-to-markdown@2.1.3/node_modules/mdast-util-to-markdown/lib/handle/image-reference.js
+// node_modules/.pnpm/mdast-util-to-markdown@2.2.0/node_modules/mdast-util-to-markdown/lib/handle/image-reference.js
 imageReference.peek = imageReferencePeek;
 function imageReference(node2, _2, state, info2) {
   const type = node2.referenceType;
@@ -61812,7 +61812,7 @@ function imageReferencePeek() {
   return "!";
 }
 
-// node_modules/.pnpm/mdast-util-to-markdown@2.1.3/node_modules/mdast-util-to-markdown/lib/handle/inline-code.js
+// node_modules/.pnpm/mdast-util-to-markdown@2.2.0/node_modules/mdast-util-to-markdown/lib/handle/inline-code.js
 inlineCode.peek = inlineCodePeek;
 function inlineCode(node2, _2, state) {
   let value = node2.value || "";
@@ -61843,7 +61843,7 @@ function inlineCodePeek() {
   return "`";
 }
 
-// node_modules/.pnpm/mdast-util-to-markdown@2.1.3/node_modules/mdast-util-to-markdown/lib/util/format-link-as-autolink.js
+// node_modules/.pnpm/mdast-util-to-markdown@2.2.0/node_modules/mdast-util-to-markdown/lib/util/format-link-as-autolink.js
 function formatLinkAsAutolink(node2, state) {
   const raw = toString(node2);
   return Boolean(
@@ -61858,7 +61858,7 @@ function formatLinkAsAutolink(node2, state) {
   );
 }
 
-// node_modules/.pnpm/mdast-util-to-markdown@2.1.3/node_modules/mdast-util-to-markdown/lib/handle/link.js
+// node_modules/.pnpm/mdast-util-to-markdown@2.2.0/node_modules/mdast-util-to-markdown/lib/handle/link.js
 link.peek = linkPeek;
 function link(node2, _2, state, info2) {
   const quote = checkQuote(state);
@@ -61938,7 +61938,7 @@ function linkPeek(node2, _2, state) {
   return formatLinkAsAutolink(node2, state) ? "<" : "[";
 }
 
-// node_modules/.pnpm/mdast-util-to-markdown@2.1.3/node_modules/mdast-util-to-markdown/lib/handle/link-reference.js
+// node_modules/.pnpm/mdast-util-to-markdown@2.2.0/node_modules/mdast-util-to-markdown/lib/handle/link-reference.js
 linkReference.peek = linkReferencePeek;
 function linkReference(node2, _2, state, info2) {
   const type = node2.referenceType;
@@ -61979,7 +61979,7 @@ function linkReferencePeek() {
   return "[";
 }
 
-// node_modules/.pnpm/mdast-util-to-markdown@2.1.3/node_modules/mdast-util-to-markdown/lib/util/check-bullet.js
+// node_modules/.pnpm/mdast-util-to-markdown@2.2.0/node_modules/mdast-util-to-markdown/lib/util/check-bullet.js
 function checkBullet(state) {
   const marker = state.options.bullet || "*";
   if (marker !== "*" && marker !== "+" && marker !== "-") {
@@ -61990,7 +61990,7 @@ function checkBullet(state) {
   return marker;
 }
 
-// node_modules/.pnpm/mdast-util-to-markdown@2.1.3/node_modules/mdast-util-to-markdown/lib/util/check-bullet-other.js
+// node_modules/.pnpm/mdast-util-to-markdown@2.2.0/node_modules/mdast-util-to-markdown/lib/util/check-bullet-other.js
 function checkBulletOther(state) {
   const bullet = checkBullet(state);
   const bulletOther = state.options.bulletOther;
@@ -62010,7 +62010,7 @@ function checkBulletOther(state) {
   return bulletOther;
 }
 
-// node_modules/.pnpm/mdast-util-to-markdown@2.1.3/node_modules/mdast-util-to-markdown/lib/util/check-bullet-ordered.js
+// node_modules/.pnpm/mdast-util-to-markdown@2.2.0/node_modules/mdast-util-to-markdown/lib/util/check-bullet-ordered.js
 function checkBulletOrdered(state) {
   const marker = state.options.bulletOrdered || ".";
   if (marker !== "." && marker !== ")") {
@@ -62021,7 +62021,7 @@ function checkBulletOrdered(state) {
   return marker;
 }
 
-// node_modules/.pnpm/mdast-util-to-markdown@2.1.3/node_modules/mdast-util-to-markdown/lib/util/check-rule.js
+// node_modules/.pnpm/mdast-util-to-markdown@2.2.0/node_modules/mdast-util-to-markdown/lib/util/check-rule.js
 function checkRule(state) {
   const marker = state.options.rule || "*";
   if (marker !== "*" && marker !== "-" && marker !== "_") {
@@ -62032,7 +62032,7 @@ function checkRule(state) {
   return marker;
 }
 
-// node_modules/.pnpm/mdast-util-to-markdown@2.1.3/node_modules/mdast-util-to-markdown/lib/handle/list.js
+// node_modules/.pnpm/mdast-util-to-markdown@2.2.0/node_modules/mdast-util-to-markdown/lib/handle/list.js
 function list2(node2, parent, state, info2) {
   const exit = state.enter("list");
   const bulletCurrent = state.bulletCurrent;
@@ -62072,7 +62072,7 @@ function list2(node2, parent, state, info2) {
   return value;
 }
 
-// node_modules/.pnpm/mdast-util-to-markdown@2.1.3/node_modules/mdast-util-to-markdown/lib/util/check-list-item-indent.js
+// node_modules/.pnpm/mdast-util-to-markdown@2.2.0/node_modules/mdast-util-to-markdown/lib/util/check-list-item-indent.js
 function checkListItemIndent(state) {
   const style = state.options.listItemIndent || "one";
   if (style !== "tab" && style !== "one" && style !== "mixed") {
@@ -62083,7 +62083,7 @@ function checkListItemIndent(state) {
   return style;
 }
 
-// node_modules/.pnpm/mdast-util-to-markdown@2.1.3/node_modules/mdast-util-to-markdown/lib/handle/list-item.js
+// node_modules/.pnpm/mdast-util-to-markdown@2.2.0/node_modules/mdast-util-to-markdown/lib/handle/list-item.js
 function listItem(node2, parent, state, info2) {
   const listItemIndent = checkListItemIndent(state);
   let bullet = state.bulletCurrent || checkBullet(state);
@@ -62112,7 +62112,7 @@ function listItem(node2, parent, state, info2) {
   }
 }
 
-// node_modules/.pnpm/mdast-util-to-markdown@2.1.3/node_modules/mdast-util-to-markdown/lib/handle/paragraph.js
+// node_modules/.pnpm/mdast-util-to-markdown@2.2.0/node_modules/mdast-util-to-markdown/lib/handle/paragraph.js
 function paragraph(node2, _2, state, info2) {
   const exit = state.enter("paragraph");
   const subexit = state.enter("phrasing");
@@ -62122,7 +62122,7 @@ function paragraph(node2, _2, state, info2) {
   return value;
 }
 
-// node_modules/.pnpm/mdast-util-to-markdown@2.1.3/node_modules/mdast-util-to-markdown/lib/handle/root.js
+// node_modules/.pnpm/mdast-util-to-markdown@2.2.0/node_modules/mdast-util-to-markdown/lib/handle/root.js
 function root(node2, _2, state, info2) {
   const hasPhrasing = node2.children.some(function(d2) {
     return phrasing(d2);
@@ -62134,7 +62134,7 @@ function root(node2, _2, state, info2) {
   return value;
 }
 
-// node_modules/.pnpm/mdast-util-to-markdown@2.1.3/node_modules/mdast-util-to-markdown/lib/util/check-strong.js
+// node_modules/.pnpm/mdast-util-to-markdown@2.2.0/node_modules/mdast-util-to-markdown/lib/util/check-strong.js
 function checkStrong(state) {
   const marker = state.options.strong || "*";
   if (marker !== "*" && marker !== "_") {
@@ -62145,7 +62145,7 @@ function checkStrong(state) {
   return marker;
 }
 
-// node_modules/.pnpm/mdast-util-to-markdown@2.1.3/node_modules/mdast-util-to-markdown/lib/handle/strong.js
+// node_modules/.pnpm/mdast-util-to-markdown@2.2.0/node_modules/mdast-util-to-markdown/lib/handle/strong.js
 strong.attention = attention2;
 strong.peek = peek2;
 function strong(node2, _2, state, info2) {
@@ -62166,12 +62166,18 @@ function peek2(_2, _1, state) {
   return state.options.strong || "*";
 }
 
-// node_modules/.pnpm/mdast-util-to-markdown@2.1.3/node_modules/mdast-util-to-markdown/lib/handle/text.js
-function text(node2, _2, state, info2) {
-  return state.safe(node2.value, info2);
+// node_modules/.pnpm/mdast-util-to-markdown@2.2.0/node_modules/mdast-util-to-markdown/lib/handle/text.js
+function text(node2, parent, state, info2) {
+  const siblings = parent ? parent.children : [];
+  const index = siblings.indexOf(node2);
+  return state.safe(node2.value, {
+    ...info2,
+    afterNode: siblings[index + 1],
+    beforeNode: siblings[index - 1]
+  });
 }
 
-// node_modules/.pnpm/mdast-util-to-markdown@2.1.3/node_modules/mdast-util-to-markdown/lib/util/check-rule-repetition.js
+// node_modules/.pnpm/mdast-util-to-markdown@2.2.0/node_modules/mdast-util-to-markdown/lib/util/check-rule-repetition.js
 function checkRuleRepetition(state) {
   const repetition = state.options.ruleRepetition || 3;
   if (repetition < 3) {
@@ -62182,13 +62188,13 @@ function checkRuleRepetition(state) {
   return repetition;
 }
 
-// node_modules/.pnpm/mdast-util-to-markdown@2.1.3/node_modules/mdast-util-to-markdown/lib/handle/thematic-break.js
+// node_modules/.pnpm/mdast-util-to-markdown@2.2.0/node_modules/mdast-util-to-markdown/lib/handle/thematic-break.js
 function thematicBreak(_2, _1, state) {
   const value = (checkRule(state) + (state.options.ruleSpaces ? " " : "")).repeat(checkRuleRepetition(state));
   return state.options.ruleSpaces ? value.slice(0, -1) : value;
 }
 
-// node_modules/.pnpm/mdast-util-to-markdown@2.1.3/node_modules/mdast-util-to-markdown/lib/handle/index.js
+// node_modules/.pnpm/mdast-util-to-markdown@2.2.0/node_modules/mdast-util-to-markdown/lib/handle/index.js
 var handle = {
   blockquote,
   break: hardBreak,
@@ -62279,7 +62285,7 @@ var htmlBlockNames = [
 ];
 var htmlRawNames = ["pre", "script", "style", "textarea"];
 
-// node_modules/.pnpm/mdast-util-to-markdown@2.1.3/node_modules/mdast-util-to-markdown/lib/util/html-kind.js
+// node_modules/.pnpm/mdast-util-to-markdown@2.2.0/node_modules/mdast-util-to-markdown/lib/util/html-kind.js
 function htmlKind(value) {
   if (value.charCodeAt(0) !== 60) return;
   const next = value.charCodeAt(1);
@@ -62306,7 +62312,7 @@ function htmlKind(value) {
   return htmlBlockNames.includes(name) ? 6 : 7;
 }
 
-// node_modules/.pnpm/mdast-util-to-markdown@2.1.3/node_modules/mdast-util-to-markdown/lib/join.js
+// node_modules/.pnpm/mdast-util-to-markdown@2.2.0/node_modules/mdast-util-to-markdown/lib/join.js
 var join = [joinDefaults];
 function joinDefaults(left, right, parent, state) {
   if (right.type === "code" && formatCodeAsIndented(right, state) && (left.type === "list" || left.type === right.type && formatCodeAsIndented(left, state))) {
@@ -62330,7 +62336,7 @@ function joinDefaults(left, right, parent, state) {
   }
 }
 
-// node_modules/.pnpm/mdast-util-to-markdown@2.1.3/node_modules/mdast-util-to-markdown/lib/unsafe.js
+// node_modules/.pnpm/mdast-util-to-markdown@2.2.0/node_modules/mdast-util-to-markdown/lib/unsafe.js
 var fullPhrasingSpans = [
   "autolink",
   "destinationLiteral",
@@ -64646,7 +64652,7 @@ function decode($0, $1, $2) {
   return decodeNamedCharacterReference($2) || $0;
 }
 
-// node_modules/.pnpm/mdast-util-to-markdown@2.1.3/node_modules/mdast-util-to-markdown/lib/util/association.js
+// node_modules/.pnpm/mdast-util-to-markdown@2.2.0/node_modules/mdast-util-to-markdown/lib/util/association.js
 function association(node2) {
   if (node2.label || !node2.identifier) {
     return node2.label || "";
@@ -64654,13 +64660,13 @@ function association(node2) {
   return decodeString(node2.identifier);
 }
 
-// node_modules/.pnpm/mdast-util-to-markdown@2.1.3/node_modules/mdast-util-to-markdown/lib/util/compile-pattern.js
+// node_modules/.pnpm/mdast-util-to-markdown@2.2.0/node_modules/mdast-util-to-markdown/lib/util/compile-pattern.js
 function compilePattern(pattern) {
   if (!pattern._compiled) {
     const before = (pattern.atBreak ? "[\\r\\n][\\t ]*" : "") + (pattern.before ? "(?:" + pattern.before + ")" : "");
     pattern._compiled = new RegExp(
-      (before ? "(" + before + ")" : "") + (/[$()*+\-.?[\\\]^{|}]/.test(pattern.character) ? "\\" : "") + pattern.character + (pattern.after ? "(?:" + pattern.after + ")" : ""),
-      "g"
+      (pattern.beforeNode ? "^" : before ? "(" + before + ")" : "") + (/[$()*+.?[\\\]^{|}]/.test(pattern.character) ? "\\" : "") + pattern.character + (pattern.afterNode ? "$" : pattern.after ? "(?:" + pattern.after + ")" : ""),
+      pattern.unicode ? "gu" : "g"
     );
   }
   return pattern._compiled;
@@ -64676,7 +64682,7 @@ function classifyCharacter(code4) {
   }
 }
 
-// node_modules/.pnpm/mdast-util-to-markdown@2.1.3/node_modules/mdast-util-to-markdown/lib/util/character.js
+// node_modules/.pnpm/mdast-util-to-markdown@2.2.0/node_modules/mdast-util-to-markdown/lib/util/character.js
 function firstCharacter(value) {
   const code4 = value.codePointAt(0);
   return code4 === void 0 ? "" : String.fromCodePoint(code4);
@@ -64686,7 +64692,7 @@ function lastCharacter(value) {
   return code4 !== void 0 && code4 > 65535 ? value.slice(-2) : value.slice(-1);
 }
 
-// node_modules/.pnpm/mdast-util-to-markdown@2.1.3/node_modules/mdast-util-to-markdown/lib/util/encode-info.js
+// node_modules/.pnpm/mdast-util-to-markdown@2.2.0/node_modules/mdast-util-to-markdown/lib/util/encode-info.js
 function encodeInfo(outside, inside, marker) {
   const outsideKind = classifyCharacter(outside);
   const insideKind = classifyCharacter(inside);
@@ -64728,7 +64734,7 @@ function encodeInfo(outside, inside, marker) {
   );
 }
 
-// node_modules/.pnpm/mdast-util-to-markdown@2.1.3/node_modules/mdast-util-to-markdown/lib/util/container-phrasing.js
+// node_modules/.pnpm/mdast-util-to-markdown@2.2.0/node_modules/mdast-util-to-markdown/lib/util/container-phrasing.js
 var builtins = /* @__PURE__ */ new Map([
   ["*", false],
   ["_", true]
@@ -65054,7 +65060,7 @@ function serialize2(items, before, after) {
   return result;
 }
 
-// node_modules/.pnpm/mdast-util-to-markdown@2.1.3/node_modules/mdast-util-to-markdown/lib/util/container-flow.js
+// node_modules/.pnpm/mdast-util-to-markdown@2.2.0/node_modules/mdast-util-to-markdown/lib/util/container-flow.js
 function containerFlow(parent, state, info2) {
   const indexStack = state.indexStack;
   const children = parent.children || [];
@@ -65103,7 +65109,7 @@ function between(left, right, parent, state) {
   return "\n\n";
 }
 
-// node_modules/.pnpm/mdast-util-to-markdown@2.1.3/node_modules/mdast-util-to-markdown/lib/util/indent-lines.js
+// node_modules/.pnpm/mdast-util-to-markdown@2.2.0/node_modules/mdast-util-to-markdown/lib/util/indent-lines.js
 var eol = /\r?\n|\r/g;
 function indentLines(value, map4) {
   const result = [];
@@ -65123,7 +65129,7 @@ function indentLines(value, map4) {
   }
 }
 
-// node_modules/.pnpm/mdast-util-to-markdown@2.1.3/node_modules/mdast-util-to-markdown/lib/util/safe.js
+// node_modules/.pnpm/mdast-util-to-markdown@2.2.0/node_modules/mdast-util-to-markdown/lib/util/safe.js
 var own4 = {}.hasOwnProperty;
 function safe(state, input, config) {
   const value = (config.before || "") + (input || "") + (config.after || "");
@@ -65131,18 +65137,22 @@ function safe(state, input, config) {
   const result = [];
   const infos = {};
   const percentEncode = state.stack.includes("autolink");
+  const offset = config.before ? config.before.length : 0;
+  const end = value.length - (config.after ? config.after.length : 0);
   let index = -1;
   while (++index < state.unsafe.length) {
     const pattern = state.unsafe[index];
-    if (!patternInScope(state.stack, pattern)) {
+    if (!patternInScope(state.stack, pattern) || !nodeInScope(pattern.beforeNode, config.beforeNode) || !nodeInScope(pattern.afterNode, config.afterNode)) {
       continue;
     }
     const expression = state.compilePattern(pattern);
+    const from = pattern.beforeNode ? offset : 0;
+    const subject = value.slice(from, pattern.afterNode ? end : void 0);
     let match;
-    while (match = expression.exec(value)) {
+    while (match = expression.exec(subject)) {
       const before = "before" in pattern || Boolean(pattern.atBreak);
       const after = "after" in pattern;
-      const position = match.index + (before ? match[1].length : 0);
+      const position = from + match.index + (before ? match[1].length : 0);
       if (own4.call(infos, position)) {
         if (infos[position].before && !before) {
           infos[position].before = false;
@@ -65157,8 +65167,6 @@ function safe(state, input, config) {
     }
   }
   positions.sort(numerical);
-  const offset = config.before ? config.before.length : 0;
-  const end = value.length - (config.after ? config.after.length : 0);
   let start = offset;
   index = -1;
   while (++index < positions.length) {
@@ -65209,6 +65217,11 @@ function safe(state, input, config) {
   result.push(percentEncode ? rest : escapeBackslashes(rest, config.after));
   return result.join("");
 }
+function nodeInScope(types, node2) {
+  if (!types) return true;
+  if (!node2) return false;
+  return typeof types === "string" ? types === node2.type : types.includes(node2.type);
+}
 function numerical(a2, b2) {
   return a2 - b2;
 }
@@ -65234,7 +65247,7 @@ function escapeBackslashes(value, after) {
   return results.join("");
 }
 
-// node_modules/.pnpm/mdast-util-to-markdown@2.1.3/node_modules/mdast-util-to-markdown/lib/util/track.js
+// node_modules/.pnpm/mdast-util-to-markdown@2.2.0/node_modules/mdast-util-to-markdown/lib/util/track.js
 function track(config) {
   const options = config || {};
   const now = options.now || {};
@@ -65258,7 +65271,7 @@ function track(config) {
   }
 }
 
-// node_modules/.pnpm/mdast-util-to-markdown@2.1.3/node_modules/mdast-util-to-markdown/lib/index.js
+// node_modules/.pnpm/mdast-util-to-markdown@2.2.0/node_modules/mdast-util-to-markdown/lib/index.js
 function toMarkdown(tree, options) {
   const settings = options || {};
   const state = {
