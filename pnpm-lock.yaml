@@ -211,7 +211,7 @@ importers:
         version: 10.0.1(eslint@10.12.0(supports-color@7.2.0))
       '@octokit/openapi':
         specifier: ^23.0.0
-        version: 23.0.2
+        version: 23.0.3
       '@octokit/openapi-types':
         specifier: ^29.0.0
         version: 29.0.1
@@ -655,8 +655,8 @@ packages:
   '@octokit/openapi-webhooks-types@12.1.0':
     resolution: {integrity: sha512-WiuzhOsiOvb7W3Pvmhf8d2C6qaLHXrWiLBP4nJ/4kydu+wpagV5Fkz9RfQwV2afYzv3PB+3xYgp4mAdNGjDprA==}
 
-  '@octokit/openapi@23.0.2':
-    resolution: {integrity: sha512-pV8M7L9GY23AybNvTmo2nyjmpmnt6+2sRE/tqr0ZLQcPS4lnw7u5eZGNmwRNkBC3D7gZXbFx5AHzLUVRBXGDhg==}
+  '@octokit/openapi@23.0.3':
+    resolution: {integrity: sha512-Hhs4bGxquF5vNM3WeSnHgCd/CgAlpxA994+/I+TO6mgMVg8Qt8zXa2Sv2Cbp3VIr2UaPzn9R3Rwvfye2NQxcxA==}
     engines: {node: '>=18'}
 
   '@octokit/plugin-paginate-graphql@6.0.0':
@@ -2297,7 +2297,7 @@ snapshots:
 
   '@octokit/openapi-webhooks-types@12.1.0': {}
 
-  '@octokit/openapi@23.0.2': {}
+  '@octokit/openapi@23.0.3': {}
 
   '@octokit/plugin-paginate-graphql@6.0.0(@octokit/core@7.0.6)':
     dependencies:
