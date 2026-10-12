@@ -66294,6 +66294,16 @@ var generated_provider_rule_permissions_v1_schema_default = {
         "write"
       ]
     },
+    organization_external_properties_for_repos: {
+      type: "string",
+      description: "The level of permission to grant the access token for managing external custom properties for repositories in an organization.",
+      enum: [
+        "none",
+        "read",
+        "write",
+        "admin"
+      ]
+    },
     organization_announcement_banners: {
       type: "string",
       description: "The level of permission to grant the access token to view and manage announcement banners for an organization.",
@@ -66778,6 +66788,15 @@ var generated_requester_token_permissions_v1_schema_default = {
       enum: [
         "read",
         "write"
+      ]
+    },
+    organization_external_properties_for_repos: {
+      type: "string",
+      description: "The level of permission to grant the access token for managing external custom properties for repositories in an organization.",
+      enum: [
+        "read",
+        "write",
+        "admin"
       ]
     },
     organization_announcement_banners: {
