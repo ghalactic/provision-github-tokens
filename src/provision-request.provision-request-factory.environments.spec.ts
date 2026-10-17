@@ -71,7 +71,7 @@ it("supports self-repo environment targets", async () => {
           github: { repo: { environments: ["env-a-*", "env-b"] } },
         }),
       )
-    )?.to,
+    ).to,
   ).toStrictEqual([
     createTestEnvironmentProvisionRequestTarget(
       "account-a",
@@ -138,7 +138,7 @@ it("doesn't match the same environment twice for self-repos", async () => {
           github: { repo: { environments: ["*", "env-*"] } },
         }),
       )
-    )?.to,
+    ).to,
   ).toStrictEqual([
     createTestEnvironmentProvisionRequestTarget(
       "account-a",
@@ -211,7 +211,7 @@ it("supports pattern-matched repo environment targets", async () => {
           },
         }),
       )
-    )?.to,
+    ).to,
   ).toStrictEqual([
     createTestEnvironmentProvisionRequestTarget(
       "account-a",
@@ -286,7 +286,7 @@ it("doesn't match the same environment twice for pattern-matched repos", async (
           },
         }),
       )
-    )?.to,
+    ).to,
   ).toStrictEqual([
     createTestEnvironmentProvisionRequestTarget(
       "account-a",
@@ -360,7 +360,7 @@ it("doesn't enable an environment target for a repo unless all matching repo pat
           },
         }),
       )
-    )?.to,
+    ).to,
   ).toStrictEqual([
     createTestEnvironmentProvisionRequestTarget(
       "account-a",
@@ -439,7 +439,7 @@ it("combines self-repo environment targets with pattern-matched repo environment
           },
         }),
       )
-    )?.to,
+    ).to,
   ).toStrictEqual([
     createTestEnvironmentProvisionRequestTarget(
       "account-a",
