@@ -134,7 +134,7 @@ export function createTextProvisionExplainer(): ProvisionResultExplainer<string>
     }
 
     const repos: string[] = [];
-    for (const { ref } of visibility) repos.push(ref.repo);
+    for (const { ref } of visibility.repos) repos.push(ref.repo);
     repos.sort((a, b) => a.localeCompare(b));
 
     if (repos.length < 1) return `\n    ${statusIcon} ${verb} no repos`;

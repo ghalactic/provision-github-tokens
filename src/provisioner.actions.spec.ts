@@ -36,7 +36,7 @@ import { createEncryptSecret } from "./encrypt-secret.js";
 import { toMarkdown } from "./markdown.js";
 import { createMarkdownProvisionExplainer } from "./provision-explainer/markdown.js";
 import type {
-  AccountSecretSelectedRepo,
+  AccountSecretSelectedRepos,
   AccountSecretVisibility,
 } from "./provision-request.js";
 import { createProvisioner } from "./provisioner.js";
@@ -600,10 +600,15 @@ it("can provision repo-level Actions secrets", async () => {
   ).toMatchFileSnapshot(join(fixturesPath, "repo/a.md"));
 });
 
-const selectedRepos: AccountSecretSelectedRepo[] = [
-  { ref: { account: "account-a", repo: "repo-a" }, id: 111 },
-  { ref: { account: "account-a", repo: "repo-b" }, id: 222 },
-];
+const selectedRepos: AccountSecretSelectedRepos = {
+  patterns: ["repo-*"],
+  repos: [
+    { ref: { account: "account-a", repo: "repo-a" }, id: 111 },
+    { ref: { account: "account-a", repo: "repo-b" }, id: 222 },
+  ],
+};
+
+const emptySelection: AccountSecretSelectedRepos = { patterns: [], repos: [] };
 
 it.each<
   [
@@ -616,19 +621,19 @@ it.each<
   ["actions", "all", "all", undefined],
   ["actions", "private", "private", undefined],
   ["actions", selectedRepos, "selected", [111, 222]],
-  ["actions", [], "selected", []],
+  ["actions", emptySelection, "selected", []],
   ["agents", "all", "all", undefined],
   ["agents", "private", "private", undefined],
   ["agents", selectedRepos, "selected", [111, 222]],
-  ["agents", [], "selected", []],
+  ["agents", emptySelection, "selected", []],
   ["codespaces", "all", "all", undefined],
   ["codespaces", "private", "private", undefined],
   ["codespaces", selectedRepos, "selected", [111, 222]],
-  ["codespaces", [], "selected", []],
+  ["codespaces", emptySelection, "selected", []],
   ["dependabot", "all", "all", undefined],
   ["dependabot", "private", "private", undefined],
   ["dependabot", selectedRepos, "selected", [111, 222]],
-  ["dependabot", [], "selected", []],
+  ["dependabot", emptySelection, "selected", []],
 ])(
   "provisions a %s org secret with the account visibility",
   async (

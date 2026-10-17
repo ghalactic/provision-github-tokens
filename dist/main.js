@@ -60789,11 +60789,11 @@ function createProvisionRequestFactory(declarationRegistry, appRegistry, repoReg
     if (setting === "all" || setting === "private") {
       return { platform: platform2, type, target: { account }, visibility: setting };
     }
-    const patterns = [];
+    const githubPatterns = [];
     for (const repoPattern of setting) {
-      patterns.push(createGitHubPattern(`${account}/${repoPattern}`));
+      githubPatterns.push(createGitHubPattern(`${account}/${repoPattern}`));
     }
-    const repos = appRegistry.resolveProvisionerRepos(patterns);
+    const repos = appRegistry.resolveProvisionerRepos(githubPatterns);
     const selectedRepos = [];
     for (const repo of repos) {
       const ref = repoRefFromName(repo);
@@ -60803,7 +60803,7 @@ function createProvisionRequestFactory(declarationRegistry, appRegistry, repoReg
       platform: platform2,
       type,
       target: { account },
-      visibility: selectedRepos
+      visibility: { patterns: [...setting], repos: selectedRepos }
     };
   }
 }
@@ -121038,7 +121038,7 @@ ${prefixLines("::debug::      ", errorStack(result.error))}`;
     ${statusIcon} ${verb} ${visibility} repos`;
     }
     const repos = [];
-    for (const { ref } of visibility) repos.push(ref.repo);
+    for (const { ref } of visibility.repos) repos.push(ref.repo);
     repos.sort((a2, b2) => a2.localeCompare(b2));
     if (repos.length < 1) return `
     ${statusIcon} ${verb} no repos`;
@@ -121237,7 +121237,7 @@ Secret #${i2}:
     }
     return {
       visibility: "selected",
-      selected_repository_ids: visibility.map(({ id }) => id)
+      selected_repository_ids: visibility.repos.map(({ id }) => id)
     };
   }
 }
@@ -121572,7 +121572,7 @@ function createMarkdownProvisionExplainer() {
       ];
     }
     const repos = [];
-    for (const { ref } of visibility) repos.push(ref.repo);
+    for (const { ref } of visibility.repos) repos.push(ref.repo);
     repos.sort((a2, b2) => a2.localeCompare(b2));
     if (repos.length < 1) {
       return [

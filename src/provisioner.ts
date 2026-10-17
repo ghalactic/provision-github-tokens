@@ -268,7 +268,7 @@ export function createProvisioner(
 
     return {
       visibility: "selected",
-      selected_repository_ids: visibility.map(({ id }) => id),
+      selected_repository_ids: visibility.repos.map(({ id }) => id),
     };
   }
 }

@@ -40,7 +40,7 @@ import {
 import { createEncryptSecret } from "./encrypt-secret.js";
 import { toMarkdown } from "./markdown.js";
 import { createMarkdownProvisionExplainer } from "./provision-explainer/markdown.js";
-import type { AccountSecretSelectedRepo } from "./provision-request.js";
+import type { AccountSecretSelectedRepos } from "./provision-request.js";
 import { createProvisioner } from "./provisioner.js";
 
 vi.mock("@actions/core");
@@ -1317,10 +1317,13 @@ it("renders the visibility of provisioned account secrets", async () => {
     ],
   ]);
 
-  const selectedRepos: AccountSecretSelectedRepo[] = [
-    { ref: { account: "account-a", repo: "repo-b" }, id: 222 },
-    { ref: { account: "account-a", repo: "repo-a" }, id: 111 },
-  ];
+  const selectedRepos: AccountSecretSelectedRepos = {
+    patterns: ["repo-*"],
+    repos: [
+      { ref: { account: "account-a", repo: "repo-b" }, id: 222 },
+      { ref: { account: "account-a", repo: "repo-a" }, id: 111 },
+    ],
+  };
 
   const targets = [
     createTestAccountProvisionRequestTarget("actions", "account-a", "all"),
@@ -1329,7 +1332,10 @@ it("renders the visibility of provisioned account secrets", async () => {
       "account-a",
       selectedRepos,
     ),
-    createTestAccountProvisionRequestTarget("codespaces", "account-a", []),
+    createTestAccountProvisionRequestTarget("codespaces", "account-a", {
+      patterns: [],
+      repos: [],
+    }),
     createTestAccountProvisionRequestTarget(
       "dependabot",
       "account-a",
@@ -1416,10 +1422,13 @@ it("renders the visibility of a failed account secret", async () => {
     ],
   ]);
 
-  const selectedRepos: AccountSecretSelectedRepo[] = [
-    { ref: { account: "account-a", repo: "repo-a" }, id: 111 },
-    { ref: { account: "account-a", repo: "repo-b" }, id: 222 },
-  ];
+  const selectedRepos: AccountSecretSelectedRepos = {
+    patterns: ["repo-a", "repo-b"],
+    repos: [
+      { ref: { account: "account-a", repo: "repo-a" }, id: 111 },
+      { ref: { account: "account-a", repo: "repo-b" }, id: 222 },
+    ],
+  };
   const target = createTestAccountProvisionRequestTarget(
     "actions",
     "account-a",
