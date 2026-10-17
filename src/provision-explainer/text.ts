@@ -5,7 +5,11 @@ import {
   repoRefToString,
 } from "../github-reference.js";
 import { FAIL_ICON, icon, PASS_ICON } from "../icon.js";
-import type { ProvisionRequestTarget } from "../provision-request.js";
+import { pluralize } from "../pluralize.js";
+import {
+  isRepoProvisionRequestTarget,
+  type ProvisionRequestTarget,
+} from "../provision-request.js";
 import { secretTypeText } from "../secret-type.js";
 import { prefixLines } from "../text.js";
 import type {
@@ -56,19 +60,30 @@ export function createTextProvisionExplainer(): ProvisionResultExplainer<string>
     result: ProvisionResult,
   ): string {
     const subject = explainSubject(target);
+    const isProvisioned = result.type === "PROVISIONED";
+    const visibility = explainVisibility(target, isProvisioned);
 
     switch (result.type) {
       case "PROVISIONED":
-        return `\n  ${PASS_ICON} Provisioned to ${subject}`;
+        return `\n  ${PASS_ICON} Provisioned to ${subject}${visibility}`;
 
       case "NOT_ALLOWED":
-        return `\n  ${FAIL_ICON} Not allowed to provision to ${subject}`;
+        return (
+          `\n  ${FAIL_ICON} Not allowed to provision ` +
+          `to ${subject}${visibility}`
+        );
 
       case "NO_TOKEN":
-        return `\n  ${FAIL_ICON} Token wasn't created for ${subject}`;
+        return (
+          `\n  ${FAIL_ICON} Token wasn't created ` +
+          `for ${subject}${visibility}`
+        );
 
       case "NO_PROVISIONER":
-        return `\n  ${FAIL_ICON} No suitable provisioner for ${subject}`;
+        return (
+          `\n  ${FAIL_ICON} No suitable provisioner ` +
+          `for ${subject}${visibility}`
+        );
 
       case "REQUEST_ERROR": {
         const summary =
@@ -81,13 +96,16 @@ export function createTextProvisionExplainer(): ProvisionResultExplainer<string>
             ? "(no response data)"
             : JSON.stringify(body, null, 2);
 
-        return `\n  ${summary}\n${prefixLines("::debug::      ", detail)}`;
+        return (
+          `\n  ${summary}${visibility}` +
+          `\n${prefixLines("::debug::      ", detail)}`
+        );
       }
 
       case "ERROR": {
         return (
           `\n  ${FAIL_ICON} Failed to provision to ${subject}: ` +
-          `${errorMessage(result.error)}` +
+          `${errorMessage(result.error)}${visibility}` +
           `\n${prefixLines("::debug::      ", errorStack(result.error))}`
         );
       }
@@ -99,5 +117,34 @@ export function createTextProvisionExplainer(): ProvisionResultExplainer<string>
       `${secretTypeText(target)} secret in ` +
       `${accountOrRepoRefToString(target.target)}`
     );
+  }
+
+  function explainVisibility(
+    target: ProvisionRequestTarget,
+    isProvisioned: boolean,
+  ): string {
+    if (isRepoProvisionRequestTarget(target)) return "";
+
+    const { visibility } = target;
+    const statusIcon = icon(isProvisioned);
+    const verb = isProvisioned ? "Readable by" : "Would've been readable by";
+
+    if (visibility === "all" || visibility === "private") {
+      return `\n    ${statusIcon} ${verb} ${visibility} repos`;
+    }
+
+    const repos: string[] = [];
+    for (const { ref } of visibility) repos.push(ref.repo);
+    repos.sort((a, b) => a.localeCompare(b));
+
+    if (repos.length < 1) return `\n    ${statusIcon} ${verb} no repos`;
+
+    let output =
+      `\n    ${statusIcon} ${verb} ` +
+      `${pluralize(repos.length, "repo", "repos")}:`;
+
+    for (const repo of repos) output += `\n      ${statusIcon} ${repo}`;
+
+    return output;
   }
 }

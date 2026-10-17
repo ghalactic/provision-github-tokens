@@ -1,4 +1,4 @@
-import type { ListItem, PhrasingContent, RootContent } from "mdast";
+import type { List, ListItem, PhrasingContent, RootContent } from "mdast";
 import { compareProvisionRequestTarget } from "../compare-provision-request-target.js";
 import { errorMessage, errorStack } from "../error.js";
 import {
@@ -17,7 +17,11 @@ import {
   strong,
   text,
 } from "../markdown.js";
-import type { ProvisionRequestTarget } from "../provision-request.js";
+import { pluralize } from "../pluralize.js";
+import {
+  isRepoProvisionRequestTarget,
+  type ProvisionRequestTarget,
+} from "../provision-request.js";
 import { secretTypeMdast } from "../secret-type.js";
 import type {
   ProvisionResult,
@@ -100,6 +104,8 @@ export function createMarkdownProvisionExplainer(): ProvisionResultExplainer<
     result: ProvisionResult,
   ): ListItem["children"] {
     const subject = explainSubject(target);
+    const isProvisioned = result.type === "PROVISIONED";
+    const visibility = explainVisibility(target, isProvisioned);
 
     switch (result.type) {
       case "PROVISIONED":
@@ -110,6 +116,7 @@ export function createMarkdownProvisionExplainer(): ProvisionResultExplainer<
             text(" to "),
             ...subject,
           ),
+          ...nestedList(...visibility),
         ];
 
       case "NOT_ALLOWED":
@@ -120,6 +127,7 @@ export function createMarkdownProvisionExplainer(): ProvisionResultExplainer<
             text(" to provision to "),
             ...subject,
           ),
+          ...nestedList(...visibility),
         ];
 
       case "NO_TOKEN":
@@ -130,6 +138,7 @@ export function createMarkdownProvisionExplainer(): ProvisionResultExplainer<
             text(" created for "),
             ...subject,
           ),
+          ...nestedList(...visibility),
         ];
 
       case "NO_PROVISIONER":
@@ -138,6 +147,7 @@ export function createMarkdownProvisionExplainer(): ProvisionResultExplainer<
             text(`${FAIL_ICON} No suitable provisioner for `),
             ...subject,
           ),
+          ...nestedList(...visibility),
         ];
 
       case "REQUEST_ERROR": {
@@ -152,6 +162,7 @@ export function createMarkdownProvisionExplainer(): ProvisionResultExplainer<
             text(":"),
           ),
           list(
+            ...visibility,
             listItem(
               paragraph(
                 text(`${FAIL_ICON} `),
@@ -180,6 +191,7 @@ export function createMarkdownProvisionExplainer(): ProvisionResultExplainer<
             text(":"),
           ),
           list(
+            ...visibility,
             listItem(
               paragraph(text(`${FAIL_ICON} ${errorMessage(result.error)}`)),
               ...details("Error stack", code("text", errorStack(result.error))),
@@ -195,5 +207,61 @@ export function createMarkdownProvisionExplainer(): ProvisionResultExplainer<
       text(" secret in "),
       inlineCode(accountOrRepoRefToString(target.target)),
     ];
+  }
+
+  function explainVisibility(
+    target: ProvisionRequestTarget,
+    isProvisioned: boolean,
+  ): ListItem[] {
+    if (isRepoProvisionRequestTarget(target)) return [];
+
+    const { visibility } = target;
+    const statusIcon = icon(isProvisioned);
+    const verb = isProvisioned ? "Readable by" : "Would've been readable by";
+
+    if (visibility === "all" || visibility === "private") {
+      return [
+        listItem(
+          paragraph(
+            text(`${statusIcon} ${verb} `),
+            strong(text(`${visibility} repos`)),
+          ),
+        ),
+      ];
+    }
+
+    const repos: string[] = [];
+    for (const { ref } of visibility) repos.push(ref.repo);
+    repos.sort((a, b) => a.localeCompare(b));
+
+    if (repos.length < 1) {
+      return [
+        listItem(
+          paragraph(text(`${statusIcon} ${verb} `), strong(text("no repos"))),
+        ),
+      ];
+    }
+
+    const repoItems: ListItem[] = [];
+    for (const repo of repos) {
+      repoItems.push(
+        listItem(paragraph(text(`${statusIcon} `), inlineCode(repo))),
+      );
+    }
+
+    return [
+      listItem(
+        paragraph(
+          text(`${statusIcon} ${verb} `),
+          strong(text(pluralize(repos.length, "repo", "repos"))),
+          text(":"),
+        ),
+        list(...repoItems),
+      ),
+    ];
+  }
+
+  function nestedList(...children: ListItem[]): List[] {
+    return children.length > 0 ? [list(...children)] : [];
   }
 }

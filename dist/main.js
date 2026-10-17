@@ -120995,36 +120995,58 @@ function createTextProvisionExplainer() {
   };
   function explainTarget(target, result) {
     const subject = explainSubject(target);
+    const isProvisioned = result.type === "PROVISIONED";
+    const visibility = explainVisibility(target, isProvisioned);
     switch (result.type) {
       case "PROVISIONED":
         return `
-  ${PASS_ICON} Provisioned to ${subject}`;
+  ${PASS_ICON} Provisioned to ${subject}${visibility}`;
       case "NOT_ALLOWED":
         return `
-  ${FAIL_ICON} Not allowed to provision to ${subject}`;
+  ${FAIL_ICON} Not allowed to provision to ${subject}${visibility}`;
       case "NO_TOKEN":
         return `
-  ${FAIL_ICON} Token wasn't created for ${subject}`;
+  ${FAIL_ICON} Token wasn't created for ${subject}${visibility}`;
       case "NO_PROVISIONER":
         return `
-  ${FAIL_ICON} No suitable provisioner for ${subject}`;
+  ${FAIL_ICON} No suitable provisioner for ${subject}${visibility}`;
       case "REQUEST_ERROR": {
         const summary2 = `${FAIL_ICON} Failed to provision to ${subject}: ${result.error.status} - ${result.error.message}`;
         const body = result.error.response?.data;
         const detail = typeof body === "undefined" ? "(no response data)" : JSON.stringify(body, null, 2);
         return `
-  ${summary2}
+  ${summary2}${visibility}
 ${prefixLines("::debug::      ", detail)}`;
       }
       case "ERROR": {
         return `
-  ${FAIL_ICON} Failed to provision to ${subject}: ${errorMessage(result.error)}
+  ${FAIL_ICON} Failed to provision to ${subject}: ${errorMessage(result.error)}${visibility}
 ${prefixLines("::debug::      ", errorStack(result.error))}`;
       }
     }
   }
   function explainSubject(target) {
     return `${secretTypeText(target)} secret in ${accountOrRepoRefToString(target.target)}`;
+  }
+  function explainVisibility(target, isProvisioned) {
+    if (isRepoProvisionRequestTarget(target)) return "";
+    const { visibility } = target;
+    const statusIcon = icon(isProvisioned);
+    const verb = isProvisioned ? "Readable by" : "Would've been readable by";
+    if (visibility === "all" || visibility === "private") {
+      return `
+    ${statusIcon} ${verb} ${visibility} repos`;
+    }
+    const repos = [];
+    for (const { ref } of visibility) repos.push(ref.repo);
+    repos.sort((a2, b2) => a2.localeCompare(b2));
+    if (repos.length < 1) return `
+    ${statusIcon} ${verb} no repos`;
+    let output = `
+    ${statusIcon} ${verb} ${pluralize(repos.length, "repo", "repos")}:`;
+    for (const repo of repos) output += `
+      ${statusIcon} ${repo}`;
+    return output;
   }
 }
 
@@ -121440,6 +121462,8 @@ function createMarkdownProvisionExplainer() {
   };
   function explainTarget(target, result) {
     const subject = explainSubject(target);
+    const isProvisioned = result.type === "PROVISIONED";
+    const visibility = explainVisibility(target, isProvisioned);
     switch (result.type) {
       case "PROVISIONED":
         return [
@@ -121448,7 +121472,8 @@ function createMarkdownProvisionExplainer() {
             strong2(text2("Provisioned")),
             text2(" to "),
             ...subject
-          )
+          ),
+          ...nestedList(...visibility)
         ];
       case "NOT_ALLOWED":
         return [
@@ -121457,7 +121482,8 @@ function createMarkdownProvisionExplainer() {
             strong2(text2("Not allowed")),
             text2(" to provision to "),
             ...subject
-          )
+          ),
+          ...nestedList(...visibility)
         ];
       case "NO_TOKEN":
         return [
@@ -121466,14 +121492,16 @@ function createMarkdownProvisionExplainer() {
             strong2(text2("wasn't")),
             text2(" created for "),
             ...subject
-          )
+          ),
+          ...nestedList(...visibility)
         ];
       case "NO_PROVISIONER":
         return [
           paragraph2(
             text2(`${FAIL_ICON} No suitable provisioner for `),
             ...subject
-          )
+          ),
+          ...nestedList(...visibility)
         ];
       case "REQUEST_ERROR": {
         const body = result.error.response?.data;
@@ -121486,6 +121514,7 @@ function createMarkdownProvisionExplainer() {
             text2(":")
           ),
           list3(
+            ...visibility,
             listItem2(
               paragraph2(
                 text2(`${FAIL_ICON} `),
@@ -121511,6 +121540,7 @@ function createMarkdownProvisionExplainer() {
             text2(":")
           ),
           list3(
+            ...visibility,
             listItem2(
               paragraph2(text2(`${FAIL_ICON} ${errorMessage(result.error)}`)),
               ...details("Error stack", code3("text", errorStack(result.error)))
@@ -121525,6 +121555,51 @@ function createMarkdownProvisionExplainer() {
       text2(" secret in "),
       inlineCode2(accountOrRepoRefToString(target.target))
     ];
+  }
+  function explainVisibility(target, isProvisioned) {
+    if (isRepoProvisionRequestTarget(target)) return [];
+    const { visibility } = target;
+    const statusIcon = icon(isProvisioned);
+    const verb = isProvisioned ? "Readable by" : "Would've been readable by";
+    if (visibility === "all" || visibility === "private") {
+      return [
+        listItem2(
+          paragraph2(
+            text2(`${statusIcon} ${verb} `),
+            strong2(text2(`${visibility} repos`))
+          )
+        )
+      ];
+    }
+    const repos = [];
+    for (const { ref } of visibility) repos.push(ref.repo);
+    repos.sort((a2, b2) => a2.localeCompare(b2));
+    if (repos.length < 1) {
+      return [
+        listItem2(
+          paragraph2(text2(`${statusIcon} ${verb} `), strong2(text2("no repos")))
+        )
+      ];
+    }
+    const repoItems = [];
+    for (const repo of repos) {
+      repoItems.push(
+        listItem2(paragraph2(text2(`${statusIcon} `), inlineCode2(repo)))
+      );
+    }
+    return [
+      listItem2(
+        paragraph2(
+          text2(`${statusIcon} ${verb} `),
+          strong2(text2(pluralize(repos.length, "repo", "repos"))),
+          text2(":")
+        ),
+        list3(...repoItems)
+      )
+    ];
+  }
+  function nestedList(...children) {
+    return children.length > 0 ? [list3(...children)] : [];
   }
 }
 
