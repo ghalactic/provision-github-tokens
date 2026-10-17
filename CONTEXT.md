@@ -89,9 +89,11 @@ repos (a single permission set covering current and future repos), selected
 repos (every repo must be individually authorized), or no repos (account-level
 capabilities only).
 
-**Secret visibility**: Which repos may read an account-level secret: `all`,
-`private`, or `selected`. The account-secret counterpart to **Repo visibility**.
-_Avoid_: secret access, repository access
+**Secret visibility**: Which repos may read an account-level secret, chosen by
+the requester: `all`, `private`, or `selected` (a list of repo-name patterns).
+Distinct from **Repo visibility**, which classifies a repository. An explicitly
+empty selection means no repos can read the secret; a selection that resolves to
+no repos is denied. _Avoid_: secret access, repository access
 
 **Token authorization**: The check deciding whether a consumer should have
 access to a token with given permissions for given repos.
