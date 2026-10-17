@@ -212,22 +212,60 @@
       "additionalProperties": false,
       "properties": {
         "actions": {
-          "description": "Whether to provision to GitHub Actions secrets.",
-          "type": "boolean"
+          "description": "How to provision to GitHub Actions secrets.",
+          "$ref": "#/definitions/provisionGithubAccountSecretSetting"
         },
         "agents": {
-          "description": "Whether to provision to GitHub Agents secrets.",
-          "type": "boolean"
+          "description": "How to provision to GitHub Agents secrets.",
+          "$ref": "#/definitions/provisionGithubAccountSecretSetting"
         },
         "codespaces": {
-          "description": "Whether to provision to GitHub Codespaces secrets.",
-          "type": "boolean"
+          "description": "How to provision to GitHub Codespaces secrets.",
+          "$ref": "#/definitions/provisionGithubAccountSecretSetting"
         },
         "dependabot": {
-          "description": "Whether to provision to Dependabot secrets.",
-          "type": "boolean"
+          "description": "How to provision to Dependabot secrets.",
+          "$ref": "#/definitions/provisionGithubAccountSecretSetting"
         }
       }
+    },
+    "provisionGithubAccountSecretSetting": {
+      "description": "How to provision the account-level secret.",
+      "oneOf": [
+        {
+          "description": "Give access to all repos in the account, including those created after the secret is provisioned.",
+          "type": "string",
+          "const": "all"
+        },
+        {
+          "description": "Give access to all private repos in the account.",
+          "type": "string",
+          "const": "private"
+        },
+        {
+          "description": "Give access to a list of repos matching the specified name patterns.",
+          "type": "array",
+          "items": {
+            "description": "A pattern which matches repos without their account prefix.",
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^[*a-zA-Z0-9-_.]+$",
+            "errorMessage": "must only contain alphanumeric characters, hyphens, underscores, periods, or asterisks",
+            "examples": [
+              "repo-a",
+              "*",
+              "with-prefix-*",
+              "*-with-suffix",
+              "with-*-infix"
+            ]
+          }
+        },
+        {
+          "description": "Don't provision this secret type.",
+          "type": "boolean",
+          "const": false
+        }
+      ]
     },
     "provisionGithubRepoSecretTypes": {
       "type": "object",
