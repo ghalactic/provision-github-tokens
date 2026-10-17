@@ -308,7 +308,7 @@ it("can provision org-level Dependabot secrets", async () => {
     actions: {},
     agents: {},
     codespaces: {},
-    dependabot: { SECRET_A: "<token-a>" },
+    dependabot: { SECRET_A: { value: "<token-a>", visibility: "all" } },
   });
   expect(__getOutput()).toMatchInlineSnapshot(`
     "

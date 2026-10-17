@@ -48,13 +48,19 @@ let repoKeys: Record<
   }
 >;
 let repoIssueLabels: Record<string, string[]>;
+
+type OrgSecret = {
+  value: string;
+  visibility: "all" | "private" | "selected";
+};
+
 let orgSecrets: Record<
   string,
   {
-    actions: Record<string, string>;
-    agents: Record<string, string>;
-    codespaces: Record<string, string>;
-    dependabot: Record<string, string>;
+    actions: Record<string, OrgSecret>;
+    agents: Record<string, OrgSecret>;
+    codespaces: Record<string, OrgSecret>;
+    dependabot: Record<string, OrgSecret>;
   }
 >;
 let repoSecrets: Record<
@@ -762,7 +768,10 @@ export function Octokit({
         codespaces: {},
         dependabot: {},
       };
-      orgSecrets[org][secretType][secret_name] = decrypted;
+      orgSecrets[org][secretType][secret_name] = {
+        value: decrypted,
+        visibility,
+      };
     } catch {
       throw new TestRequestError(400);
     }
