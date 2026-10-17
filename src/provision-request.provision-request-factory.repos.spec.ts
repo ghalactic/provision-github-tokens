@@ -65,7 +65,7 @@ it("supports self-repo targets", async () => {
           github: { repo: { actions: true } },
         }),
       )
-    )?.to,
+    ).to,
   ).toStrictEqual([
     createTestRepoProvisionRequestTarget(
       "actions",
@@ -85,7 +85,7 @@ it("supports self-repo targets", async () => {
           github: { repo: { agents: true } },
         }),
       )
-    )?.to,
+    ).to,
   ).toStrictEqual([
     createTestRepoProvisionRequestTarget(
       "agents",
@@ -105,7 +105,7 @@ it("supports self-repo targets", async () => {
           github: { repo: { codespaces: true } },
         }),
       )
-    )?.to,
+    ).to,
   ).toStrictEqual([
     createTestRepoProvisionRequestTarget(
       "codespaces",
@@ -125,7 +125,7 @@ it("supports self-repo targets", async () => {
           github: { repo: { dependabot: true } },
         }),
       )
-    )?.to,
+    ).to,
   ).toStrictEqual([
     createTestRepoProvisionRequestTarget(
       "dependabot",
@@ -181,7 +181,7 @@ it("supports pattern-matched repo targets", async () => {
           github: { repos: { "account-a/repo-a-*": { actions: true } } },
         }),
       )
-    )?.to,
+    ).to,
   ).toStrictEqual([
     createTestRepoProvisionRequestTarget(
       "actions",
@@ -207,7 +207,7 @@ it("supports pattern-matched repo targets", async () => {
           github: { repos: { "account-a/repo-a-*": { agents: true } } },
         }),
       )
-    )?.to,
+    ).to,
   ).toStrictEqual([
     createTestRepoProvisionRequestTarget(
       "agents",
@@ -233,7 +233,7 @@ it("supports pattern-matched repo targets", async () => {
           github: { repos: { "account-a/repo-a-*": { codespaces: true } } },
         }),
       )
-    )?.to,
+    ).to,
   ).toStrictEqual([
     createTestRepoProvisionRequestTarget(
       "codespaces",
@@ -259,7 +259,7 @@ it("supports pattern-matched repo targets", async () => {
           github: { repos: { "account-a/repo-a-*": { dependabot: true } } },
         }),
       )
-    )?.to,
+    ).to,
   ).toStrictEqual([
     createTestRepoProvisionRequestTarget(
       "dependabot",
@@ -326,7 +326,7 @@ it("doesn't match the same repo twice", async () => {
           },
         }),
       )
-    )?.to,
+    ).to,
   ).toStrictEqual([
     createTestRepoProvisionRequestTarget(
       "actions",
@@ -394,7 +394,7 @@ it("doesn't enable a target for a repo if any matching patterns disable the targ
           },
         }),
       )
-    )?.to,
+    ).to,
   ).toStrictEqual([
     createTestRepoProvisionRequestTarget(
       "actions",
@@ -455,7 +455,7 @@ it("allows self-repo targets to override pattern-matched repo targets", async ()
           },
         }),
       )
-    )?.to,
+    ).to,
   ).toStrictEqual([
     createTestRepoProvisionRequestTarget(
       "actions",

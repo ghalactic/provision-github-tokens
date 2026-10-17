@@ -60794,17 +60794,16 @@ function createProvisionRequestFactory(declarationRegistry, appRegistry, repoReg
       patterns.push(createGitHubPattern(`${account}/${repoPattern}`));
     }
     const repos = appRegistry.resolveProvisionerRepos(patterns);
-    const selectedRepositoryIds = [];
+    const selectedRepos = [];
     for (const repo of repos) {
-      selectedRepositoryIds.push(
-        Number(repoRegistry.find(repoRefFromName(repo)).id)
-      );
+      const ref = repoRefFromName(repo);
+      selectedRepos.push({ ref, id: Number(repoRegistry.find(ref).id) });
     }
     return {
       platform: platform2,
       type,
       target: { account },
-      visibility: selectedRepositoryIds
+      visibility: selectedRepos
     };
   }
 }

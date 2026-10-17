@@ -177,7 +177,7 @@ it("supports provisioning to multiple targets", async () => {
           },
         }),
       )
-    )?.to,
+    ).to,
   ).toStrictEqual([
     createTestAccountProvisionRequestTarget("actions", "account-a", "all"),
     createTestAccountProvisionRequestTarget("agents", "account-a", "all"),
