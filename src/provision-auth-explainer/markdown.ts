@@ -25,11 +25,13 @@ import { createSequencer } from "../sequencer.js";
 import type {
   ProvisionAuthResult,
   ProvisionAuthResultExplainer,
+  ProvisionAuthSelectedRepoResult,
   ProvisionAuthTargetResult,
   ProvisionAuthTargetRuleResult,
 } from "../type/provision-auth-result.js";
 import type { ProvisionSecretsRule } from "../type/provision-rule.js";
 import type { TokenAuthResult } from "../type/token-auth-result.js";
+import { accountSecretVisibilityCategoryLabel } from "./account-secret-visibility-category.js";
 
 export function createMarkdownProvisionAuthExplainer(): ProvisionAuthResultExplainer<
   RootContent[]
@@ -114,19 +116,20 @@ export function createMarkdownProvisionAuthExplainer(): ProvisionAuthResultExpla
   function explainTarget(
     result: ProvisionAuthTargetResult,
   ): ListItem["children"] {
-    const { isAllowed } = result;
+    const { isAllowed, target } = result;
 
     return [
       paragraph(
         text(`${icon(isAllowed)} `),
         strong(text(isAllowed ? "Can" : "Can't")),
         text(" provision token to "),
-        ...explainSubject(result.target),
+        ...explainSubject(target),
         text(":"),
       ),
       list(
         listItem(...explainTargetToken(result)),
-        listItem(...explainBasedOnRules(result)),
+        listItem(...explainBasedOnRules(target, result)),
+        ...explainSelectedRepositories(target, result),
       ),
     ];
   }
@@ -172,15 +175,23 @@ export function createMarkdownProvisionAuthExplainer(): ProvisionAuthResultExpla
     ];
   }
 
-  function explainBasedOnRules({
-    isProvisionAllowed,
-    rules,
-  }: ProvisionAuthTargetResult): ListItem["children"] {
+  function explainBasedOnRules(
+    target: ProvisionRequestTarget,
+    {
+      isProvisionAllowed,
+      isSecretVisibilityCategoryAllowed,
+      rules,
+    }: ProvisionAuthTargetResult,
+  ): ListItem["children"] {
+    const isAllowed = isRepoProvisionRequestTarget(target)
+      ? isProvisionAllowed
+      : isSecretVisibilityCategoryAllowed;
     const ruleCount = rules.length;
     const summary = paragraph(
-      text(`${icon(isProvisionAllowed)} `),
-      strong(text(isProvisionAllowed ? "Can" : "Can't")),
-      text(" provision secret "),
+      text(`${icon(isAllowed)} `),
+      strong(text(isAllowed ? "Can" : "Can't")),
+      text(" provision "),
+      ...explainProvisionTo(target),
       ...(ruleCount < 1
         ? [text("(no matching rules)")]
         : [text(`based on ${pluralize(ruleCount, "rule", "rules")}:`)]),
@@ -195,6 +206,97 @@ export function createMarkdownProvisionAuthExplainer(): ProvisionAuthResultExpla
     }
 
     return [summary, list(...explainedRules)];
+  }
+
+  function explainProvisionTo(
+    target: ProvisionRequestTarget,
+  ): PhrasingContent[] {
+    return isRepoProvisionRequestTarget(target)
+      ? [text("secret ")]
+      : [
+          text("to "),
+          strong(text(accountSecretVisibilityCategoryLabel(target.visibility))),
+          text(" "),
+        ];
+  }
+
+  function explainSelectedRepositories(
+    target: ProvisionRequestTarget,
+    result: ProvisionAuthTargetResult,
+  ): ListItem[] {
+    const selectedRepos =
+      "selectedRepos" in result ? result.selectedRepos : undefined;
+    if (!selectedRepos || isRepoProvisionRequestTarget(target)) return [];
+
+    const { visibility } = target;
+    const repos = Object.entries(selectedRepos.results);
+    repos.sort(([a], [b]) => a.localeCompare(b));
+
+    const items: ListItem[] = [];
+    for (const [repo, repoResult] of repos) {
+      items.push(listItem(...explainSelectedRepository(repo, repoResult)));
+    }
+
+    if (!selectedRepos.isMatched && typeof visibility !== "string") {
+      items.push(
+        listItem(
+          paragraph(
+            text(`${FAIL_ICON} No repositories matched the patterns `),
+            ...explainPatterns(visibility.patterns),
+          ),
+        ),
+      );
+    }
+
+    return items;
+  }
+
+  function explainSelectedRepository(
+    repo: string,
+    { isAllowed, rules, visibility }: ProvisionAuthSelectedRepoResult,
+  ): ListItem["children"] {
+    const summary = paragraph(
+      text(`${icon(isAllowed)} `),
+      strong(text(isAllowed ? "Can" : "Can't")),
+      text(" provision secret to "),
+      strong(text(visibility)),
+      text(" repo "),
+      inlineCode(repo),
+      text(":"),
+    );
+
+    if (rules.length < 1) {
+      return [
+        summary,
+        list(
+          listItem(
+            paragraph(
+              text(`${FAIL_ICON} `),
+              strong(text("Can't")),
+              text(" provision secret (no matching rules)"),
+            ),
+          ),
+        ),
+      ];
+    }
+
+    const explainedRules: ListItem[] = [];
+    for (const ruleResult of rules) {
+      explainedRules.push(listItem(...explainRule(ruleResult)));
+    }
+
+    return [summary, list(...explainedRules)];
+  }
+
+  function explainPatterns(patterns: string[]): PhrasingContent[] {
+    const content: PhrasingContent[] = [];
+
+    for (let i = 0; i < patterns.length; ++i) {
+      if (i > 0) content.push(text(", "));
+      content.push(inlineCode(patterns[i]));
+    }
+
+    return content;
   }
 
   function explainRule({

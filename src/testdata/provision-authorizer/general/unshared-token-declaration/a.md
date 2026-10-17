@@ -2,5 +2,5 @@
   - ✅ **Can't** use token declaration `account-y/repo-y.token-y` because it isn't shared
   * ❌ **Can't** provision token to **GitHub Actions** secret in account `account-a`:
     - ❌ Token can't be authorized without a declaration
-    - ✅ **Can** provision secret based on 1 rule:
+    - ✅ **Can** provision to **private repos** based on 1 rule:
       - ✅ **Allowed** by rule `#1`

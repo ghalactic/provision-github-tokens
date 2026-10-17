@@ -97,7 +97,7 @@ it("allows GitHub Agents account secrets that should be allowed", async () => {
       ✅ Can use token declaration account-a/repo-a.tokenA
       ✅ Can provision token to GitHub Agents secret in account account-a:
         ✅ Account account-a was allowed access to token #1
-        ✅ Can provision secret based on 1 rule:
+        ✅ Can provision to private repos based on 1 rule:
           ✅ Allowed by rule #1"
   `);
   await expect(toMarkdown(toMdast(resultA))).toMatchFileSnapshot(
@@ -108,7 +108,7 @@ it("allows GitHub Agents account secrets that should be allowed", async () => {
       ✅ Can use token declaration account-a/repo-a.tokenA
       ✅ Can provision token to GitHub Agents secret in account account-b-1:
         ✅ Account account-b-1 was allowed access to token #2
-        ✅ Can provision secret based on 1 rule:
+        ✅ Can provision to private repos based on 1 rule:
           ✅ Allowed by rule #1"
   `);
   await expect(toMarkdown(toMdast(resultB))).toMatchFileSnapshot(
@@ -183,7 +183,7 @@ it("allows GitHub Agents account secrets that should be allowed within the reque
       ✅ Can use token declaration account-a/repo-a.tokenA
       ✅ Can provision token to GitHub Agents secret in account account-a:
         ✅ Account account-a was allowed access to token #1
-        ✅ Can provision secret based on 1 rule:
+        ✅ Can provision to private repos based on 1 rule:
           ✅ Allowed by rule #1"
   `);
   await expect(toMarkdown(toMdast(resultA))).toMatchFileSnapshot(
@@ -194,7 +194,7 @@ it("allows GitHub Agents account secrets that should be allowed within the reque
       ✅ Can use token declaration account-a/repo-a.tokenA
       ✅ Can provision token to GitHub Agents secret in account account-b-1:
         ✅ Account account-b-1 was allowed access to token #2
-        ✅ Can provision secret based on 1 rule:
+        ✅ Can provision to private repos based on 1 rule:
           ✅ Allowed by rule #1"
   `);
   await expect(toMarkdown(toMdast(resultB))).toMatchFileSnapshot(
@@ -268,7 +268,7 @@ it("allows GitHub Agents account secrets that should be allowed within the reque
       ✅ Can use token declaration account-a/repo-a.tokenA
       ✅ Can provision token to GitHub Agents secret in account account-a:
         ✅ Account account-a was allowed access to token #1
-        ✅ Can provision secret based on 1 rule:
+        ✅ Can provision to private repos based on 1 rule:
           ✅ Allowed by rule #1"
   `);
   await expect(toMarkdown(toMdast(resultA))).toMatchFileSnapshot(
@@ -607,7 +607,7 @@ it("doesn't allow GitHub Agents account secrets for unauthorized requesters", as
       ✅ Can use token declaration account-a/repo-a.tokenA
       ❌ Can't provision token to GitHub Agents secret in account account-a:
         ✅ Account account-a was allowed access to token #1
-        ❌ Can't provision secret (no matching rules)"
+        ❌ Can't provision to private repos (no matching rules)"
   `);
   await expect(toMarkdown(toMdast(resultA))).toMatchFileSnapshot(
     join(fixturesPath, "denied-account-unauthorized-requester/a.md"),
@@ -694,7 +694,7 @@ it("doesn't allow GitHub Agents account secrets within the requesting account fo
       ✅ Can use token declaration account-a/repo-a.tokenA
       ❌ Can't provision token to GitHub Agents secret in account account-x:
         ✅ Account account-x was allowed access to token #1
-        ❌ Can't provision secret (no matching rules)"
+        ❌ Can't provision to private repos (no matching rules)"
   `);
   await expect(toMarkdown(toMdast(resultA))).toMatchFileSnapshot(
     join(fixturesPath, "denied-account-unauthorized-requester-self/a.md"),
@@ -704,7 +704,7 @@ it("doesn't allow GitHub Agents account secrets within the requesting account fo
       ✅ Can use token declaration account-a/repo-a.tokenA
       ❌ Can't provision token to GitHub Agents secret in account account-x:
         ✅ Account account-x was allowed access to token #1
-        ❌ Can't provision secret (no matching rules)"
+        ❌ Can't provision to private repos (no matching rules)"
   `);
   await expect(toMarkdown(toMdast(resultB))).toMatchFileSnapshot(
     join(fixturesPath, "denied-account-unauthorized-requester-self/b.md"),
@@ -714,7 +714,7 @@ it("doesn't allow GitHub Agents account secrets within the requesting account fo
       ✅ Can use token declaration account-a/repo-a.tokenA
       ❌ Can't provision token to GitHub Agents secret in account account-y:
         ✅ Account account-y was allowed access to token #2
-        ❌ Can't provision secret (no matching rules)"
+        ❌ Can't provision to private repos (no matching rules)"
   `);
   await expect(toMarkdown(toMdast(resultC))).toMatchFileSnapshot(
     join(fixturesPath, "denied-account-unauthorized-requester-self/c.md"),
@@ -787,7 +787,7 @@ it("doesn't allow GitHub Agents account secrets within the requesting account wh
       ✅ Can use token declaration account-a/repo-a.tokenA
       ❌ Can't provision token to GitHub Agents secret in account account-a:
         ✅ Account account-a was allowed access to token #1
-        ❌ Can't provision secret based on 1 rule:
+        ❌ Can't provision to private repos based on 1 rule:
           ❌ Denied by rule #1"
   `);
   await expect(toMarkdown(toMdast(resultA))).toMatchFileSnapshot(

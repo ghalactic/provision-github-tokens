@@ -1,0 +1,6 @@
+- ✅ Repo `account-a/repo-a` **was allowed** to provision secret `SECRET_A`:
+  - ✅ **Can** use token declaration `account-a/repo-a.tokenA`
+  * ✅ **Can** provision token to **GitHub Actions** secret in account `account-a`:
+    - ✅ Account `account-a` was **allowed** access to token `#1`
+    - ✅ **Can** provision to **all repos** based on 1 rule:
+      - ✅ **Allowed** by rule `#1`

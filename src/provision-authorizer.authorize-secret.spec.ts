@@ -80,7 +80,7 @@ it("supports multiple secrets per rule", async () => {
       ✅ Can use token declaration account-y/repo-y.token-y
       ✅ Can provision token to GitHub Actions secret in account account-a:
         ✅ Account account-a was allowed access to token #1
-        ✅ Can provision secret based on 1 rule:
+        ✅ Can provision to private repos based on 1 rule:
           ✅ Allowed by rule #1"
   `);
   await expect(toMarkdown(toMdast(resultA))).toMatchFileSnapshot(
@@ -91,7 +91,7 @@ it("supports multiple secrets per rule", async () => {
       ✅ Can use token declaration account-y/repo-y.token-y
       ✅ Can provision token to GitHub Actions secret in account account-a:
         ✅ Account account-a was allowed access to token #1
-        ✅ Can provision secret based on 1 rule:
+        ✅ Can provision to private repos based on 1 rule:
           ✅ Allowed by rule #1"
   `);
   await expect(toMarkdown(toMdast(resultB))).toMatchFileSnapshot(
@@ -180,15 +180,15 @@ it("supports multiple targets in requests", async () => {
       ✅ Can use token declaration account-y/repo-y.token-y
       ✅ Can provision token to GitHub Actions secret in account account-a:
         ✅ Account account-a was allowed access to token #1
-        ✅ Can provision secret based on 1 rule:
+        ✅ Can provision to private repos based on 1 rule:
           ✅ Allowed by rule #1
       ✅ Can provision token to GitHub Agents secret in account account-a:
         ✅ Account account-a was allowed access to token #1
-        ✅ Can provision secret based on 1 rule:
+        ✅ Can provision to private repos based on 1 rule:
           ✅ Allowed by rule #1
       ✅ Can provision token to GitHub Codespaces secret in account account-a:
         ✅ Account account-a was allowed access to token #1
-        ✅ Can provision secret based on 1 rule:
+        ✅ Can provision to private repos based on 1 rule:
           ✅ Allowed by rule #1"
   `);
   await expect(toMarkdown(toMdast(resultA))).toMatchFileSnapshot(
@@ -255,7 +255,7 @@ it("supports wildcards in secret names", async () => {
       ✅ Can use token declaration account-y/repo-y.token-y
       ✅ Can provision token to GitHub Actions secret in account account-a:
         ✅ Account account-a was allowed access to token #1
-        ✅ Can provision secret based on 1 rule:
+        ✅ Can provision to private repos based on 1 rule:
           ✅ Allowed by rule #1"
   `);
   await expect(toMarkdown(toMdast(resultA))).toMatchFileSnapshot(
@@ -266,7 +266,7 @@ it("supports wildcards in secret names", async () => {
       ✅ Can use token declaration account-y/repo-y.token-y
       ✅ Can provision token to GitHub Actions secret in account account-a:
         ✅ Account account-a was allowed access to token #1
-        ✅ Can provision secret based on 1 rule:
+        ✅ Can provision to private repos based on 1 rule:
           ✅ Allowed by rule #1"
   `);
   await expect(toMarkdown(toMdast(resultB))).toMatchFileSnapshot(
@@ -327,7 +327,7 @@ it("supports rule descriptions", async () => {
       ✅ Can use token declaration account-y/repo-y.token-y
       ✅ Can provision token to GitHub Actions secret in account account-a:
         ✅ Account account-a was allowed access to token #1
-        ✅ Can provision secret based on 1 rule:
+        ✅ Can provision to private repos based on 1 rule:
           ✅ Allowed by rule #1: "<description>""
   `);
   await expect(toMarkdown(toMdast(resultA))).toMatchFileSnapshot(
@@ -440,7 +440,7 @@ it("allows secrets when a later rule allows access that a previous rule denied",
       ✅ Can use token declaration account-y/repo-y.token-y
       ✅ Can provision token to GitHub Actions secret in account account-a:
         ✅ Account account-a was allowed access to token #1
-        ✅ Can provision secret based on 2 rules:
+        ✅ Can provision to private repos based on 2 rules:
           ❌ Denied by rule #1
           ✅ Allowed by rule #2"
   `);
@@ -566,7 +566,7 @@ it("doesn't allow secrets when a later rule denies access that a previous rule a
       ✅ Can use token declaration account-y/repo-y.token-y
       ❌ Can't provision token to GitHub Actions secret in account account-a:
         ✅ Account account-a was allowed access to token #1
-        ❌ Can't provision secret based on 2 rules:
+        ❌ Can't provision to private repos based on 2 rules:
           ✅ Allowed by rule #1
           ❌ Denied by rule #2"
   `);
@@ -648,7 +648,7 @@ it("doesn't allow secrets when no rule matches the secret name", async () => {
       ✅ Can use token declaration account-y/repo-y.token-y
       ❌ Can't provision token to GitHub Actions secret in account account-a:
         ✅ Account account-a was allowed access to token #1
-        ❌ Can't provision secret (no matching rules)"
+        ❌ Can't provision to private repos (no matching rules)"
   `);
   await expect(toMarkdown(toMdast(resultA))).toMatchFileSnapshot(
     join(fixturesPath, "denied-no-matching-secret/a.md"),
@@ -717,7 +717,7 @@ it("doesn't allow secrets when two account patterns match but one allows and one
       ✅ Can use token declaration account-y/repo-y.token-y
       ❌ Can't provision token to GitHub Actions secret in account account-a:
         ✅ Account account-a was allowed access to token #1
-        ❌ Can't provision secret based on 1 rule:
+        ❌ Can't provision to private repos based on 1 rule:
           ❌ Denied by rule #1"
   `);
   await expect(toMarkdown(toMdast(resultA))).toMatchFileSnapshot(
@@ -889,19 +889,19 @@ it("doesn't allow secrets when some targets aren't allowed", async () => {
       ✅ Can use token declaration account-y/repo-y.token-y
       ✅ Can provision token to GitHub Actions secret in account account-a:
         ✅ Account account-a was allowed access to token #1
-        ✅ Can provision secret based on 1 rule:
+        ✅ Can provision to private repos based on 1 rule:
           ✅ Allowed by rule #1
       ✅ Can provision token to GitHub Agents secret in account account-a:
         ✅ Account account-a was allowed access to token #1
-        ✅ Can provision secret based on 1 rule:
+        ✅ Can provision to private repos based on 1 rule:
           ✅ Allowed by rule #1
       ❌ Can't provision token to GitHub Codespaces secret in account account-a:
         ✅ Account account-a was allowed access to token #1
-        ❌ Can't provision secret based on 1 rule:
+        ❌ Can't provision to private repos based on 1 rule:
           ❌ Denied by rule #1
       ✅ Can provision token to Dependabot secret in account account-a:
         ✅ Account account-a was allowed access to token #1
-        ✅ Can provision secret based on 1 rule:
+        ✅ Can provision to private repos based on 1 rule:
           ✅ Allowed by rule #1"
   `);
   await expect(toMarkdown(toMdast(resultA))).toMatchFileSnapshot(
@@ -1027,7 +1027,7 @@ it("doesn't allow secrets when the token isn't allowed for a target", async () =
       ✅ Can use token declaration account-y/repo-y.token-y
       ❌ Can't provision token to GitHub Actions secret in account account-a:
         ❌ Account account-a was denied access to token #1
-        ✅ Can provision secret based on 1 rule:
+        ✅ Can provision to private repos based on 1 rule:
           ✅ Allowed by rule #1
       ❌ Can't provision token to GitHub Actions secret in private repo account-a/repo-a:
         ❌ Repo account-a/repo-a was denied access to token #2
@@ -1093,7 +1093,7 @@ it("doesn't allow secrets for unshared token declarations", async () => {
       ❌ Can't use token declaration account-y/repo-y.token-y because it isn't shared
       ❌ Can't provision token to GitHub Actions secret in account account-a:
         ❌ Token can't be authorized without a declaration
-        ✅ Can provision secret based on 1 rule:
+        ✅ Can provision to private repos based on 1 rule:
           ✅ Allowed by rule #1"
   `);
   await expect(toMarkdown(toMdast(resultA))).toMatchFileSnapshot(
@@ -1155,7 +1155,7 @@ it("doesn't allow secrets for undefined token declarations", async () => {
       ❌ Can't use token declaration account-y/repo-y.token-y because it doesn't exist
       ❌ Can't provision token to GitHub Actions secret in account account-a:
         ❌ Token can't be authorized without a declaration
-        ✅ Can provision secret based on 1 rule:
+        ✅ Can provision to private repos based on 1 rule:
           ✅ Allowed by rule #1"
   `);
   await expect(toMarkdown(toMdast(resultA))).toMatchFileSnapshot(
@@ -1215,7 +1215,7 @@ it("doesn't allow secrets when the account matches but the secret type isn't all
       ✅ Can use token declaration account-y/repo-y.token-y
       ❌ Can't provision token to GitHub Actions secret in account account-a:
         ✅ Account account-a was allowed access to token #1
-        ❌ Can't provision secret (no matching rules)"
+        ❌ Can't provision to private repos (no matching rules)"
   `);
   await expect(toMarkdown(toMdast(resultA))).toMatchFileSnapshot(
     join(fixturesPath, "denied-secret-type-not-allowed/a.md"),

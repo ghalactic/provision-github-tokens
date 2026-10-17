@@ -15,11 +15,13 @@ import { createSequencer } from "../sequencer.js";
 import type {
   ProvisionAuthResult,
   ProvisionAuthResultExplainer,
+  ProvisionAuthSelectedRepoResult,
   ProvisionAuthTargetResult,
   ProvisionAuthTargetRuleResult,
 } from "../type/provision-auth-result.js";
 import type { ProvisionSecretsRule } from "../type/provision-rule.js";
 import type { TokenAuthResult } from "../type/token-auth-result.js";
+import { accountSecretVisibilityCategoryLabel } from "./account-secret-visibility-category.js";
 
 export function createTextProvisionAuthExplainer(): ProvisionAuthResultExplainer<string> {
   const tokenSeq = createSequencer<TokenAuthResult>();
@@ -71,13 +73,14 @@ export function createTextProvisionAuthExplainer(): ProvisionAuthResultExplainer
   }
 
   function explainTarget(result: ProvisionAuthTargetResult): string {
-    const { isAllowed } = result;
+    const { isAllowed, target } = result;
 
     return (
       `\n  ${icon(isAllowed)} ${isAllowed ? "Can" : "Can't"} ` +
-      `provision token to ${explainSubject(result.target)}:` +
+      `provision token to ${explainSubject(target)}:` +
       explainTargetToken(result) +
-      explainBasedOnRules(result)
+      explainBasedOnRules(target, result) +
+      explainSelectedRepositories(target, result)
     );
   }
 
@@ -114,15 +117,22 @@ export function createTextProvisionAuthExplainer(): ProvisionAuthResultExplainer
     );
   }
 
-  function explainBasedOnRules({
-    isProvisionAllowed,
-    rules,
-  }: ProvisionAuthTargetResult): string {
+  function explainBasedOnRules(
+    target: ProvisionRequestTarget,
+    {
+      isProvisionAllowed,
+      isSecretVisibilityCategoryAllowed,
+      rules,
+    }: ProvisionAuthTargetResult,
+  ): string {
+    const isAllowed = isRepoProvisionRequestTarget(target)
+      ? isProvisionAllowed
+      : isSecretVisibilityCategoryAllowed;
     const ruleCount = rules.length;
     const summary =
-      `\n    ${icon(isProvisionAllowed)} ` +
-      `${isProvisionAllowed ? "Can" : "Can't"} ` +
-      `provision secret ` +
+      `\n    ${icon(isAllowed)} ` +
+      `${isAllowed ? "Can" : "Can't"} ` +
+      `provision ${explainProvisionTo(target)}` +
       (ruleCount < 1
         ? "(no matching rules)"
         : `based on ${pluralize(ruleCount, "rule", "rules")}:`);
@@ -135,6 +145,66 @@ export function createTextProvisionAuthExplainer(): ProvisionAuthResultExplainer
     }
 
     return `${summary}${explainedRules}`;
+  }
+
+  function explainProvisionTo(target: ProvisionRequestTarget): string {
+    return isRepoProvisionRequestTarget(target)
+      ? "secret "
+      : `to ${accountSecretVisibilityCategoryLabel(target.visibility)} `;
+  }
+
+  function explainSelectedRepositories(
+    target: ProvisionRequestTarget,
+    result: ProvisionAuthTargetResult,
+  ): string {
+    const selectedRepos =
+      "selectedRepos" in result ? result.selectedRepos : undefined;
+    if (!selectedRepos || isRepoProvisionRequestTarget(target)) return "";
+
+    const { visibility } = target;
+    const repos = Object.entries(selectedRepos.results);
+    repos.sort(([a], [b]) => a.localeCompare(b));
+
+    let explained = "";
+    for (const [repo, repoResult] of repos) {
+      explained += explainSelectedRepository(repo, repoResult);
+    }
+
+    if (!selectedRepos.isMatched && typeof visibility !== "string") {
+      explained += explainMatchedNothing(visibility.patterns);
+    }
+
+    return explained;
+  }
+
+  function explainSelectedRepository(
+    repo: string,
+    { isAllowed, rules, visibility }: ProvisionAuthSelectedRepoResult,
+  ): string {
+    let explained =
+      `\n    ${icon(isAllowed)} ` +
+      `${isAllowed ? "Can" : "Can't"} ` +
+      `provision secret to ${visibility} repo ${repo}:`;
+
+    if (rules.length < 1) {
+      return (
+        explained +
+        `\n      ${FAIL_ICON} Can't provision secret (no matching rules)`
+      );
+    }
+
+    for (const ruleResult of rules) {
+      explained += explainRule(ruleResult);
+    }
+
+    return explained;
+  }
+
+  function explainMatchedNothing(patterns: string[]): string {
+    return (
+      `\n    ${FAIL_ICON} ` +
+      `No repositories matched the patterns ${patterns.join(", ")}`
+    );
   }
 
   function explainRule({

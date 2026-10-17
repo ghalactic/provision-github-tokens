@@ -65668,6 +65668,13 @@ function createSequencer() {
   };
 }
 
+// src/provision-auth-explainer/account-secret-visibility-category.ts
+function accountSecretVisibilityCategoryLabel(visibility) {
+  if (visibility === "all") return "all repos";
+  if (visibility === "private") return "private repos";
+  return visibility.patterns.length > 0 ? "selected repos" : "no repos";
+}
+
 // src/provision-auth-explainer/text.ts
 function createTextProvisionAuthExplainer() {
   const tokenSeq = createSequencer();
@@ -65702,9 +65709,9 @@ function createTextProvisionAuthExplainer() {
     return explained;
   }
   function explainTarget(result) {
-    const { isAllowed } = result;
+    const { isAllowed, target } = result;
     return `
-  ${icon(isAllowed)} ${isAllowed ? "Can" : "Can't"} provision token to ${explainSubject(result.target)}:` + explainTargetToken(result) + explainBasedOnRules(result);
+  ${icon(isAllowed)} ${isAllowed ? "Can" : "Can't"} provision token to ${explainSubject(target)}:` + explainTargetToken(result) + explainBasedOnRules(target, result) + explainSelectedRepositories(target, result);
   }
   function explainTargetToken({
     isTokenAllowed,
@@ -65723,19 +65730,55 @@ function createTextProvisionAuthExplainer() {
   function explainSubject(target) {
     return `${secretTypeText(target)} secret in ` + (isRepoProvisionRequestTarget(target) ? `${target.visibility} repo ` : "account ") + `${accountOrRepoRefToString(target.target)}`;
   }
-  function explainBasedOnRules({
+  function explainBasedOnRules(target, {
     isProvisionAllowed,
+    isSecretVisibilityCategoryAllowed,
     rules
   }) {
+    const isAllowed = isRepoProvisionRequestTarget(target) ? isProvisionAllowed : isSecretVisibilityCategoryAllowed;
     const ruleCount = rules.length;
     const summary2 = `
-    ${icon(isProvisionAllowed)} ${isProvisionAllowed ? "Can" : "Can't"} provision secret ` + (ruleCount < 1 ? "(no matching rules)" : `based on ${pluralize(ruleCount, "rule", "rules")}:`);
+    ${icon(isAllowed)} ${isAllowed ? "Can" : "Can't"} provision ${explainProvisionTo(target)}` + (ruleCount < 1 ? "(no matching rules)" : `based on ${pluralize(ruleCount, "rule", "rules")}:`);
     if (ruleCount < 1) return summary2;
     let explainedRules = "";
     for (const ruleResult of rules) {
       explainedRules += explainRule(ruleResult);
     }
     return `${summary2}${explainedRules}`;
+  }
+  function explainProvisionTo(target) {
+    return isRepoProvisionRequestTarget(target) ? "secret " : `to ${accountSecretVisibilityCategoryLabel(target.visibility)} `;
+  }
+  function explainSelectedRepositories(target, result) {
+    const selectedRepos = "selectedRepos" in result ? result.selectedRepos : void 0;
+    if (!selectedRepos || isRepoProvisionRequestTarget(target)) return "";
+    const { visibility } = target;
+    const repos = Object.entries(selectedRepos.results);
+    repos.sort(([a2], [b2]) => a2.localeCompare(b2));
+    let explained = "";
+    for (const [repo, repoResult] of repos) {
+      explained += explainSelectedRepository(repo, repoResult);
+    }
+    if (!selectedRepos.isMatched && typeof visibility !== "string") {
+      explained += explainMatchedNothing(visibility.patterns);
+    }
+    return explained;
+  }
+  function explainSelectedRepository(repo, { isAllowed, rules, visibility }) {
+    let explained = `
+    ${icon(isAllowed)} ${isAllowed ? "Can" : "Can't"} provision secret to ${visibility} repo ${repo}:`;
+    if (rules.length < 1) {
+      return explained + `
+      ${FAIL_ICON} Can't provision secret (no matching rules)`;
+    }
+    for (const ruleResult of rules) {
+      explained += explainRule(ruleResult);
+    }
+    return explained;
+  }
+  function explainMatchedNothing(patterns) {
+    return `
+    ${FAIL_ICON} No repositories matched the patterns ${patterns.join(", ")}`;
   }
   function explainRule({
     index,
@@ -120809,23 +120852,25 @@ function createProvisionAuthorizer(createTokenRequest, tokenAuthorizer, config) 
           if (isRepoProvisionRequestTarget(target)) {
             ruleHave = selectRepoRule(i2, target, isSelfRepo);
           } else {
-            const category = accountSecretVisibilityCategory(target.visibility);
+            const visibilityCategory = accountSecretVisibilityCategory(
+              target.visibility
+            );
             for (let j2 = 0; j2 < targetPatterns[i2].accounts.length; ++j2) {
               const [account, accountPattern] = targetPatterns[i2].accounts[j2];
               if (!accountPattern.test(targetName)) continue;
-              const accountPatternHave = selectAccountCategory(
+              const accountPatternHave = selectAccountVisibilityCategory(
                 rule.to.github.accounts[account].types,
                 target.type,
-                category
+                visibilityCategory
               );
               if (accountPatternHave) ruleHave = accountPatternHave;
               if (ruleHave === "deny") break;
             }
             if (isSelfAccount) {
-              const selfHave = selectAccountCategory(
+              const selfHave = selectAccountVisibilityCategory(
                 rule.to.github.account.types,
                 target.type,
-                category
+                visibilityCategory
               );
               if (selfHave) ruleHave = selfHave;
             }
@@ -120851,12 +120896,14 @@ function createProvisionAuthorizer(createTokenRequest, tokenAuthorizer, config) 
           );
           isTokenAllowed = tokenAuthResult.isAllowed;
         }
-        const isProvisionAllowed = have === "allow" && (selectedRepos?.isAllowed ?? true);
+        const isSecretVisibilityCategoryAllowed = have === "allow";
+        const isProvisionAllowed = isSecretVisibilityCategoryAllowed && (selectedRepos?.isAllowed ?? true);
         const common = {
           rules: ruleResults,
           have,
           tokenAuthResult,
           isTokenAllowed,
+          isSecretVisibilityCategoryAllowed,
           isProvisionAllowed,
           isAllowed: isTokenAllowed && isProvisionAllowed
         };
@@ -120976,8 +121023,8 @@ function createProvisionAuthorizer(createTokenRequest, tokenAuthorizer, config) 
     if (visibility === "private") return "privateRepos";
     return visibility.patterns.length > 0 ? "selectedRepos" : "noRepos";
   }
-  function selectAccountCategory(types, type, category) {
-    return selectAccountSecretType(types, type)?.[category];
+  function selectAccountVisibilityCategory(types, type, visibilityCategory) {
+    return selectAccountSecretType(types, type)?.[visibilityCategory];
   }
   function selectAccountSecretType(types, type) {
     switch (type) {
@@ -121415,18 +121462,19 @@ function createMarkdownProvisionAuthExplainer() {
     return targets;
   }
   function explainTarget(result) {
-    const { isAllowed } = result;
+    const { isAllowed, target } = result;
     return [
       paragraph2(
         text2(`${icon(isAllowed)} `),
         strong2(text2(isAllowed ? "Can" : "Can't")),
         text2(" provision token to "),
-        ...explainSubject(result.target),
+        ...explainSubject(target),
         text2(":")
       ),
       list3(
         listItem2(...explainTargetToken(result)),
-        listItem2(...explainBasedOnRules(result))
+        listItem2(...explainBasedOnRules(target, result)),
+        ...explainSelectedRepositories(target, result)
       )
     ];
   }
@@ -121463,15 +121511,18 @@ function createMarkdownProvisionAuthExplainer() {
       inlineCode2(accountOrRepoRefToString(target.target))
     ];
   }
-  function explainBasedOnRules({
+  function explainBasedOnRules(target, {
     isProvisionAllowed,
+    isSecretVisibilityCategoryAllowed,
     rules
   }) {
+    const isAllowed = isRepoProvisionRequestTarget(target) ? isProvisionAllowed : isSecretVisibilityCategoryAllowed;
     const ruleCount = rules.length;
     const summary2 = paragraph2(
-      text2(`${icon(isProvisionAllowed)} `),
-      strong2(text2(isProvisionAllowed ? "Can" : "Can't")),
-      text2(" provision secret "),
+      text2(`${icon(isAllowed)} `),
+      strong2(text2(isAllowed ? "Can" : "Can't")),
+      text2(" provision "),
+      ...explainProvisionTo(target),
       ...ruleCount < 1 ? [text2("(no matching rules)")] : [text2(`based on ${pluralize(ruleCount, "rule", "rules")}:`)]
     );
     if (ruleCount < 1) return [summary2];
@@ -121480,6 +121531,73 @@ function createMarkdownProvisionAuthExplainer() {
       explainedRules.push(listItem2(...explainRule(ruleResult)));
     }
     return [summary2, list3(...explainedRules)];
+  }
+  function explainProvisionTo(target) {
+    return isRepoProvisionRequestTarget(target) ? [text2("secret ")] : [
+      text2("to "),
+      strong2(text2(accountSecretVisibilityCategoryLabel(target.visibility))),
+      text2(" ")
+    ];
+  }
+  function explainSelectedRepositories(target, result) {
+    const selectedRepos = "selectedRepos" in result ? result.selectedRepos : void 0;
+    if (!selectedRepos || isRepoProvisionRequestTarget(target)) return [];
+    const { visibility } = target;
+    const repos = Object.entries(selectedRepos.results);
+    repos.sort(([a2], [b2]) => a2.localeCompare(b2));
+    const items = [];
+    for (const [repo, repoResult] of repos) {
+      items.push(listItem2(...explainSelectedRepository(repo, repoResult)));
+    }
+    if (!selectedRepos.isMatched && typeof visibility !== "string") {
+      items.push(
+        listItem2(
+          paragraph2(
+            text2(`${FAIL_ICON} No repositories matched the patterns `),
+            ...explainPatterns(visibility.patterns)
+          )
+        )
+      );
+    }
+    return items;
+  }
+  function explainSelectedRepository(repo, { isAllowed, rules, visibility }) {
+    const summary2 = paragraph2(
+      text2(`${icon(isAllowed)} `),
+      strong2(text2(isAllowed ? "Can" : "Can't")),
+      text2(" provision secret to "),
+      strong2(text2(visibility)),
+      text2(" repo "),
+      inlineCode2(repo),
+      text2(":")
+    );
+    if (rules.length < 1) {
+      return [
+        summary2,
+        list3(
+          listItem2(
+            paragraph2(
+              text2(`${FAIL_ICON} `),
+              strong2(text2("Can't")),
+              text2(" provision secret (no matching rules)")
+            )
+          )
+        )
+      ];
+    }
+    const explainedRules = [];
+    for (const ruleResult of rules) {
+      explainedRules.push(listItem2(...explainRule(ruleResult)));
+    }
+    return [summary2, list3(...explainedRules)];
+  }
+  function explainPatterns(patterns) {
+    const content = [];
+    for (let i2 = 0; i2 < patterns.length; ++i2) {
+      if (i2 > 0) content.push(text2(", "));
+      content.push(inlineCode2(patterns[i2]));
+    }
+    return content;
   }
   function explainRule({
     index,
