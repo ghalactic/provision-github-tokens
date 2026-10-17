@@ -1,5 +1,5 @@
 import type {
-  AccountSecretSelectedRepo,
+  AccountSecretVisibility,
   GitHubEnvironmentProvisionRequestTarget,
   GitHubRepoProvisionRequestTarget,
   ProvisionRequest,
@@ -31,7 +31,7 @@ export function createTestProvisionRequest(
 export function createTestAccountProvisionRequestTarget(
   type: "actions" | "agents" | "codespaces" | "dependabot",
   account: string,
-  visibility: "all" | "private" | AccountSecretSelectedRepo[],
+  visibility: AccountSecretVisibility,
 ): ProvisionRequestTarget {
   return { platform: "github", type, target: { account }, visibility };
 }

@@ -1001,8 +1001,8 @@ it("can provision multiple secrets of the same type", async () => {
   `);
   expect(__getOrgSecrets("account-a")).toEqual({
     actions: {
-      SECRET_A: { value: "<token-a>", visibility: "all" },
-      SECRET_B: { value: "<token-b>", visibility: "all" },
+      SECRET_A: { value: "<token-a>", visibility: "private" },
+      SECRET_B: { value: "<token-b>", visibility: "private" },
     },
     agents: {},
     codespaces: {},
@@ -1241,10 +1241,10 @@ it("can provision a secret to multiple targets", async () => {
     "
   `);
   expect(__getOrgSecrets("account-a")).toEqual({
-    actions: { SECRET_A: { value: "<token-a>", visibility: "all" } },
+    actions: { SECRET_A: { value: "<token-a>", visibility: "private" } },
     agents: {},
-    codespaces: { SECRET_A: { value: "<token-a>", visibility: "all" } },
-    dependabot: { SECRET_A: { value: "<token-a>", visibility: "all" } },
+    codespaces: { SECRET_A: { value: "<token-a>", visibility: "private" } },
+    dependabot: { SECRET_A: { value: "<token-a>", visibility: "private" } },
   });
   expect(__getRepoSecrets("account-a", "repo-a")).toEqual({
     actions: { SECRET_A: "<token-a>" },

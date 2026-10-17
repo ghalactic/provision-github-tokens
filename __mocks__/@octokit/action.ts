@@ -52,6 +52,7 @@ let repoIssueLabels: Record<string, string[]>;
 type OrgSecret = {
   value: string;
   visibility: "all" | "private" | "selected";
+  selectedRepositoryIds?: number[];
 };
 
 let orgSecrets: Record<
@@ -734,6 +735,7 @@ export function Octokit({
       encrypted_value,
       key_id,
       visibility,
+      selected_repository_ids,
     }: {
       org: string;
       secret_name: string;
@@ -755,7 +757,6 @@ export function Octokit({
 
     const key = orgKeys[org]?.[secretType];
 
-    if (visibility !== "all") throw new TestRequestError(400);
     if (!encrypted_value || !key || key.githubPublic.key_id !== key_id) {
       throw new TestRequestError(401);
     }
@@ -771,6 +772,9 @@ export function Octokit({
       orgSecrets[org][secretType][secret_name] = {
         value: decrypted,
         visibility,
+        ...(selected_repository_ids != null && {
+          selectedRepositoryIds: selected_repository_ids.map(Number),
+        }),
       };
     } catch {
       throw new TestRequestError(400);
