@@ -35,6 +35,10 @@ import {
 import { createEncryptSecret } from "./encrypt-secret.js";
 import { toMarkdown } from "./markdown.js";
 import { createMarkdownProvisionExplainer } from "./provision-explainer/markdown.js";
+import type {
+  AccountSecretSelectedRepo,
+  AccountSecretVisibility,
+} from "./provision-request.js";
 import { createProvisioner } from "./provisioner.js";
 
 vi.mock("@actions/core");
@@ -287,7 +291,7 @@ it("can provision org-level Actions secrets", async () => {
   const toMdast = createMarkdownProvisionExplainer();
 
   expect(__getOrgSecrets("account-a")).toEqual({
-    actions: { SECRET_A: { value: "<token-a>", visibility: "all" } },
+    actions: { SECRET_A: { value: "<token-a>", visibility: "private" } },
     agents: {},
     codespaces: {},
     dependabot: {},
@@ -592,3 +596,109 @@ it("can provision repo-level Actions secrets", async () => {
     toMarkdown(toMdast(resultA, targetResultsA)),
   ).toMatchFileSnapshot(join(fixturesPath, "repo/a.md"));
 });
+
+const selectedRepos: AccountSecretSelectedRepo[] = [
+  { ref: { account: "account-a", repo: "repo-a" }, id: 111 },
+  { ref: { account: "account-a", repo: "repo-b" }, id: 222 },
+];
+
+it.each<
+  [
+    type: "actions" | "agents" | "codespaces" | "dependabot",
+    visibility: AccountSecretVisibility,
+    expectedVisibility: "all" | "private" | "selected",
+    expectedSelectedRepositoryIds: number[] | undefined,
+  ]
+>([
+  ["actions", "all", "all", undefined],
+  ["actions", "private", "private", undefined],
+  ["actions", selectedRepos, "selected", [111, 222]],
+  ["actions", [], "selected", []],
+  ["agents", "all", "all", undefined],
+  ["agents", "private", "private", undefined],
+  ["agents", selectedRepos, "selected", [111, 222]],
+  ["agents", [], "selected", []],
+  ["codespaces", "all", "all", undefined],
+  ["codespaces", "private", "private", undefined],
+  ["codespaces", selectedRepos, "selected", [111, 222]],
+  ["codespaces", [], "selected", []],
+  ["dependabot", "all", "all", undefined],
+  ["dependabot", "private", "private", undefined],
+  ["dependabot", selectedRepos, "selected", [111, 222]],
+  ["dependabot", [], "selected", []],
+])(
+  "provisions a %s org secret with the account visibility",
+  async (
+    type,
+    visibility,
+    expectedVisibility,
+    expectedSelectedRepositoryIds,
+  ) => {
+    const [[accountA, [repoA]]] = createTestInstallationAccounts([
+      "Organization",
+      100,
+      "account-a",
+      ["repo-a"],
+    ]);
+    const [[appA, [appAInstallationA]]] = createTestApps([
+      "App A",
+      {},
+      [[accountA, "selected"]],
+    ]);
+    const accountAKey = await createTestKeyPair(`${type}.account-a`);
+
+    __setOrgKeys("account-a", { [type]: accountAKey });
+
+    const appRegistry = createTestAppRegistry(createTestRepoRegistry(), {
+      app: appA,
+      provisioner: true,
+      installations: [[appAInstallationA, [repoA]]],
+    });
+
+    const { findProvisionerOctokit } = createTestOctokitFactory(appRegistry);
+    const encryptSecret = vi.fn(createEncryptSecret(findProvisionerOctokit));
+    const provisionSecrets = createProvisioner(
+      findProvisionerOctokit,
+      encryptSecret,
+    );
+
+    const tokenAuthResult = createTestTokenAuthResult();
+    const tokenResults = new Map([
+      [
+        tokenAuthResult,
+        {
+          type: "CREATED" as const,
+          token: { token: "<token-a>", expires_at: "2001-02-03T04:05:06Z" },
+        },
+      ],
+    ]);
+
+    await provisionSecrets(tokenResults, [
+      {
+        request: createTestProvisionRequest(),
+        results: [
+          createTestProvisionAuthTargetResult({
+            target: createTestAccountProvisionRequestTarget(
+              type,
+              "account-a",
+              visibility,
+            ),
+            tokenAuthResult,
+          }),
+        ],
+        isMissingTargets: false,
+        isAllowed: true,
+      },
+    ]);
+
+    expect(__getOrgSecrets("account-a")[type]).toEqual({
+      SECRET_A: {
+        value: "<token-a>",
+        visibility: expectedVisibility,
+        ...(expectedSelectedRepositoryIds == null
+          ? {}
+          : { selectedRepositoryIds: expectedSelectedRepositoryIds }),
+      },
+    });
+  },
+);

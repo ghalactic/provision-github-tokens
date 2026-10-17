@@ -307,7 +307,7 @@ it("can provision org-level Codespaces secrets", async () => {
   expect(__getOrgSecrets("account-a")).toEqual({
     actions: {},
     agents: {},
-    codespaces: { SECRET_A: { value: "<token-a>", visibility: "all" } },
+    codespaces: { SECRET_A: { value: "<token-a>", visibility: "private" } },
     dependabot: {},
   });
   expect(__getOutput()).toMatchInlineSnapshot(`

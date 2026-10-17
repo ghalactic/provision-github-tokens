@@ -1,11 +1,15 @@
 import { info, warning } from "@actions/core";
 import { RequestError } from "@octokit/request-error";
 import type { EncryptSecret } from "./encrypt-secret.js";
-import { isRepoRef } from "./github-reference.js";
 import { createAgentsOctokit } from "./octokit-agents.js";
 import type { Octokit } from "./octokit.js";
 import { createTextProvisionExplainer } from "./provision-explainer/text.js";
-import type { ProvisionRequestTarget } from "./provision-request.js";
+import {
+  isEnvironmentProvisionRequestTarget,
+  isRepoProvisionRequestTarget,
+  type AccountSecretVisibility,
+  type ProvisionRequestTarget,
+} from "./provision-request.js";
 import type { FindProvisionerOctokit } from "./provisioner-octokit.js";
 import type {
   ProvisionAuthResult,
@@ -139,24 +143,26 @@ export function createProvisioner(
     encrypted: string,
     keyId: string,
     name: string,
-    { type, target }: ProvisionRequestTarget,
+    requestTarget: ProvisionRequestTarget,
   ): Promise<void> {
+    const { type } = requestTarget;
+
     if (type === "actions") {
-      if (isRepoRef(target)) {
+      if (isRepoProvisionRequestTarget(requestTarget)) {
         await octokit.rest.actions.createOrUpdateRepoSecret({
-          owner: target.account,
-          repo: target.repo,
+          owner: requestTarget.target.account,
+          repo: requestTarget.target.repo,
           secret_name: name,
           encrypted_value: encrypted,
           key_id: keyId,
         });
       } else {
         await octokit.rest.actions.createOrUpdateOrgSecret({
-          org: target.account,
+          org: requestTarget.target.account,
           secret_name: name,
           encrypted_value: encrypted,
           key_id: keyId,
-          visibility: "all",
+          ...toOrgSecretVisibilityParams(requestTarget.visibility),
         });
       }
 
@@ -166,21 +172,21 @@ export function createProvisioner(
     if (type === "agents") {
       const agents = createAgentsOctokit(octokit);
 
-      if (isRepoRef(target)) {
+      if (isRepoProvisionRequestTarget(requestTarget)) {
         await agents.createOrUpdateRepoSecret({
-          owner: target.account,
-          repo: target.repo,
+          owner: requestTarget.target.account,
+          repo: requestTarget.target.repo,
           secret_name: name,
           encrypted_value: encrypted,
           key_id: keyId,
         });
       } else {
         await agents.createOrUpdateOrgSecret({
-          org: target.account,
+          org: requestTarget.target.account,
           secret_name: name,
           encrypted_value: encrypted,
           key_id: keyId,
-          visibility: "all",
+          ...toOrgSecretVisibilityParams(requestTarget.visibility),
         });
       }
 
@@ -188,21 +194,21 @@ export function createProvisioner(
     }
 
     if (type === "codespaces") {
-      if (isRepoRef(target)) {
+      if (isRepoProvisionRequestTarget(requestTarget)) {
         await octokit.rest.codespaces.createOrUpdateRepoSecret({
-          owner: target.account,
-          repo: target.repo,
+          owner: requestTarget.target.account,
+          repo: requestTarget.target.repo,
           secret_name: name,
           encrypted_value: encrypted,
           key_id: keyId,
         });
       } else {
         await octokit.rest.codespaces.createOrUpdateOrgSecret({
-          org: target.account,
+          org: requestTarget.target.account,
           secret_name: name,
           encrypted_value: encrypted,
           key_id: keyId,
-          visibility: "all",
+          ...toOrgSecretVisibilityParams(requestTarget.visibility),
         });
       }
 
@@ -210,21 +216,21 @@ export function createProvisioner(
     }
 
     if (type === "dependabot") {
-      if (isRepoRef(target)) {
+      if (isRepoProvisionRequestTarget(requestTarget)) {
         await octokit.rest.dependabot.createOrUpdateRepoSecret({
-          owner: target.account,
-          repo: target.repo,
+          owner: requestTarget.target.account,
+          repo: requestTarget.target.repo,
           secret_name: name,
           encrypted_value: encrypted,
           key_id: keyId,
         });
       } else {
         await octokit.rest.dependabot.createOrUpdateOrgSecret({
-          org: target.account,
+          org: requestTarget.target.account,
           secret_name: name,
           encrypted_value: encrypted,
           key_id: keyId,
-          visibility: "all",
+          ...toOrgSecretVisibilityParams(requestTarget.visibility),
         });
       }
 
@@ -232,11 +238,11 @@ export function createProvisioner(
     }
 
     /* istanbul ignore else - @preserve */
-    if (type === "environment") {
+    if (isEnvironmentProvisionRequestTarget(requestTarget)) {
       await octokit.rest.actions.createOrUpdateEnvironmentSecret({
-        owner: target.account,
-        repo: target.repo,
-        environment_name: target.environment,
+        owner: requestTarget.target.account,
+        repo: requestTarget.target.repo,
+        environment_name: requestTarget.target.environment,
         secret_name: name,
         encrypted_value: encrypted,
         key_id: keyId,
@@ -249,5 +255,20 @@ export function createProvisioner(
     throw new Error(
       `Invariant violation: Unexpected target type ${JSON.stringify(type)}`,
     );
+  }
+
+  function toOrgSecretVisibilityParams(visibility: AccountSecretVisibility): {
+    visibility: "all" | "private" | "selected";
+    // eslint-disable-next-line @typescript-eslint/naming-convention -- GitHub API parameter
+    selected_repository_ids?: number[];
+  } {
+    if (visibility === "all" || visibility === "private") {
+      return { visibility };
+    }
+
+    return {
+      visibility: "selected",
+      selected_repository_ids: visibility.map(({ id }) => id),
+    };
   }
 }

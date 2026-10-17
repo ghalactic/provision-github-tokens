@@ -45,11 +45,14 @@ export type AccountSecretSelectedRepo = {
   id: number;
 };
 
+export type AccountSecretVisibility =
+  "all" | "private" | AccountSecretSelectedRepo[];
+
 export type GitHubAccountProvisionRequestTarget = {
   platform: "github";
   type: "actions" | "agents" | "codespaces" | "dependabot";
   target: AccountReference;
-  visibility: "private" | "all" | AccountSecretSelectedRepo[];
+  visibility: AccountSecretVisibility;
 };
 
 export type GitHubRepoProvisionRequestTarget = {
