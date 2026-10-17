@@ -12,6 +12,7 @@
 
 - ❌ Secret `SECRET_A` **wasn't** provisioned for repo `account-x/repo-x`:
   - ❌ Token **wasn't** created for **GitHub Actions** secret in `account-a`
+    - ❌ Would've been readable by **private repos**
 
 ## Token creation
 

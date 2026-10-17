@@ -40,6 +40,7 @@ import {
 import { createEncryptSecret } from "./encrypt-secret.js";
 import { toMarkdown } from "./markdown.js";
 import { createMarkdownProvisionExplainer } from "./provision-explainer/markdown.js";
+import type { AccountSecretSelectedRepo } from "./provision-request.js";
 import { createProvisioner } from "./provisioner.js";
 
 vi.mock("@actions/core");
@@ -197,6 +198,7 @@ it("doesn't provision secrets when provisioning isn't allowed", async () => {
 
     ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
       ❌ Not allowed to provision to GitHub Actions secret in account-a
+        ❌ Would've been readable by private repos
 
     "
   `);
@@ -355,6 +357,7 @@ it("doesn't provision secrets when the token wasn't created", async () => {
 
     ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
       ❌ Token wasn't created for GitHub Actions secret in account-a
+        ❌ Would've been readable by private repos
       ❌ Token wasn't created for GitHub Actions secret in account-a/repo-a
       ❌ Token wasn't created for GitHub environment env-a secret in account-a/repo-a
 
@@ -444,6 +447,7 @@ it("doesn't provision secrets when no suitable provisioners are found", async ()
 
     ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
       ❌ No suitable provisioner for GitHub Actions secret in account-x
+        ❌ Would've been readable by private repos
 
     "
   `);
@@ -528,6 +532,7 @@ it("doesn't provision secrets when target provisioning fails with a GitHub API e
 
     ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
       ❌ Failed to provision to GitHub Actions secret in account-a: 403 - Forbidden
+        ❌ Would've been readable by private repos
     ::debug::      {
     ::debug::        "message": "Resource not accessible"
     ::debug::      }
@@ -615,6 +620,7 @@ it("doesn't provision secrets when target provisioning fails with an unexpected 
 
     ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
       ❌ Failed to provision to GitHub Actions secret in account-a: <message>
+        ❌ Would've been readable by private repos
     ::debug::      Error: <message>
     ::debug::          at provisioner.ts:1:1
 
@@ -696,6 +702,7 @@ it("doesn't provision secrets when encryption fails with a GitHub API error", as
 
     ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
       ❌ Failed to provision to GitHub Actions secret in account-a: 401 - Unauthorized
+        ❌ Would've been readable by private repos
     ::debug::      (no response data)
 
     "
@@ -781,6 +788,7 @@ it("doesn't provision secrets when encryption fails with an unexpected error", a
 
     ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
       ❌ Failed to provision to GitHub Actions secret in account-a: <message>
+        ❌ Would've been readable by private repos
     ::debug::      Error: <message>
     ::debug::          at encrypt.ts:1:1
 
@@ -987,6 +995,7 @@ it("can provision multiple secrets of the same type", async () => {
 
     ✅ Secret SECRET_A was provisioned for repo account-a/repo-a:
       ✅ Provisioned to GitHub Actions secret in account-a
+        ✅ Readable by private repos
       ✅ Provisioned to GitHub Actions secret in account-a/repo-a
       ✅ Provisioned to GitHub environment env-a secret in account-a/repo-a
 
@@ -994,6 +1003,7 @@ it("can provision multiple secrets of the same type", async () => {
 
     ✅ Secret SECRET_B was provisioned for repo account-a/repo-a:
       ✅ Provisioned to GitHub Actions secret in account-a
+        ✅ Readable by private repos
       ✅ Provisioned to GitHub Actions secret in account-a/repo-a
       ✅ Provisioned to GitHub environment env-a secret in account-a/repo-a
 
@@ -1231,8 +1241,11 @@ it("can provision a secret to multiple targets", async () => {
 
     ✅ Secret SECRET_A was provisioned for repo account-a/repo-a:
       ✅ Provisioned to GitHub Actions secret in account-a
+        ✅ Readable by private repos
       ✅ Provisioned to GitHub Codespaces secret in account-a
+        ✅ Readable by private repos
       ✅ Provisioned to Dependabot secret in account-a
+        ✅ Readable by private repos
       ✅ Provisioned to GitHub Actions secret in account-a/repo-a
       ✅ Provisioned to GitHub Codespaces secret in account-a/repo-a
       ✅ Provisioned to Dependabot secret in account-a/repo-a
@@ -1258,6 +1271,192 @@ it("can provision a secret to multiple targets", async () => {
   await expect(
     toMarkdown(toMdast(resultA, targetResultsA)),
   ).toMatchFileSnapshot(join(fixturesPath, "multiple-targets/a.md"));
+});
+
+it("renders the visibility of provisioned account secrets", async () => {
+  const [[accountA, [repoA]]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "account-a",
+    ["repo-a"],
+  ]);
+  const [[appA, [appAInstallationA]]] = createTestApps([
+    "App A",
+    {},
+    [[accountA, "selected"]],
+  ]);
+
+  __setOrgKeys("account-a", {
+    actions: await createTestKeyPair("actions.account-a"),
+    agents: await createTestKeyPair("agents.account-a"),
+    codespaces: await createTestKeyPair("codespaces.account-a"),
+    dependabot: await createTestKeyPair("dependabot.account-a"),
+  });
+
+  const appRegistry = createTestAppRegistry(createTestRepoRegistry(), {
+    app: appA,
+    provisioner: true,
+    installations: [[appAInstallationA, [repoA]]],
+  });
+
+  const { findProvisionerOctokit } = createTestOctokitFactory(appRegistry);
+  const encryptSecret = vi.fn(createEncryptSecret(findProvisionerOctokit));
+  const provisionSecrets = createProvisioner(
+    findProvisionerOctokit,
+    encryptSecret,
+  );
+
+  const tokenAuthResult = createTestTokenAuthResult();
+  const tokenResults = new Map([
+    [
+      tokenAuthResult,
+      {
+        type: "CREATED" as const,
+        token: { token: "<token-a>", expires_at: "2001-02-03T04:05:06Z" },
+      },
+    ],
+  ]);
+
+  const selectedRepos: AccountSecretSelectedRepo[] = [
+    { ref: { account: "account-a", repo: "repo-b" }, id: 222 },
+    { ref: { account: "account-a", repo: "repo-a" }, id: 111 },
+  ];
+
+  const targets = [
+    createTestAccountProvisionRequestTarget("actions", "account-a", "all"),
+    createTestAccountProvisionRequestTarget(
+      "agents",
+      "account-a",
+      selectedRepos,
+    ),
+    createTestAccountProvisionRequestTarget("codespaces", "account-a", []),
+    createTestAccountProvisionRequestTarget(
+      "dependabot",
+      "account-a",
+      "private",
+    ),
+  ];
+
+  const [[resultA, targetResultsA]] = await provisionSecrets(tokenResults, [
+    {
+      request: createTestProvisionRequest({ to: targets }),
+      results: targets.map((target) =>
+        createTestProvisionAuthTargetResult({ target, tokenAuthResult }),
+      ),
+      isMissingTargets: false,
+      isAllowed: true,
+    },
+  ]);
+
+  const toMdast = createMarkdownProvisionExplainer();
+
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "
+    Secret #1:
+
+    ✅ Secret SECRET_A was provisioned for repo account-a/repo-a:
+      ✅ Provisioned to GitHub Actions secret in account-a
+        ✅ Readable by all repos
+      ✅ Provisioned to GitHub Agents secret in account-a
+        ✅ Readable by 2 repos:
+          ✅ repo-a
+          ✅ repo-b
+      ✅ Provisioned to GitHub Codespaces secret in account-a
+        ✅ Readable by no repos
+      ✅ Provisioned to Dependabot secret in account-a
+        ✅ Readable by private repos
+
+    "
+  `);
+  await expect(
+    toMarkdown(toMdast(resultA, targetResultsA)),
+  ).toMatchFileSnapshot(join(fixturesPath, "account-visibility/a.md"));
+});
+
+it("renders the visibility of a failed account secret", async () => {
+  const [[accountA, [repoA]]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "account-a",
+    ["repo-a"],
+  ]);
+  const [[appA, [appAInstallationA]]] = createTestApps([
+    "App A",
+    {},
+    [[accountA, "selected"]],
+  ]);
+  const accountAActionsKey = await createTestKeyPair("actions.account-a");
+
+  __setOrgKeys("account-a", { actions: accountAActionsKey });
+  __setErrors("actions.createOrUpdateOrgSecret", [
+    new TestRequestError(403, { message: "Resource not accessible" }),
+  ]);
+
+  const appRegistry = createTestAppRegistry(createTestRepoRegistry(), {
+    app: appA,
+    provisioner: true,
+    installations: [[appAInstallationA, [repoA]]],
+  });
+
+  const { findProvisionerOctokit } = createTestOctokitFactory(appRegistry);
+  const encryptSecret = vi.fn(createEncryptSecret(findProvisionerOctokit));
+  const provisionSecrets = createProvisioner(
+    findProvisionerOctokit,
+    encryptSecret,
+  );
+
+  const tokenAuthResult = createTestTokenAuthResult();
+  const tokenResults = new Map([
+    [
+      tokenAuthResult,
+      {
+        type: "CREATED" as const,
+        token: { token: "<token-a>", expires_at: "2001-02-03T04:05:06Z" },
+      },
+    ],
+  ]);
+
+  const selectedRepos: AccountSecretSelectedRepo[] = [
+    { ref: { account: "account-a", repo: "repo-a" }, id: 111 },
+    { ref: { account: "account-a", repo: "repo-b" }, id: 222 },
+  ];
+  const target = createTestAccountProvisionRequestTarget(
+    "actions",
+    "account-a",
+    selectedRepos,
+  );
+
+  const [[resultA, targetResultsA]] = await provisionSecrets(tokenResults, [
+    {
+      request: createTestProvisionRequest({ to: [target] }),
+      results: [
+        createTestProvisionAuthTargetResult({ target, tokenAuthResult }),
+      ],
+      isMissingTargets: false,
+      isAllowed: true,
+    },
+  ]);
+
+  const toMdast = createMarkdownProvisionExplainer();
+
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "
+    Secret #1:
+
+    ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
+      ❌ Failed to provision to GitHub Actions secret in account-a: 403 - Forbidden
+        ❌ Would've been readable by 2 repos:
+          ❌ repo-a
+          ❌ repo-b
+    ::debug::      {
+    ::debug::        "message": "Resource not accessible"
+    ::debug::      }
+
+    "
+  `);
+  await expect(
+    toMarkdown(toMdast(resultA, targetResultsA)),
+  ).toMatchFileSnapshot(join(fixturesPath, "account-visibility-error/a.md"));
 });
 
 it("doesn't stop provisioning when some targets fail", async () => {
@@ -1371,13 +1570,17 @@ it("doesn't stop provisioning when some targets fail", async () => {
 
     ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
       ❌ Not allowed to provision to GitHub Actions secret in account-a
+        ❌ Would've been readable by private repos
 
     Secret #2:
 
     ❌ Secret SECRET_A was partially provisioned for repo account-a/repo-a:
       ❌ Token wasn't created for GitHub Actions secret in account-a
+        ❌ Would've been readable by private repos
       ✅ Provisioned to GitHub Actions secret in account-a
+        ✅ Readable by private repos
       ❌ No suitable provisioner for GitHub Actions secret in account-x
+        ❌ Would've been readable by private repos
 
     "
   `);

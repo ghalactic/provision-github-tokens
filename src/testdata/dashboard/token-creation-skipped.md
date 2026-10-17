@@ -12,6 +12,7 @@
 
 - ❌ Secret `SECRET_A` **wasn't** provisioned for repo `account-x/repo-x`:
   - ❌ **Failed** to provision to **GitHub Actions** secret in `account-a`:
+    - ❌ Would've been readable by **private repos**
     - ❌ **500** - _boom_
       <details>
       <summary>Response body</summary>

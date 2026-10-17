@@ -1,0 +1,11 @@
+- ✅ Secret `SECRET_A` **was** provisioned for repo `account-a/repo-a`:
+  - ✅ **Provisioned** to **GitHub Actions** secret in `account-a`
+    - ✅ Readable by **all repos**
+  - ✅ **Provisioned** to **GitHub Agents** secret in `account-a`
+    - ✅ Readable by **2 repos**:
+      - ✅ `repo-a`
+      - ✅ `repo-b`
+  - ✅ **Provisioned** to **GitHub Codespaces** secret in `account-a`
+    - ✅ Readable by **no repos**
+  - ✅ **Provisioned** to **Dependabot** secret in `account-a`
+    - ✅ Readable by **private repos**

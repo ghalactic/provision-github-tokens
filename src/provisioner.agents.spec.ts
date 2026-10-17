@@ -126,6 +126,7 @@ it("handles GitHub API errors when provisioning org-level Agents secrets", async
 
     ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
       ❌ Failed to provision to GitHub Agents secret in account-a: 401 - Unauthorized
+        ❌ Would've been readable by private repos
     ::debug::      (no response data)
 
     "
@@ -218,6 +219,7 @@ it("handles unexpected errors when provisioning org-level Agents secrets", async
 
     ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
       ❌ Failed to provision to GitHub Agents secret in account-a: <message>
+        ❌ Would've been readable by private repos
     ::debug::      Error: <message>
     ::debug::          at provisioner.ts:1:1
 
@@ -313,6 +315,7 @@ it("can provision org-level Agents secrets", async () => {
 
     ✅ Secret SECRET_A was provisioned for repo account-a/repo-a:
       ✅ Provisioned to GitHub Agents secret in account-a
+        ✅ Readable by private repos
 
     "
   `);

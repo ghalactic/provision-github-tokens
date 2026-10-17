@@ -127,6 +127,7 @@ it("handles GitHub API errors when provisioning org-level Actions secrets", asyn
 
     ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
       ❌ Failed to provision to GitHub Actions secret in account-a: 403 - Forbidden
+        ❌ Would've been readable by private repos
     ::debug::      {
     ::debug::        "message": "Resource not accessible"
     ::debug::      }
@@ -214,6 +215,7 @@ it("handles unexpected errors when provisioning org-level Actions secrets", asyn
 
     ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
       ❌ Failed to provision to GitHub Actions secret in account-a: <message>
+        ❌ Would've been readable by private repos
     ::debug::      Error: <message>
     ::debug::          at provisioner.ts:1:1
 
@@ -302,6 +304,7 @@ it("can provision org-level Actions secrets", async () => {
 
     ✅ Secret SECRET_A was provisioned for repo account-a/repo-a:
       ✅ Provisioned to GitHub Actions secret in account-a
+        ✅ Readable by private repos
 
     "
   `);
