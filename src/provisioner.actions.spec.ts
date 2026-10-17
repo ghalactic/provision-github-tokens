@@ -603,8 +603,16 @@ it("can provision repo-level Actions secrets", async () => {
 const selectedRepos: AccountSecretSelectedRepos = {
   patterns: ["repo-*"],
   repos: [
-    { ref: { account: "account-a", repo: "repo-a" }, id: 111 },
-    { ref: { account: "account-a", repo: "repo-b" }, id: 222 },
+    {
+      ref: { account: "account-a", repo: "repo-a" },
+      id: 111,
+      visibility: "private",
+    },
+    {
+      ref: { account: "account-a", repo: "repo-b" },
+      id: 222,
+      visibility: "private",
+    },
   ],
 };
 

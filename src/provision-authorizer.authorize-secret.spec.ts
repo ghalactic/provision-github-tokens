@@ -39,7 +39,12 @@ it("supports multiple secrets per rule", async () => {
                 accounts: {
                   "account-a": {
                     types: {
-                      actions: "allow",
+                      actions: {
+                        allRepos: "allow",
+                        privateRepos: "allow",
+                        selectedRepos: "allow",
+                        noRepos: "allow",
+                      },
                     },
                   },
                 },
@@ -112,9 +117,24 @@ it("supports multiple targets in requests", async () => {
                 accounts: {
                   "account-a": {
                     types: {
-                      actions: "allow",
-                      agents: "allow",
-                      codespaces: "allow",
+                      actions: {
+                        allRepos: "allow",
+                        privateRepos: "allow",
+                        selectedRepos: "allow",
+                        noRepos: "allow",
+                      },
+                      agents: {
+                        allRepos: "allow",
+                        privateRepos: "allow",
+                        selectedRepos: "allow",
+                        noRepos: "allow",
+                      },
+                      codespaces: {
+                        allRepos: "allow",
+                        privateRepos: "allow",
+                        selectedRepos: "allow",
+                        noRepos: "allow",
+                      },
                     },
                   },
                 },
@@ -194,7 +214,12 @@ it("supports wildcards in secret names", async () => {
                 accounts: {
                   "account-a": {
                     types: {
-                      actions: "allow",
+                      actions: {
+                        allRepos: "allow",
+                        privateRepos: "allow",
+                        selectedRepos: "allow",
+                        noRepos: "allow",
+                      },
                     },
                   },
                 },
@@ -268,7 +293,12 @@ it("supports rule descriptions", async () => {
                 accounts: {
                   "account-a": {
                     types: {
-                      actions: "allow",
+                      actions: {
+                        allRepos: "allow",
+                        privateRepos: "allow",
+                        selectedRepos: "allow",
+                        noRepos: "allow",
+                      },
                     },
                   },
                 },
@@ -323,7 +353,12 @@ it("allows secrets when a later rule allows access that a previous rule denied",
                 accounts: {
                   "*": {
                     types: {
-                      actions: "deny",
+                      actions: {
+                        allRepos: "deny",
+                        privateRepos: "deny",
+                        selectedRepos: "deny",
+                        noRepos: "deny",
+                      },
                     },
                   },
                 },
@@ -349,7 +384,12 @@ it("allows secrets when a later rule allows access that a previous rule denied",
                 accounts: {
                   "*": {
                     types: {
-                      actions: "allow",
+                      actions: {
+                        allRepos: "allow",
+                        privateRepos: "allow",
+                        selectedRepos: "allow",
+                        noRepos: "allow",
+                      },
                     },
                   },
                 },
@@ -439,7 +479,12 @@ it("doesn't allow secrets when a later rule denies access that a previous rule a
                 accounts: {
                   "*": {
                     types: {
-                      actions: "allow",
+                      actions: {
+                        allRepos: "allow",
+                        privateRepos: "allow",
+                        selectedRepos: "allow",
+                        noRepos: "allow",
+                      },
                     },
                   },
                 },
@@ -465,7 +510,12 @@ it("doesn't allow secrets when a later rule denies access that a previous rule a
                 accounts: {
                   "*": {
                     types: {
-                      actions: "deny",
+                      actions: {
+                        allRepos: "deny",
+                        privateRepos: "deny",
+                        selectedRepos: "deny",
+                        noRepos: "deny",
+                      },
                     },
                   },
                 },
@@ -555,7 +605,12 @@ it("doesn't allow secrets when no rule matches the secret name", async () => {
                 accounts: {
                   "*": {
                     types: {
-                      actions: "allow",
+                      actions: {
+                        allRepos: "allow",
+                        privateRepos: "allow",
+                        selectedRepos: "allow",
+                        noRepos: "allow",
+                      },
                     },
                   },
                 },
@@ -618,12 +673,22 @@ it("doesn't allow secrets when two account patterns match but one allows and one
                 accounts: {
                   "*": {
                     types: {
-                      actions: "deny",
+                      actions: {
+                        allRepos: "deny",
+                        privateRepos: "deny",
+                        selectedRepos: "deny",
+                        noRepos: "deny",
+                      },
                     },
                   },
                   "account-a": {
                     types: {
-                      actions: "allow",
+                      actions: {
+                        allRepos: "allow",
+                        privateRepos: "allow",
+                        selectedRepos: "allow",
+                        noRepos: "allow",
+                      },
                     },
                   },
                 },
@@ -750,10 +815,30 @@ it("doesn't allow secrets when some targets aren't allowed", async () => {
                 accounts: {
                   "account-a": {
                     types: {
-                      actions: "allow",
-                      codespaces: "deny",
-                      dependabot: "allow",
-                      agents: "allow",
+                      actions: {
+                        allRepos: "allow",
+                        privateRepos: "allow",
+                        selectedRepos: "allow",
+                        noRepos: "allow",
+                      },
+                      codespaces: {
+                        allRepos: "deny",
+                        privateRepos: "deny",
+                        selectedRepos: "deny",
+                        noRepos: "deny",
+                      },
+                      dependabot: {
+                        allRepos: "allow",
+                        privateRepos: "allow",
+                        selectedRepos: "allow",
+                        noRepos: "allow",
+                      },
+                      agents: {
+                        allRepos: "allow",
+                        privateRepos: "allow",
+                        selectedRepos: "allow",
+                        noRepos: "allow",
+                      },
                     },
                   },
                 },
@@ -886,7 +971,18 @@ it("doesn't allow secrets when the token isn't allowed for a target", async () =
             to: {
               github: {
                 account: { types: {} },
-                accounts: { "*": { types: { actions: "allow" } } },
+                accounts: {
+                  "*": {
+                    types: {
+                      actions: {
+                        allRepos: "allow",
+                        privateRepos: "allow",
+                        selectedRepos: "allow",
+                        noRepos: "allow",
+                      },
+                    },
+                  },
+                },
                 repo: { visibility: "private", types: { environments: {} } },
                 repos: {
                   "*/*": {
@@ -961,7 +1057,12 @@ it("doesn't allow secrets for unshared token declarations", async () => {
                 accounts: {
                   "account-a": {
                     types: {
-                      actions: "allow",
+                      actions: {
+                        allRepos: "allow",
+                        privateRepos: "allow",
+                        selectedRepos: "allow",
+                        noRepos: "allow",
+                      },
                     },
                   },
                 },
@@ -1018,7 +1119,12 @@ it("doesn't allow secrets for undefined token declarations", async () => {
                 accounts: {
                   "account-a": {
                     types: {
-                      actions: "allow",
+                      actions: {
+                        allRepos: "allow",
+                        privateRepos: "allow",
+                        selectedRepos: "allow",
+                        noRepos: "allow",
+                      },
                     },
                   },
                 },
@@ -1075,7 +1181,12 @@ it("doesn't allow secrets when the account matches but the secret type isn't all
                 accounts: {
                   "account-a": {
                     types: {
-                      codespaces: "allow",
+                      codespaces: {
+                        allRepos: "allow",
+                        privateRepos: "allow",
+                        selectedRepos: "allow",
+                        noRepos: "allow",
+                      },
                     },
                   },
                 },

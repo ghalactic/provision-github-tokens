@@ -35,12 +35,22 @@ it("allows GitHub Dependabot account secrets that should be allowed", async () =
                 accounts: {
                   "account-a": {
                     types: {
-                      dependabot: "allow",
+                      dependabot: {
+                        allRepos: "allow",
+                        privateRepos: "allow",
+                        selectedRepos: "allow",
+                        noRepos: "allow",
+                      },
                     },
                   },
                   "account-b-*": {
                     types: {
-                      dependabot: "allow",
+                      dependabot: {
+                        allRepos: "allow",
+                        privateRepos: "allow",
+                        selectedRepos: "allow",
+                        noRepos: "allow",
+                      },
                     },
                   },
                 },
@@ -122,7 +132,12 @@ it("allows GitHub Dependabot account secrets that should be allowed within the r
               github: {
                 account: {
                   types: {
-                    dependabot: "allow",
+                    dependabot: {
+                      allRepos: "allow",
+                      privateRepos: "allow",
+                      selectedRepos: "allow",
+                      noRepos: "allow",
+                    },
                   },
                 },
                 accounts: {},
@@ -203,13 +218,23 @@ it("allows GitHub Dependabot account secrets that should be allowed within the r
               github: {
                 account: {
                   types: {
-                    dependabot: "allow",
+                    dependabot: {
+                      allRepos: "allow",
+                      privateRepos: "allow",
+                      selectedRepos: "allow",
+                      noRepos: "allow",
+                    },
                   },
                 },
                 accounts: {
                   "account-a": {
                     types: {
-                      dependabot: "deny",
+                      dependabot: {
+                        allRepos: "deny",
+                        privateRepos: "deny",
+                        selectedRepos: "deny",
+                        noRepos: "deny",
+                      },
                     },
                   },
                 },
@@ -542,7 +567,12 @@ it("doesn't allow GitHub Dependabot account secrets for unauthorized requesters"
                 accounts: {
                   "account-a": {
                     types: {
-                      dependabot: "allow",
+                      dependabot: {
+                        allRepos: "allow",
+                        privateRepos: "allow",
+                        selectedRepos: "allow",
+                        noRepos: "allow",
+                      },
                     },
                   },
                 },
@@ -600,7 +630,12 @@ it("doesn't allow GitHub Dependabot account secrets within the requesting accoun
               github: {
                 account: {
                   types: {
-                    dependabot: "allow",
+                    dependabot: {
+                      allRepos: "allow",
+                      privateRepos: "allow",
+                      selectedRepos: "allow",
+                      noRepos: "allow",
+                    },
                   },
                 },
                 accounts: {},
@@ -702,13 +737,23 @@ it("doesn't allow GitHub Dependabot account secrets within the requesting accoun
               github: {
                 account: {
                   types: {
-                    dependabot: "deny",
+                    dependabot: {
+                      allRepos: "deny",
+                      privateRepos: "deny",
+                      selectedRepos: "deny",
+                      noRepos: "deny",
+                    },
                   },
                 },
                 accounts: {
                   "account-a": {
                     types: {
-                      dependabot: "allow",
+                      dependabot: {
+                        allRepos: "allow",
+                        privateRepos: "allow",
+                        selectedRepos: "allow",
+                        noRepos: "allow",
+                      },
                     },
                   },
                 },

@@ -458,10 +458,30 @@ it("reads comprehensive provider config", async () => {
               github: {
                 account: {
                   types: {
-                    actions: "allow",
-                    agents: "allow",
-                    codespaces: "allow",
-                    dependabot: "allow",
+                    actions: {
+                      allRepos: "allow",
+                      privateRepos: "allow",
+                      selectedRepos: "allow",
+                      noRepos: "allow",
+                    },
+                    agents: {
+                      allRepos: "allow",
+                      privateRepos: "allow",
+                      selectedRepos: "allow",
+                      noRepos: "allow",
+                    },
+                    codespaces: {
+                      allRepos: "allow",
+                      privateRepos: "allow",
+                      selectedRepos: "allow",
+                      noRepos: "allow",
+                    },
+                    dependabot: {
+                      allRepos: "allow",
+                      privateRepos: "allow",
+                      selectedRepos: "allow",
+                      noRepos: "allow",
+                    },
                   },
                 },
                 accounts: {},
@@ -486,12 +506,22 @@ it("reads comprehensive provider config", async () => {
                 accounts: {
                   "account-a": {
                     types: {
-                      dependabot: "allow",
+                      dependabot: {
+                        allRepos: "allow",
+                        privateRepos: "allow",
+                        selectedRepos: "allow",
+                        noRepos: "allow",
+                      },
                     },
                   },
                   "account-b": {
                     types: {
-                      dependabot: "allow",
+                      dependabot: {
+                        allRepos: "allow",
+                        privateRepos: "allow",
+                        selectedRepos: "allow",
+                        noRepos: "allow",
+                      },
                     },
                   },
                 },
@@ -516,7 +546,12 @@ it("reads comprehensive provider config", async () => {
                 accounts: {
                   "*": {
                     types: {
-                      dependabot: "allow",
+                      dependabot: {
+                        allRepos: "allow",
+                        privateRepos: "allow",
+                        selectedRepos: "allow",
+                        noRepos: "allow",
+                      },
                     },
                   },
                 },
@@ -663,18 +698,33 @@ it("reads comprehensive provider config", async () => {
               github: {
                 account: {
                   types: {
-                    actions: "allow",
+                    actions: {
+                      allRepos: "allow",
+                      privateRepos: "allow",
+                      selectedRepos: "allow",
+                      noRepos: "allow",
+                    },
                   },
                 },
                 accounts: {
                   "account-a": {
                     types: {
-                      actions: "allow",
+                      actions: {
+                        allRepos: "allow",
+                        privateRepos: "allow",
+                        selectedRepos: "allow",
+                        noRepos: "allow",
+                      },
                     },
                   },
                   "account-b": {
                     types: {
-                      actions: "allow",
+                      actions: {
+                        allRepos: "allow",
+                        privateRepos: "allow",
+                        selectedRepos: "allow",
+                        noRepos: "allow",
+                      },
                     },
                   },
                 },
@@ -715,10 +765,30 @@ it("reads comprehensive provider config", async () => {
                 accounts: {
                   "*": {
                     types: {
-                      actions: "deny",
-                      agents: "deny",
-                      codespaces: "deny",
-                      dependabot: "deny",
+                      actions: {
+                        allRepos: "deny",
+                        privateRepos: "deny",
+                        selectedRepos: "deny",
+                        noRepos: "deny",
+                      },
+                      agents: {
+                        allRepos: "deny",
+                        privateRepos: "deny",
+                        selectedRepos: "deny",
+                        noRepos: "deny",
+                      },
+                      codespaces: {
+                        allRepos: "deny",
+                        privateRepos: "deny",
+                        selectedRepos: "deny",
+                        noRepos: "deny",
+                      },
+                      dependabot: {
+                        allRepos: "deny",
+                        privateRepos: "deny",
+                        selectedRepos: "deny",
+                        noRepos: "deny",
+                      },
                     },
                   },
                 },

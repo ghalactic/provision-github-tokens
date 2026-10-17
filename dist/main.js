@@ -60797,7 +60797,12 @@ function createProvisionRequestFactory(declarationRegistry, appRegistry, repoReg
     const selectedRepos = [];
     for (const repo of repos) {
       const ref = repoRefFromName(repo);
-      selectedRepos.push({ ref, id: Number(repoRegistry.find(ref).id) });
+      const info2 = repoRegistry.find(ref);
+      selectedRepos.push({
+        ref,
+        id: Number(info2.id),
+        visibility: info2.visibility
+      });
     }
     return {
       platform: platform2,
@@ -67357,26 +67362,50 @@ var provider_v1_schema_default = {
       }
     },
     provisionGithubAccountSecretTypes: {
+      description: "Which types of secrets to allow provisioning to in a GitHub account.",
       type: "object",
       additionalProperties: false,
       properties: {
         actions: {
-          description: "Whether to allow provisioning to GitHub Actions secrets.",
-          type: "string",
-          enum: ["allow", "deny"]
+          description: "Which visibility settings are allowed for GitHub Actions secrets.",
+          $ref: "#/definitions/provisionGithubAccountSecretVisibilityDecisions"
         },
         agents: {
-          description: "Whether to allow provisioning to GitHub Agents secrets.",
-          type: "string",
-          enum: ["allow", "deny"]
+          description: "Which visibility settings are allowed for GitHub Agents secrets.",
+          $ref: "#/definitions/provisionGithubAccountSecretVisibilityDecisions"
         },
         codespaces: {
-          description: "Whether to allow provisioning to GitHub Codespaces secrets.",
+          description: "Which visibility settings are allowed for GitHub Codespaces secrets.",
+          $ref: "#/definitions/provisionGithubAccountSecretVisibilityDecisions"
+        },
+        dependabot: {
+          description: "Which visibility settings are allowed for Dependabot secrets.",
+          $ref: "#/definitions/provisionGithubAccountSecretVisibilityDecisions"
+        }
+      }
+    },
+    provisionGithubAccountSecretVisibilityDecisions: {
+      description: "Which GitHub account secret visibility settings are allowed.",
+      type: "object",
+      additionalProperties: false,
+      properties: {
+        allRepos: {
+          description: "Whether a secret readable by all repos is allowed.",
           type: "string",
           enum: ["allow", "deny"]
         },
-        dependabot: {
-          description: "Whether to allow provisioning to Dependabot secrets.",
+        privateRepos: {
+          description: "Whether a secret readable by all private repos is allowed.",
+          type: "string",
+          enum: ["allow", "deny"]
+        },
+        selectedRepos: {
+          description: "Whether a secret readable by selected repos is allowed.",
+          type: "string",
+          enum: ["allow", "deny"]
+        },
+        noRepos: {
+          description: "Whether a secret readable by no repos is allowed.",
           type: "string",
           enum: ["allow", "deny"]
         }
@@ -120779,51 +120808,25 @@ function createProvisionAuthorizer(createTokenRequest, tokenAuthorizer, config) 
           const rule = config.rules.secrets[i2];
           let ruleHave;
           if (isRepoProvisionRequestTarget(target)) {
-            for (let j2 = 0; j2 < targetPatterns[i2].repos.length; ++j2) {
-              const [repo, repoPattern, envPatterns, repoVisibility] = targetPatterns[i2].repos[j2];
-              if (!repoPattern.test(targetName)) continue;
-              if (!isVisibilityWithin(target.visibility, repoVisibility)) {
-                continue;
-              }
-              const repoPatternHave = isEnvironmentProvisionRequestTarget(
-                target
-              ) ? applyEnvPatterns(
-                target.target.environment,
-                rule.to.github.repos[repo].types.environments,
-                envPatterns
-              ) : selectBySecretType(
-                rule.to.github.repos[repo].types,
-                target.type
-              );
-              if (repoPatternHave) ruleHave = repoPatternHave;
-              if (ruleHave === "deny") break;
-            }
-            if (isSelfRepo && isVisibilityWithin(
-              target.visibility,
-              rule.to.github.repo.visibility
-            )) {
-              const selfHave = isEnvironmentProvisionRequestTarget(target) ? applyEnvPatterns(
-                target.target.environment,
-                rule.to.github.repo.types.environments,
-                targetPatterns[i2].selfRepoEnvs
-              ) : selectBySecretType(rule.to.github.repo.types, target.type);
-              if (selfHave) ruleHave = selfHave;
-            }
+            ruleHave = selectRepoRule(i2, target, isSelfRepo);
           } else {
+            const category = accountSecretVisibilityCategory(target.visibility);
             for (let j2 = 0; j2 < targetPatterns[i2].accounts.length; ++j2) {
               const [account, accountPattern] = targetPatterns[i2].accounts[j2];
               if (!accountPattern.test(targetName)) continue;
-              const accountPatternHave = selectBySecretType(
+              const accountPatternHave = selectAccountCategory(
                 rule.to.github.accounts[account].types,
-                target.type
+                target.type,
+                category
               );
               if (accountPatternHave) ruleHave = accountPatternHave;
               if (ruleHave === "deny") break;
             }
             if (isSelfAccount) {
-              const selfHave = selectBySecretType(
+              const selfHave = selectAccountCategory(
                 rule.to.github.account.types,
-                target.type
+                target.type,
+                category
               );
               if (selfHave) ruleHave = selfHave;
             }
@@ -120836,6 +120839,7 @@ function createProvisionAuthorizer(createTokenRequest, tokenAuthorizer, config) 
             have: ruleHave
           });
         }
+        const selectedRepos = isRepoProvisionRequestTarget(target) ? void 0 : evaluateSelectedRepos(target, request2);
         let tokenAuthResult;
         let isTokenAllowed;
         if (request2.tokenDec == null) {
@@ -120847,7 +120851,7 @@ function createProvisionAuthorizer(createTokenRequest, tokenAuthorizer, config) 
           );
           isTokenAllowed = tokenAuthResult.isAllowed;
         }
-        const isProvisionAllowed = have === "allow";
+        const isProvisionAllowed = have === "allow" && (selectedRepos?.isAllowed ?? true);
         targetResults.push({
           target,
           rules: ruleResults,
@@ -120855,7 +120859,8 @@ function createProvisionAuthorizer(createTokenRequest, tokenAuthorizer, config) 
           tokenAuthResult,
           isTokenAllowed,
           isProvisionAllowed,
-          isAllowed: isTokenAllowed && isProvisionAllowed
+          isAllowed: isTokenAllowed && isProvisionAllowed,
+          selectedRepos: selectedRepos?.result
         });
       }
       const hasTokenDec = request2.tokenDec != null;
@@ -120932,6 +120937,99 @@ function createProvisionAuthorizer(createTokenRequest, tokenAuthorizer, config) 
     throw new Error(
       `Invariant violation: Unexpected secret type ${JSON.stringify(type)}`
     );
+  }
+  function selectRepoRule(index, target, isSelfRepo) {
+    const rule = config.rules.secrets[index];
+    const targetName = repoRefToString(target.target);
+    let ruleHave;
+    for (let j2 = 0; j2 < targetPatterns[index].repos.length; ++j2) {
+      const [repo, repoPattern, envPatterns, repoVisibility] = targetPatterns[index].repos[j2];
+      if (!repoPattern.test(targetName)) continue;
+      if (!isVisibilityWithin(target.visibility, repoVisibility)) continue;
+      const repoPatternHave = isEnvironmentProvisionRequestTarget(target) ? applyEnvPatterns(
+        target.target.environment,
+        rule.to.github.repos[repo].types.environments,
+        envPatterns
+      ) : selectBySecretType(rule.to.github.repos[repo].types, target.type);
+      if (repoPatternHave) ruleHave = repoPatternHave;
+      if (ruleHave === "deny") break;
+    }
+    if (isSelfRepo && isVisibilityWithin(target.visibility, rule.to.github.repo.visibility)) {
+      const selfHave = isEnvironmentProvisionRequestTarget(target) ? applyEnvPatterns(
+        target.target.environment,
+        rule.to.github.repo.types.environments,
+        targetPatterns[index].selfRepoEnvs
+      ) : selectBySecretType(rule.to.github.repo.types, target.type);
+      if (selfHave) ruleHave = selfHave;
+    }
+    return ruleHave;
+  }
+  function accountSecretVisibilityCategory(visibility) {
+    if (visibility === "all") return "allRepos";
+    if (visibility === "private") return "privateRepos";
+    return visibility.patterns.length > 0 ? "selectedRepos" : "noRepos";
+  }
+  function selectAccountCategory(types, type, category) {
+    return selectAccountSecretType(types, type)?.[category];
+  }
+  function selectAccountSecretType(types, type) {
+    switch (type) {
+      case "actions":
+        return types.actions;
+      case "agents":
+        return types.agents;
+      case "codespaces":
+        return types.codespaces;
+      case "dependabot":
+        return types.dependabot;
+    }
+    throw new Error(
+      `Invariant violation: Unexpected secret type ${JSON.stringify(type)}`
+    );
+  }
+  function evaluateSelectedRepos(target, request2) {
+    const { visibility } = target;
+    if (visibility === "all" || visibility === "private") return void 0;
+    if (visibility.patterns.length < 1) return void 0;
+    const requester = repoRefToString(request2.requester);
+    const results2 = {};
+    let isAllowed = true;
+    for (const { ref, visibility: repoVisibility } of visibility.repos) {
+      const repoTarget = {
+        platform: "github",
+        type: target.type,
+        target: ref,
+        visibility: repoVisibility
+      };
+      const isSelfRepo = request2.requester.account === ref.account && request2.requester.repo === ref.repo;
+      const ruleResults = [];
+      let have;
+      for (let i2 = 0; i2 < config.rules.secrets.length; ++i2) {
+        if (!anyPatternMatches(namePatterns[i2], request2.name)) continue;
+        if (!anyPatternMatches(requesterPatterns[i2], requester)) continue;
+        const ruleHave = selectRepoRule(i2, repoTarget, isSelfRepo);
+        if (!ruleHave) continue;
+        have = ruleHave;
+        ruleResults.push({
+          index: i2,
+          rule: config.rules.secrets[i2],
+          have: ruleHave
+        });
+      }
+      const repoAllowed = have === "allow";
+      isAllowed &&= repoAllowed;
+      results2[repoRefToString(ref)] = {
+        rules: ruleResults,
+        have,
+        isAllowed: repoAllowed,
+        visibility: repoVisibility
+      };
+    }
+    const isMatched = visibility.repos.length > 0;
+    return {
+      isAllowed: isMatched && isAllowed,
+      result: { results: results2, isMatched }
+    };
   }
   function applyEnvPatterns(reqEnv, environments, envPatterns) {
     let have;

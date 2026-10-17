@@ -118,7 +118,18 @@ it("authorizes all requests and outputs the results", async () => {
     to: {
       github: {
         account: { types: {} },
-        accounts: { "*": { types: { actions: "allow" } } },
+        accounts: {
+          "*": {
+            types: {
+              actions: {
+                allRepos: "allow",
+                privateRepos: "allow",
+                selectedRepos: "allow",
+                noRepos: "allow",
+              },
+            },
+          },
+        },
         repo: { visibility: "private", types: { environments: {} } },
         repos: {
           "*/*": {
@@ -361,7 +372,18 @@ it("handles empty token requests", async () => {
     to: {
       github: {
         account: { types: {} },
-        accounts: { "*": { types: { actions: "allow" } } },
+        accounts: {
+          "*": {
+            types: {
+              actions: {
+                allRepos: "allow",
+                privateRepos: "allow",
+                selectedRepos: "allow",
+                noRepos: "allow",
+              },
+            },
+          },
+        },
         repo: { visibility: "private", types: { environments: {} } },
         repos: {
           "*/*": {

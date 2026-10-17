@@ -348,26 +348,50 @@
       }
     },
     "provisionGithubAccountSecretTypes": {
+      "description": "Which types of secrets to allow provisioning to in a GitHub account.",
       "type": "object",
       "additionalProperties": false,
       "properties": {
         "actions": {
-          "description": "Whether to allow provisioning to GitHub Actions secrets.",
-          "type": "string",
-          "enum": ["allow", "deny"]
+          "description": "Which visibility settings are allowed for GitHub Actions secrets.",
+          "$ref": "#/definitions/provisionGithubAccountSecretVisibilityDecisions"
         },
         "agents": {
-          "description": "Whether to allow provisioning to GitHub Agents secrets.",
-          "type": "string",
-          "enum": ["allow", "deny"]
+          "description": "Which visibility settings are allowed for GitHub Agents secrets.",
+          "$ref": "#/definitions/provisionGithubAccountSecretVisibilityDecisions"
         },
         "codespaces": {
-          "description": "Whether to allow provisioning to GitHub Codespaces secrets.",
+          "description": "Which visibility settings are allowed for GitHub Codespaces secrets.",
+          "$ref": "#/definitions/provisionGithubAccountSecretVisibilityDecisions"
+        },
+        "dependabot": {
+          "description": "Which visibility settings are allowed for Dependabot secrets.",
+          "$ref": "#/definitions/provisionGithubAccountSecretVisibilityDecisions"
+        }
+      }
+    },
+    "provisionGithubAccountSecretVisibilityDecisions": {
+      "description": "Which GitHub account secret visibility settings are allowed.",
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "allRepos": {
+          "description": "Whether a secret readable by all repos is allowed.",
           "type": "string",
           "enum": ["allow", "deny"]
         },
-        "dependabot": {
-          "description": "Whether to allow provisioning to Dependabot secrets.",
+        "privateRepos": {
+          "description": "Whether a secret readable by all private repos is allowed.",
+          "type": "string",
+          "enum": ["allow", "deny"]
+        },
+        "selectedRepos": {
+          "description": "Whether a secret readable by selected repos is allowed.",
+          "type": "string",
+          "enum": ["allow", "deny"]
+        },
+        "noRepos": {
+          "description": "Whether a secret readable by no repos is allowed.",
           "type": "string",
           "enum": ["allow", "deny"]
         }

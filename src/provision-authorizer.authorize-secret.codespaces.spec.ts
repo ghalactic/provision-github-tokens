@@ -35,12 +35,22 @@ it("allows GitHub Codespaces account secrets that should be allowed", async () =
                 accounts: {
                   "account-a": {
                     types: {
-                      codespaces: "allow",
+                      codespaces: {
+                        allRepos: "allow",
+                        privateRepos: "allow",
+                        selectedRepos: "allow",
+                        noRepos: "allow",
+                      },
                     },
                   },
                   "account-b-*": {
                     types: {
-                      codespaces: "allow",
+                      codespaces: {
+                        allRepos: "allow",
+                        privateRepos: "allow",
+                        selectedRepos: "allow",
+                        noRepos: "allow",
+                      },
                     },
                   },
                 },
@@ -122,7 +132,12 @@ it("allows GitHub Codespaces account secrets that should be allowed within the r
               github: {
                 account: {
                   types: {
-                    codespaces: "allow",
+                    codespaces: {
+                      allRepos: "allow",
+                      privateRepos: "allow",
+                      selectedRepos: "allow",
+                      noRepos: "allow",
+                    },
                   },
                 },
                 accounts: {},
@@ -203,13 +218,23 @@ it("allows GitHub Codespaces account secrets that should be allowed within the r
               github: {
                 account: {
                   types: {
-                    codespaces: "allow",
+                    codespaces: {
+                      allRepos: "allow",
+                      privateRepos: "allow",
+                      selectedRepos: "allow",
+                      noRepos: "allow",
+                    },
                   },
                 },
                 accounts: {
                   "account-a": {
                     types: {
-                      codespaces: "deny",
+                      codespaces: {
+                        allRepos: "deny",
+                        privateRepos: "deny",
+                        selectedRepos: "deny",
+                        noRepos: "deny",
+                      },
                     },
                   },
                 },
@@ -542,7 +567,12 @@ it("doesn't allow GitHub Codespaces account secrets for unauthorized requesters"
                 accounts: {
                   "account-a": {
                     types: {
-                      codespaces: "allow",
+                      codespaces: {
+                        allRepos: "allow",
+                        privateRepos: "allow",
+                        selectedRepos: "allow",
+                        noRepos: "allow",
+                      },
                     },
                   },
                 },
@@ -600,7 +630,12 @@ it("doesn't allow GitHub Codespaces account secrets within the requesting accoun
               github: {
                 account: {
                   types: {
-                    codespaces: "allow",
+                    codespaces: {
+                      allRepos: "allow",
+                      privateRepos: "allow",
+                      selectedRepos: "allow",
+                      noRepos: "allow",
+                    },
                   },
                 },
                 accounts: {},
@@ -702,13 +737,23 @@ it("doesn't allow GitHub Codespaces account secrets within the requesting accoun
               github: {
                 account: {
                   types: {
-                    codespaces: "deny",
+                    codespaces: {
+                      allRepos: "deny",
+                      privateRepos: "deny",
+                      selectedRepos: "deny",
+                      noRepos: "deny",
+                    },
                   },
                 },
                 accounts: {
                   "account-a": {
                     types: {
-                      codespaces: "allow",
+                      codespaces: {
+                        allRepos: "allow",
+                        privateRepos: "allow",
+                        selectedRepos: "allow",
+                        noRepos: "allow",
+                      },
                     },
                   },
                 },

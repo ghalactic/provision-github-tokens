@@ -4,6 +4,7 @@ import type {
 } from "../provision-request.js";
 import type { ProvisionSecretsRule } from "./provision-rule.js";
 import type { TokenAuthResult } from "./token-auth-result.js";
+import type { Visibility } from "./visibility.js";
 
 export type ProvisionAuthResultExplainer<T> = (
   result: ProvisionAuthResult,
@@ -24,6 +25,19 @@ export type ProvisionAuthTargetResult = {
   isTokenAllowed: boolean;
   isProvisionAllowed: boolean;
   isAllowed: boolean;
+  selectedRepos?: ProvisionAuthSelectedReposResult;
+};
+
+export type ProvisionAuthSelectedReposResult = {
+  results: Record<string, ProvisionAuthSelectedRepoResult>;
+  isMatched: boolean;
+};
+
+export type ProvisionAuthSelectedRepoResult = {
+  rules: ProvisionAuthTargetRuleResult[];
+  have: "allow" | "deny" | undefined;
+  isAllowed: boolean;
+  visibility: Visibility;
 };
 
 export type ProvisionAuthTargetRuleResult = {
