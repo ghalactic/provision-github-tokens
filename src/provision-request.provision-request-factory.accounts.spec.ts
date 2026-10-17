@@ -529,9 +529,122 @@ it("supports selected-repo account targets", async () => {
       )
     ).to,
   ).toStrictEqual([
-    createTestAccountProvisionRequestTarget("actions", "account-a", [
-      { ref: repoA, id: 2536791224 },
-      { ref: repoB, id: 772360969 },
-    ]),
+    createTestAccountProvisionRequestTarget("actions", "account-a", {
+      patterns: ["repo-*"],
+      repos: [
+        { ref: repoA, id: 2536791224 },
+        { ref: repoB, id: 772360969 },
+      ],
+    }),
+  ] satisfies ProvisionRequestTarget[]);
+});
+
+it("supports an explicitly empty selected-repo account target", async () => {
+  const repoA: RepoReference = { account: "account-a", repo: "repo-a" };
+
+  const declarationRegistry = createTokenDeclarationRegistry();
+  const environmentResolver = createTestEnvironmentResolver();
+
+  const tokenDecA = createTestTokenDec({ shared: true });
+  declarationRegistry.registerDeclaration(repoA, "token-a", tokenDecA);
+
+  const [[accountA, reposA]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "account-a",
+    ["repo-a"],
+  ]);
+
+  const [[appA, [appAInstallationA]]] = createTestApps([
+    "App A",
+    {},
+    [[accountA, "selected"]],
+  ]);
+
+  const repoRegistry = createTestRepoRegistry();
+  const appRegistry = createTestAppRegistry(repoRegistry, {
+    app: appA,
+    provisioner: true,
+    installations: [[appAInstallationA, reposA]],
+  });
+
+  const createProvisionRequest = createProvisionRequestFactory(
+    declarationRegistry,
+    appRegistry,
+    repoRegistry,
+    environmentResolver,
+  );
+
+  expect(
+    (
+      await createProvisionRequest(
+        repoA,
+        "SECRET_A",
+        createTestSecretDec({
+          token: normalizeTokenReference(repoA, "token-a"),
+          github: { account: { actions: [] } },
+        }),
+      )
+    ).to,
+  ).toStrictEqual([
+    createTestAccountProvisionRequestTarget("actions", "account-a", {
+      patterns: [],
+      repos: [],
+    }),
+  ] satisfies ProvisionRequestTarget[]);
+});
+
+it("distinguishes a selected-repo account target whose patterns match nothing", async () => {
+  const repoA: RepoReference = { account: "account-a", repo: "repo-a" };
+
+  const declarationRegistry = createTokenDeclarationRegistry();
+  const environmentResolver = createTestEnvironmentResolver();
+
+  const tokenDecA = createTestTokenDec({ shared: true });
+  declarationRegistry.registerDeclaration(repoA, "token-a", tokenDecA);
+
+  const [[accountA, reposA]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "account-a",
+    ["repo-a", "repo-b"],
+  ]);
+
+  const [[appA, [appAInstallationA]]] = createTestApps([
+    "App A",
+    {},
+    [[accountA, "selected"]],
+  ]);
+
+  const repoRegistry = createTestRepoRegistry();
+  const appRegistry = createTestAppRegistry(repoRegistry, {
+    app: appA,
+    provisioner: true,
+    installations: [[appAInstallationA, reposA]],
+  });
+
+  const createProvisionRequest = createProvisionRequestFactory(
+    declarationRegistry,
+    appRegistry,
+    repoRegistry,
+    environmentResolver,
+  );
+
+  expect(
+    (
+      await createProvisionRequest(
+        repoA,
+        "SECRET_A",
+        createTestSecretDec({
+          token: normalizeTokenReference(repoA, "token-a"),
+          github: { account: { actions: ["team-*"] } },
+        }),
+      )
+    ).to,
+  ).toStrictEqual([
+    createTestAccountProvisionRequestTarget("actions", "account-a", {
+      patterns: ["team-*"],
+      repos: [],
+    }),
   ] satisfies ProvisionRequestTarget[]);
 });

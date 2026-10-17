@@ -45,8 +45,13 @@ export type AccountSecretSelectedRepo = {
   id: number;
 };
 
+export type AccountSecretSelectedRepos = {
+  patterns: string[];
+  repos: AccountSecretSelectedRepo[];
+};
+
 export type AccountSecretVisibility =
-  "all" | "private" | AccountSecretSelectedRepo[];
+  "all" | "private" | AccountSecretSelectedRepos;
 
 export type GitHubAccountProvisionRequestTarget = {
   platform: "github";
@@ -276,12 +281,12 @@ export function createProvisionRequestFactory(
       return { platform, type, target: { account }, visibility: setting };
     }
 
-    const patterns: Pattern[] = [];
+    const githubPatterns: Pattern[] = [];
     for (const repoPattern of setting) {
-      patterns.push(createGitHubPattern(`${account}/${repoPattern}`));
+      githubPatterns.push(createGitHubPattern(`${account}/${repoPattern}`));
     }
 
-    const repos = appRegistry.resolveProvisionerRepos(patterns);
+    const repos = appRegistry.resolveProvisionerRepos(githubPatterns);
 
     const selectedRepos: AccountSecretSelectedRepo[] = [];
     for (const repo of repos) {
@@ -293,7 +298,7 @@ export function createProvisionRequestFactory(
       platform,
       type,
       target: { account },
-      visibility: selectedRepos,
+      visibility: { patterns: [...setting], repos: selectedRepos },
     };
   }
 }

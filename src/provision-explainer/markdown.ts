@@ -231,7 +231,7 @@ export function createMarkdownProvisionExplainer(): ProvisionResultExplainer<
     }
 
     const repos: string[] = [];
-    for (const { ref } of visibility) repos.push(ref.repo);
+    for (const { ref } of visibility.repos) repos.push(ref.repo);
     repos.sort((a, b) => a.localeCompare(b));
 
     if (repos.length < 1) {
