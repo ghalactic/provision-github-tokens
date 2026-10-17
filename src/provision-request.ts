@@ -40,11 +40,16 @@ export type ProvisionRequestTarget =
   | GitHubRepoProvisionRequestTarget
   | GitHubEnvironmentProvisionRequestTarget;
 
+export type AccountSecretSelectedRepo = {
+  ref: RepoReference;
+  id: number;
+};
+
 export type GitHubAccountProvisionRequestTarget = {
   platform: "github";
   type: "actions" | "agents" | "codespaces" | "dependabot";
   target: AccountReference;
-  visibility: "private" | "all" | number[];
+  visibility: "private" | "all" | AccountSecretSelectedRepo[];
 };
 
 export type GitHubRepoProvisionRequestTarget = {
@@ -275,18 +280,17 @@ export function createProvisionRequestFactory(
 
     const repos = appRegistry.resolveProvisionerRepos(patterns);
 
-    const selectedRepositoryIds: number[] = [];
+    const selectedRepos: AccountSecretSelectedRepo[] = [];
     for (const repo of repos) {
-      selectedRepositoryIds.push(
-        Number(repoRegistry.find(repoRefFromName(repo)).id),
-      );
+      const ref = repoRefFromName(repo);
+      selectedRepos.push({ ref, id: Number(repoRegistry.find(ref).id) });
     }
 
     return {
       platform,
       type,
       target: { account },
-      visibility: selectedRepositoryIds,
+      visibility: selectedRepos,
     };
   }
 }

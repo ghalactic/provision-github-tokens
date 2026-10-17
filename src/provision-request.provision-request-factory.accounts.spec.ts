@@ -482,6 +482,7 @@ it("keeps a target enabled when a matching pattern omits it", async () => {
 
 it("supports selected-repo account targets", async () => {
   const repoA: RepoReference = { account: "account-a", repo: "repo-a" };
+  const repoB: RepoReference = { account: "account-a", repo: "repo-b" };
 
   const declarationRegistry = createTokenDeclarationRegistry();
   const environmentResolver = createTestEnvironmentResolver();
@@ -516,24 +517,21 @@ it("supports selected-repo account targets", async () => {
     environmentResolver,
   );
 
-  const selectedRepoIds = reposA
-    .filter((repo) => repo.name.startsWith("repo-"))
-    .map((repo) => Number(repo.id));
-
-  const request = await createProvisionRequest(
-    repoA,
-    "SECRET_A",
-    createTestSecretDec({
-      token: normalizeTokenReference(repoA, "token-a"),
-      github: { account: { actions: ["repo-*"] } },
-    }),
-  );
-
-  expect(request?.to).toStrictEqual([
-    createTestAccountProvisionRequestTarget(
-      "actions",
-      "account-a",
-      selectedRepoIds,
-    ),
+  expect(
+    (
+      await createProvisionRequest(
+        repoA,
+        "SECRET_A",
+        createTestSecretDec({
+          token: normalizeTokenReference(repoA, "token-a"),
+          github: { account: { actions: ["repo-*"] } },
+        }),
+      )
+    )?.to,
+  ).toStrictEqual([
+    createTestAccountProvisionRequestTarget("actions", "account-a", [
+      { ref: repoA, id: 2536791224 },
+      { ref: repoB, id: 772360969 },
+    ]),
   ] satisfies ProvisionRequestTarget[]);
 });
