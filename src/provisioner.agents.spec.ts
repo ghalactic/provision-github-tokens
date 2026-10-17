@@ -303,7 +303,7 @@ it("can provision org-level Agents secrets", async () => {
 
   expect(__getOrgSecrets("account-a")).toEqual({
     actions: {},
-    agents: { SECRET_A: "<token-a>" },
+    agents: { SECRET_A: { value: "<token-a>", visibility: "all" } },
     codespaces: {},
     dependabot: {},
   });

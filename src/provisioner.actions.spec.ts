@@ -287,7 +287,7 @@ it("can provision org-level Actions secrets", async () => {
   const toMdast = createMarkdownProvisionExplainer();
 
   expect(__getOrgSecrets("account-a")).toEqual({
-    actions: { SECRET_A: "<token-a>" },
+    actions: { SECRET_A: { value: "<token-a>", visibility: "all" } },
     agents: {},
     codespaces: {},
     dependabot: {},
