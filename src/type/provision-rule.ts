@@ -15,12 +15,26 @@ export type ProvisionSecretsRule = {
 };
 
 export type ProviderConfigGitHubAccountTarget = {
-  types: ProviderConfigGitHubSecretTypes;
+  types: ProviderConfigGitHubAccountSecretTypes;
 };
 
 export type ProviderConfigGitHubRepoTarget = {
   visibility: Visibility;
   types: ProviderConfigGitHubRepoSecretTypes;
+};
+
+export type ProviderConfigGitHubAccountSecretTypes = {
+  actions?: ProviderConfigGitHubAccountSecretVisibilityDecisions;
+  agents?: ProviderConfigGitHubAccountSecretVisibilityDecisions;
+  codespaces?: ProviderConfigGitHubAccountSecretVisibilityDecisions;
+  dependabot?: ProviderConfigGitHubAccountSecretVisibilityDecisions;
+};
+
+export type ProviderConfigGitHubAccountSecretVisibilityDecisions = {
+  allRepos?: "allow" | "deny";
+  privateRepos?: "allow" | "deny";
+  selectedRepos?: "allow" | "deny";
+  noRepos?: "allow" | "deny";
 };
 
 export type ProviderConfigGitHubSecretTypes = {

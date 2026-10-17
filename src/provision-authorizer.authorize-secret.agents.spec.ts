@@ -35,12 +35,22 @@ it("allows GitHub Agents account secrets that should be allowed", async () => {
                 accounts: {
                   "account-a": {
                     types: {
-                      agents: "allow",
+                      agents: {
+                        allRepos: "allow",
+                        privateRepos: "allow",
+                        selectedRepos: "allow",
+                        noRepos: "allow",
+                      },
                     },
                   },
                   "account-b-*": {
                     types: {
-                      agents: "allow",
+                      agents: {
+                        allRepos: "allow",
+                        privateRepos: "allow",
+                        selectedRepos: "allow",
+                        noRepos: "allow",
+                      },
                     },
                   },
                 },
@@ -122,7 +132,12 @@ it("allows GitHub Agents account secrets that should be allowed within the reque
               github: {
                 account: {
                   types: {
-                    agents: "allow",
+                    agents: {
+                      allRepos: "allow",
+                      privateRepos: "allow",
+                      selectedRepos: "allow",
+                      noRepos: "allow",
+                    },
                   },
                 },
                 accounts: {},
@@ -203,13 +218,23 @@ it("allows GitHub Agents account secrets that should be allowed within the reque
               github: {
                 account: {
                   types: {
-                    agents: "allow",
+                    agents: {
+                      allRepos: "allow",
+                      privateRepos: "allow",
+                      selectedRepos: "allow",
+                      noRepos: "allow",
+                    },
                   },
                 },
                 accounts: {
                   "account-a": {
                     types: {
-                      agents: "deny",
+                      agents: {
+                        allRepos: "deny",
+                        privateRepos: "deny",
+                        selectedRepos: "deny",
+                        noRepos: "deny",
+                      },
                     },
                   },
                 },
@@ -542,7 +567,12 @@ it("doesn't allow GitHub Agents account secrets for unauthorized requesters", as
                 accounts: {
                   "account-a": {
                     types: {
-                      agents: "allow",
+                      agents: {
+                        allRepos: "allow",
+                        privateRepos: "allow",
+                        selectedRepos: "allow",
+                        noRepos: "allow",
+                      },
                     },
                   },
                 },
@@ -600,7 +630,12 @@ it("doesn't allow GitHub Agents account secrets within the requesting account fo
               github: {
                 account: {
                   types: {
-                    agents: "allow",
+                    agents: {
+                      allRepos: "allow",
+                      privateRepos: "allow",
+                      selectedRepos: "allow",
+                      noRepos: "allow",
+                    },
                   },
                 },
                 accounts: {},
@@ -702,13 +737,23 @@ it("doesn't allow GitHub Agents account secrets within the requesting account wh
               github: {
                 account: {
                   types: {
-                    agents: "deny",
+                    agents: {
+                      allRepos: "deny",
+                      privateRepos: "deny",
+                      selectedRepos: "deny",
+                      noRepos: "deny",
+                    },
                   },
                 },
                 accounts: {
                   "account-a": {
                     types: {
-                      agents: "allow",
+                      agents: {
+                        allRepos: "allow",
+                        privateRepos: "allow",
+                        selectedRepos: "allow",
+                        noRepos: "allow",
+                      },
                     },
                   },
                 },

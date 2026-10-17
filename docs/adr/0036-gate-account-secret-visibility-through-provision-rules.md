@@ -4,9 +4,9 @@ status: accepted
 
 # Gate account secret visibility through provision rules
 
-**Secret visibility** is a requester-chosen reader set, not a repository
-classification, so ADR-0034's account-target exemption no longer holds. Each
-account secret type carries four optional decisions — `allRepos`,
+**Secret visibility** is the requester's choice of who may read the secret, not
+a repository classification, so ADR-0034's account-target exemption no longer
+holds. Each account secret type carries four optional decisions — `allRepos`,
 `privateRepos`, `selectedRepos`, `noRepos`, each `allow` or `deny` — and the
 requester's chosen visibility selects the category, resolved by the existing
 rule ordering and defaults (ADR-0015, ADR-0018). `allRepos`, `privateRepos`, and

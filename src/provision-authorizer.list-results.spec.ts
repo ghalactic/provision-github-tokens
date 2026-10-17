@@ -23,7 +23,12 @@ it("can list all processed requests and their results", () => {
                 accounts: {
                   "account-a": {
                     types: {
-                      actions: "allow",
+                      actions: {
+                        allRepos: "allow",
+                        privateRepos: "allow",
+                        selectedRepos: "allow",
+                        noRepos: "allow",
+                      },
                     },
                   },
                 },

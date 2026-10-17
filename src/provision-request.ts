@@ -43,6 +43,7 @@ export type ProvisionRequestTarget =
 export type AccountSecretSelectedRepo = {
   ref: RepoReference;
   id: number;
+  visibility: Visibility;
 };
 
 export type AccountSecretSelectedRepos = {
@@ -291,7 +292,12 @@ export function createProvisionRequestFactory(
     const selectedRepos: AccountSecretSelectedRepo[] = [];
     for (const repo of repos) {
       const ref = repoRefFromName(repo);
-      selectedRepos.push({ ref, id: Number(repoRegistry.find(ref).id) });
+      const info = repoRegistry.find(ref);
+      selectedRepos.push({
+        ref,
+        id: Number(info.id),
+        visibility: info.visibility as Visibility,
+      });
     }
 
     return {

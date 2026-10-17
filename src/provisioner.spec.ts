@@ -1320,8 +1320,16 @@ it("renders the visibility of provisioned account secrets", async () => {
   const selectedRepos: AccountSecretSelectedRepos = {
     patterns: ["repo-*"],
     repos: [
-      { ref: { account: "account-a", repo: "repo-b" }, id: 222 },
-      { ref: { account: "account-a", repo: "repo-a" }, id: 111 },
+      {
+        ref: { account: "account-a", repo: "repo-b" },
+        id: 222,
+        visibility: "private",
+      },
+      {
+        ref: { account: "account-a", repo: "repo-a" },
+        id: 111,
+        visibility: "private",
+      },
     ],
   };
 
@@ -1425,8 +1433,16 @@ it("renders the visibility of a failed account secret", async () => {
   const selectedRepos: AccountSecretSelectedRepos = {
     patterns: ["repo-a", "repo-b"],
     repos: [
-      { ref: { account: "account-a", repo: "repo-a" }, id: 111 },
-      { ref: { account: "account-a", repo: "repo-b" }, id: 222 },
+      {
+        ref: { account: "account-a", repo: "repo-a" },
+        id: 111,
+        visibility: "private",
+      },
+      {
+        ref: { account: "account-a", repo: "repo-b" },
+        id: 222,
+        visibility: "private",
+      },
     ],
   };
   const target = createTestAccountProvisionRequestTarget(

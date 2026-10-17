@@ -532,8 +532,8 @@ it("supports selected-repo account targets", async () => {
     createTestAccountProvisionRequestTarget("actions", "account-a", {
       patterns: ["repo-*"],
       repos: [
-        { ref: repoA, id: 2536791224 },
-        { ref: repoB, id: 772360969 },
+        { ref: repoA, id: 2536791224, visibility: "private" },
+        { ref: repoB, id: 772360969, visibility: "private" },
       ],
     }),
   ] satisfies ProvisionRequestTarget[]);

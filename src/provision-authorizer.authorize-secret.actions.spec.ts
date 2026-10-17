@@ -35,12 +35,22 @@ it("allows GitHub Actions account secrets that should be allowed", async () => {
                 accounts: {
                   "account-a": {
                     types: {
-                      actions: "allow",
+                      actions: {
+                        allRepos: "allow",
+                        privateRepos: "allow",
+                        selectedRepos: "allow",
+                        noRepos: "allow",
+                      },
                     },
                   },
                   "account-b-*": {
                     types: {
-                      actions: "allow",
+                      actions: {
+                        allRepos: "allow",
+                        privateRepos: "allow",
+                        selectedRepos: "allow",
+                        noRepos: "allow",
+                      },
                     },
                   },
                 },
@@ -115,7 +125,12 @@ it("allows GitHub Actions account secrets that should be allowed within the requ
               github: {
                 account: {
                   types: {
-                    actions: "allow",
+                    actions: {
+                      allRepos: "allow",
+                      privateRepos: "allow",
+                      selectedRepos: "allow",
+                      noRepos: "allow",
+                    },
                   },
                 },
                 accounts: {},
@@ -186,13 +201,23 @@ it("allows GitHub Actions account secrets that should be allowed within the requ
               github: {
                 account: {
                   types: {
-                    actions: "allow",
+                    actions: {
+                      allRepos: "allow",
+                      privateRepos: "allow",
+                      selectedRepos: "allow",
+                      noRepos: "allow",
+                    },
                   },
                 },
                 accounts: {
                   "account-a": {
                     types: {
-                      actions: "deny",
+                      actions: {
+                        allRepos: "deny",
+                        privateRepos: "deny",
+                        selectedRepos: "deny",
+                        noRepos: "deny",
+                      },
                     },
                   },
                 },
@@ -515,7 +540,12 @@ it("doesn't allow GitHub Actions account secrets for unauthorized requesters", a
                 accounts: {
                   "account-a": {
                     types: {
-                      actions: "allow",
+                      actions: {
+                        allRepos: "allow",
+                        privateRepos: "allow",
+                        selectedRepos: "allow",
+                        noRepos: "allow",
+                      },
                     },
                   },
                 },
@@ -566,7 +596,12 @@ it("doesn't allow GitHub Actions account secrets within the requesting account f
               github: {
                 account: {
                   types: {
-                    actions: "allow",
+                    actions: {
+                      allRepos: "allow",
+                      privateRepos: "allow",
+                      selectedRepos: "allow",
+                      noRepos: "allow",
+                    },
                   },
                 },
                 accounts: {},
@@ -668,13 +703,23 @@ it("doesn't allow GitHub Actions account secrets within the requesting account w
               github: {
                 account: {
                   types: {
-                    actions: "deny",
+                    actions: {
+                      allRepos: "deny",
+                      privateRepos: "deny",
+                      selectedRepos: "deny",
+                      noRepos: "deny",
+                    },
                   },
                 },
                 accounts: {
                   "account-a": {
                     types: {
-                      actions: "allow",
+                      actions: {
+                        allRepos: "allow",
+                        privateRepos: "allow",
+                        selectedRepos: "allow",
+                        noRepos: "allow",
+                      },
                     },
                   },
                 },
