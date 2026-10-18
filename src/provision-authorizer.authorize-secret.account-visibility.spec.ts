@@ -120,6 +120,102 @@ it("explains the account secret visibility toggles", async () => {
   );
 });
 
+it("explains an explicitly empty account secret", async () => {
+  const authorizerNoReposAllowed = createProvisionAuthorizer(
+    createTestTokenRequestFactory(),
+    createTestTokenAuthorizer({ metadata: "read" }),
+    {
+      rules: {
+        secrets: [
+          {
+            secrets: ["SECRET_A"],
+            requesters: ["account-a/repo-a"],
+            to: {
+              github: {
+                account: { types: { actions: { noRepos: "allow" } } },
+                accounts: {},
+                repo: { visibility: "private", types: { environments: {} } },
+                repos: {},
+              },
+            },
+          },
+        ],
+      },
+    },
+  );
+  const authorizerNoReposUnspecified = createProvisionAuthorizer(
+    createTestTokenRequestFactory(),
+    createTestTokenAuthorizer({ metadata: "read" }),
+    {
+      rules: {
+        secrets: [
+          {
+            secrets: ["SECRET_A"],
+            requesters: ["account-a/repo-a"],
+            to: {
+              github: {
+                account: { types: { actions: {} } },
+                accounts: {},
+                repo: { visibility: "private", types: { environments: {} } },
+                repos: {},
+              },
+            },
+          },
+        ],
+      },
+    },
+  );
+
+  const resultNoReposAllowed = authorizerNoReposAllowed.authorizeSecret(
+    createTestProvisionRequest({
+      to: [
+        createTestAccountProvisionRequestTarget("actions", "account-a", {
+          patterns: [],
+          repos: [],
+        }),
+      ],
+    }),
+  );
+  const resultNoReposUnspecified = authorizerNoReposUnspecified.authorizeSecret(
+    createTestProvisionRequest({
+      to: [
+        createTestAccountProvisionRequestTarget("actions", "account-a", {
+          patterns: [],
+          repos: [],
+        }),
+      ],
+    }),
+  );
+
+  const toText = createTextProvisionAuthExplainer();
+  const toMdast = createMarkdownProvisionAuthExplainer();
+
+  expect(resultNoReposAllowed.isAllowed).toBe(true);
+  expect(toText(resultNoReposAllowed)).toMatchInlineSnapshot(`
+    "✅ Repo account-a/repo-a was allowed to provision secret SECRET_A:
+      ✅ Can use token declaration account-a/repo-a.tokenA
+      ✅ Can provision token to GitHub Actions secret in account account-a:
+        ✅ Account account-a was allowed access to token #1
+        ✅ Can provision to no repos based on 1 rule:
+          ✅ Allowed by rule #1"
+  `);
+  await expect(toMarkdown(toMdast(resultNoReposAllowed))).toMatchFileSnapshot(
+    join(fixturesPath, "toggles/no-repos-allowed.md"),
+  );
+
+  expect(resultNoReposUnspecified.isAllowed).toBe(false);
+  expect(toText(resultNoReposUnspecified)).toMatchInlineSnapshot(`
+    "❌ Repo account-a/repo-a wasn't allowed to provision secret SECRET_A:
+      ✅ Can use token declaration account-a/repo-a.tokenA
+      ❌ Can't provision token to GitHub Actions secret in account account-a:
+        ✅ Account account-a was allowed access to token #2
+        ❌ Can't provision to no repos (no matching rules)"
+  `);
+  await expect(
+    toMarkdown(toMdast(resultNoReposUnspecified)),
+  ).toMatchFileSnapshot(join(fixturesPath, "toggles/no-repos-unspecified.md"));
+});
+
 it("explains an account secret visibility toggle with no matching rules", async () => {
   const authorizer = createProvisionAuthorizer(
     createTestTokenRequestFactory(),
