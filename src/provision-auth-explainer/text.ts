@@ -6,12 +6,13 @@ import {
 } from "../github-reference.js";
 import { FAIL_ICON, PASS_ICON, icon } from "../icon.js";
 import { pluralize } from "../pluralize.js";
-import { isRepoProvisionAuthTargetResult } from "../provision-auth-result.js";
+import {
+  isRepoProvisionRequestTarget,
+  type ProvisionRequestTarget,
+} from "../provision-request.js";
 import { secretTypeText } from "../secret-type.js";
 import { createSequencer } from "../sequencer.js";
 import type {
-  ProvisionAuthAccountTargetResult,
-  ProvisionAuthRepoTargetResult,
   ProvisionAuthResult,
   ProvisionAuthResultExplainer,
   ProvisionAuthTargetResult,
@@ -64,48 +65,17 @@ export function createTextProvisionAuthExplainer(): ProvisionAuthResultExplainer
     );
 
     let explained = "";
-    for (const result of sortedResults) {
-      explained += explainTarget(result);
-    }
+    for (const result of sortedResults) explained += explainTarget(result);
 
     return explained;
   }
 
   function explainTarget(result: ProvisionAuthTargetResult): string {
-    return isRepoProvisionAuthTargetResult(result)
-      ? explainRepoTarget(result)
-      : explainAccountTarget(result);
-  }
-
-  function explainAccountTarget(
-    result: ProvisionAuthAccountTargetResult,
-  ): string {
-    const { target } = result;
-    const subject =
-      `${secretTypeText(target)} secret in account ` +
-      `${accountOrRepoRefToString(target.target)}`;
-
-    return explainSubject(result, subject);
-  }
-
-  function explainRepoTarget(result: ProvisionAuthRepoTargetResult): string {
-    const { target } = result;
-    const subject =
-      `${secretTypeText(target)} secret in ` +
-      `${target.visibility} repo ${accountOrRepoRefToString(target.target)}`;
-
-    return explainSubject(result, subject);
-  }
-
-  function explainSubject(
-    result: ProvisionAuthTargetResult,
-    subject: string,
-  ): string {
     const { isAllowed } = result;
 
     return (
       `\n  ${icon(isAllowed)} ${isAllowed ? "Can" : "Can't"} ` +
-      `provision token to ${subject}:` +
+      `provision token to ${explainSubject(result.target)}:` +
       explainTargetToken(result) +
       explainBasedOnRules(result)
     );
@@ -131,6 +101,16 @@ export function createTextProvisionAuthExplainer(): ProvisionAuthResultExplainer
     return (
       `\n    ${icon(isTokenAllowed)} ${kind} ${name} ` +
       `was ${isTokenAllowed ? "allowed" : "denied"} access to token ${ref}`
+    );
+  }
+
+  function explainSubject(target: ProvisionRequestTarget): string {
+    return (
+      `${secretTypeText(target)} secret in ` +
+      (isRepoProvisionRequestTarget(target)
+        ? `${target.visibility} repo `
+        : "account ") +
+      `${accountOrRepoRefToString(target.target)}`
     );
   }
 

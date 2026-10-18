@@ -60813,11 +60813,6 @@ function createProvisionRequestFactory(declarationRegistry, appRegistry, repoReg
   }
 }
 
-// src/provision-auth-result.ts
-function isRepoProvisionAuthTargetResult(result) {
-  return isRepoProvisionRequestTarget(result.target);
-}
-
 // node_modules/.pnpm/micromark-util-character@2.1.1/node_modules/micromark-util-character/index.js
 var asciiAlpha = regexCheck(/[A-Za-z]/);
 var asciiAlphanumeric = regexCheck(/[\dA-Za-z]/);
@@ -65703,28 +65698,13 @@ function createTextProvisionAuthExplainer() {
       (a2, b2) => compareProvisionRequestTarget(a2.target, b2.target)
     );
     let explained = "";
-    for (const result of sortedResults) {
-      explained += explainTarget(result);
-    }
+    for (const result of sortedResults) explained += explainTarget(result);
     return explained;
   }
   function explainTarget(result) {
-    return isRepoProvisionAuthTargetResult(result) ? explainRepoTarget(result) : explainAccountTarget(result);
-  }
-  function explainAccountTarget(result) {
-    const { target } = result;
-    const subject = `${secretTypeText(target)} secret in account ${accountOrRepoRefToString(target.target)}`;
-    return explainSubject(result, subject);
-  }
-  function explainRepoTarget(result) {
-    const { target } = result;
-    const subject = `${secretTypeText(target)} secret in ${target.visibility} repo ${accountOrRepoRefToString(target.target)}`;
-    return explainSubject(result, subject);
-  }
-  function explainSubject(result, subject) {
     const { isAllowed } = result;
     return `
-  ${icon(isAllowed)} ${isAllowed ? "Can" : "Can't"} provision token to ${subject}:` + explainTargetToken(result) + explainBasedOnRules(result);
+  ${icon(isAllowed)} ${isAllowed ? "Can" : "Can't"} provision token to ${explainSubject(result.target)}:` + explainTargetToken(result) + explainBasedOnRules(result);
   }
   function explainTargetToken({
     isTokenAllowed,
@@ -65739,6 +65719,9 @@ function createTextProvisionAuthExplainer() {
     const kind = isRepoRef(tokenAuthResult.request.consumer) ? "Repo" : "Account";
     return `
     ${icon(isTokenAllowed)} ${kind} ${name} was ${isTokenAllowed ? "allowed" : "denied"} access to token ${ref}`;
+  }
+  function explainSubject(target) {
+    return `${secretTypeText(target)} secret in ` + (isRepoProvisionRequestTarget(target) ? `${target.visibility} repo ` : "account ") + `${accountOrRepoRefToString(target.target)}`;
   }
   function explainBasedOnRules({
     isProvisionAllowed,
@@ -121362,6 +121345,11 @@ Secret #${i2}:
       selected_repository_ids: visibility.repos.map(({ id }) => id)
     };
   }
+}
+
+// src/provision-auth-result.ts
+function isRepoProvisionAuthTargetResult(result) {
+  return isRepoProvisionRequestTarget(result.target);
 }
 
 // src/provision-auth-explainer/markdown.ts
