@@ -122,29 +122,31 @@ export function createMarkdownProvisionAuthExplainer(): ProvisionAuthResultExpla
     result: ProvisionAuthAccountTargetResult,
   ): ListItem["children"] {
     const { target } = result;
-
-    return explainTargetContent(result, [
+    const subject = [
       ...secretTypeMdast(target),
       text(" secret in account "),
       inlineCode(accountOrRepoRefToString(target.target)),
-    ]);
+    ];
+
+    return explainSubject(result, subject);
   }
 
   function explainRepoTarget(
     result: ProvisionAuthRepoTargetResult,
   ): ListItem["children"] {
     const { target } = result;
-
-    return explainTargetContent(result, [
+    const subject = [
       ...secretTypeMdast(target),
       text(" secret in "),
       strong(text(target.visibility)),
       text(" repo "),
       inlineCode(accountOrRepoRefToString(target.target)),
-    ]);
+    ];
+
+    return explainSubject(result, subject);
   }
 
-  function explainTargetContent(
+  function explainSubject(
     result: ProvisionAuthTargetResult,
     subject: PhrasingContent[],
   ): ListItem["children"] {

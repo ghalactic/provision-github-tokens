@@ -65714,12 +65714,17 @@ function createTextProvisionAuthExplainer() {
   function explainAccountTarget(result) {
     const { target } = result;
     const subject = `${secretTypeText(target)} secret in account ${accountOrRepoRefToString(target.target)}`;
-    return explainTargetSentence(result.isAllowed, subject) + explainTargetToken(result) + explainBasedOnRules(result.isProvisionAllowed, result.rules);
+    return explainSubject(result, subject);
   }
   function explainRepoTarget(result) {
     const { target } = result;
     const subject = `${secretTypeText(target)} secret in ${target.visibility} repo ${accountOrRepoRefToString(target.target)}`;
-    return explainTargetSentence(result.isAllowed, subject) + explainTargetToken(result) + explainBasedOnRules(result.isProvisionAllowed, result.rules);
+    return explainSubject(result, subject);
+  }
+  function explainSubject(result, subject) {
+    const { isAllowed } = result;
+    return `
+  ${icon(isAllowed)} ${isAllowed ? "Can" : "Can't"} provision token to ${subject}:` + explainTargetToken(result) + explainBasedOnRules(result);
   }
   function explainTargetToken({
     isTokenAllowed,
@@ -65735,11 +65740,10 @@ function createTextProvisionAuthExplainer() {
     return `
     ${icon(isTokenAllowed)} ${kind} ${name} was ${isTokenAllowed ? "allowed" : "denied"} access to token ${ref}`;
   }
-  function explainTargetSentence(isAllowed, subject) {
-    return `
-  ${icon(isAllowed)} ${isAllowed ? "Can" : "Can't"} provision token to ${subject}:`;
-  }
-  function explainBasedOnRules(isProvisionAllowed, rules) {
+  function explainBasedOnRules({
+    isProvisionAllowed,
+    rules
+  }) {
     const ruleCount = rules.length;
     const summary2 = `
     ${icon(isProvisionAllowed)} ${isProvisionAllowed ? "Can" : "Can't"} provision secret ` + (ruleCount < 1 ? "(no matching rules)" : `based on ${pluralize(ruleCount, "rule", "rules")}:`);
@@ -121432,23 +121436,25 @@ function createMarkdownProvisionAuthExplainer() {
   }
   function explainAccountTarget(result) {
     const { target } = result;
-    return explainTargetContent(result, [
+    const subject = [
       ...secretTypeMdast(target),
       text2(" secret in account "),
       inlineCode2(accountOrRepoRefToString(target.target))
-    ]);
+    ];
+    return explainSubject(result, subject);
   }
   function explainRepoTarget(result) {
     const { target } = result;
-    return explainTargetContent(result, [
+    const subject = [
       ...secretTypeMdast(target),
       text2(" secret in "),
       strong2(text2(target.visibility)),
       text2(" repo "),
       inlineCode2(accountOrRepoRefToString(target.target))
-    ]);
+    ];
+    return explainSubject(result, subject);
   }
-  function explainTargetContent(result, subject) {
+  function explainSubject(result, subject) {
     const { isAllowed } = result;
     return [
       paragraph2(

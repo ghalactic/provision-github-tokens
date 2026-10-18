@@ -85,11 +85,7 @@ export function createTextProvisionAuthExplainer(): ProvisionAuthResultExplainer
       `${secretTypeText(target)} secret in account ` +
       `${accountOrRepoRefToString(target.target)}`;
 
-    return (
-      explainTargetSentence(result.isAllowed, subject) +
-      explainTargetToken(result) +
-      explainBasedOnRules(result.isProvisionAllowed, result.rules)
-    );
+    return explainSubject(result, subject);
   }
 
   function explainRepoTarget(result: ProvisionAuthRepoTargetResult): string {
@@ -98,10 +94,20 @@ export function createTextProvisionAuthExplainer(): ProvisionAuthResultExplainer
       `${secretTypeText(target)} secret in ` +
       `${target.visibility} repo ${accountOrRepoRefToString(target.target)}`;
 
+    return explainSubject(result, subject);
+  }
+
+  function explainSubject(
+    result: ProvisionAuthTargetResult,
+    subject: string,
+  ): string {
+    const { isAllowed } = result;
+
     return (
-      explainTargetSentence(result.isAllowed, subject) +
+      `\n  ${icon(isAllowed)} ${isAllowed ? "Can" : "Can't"} ` +
+      `provision token to ${subject}:` +
       explainTargetToken(result) +
-      explainBasedOnRules(result.isProvisionAllowed, result.rules)
+      explainBasedOnRules(result)
     );
   }
 
@@ -128,17 +134,10 @@ export function createTextProvisionAuthExplainer(): ProvisionAuthResultExplainer
     );
   }
 
-  function explainTargetSentence(isAllowed: boolean, subject: string): string {
-    return (
-      `\n  ${icon(isAllowed)} ${isAllowed ? "Can" : "Can't"} ` +
-      `provision token to ${subject}:`
-    );
-  }
-
-  function explainBasedOnRules(
-    isProvisionAllowed: boolean,
-    rules: ProvisionAuthTargetRuleResult[],
-  ): string {
+  function explainBasedOnRules({
+    isProvisionAllowed,
+    rules,
+  }: ProvisionAuthTargetResult): string {
     const ruleCount = rules.length;
     const summary =
       `\n    ${icon(isProvisionAllowed)} ` +
