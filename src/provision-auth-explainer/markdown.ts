@@ -16,12 +16,13 @@ import {
   text,
 } from "../markdown.js";
 import { pluralize } from "../pluralize.js";
-import { isRepoProvisionAuthTargetResult } from "../provision-auth-result.js";
+import {
+  isRepoProvisionRequestTarget,
+  type ProvisionRequestTarget,
+} from "../provision-request.js";
 import { secretTypeMdast } from "../secret-type.js";
 import { createSequencer } from "../sequencer.js";
 import type {
-  ProvisionAuthAccountTargetResult,
-  ProvisionAuthRepoTargetResult,
   ProvisionAuthResult,
   ProvisionAuthResultExplainer,
   ProvisionAuthTargetResult,
@@ -113,43 +114,6 @@ export function createMarkdownProvisionAuthExplainer(): ProvisionAuthResultExpla
   function explainTarget(
     result: ProvisionAuthTargetResult,
   ): ListItem["children"] {
-    return isRepoProvisionAuthTargetResult(result)
-      ? explainRepoTarget(result)
-      : explainAccountTarget(result);
-  }
-
-  function explainAccountTarget(
-    result: ProvisionAuthAccountTargetResult,
-  ): ListItem["children"] {
-    const { target } = result;
-    const subject = [
-      ...secretTypeMdast(target),
-      text(" secret in account "),
-      inlineCode(accountOrRepoRefToString(target.target)),
-    ];
-
-    return explainSubject(result, subject);
-  }
-
-  function explainRepoTarget(
-    result: ProvisionAuthRepoTargetResult,
-  ): ListItem["children"] {
-    const { target } = result;
-    const subject = [
-      ...secretTypeMdast(target),
-      text(" secret in "),
-      strong(text(target.visibility)),
-      text(" repo "),
-      inlineCode(accountOrRepoRefToString(target.target)),
-    ];
-
-    return explainSubject(result, subject);
-  }
-
-  function explainSubject(
-    result: ProvisionAuthTargetResult,
-    subject: PhrasingContent[],
-  ): ListItem["children"] {
     const { isAllowed } = result;
 
     return [
@@ -157,7 +121,7 @@ export function createMarkdownProvisionAuthExplainer(): ProvisionAuthResultExpla
         text(`${icon(isAllowed)} `),
         strong(text(isAllowed ? "Can" : "Can't")),
         text(" provision token to "),
-        ...subject,
+        ...explainSubject(result.target),
         text(":"),
       ),
       list(
@@ -194,6 +158,17 @@ export function createMarkdownProvisionAuthExplainer(): ProvisionAuthResultExpla
         text(" access to token "),
         inlineCode(ref),
       ),
+    ];
+  }
+
+  function explainSubject(target: ProvisionRequestTarget): PhrasingContent[] {
+    return [
+      ...secretTypeMdast(target),
+      text(" secret in "),
+      ...(isRepoProvisionRequestTarget(target)
+        ? [strong(text(target.visibility)), text(" repo ")]
+        : [text("account ")]),
+      inlineCode(accountOrRepoRefToString(target.target)),
     ];
   }
 

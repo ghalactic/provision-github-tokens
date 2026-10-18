@@ -121347,11 +121347,6 @@ Secret #${i2}:
   }
 }
 
-// src/provision-auth-result.ts
-function isRepoProvisionAuthTargetResult(result) {
-  return isRepoProvisionRequestTarget(result.target);
-}
-
 // src/provision-auth-explainer/markdown.ts
 function createMarkdownProvisionAuthExplainer() {
   const tokenSeq = createSequencer();
@@ -121420,36 +121415,13 @@ function createMarkdownProvisionAuthExplainer() {
     return targets;
   }
   function explainTarget(result) {
-    return isRepoProvisionAuthTargetResult(result) ? explainRepoTarget(result) : explainAccountTarget(result);
-  }
-  function explainAccountTarget(result) {
-    const { target } = result;
-    const subject = [
-      ...secretTypeMdast(target),
-      text2(" secret in account "),
-      inlineCode2(accountOrRepoRefToString(target.target))
-    ];
-    return explainSubject(result, subject);
-  }
-  function explainRepoTarget(result) {
-    const { target } = result;
-    const subject = [
-      ...secretTypeMdast(target),
-      text2(" secret in "),
-      strong2(text2(target.visibility)),
-      text2(" repo "),
-      inlineCode2(accountOrRepoRefToString(target.target))
-    ];
-    return explainSubject(result, subject);
-  }
-  function explainSubject(result, subject) {
     const { isAllowed } = result;
     return [
       paragraph2(
         text2(`${icon(isAllowed)} `),
         strong2(text2(isAllowed ? "Can" : "Can't")),
         text2(" provision token to "),
-        ...subject,
+        ...explainSubject(result.target),
         text2(":")
       ),
       list3(
@@ -121481,6 +121453,14 @@ function createMarkdownProvisionAuthExplainer() {
         text2(" access to token "),
         inlineCode2(ref)
       )
+    ];
+  }
+  function explainSubject(target) {
+    return [
+      ...secretTypeMdast(target),
+      text2(" secret in "),
+      ...isRepoProvisionRequestTarget(target) ? [strong2(text2(target.visibility)), text2(" repo ")] : [text2("account ")],
+      inlineCode2(accountOrRepoRefToString(target.target))
     ];
   }
   function explainBasedOnRules({
