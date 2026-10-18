@@ -60813,6 +60813,11 @@ function createProvisionRequestFactory(declarationRegistry, appRegistry, repoReg
   }
 }
 
+// src/provision-auth-result.ts
+function isRepoProvisionAuthTargetResult(result) {
+  return isRepoProvisionRequestTarget(result.target);
+}
+
 // node_modules/.pnpm/micromark-util-character@2.1.1/node_modules/micromark-util-character/index.js
 var asciiAlpha = regexCheck(/[A-Za-z]/);
 var asciiAlphanumeric = regexCheck(/[\dA-Za-z]/);
@@ -65711,7 +65716,7 @@ function createTextProvisionAuthExplainer() {
   function explainTarget(result) {
     const { isAllowed, target } = result;
     return `
-  ${icon(isAllowed)} ${isAllowed ? "Can" : "Can't"} provision token to ${explainSubject(target)}:` + explainTargetToken(result) + explainBasedOnRules(target, result) + explainSelectedRepositories(target, result);
+  ${icon(isAllowed)} ${isAllowed ? "Can" : "Can't"} provision token to ${explainSubject(target)}:` + explainTargetToken(result) + explainBasedOnRules(target, result) + (isRepoProvisionAuthTargetResult(result) ? "" : explainSelectedRepositories(target, result));
   }
   function explainTargetToken({
     isTokenAllowed,
@@ -65750,8 +65755,8 @@ function createTextProvisionAuthExplainer() {
     return isRepoProvisionRequestTarget(target) ? "secret " : `to ${accountSecretVisibilityCategoryLabel(target.visibility)} `;
   }
   function explainSelectedRepositories(target, result) {
-    const selectedRepos = "selectedRepos" in result ? result.selectedRepos : void 0;
-    if (!selectedRepos || isRepoProvisionRequestTarget(target)) return "";
+    const { selectedRepos } = result;
+    if (!selectedRepos) return "";
     const { visibility } = target;
     const repos = Object.entries(selectedRepos.results);
     repos.sort(([a2], [b2]) => a2.localeCompare(b2));
@@ -65760,7 +65765,8 @@ function createTextProvisionAuthExplainer() {
       explained += explainSelectedRepository(repo, repoResult);
     }
     if (!selectedRepos.isMatched && typeof visibility !== "string") {
-      explained += explainMatchedNothing(visibility.patterns);
+      explained += `
+    ${FAIL_ICON} No repositories matched the patterns ${visibility.patterns.join(", ")}`;
     }
     return explained;
   }
@@ -65775,10 +65781,6 @@ function createTextProvisionAuthExplainer() {
       explained += explainRule(ruleResult);
     }
     return explained;
-  }
-  function explainMatchedNothing(patterns) {
-    return `
-    ${FAIL_ICON} No repositories matched the patterns ${patterns.join(", ")}`;
   }
   function explainRule({
     index,
@@ -121392,11 +121394,6 @@ Secret #${i2}:
       selected_repository_ids: visibility.repos.map(({ id }) => id)
     };
   }
-}
-
-// src/provision-auth-result.ts
-function isRepoProvisionAuthTargetResult(result) {
-  return isRepoProvisionRequestTarget(result.target);
 }
 
 // src/provision-auth-explainer/markdown.ts

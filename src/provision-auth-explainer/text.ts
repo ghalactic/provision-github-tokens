@@ -6,6 +6,7 @@ import {
 } from "../github-reference.js";
 import { FAIL_ICON, PASS_ICON, icon } from "../icon.js";
 import { pluralize } from "../pluralize.js";
+import { isRepoProvisionAuthTargetResult } from "../provision-auth-result.js";
 import {
   isRepoProvisionRequestTarget,
   type ProvisionRequestTarget,
@@ -13,6 +14,7 @@ import {
 import { secretTypeText } from "../secret-type.js";
 import { createSequencer } from "../sequencer.js";
 import type {
+  ProvisionAuthAccountTargetResult,
   ProvisionAuthResult,
   ProvisionAuthResultExplainer,
   ProvisionAuthSelectedRepoResult,
@@ -80,7 +82,9 @@ export function createTextProvisionAuthExplainer(): ProvisionAuthResultExplainer
       `provision token to ${explainSubject(target)}:` +
       explainTargetToken(result) +
       explainBasedOnRules(target, result) +
-      explainSelectedRepositories(target, result)
+      (isRepoProvisionAuthTargetResult(result)
+        ? ""
+        : explainSelectedRepositories(target, result))
     );
   }
 
@@ -155,11 +159,11 @@ export function createTextProvisionAuthExplainer(): ProvisionAuthResultExplainer
 
   function explainSelectedRepositories(
     target: ProvisionRequestTarget,
-    result: ProvisionAuthTargetResult,
+    result: ProvisionAuthAccountTargetResult,
   ): string {
-    const selectedRepos =
-      "selectedRepos" in result ? result.selectedRepos : undefined;
-    if (!selectedRepos || isRepoProvisionRequestTarget(target)) return "";
+    const { selectedRepos } = result;
+
+    if (!selectedRepos) return "";
 
     const { visibility } = target;
     const repos = Object.entries(selectedRepos.results);
@@ -171,7 +175,9 @@ export function createTextProvisionAuthExplainer(): ProvisionAuthResultExplainer
     }
 
     if (!selectedRepos.isMatched && typeof visibility !== "string") {
-      explained += explainMatchedNothing(visibility.patterns);
+      explained +=
+        `\n    ${FAIL_ICON} ` +
+        `No repositories matched the patterns ${visibility.patterns.join(", ")}`;
     }
 
     return explained;
@@ -198,13 +204,6 @@ export function createTextProvisionAuthExplainer(): ProvisionAuthResultExplainer
     }
 
     return explained;
-  }
-
-  function explainMatchedNothing(patterns: string[]): string {
-    return (
-      `\n    ${FAIL_ICON} ` +
-      `No repositories matched the patterns ${patterns.join(", ")}`
-    );
   }
 
   function explainRule({
