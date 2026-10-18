@@ -1,7 +1,13 @@
 import { maxAccess } from "../src/access-level.js";
+import {
+  isEnvironmentProvisionRequestTarget,
+  isRepoProvisionRequestTarget,
+  type ProvisionRequestTarget,
+} from "../src/provision-request.js";
 import type { Permissions } from "../src/type/permissions.js";
 import type {
   ProvisionAuthResult,
+  ProvisionAuthSelectedReposResult,
   ProvisionAuthTargetResult,
 } from "../src/type/provision-auth-result.js";
 import type {
@@ -11,6 +17,7 @@ import type {
   TokenAuthResultSelectedRepos,
 } from "../src/type/token-auth-result.js";
 import { createTestSecretDec, createTestTokenDec } from "./declaration.js";
+import { createTestAccountProvisionRequestTarget } from "./provision-request.js";
 
 export function createTestTokenAuthResult(): TokenAuthResultAllRepos;
 export function createTestTokenAuthResult(
@@ -105,31 +112,49 @@ export function createTestTokenAuthResult(
   };
 }
 
+export type TestProvisionAuthTargetResultOptions = Partial<
+  Omit<ProvisionAuthTargetResult, "target">
+> & {
+  target?: ProvisionRequestTarget;
+  selectedRepos?: ProvisionAuthSelectedReposResult;
+};
+
 export function createTestProvisionAuthTargetResult(
-  result: Partial<ProvisionAuthTargetResult> = {},
+  result: TestProvisionAuthTargetResultOptions = {},
 ): ProvisionAuthTargetResult {
-  const { isAllowed = true, ...overrides } = result;
+  const {
+    isAllowed = true,
+    tokenAuthResult = createTestTokenAuthResult(),
+    isTokenAllowed = tokenAuthResult.isAllowed,
+    isProvisionAllowed = isAllowed,
+    have = isProvisionAllowed ? "allow" : "deny",
+    rules = [],
+    target = createTestAccountProvisionRequestTarget(
+      "actions",
+      "account-a",
+      "all",
+    ),
+    selectedRepos,
+  } = result;
 
-  const tokenAuthResult =
-    overrides.tokenAuthResult ?? createTestTokenAuthResult();
-  const isTokenAllowed = overrides.isTokenAllowed ?? tokenAuthResult.isAllowed;
-  const isProvisionAllowed = overrides.isProvisionAllowed ?? isAllowed;
-
-  return {
-    target: {
-      platform: "github",
-      type: "actions",
-      target: { account: "account-a" },
-      visibility: "all",
-    },
-    rules: [],
-    have: isProvisionAllowed ? "allow" : "deny",
+  const common = {
+    rules,
+    have,
     tokenAuthResult,
     isTokenAllowed,
     isProvisionAllowed,
     isAllowed: isTokenAllowed && isProvisionAllowed,
-    ...overrides,
   };
+
+  if (isEnvironmentProvisionRequestTarget(target)) {
+    return { ...common, target };
+  }
+
+  if (isRepoProvisionRequestTarget(target)) {
+    return { ...common, target };
+  }
+
+  return { ...common, target, selectedRepos };
 }
 
 export function createTestProvisionAuthResult(

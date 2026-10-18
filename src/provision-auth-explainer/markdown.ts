@@ -16,13 +16,12 @@ import {
   text,
 } from "../markdown.js";
 import { pluralize } from "../pluralize.js";
-import {
-  isRepoProvisionRequestTarget,
-  type ProvisionRequestTarget,
-} from "../provision-request.js";
+import { isAccountProvisionAuthTargetResult } from "../provision-auth-result.js";
 import { secretTypeMdast } from "../secret-type.js";
 import { createSequencer } from "../sequencer.js";
 import type {
+  ProvisionAuthAccountTargetResult,
+  ProvisionAuthRepoOrEnvironmentTargetResult,
   ProvisionAuthResult,
   ProvisionAuthResultExplainer,
   ProvisionAuthTargetResult,
@@ -91,7 +90,6 @@ export function createMarkdownProvisionAuthExplainer(): ProvisionAuthResultExpla
   }
 
   function explainTargets({
-    request,
     results,
     isMissingTargets,
   }: ProvisionAuthResult): ListItem[] {
@@ -99,26 +97,56 @@ export function createMarkdownProvisionAuthExplainer(): ProvisionAuthResultExpla
       return [listItem(paragraph(text(`${FAIL_ICON} No targets specified`)))];
     }
 
-    const entries: [
-      target: ProvisionRequestTarget,
-      result: ProvisionAuthTargetResult,
-    ][] = [];
-    for (let i = 0; i < results.length; ++i) {
-      entries.push([request.to[i], results[i]]);
-    }
-    entries.sort(([a], [b]) => compareProvisionRequestTarget(a, b));
+    const sortedResults = [...results];
+    sortedResults.sort((a, b) =>
+      compareProvisionRequestTarget(a.target, b.target),
+    );
 
     const targets: ListItem[] = [];
-    for (const [target, result] of entries) {
-      targets.push(listItem(...explainTarget(target, result)));
+    for (const result of sortedResults) {
+      targets.push(listItem(...explainTarget(result)));
     }
 
     return targets;
   }
 
   function explainTarget(
-    target: ProvisionRequestTarget,
     result: ProvisionAuthTargetResult,
+  ): ListItem["children"] {
+    return isAccountProvisionAuthTargetResult(result)
+      ? explainAccountTarget(result)
+      : explainRepoOrEnvironmentTarget(result);
+  }
+
+  function explainAccountTarget(
+    result: ProvisionAuthAccountTargetResult,
+  ): ListItem["children"] {
+    const { target } = result;
+
+    return explainTargetContent(result, [
+      ...secretTypeMdast(target),
+      text(" secret in account "),
+      inlineCode(accountOrRepoRefToString(target.target)),
+    ]);
+  }
+
+  function explainRepoOrEnvironmentTarget(
+    result: ProvisionAuthRepoOrEnvironmentTargetResult,
+  ): ListItem["children"] {
+    const { target } = result;
+
+    return explainTargetContent(result, [
+      ...secretTypeMdast(target),
+      text(" secret in "),
+      strong(text(target.visibility)),
+      text(" repo "),
+      inlineCode(accountOrRepoRefToString(target.target)),
+    ]);
+  }
+
+  function explainTargetContent(
+    result: ProvisionAuthTargetResult,
+    subject: PhrasingContent[],
   ): ListItem["children"] {
     const { isAllowed } = result;
 
@@ -127,7 +155,7 @@ export function createMarkdownProvisionAuthExplainer(): ProvisionAuthResultExpla
         text(`${icon(isAllowed)} `),
         strong(text(isAllowed ? "Can" : "Can't")),
         text(" provision token to "),
-        ...explainSubject(target),
+        ...subject,
         text(":"),
       ),
       list(
@@ -164,17 +192,6 @@ export function createMarkdownProvisionAuthExplainer(): ProvisionAuthResultExpla
         text(" access to token "),
         inlineCode(ref),
       ),
-    ];
-  }
-
-  function explainSubject(target: ProvisionRequestTarget): PhrasingContent[] {
-    return [
-      ...secretTypeMdast(target),
-      text(" secret in "),
-      ...(isRepoProvisionRequestTarget(target)
-        ? [strong(text(target.visibility)), text(" repo ")]
-        : [text("account ")]),
-      inlineCode(accountOrRepoRefToString(target.target)),
     ];
   }
 

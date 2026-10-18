@@ -136,16 +136,26 @@ export function createProvisionAuthorizer(
         const isProvisionAllowed =
           have === "allow" && (selectedRepos?.isAllowed ?? true);
 
-        targetResults.push({
-          target,
+        const common = {
           rules: ruleResults,
           have,
           tokenAuthResult,
           isTokenAllowed,
           isProvisionAllowed,
           isAllowed: isTokenAllowed && isProvisionAllowed,
-          selectedRepos: selectedRepos?.result,
-        });
+        };
+
+        if (!isRepoProvisionRequestTarget(target)) {
+          targetResults.push({
+            ...common,
+            target,
+            selectedRepos: selectedRepos?.result,
+          });
+        } else if (isEnvironmentProvisionRequestTarget(target)) {
+          targetResults.push({ ...common, target });
+        } else {
+          targetResults.push({ ...common, target });
+        }
       }
 
       const hasTokenDec = request.tokenDec != null;

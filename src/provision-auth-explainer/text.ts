@@ -6,13 +6,12 @@ import {
 } from "../github-reference.js";
 import { FAIL_ICON, PASS_ICON, icon } from "../icon.js";
 import { pluralize } from "../pluralize.js";
-import {
-  isRepoProvisionRequestTarget,
-  type ProvisionRequestTarget,
-} from "../provision-request.js";
+import { isAccountProvisionAuthTargetResult } from "../provision-auth-result.js";
 import { secretTypeText } from "../secret-type.js";
 import { createSequencer } from "../sequencer.js";
 import type {
+  ProvisionAuthAccountTargetResult,
+  ProvisionAuthRepoOrEnvironmentTargetResult,
   ProvisionAuthResult,
   ProvisionAuthResultExplainer,
   ProvisionAuthTargetResult,
@@ -54,39 +53,55 @@ export function createTextProvisionAuthExplainer(): ProvisionAuthResultExplainer
   }
 
   function explainTargets({
-    request,
     results,
     isMissingTargets,
   }: ProvisionAuthResult): string {
     if (isMissingTargets) return `\n  ${FAIL_ICON} No targets specified`;
 
-    const entries: [
-      target: ProvisionRequestTarget,
-      result: ProvisionAuthTargetResult,
-    ][] = [];
-    for (let i = 0; i < results.length; ++i) {
-      entries.push([request.to[i], results[i]]);
-    }
-    entries.sort(([a], [b]) => compareProvisionRequestTarget(a, b));
+    const sortedResults = [...results];
+    sortedResults.sort((a, b) =>
+      compareProvisionRequestTarget(a.target, b.target),
+    );
 
     let explained = "";
-    for (const [target, result] of entries) {
-      explained += explainTarget(target, result);
+    for (const result of sortedResults) {
+      explained += explainTarget(result);
     }
 
     return explained;
   }
 
-  function explainTarget(
-    target: ProvisionRequestTarget,
-    result: ProvisionAuthTargetResult,
+  function explainTarget(result: ProvisionAuthTargetResult): string {
+    return isAccountProvisionAuthTargetResult(result)
+      ? explainAccountTarget(result)
+      : explainRepoOrEnvironmentTarget(result);
+  }
+
+  function explainAccountTarget(
+    result: ProvisionAuthAccountTargetResult,
   ): string {
-    const { isAllowed } = result;
+    const { target } = result;
+    const subject =
+      `${secretTypeText(target)} secret in account ` +
+      `${accountOrRepoRefToString(target.target)}`;
 
     return (
-      `\n  ${icon(isAllowed)} ` +
-      `${isAllowed ? "Can" : "Can't"} ` +
-      `provision token to ${explainSubject(target)}:` +
+      explainTargetSentence(result.isAllowed, subject) +
+      explainTargetToken(result) +
+      explainBasedOnRules(result.isProvisionAllowed, result.rules)
+    );
+  }
+
+  function explainRepoOrEnvironmentTarget(
+    result: ProvisionAuthRepoOrEnvironmentTargetResult,
+  ): string {
+    const { target } = result;
+    const subject =
+      `${secretTypeText(target)} secret in ` +
+      `${target.visibility} repo ${accountOrRepoRefToString(target.target)}`;
+
+    return (
+      explainTargetSentence(result.isAllowed, subject) +
       explainTargetToken(result) +
       explainBasedOnRules(result.isProvisionAllowed, result.rules)
     );
@@ -115,13 +130,10 @@ export function createTextProvisionAuthExplainer(): ProvisionAuthResultExplainer
     );
   }
 
-  function explainSubject(target: ProvisionRequestTarget): string {
+  function explainTargetSentence(isAllowed: boolean, subject: string): string {
     return (
-      `${secretTypeText(target)} secret in ` +
-      (isRepoProvisionRequestTarget(target)
-        ? `${target.visibility} repo `
-        : "account ") +
-      `${accountOrRepoRefToString(target.target)}`
+      `\n  ${icon(isAllowed)} ${isAllowed ? "Can" : "Can't"} ` +
+      `provision token to ${subject}:`
     );
   }
 

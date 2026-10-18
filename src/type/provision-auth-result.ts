@@ -1,6 +1,8 @@
 import type {
+  GitHubAccountProvisionRequestTarget,
+  GitHubEnvironmentProvisionRequestTarget,
+  GitHubRepoProvisionRequestTarget,
   ProvisionRequest,
-  ProvisionRequestTarget,
 } from "../provision-request.js";
 import type { ProvisionSecretsRule } from "./provision-rule.js";
 import type { TokenAuthResult } from "./token-auth-result.js";
@@ -17,15 +19,27 @@ export type ProvisionAuthResult = {
   isAllowed: boolean;
 };
 
-export type ProvisionAuthTargetResult = {
-  target: ProvisionRequestTarget;
-  rules: ProvisionAuthTargetRuleResult[];
-  have: "allow" | "deny" | undefined;
-  tokenAuthResult: TokenAuthResult | undefined;
-  isTokenAllowed: boolean;
-  isProvisionAllowed: boolean;
-  isAllowed: boolean;
-  selectedRepos?: ProvisionAuthSelectedReposResult;
+export type ProvisionAuthTargetResult =
+  | ProvisionAuthAccountTargetResult
+  | ProvisionAuthEnvironmentTargetResult
+  | ProvisionAuthRepoTargetResult;
+
+export type ProvisionAuthRepoOrEnvironmentTargetResult =
+  ProvisionAuthEnvironmentTargetResult | ProvisionAuthRepoTargetResult;
+
+export type ProvisionAuthAccountTargetResult =
+  ProvisionAuthTargetResultCommon & {
+    target: GitHubAccountProvisionRequestTarget;
+    selectedRepos?: ProvisionAuthSelectedReposResult;
+  };
+
+export type ProvisionAuthEnvironmentTargetResult =
+  ProvisionAuthTargetResultCommon & {
+    target: GitHubEnvironmentProvisionRequestTarget;
+  };
+
+export type ProvisionAuthRepoTargetResult = ProvisionAuthTargetResultCommon & {
+  target: GitHubRepoProvisionRequestTarget;
 };
 
 export type ProvisionAuthSelectedReposResult = {
@@ -44,4 +58,13 @@ export type ProvisionAuthTargetRuleResult = {
   index: number;
   rule: ProvisionSecretsRule;
   have: "allow" | "deny" | undefined;
+};
+
+type ProvisionAuthTargetResultCommon = {
+  rules: ProvisionAuthTargetRuleResult[];
+  have: "allow" | "deny" | undefined;
+  tokenAuthResult: TokenAuthResult | undefined;
+  isTokenAllowed: boolean;
+  isProvisionAllowed: boolean;
+  isAllowed: boolean;
 };

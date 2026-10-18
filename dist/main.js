@@ -60813,6 +60813,11 @@ function createProvisionRequestFactory(declarationRegistry, appRegistry, repoReg
   }
 }
 
+// src/provision-auth-result.ts
+function isAccountProvisionAuthTargetResult(result) {
+  return !isRepoProvisionRequestTarget(result.target);
+}
+
 // node_modules/.pnpm/micromark-util-character@2.1.1/node_modules/micromark-util-character/index.js
 var asciiAlpha = regexCheck(/[A-Za-z]/);
 var asciiAlphanumeric = regexCheck(/[\dA-Za-z]/);
@@ -65688,27 +65693,33 @@ function createTextProvisionAuthExplainer() {
   ${FAIL_ICON} Can't use token declaration ${secretDec.token} because ` + (tokenDecIsRegistered ? "it isn't shared" : "it doesn't exist");
   }
   function explainTargets({
-    request: request2,
     results,
     isMissingTargets
   }) {
     if (isMissingTargets) return `
   ${FAIL_ICON} No targets specified`;
-    const entries = [];
-    for (let i2 = 0; i2 < results.length; ++i2) {
-      entries.push([request2.to[i2], results[i2]]);
-    }
-    entries.sort(([a2], [b2]) => compareProvisionRequestTarget(a2, b2));
+    const sortedResults = [...results];
+    sortedResults.sort(
+      (a2, b2) => compareProvisionRequestTarget(a2.target, b2.target)
+    );
     let explained = "";
-    for (const [target, result] of entries) {
-      explained += explainTarget(target, result);
+    for (const result of sortedResults) {
+      explained += explainTarget(result);
     }
     return explained;
   }
-  function explainTarget(target, result) {
-    const { isAllowed } = result;
-    return `
-  ${icon(isAllowed)} ${isAllowed ? "Can" : "Can't"} provision token to ${explainSubject(target)}:` + explainTargetToken(result) + explainBasedOnRules(result.isProvisionAllowed, result.rules);
+  function explainTarget(result) {
+    return isAccountProvisionAuthTargetResult(result) ? explainAccountTarget(result) : explainRepoOrEnvironmentTarget(result);
+  }
+  function explainAccountTarget(result) {
+    const { target } = result;
+    const subject = `${secretTypeText(target)} secret in account ${accountOrRepoRefToString(target.target)}`;
+    return explainTargetSentence(result.isAllowed, subject) + explainTargetToken(result) + explainBasedOnRules(result.isProvisionAllowed, result.rules);
+  }
+  function explainRepoOrEnvironmentTarget(result) {
+    const { target } = result;
+    const subject = `${secretTypeText(target)} secret in ${target.visibility} repo ${accountOrRepoRefToString(target.target)}`;
+    return explainTargetSentence(result.isAllowed, subject) + explainTargetToken(result) + explainBasedOnRules(result.isProvisionAllowed, result.rules);
   }
   function explainTargetToken({
     isTokenAllowed,
@@ -65724,8 +65735,9 @@ function createTextProvisionAuthExplainer() {
     return `
     ${icon(isTokenAllowed)} ${kind} ${name} was ${isTokenAllowed ? "allowed" : "denied"} access to token ${ref}`;
   }
-  function explainSubject(target) {
-    return `${secretTypeText(target)} secret in ` + (isRepoProvisionRequestTarget(target) ? `${target.visibility} repo ` : "account ") + `${accountOrRepoRefToString(target.target)}`;
+  function explainTargetSentence(isAllowed, subject) {
+    return `
+  ${icon(isAllowed)} ${isAllowed ? "Can" : "Can't"} provision token to ${subject}:`;
   }
   function explainBasedOnRules(isProvisionAllowed, rules) {
     const ruleCount = rules.length;
@@ -120852,16 +120864,25 @@ function createProvisionAuthorizer(createTokenRequest, tokenAuthorizer, config) 
           isTokenAllowed = tokenAuthResult.isAllowed;
         }
         const isProvisionAllowed = have === "allow" && (selectedRepos?.isAllowed ?? true);
-        targetResults.push({
-          target,
+        const common = {
           rules: ruleResults,
           have,
           tokenAuthResult,
           isTokenAllowed,
           isProvisionAllowed,
-          isAllowed: isTokenAllowed && isProvisionAllowed,
-          selectedRepos: selectedRepos?.result
-        });
+          isAllowed: isTokenAllowed && isProvisionAllowed
+        };
+        if (!isRepoProvisionRequestTarget(target)) {
+          targetResults.push({
+            ...common,
+            target,
+            selectedRepos: selectedRepos?.result
+          });
+        } else if (isEnvironmentProvisionRequestTarget(target)) {
+          targetResults.push({ ...common, target });
+        } else {
+          targetResults.push({ ...common, target });
+        }
       }
       const hasTokenDec = request2.tokenDec != null;
       const isMissingTargets = targetResults.length < 1;
@@ -121391,32 +121412,51 @@ function createMarkdownProvisionAuthExplainer() {
     ];
   }
   function explainTargets({
-    request: request2,
     results,
     isMissingTargets
   }) {
     if (isMissingTargets) {
       return [listItem2(paragraph2(text2(`${FAIL_ICON} No targets specified`)))];
     }
-    const entries = [];
-    for (let i2 = 0; i2 < results.length; ++i2) {
-      entries.push([request2.to[i2], results[i2]]);
-    }
-    entries.sort(([a2], [b2]) => compareProvisionRequestTarget(a2, b2));
+    const sortedResults = [...results];
+    sortedResults.sort(
+      (a2, b2) => compareProvisionRequestTarget(a2.target, b2.target)
+    );
     const targets = [];
-    for (const [target, result] of entries) {
-      targets.push(listItem2(...explainTarget(target, result)));
+    for (const result of sortedResults) {
+      targets.push(listItem2(...explainTarget(result)));
     }
     return targets;
   }
-  function explainTarget(target, result) {
+  function explainTarget(result) {
+    return isAccountProvisionAuthTargetResult(result) ? explainAccountTarget(result) : explainRepoOrEnvironmentTarget(result);
+  }
+  function explainAccountTarget(result) {
+    const { target } = result;
+    return explainTargetContent(result, [
+      ...secretTypeMdast(target),
+      text2(" secret in account "),
+      inlineCode2(accountOrRepoRefToString(target.target))
+    ]);
+  }
+  function explainRepoOrEnvironmentTarget(result) {
+    const { target } = result;
+    return explainTargetContent(result, [
+      ...secretTypeMdast(target),
+      text2(" secret in "),
+      strong2(text2(target.visibility)),
+      text2(" repo "),
+      inlineCode2(accountOrRepoRefToString(target.target))
+    ]);
+  }
+  function explainTargetContent(result, subject) {
     const { isAllowed } = result;
     return [
       paragraph2(
         text2(`${icon(isAllowed)} `),
         strong2(text2(isAllowed ? "Can" : "Can't")),
         text2(" provision token to "),
-        ...explainSubject(target),
+        ...subject,
         text2(":")
       ),
       list3(
@@ -121448,14 +121488,6 @@ function createMarkdownProvisionAuthExplainer() {
         text2(" access to token "),
         inlineCode2(ref)
       )
-    ];
-  }
-  function explainSubject(target) {
-    return [
-      ...secretTypeMdast(target),
-      text2(" secret in "),
-      ...isRepoProvisionRequestTarget(target) ? [strong2(text2(target.visibility)), text2(" repo ")] : [text2("account ")],
-      inlineCode2(accountOrRepoRefToString(target.target))
     ];
   }
   function explainBasedOnRules({

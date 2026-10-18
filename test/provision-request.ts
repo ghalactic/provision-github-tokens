@@ -1,9 +1,9 @@
 import type {
   AccountSecretVisibility,
+  GitHubAccountProvisionRequestTarget,
   GitHubEnvironmentProvisionRequestTarget,
   GitHubRepoProvisionRequestTarget,
   ProvisionRequest,
-  ProvisionRequestTarget,
 } from "../src/provision-request.js";
 import type { Visibility } from "../src/type/visibility.js";
 import { createTestSecretDec, createTestTokenDec } from "./declaration.js";
@@ -32,7 +32,7 @@ export function createTestAccountProvisionRequestTarget(
   type: "actions" | "agents" | "codespaces" | "dependabot",
   account: string,
   visibility: AccountSecretVisibility,
-): ProvisionRequestTarget {
+): GitHubAccountProvisionRequestTarget {
   return { platform: "github", type, target: { account }, visibility };
 }
 
