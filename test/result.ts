@@ -125,7 +125,7 @@ export function createTestProvisionAuthTargetResult(
       visibility: "all",
     },
     rules: [],
-    have: isSecretVisibilityCategoryAllowed ? "allow" : "deny",
+    have: isProvisionAllowed ? "allow" : "deny",
     tokenAuthResult,
     isTokenAllowed,
     isSecretVisibilityCategoryAllowed,
