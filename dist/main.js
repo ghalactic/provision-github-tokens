@@ -60814,8 +60814,8 @@ function createProvisionRequestFactory(declarationRegistry, appRegistry, repoReg
 }
 
 // src/provision-auth-result.ts
-function isAccountProvisionAuthTargetResult(result) {
-  return !isRepoProvisionRequestTarget(result.target);
+function isRepoProvisionAuthTargetResult(result) {
+  return isRepoProvisionRequestTarget(result.target);
 }
 
 // node_modules/.pnpm/micromark-util-character@2.1.1/node_modules/micromark-util-character/index.js
@@ -65709,14 +65709,14 @@ function createTextProvisionAuthExplainer() {
     return explained;
   }
   function explainTarget(result) {
-    return isAccountProvisionAuthTargetResult(result) ? explainAccountTarget(result) : explainRepoOrEnvironmentTarget(result);
+    return isRepoProvisionAuthTargetResult(result) ? explainRepoTarget(result) : explainAccountTarget(result);
   }
   function explainAccountTarget(result) {
     const { target } = result;
     const subject = `${secretTypeText(target)} secret in account ${accountOrRepoRefToString(target.target)}`;
     return explainTargetSentence(result.isAllowed, subject) + explainTargetToken(result) + explainBasedOnRules(result.isProvisionAllowed, result.rules);
   }
-  function explainRepoOrEnvironmentTarget(result) {
+  function explainRepoTarget(result) {
     const { target } = result;
     const subject = `${secretTypeText(target)} secret in ${target.visibility} repo ${accountOrRepoRefToString(target.target)}`;
     return explainTargetSentence(result.isAllowed, subject) + explainTargetToken(result) + explainBasedOnRules(result.isProvisionAllowed, result.rules);
@@ -120851,7 +120851,8 @@ function createProvisionAuthorizer(createTokenRequest, tokenAuthorizer, config) 
             have: ruleHave
           });
         }
-        const selectedRepos = isRepoProvisionRequestTarget(target) ? void 0 : evaluateSelectedRepos(target, request2);
+        const isRepoTarget = isRepoProvisionRequestTarget(target);
+        const selectedRepos = isRepoTarget ? void 0 : evaluateSelectedRepos(target, request2);
         let tokenAuthResult;
         let isTokenAllowed;
         if (request2.tokenDec == null) {
@@ -120872,16 +120873,14 @@ function createProvisionAuthorizer(createTokenRequest, tokenAuthorizer, config) 
           isProvisionAllowed,
           isAllowed: isTokenAllowed && isProvisionAllowed
         };
-        if (!isRepoProvisionRequestTarget(target)) {
+        if (isRepoTarget) {
+          targetResults.push({ ...common, target });
+        } else {
           targetResults.push({
             ...common,
             target,
             selectedRepos: selectedRepos?.result
           });
-        } else if (isEnvironmentProvisionRequestTarget(target)) {
-          targetResults.push({ ...common, target });
-        } else {
-          targetResults.push({ ...common, target });
         }
       }
       const hasTokenDec = request2.tokenDec != null;
@@ -121429,7 +121428,7 @@ function createMarkdownProvisionAuthExplainer() {
     return targets;
   }
   function explainTarget(result) {
-    return isAccountProvisionAuthTargetResult(result) ? explainAccountTarget(result) : explainRepoOrEnvironmentTarget(result);
+    return isRepoProvisionAuthTargetResult(result) ? explainRepoTarget(result) : explainAccountTarget(result);
   }
   function explainAccountTarget(result) {
     const { target } = result;
@@ -121439,7 +121438,7 @@ function createMarkdownProvisionAuthExplainer() {
       inlineCode2(accountOrRepoRefToString(target.target))
     ]);
   }
-  function explainRepoOrEnvironmentTarget(result) {
+  function explainRepoTarget(result) {
     const { target } = result;
     return explainTargetContent(result, [
       ...secretTypeMdast(target),

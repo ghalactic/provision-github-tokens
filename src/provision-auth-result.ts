@@ -1,11 +1,11 @@
 import { isRepoProvisionRequestTarget } from "./provision-request.js";
 import type {
-  ProvisionAuthAccountTargetResult,
+  ProvisionAuthRepoTargetResult,
   ProvisionAuthTargetResult,
 } from "./type/provision-auth-result.js";
 
-export function isAccountProvisionAuthTargetResult(
+export function isRepoProvisionAuthTargetResult(
   result: ProvisionAuthTargetResult,
-): result is ProvisionAuthAccountTargetResult {
-  return !isRepoProvisionRequestTarget(result.target);
+): result is ProvisionAuthRepoTargetResult {
+  return isRepoProvisionRequestTarget(result.target);
 }

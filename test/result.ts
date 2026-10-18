@@ -1,6 +1,5 @@
 import { maxAccess } from "../src/access-level.js";
 import {
-  isEnvironmentProvisionRequestTarget,
   isRepoProvisionRequestTarget,
   type ProvisionRequestTarget,
 } from "../src/provision-request.js";
@@ -145,10 +144,6 @@ export function createTestProvisionAuthTargetResult(
     isProvisionAllowed,
     isAllowed: isTokenAllowed && isProvisionAllowed,
   };
-
-  if (isEnvironmentProvisionRequestTarget(target)) {
-    return { ...common, target };
-  }
 
   if (isRepoProvisionRequestTarget(target)) {
     return { ...common, target };

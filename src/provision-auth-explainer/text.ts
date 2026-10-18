@@ -6,12 +6,12 @@ import {
 } from "../github-reference.js";
 import { FAIL_ICON, PASS_ICON, icon } from "../icon.js";
 import { pluralize } from "../pluralize.js";
-import { isAccountProvisionAuthTargetResult } from "../provision-auth-result.js";
+import { isRepoProvisionAuthTargetResult } from "../provision-auth-result.js";
 import { secretTypeText } from "../secret-type.js";
 import { createSequencer } from "../sequencer.js";
 import type {
   ProvisionAuthAccountTargetResult,
-  ProvisionAuthRepoOrEnvironmentTargetResult,
+  ProvisionAuthRepoTargetResult,
   ProvisionAuthResult,
   ProvisionAuthResultExplainer,
   ProvisionAuthTargetResult,
@@ -72,9 +72,9 @@ export function createTextProvisionAuthExplainer(): ProvisionAuthResultExplainer
   }
 
   function explainTarget(result: ProvisionAuthTargetResult): string {
-    return isAccountProvisionAuthTargetResult(result)
-      ? explainAccountTarget(result)
-      : explainRepoOrEnvironmentTarget(result);
+    return isRepoProvisionAuthTargetResult(result)
+      ? explainRepoTarget(result)
+      : explainAccountTarget(result);
   }
 
   function explainAccountTarget(
@@ -92,9 +92,7 @@ export function createTextProvisionAuthExplainer(): ProvisionAuthResultExplainer
     );
   }
 
-  function explainRepoOrEnvironmentTarget(
-    result: ProvisionAuthRepoOrEnvironmentTargetResult,
-  ): string {
+  function explainRepoTarget(result: ProvisionAuthRepoTargetResult): string {
     const { target } = result;
     const subject =
       `${secretTypeText(target)} secret in ` +

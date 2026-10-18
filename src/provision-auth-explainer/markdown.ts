@@ -16,12 +16,12 @@ import {
   text,
 } from "../markdown.js";
 import { pluralize } from "../pluralize.js";
-import { isAccountProvisionAuthTargetResult } from "../provision-auth-result.js";
+import { isRepoProvisionAuthTargetResult } from "../provision-auth-result.js";
 import { secretTypeMdast } from "../secret-type.js";
 import { createSequencer } from "../sequencer.js";
 import type {
   ProvisionAuthAccountTargetResult,
-  ProvisionAuthRepoOrEnvironmentTargetResult,
+  ProvisionAuthRepoTargetResult,
   ProvisionAuthResult,
   ProvisionAuthResultExplainer,
   ProvisionAuthTargetResult,
@@ -113,9 +113,9 @@ export function createMarkdownProvisionAuthExplainer(): ProvisionAuthResultExpla
   function explainTarget(
     result: ProvisionAuthTargetResult,
   ): ListItem["children"] {
-    return isAccountProvisionAuthTargetResult(result)
-      ? explainAccountTarget(result)
-      : explainRepoOrEnvironmentTarget(result);
+    return isRepoProvisionAuthTargetResult(result)
+      ? explainRepoTarget(result)
+      : explainAccountTarget(result);
   }
 
   function explainAccountTarget(
@@ -130,8 +130,8 @@ export function createMarkdownProvisionAuthExplainer(): ProvisionAuthResultExpla
     ]);
   }
 
-  function explainRepoOrEnvironmentTarget(
-    result: ProvisionAuthRepoOrEnvironmentTargetResult,
+  function explainRepoTarget(
+    result: ProvisionAuthRepoTargetResult,
   ): ListItem["children"] {
     const { target } = result;
 

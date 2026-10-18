@@ -20,12 +20,7 @@ export type ProvisionAuthResult = {
 };
 
 export type ProvisionAuthTargetResult =
-  | ProvisionAuthAccountTargetResult
-  | ProvisionAuthEnvironmentTargetResult
-  | ProvisionAuthRepoTargetResult;
-
-export type ProvisionAuthRepoOrEnvironmentTargetResult =
-  ProvisionAuthEnvironmentTargetResult | ProvisionAuthRepoTargetResult;
+  ProvisionAuthAccountTargetResult | ProvisionAuthRepoTargetResult;
 
 export type ProvisionAuthAccountTargetResult =
   ProvisionAuthTargetResultCommon & {
@@ -33,13 +28,9 @@ export type ProvisionAuthAccountTargetResult =
     selectedRepos?: ProvisionAuthSelectedReposResult;
   };
 
-export type ProvisionAuthEnvironmentTargetResult =
-  ProvisionAuthTargetResultCommon & {
-    target: GitHubEnvironmentProvisionRequestTarget;
-  };
-
 export type ProvisionAuthRepoTargetResult = ProvisionAuthTargetResultCommon & {
-  target: GitHubRepoProvisionRequestTarget;
+  target:
+    GitHubRepoProvisionRequestTarget | GitHubEnvironmentProvisionRequestTarget;
 };
 
 export type ProvisionAuthSelectedReposResult = {
