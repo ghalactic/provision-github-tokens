@@ -2,4 +2,4 @@
   - ✅ **Can** use token declaration `account-a/repo-a.tokenA`
   * ❌ **Can't** provision token to **Dependabot** secret in account `account-x`:
     - ✅ Account `account-x` was **allowed** access to token `#1`
-    - ❌  **Can't** provision secret (no matching rules)
+    - ❌ **Can't** provision secret (no matching rules)

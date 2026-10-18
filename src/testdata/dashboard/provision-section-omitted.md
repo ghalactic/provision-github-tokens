@@ -25,7 +25,7 @@
   - ✅ **Can** use token declaration `account-a/repo-a.token-a`
   * ✅ **Can** provision token to **GitHub Actions** secret in account `account-a`:
     - ✅ Account `account-a` was **allowed** access to token `#1`
-    - ✅  **Can** provision secret (no matching rules)
+    - ✅ **Can** provision secret (no matching rules)
 
 ### Token `#1`
 

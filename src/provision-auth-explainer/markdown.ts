@@ -91,7 +91,6 @@ export function createMarkdownProvisionAuthExplainer(): ProvisionAuthResultExpla
   }
 
   function explainTargets({
-    request,
     results,
     isMissingTargets,
   }: ProvisionAuthResult): ListItem[] {
@@ -99,25 +98,20 @@ export function createMarkdownProvisionAuthExplainer(): ProvisionAuthResultExpla
       return [listItem(paragraph(text(`${FAIL_ICON} No targets specified`)))];
     }
 
-    const entries: [
-      target: ProvisionRequestTarget,
-      result: ProvisionAuthTargetResult,
-    ][] = [];
-    for (let i = 0; i < results.length; ++i) {
-      entries.push([request.to[i], results[i]]);
-    }
-    entries.sort(([a], [b]) => compareProvisionRequestTarget(a, b));
+    const sortedResults = [...results];
+    sortedResults.sort((a, b) =>
+      compareProvisionRequestTarget(a.target, b.target),
+    );
 
     const targets: ListItem[] = [];
-    for (const [target, result] of entries) {
-      targets.push(listItem(...explainTarget(target, result)));
+    for (const result of sortedResults) {
+      targets.push(listItem(...explainTarget(result)));
     }
 
     return targets;
   }
 
   function explainTarget(
-    target: ProvisionRequestTarget,
     result: ProvisionAuthTargetResult,
   ): ListItem["children"] {
     const { isAllowed } = result;
@@ -127,7 +121,7 @@ export function createMarkdownProvisionAuthExplainer(): ProvisionAuthResultExpla
         text(`${icon(isAllowed)} `),
         strong(text(isAllowed ? "Can" : "Can't")),
         text(" provision token to "),
-        ...explainSubject(target),
+        ...explainSubject(result.target),
         text(":"),
       ),
       list(
@@ -184,7 +178,7 @@ export function createMarkdownProvisionAuthExplainer(): ProvisionAuthResultExpla
   }: ProvisionAuthTargetResult): ListItem["children"] {
     const ruleCount = rules.length;
     const summary = paragraph(
-      text(`${icon(isProvisionAllowed)}  `),
+      text(`${icon(isProvisionAllowed)} `),
       strong(text(isProvisionAllowed ? "Can" : "Can't")),
       text(" provision secret "),
       ...(ruleCount < 1

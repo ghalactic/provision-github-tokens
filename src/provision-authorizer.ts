@@ -116,7 +116,8 @@ export function createProvisionAuthorizer(
           });
         }
 
-        const selectedRepos = isRepoProvisionRequestTarget(target)
+        const isRepoTarget = isRepoProvisionRequestTarget(target);
+        const selectedRepos = isRepoTarget
           ? undefined
           : evaluateSelectedRepos(target, request);
 
@@ -136,16 +137,24 @@ export function createProvisionAuthorizer(
         const isProvisionAllowed =
           have === "allow" && (selectedRepos?.isAllowed ?? true);
 
-        targetResults.push({
-          target,
+        const common = {
           rules: ruleResults,
           have,
           tokenAuthResult,
           isTokenAllowed,
           isProvisionAllowed,
           isAllowed: isTokenAllowed && isProvisionAllowed,
-          selectedRepos: selectedRepos?.result,
-        });
+        };
+
+        if (isRepoTarget) {
+          targetResults.push({ ...common, target });
+        } else {
+          targetResults.push({
+            ...common,
+            target,
+            selectedRepos: selectedRepos?.result,
+          });
+        }
       }
 
       const hasTokenDec = request.tokenDec != null;

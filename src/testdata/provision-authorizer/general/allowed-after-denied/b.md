@@ -2,6 +2,6 @@
   - ✅ **Can** use token declaration `account-y/repo-y.token-y`
   * ✅ **Can** provision token to **GitHub Actions** secret in **private** repo `account-a/repo-a`:
     - ✅ Repo `account-a/repo-a` was **allowed** access to token `#2`
-    - ✅  **Can** provision secret based on 2 rules:
+    - ✅ **Can** provision secret based on 2 rules:
       - ❌ **Denied** by rule `#1`
       - ✅ **Allowed** by rule `#2`

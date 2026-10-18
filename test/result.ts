@@ -129,7 +129,7 @@ export function createTestProvisionAuthTargetResult(
     isProvisionAllowed,
     isAllowed: isTokenAllowed && isProvisionAllowed,
     ...overrides,
-  };
+  } as ProvisionAuthTargetResult;
 }
 
 export function createTestProvisionAuthResult(

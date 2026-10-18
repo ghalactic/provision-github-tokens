@@ -54,41 +54,30 @@ export function createTextProvisionAuthExplainer(): ProvisionAuthResultExplainer
   }
 
   function explainTargets({
-    request,
     results,
     isMissingTargets,
   }: ProvisionAuthResult): string {
     if (isMissingTargets) return `\n  ${FAIL_ICON} No targets specified`;
 
-    const entries: [
-      target: ProvisionRequestTarget,
-      result: ProvisionAuthTargetResult,
-    ][] = [];
-    for (let i = 0; i < results.length; ++i) {
-      entries.push([request.to[i], results[i]]);
-    }
-    entries.sort(([a], [b]) => compareProvisionRequestTarget(a, b));
+    const sortedResults = [...results];
+    sortedResults.sort((a, b) =>
+      compareProvisionRequestTarget(a.target, b.target),
+    );
 
     let explained = "";
-    for (const [target, result] of entries) {
-      explained += explainTarget(target, result);
-    }
+    for (const result of sortedResults) explained += explainTarget(result);
 
     return explained;
   }
 
-  function explainTarget(
-    target: ProvisionRequestTarget,
-    result: ProvisionAuthTargetResult,
-  ): string {
+  function explainTarget(result: ProvisionAuthTargetResult): string {
     const { isAllowed } = result;
 
     return (
-      `\n  ${icon(isAllowed)} ` +
-      `${isAllowed ? "Can" : "Can't"} ` +
-      `provision token to ${explainSubject(target)}:` +
+      `\n  ${icon(isAllowed)} ${isAllowed ? "Can" : "Can't"} ` +
+      `provision token to ${explainSubject(result.target)}:` +
       explainTargetToken(result) +
-      explainBasedOnRules(result.isProvisionAllowed, result.rules)
+      explainBasedOnRules(result)
     );
   }
 
@@ -125,10 +114,10 @@ export function createTextProvisionAuthExplainer(): ProvisionAuthResultExplainer
     );
   }
 
-  function explainBasedOnRules(
-    isProvisionAllowed: boolean,
-    rules: ProvisionAuthTargetRuleResult[],
-  ): string {
+  function explainBasedOnRules({
+    isProvisionAllowed,
+    rules,
+  }: ProvisionAuthTargetResult): string {
     const ruleCount = rules.length;
     const summary =
       `\n    ${icon(isProvisionAllowed)} ` +
