@@ -16,6 +16,7 @@ import {
   text,
 } from "../markdown.js";
 import { pluralize } from "../pluralize.js";
+import { isRepoProvisionAuthTargetResult } from "../provision-auth-result.js";
 import {
   isRepoProvisionRequestTarget,
   type ProvisionRequestTarget,
@@ -23,6 +24,7 @@ import {
 import { secretTypeMdast } from "../secret-type.js";
 import { createSequencer } from "../sequencer.js";
 import type {
+  ProvisionAuthAccountTargetResult,
   ProvisionAuthResult,
   ProvisionAuthResultExplainer,
   ProvisionAuthSelectedRepoResult,
@@ -129,7 +131,9 @@ export function createMarkdownProvisionAuthExplainer(): ProvisionAuthResultExpla
       list(
         listItem(...explainTargetToken(result)),
         listItem(...explainBasedOnRules(target, result)),
-        ...explainSelectedRepositories(target, result),
+        ...(isRepoProvisionAuthTargetResult(result)
+          ? []
+          : explainSelectedRepositories(target, result)),
       ),
     ];
   }
@@ -222,11 +226,11 @@ export function createMarkdownProvisionAuthExplainer(): ProvisionAuthResultExpla
 
   function explainSelectedRepositories(
     target: ProvisionRequestTarget,
-    result: ProvisionAuthTargetResult,
+    result: ProvisionAuthAccountTargetResult,
   ): ListItem[] {
-    const selectedRepos =
-      "selectedRepos" in result ? result.selectedRepos : undefined;
-    if (!selectedRepos || isRepoProvisionRequestTarget(target)) return [];
+    const { selectedRepos } = result;
+
+    if (!selectedRepos) return [];
 
     const { visibility } = target;
     const repos = Object.entries(selectedRepos.results);

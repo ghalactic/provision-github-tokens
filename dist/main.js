@@ -121394,6 +121394,11 @@ Secret #${i2}:
   }
 }
 
+// src/provision-auth-result.ts
+function isRepoProvisionAuthTargetResult(result) {
+  return isRepoProvisionRequestTarget(result.target);
+}
+
 // src/provision-auth-explainer/markdown.ts
 function createMarkdownProvisionAuthExplainer() {
   const tokenSeq = createSequencer();
@@ -121474,7 +121479,7 @@ function createMarkdownProvisionAuthExplainer() {
       list3(
         listItem2(...explainTargetToken(result)),
         listItem2(...explainBasedOnRules(target, result)),
-        ...explainSelectedRepositories(target, result)
+        ...isRepoProvisionAuthTargetResult(result) ? [] : explainSelectedRepositories(target, result)
       )
     ];
   }
@@ -121540,8 +121545,8 @@ function createMarkdownProvisionAuthExplainer() {
     ];
   }
   function explainSelectedRepositories(target, result) {
-    const selectedRepos = "selectedRepos" in result ? result.selectedRepos : void 0;
-    if (!selectedRepos || isRepoProvisionRequestTarget(target)) return [];
+    const { selectedRepos } = result;
+    if (!selectedRepos) return [];
     const { visibility } = target;
     const repos = Object.entries(selectedRepos.results);
     repos.sort(([a2], [b2]) => a2.localeCompare(b2));
