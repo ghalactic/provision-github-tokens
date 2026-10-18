@@ -12,7 +12,7 @@
 
 - ❌ **Failed** to create **write** token with access to **all repos** in `account-a`:
   - ❌ No suitable issuer
-  - ➖ Wanted **write** access _without_ a role
+  - ➖ Wanted **write** access with role `role-a`
   - ➖ Wanted access to **all repos** in `account-a`
   - ➖ Wanted **1 permission**:
     - ➖ _contents_: `write`
@@ -25,10 +25,13 @@
   - ✅ **Can** use token declaration `account-a/repo-a.token-a`
   * ✅ **Can** provision token to **GitHub Actions** secret in account `account-a`:
     - ✅ Account `account-a` was **allowed** access to token `#1`
-    - ✅ **Can** provision to **private repos** (no matching rules)
+    - ✅ **Can** provision to **private repos** based on 1 rule:
+      - ✅ **Allowed** by rule `#1`
 
 ### Token `#1`
 
 - ✅ Account `account-a` was **allowed** access to a token:
-  - ✅ **Write** access to **all repos** in `account-a` requested without a role
-  * ✅ **Sufficient** access to **all repos** in `account-a` (no matching rules)
+  - ✅ **Write** access to **all repos** in `account-a` requested with role `role-a`
+  * ✅ **Sufficient** access to **all repos** in `account-a` based on 1 rule:
+    - ✅ Rule `#1` gave sufficient access:
+      - ✅ _contents_: have `write`, wanted `write`

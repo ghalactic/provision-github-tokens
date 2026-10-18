@@ -48,7 +48,10 @@ it("renders a summary with all secrets provisioned", async () => {
     request: {
       consumer: { account: "account-a" },
       repos: "all",
-      tokenDec: createTestTokenDec({ permissions: { contents: "write" } }),
+      tokenDec: createTestTokenDec({
+        as: "role-a",
+        permissions: { contents: "write" },
+      }),
     },
     have: { contents: "write" },
     maxWant: "write",
@@ -162,7 +165,10 @@ it("renders a summary with some secrets denied", async () => {
     request: {
       consumer: { account: "account-a" },
       repos: "all",
-      tokenDec: createTestTokenDec({ permissions: { contents: "write" } }),
+      tokenDec: createTestTokenDec({
+        as: "role-a",
+        permissions: { contents: "write" },
+      }),
     },
     have: { contents: "write" },
     maxWant: "write",
@@ -451,7 +457,10 @@ it("renders a summary with multiple requesters", async () => {
     request: {
       consumer: { account: "account-a" },
       repos: "all",
-      tokenDec: createTestTokenDec({ permissions: { contents: "write" } }),
+      tokenDec: createTestTokenDec({
+        as: "role-a",
+        permissions: { contents: "write" },
+      }),
     },
     have: { contents: "write" },
     maxWant: "write",

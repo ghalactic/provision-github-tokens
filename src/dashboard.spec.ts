@@ -45,7 +45,10 @@ it("renders a failure dashboard for a secret that failed to create", async () =>
     request: {
       consumer: { account: "account-a" },
       repos: "all",
-      tokenDec: createTestTokenDec({ permissions: { contents: "write" } }),
+      tokenDec: createTestTokenDec({
+        as: "role-a",
+        permissions: { contents: "write" },
+      }),
     },
     have: { contents: "write" },
     maxWant: "write",
@@ -319,7 +322,10 @@ it("omits the provision section for a secret missing from the provision results"
     request: {
       consumer: { account: "account-a" },
       repos: "all",
-      tokenDec: createTestTokenDec({ permissions: { contents: "write" } }),
+      tokenDec: createTestTokenDec({
+        as: "role-a",
+        permissions: { contents: "write" },
+      }),
     },
     have: { contents: "write" },
     maxWant: "write",
