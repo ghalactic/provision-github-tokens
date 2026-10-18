@@ -56,6 +56,7 @@ type ProvisionAuthTargetResultCommon = {
   have: "allow" | "deny" | undefined;
   tokenAuthResult: TokenAuthResult | undefined;
   isTokenAllowed: boolean;
+  isSecretVisibilityCategoryAllowed: boolean;
   isProvisionAllowed: boolean;
   isAllowed: boolean;
 };

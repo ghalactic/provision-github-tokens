@@ -77,17 +77,19 @@ export function createProvisionAuthorizer(
           if (isRepoProvisionRequestTarget(target)) {
             ruleHave = selectRepoRule(i, target, isSelfRepo);
           } else {
-            const category = accountSecretVisibilityCategory(target.visibility);
+            const visibilityCategory = accountSecretVisibilityCategory(
+              target.visibility,
+            );
 
             for (let j = 0; j < targetPatterns[i].accounts.length; ++j) {
               const [account, accountPattern] = targetPatterns[i].accounts[j];
 
               if (!accountPattern.test(targetName)) continue;
 
-              const accountPatternHave = selectAccountCategory(
+              const accountPatternHave = selectAccountVisibilityCategory(
                 rule.to.github.accounts[account].types,
                 target.type,
-                category,
+                visibilityCategory,
               );
 
               if (accountPatternHave) ruleHave = accountPatternHave;
@@ -96,10 +98,10 @@ export function createProvisionAuthorizer(
             }
 
             if (isSelfAccount) {
-              const selfHave = selectAccountCategory(
+              const selfHave = selectAccountVisibilityCategory(
                 rule.to.github.account.types,
                 target.type,
-                category,
+                visibilityCategory,
               );
 
               if (selfHave) ruleHave = selfHave;
@@ -134,14 +136,17 @@ export function createProvisionAuthorizer(
           isTokenAllowed = tokenAuthResult.isAllowed;
         }
 
+        const isSecretVisibilityCategoryAllowed = have === "allow";
         const isProvisionAllowed =
-          have === "allow" && (selectedRepos?.isAllowed ?? true);
+          isSecretVisibilityCategoryAllowed &&
+          (selectedRepos?.isAllowed ?? true);
 
         const common = {
           rules: ruleResults,
           have,
           tokenAuthResult,
           isTokenAllowed,
+          isSecretVisibilityCategoryAllowed,
           isProvisionAllowed,
           isAllowed: isTokenAllowed && isProvisionAllowed,
         };
@@ -325,12 +330,12 @@ export function createProvisionAuthorizer(
     return visibility.patterns.length > 0 ? "selectedRepos" : "noRepos";
   }
 
-  function selectAccountCategory(
+  function selectAccountVisibilityCategory(
     types: ProviderConfigGitHubAccountSecretTypes,
     type: string,
-    category: AccountSecretVisibilityCategory,
+    visibilityCategory: AccountSecretVisibilityCategory,
   ): "allow" | "deny" | undefined {
-    return selectAccountSecretType(types, type)?.[category];
+    return selectAccountSecretType(types, type)?.[visibilityCategory];
   }
 
   function selectAccountSecretType(

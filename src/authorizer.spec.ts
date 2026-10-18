@@ -247,6 +247,7 @@ it("authorizes all requests and outputs the results", async () => {
             ),
             have: "allow",
             isAllowed: true,
+            isSecretVisibilityCategoryAllowed: true,
             isProvisionAllowed: true,
             isTokenAllowed: true,
             rules: [{ have: "allow", index: 0, rule: secretsRuleA }],
@@ -280,6 +281,7 @@ it("authorizes all requests and outputs the results", async () => {
             ),
             have: "allow",
             isAllowed: true,
+            isSecretVisibilityCategoryAllowed: true,
             isProvisionAllowed: true,
             isTokenAllowed: true,
             rules: [{ have: "allow", index: 0, rule: secretsRuleA }],
@@ -298,7 +300,7 @@ it("authorizes all requests and outputs the results", async () => {
       ✅ Can use token declaration account-a/repo-a.tokenA
       ✅ Can provision token to GitHub Actions secret in account account-a:
         ✅ Account account-a was allowed access to token #1
-        ✅ Can provision secret based on 1 rule:
+        ✅ Can provision to all repos based on 1 rule:
           ✅ Allowed by rule #1
 
     Secret #2:
@@ -454,6 +456,7 @@ it("handles empty token requests", async () => {
             ),
             have: "allow",
             isAllowed: false,
+            isSecretVisibilityCategoryAllowed: true,
             isProvisionAllowed: true,
             isTokenAllowed: false,
             rules: [{ have: "allow", index: 0, rule: secretsRuleA }],
@@ -472,7 +475,7 @@ it("handles empty token requests", async () => {
       ❌ Can't use token declaration account-a/repo-a.tokenA because it doesn't exist
       ❌ Can't provision token to GitHub Actions secret in account account-a:
         ❌ Token can't be authorized without a declaration
-        ✅ Can provision secret based on 1 rule:
+        ✅ Can provision to all repos based on 1 rule:
           ✅ Allowed by rule #1
 
     ::warning::⚠️ No tokens were authorized

@@ -1,0 +1,5 @@
+- ❌ Repo `account-a/repo-a` **wasn't allowed** to provision secret `SECRET_A`:
+  - ✅ **Can** use token declaration `account-a/repo-a.tokenA`
+  * ❌ **Can't** provision token to **GitHub Actions** secret in account `account-a`:
+    - ✅ Account `account-a` was **allowed** access to token `#2`
+    - ❌ **Can't** provision to **no repos** (no matching rules)

@@ -114,6 +114,8 @@ export function createTestProvisionAuthTargetResult(
     overrides.tokenAuthResult ?? createTestTokenAuthResult();
   const isTokenAllowed = overrides.isTokenAllowed ?? tokenAuthResult.isAllowed;
   const isProvisionAllowed = overrides.isProvisionAllowed ?? isAllowed;
+  const isSecretVisibilityCategoryAllowed =
+    overrides.isSecretVisibilityCategoryAllowed ?? isProvisionAllowed;
 
   return {
     target: {
@@ -126,6 +128,7 @@ export function createTestProvisionAuthTargetResult(
     have: isProvisionAllowed ? "allow" : "deny",
     tokenAuthResult,
     isTokenAllowed,
+    isSecretVisibilityCategoryAllowed,
     isProvisionAllowed,
     isAllowed: isTokenAllowed && isProvisionAllowed,
     ...overrides,
