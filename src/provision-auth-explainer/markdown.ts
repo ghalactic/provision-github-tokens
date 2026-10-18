@@ -201,7 +201,7 @@ export function createMarkdownProvisionAuthExplainer(): ProvisionAuthResultExpla
   }: ProvisionAuthTargetResult): ListItem["children"] {
     const ruleCount = rules.length;
     const summary = paragraph(
-      text(`${icon(isProvisionAllowed)}  `),
+      text(`${icon(isProvisionAllowed)} `),
       strong(text(isProvisionAllowed ? "Can" : "Can't")),
       text(" provision secret "),
       ...(ruleCount < 1

@@ -2,5 +2,5 @@
   - ✅ **Can** use token declaration `account-a/repo-a.tokenA`
   * ✅ **Can** provision token to **Dependabot** secret in account `account-a`:
     - ✅ Account `account-a` was **allowed** access to token `#1`
-    - ✅  **Can** provision secret based on 1 rule:
+    - ✅ **Can** provision secret based on 1 rule:
       - ✅ **Allowed** by rule `#1`

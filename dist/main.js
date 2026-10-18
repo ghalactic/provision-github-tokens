@@ -121496,7 +121496,7 @@ function createMarkdownProvisionAuthExplainer() {
   }) {
     const ruleCount = rules.length;
     const summary2 = paragraph2(
-      text2(`${icon(isProvisionAllowed)}  `),
+      text2(`${icon(isProvisionAllowed)} `),
       strong2(text2(isProvisionAllowed ? "Can" : "Can't")),
       text2(" provision secret "),
       ...ruleCount < 1 ? [text2("(no matching rules)")] : [text2(`based on ${pluralize(ruleCount, "rule", "rules")}:`)]

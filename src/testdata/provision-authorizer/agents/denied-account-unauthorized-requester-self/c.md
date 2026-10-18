@@ -2,4 +2,4 @@
   - ✅ **Can** use token declaration `account-a/repo-a.tokenA`
   * ❌ **Can't** provision token to **GitHub Agents** secret in account `account-y`:
     - ✅ Account `account-y` was **allowed** access to token `#2`
-    - ❌  **Can't** provision secret (no matching rules)
+    - ❌ **Can't** provision secret (no matching rules)
