@@ -27,7 +27,7 @@
     "@octokit/types": "^18.0.0",
     "@types/json-schema": "^7.0.15",
     "@types/mdast": "^4.0.4",
-    "@types/node": "^24.12.2",
+    "@types/node": "^26.0.0",
     "@types/source-map-support": "^0.5.10",
     "@typescript/native": "npm:typescript@^7.0.2",
     "@vitest/coverage-v8": "^5.0.0",
