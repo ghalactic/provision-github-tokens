@@ -1,4 +1,5 @@
-GENERATED_FILES += src/schema/generated.requester-token-permissions.v1.schema.json src/schema/generated.provider-rule-permissions.v1.schema.json dist/main.js dist/main.js.map
+GENERATED_FILES += src/schema/generated.requester-token-permissions.v1.schema.json src/schema/generated.provider-rule-permissions.v1.schema.json
+GENERATED_BYPRODUCT_FILES += dist/main.js dist/main.js.map
 JS_TSC_TYPECHECK_SKIP_LIB := true
 
 -include .makefiles/Makefile
