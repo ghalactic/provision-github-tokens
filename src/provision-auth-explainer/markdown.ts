@@ -134,6 +134,40 @@ export function createMarkdownProvisionAuthExplainer(): ProvisionAuthResultExpla
         ...(isRepoProvisionAuthTargetResult(result)
           ? []
           : explainSelectedRepositories(target, result)),
+        ...explainCollision(result),
+      ),
+    ];
+  }
+
+  function explainCollision(result: ProvisionAuthTargetResult): ListItem[] {
+    const collision = result.collision;
+
+    if (!collision) return [];
+
+    const participants: ListItem[] = [];
+    for (const { requester, name, token } of collision.participants) {
+      participants.push(
+        listItem(
+          paragraph(
+            text(`${FAIL_ICON} Declared by `),
+            inlineCode(repoRefToString(requester)),
+            text(" as secret "),
+            inlineCode(name),
+            text(" using token declaration "),
+            inlineCode(token),
+          ),
+        ),
+      );
+    }
+
+    return [
+      listItem(
+        paragraph(
+          text(`${FAIL_ICON} `),
+          strong(text("Conflicting declarations")),
+          text(" were found:"),
+        ),
+        list(...participants),
       ),
     ];
   }

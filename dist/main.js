@@ -20793,6 +20793,62 @@ var require_source_map_support = __commonJS({
   }
 });
 
+// node_modules/.pnpm/fast-json-stable-stringify@2.1.0/node_modules/fast-json-stable-stringify/index.js
+var require_fast_json_stable_stringify = __commonJS({
+  "node_modules/.pnpm/fast-json-stable-stringify@2.1.0/node_modules/fast-json-stable-stringify/index.js"(exports, module2) {
+    "use strict";
+    module2.exports = function(data, opts) {
+      if (!opts) opts = {};
+      if (typeof opts === "function") opts = { cmp: opts };
+      var cycles = typeof opts.cycles === "boolean" ? opts.cycles : false;
+      var cmp = opts.cmp && /* @__PURE__ */ (function(f2) {
+        return function(node2) {
+          return function(a2, b2) {
+            var aobj = { key: a2, value: node2[a2] };
+            var bobj = { key: b2, value: node2[b2] };
+            return f2(aobj, bobj);
+          };
+        };
+      })(opts.cmp);
+      var seen = [];
+      return (function stringify3(node2) {
+        if (node2 && node2.toJSON && typeof node2.toJSON === "function") {
+          node2 = node2.toJSON();
+        }
+        if (node2 === void 0) return;
+        if (typeof node2 == "number") return isFinite(node2) ? "" + node2 : "null";
+        if (typeof node2 !== "object") return JSON.stringify(node2);
+        var i2, out;
+        if (Array.isArray(node2)) {
+          out = "[";
+          for (i2 = 0; i2 < node2.length; i2++) {
+            if (i2) out += ",";
+            out += stringify3(node2[i2]) || "null";
+          }
+          return out + "]";
+        }
+        if (node2 === null) return "null";
+        if (seen.indexOf(node2) !== -1) {
+          if (cycles) return JSON.stringify("__cycle__");
+          throw new TypeError("Converting circular structure to JSON");
+        }
+        var seenIndex = seen.push(node2) - 1;
+        var keys = Object.keys(node2).sort(cmp && cmp(node2));
+        out = "";
+        for (i2 = 0; i2 < keys.length; i2++) {
+          var key = keys[i2];
+          var value = stringify3(node2[key]);
+          if (!value) continue;
+          if (out) out += ",";
+          out += JSON.stringify(key) + ":" + value;
+        }
+        seen.splice(seenIndex, 1);
+        return "{" + out + "}";
+      })(data);
+    };
+  }
+});
+
 // node_modules/.pnpm/ajv@8.20.0/node_modules/ajv/dist/compile/codegen/code.js
 var require_code = __commonJS({
   "node_modules/.pnpm/ajv@8.20.0/node_modules/ajv/dist/compile/codegen/code.js"(exports) {
@@ -59605,62 +59661,6 @@ var require_light = __commonJS({
   }
 });
 
-// node_modules/.pnpm/fast-json-stable-stringify@2.1.0/node_modules/fast-json-stable-stringify/index.js
-var require_fast_json_stable_stringify = __commonJS({
-  "node_modules/.pnpm/fast-json-stable-stringify@2.1.0/node_modules/fast-json-stable-stringify/index.js"(exports, module2) {
-    "use strict";
-    module2.exports = function(data, opts) {
-      if (!opts) opts = {};
-      if (typeof opts === "function") opts = { cmp: opts };
-      var cycles = typeof opts.cycles === "boolean" ? opts.cycles : false;
-      var cmp = opts.cmp && /* @__PURE__ */ (function(f2) {
-        return function(node2) {
-          return function(a2, b2) {
-            var aobj = { key: a2, value: node2[a2] };
-            var bobj = { key: b2, value: node2[b2] };
-            return f2(aobj, bobj);
-          };
-        };
-      })(opts.cmp);
-      var seen = [];
-      return (function stringify3(node2) {
-        if (node2 && node2.toJSON && typeof node2.toJSON === "function") {
-          node2 = node2.toJSON();
-        }
-        if (node2 === void 0) return;
-        if (typeof node2 == "number") return isFinite(node2) ? "" + node2 : "null";
-        if (typeof node2 !== "object") return JSON.stringify(node2);
-        var i2, out;
-        if (Array.isArray(node2)) {
-          out = "[";
-          for (i2 = 0; i2 < node2.length; i2++) {
-            if (i2) out += ",";
-            out += stringify3(node2[i2]) || "null";
-          }
-          return out + "]";
-        }
-        if (node2 === null) return "null";
-        if (seen.indexOf(node2) !== -1) {
-          if (cycles) return JSON.stringify("__cycle__");
-          throw new TypeError("Converting circular structure to JSON");
-        }
-        var seenIndex = seen.push(node2) - 1;
-        var keys = Object.keys(node2).sort(cmp && cmp(node2));
-        out = "";
-        for (i2 = 0; i2 < keys.length; i2++) {
-          var key = keys[i2];
-          var value = stringify3(node2[key]);
-          if (!value) continue;
-          if (out) out += ",";
-          out += JSON.stringify(key) + ":" + value;
-        }
-        seen.splice(seenIndex, 1);
-        return "{" + out + "}";
-      })(data);
-    };
-  }
-});
-
 // node_modules/.pnpm/@actions+core@3.0.1/node_modules/@actions/core/lib/command.js
 import * as os from "os";
 
@@ -65802,7 +65802,18 @@ function createTextProvisionAuthExplainer() {
   function explainTarget(result) {
     const { isAllowed, target } = result;
     return `
-  ${icon(isAllowed)} ${isAllowed ? "Can" : "Can't"} provision token to ${explainSubject(target)}:` + explainTargetToken(result) + explainBasedOnRules(target, result) + (isRepoProvisionAuthTargetResult(result) ? "" : explainSelectedRepositories(target, result));
+  ${icon(isAllowed)} ${isAllowed ? "Can" : "Can't"} provision token to ${explainSubject(target)}:` + explainTargetToken(result) + explainBasedOnRules(target, result) + (isRepoProvisionAuthTargetResult(result) ? "" : explainSelectedRepositories(target, result)) + explainCollision(result);
+  }
+  function explainCollision(result) {
+    const collision = result.collision;
+    if (!collision) return "";
+    let explained = `
+    ${FAIL_ICON} Conflicting declarations were found:`;
+    for (const { requester, name, token } of collision.participants) {
+      explained += `
+      ${FAIL_ICON} Declared by ${repoRefToString(requester)} as secret ${name} using token declaration ${token}`;
+    }
+    return explained;
   }
   function explainTargetToken({
     isTokenAllowed,
@@ -65881,6 +65892,152 @@ function createTextProvisionAuthExplainer() {
     const n2 = `#${index + 1}`;
     return description ? `${n2}: ${JSON.stringify(description)}` : n2;
   }
+}
+
+// src/provision-collision.ts
+var import_fast_json_stable_stringify2 = __toESM(require_fast_json_stable_stringify(), 1);
+
+// src/token-request.ts
+var import_fast_json_stable_stringify = __toESM(require_fast_json_stable_stringify(), 1);
+
+// src/token-declaration.ts
+function normalizeTokenDeclaration(declaration) {
+  const { repos } = declaration;
+  return { ...declaration, repos: repos === "all" ? "all" : repos.toSorted() };
+}
+
+// src/token-request.ts
+function normalizeTokenRequest(request2) {
+  const { consumer, tokenDec, repos } = request2;
+  return {
+    consumer: isRepoRef(consumer) ? createRepoRef(consumer.account, consumer.repo) : createAccountRef(consumer.account),
+    repos: repos === "all" ? "all" : repos.toSorted(),
+    tokenDec: normalizeTokenDeclaration(tokenDec)
+  };
+}
+function tokenShapeKey(request2) {
+  return (0, import_fast_json_stable_stringify.default)({
+    account: request2.tokenDec.account,
+    as: request2.tokenDec.as,
+    permissions: request2.tokenDec.permissions,
+    repos: request2.repos
+  });
+}
+function createTokenRequestFactory(appRegistry) {
+  const cache = {};
+  return (tokenDec, consumer) => {
+    let repos;
+    if (tokenDec.repos === "all") {
+      repos = "all";
+    } else {
+      const repoPatterns = tokenDec.repos.map((repo) => {
+        return createGitHubPattern(
+          repoRefToString(createRepoRef(tokenDec.account, repo))
+        );
+      });
+      repos = appRegistry.resolveIssuerRepos(repoPatterns).map((repo) => repoRefFromName(repo).repo);
+    }
+    const tokenReq = normalizeTokenRequest({ consumer, tokenDec, repos });
+    return cache[(0, import_fast_json_stable_stringify.default)(tokenReq)] ??= tokenReq;
+  };
+}
+
+// src/provision-collision.ts
+function resolveProvisionCollisions(authResults) {
+  const resolutions = [];
+  for (const group2 of collisionGroups(authResults)) {
+    const allowed = [];
+    for (const entry of group2) {
+      if (entry.auth.isAllowed) allowed.push(entry);
+    }
+    const areAllowedIdentical = allowed.length < 2 || isIdentical(allowed);
+    const isGroupIdentical = isIdentical(group2);
+    for (const entry of group2) {
+      const isWriter = entry.auth.isAllowed;
+      if (isWriter ? areAllowedIdentical : isGroupIdentical) continue;
+      resolutions.push({
+        entry,
+        isWriter,
+        participants: participantsFor(entry, group2)
+      });
+    }
+  }
+  for (const { entry, isWriter, participants } of resolutions) {
+    entry.target.collision = { participants };
+    if (!isWriter) continue;
+    entry.target.isAllowed = false;
+    entry.auth.isAllowed = false;
+  }
+}
+function collisionGroups(authResults) {
+  const groups = /* @__PURE__ */ new Map();
+  for (const auth6 of authResults) {
+    for (const target of auth6.results) {
+      const key = collisionKey(auth6.request.name, target.target);
+      const group2 = groups.get(key);
+      if (group2) {
+        group2.push({ auth: auth6, target });
+      } else {
+        groups.set(key, [{ auth: auth6, target }]);
+      }
+    }
+  }
+  const collisions = [];
+  for (const group2 of groups.values()) {
+    if (group2.length > 1) collisions.push(group2);
+  }
+  return collisions;
+}
+function collisionKey(name, target) {
+  return (0, import_fast_json_stable_stringify2.default)({
+    name: name.toLowerCase(),
+    target: target.target,
+    type: target.type
+  });
+}
+function isIdentical(entries) {
+  const first = writeDescriptor(entries[0]);
+  for (const entry of entries) {
+    const other = writeDescriptor(entry);
+    if (other == null || other !== first) return false;
+  }
+  return true;
+}
+function writeDescriptor(entry) {
+  const { auth: auth6, target } = entry;
+  const tokenRequest = target.tokenAuthResult?.request;
+  if (!tokenRequest) return void 0;
+  return (0, import_fast_json_stable_stringify2.default)({
+    name: auth6.request.name,
+    token: tokenShapeKey(tokenRequest),
+    visibility: visibilityDescriptor(target.target)
+  });
+}
+function visibilityDescriptor(target) {
+  if (isRepoProvisionRequestTarget(target)) return void 0;
+  const { visibility } = target;
+  if (visibility === "all" || visibility === "private") return visibility;
+  const repos = [];
+  for (const { id } of visibility.repos) repos.push(id);
+  repos.sort((a2, b2) => a2 - b2);
+  return { category: "selected", repos };
+}
+function toParticipant({
+  auth: auth6
+}) {
+  const { requester, name, secretDec } = auth6.request;
+  return { requester, name, token: secretDec.token };
+}
+function participantsFor(entry, group2) {
+  const participants = [];
+  for (const other of group2) {
+    if (other !== entry) participants.push(toParticipant(other));
+  }
+  participants.sort(compareParticipants);
+  return participants;
+}
+function compareParticipants(a2, b2) {
+  return compareRef(a2.requester, b2.requester) || a2.name.localeCompare(b2.name);
 }
 
 // src/token-auth-explainer/access-level.ts
@@ -66014,6 +66171,7 @@ function createAuthorizer(createProvisionRequest, provisionAuthorizer, tokenAuth
       }
       const provisionResults = provisionAuthorizer.listResults().sort((a2, b2) => compareProvisionRequest(a2.request, b2.request));
       const tokenResults = tokenAuthorizer.listResults().sort((a2, b2) => compareTokenRequest(a2.request, b2.request));
+      resolveProvisionCollisions(provisionResults);
       const explainProvisionAuth = createTextProvisionAuthExplainer();
       const explainTokenAuth = createTextTokenAuthExplainer();
       if (provisionResults.length > 0) {
@@ -121562,7 +121720,37 @@ function createMarkdownProvisionAuthExplainer() {
       list3(
         listItem2(...explainTargetToken(result)),
         listItem2(...explainBasedOnRules(target, result)),
-        ...isRepoProvisionAuthTargetResult(result) ? [] : explainSelectedRepositories(target, result)
+        ...isRepoProvisionAuthTargetResult(result) ? [] : explainSelectedRepositories(target, result),
+        ...explainCollision(result)
+      )
+    ];
+  }
+  function explainCollision(result) {
+    const collision = result.collision;
+    if (!collision) return [];
+    const participants = [];
+    for (const { requester, name, token } of collision.participants) {
+      participants.push(
+        listItem2(
+          paragraph2(
+            text2(`${FAIL_ICON} Declared by `),
+            inlineCode2(repoRefToString(requester)),
+            text2(" as secret "),
+            inlineCode2(name),
+            text2(" using token declaration "),
+            inlineCode2(token)
+          )
+        )
+      );
+    }
+    return [
+      listItem2(
+        paragraph2(
+          text2(`${FAIL_ICON} `),
+          strong2(text2("Conflicting declarations")),
+          text2(" were found:")
+        ),
+        list3(...participants)
       )
     ];
   }
@@ -123239,9 +123427,6 @@ function createTokenDeclarationRegistry() {
   };
 }
 
-// src/token-factory.ts
-var import_fast_json_stable_stringify = __toESM(require_fast_json_stable_stringify(), 1);
-
 // src/token-creation-explainer/text.ts
 function createTextTokenCreationExplainer() {
   const tokenSeq = createSequencer();
@@ -123353,7 +123538,7 @@ function createTokenFactory(findIssuerOctokit) {
         creationResults.set(auth6, { type: "NOT_ALLOWED" });
         continue;
       }
-      const key = tokenCreationCacheKey(auth6.request);
+      const key = tokenShapeKey(auth6.request);
       const cached = cache[key];
       if (cached) {
         creationResults.set(auth6, cached);
@@ -123392,51 +123577,6 @@ Token #${i2}:
     }
     info("");
     return creationResults;
-  };
-}
-function tokenCreationCacheKey(request2) {
-  return (0, import_fast_json_stable_stringify.default)({
-    account: request2.tokenDec.account,
-    as: request2.tokenDec.as,
-    permissions: request2.tokenDec.permissions,
-    repos: request2.repos
-  });
-}
-
-// src/token-request.ts
-var import_fast_json_stable_stringify2 = __toESM(require_fast_json_stable_stringify(), 1);
-
-// src/token-declaration.ts
-function normalizeTokenDeclaration(declaration) {
-  const { repos } = declaration;
-  return { ...declaration, repos: repos === "all" ? "all" : repos.toSorted() };
-}
-
-// src/token-request.ts
-function normalizeTokenRequest(request2) {
-  const { consumer, tokenDec, repos } = request2;
-  return {
-    consumer: isRepoRef(consumer) ? createRepoRef(consumer.account, consumer.repo) : createAccountRef(consumer.account),
-    repos: repos === "all" ? "all" : repos.toSorted(),
-    tokenDec: normalizeTokenDeclaration(tokenDec)
-  };
-}
-function createTokenRequestFactory(appRegistry) {
-  const cache = {};
-  return (tokenDec, consumer) => {
-    let repos;
-    if (tokenDec.repos === "all") {
-      repos = "all";
-    } else {
-      const repoPatterns = tokenDec.repos.map((repo) => {
-        return createGitHubPattern(
-          repoRefToString(createRepoRef(tokenDec.account, repo))
-        );
-      });
-      repos = appRegistry.resolveIssuerRepos(repoPatterns).map((repo) => repoRefFromName(repo).repo);
-    }
-    const tokenReq = normalizeTokenRequest({ consumer, tokenDec, repos });
-    return cache[(0, import_fast_json_stable_stringify2.default)(tokenReq)] ??= tokenReq;
   };
 }
 

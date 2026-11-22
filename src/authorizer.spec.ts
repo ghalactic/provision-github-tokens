@@ -574,3 +574,222 @@ it("handles requester configs that can't be parsed", async () => {
     "
   `);
 });
+
+it("refuses conflicting declarations and explains them to every requester", async () => {
+  const [[accountA, [repoA]], [accountB, [repoB]]] =
+    createTestInstallationAccounts(
+      ["Organization", 100, "account-a", ["repo-a"]],
+      ["User", 101, "account-b", ["repo-b"]],
+    );
+  const [[appA, [appAInstallationA, appAInstallationB]]] = createTestApps([
+    "App A",
+    { contents: "read", issues: "read", metadata: "read" },
+    [[accountA], [accountB]],
+  ]);
+
+  const repoRegistry = createTestRepoRegistry(
+    ["account-a", "repo-a"],
+    ["account-b", "repo-b"],
+  );
+  const appRegistry = createTestAppRegistry(repoRegistry, {
+    app: appA,
+    issuer: [],
+    provisioner: true,
+    installations: [
+      [appAInstallationA, [repoA]],
+      [appAInstallationB, [repoB]],
+    ],
+  });
+
+  const declarationRegistry = createTokenDeclarationRegistry();
+
+  const tokenDecA: TokenDeclaration = {
+    shared: false,
+    as: undefined,
+    account: "account-a",
+    repos: "all",
+    permissions: { contents: "read" },
+  };
+  declarationRegistry.registerDeclaration(
+    { account: "account-a", repo: "repo-a" },
+    "tokenA",
+    tokenDecA,
+  );
+
+  const tokenDecB: TokenDeclaration = {
+    shared: false,
+    as: undefined,
+    account: "account-a",
+    repos: "all",
+    permissions: { issues: "read" },
+  };
+  declarationRegistry.registerDeclaration(
+    { account: "account-b", repo: "repo-b" },
+    "tokenB",
+    tokenDecB,
+  );
+
+  const environmentResolver = createTestEnvironmentResolver();
+  const createProvisionRequest = createProvisionRequestFactory(
+    declarationRegistry,
+    appRegistry,
+    repoRegistry,
+    environmentResolver,
+  );
+  const createTokenRequest = createTestTokenRequestFactory();
+
+  const permissionsRule: PermissionsRule = {
+    consumers: ["*", "*/*"],
+    permissions: { contents: "read", issues: "read", metadata: "read" },
+    resources: [
+      {
+        accounts: ["*"],
+        allRepos: true,
+        noRepos: true,
+        selectedRepos: { repos: ["*"], visibility: "private" },
+      },
+    ],
+  };
+  const tokenAuthorizer = createTokenAuthorizer(createRepoRegistry(), {
+    rules: [permissionsRule],
+  });
+
+  const secretsRule: ProvisionSecretsRule = {
+    secrets: ["*"],
+    requesters: ["*/*"],
+    to: {
+      github: {
+        account: { types: {} },
+        accounts: {
+          "*": {
+            types: {
+              actions: {
+                allRepos: "allow",
+                privateRepos: "allow",
+                selectedRepos: "allow",
+                noRepos: "allow",
+              },
+            },
+          },
+        },
+        repo: { visibility: "private", types: { environments: {} } },
+        repos: {},
+      },
+    },
+  };
+  const provisionAuthorizer = createProvisionAuthorizer(
+    createTokenRequest,
+    tokenAuthorizer,
+    { rules: { secrets: [secretsRule] } },
+  );
+
+  const authorizer = createAuthorizer(
+    createProvisionRequest,
+    provisionAuthorizer,
+    tokenAuthorizer,
+  );
+
+  const result = await authorizer.authorize([
+    {
+      requester: { account: "account-a", repo: "repo-a" },
+      configPath: ".github/ghalactic/provision-github-tokens.yml",
+      configSha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      config: {
+        $schema: "",
+        dashboard: { enabled: true },
+        tokens: {},
+        provision: {
+          secrets: {
+            SECRET_A: createTestSecretDec({
+              token: "account-a/repo-a.tokenA",
+              github: { accounts: { "account-a": { actions: "all" } } },
+            }),
+          },
+        },
+      },
+    },
+    {
+      requester: { account: "account-b", repo: "repo-b" },
+      configPath: ".github/ghalactic/provision-github-tokens.yml",
+      configSha: "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      config: {
+        $schema: "",
+        dashboard: { enabled: true },
+        tokens: {},
+        provision: {
+          secrets: {
+            SECRET_A: createTestSecretDec({
+              token: "account-b/repo-b.tokenB",
+              github: { accounts: { "account-a": { actions: "all" } } },
+            }),
+          },
+        },
+      },
+    },
+  ]);
+
+  const [a, b] = result.provisionResults;
+
+  expect(a.isAllowed).toBe(false);
+  expect(b.isAllowed).toBe(false);
+  expect(a.results[0].collision).toEqual({
+    participants: [
+      {
+        requester: { account: "account-b", repo: "repo-b" },
+        name: "SECRET_A",
+        token: "account-b/repo-b.tokenB",
+      },
+    ],
+  });
+  expect(b.results[0].collision).toEqual({
+    participants: [
+      {
+        requester: { account: "account-a", repo: "repo-a" },
+        name: "SECRET_A",
+        token: "account-a/repo-a.tokenA",
+      },
+    ],
+  });
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "
+    Secret #1:
+
+    ❌ Repo account-a/repo-a wasn't allowed to provision secret SECRET_A:
+      ✅ Can use token declaration account-a/repo-a.tokenA
+      ❌ Can't provision token to GitHub Actions secret in account account-a:
+        ✅ Account account-a was allowed access to token #1
+        ✅ Can provision to all repos based on 1 rule:
+          ✅ Allowed by rule #1
+        ❌ Conflicting declarations were found:
+          ❌ Declared by account-b/repo-b as secret SECRET_A using token declaration account-b/repo-b.tokenB
+
+    Secret #2:
+
+    ❌ Repo account-b/repo-b wasn't allowed to provision secret SECRET_A:
+      ✅ Can use token declaration account-b/repo-b.tokenB
+      ❌ Can't provision token to GitHub Actions secret in account account-a:
+        ✅ Account account-a was allowed access to token #2
+        ✅ Can provision to all repos based on 1 rule:
+          ✅ Allowed by rule #1
+        ❌ Conflicting declarations were found:
+          ❌ Declared by account-a/repo-a as secret SECRET_A using token declaration account-a/repo-a.tokenA
+
+    Token #1:
+
+    ✅ Account account-a was allowed access to a token:
+      ✅ Read access to all repos in account-a requested without a role
+      ✅ Sufficient access to all repos in account-a based on 1 rule:
+        ✅ Rule #1 gave sufficient access:
+          ✅ contents: have read, wanted read
+
+    Token #2:
+
+    ✅ Account account-a was allowed access to a token:
+      ✅ Read access to all repos in account-a requested without a role
+      ✅ Sufficient access to all repos in account-a based on 1 rule:
+        ✅ Rule #1 gave sufficient access:
+          ✅ issues: have read, wanted read
+
+    "
+  `);
+});

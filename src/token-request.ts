@@ -37,6 +37,15 @@ export type TokenRequestFactory = (
   consumer: AccountOrRepoReference,
 ) => TokenRequest;
 
+export function tokenShapeKey(request: TokenRequest): string {
+  return stringify({
+    account: request.tokenDec.account,
+    as: request.tokenDec.as,
+    permissions: request.tokenDec.permissions,
+    repos: request.repos,
+  });
+}
+
 export function createTokenRequestFactory(
   appRegistry: AppRegistry,
 ): TokenRequestFactory {

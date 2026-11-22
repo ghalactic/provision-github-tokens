@@ -121,6 +121,10 @@ account, which can override a pattern result.
 **Authorization explanation**: The human-readable basis for each token and
 provision authorization decision, doubling as an audit trail.
 
+**Conflicting declarations**: Two or more provision requests in a single run
+that write different content under the same secret name at the same provision
+target. Requests that write identical content don't conflict.
+
 **Provision target**: A secret type plus the account, repo, or environment where
 a secret is provisioned.
 

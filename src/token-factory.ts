@@ -1,9 +1,8 @@
 import { info, warning } from "@actions/core";
 import { RequestError } from "@octokit/request-error";
-import stringify from "fast-json-stable-stringify";
 import type { FindIssuerOctokit } from "./issuer-octokit.js";
 import { createTextTokenCreationExplainer } from "./token-creation-explainer/text.js";
-import type { TokenRequest } from "./token-request.js";
+import { tokenShapeKey } from "./token-request.js";
 import type { TokenAuthResult } from "./type/token-auth-result.js";
 import type { TokenCreationResult } from "./type/token-creation-result.js";
 
@@ -25,7 +24,7 @@ export function createTokenFactory(
         continue;
       }
 
-      const key = tokenCreationCacheKey(auth.request);
+      const key = tokenShapeKey(auth.request);
       const cached = cache[key];
 
       if (cached) {
@@ -79,13 +78,4 @@ export function createTokenFactory(
 
     return creationResults;
   };
-}
-
-function tokenCreationCacheKey(request: TokenRequest): string {
-  return stringify({
-    account: request.tokenDec.account,
-    as: request.tokenDec.as,
-    permissions: request.tokenDec.permissions,
-    repos: request.repos,
-  });
 }
