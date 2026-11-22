@@ -173,15 +173,14 @@ export function createMarkdownProvisionAuthExplainer(
   function explainCollision(result: ProvisionAuthTargetResult): ListItem[] {
     const collision = collisions.get(result);
 
-    // Blocking collisions are reported by the provision explanation.
-    if (!collision || collision.isBlocking) return [];
+    if (!collision) return [];
 
     const participants: ListItem[] = [];
     for (const { requester, name, token } of collision.participants) {
       participants.push(
         listItem(
           paragraph(
-            text(`${FAIL_ICON} Also declared by `),
+            text(`${FAIL_ICON} Declared by `),
             inlineCode(repoRefToString(requester)),
             text(" as secret "),
             inlineCode(name),
@@ -196,10 +195,8 @@ export function createMarkdownProvisionAuthExplainer(
       listItem(
         paragraph(
           text(`${FAIL_ICON} `),
-          strong(text("Provision collision")),
-          text(" for "),
-          ...explainSubject(result.target),
-          text(":"),
+          strong(text("Conflicting declarations")),
+          text(" were found:"),
         ),
         list(...participants),
       ),

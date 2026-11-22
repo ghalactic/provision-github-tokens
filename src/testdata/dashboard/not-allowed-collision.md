@@ -23,8 +23,8 @@
   * ❌ **Can't** provision token to **GitHub Actions** secret in account `account-a`:
     - ✅ Account `account-a` was **allowed** access to token `#1`
     - ❌ **Can't** provision to **private repos** (no matching rules)
-    - ❌ **Provision collision** for **GitHub Actions** secret in account `account-a`:
-      - ❌ Also declared by `account-a/repo-a` as secret `SECRET_A` using token declaration `account-a/repo-a.token`
+    - ❌ **Conflicting declarations** were found:
+      - ❌ Declared by `account-a/repo-a` as secret `SECRET_A` using token declaration `account-a/repo-a.token`
 
 ### Token `#1`
 

@@ -65820,12 +65820,12 @@ function createTextProvisionAuthExplainer(collisions) {
   }
   function explainCollision(result) {
     const collision = collisions.get(result);
-    if (!collision || collision.isBlocking) return "";
+    if (!collision) return "";
     let explained = `
-    ${FAIL_ICON} Provision collision for ${explainSubject(result.target)}`;
+    ${FAIL_ICON} Conflicting declarations were found:`;
     for (const { requester, name, token } of collision.participants) {
       explained += `
-      ${FAIL_ICON} Also declared by ${repoRefToString(requester)} as secret ${name} using token declaration ${token}`;
+      ${FAIL_ICON} Declared by ${repoRefToString(requester)} as secret ${name} using token declaration ${token}`;
     }
     return explained;
   }
@@ -121405,7 +121405,7 @@ function createTextProvisionExplainer() {
   ${FAIL_ICON} No suitable provisioner for ${subject}${visibility}`;
       case "COLLISION":
         return `
-  ${FAIL_ICON} Provision collision for ${subject}${visibility}` + explainCollisionParticipants(result.collision);
+  ${FAIL_ICON} Conflicting declarations were found for ${subject}${visibility}`;
       case "REQUEST_ERROR": {
         const summary2 = `${FAIL_ICON} Failed to provision to ${subject}: ${result.error.status} - ${result.error.message}`;
         const body = result.error.response?.data;
@@ -121443,14 +121443,6 @@ ${prefixLines("::debug::      ", errorStack(result.error))}`;
     for (const repo of repos) output += `
       ${statusIcon} ${repo}`;
     return output;
-  }
-  function explainCollisionParticipants(collision) {
-    let explained = "";
-    for (const { requester, name, token } of collision.participants) {
-      explained += `
-    ${FAIL_ICON} Also declared by ${repoRefToString(requester)} as secret ${name} using token declaration ${token}`;
-    }
-    return explained;
   }
 }
 
@@ -121763,13 +121755,13 @@ function createMarkdownProvisionAuthExplainer(collisions) {
   }
   function explainCollision(result) {
     const collision = collisions.get(result);
-    if (!collision || collision.isBlocking) return [];
+    if (!collision) return [];
     const participants = [];
     for (const { requester, name, token } of collision.participants) {
       participants.push(
         listItem2(
           paragraph2(
-            text2(`${FAIL_ICON} Also declared by `),
+            text2(`${FAIL_ICON} Declared by `),
             inlineCode2(repoRefToString(requester)),
             text2(" as secret "),
             inlineCode2(name),
@@ -121783,10 +121775,8 @@ function createMarkdownProvisionAuthExplainer(collisions) {
       listItem2(
         paragraph2(
           text2(`${FAIL_ICON} `),
-          strong2(text2("Provision collision")),
-          text2(" for "),
-          ...explainSubject(result.target),
-          text2(":")
+          strong2(text2("Conflicting declarations")),
+          text2(" were found:")
         ),
         list3(...participants)
       )
@@ -122016,15 +122006,11 @@ function createMarkdownProvisionExplainer() {
         return [
           paragraph2(
             text2(`${FAIL_ICON} `),
-            strong2(text2("Provision collision")),
-            text2(" for "),
-            ...subject,
-            text2(":")
+            strong2(text2("Conflicting declarations")),
+            text2(" were found for "),
+            ...subject
           ),
-          list3(
-            ...visibility,
-            ...explainCollisionParticipants(result.collision)
-          )
+          ...nestedList(...visibility)
         ];
       case "REQUEST_ERROR": {
         const body = result.error.response?.data;
@@ -122120,24 +122106,6 @@ function createMarkdownProvisionExplainer() {
         list3(...repoItems)
       )
     ];
-  }
-  function explainCollisionParticipants(collision) {
-    const participants = [];
-    for (const { requester, name, token } of collision.participants) {
-      participants.push(
-        listItem2(
-          paragraph2(
-            text2(`${FAIL_ICON} Also declared by `),
-            inlineCode2(repoRefToString(requester)),
-            text2(" as secret "),
-            inlineCode2(name),
-            text2(" using token declaration "),
-            inlineCode2(token)
-          )
-        )
-      );
-    }
-    return participants;
   }
   function nestedList(...children) {
     return children.length > 0 ? [list3(...children)] : [];

@@ -762,8 +762,8 @@ it("explains a collision to a denied requester", async () => {
       ❌ Can't provision token to GitHub Actions secret in account account-a:
         ✅ Account account-a was allowed access to token #2
         ❌ Can't provision to all repos (no matching rules)
-        ❌ Provision collision for GitHub Actions secret in account account-a
-          ❌ Also declared by account-a/repo-a as secret SECRET_A using token declaration account-a/repo-a.tokenA
+        ❌ Conflicting declarations were found:
+          ❌ Declared by account-a/repo-a as secret SECRET_A using token declaration account-a/repo-a.tokenA
 
     Token #1:
 

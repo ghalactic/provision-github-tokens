@@ -118,16 +118,13 @@ export function createTextProvisionAuthExplainer(
   function explainCollision(result: ProvisionAuthTargetResult): string {
     const collision = collisions.get(result);
 
-    // Blocking collisions are reported by the provision explanation.
-    if (!collision || collision.isBlocking) return "";
+    if (!collision) return "";
 
-    let explained =
-      `\n    ${FAIL_ICON} Provision collision for ` +
-      `${explainSubject(result.target)}`;
+    let explained = `\n    ${FAIL_ICON} Conflicting declarations were found:`;
 
     for (const { requester, name, token } of collision.participants) {
       explained +=
-        `\n      ${FAIL_ICON} Also declared by ${repoRefToString(requester)} ` +
+        `\n      ${FAIL_ICON} Declared by ${repoRefToString(requester)} ` +
         `as secret ${name} using token declaration ${token}`;
     }
 

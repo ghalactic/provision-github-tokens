@@ -6,7 +6,6 @@ import {
 } from "../github-reference.js";
 import { FAIL_ICON, icon, PASS_ICON } from "../icon.js";
 import { pluralize } from "../pluralize.js";
-import type { ProvisionCollision } from "../provision-collision.js";
 import {
   isRepoProvisionRequestTarget,
   type ProvisionRequestTarget,
@@ -90,8 +89,8 @@ export function createTextProvisionExplainer(): ProvisionResultExplainer<string>
 
       case "COLLISION":
         return (
-          `\n  ${FAIL_ICON} Provision collision for ${subject}${visibility}` +
-          explainCollisionParticipants(result.collision)
+          `\n  ${FAIL_ICON} Conflicting declarations were found ` +
+          `for ${subject}${visibility}`
         );
 
       case "REQUEST_ERROR": {
@@ -155,16 +154,5 @@ export function createTextProvisionExplainer(): ProvisionResultExplainer<string>
     for (const repo of repos) output += `\n      ${statusIcon} ${repo}`;
 
     return output;
-  }
-
-  function explainCollisionParticipants(collision: ProvisionCollision): string {
-    let explained = "";
-    for (const { requester, name, token } of collision.participants) {
-      explained +=
-        `\n    ${FAIL_ICON} Also declared by ${repoRefToString(requester)} ` +
-        `as secret ${name} using token declaration ${token}`;
-    }
-
-    return explained;
   }
 }

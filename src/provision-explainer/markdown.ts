@@ -18,7 +18,6 @@ import {
   text,
 } from "../markdown.js";
 import { pluralize } from "../pluralize.js";
-import type { ProvisionCollision } from "../provision-collision.js";
 import {
   isRepoProvisionRequestTarget,
   type ProvisionRequestTarget,
@@ -155,15 +154,11 @@ export function createMarkdownProvisionExplainer(): ProvisionResultExplainer<
         return [
           paragraph(
             text(`${FAIL_ICON} `),
-            strong(text("Provision collision")),
-            text(" for "),
+            strong(text("Conflicting declarations")),
+            text(" were found for "),
             ...subject,
-            text(":"),
           ),
-          list(
-            ...visibility,
-            ...explainCollisionParticipants(result.collision),
-          ),
+          ...nestedList(...visibility),
         ];
 
       case "REQUEST_ERROR": {
@@ -275,28 +270,6 @@ export function createMarkdownProvisionExplainer(): ProvisionResultExplainer<
         list(...repoItems),
       ),
     ];
-  }
-
-  function explainCollisionParticipants(
-    collision: ProvisionCollision,
-  ): ListItem[] {
-    const participants: ListItem[] = [];
-    for (const { requester, name, token } of collision.participants) {
-      participants.push(
-        listItem(
-          paragraph(
-            text(`${FAIL_ICON} Also declared by `),
-            inlineCode(repoRefToString(requester)),
-            text(" as secret "),
-            inlineCode(name),
-            text(" using token declaration "),
-            inlineCode(token),
-          ),
-        ),
-      );
-    }
-
-    return participants;
   }
 
   function nestedList(...children: ListItem[]): List[] {

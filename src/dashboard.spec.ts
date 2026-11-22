@@ -8,10 +8,13 @@ import {
 } from "../test/declaration.js";
 import {
   createTestAccountProvisionRequestTarget,
+  createTestEnvironmentProvisionRequestTarget,
   createTestProvisionRequest,
+  createTestRepoProvisionRequestTarget,
 } from "../test/provision-request.js";
 import {
   createTestProvisionAuthResult,
+  createTestProvisionAuthSelectedReposResult,
   createTestProvisionAuthTargetResult,
   createTestTokenAuthResult,
 } from "../test/result.js";
@@ -24,7 +27,10 @@ import {
   renderFailureDashboard,
 } from "./dashboard.js";
 import { toMarkdown } from "./markdown.js";
-import type { ProvisionCollisions } from "./provision-collision.js";
+import type {
+  ProvisionCollision,
+  ProvisionCollisions,
+} from "./provision-collision.js";
 import type {
   ProvisionAuthResult,
   ProvisionAuthTargetResult,
@@ -275,6 +281,276 @@ it("renders a collision for a secret that can't be provisioned", async () => {
   expect(issue.title).toBe(FAILURE_DASHBOARD_TITLE);
   await expect(toMarkdown(issue.body)).toMatchFileSnapshot(
     join(fixturesPath, "not-allowed-collision.md"),
+  );
+});
+
+it("renders a collision for a repo secret", async () => {
+  const target = createTestRepoProvisionRequestTarget(
+    "actions",
+    "account-a",
+    "repo-a",
+    "private",
+  );
+  const tokenAuthResult = createTestTokenAuthResult();
+  const targetResult = createTestProvisionAuthTargetResult({
+    target,
+    tokenAuthResult,
+  });
+  const secret = createTestProvisionAuthResult({
+    request: createTestProvisionRequest({
+      requester: { account: "account-b", repo: "repo-b" },
+      secretDec: createTestSecretDec({ token: "account-b/repo-b.token" }),
+      to: [target],
+    }),
+    results: [targetResult],
+  });
+  const collision: ProvisionCollision = {
+    isBlocking: true,
+    participants: [
+      {
+        requester: { account: "account-c", repo: "repo-c" },
+        name: "SECRET_A",
+        token: "account-c/repo-c.token",
+      },
+    ],
+  };
+
+  const provisionResults = new Map<
+    ProvisionAuthResult,
+    Map<ProvisionAuthTargetResult, ProvisionResult>
+  >([[secret, new Map([[targetResult, { type: "COLLISION", collision }]])]]);
+  const provisionCollisions: ProvisionCollisions = new Map([
+    [targetResult, collision],
+  ]);
+
+  const issue = renderFailureDashboard(
+    testContext,
+    [secret],
+    [tokenAuthResult],
+    new Map(),
+    provisionResults,
+    provisionCollisions,
+  );
+
+  expect(issue.title).toBe(FAILURE_DASHBOARD_TITLE);
+  await expect(toMarkdown(issue.body)).toMatchFileSnapshot(
+    join(fixturesPath, "collision-repo.md"),
+  );
+});
+
+it("renders a collision for an environment secret", async () => {
+  const target = createTestEnvironmentProvisionRequestTarget(
+    "account-a",
+    "repo-a",
+    "production",
+    "private",
+  );
+  const tokenAuthResult = createTestTokenAuthResult();
+  const targetResult = createTestProvisionAuthTargetResult({
+    target,
+    tokenAuthResult,
+  });
+  const secret = createTestProvisionAuthResult({
+    request: createTestProvisionRequest({
+      requester: { account: "account-b", repo: "repo-b" },
+      secretDec: createTestSecretDec({ token: "account-b/repo-b.token" }),
+      to: [target],
+    }),
+    results: [targetResult],
+  });
+  const collision: ProvisionCollision = {
+    isBlocking: true,
+    participants: [
+      {
+        requester: { account: "account-c", repo: "repo-c" },
+        name: "SECRET_A",
+        token: "account-c/repo-c.token",
+      },
+    ],
+  };
+
+  const provisionResults = new Map<
+    ProvisionAuthResult,
+    Map<ProvisionAuthTargetResult, ProvisionResult>
+  >([[secret, new Map([[targetResult, { type: "COLLISION", collision }]])]]);
+  const provisionCollisions: ProvisionCollisions = new Map([
+    [targetResult, collision],
+  ]);
+
+  const issue = renderFailureDashboard(
+    testContext,
+    [secret],
+    [tokenAuthResult],
+    new Map(),
+    provisionResults,
+    provisionCollisions,
+  );
+
+  expect(issue.title).toBe(FAILURE_DASHBOARD_TITLE);
+  await expect(toMarkdown(issue.body)).toMatchFileSnapshot(
+    join(fixturesPath, "collision-environment.md"),
+  );
+});
+
+it("renders a collision after an account secret's selected repos", async () => {
+  const target = createTestAccountProvisionRequestTarget(
+    "actions",
+    "account-a",
+    {
+      patterns: ["repo-*"],
+      repos: [
+        {
+          ref: { account: "account-a", repo: "repo-a" },
+          id: 1,
+          visibility: "private",
+        },
+        {
+          ref: { account: "account-a", repo: "repo-b" },
+          id: 2,
+          visibility: "private",
+        },
+      ],
+    },
+  );
+  const tokenAuthResult = createTestTokenAuthResult();
+  const targetResult = createTestProvisionAuthTargetResult({
+    target,
+    tokenAuthResult,
+    selectedRepos: createTestProvisionAuthSelectedReposResult(
+      ["account-a/repo-a", true],
+      ["account-a/repo-b", true],
+    ),
+  });
+  const secret = createTestProvisionAuthResult({
+    request: createTestProvisionRequest({
+      requester: { account: "account-b", repo: "repo-b" },
+      secretDec: createTestSecretDec({ token: "account-b/repo-b.token" }),
+      to: [target],
+    }),
+    results: [targetResult],
+  });
+  const collision: ProvisionCollision = {
+    isBlocking: true,
+    participants: [
+      {
+        requester: { account: "account-c", repo: "repo-c" },
+        name: "SECRET_A",
+        token: "account-c/repo-c.token",
+      },
+    ],
+  };
+
+  const provisionResults = new Map<
+    ProvisionAuthResult,
+    Map<ProvisionAuthTargetResult, ProvisionResult>
+  >([[secret, new Map([[targetResult, { type: "COLLISION", collision }]])]]);
+  const provisionCollisions: ProvisionCollisions = new Map([
+    [targetResult, collision],
+  ]);
+
+  const issue = renderFailureDashboard(
+    testContext,
+    [secret],
+    [tokenAuthResult],
+    new Map(),
+    provisionResults,
+    provisionCollisions,
+  );
+
+  expect(issue.title).toBe(FAILURE_DASHBOARD_TITLE);
+  await expect(toMarkdown(issue.body)).toMatchFileSnapshot(
+    join(fixturesPath, "collision-selected-repos.md"),
+  );
+});
+
+it("renders multiple collisions for a secret", async () => {
+  const accountTarget = createTestAccountProvisionRequestTarget(
+    "actions",
+    "account-a",
+    "private",
+  );
+  const environmentTarget = createTestEnvironmentProvisionRequestTarget(
+    "account-a",
+    "repo-a",
+    "production",
+    "private",
+  );
+  const tokenAuthResult = createTestTokenAuthResult();
+  const accountTargetResult = createTestProvisionAuthTargetResult({
+    target: accountTarget,
+    tokenAuthResult,
+  });
+  const environmentTargetResult = createTestProvisionAuthTargetResult({
+    target: environmentTarget,
+    tokenAuthResult,
+  });
+  const secret = createTestProvisionAuthResult({
+    request: createTestProvisionRequest({
+      requester: { account: "account-b", repo: "repo-b" },
+      secretDec: createTestSecretDec({
+        token: "account-b/repo-b.token",
+        github: { accounts: { "account-a": { actions: "private" } } },
+      }),
+      to: [accountTarget, environmentTarget],
+    }),
+    results: [accountTargetResult, environmentTargetResult],
+  });
+  const accountCollision: ProvisionCollision = {
+    isBlocking: true,
+    participants: [
+      {
+        requester: { account: "account-c", repo: "repo-c" },
+        name: "SECRET_A",
+        token: "account-c/repo-c.token",
+      },
+    ],
+  };
+  const environmentCollision: ProvisionCollision = {
+    isBlocking: true,
+    participants: [
+      {
+        requester: { account: "account-d", repo: "repo-d" },
+        name: "SECRET_A",
+        token: "account-d/repo-d.token",
+      },
+    ],
+  };
+
+  const provisionResults = new Map<
+    ProvisionAuthResult,
+    Map<ProvisionAuthTargetResult, ProvisionResult>
+  >([
+    [
+      secret,
+      new Map<ProvisionAuthTargetResult, ProvisionResult>([
+        [
+          accountTargetResult,
+          { type: "COLLISION", collision: accountCollision },
+        ],
+        [
+          environmentTargetResult,
+          { type: "COLLISION", collision: environmentCollision },
+        ],
+      ]),
+    ],
+  ]);
+  const provisionCollisions: ProvisionCollisions = new Map([
+    [accountTargetResult, accountCollision],
+    [environmentTargetResult, environmentCollision],
+  ]);
+
+  const issue = renderFailureDashboard(
+    testContext,
+    [secret],
+    [tokenAuthResult],
+    new Map(),
+    provisionResults,
+    provisionCollisions,
+  );
+
+  expect(issue.title).toBe(FAILURE_DASHBOARD_TITLE);
+  await expect(toMarkdown(issue.body)).toMatchFileSnapshot(
+    join(fixturesPath, "collisions-multiple.md"),
   );
 });
 

@@ -3,6 +3,8 @@ import type { PermissionsRule } from "../src/type/permissions-rule.js";
 import type { Permissions } from "../src/type/permissions.js";
 import type {
   ProvisionAuthResult,
+  ProvisionAuthSelectedRepoResult,
+  ProvisionAuthSelectedReposResult,
   ProvisionAuthTargetResult,
   ProvisionAuthTargetRuleResult,
 } from "../src/type/provision-auth-result.js";
@@ -148,6 +150,23 @@ export function createTestProvisionAuthTargetResult(
     isAllowed: isTokenAllowed && isProvisionAllowed,
     ...overrides,
   } as ProvisionAuthTargetResult;
+}
+
+export function createTestProvisionAuthSelectedReposResult(
+  ...repos: [repo: string, isAllowed: boolean][]
+): ProvisionAuthSelectedReposResult {
+  const results: Record<string, ProvisionAuthSelectedRepoResult> = {};
+
+  for (const [repo, isAllowed] of repos) {
+    results[repo] = {
+      rules: isAllowed ? [createTestProvisionAuthTargetRuleResult()] : [],
+      have: isAllowed ? "allow" : undefined,
+      isAllowed,
+      visibility: "private",
+    };
+  }
+
+  return { results, isMatched: true };
 }
 
 export function createTestProvisionAuthResult(
