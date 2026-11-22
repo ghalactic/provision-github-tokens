@@ -65802,14 +65802,14 @@ function createTextProvisionAuthExplainer() {
   function explainTarget(result) {
     const { isAllowed, target } = result;
     return `
-  ${icon(isAllowed)} ${isAllowed ? "Can" : "Can't"} provision token to ${explainSubject(target)}:` + explainTargetToken(result) + explainBasedOnRules(target, result) + (isRepoProvisionAuthTargetResult(result) ? "" : explainSelectedRepositories(target, result)) + explainCollision(result);
+  ${icon(isAllowed)} ${isAllowed ? "Can" : "Can't"} provision token to ${explainSubject(target)}:` + explainTargetToken(result) + explainBasedOnRules(target, result) + (isRepoProvisionAuthTargetResult(result) ? "" : explainSelectedRepositories(target, result)) + explainConflict(result);
   }
-  function explainCollision(result) {
-    const collision = result.collision;
-    if (!collision) return "";
+  function explainConflict(result) {
+    const conflict = result.conflict;
+    if (!conflict) return "";
     let explained = `
     ${FAIL_ICON} Conflicting declarations were found:`;
-    for (const { requester, name, token } of collision.participants) {
+    for (const { requester, name, token } of conflict.participants) {
       explained += `
       ${FAIL_ICON} Declared by ${repoRefToString(requester)} as secret ${name} using token declaration ${token}`;
     }
@@ -65894,7 +65894,7 @@ function createTextProvisionAuthExplainer() {
   }
 }
 
-// src/provision-collision.ts
+// src/provision-conflict.ts
 var import_fast_json_stable_stringify2 = __toESM(require_fast_json_stable_stringify(), 1);
 
 // src/token-request.ts
@@ -65942,10 +65942,10 @@ function createTokenRequestFactory(appRegistry) {
   };
 }
 
-// src/provision-collision.ts
-function resolveProvisionCollisions(authResults) {
+// src/provision-conflict.ts
+function resolveProvisionConflicts(authResults) {
   const resolutions = [];
-  for (const group2 of collisionGroups(authResults)) {
+  for (const group2 of conflictGroups(authResults)) {
     const allowed = [];
     for (const entry of group2) {
       if (entry.auth.isAllowed) allowed.push(entry);
@@ -65963,17 +65963,17 @@ function resolveProvisionCollisions(authResults) {
     }
   }
   for (const { entry, isWriter, participants } of resolutions) {
-    entry.target.collision = { participants };
+    entry.target.conflict = { participants };
     if (!isWriter) continue;
     entry.target.isAllowed = false;
     entry.auth.isAllowed = false;
   }
 }
-function collisionGroups(authResults) {
+function conflictGroups(authResults) {
   const groups = /* @__PURE__ */ new Map();
   for (const auth6 of authResults) {
     for (const target of auth6.results) {
-      const key = collisionKey(auth6.request.name, target.target);
+      const key = conflictKey(auth6.request.name, target.target);
       const group2 = groups.get(key);
       if (group2) {
         group2.push({ auth: auth6, target });
@@ -65982,13 +65982,13 @@ function collisionGroups(authResults) {
       }
     }
   }
-  const collisions = [];
+  const conflicts = [];
   for (const group2 of groups.values()) {
-    if (group2.length > 1) collisions.push(group2);
+    if (group2.length > 1) conflicts.push(group2);
   }
-  return collisions;
+  return conflicts;
 }
-function collisionKey(name, target) {
+function conflictKey(name, target) {
   return (0, import_fast_json_stable_stringify2.default)({
     name: name.toLowerCase(),
     target: target.target,
@@ -66022,9 +66022,7 @@ function visibilityDescriptor(target) {
   repos.sort((a2, b2) => a2 - b2);
   return { category: "selected", repos };
 }
-function toParticipant({
-  auth: auth6
-}) {
+function toParticipant({ auth: auth6 }) {
   const { requester, name, secretDec } = auth6.request;
   return { requester, name, token: secretDec.token };
 }
@@ -66171,7 +66169,7 @@ function createAuthorizer(createProvisionRequest, provisionAuthorizer, tokenAuth
       }
       const provisionResults = provisionAuthorizer.listResults().sort((a2, b2) => compareProvisionRequest(a2.request, b2.request));
       const tokenResults = tokenAuthorizer.listResults().sort((a2, b2) => compareTokenRequest(a2.request, b2.request));
-      resolveProvisionCollisions(provisionResults);
+      resolveProvisionConflicts(provisionResults);
       const explainProvisionAuth = createTextProvisionAuthExplainer();
       const explainTokenAuth = createTextTokenAuthExplainer();
       if (provisionResults.length > 0) {
@@ -121721,15 +121719,15 @@ function createMarkdownProvisionAuthExplainer() {
         listItem2(...explainTargetToken(result)),
         listItem2(...explainBasedOnRules(target, result)),
         ...isRepoProvisionAuthTargetResult(result) ? [] : explainSelectedRepositories(target, result),
-        ...explainCollision(result)
+        ...explainConflict(result)
       )
     ];
   }
-  function explainCollision(result) {
-    const collision = result.collision;
-    if (!collision) return [];
+  function explainConflict(result) {
+    const conflict = result.conflict;
+    if (!conflict) return [];
     const participants = [];
-    for (const { requester, name, token } of collision.participants) {
+    for (const { requester, name, token } of conflict.participants) {
       participants.push(
         listItem2(
           paragraph2(

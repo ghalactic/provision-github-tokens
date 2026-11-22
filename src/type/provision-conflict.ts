@@ -1,10 +1,10 @@
 import type { RepoReference } from "../github-reference.js";
 
-export type ProvisionCollision = {
-  participants: ProvisionCollisionParticipant[];
+export type ProvisionConflict = {
+  participants: ProvisionConflictParticipant[];
 };
 
-export type ProvisionCollisionParticipant = {
+export type ProvisionConflictParticipant = {
   requester: RepoReference;
   name: string;
   token: string;

@@ -134,18 +134,18 @@ export function createMarkdownProvisionAuthExplainer(): ProvisionAuthResultExpla
         ...(isRepoProvisionAuthTargetResult(result)
           ? []
           : explainSelectedRepositories(target, result)),
-        ...explainCollision(result),
+        ...explainConflict(result),
       ),
     ];
   }
 
-  function explainCollision(result: ProvisionAuthTargetResult): ListItem[] {
-    const collision = result.collision;
+  function explainConflict(result: ProvisionAuthTargetResult): ListItem[] {
+    const conflict = result.conflict;
 
-    if (!collision) return [];
+    if (!conflict) return [];
 
     const participants: ListItem[] = [];
-    for (const { requester, name, token } of collision.participants) {
+    for (const { requester, name, token } of conflict.participants) {
       participants.push(
         listItem(
           paragraph(

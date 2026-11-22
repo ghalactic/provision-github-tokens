@@ -234,7 +234,7 @@ it("renders a conflict for an account secret", async () => {
     tokenAuthResult,
   });
   targetResult.isAllowed = false;
-  targetResult.collision = {
+  targetResult.conflict = {
     participants: [
       {
         requester: { account: "account-c", repo: "repo-c" },
@@ -292,7 +292,7 @@ it("renders a conflict for a repo secret", async () => {
     tokenAuthResult,
   });
   targetResult.isAllowed = false;
-  targetResult.collision = {
+  targetResult.conflict = {
     participants: [
       {
         requester: { account: "account-c", repo: "repo-c" },
@@ -350,7 +350,7 @@ it("renders a conflict for an environment secret", async () => {
     tokenAuthResult,
   });
   targetResult.isAllowed = false;
-  targetResult.collision = {
+  targetResult.conflict = {
     participants: [
       {
         requester: { account: "account-c", repo: "repo-c" },
@@ -439,7 +439,7 @@ it("renders a conflict after an account secret's selected repos", async () => {
     },
   });
   targetResult.isAllowed = false;
-  targetResult.collision = {
+  targetResult.conflict = {
     participants: [
       {
         requester: { account: "account-c", repo: "repo-c" },
@@ -496,7 +496,7 @@ it("renders a conflict with multiple declarations", async () => {
     tokenAuthResult,
   });
   targetResult.isAllowed = false;
-  targetResult.collision = {
+  targetResult.conflict = {
     participants: [
       {
         requester: { account: "account-a", repo: "repo-a" },

@@ -13,7 +13,7 @@ import {
   createTestProvisionAuthTargetResult,
   createTestTokenAuthResult,
 } from "../test/result.js";
-import { resolveProvisionCollisions } from "./provision-collision.js";
+import { resolveProvisionConflicts } from "./provision-conflict.js";
 
 it("refuses allowed requests that declare different tokens", () => {
   const target = createTestAccountProvisionRequestTarget(
@@ -73,9 +73,9 @@ it("refuses allowed requests that declare different tokens", () => {
   });
 
   const auths = [a, b];
-  resolveProvisionCollisions(auths);
+  resolveProvisionConflicts(auths);
 
-  expect(a.results[0].collision).toEqual({
+  expect(a.results[0].conflict).toEqual({
     participants: [
       {
         requester: { account: "account-b", repo: "repo-b" },
@@ -84,7 +84,7 @@ it("refuses allowed requests that declare different tokens", () => {
       },
     ],
   });
-  expect(b.results[0].collision).toEqual({
+  expect(b.results[0].conflict).toEqual({
     participants: [
       {
         requester: { account: "account-a", repo: "repo-a" },
@@ -156,11 +156,11 @@ it("doesn't report a conflict for identical declarations", () => {
   });
 
   const auths = [a, b];
-  resolveProvisionCollisions(auths);
+  resolveProvisionConflicts(auths);
 
   for (const auth of auths) {
     for (const result of auth.results) {
-      expect(result.collision).toBeUndefined();
+      expect(result.conflict).toBeUndefined();
     }
   }
 });
@@ -227,7 +227,7 @@ it("reports a conflict when account secret visibility differs", () => {
   });
 
   const auths = [a, b];
-  resolveProvisionCollisions(auths);
+  resolveProvisionConflicts(auths);
 
   expect(a.results[0].isAllowed).toBe(false);
   expect(a.isAllowed).toBe(false);
@@ -293,11 +293,11 @@ it("doesn't report a conflict for identical repo targets", () => {
   });
 
   const auths = [a, b];
-  resolveProvisionCollisions(auths);
+  resolveProvisionConflicts(auths);
 
   for (const auth of auths) {
     for (const result of auth.results) {
-      expect(result.collision).toBeUndefined();
+      expect(result.conflict).toBeUndefined();
     }
   }
 });
@@ -409,12 +409,12 @@ it("sorts conflict participants by requester", () => {
   });
 
   const auths = [a, a2, a3, b];
-  resolveProvisionCollisions(auths);
+  resolveProvisionConflicts(auths);
 
-  const collision = a.results[0].collision;
+  const conflict = a.results[0].conflict;
   const repos: string[] = [];
 
-  for (const { requester } of collision?.participants ?? []) {
+  for (const { requester } of conflict?.participants ?? []) {
     repos.push(requester.repo);
   }
 
@@ -511,11 +511,11 @@ it("compares selected repo IDs order-insensitively", () => {
   });
 
   const auths = [a, b];
-  resolveProvisionCollisions(auths);
+  resolveProvisionConflicts(auths);
 
   for (const auth of auths) {
     for (const result of auth.results) {
-      expect(result.collision).toBeUndefined();
+      expect(result.conflict).toBeUndefined();
     }
   }
 });
@@ -600,7 +600,7 @@ it("reports a conflict when selected repo IDs differ", () => {
   });
 
   const auths = [a, b];
-  resolveProvisionCollisions(auths);
+  resolveProvisionConflicts(auths);
 
   expect(a.results[0].isAllowed).toBe(false);
   expect(a.isAllowed).toBe(false);
@@ -667,10 +667,10 @@ it("reports a conflict when only the secret name casing differs", () => {
   });
 
   const auths = [a, b];
-  resolveProvisionCollisions(auths);
+  resolveProvisionConflicts(auths);
 
-  expect(a.results[0].collision?.participants[0].name).toBe("secret_a");
-  expect(b.results[0].collision?.participants[0].name).toBe("SECRET_A");
+  expect(a.results[0].conflict?.participants[0].name).toBe("secret_a");
+  expect(b.results[0].conflict?.participants[0].name).toBe("SECRET_A");
 });
 
 it("matches secret names case-insensitively", () => {
@@ -732,11 +732,11 @@ it("matches secret names case-insensitively", () => {
   });
 
   const auths = [a, b];
-  resolveProvisionCollisions(auths);
+  resolveProvisionConflicts(auths);
 
   for (const auth of auths) {
     for (const result of auth.results) {
-      expect(result.collision).toBeUndefined();
+      expect(result.conflict).toBeUndefined();
     }
   }
 });
@@ -832,11 +832,11 @@ it("doesn't report a conflict across secret types or targets", () => {
   });
 
   const auths = [a, b, c];
-  resolveProvisionCollisions(auths);
+  resolveProvisionConflicts(auths);
 
   for (const auth of auths) {
     for (const result of auth.results) {
-      expect(result.collision).toBeUndefined();
+      expect(result.conflict).toBeUndefined();
     }
   }
 });
@@ -900,10 +900,10 @@ it("reports a conflict to a denied request", () => {
   });
 
   const auths = [allowed, denied];
-  resolveProvisionCollisions(auths);
+  resolveProvisionConflicts(auths);
 
-  expect(allowed.results[0].collision).toBeUndefined();
-  expect(denied.results[0].collision).toEqual({
+  expect(allowed.results[0].conflict).toBeUndefined();
+  expect(denied.results[0].conflict).toEqual({
     participants: [
       {
         requester: { account: "account-a", repo: "repo-a" },
@@ -974,9 +974,9 @@ it("reports a conflict to every denied request", () => {
   });
 
   const auths = [a, b];
-  resolveProvisionCollisions(auths);
+  resolveProvisionConflicts(auths);
 
-  expect(a.results[0].collision).toEqual({
+  expect(a.results[0].conflict).toEqual({
     participants: [
       {
         requester: { account: "account-b", repo: "repo-b" },
@@ -985,7 +985,7 @@ it("reports a conflict to every denied request", () => {
       },
     ],
   });
-  expect(b.results[0].collision).toEqual({
+  expect(b.results[0].conflict).toEqual({
     participants: [
       {
         requester: { account: "account-a", repo: "repo-a" },
@@ -1085,13 +1085,13 @@ it("reports a conflict when allowed requests are already refused", () => {
   });
 
   const auths = [a, b, denied];
-  resolveProvisionCollisions(auths);
+  resolveProvisionConflicts(auths);
 
   expect(a.results[0].isAllowed).toBe(false);
   expect(a.isAllowed).toBe(false);
   expect(b.results[0].isAllowed).toBe(false);
   expect(b.isAllowed).toBe(false);
-  expect(denied.results[0].collision).toEqual({
+  expect(denied.results[0].conflict).toEqual({
     participants: [
       {
         requester: { account: "account-a", repo: "repo-a" },
@@ -1156,11 +1156,11 @@ it("doesn't report a conflict when denied declarations match", () => {
   });
 
   const auths = [allowed, denied];
-  resolveProvisionCollisions(auths);
+  resolveProvisionConflicts(auths);
 
   for (const auth of auths) {
     for (const result of auth.results) {
-      expect(result.collision).toBeUndefined();
+      expect(result.conflict).toBeUndefined();
     }
   }
 });
@@ -1199,11 +1199,11 @@ it("doesn't refuse a single request", () => {
   });
 
   const auths = [result];
-  resolveProvisionCollisions(auths);
+  resolveProvisionConflicts(auths);
 
   for (const auth of auths) {
     for (const result of auth.results) {
-      expect(result.collision).toBeUndefined();
+      expect(result.conflict).toBeUndefined();
     }
   }
 });
@@ -1256,10 +1256,10 @@ it("treats an unknown declaration as conflicting", () => {
   });
 
   const auths = [known, unknown];
-  resolveProvisionCollisions(auths);
+  resolveProvisionConflicts(auths);
 
-  expect(known.results[0].collision).toBeUndefined();
-  expect(unknown.results[0].collision).toEqual({
+  expect(known.results[0].conflict).toBeUndefined();
+  expect(unknown.results[0].conflict).toEqual({
     participants: [
       {
         requester: { account: "account-a", repo: "repo-a" },

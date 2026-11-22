@@ -9,15 +9,15 @@ import type {
   ProvisionAuthResult,
   ProvisionAuthTargetResult,
 } from "./type/provision-auth-result.js";
-import type { ProvisionCollisionParticipant } from "./type/provision-collision.js";
+import type { ProvisionConflictParticipant } from "./type/provision-conflict.js";
 
-export function resolveProvisionCollisions(
+export function resolveProvisionConflicts(
   authResults: ProvisionAuthResult[],
 ): void {
-  const resolutions: CollisionResolution[] = [];
+  const resolutions: ConflictResolution[] = [];
 
-  for (const group of collisionGroups(authResults)) {
-    const allowed: CollisionEntry[] = [];
+  for (const group of conflictGroups(authResults)) {
+    const allowed: ConflictEntry[] = [];
 
     for (const entry of group) {
       if (entry.auth.isAllowed) allowed.push(entry);
@@ -40,7 +40,7 @@ export function resolveProvisionCollisions(
   }
 
   for (const { entry, isWriter, participants } of resolutions) {
-    entry.target.collision = { participants };
+    entry.target.conflict = { participants };
 
     if (!isWriter) continue;
 
@@ -49,14 +49,12 @@ export function resolveProvisionCollisions(
   }
 }
 
-function collisionGroups(
-  authResults: ProvisionAuthResult[],
-): CollisionEntry[][] {
-  const groups = new Map<string, CollisionEntry[]>();
+function conflictGroups(authResults: ProvisionAuthResult[]): ConflictEntry[][] {
+  const groups = new Map<string, ConflictEntry[]>();
 
   for (const auth of authResults) {
     for (const target of auth.results) {
-      const key = collisionKey(auth.request.name, target.target);
+      const key = conflictKey(auth.request.name, target.target);
       const group = groups.get(key);
 
       if (group) {
@@ -67,16 +65,16 @@ function collisionGroups(
     }
   }
 
-  const collisions: CollisionEntry[][] = [];
+  const conflicts: ConflictEntry[][] = [];
 
   for (const group of groups.values()) {
-    if (group.length > 1) collisions.push(group);
+    if (group.length > 1) conflicts.push(group);
   }
 
-  return collisions;
+  return conflicts;
 }
 
-function collisionKey(name: string, target: ProvisionRequestTarget): string {
+function conflictKey(name: string, target: ProvisionRequestTarget): string {
   return stringify({
     name: name.toLowerCase(),
     target: target.target,
@@ -84,7 +82,7 @@ function collisionKey(name: string, target: ProvisionRequestTarget): string {
   });
 }
 
-function isIdentical(entries: CollisionEntry[]): boolean {
+function isIdentical(entries: ConflictEntry[]): boolean {
   const first = writeDescriptor(entries[0]);
 
   for (const entry of entries) {
@@ -96,7 +94,7 @@ function isIdentical(entries: CollisionEntry[]): boolean {
   return true;
 }
 
-function writeDescriptor(entry: CollisionEntry): string | undefined {
+function writeDescriptor(entry: ConflictEntry): string | undefined {
   const { auth, target } = entry;
   const tokenRequest = target.tokenAuthResult?.request;
 
@@ -127,19 +125,17 @@ function visibilityDescriptor(
   return { category: "selected", repos };
 }
 
-function toParticipant({
-  auth,
-}: CollisionEntry): ProvisionCollisionParticipant {
+function toParticipant({ auth }: ConflictEntry): ProvisionConflictParticipant {
   const { requester, name, secretDec } = auth.request;
 
   return { requester, name, token: secretDec.token };
 }
 
 function participantsFor(
-  entry: CollisionEntry,
-  group: CollisionEntry[],
-): ProvisionCollisionParticipant[] {
-  const participants: ProvisionCollisionParticipant[] = [];
+  entry: ConflictEntry,
+  group: ConflictEntry[],
+): ProvisionConflictParticipant[] {
+  const participants: ProvisionConflictParticipant[] = [];
 
   for (const other of group) {
     if (other !== entry) participants.push(toParticipant(other));
@@ -151,19 +147,19 @@ function participantsFor(
 }
 
 function compareParticipants(
-  a: ProvisionCollisionParticipant,
-  b: ProvisionCollisionParticipant,
+  a: ProvisionConflictParticipant,
+  b: ProvisionConflictParticipant,
 ): number {
   return compareRef(a.requester, b.requester) || a.name.localeCompare(b.name);
 }
 
-type CollisionEntry = {
+type ConflictEntry = {
   auth: ProvisionAuthResult;
   target: ProvisionAuthTargetResult;
 };
 
-type CollisionResolution = {
-  entry: CollisionEntry;
+type ConflictResolution = {
+  entry: ConflictEntry;
   isWriter: boolean;
-  participants: ProvisionCollisionParticipant[];
+  participants: ProvisionConflictParticipant[];
 };

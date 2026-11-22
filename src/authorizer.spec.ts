@@ -732,7 +732,7 @@ it("refuses conflicting declarations and explains them to every requester", asyn
 
   expect(a.isAllowed).toBe(false);
   expect(b.isAllowed).toBe(false);
-  expect(a.results[0].collision).toEqual({
+  expect(a.results[0].conflict).toEqual({
     participants: [
       {
         requester: { account: "account-b", repo: "repo-b" },
@@ -741,7 +741,7 @@ it("refuses conflicting declarations and explains them to every requester", asyn
       },
     ],
   });
-  expect(b.results[0].collision).toEqual({
+  expect(b.results[0].conflict).toEqual({
     participants: [
       {
         requester: { account: "account-a", repo: "repo-a" },
