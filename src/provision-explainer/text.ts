@@ -53,7 +53,7 @@ export function createTextProvisionExplainer(): ProvisionResultExplainer<string>
       `for repo ${repoRefToString(authResult.request.requester)}:`;
 
     for (const [targetAuth, result] of sortedTargetResults) {
-      output += explainTarget(targetAuth, result);
+      output += explainTarget(targetAuth, result, authResult.request.name);
     }
 
     return output;
@@ -62,6 +62,7 @@ export function createTextProvisionExplainer(): ProvisionResultExplainer<string>
   function explainTarget(
     targetAuth: ProvisionAuthTargetResult,
     result: ProvisionResult,
+    secretName: string,
   ): string {
     const target = targetAuth.target;
     const subject = explainSubject(target);
@@ -102,7 +103,7 @@ export function createTextProvisionExplainer(): ProvisionResultExplainer<string>
 
         return (
           `\n  ${FAIL_ICON} Provision collision for ${subject}${visibility}` +
-          explainCollisionParticipants(collision)
+          explainCollisionParticipants(collision, secretName)
         );
       }
 
@@ -169,12 +170,18 @@ export function createTextProvisionExplainer(): ProvisionResultExplainer<string>
     return output;
   }
 
-  function explainCollisionParticipants(collision: ProvisionCollision): string {
+  function explainCollisionParticipants(
+    collision: ProvisionCollision,
+    secretName: string,
+  ): string {
     let explained = "";
+
     for (const { requester, name, token } of collision.participants) {
-      explained +=
-        `\n    ${FAIL_ICON} Also declared by ${repoRefToString(requester)} ` +
-        `as secret ${name} using token declaration ${token}`;
+      explained += `\n    ${FAIL_ICON} Also declared by ${repoRefToString(requester)}`;
+
+      if (name !== secretName) explained += ` as secret ${name}`;
+
+      explained += ` using token declaration ${token}`;
     }
 
     return explained;
