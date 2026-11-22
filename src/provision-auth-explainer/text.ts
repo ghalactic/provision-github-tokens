@@ -7,6 +7,7 @@ import {
 import { FAIL_ICON, PASS_ICON, icon } from "../icon.js";
 import { pluralize } from "../pluralize.js";
 import { isRepoProvisionAuthTargetResult } from "../provision-auth-result.js";
+import type { ProvisionCollisions } from "../provision-collision.js";
 import {
   isRepoProvisionRequestTarget,
   type ProvisionRequestTarget,
@@ -25,7 +26,9 @@ import type { ProvisionSecretsRule } from "../type/provision-rule.js";
 import type { TokenAuthResult } from "../type/token-auth-result.js";
 import { accountSecretVisibilityCategoryLabel } from "./account-secret-visibility-category.js";
 
-export function createTextProvisionAuthExplainer(): ProvisionAuthResultExplainer<string> {
+export function createTextProvisionAuthExplainer(
+  collisions: ProvisionCollisions,
+): ProvisionAuthResultExplainer<string> {
   const tokenSeq = createSequencer<TokenAuthResult>();
 
   return (result) => {
@@ -84,7 +87,8 @@ export function createTextProvisionAuthExplainer(): ProvisionAuthResultExplainer
       explainBasedOnRules(target, result) +
       (isRepoProvisionAuthTargetResult(result)
         ? ""
-        : explainSelectedRepositories(target, result))
+        : explainSelectedRepositories(target, result)) +
+      explainCollision(result)
     );
   }
 
@@ -109,6 +113,25 @@ export function createTextProvisionAuthExplainer(): ProvisionAuthResultExplainer
       `\n    ${icon(isTokenAllowed)} ${kind} ${name} ` +
       `was ${isTokenAllowed ? "allowed" : "denied"} access to token ${ref}`
     );
+  }
+
+  function explainCollision(result: ProvisionAuthTargetResult): string {
+    const collision = collisions.get(result);
+
+    // Blocking collisions are reported by the provision explanation.
+    if (!collision || collision.isBlocking) return "";
+
+    let explained =
+      `\n    ${FAIL_ICON} Provision collision for ` +
+      `${explainSubject(result.target)}`;
+
+    for (const { requester, name, token } of collision.participants) {
+      explained +=
+        `\n      ${FAIL_ICON} Also declared by ${repoRefToString(requester)} ` +
+        `as secret ${name} using token declaration ${token}`;
+    }
+
+    return explained;
   }
 
   function explainSubject(target: ProvisionRequestTarget): string {

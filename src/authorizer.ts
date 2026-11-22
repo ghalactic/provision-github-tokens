@@ -6,15 +6,12 @@ import { createTextProvisionAuthExplainer } from "./provision-auth-explainer/tex
 import type { ProvisionAuthorizer } from "./provision-authorizer.js";
 import {
   resolveProvisionCollisions,
-  type ProvisionCollision,
+  type ProvisionCollisions,
 } from "./provision-collision.js";
 import type { ProvisionRequestFactory } from "./provision-request.js";
 import { createTextTokenAuthExplainer } from "./token-auth-explainer/text.js";
 import type { TokenAuthorizer } from "./token-authorizer.js";
-import type {
-  ProvisionAuthResult,
-  ProvisionAuthTargetResult,
-} from "./type/provision-auth-result.js";
+import type { ProvisionAuthResult } from "./type/provision-auth-result.js";
 import type { TokenAuthResult } from "./type/token-auth-result.js";
 
 export type Authorizer = {
@@ -23,7 +20,7 @@ export type Authorizer = {
 
 export type AuthorizeResult = {
   provisionResults: ProvisionAuthResult[];
-  provisionCollisions: Map<ProvisionAuthTargetResult, ProvisionCollision>;
+  provisionCollisions: ProvisionCollisions;
   tokenResults: TokenAuthResult[];
 };
 
@@ -57,7 +54,8 @@ export function createAuthorizer(
 
       const provisionCollisions = resolveProvisionCollisions(provisionResults);
 
-      const explainProvisionAuth = createTextProvisionAuthExplainer();
+      const explainProvisionAuth =
+        createTextProvisionAuthExplainer(provisionCollisions);
       const explainTokenAuth = createTextTokenAuthExplainer();
 
       if (provisionResults.length > 0) {

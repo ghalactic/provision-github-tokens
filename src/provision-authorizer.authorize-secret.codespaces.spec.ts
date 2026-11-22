@@ -89,8 +89,8 @@ it("allows GitHub Codespaces account secrets that should be allowed", async () =
     }),
   );
 
-  const toText = createTextProvisionAuthExplainer();
-  const toMdast = createMarkdownProvisionAuthExplainer();
+  const toText = createTextProvisionAuthExplainer(new Map());
+  const toMdast = createMarkdownProvisionAuthExplainer(new Map());
 
   expect(toText(resultA)).toMatchInlineSnapshot(`
     "✅ Repo account-x/repo-x was allowed to provision secret SECRET_A:
@@ -175,8 +175,8 @@ it("allows GitHub Codespaces account secrets that should be allowed within the r
     }),
   );
 
-  const toText = createTextProvisionAuthExplainer();
-  const toMdast = createMarkdownProvisionAuthExplainer();
+  const toText = createTextProvisionAuthExplainer(new Map());
+  const toMdast = createMarkdownProvisionAuthExplainer(new Map());
 
   expect(toText(resultA)).toMatchInlineSnapshot(`
     "✅ Repo account-a/repo-a was allowed to provision secret SECRET_A:
@@ -260,8 +260,8 @@ it("allows GitHub Codespaces account secrets that should be allowed within the r
     }),
   );
 
-  const toText = createTextProvisionAuthExplainer();
-  const toMdast = createMarkdownProvisionAuthExplainer();
+  const toText = createTextProvisionAuthExplainer(new Map());
+  const toMdast = createMarkdownProvisionAuthExplainer(new Map());
 
   expect(toText(resultA)).toMatchInlineSnapshot(`
     "✅ Repo account-a/repo-a was allowed to provision secret SECRET_A:
@@ -344,8 +344,8 @@ it("allows GitHub Codespaces repo secrets that should be allowed", async () => {
     }),
   );
 
-  const toText = createTextProvisionAuthExplainer();
-  const toMdast = createMarkdownProvisionAuthExplainer();
+  const toText = createTextProvisionAuthExplainer(new Map());
+  const toMdast = createMarkdownProvisionAuthExplainer(new Map());
 
   expect(toText(resultA)).toMatchInlineSnapshot(`
     "✅ Repo account-x/repo-x was allowed to provision secret SECRET_A:
@@ -429,8 +429,8 @@ it("allows GitHub Codespaces repo secrets that should be allowed within the requ
     }),
   );
 
-  const toText = createTextProvisionAuthExplainer();
-  const toMdast = createMarkdownProvisionAuthExplainer();
+  const toText = createTextProvisionAuthExplainer(new Map());
+  const toMdast = createMarkdownProvisionAuthExplainer(new Map());
 
   expect(toText(resultA)).toMatchInlineSnapshot(`
     "✅ Repo account-a/repo-a was allowed to provision secret SECRET_A:
@@ -522,8 +522,8 @@ it("allows GitHub Codespaces repo secrets that should be allowed within the requ
     }),
   );
 
-  const toText = createTextProvisionAuthExplainer();
-  const toMdast = createMarkdownProvisionAuthExplainer();
+  const toText = createTextProvisionAuthExplainer(new Map());
+  const toMdast = createMarkdownProvisionAuthExplainer(new Map());
 
   expect(toText(resultA)).toMatchInlineSnapshot(`
     "✅ Repo account-a/repo-a was allowed to provision secret SECRET_A:
@@ -599,8 +599,8 @@ it("doesn't allow GitHub Codespaces account secrets for unauthorized requesters"
     }),
   );
 
-  const toText = createTextProvisionAuthExplainer();
-  const toMdast = createMarkdownProvisionAuthExplainer();
+  const toText = createTextProvisionAuthExplainer(new Map());
+  const toMdast = createMarkdownProvisionAuthExplainer(new Map());
 
   expect(toText(resultA)).toMatchInlineSnapshot(`
     "❌ Repo account-y/repo-y wasn't allowed to provision secret SECRET_A:
@@ -686,8 +686,8 @@ it("doesn't allow GitHub Codespaces account secrets within the requesting accoun
     }),
   );
 
-  const toText = createTextProvisionAuthExplainer();
-  const toMdast = createMarkdownProvisionAuthExplainer();
+  const toText = createTextProvisionAuthExplainer(new Map());
+  const toMdast = createMarkdownProvisionAuthExplainer(new Map());
 
   expect(toText(resultA)).toMatchInlineSnapshot(`
     "❌ Repo account-y/repo-y wasn't allowed to provision secret SECRET_A:
@@ -779,8 +779,8 @@ it("doesn't allow GitHub Codespaces account secrets within the requesting accoun
     }),
   );
 
-  const toText = createTextProvisionAuthExplainer();
-  const toMdast = createMarkdownProvisionAuthExplainer();
+  const toText = createTextProvisionAuthExplainer(new Map());
+  const toMdast = createMarkdownProvisionAuthExplainer(new Map());
 
   expect(toText(resultA)).toMatchInlineSnapshot(`
     "❌ Repo account-a/repo-a wasn't allowed to provision secret SECRET_A:
@@ -843,8 +843,8 @@ it("doesn't allow GitHub Codespaces repo secrets for unauthorized requesters", a
     }),
   );
 
-  const toText = createTextProvisionAuthExplainer();
-  const toMdast = createMarkdownProvisionAuthExplainer();
+  const toText = createTextProvisionAuthExplainer(new Map());
+  const toMdast = createMarkdownProvisionAuthExplainer(new Map());
 
   expect(toText(resultA)).toMatchInlineSnapshot(`
     "❌ Repo account-y/repo-y wasn't allowed to provision secret SECRET_A:
@@ -930,8 +930,8 @@ it("doesn't allow GitHub Codespaces repo secrets within the requesting repo for 
     }),
   );
 
-  const toText = createTextProvisionAuthExplainer();
-  const toMdast = createMarkdownProvisionAuthExplainer();
+  const toText = createTextProvisionAuthExplainer(new Map());
+  const toMdast = createMarkdownProvisionAuthExplainer(new Map());
 
   expect(toText(resultA)).toMatchInlineSnapshot(`
     "❌ Repo account-y/repo-y wasn't allowed to provision secret SECRET_A:
@@ -1018,8 +1018,8 @@ it("doesn't allow GitHub Codespaces repo secrets within the requesting repo when
     }),
   );
 
-  const toText = createTextProvisionAuthExplainer();
-  const toMdast = createMarkdownProvisionAuthExplainer();
+  const toText = createTextProvisionAuthExplainer(new Map());
+  const toMdast = createMarkdownProvisionAuthExplainer(new Map());
 
   expect(toText(resultA)).toMatchInlineSnapshot(`
     "❌ Repo account-a/repo-a wasn't allowed to provision secret SECRET_A:

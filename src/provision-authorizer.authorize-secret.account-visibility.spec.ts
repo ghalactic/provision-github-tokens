@@ -77,8 +77,8 @@ it("explains the account secret visibility toggles", async () => {
     }),
   );
 
-  const toText = createTextProvisionAuthExplainer();
-  const toMdast = createMarkdownProvisionAuthExplainer();
+  const toText = createTextProvisionAuthExplainer(new Map());
+  const toMdast = createMarkdownProvisionAuthExplainer(new Map());
 
   expect(resultAll.isAllowed).toBe(true);
   expect(toText(resultAll)).toMatchInlineSnapshot(`
@@ -187,8 +187,8 @@ it("explains an explicitly empty account secret", async () => {
     }),
   );
 
-  const toText = createTextProvisionAuthExplainer();
-  const toMdast = createMarkdownProvisionAuthExplainer();
+  const toText = createTextProvisionAuthExplainer(new Map());
+  const toMdast = createMarkdownProvisionAuthExplainer(new Map());
 
   expect(resultNoReposAllowed.isAllowed).toBe(true);
   expect(toText(resultNoReposAllowed)).toMatchInlineSnapshot(`
@@ -252,8 +252,8 @@ it("explains an account secret visibility toggle with no matching rules", async 
     }),
   );
 
-  const toText = createTextProvisionAuthExplainer();
-  const toMdast = createMarkdownProvisionAuthExplainer();
+  const toText = createTextProvisionAuthExplainer(new Map());
+  const toMdast = createMarkdownProvisionAuthExplainer(new Map());
 
   expect(result.isAllowed).toBe(false);
   expect(toText(result)).toMatchInlineSnapshot(`
@@ -331,8 +331,8 @@ it("explains a selected account secret when the gate and every repo allow it", a
     }),
   );
 
-  const toText = createTextProvisionAuthExplainer();
-  const toMdast = createMarkdownProvisionAuthExplainer();
+  const toText = createTextProvisionAuthExplainer(new Map());
+  const toMdast = createMarkdownProvisionAuthExplainer(new Map());
 
   expect(result.isAllowed).toBe(true);
   expect(toText(result)).toMatchInlineSnapshot(`
@@ -415,8 +415,8 @@ it("explains a selected account secret when a repo's visibility excludes it", as
     }),
   );
 
-  const toText = createTextProvisionAuthExplainer();
-  const toMdast = createMarkdownProvisionAuthExplainer();
+  const toText = createTextProvisionAuthExplainer(new Map());
+  const toMdast = createMarkdownProvisionAuthExplainer(new Map());
 
   expect(result.isAllowed).toBe(false);
   expect(toText(result)).toMatchInlineSnapshot(`
@@ -494,8 +494,8 @@ it("explains a selected account secret when the gate denies it", async () => {
     }),
   );
 
-  const toText = createTextProvisionAuthExplainer();
-  const toMdast = createMarkdownProvisionAuthExplainer();
+  const toText = createTextProvisionAuthExplainer(new Map());
+  const toMdast = createMarkdownProvisionAuthExplainer(new Map());
 
   expect(result.isAllowed).toBe(false);
   expect(toText(result)).toMatchInlineSnapshot(`
@@ -576,8 +576,8 @@ it("explains a selected account secret when a named repo matches no rule", async
     }),
   );
 
-  const toText = createTextProvisionAuthExplainer();
-  const toMdast = createMarkdownProvisionAuthExplainer();
+  const toText = createTextProvisionAuthExplainer(new Map());
+  const toMdast = createMarkdownProvisionAuthExplainer(new Map());
 
   expect(result.isAllowed).toBe(false);
   expect(toText(result)).toMatchInlineSnapshot(`
@@ -636,8 +636,8 @@ it("explains a selected account secret whose patterns matched no repos", async (
     }),
   );
 
-  const toText = createTextProvisionAuthExplainer();
-  const toMdast = createMarkdownProvisionAuthExplainer();
+  const toText = createTextProvisionAuthExplainer(new Map());
+  const toMdast = createMarkdownProvisionAuthExplainer(new Map());
 
   expect(result.isAllowed).toBe(false);
   expect(toText(result)).toMatchInlineSnapshot(`
@@ -734,8 +734,8 @@ it("skips rules that don't match the secret name or the requester", async () => 
     }),
   );
 
-  const toText = createTextProvisionAuthExplainer();
-  const toMdast = createMarkdownProvisionAuthExplainer();
+  const toText = createTextProvisionAuthExplainer(new Map());
+  const toMdast = createMarkdownProvisionAuthExplainer(new Map());
 
   expect(result.isAllowed).toBe(true);
   expect(toText(result)).toMatchInlineSnapshot(`

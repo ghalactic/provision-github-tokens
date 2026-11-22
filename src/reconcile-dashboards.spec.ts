@@ -102,6 +102,7 @@ it("creates a dashboard when there are config issues", async () => {
     [],
     new Map(),
     new Map(),
+    new Map(),
   );
 
   expect(__getOutput()).toMatchInlineSnapshot(`
@@ -184,6 +185,7 @@ it("creates a dashboard when provisioning fails", async () => {
     [],
     new Map(),
     provisionResults,
+    new Map(),
   );
 
   expect(__getOutput()).toMatchInlineSnapshot(`
@@ -280,6 +282,7 @@ it("updates a dashboard when its body is stale", async () => {
     [],
     new Map(),
     provisionResults,
+    new Map(),
   );
 
   const issues = __getIssues("org-a", "repo-a");
@@ -363,6 +366,7 @@ it("updates a dashboard on subsequent workflow runs", async () => {
     [],
     new Map(),
     provisionResults,
+    new Map(),
   );
   await reconcileDashboards(
     {
@@ -376,6 +380,7 @@ it("updates a dashboard on subsequent workflow runs", async () => {
     [],
     new Map(),
     provisionResults,
+    new Map(),
   );
 
   const issues = __getIssues("org-a", "repo-a");
@@ -478,6 +483,7 @@ it("closes all but the newest dashboard", async () => {
     [],
     new Map(),
     provisionResults,
+    new Map(),
   );
 
   const issues = __getIssues("org-a", "repo-a");
@@ -572,6 +578,7 @@ it("closes dashboards when nothing is failing", async () => {
     config,
     discovered,
     [],
+    new Map(),
     new Map(),
     new Map(),
   );
@@ -671,6 +678,7 @@ it("closes dashboards when everything is provisioned", async () => {
     [],
     new Map(),
     provisionResults,
+    new Map(),
   );
 
   const issues = __getIssues("org-a", "repo-a");
@@ -763,6 +771,7 @@ it("closes dashboards when they're disabled by the provider", async () => {
     [],
     new Map(),
     provisionResults,
+    new Map(),
   );
 
   const issues = __getIssues("org-a", "repo-a");
@@ -855,6 +864,7 @@ it("closes dashboards when they're disabled by the requester", async () => {
     [],
     new Map(),
     provisionResults,
+    new Map(),
   );
 
   const issues = __getIssues("org-a", "repo-a");
@@ -921,6 +931,7 @@ it("doesn't create a dashboard when nothing is failing", async () => {
     config,
     discovered,
     [],
+    new Map(),
     new Map(),
     new Map(),
   );
@@ -998,6 +1009,7 @@ it("doesn't create a dashboard when they're disabled", async () => {
     [],
     new Map(),
     provisionResults,
+    new Map(),
   );
 
   expect(__getOutput()).toMatchInlineSnapshot(`
@@ -1075,6 +1087,7 @@ it("reuses the existing label when creating dashboards", async () => {
     [],
     new Map(),
     provisionResults,
+    new Map(),
   );
 
   expect(__getOutput()).toMatchInlineSnapshot(`
@@ -1163,6 +1176,7 @@ it("ignores provisioned secrets from other repos", async () => {
     [],
     new Map(),
     provisionResults,
+    new Map(),
   );
 
   const issues = __getIssues("org-a", "repo-a");
@@ -1257,6 +1271,7 @@ it("ignores open issues without the dashboard label", async () => {
     [],
     new Map(),
     provisionResults,
+    new Map(),
   );
 
   const issues = __getIssues("org-a", "repo-a");
@@ -1360,6 +1375,7 @@ it("reconciles each requester independently", async () => {
     [],
     new Map(),
     provisionResults,
+    new Map(),
   );
 
   expect(__getOutput()).toMatchInlineSnapshot(`
@@ -1439,6 +1455,7 @@ it("warns when listing open issues fails", async () => {
     [],
     new Map(),
     provisionResults,
+    new Map(),
   );
 
   expect(__getOutput()).toMatchInlineSnapshot(`
@@ -1515,6 +1532,7 @@ it("warns when failing to create the dashboard label", async () => {
     [],
     new Map(),
     provisionResults,
+    new Map(),
   );
 
   expect(__getOutput()).toMatchInlineSnapshot(`

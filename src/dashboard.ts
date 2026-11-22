@@ -20,6 +20,7 @@ import {
   text,
 } from "./markdown.js";
 import { createMarkdownProvisionAuthExplainer } from "./provision-auth-explainer/markdown.js";
+import type { ProvisionCollisions } from "./provision-collision.js";
 import { createMarkdownProvisionExplainer } from "./provision-explainer/markdown.js";
 import { createMarkdownTokenAuthExplainer } from "./token-auth-explainer/markdown.js";
 import { createMarkdownTokenCreationExplainer } from "./token-creation-explainer/markdown.js";
@@ -52,6 +53,7 @@ export function renderFailureDashboard(
     ProvisionAuthResult,
     Map<ProvisionAuthTargetResult, ProvisionResult>
   >,
+  provisionCollisions: ProvisionCollisions,
 ): DashboardIssue {
   const secretProvisioning: RootContent[] = [];
   const tokenCreation: RootContent[] = [];
@@ -68,7 +70,8 @@ export function renderFailureDashboard(
 
   const explainProvision = createMarkdownProvisionExplainer();
   const explainTokenCreation = createMarkdownTokenCreationExplainer();
-  const explainProvisionAuth = createMarkdownProvisionAuthExplainer();
+  const explainProvisionAuth =
+    createMarkdownProvisionAuthExplainer(provisionCollisions);
   const explainTokenAuth = createMarkdownTokenAuthExplainer();
 
   for (let i = 0; i < secrets.length; ++i) {

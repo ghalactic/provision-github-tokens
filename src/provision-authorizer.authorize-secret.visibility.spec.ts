@@ -280,8 +280,8 @@ it("explains the visibility applied to an allowed repo target", async () => {
     }),
   );
 
-  const toText = createTextProvisionAuthExplainer();
-  const toMdast = createMarkdownProvisionAuthExplainer();
+  const toText = createTextProvisionAuthExplainer(new Map());
+  const toMdast = createMarkdownProvisionAuthExplainer(new Map());
 
   expect(toText(result)).toMatchInlineSnapshot(`
     "✅ Repo account-a/repo-a was allowed to provision secret SECRET_A:
@@ -339,8 +339,8 @@ it("explains the visibility that excluded a repo target", async () => {
     }),
   );
 
-  const toText = createTextProvisionAuthExplainer();
-  const toMdast = createMarkdownProvisionAuthExplainer();
+  const toText = createTextProvisionAuthExplainer(new Map());
+  const toMdast = createMarkdownProvisionAuthExplainer(new Map());
 
   expect(toText(result)).toMatchInlineSnapshot(`
     "❌ Repo account-a/repo-a wasn't allowed to provision secret SECRET_A:
@@ -414,8 +414,8 @@ it("explains only the rules whose visibility matched", async () => {
     }),
   );
 
-  const toText = createTextProvisionAuthExplainer();
-  const toMdast = createMarkdownProvisionAuthExplainer();
+  const toText = createTextProvisionAuthExplainer(new Map());
+  const toMdast = createMarkdownProvisionAuthExplainer(new Map());
 
   expect(toText(result)).toMatchInlineSnapshot(`
     "✅ Repo account-a/repo-a was allowed to provision secret SECRET_A:
@@ -477,8 +477,8 @@ it("explains the visibility of an environment target inherited from its repo", a
     }),
   );
 
-  const toText = createTextProvisionAuthExplainer();
-  const toMdast = createMarkdownProvisionAuthExplainer();
+  const toText = createTextProvisionAuthExplainer(new Map());
+  const toMdast = createMarkdownProvisionAuthExplainer(new Map());
 
   expect(toText(result)).toMatchInlineSnapshot(`
     "✅ Repo account-a/repo-a was allowed to provision secret SECRET_A:

@@ -18,6 +18,7 @@ import {
   type Octokit,
 } from "./octokit.js";
 import { pluralize } from "./pluralize.js";
+import type { ProvisionCollisions } from "./provision-collision.js";
 import type { FindProvisionerOctokit } from "./provisioner-octokit.js";
 import type { ProviderConfig } from "./type/provider-config.js";
 import type {
@@ -38,6 +39,7 @@ export type ReconcileDashboards = (
     ProvisionAuthResult,
     Map<ProvisionAuthTargetResult, ProvisionResult>
   >,
+  provisionCollisions: ProvisionCollisions,
 ) => Promise<void>;
 
 export function createReconcileDashboards(
@@ -50,6 +52,7 @@ export function createReconcileDashboards(
     tokenResults,
     tokenCreationResults,
     provisionResults,
+    provisionCollisions,
   ) => {
     debug("Reconciling token dashboards");
 
@@ -135,6 +138,7 @@ export function createReconcileDashboards(
             tokenResults,
             tokenCreationResults,
             provisionResults,
+            provisionCollisions,
           );
         }
       }

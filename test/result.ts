@@ -119,8 +119,11 @@ export function createTestProvisionAuthTargetResult(
   } = result;
 
   const tokenAuthResult =
-    overrides.tokenAuthResult ?? createTestTokenAuthResult();
-  const isTokenAllowed = overrides.isTokenAllowed ?? tokenAuthResult.isAllowed;
+    "tokenAuthResult" in result
+      ? result.tokenAuthResult
+      : createTestTokenAuthResult();
+  const isTokenAllowed =
+    overrides.isTokenAllowed ?? tokenAuthResult?.isAllowed ?? false;
   const isProvisionAllowed = overrides.isProvisionAllowed ?? isAllowed;
   const isSecretVisibilityCategoryAllowed =
     overrides.isSecretVisibilityCategoryAllowed ?? isProvisionAllowed;

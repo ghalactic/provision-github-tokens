@@ -65767,7 +65767,7 @@ function accountSecretVisibilityCategoryLabel(visibility) {
 }
 
 // src/provision-auth-explainer/text.ts
-function createTextProvisionAuthExplainer() {
+function createTextProvisionAuthExplainer(collisions) {
   const tokenSeq = createSequencer();
   return (result) => {
     return explainSummary(result) + explainTokenDec(result) + explainTargets(result);
@@ -65802,7 +65802,7 @@ function createTextProvisionAuthExplainer() {
   function explainTarget(result) {
     const { isAllowed, target } = result;
     return `
-  ${icon(isAllowed)} ${isAllowed ? "Can" : "Can't"} provision token to ${explainSubject(target)}:` + explainTargetToken(result) + explainBasedOnRules(target, result) + (isRepoProvisionAuthTargetResult(result) ? "" : explainSelectedRepositories(target, result));
+  ${icon(isAllowed)} ${isAllowed ? "Can" : "Can't"} provision token to ${explainSubject(target)}:` + explainTargetToken(result) + explainBasedOnRules(target, result) + (isRepoProvisionAuthTargetResult(result) ? "" : explainSelectedRepositories(target, result)) + explainCollision(result);
   }
   function explainTargetToken({
     isTokenAllowed,
@@ -65817,6 +65817,17 @@ function createTextProvisionAuthExplainer() {
     const kind = isRepoRef(tokenAuthResult.request.consumer) ? "Repo" : "Account";
     return `
     ${icon(isTokenAllowed)} ${kind} ${name} was ${isTokenAllowed ? "allowed" : "denied"} access to token ${ref}`;
+  }
+  function explainCollision(result) {
+    const collision = collisions.get(result);
+    if (!collision || collision.isBlocking) return "";
+    let explained = `
+    ${FAIL_ICON} Provision collision for ${explainSubject(result.target)}`;
+    for (const { requester, name, token } of collision.participants) {
+      explained += `
+      ${FAIL_ICON} Also declared by ${repoRefToString(requester)} as secret ${name} using token declaration ${token}`;
+    }
+    return explained;
   }
   function explainSubject(target) {
     return `${secretTypeText(target)} secret in ` + (isRepoProvisionRequestTarget(target) ? `${target.visibility} repo ` : "account ") + `${accountOrRepoRefToString(target.target)}`;
@@ -65936,18 +65947,29 @@ function resolveProvisionCollisions(authResults) {
   const collisions = /* @__PURE__ */ new Map();
   for (const group2 of collisionGroups(authResults)) {
     const writable = [];
+    const unwritable = [];
     for (const entry of group2) {
-      if (entry.auth.isAllowed) writable.push(entry);
-    }
-    if (writable.length < 2) continue;
-    if (isIdentical(writable)) continue;
-    for (const entry of writable) {
-      const participants = [];
-      for (const other of group2) {
-        if (other !== entry) participants.push(toParticipant(other));
+      if (entry.auth.isAllowed) {
+        writable.push(entry);
+      } else {
+        unwritable.push(entry);
       }
-      participants.sort(compareParticipants);
-      collisions.set(entry.target, { isBlocking: true, participants });
+    }
+    if (writable.length >= 2 && !isIdentical(writable)) {
+      for (const entry of writable) {
+        collisions.set(entry.target, {
+          isBlocking: true,
+          participants: participantsFor(entry, group2)
+        });
+      }
+    }
+    if (unwritable.length > 0 && !isIdentical(group2)) {
+      for (const entry of unwritable) {
+        collisions.set(entry.target, {
+          isBlocking: false,
+          participants: participantsFor(entry, group2)
+        });
+      }
     }
   }
   return collisions;
@@ -66010,6 +66032,14 @@ function toParticipant({
 }) {
   const { requester, name, secretDec } = auth6.request;
   return { requester, name, token: secretDec.token };
+}
+function participantsFor(entry, group2) {
+  const participants = [];
+  for (const other of group2) {
+    if (other !== entry) participants.push(toParticipant(other));
+  }
+  participants.sort(compareParticipants);
+  return participants;
 }
 function compareParticipants(a2, b2) {
   return compareRef(a2.requester, b2.requester) || a2.name.localeCompare(b2.name);
@@ -66147,7 +66177,7 @@ function createAuthorizer(createProvisionRequest, provisionAuthorizer, tokenAuth
       const provisionResults = provisionAuthorizer.listResults().sort((a2, b2) => compareProvisionRequest(a2.request, b2.request));
       const tokenResults = tokenAuthorizer.listResults().sort((a2, b2) => compareTokenRequest(a2.request, b2.request));
       const provisionCollisions = resolveProvisionCollisions(provisionResults);
-      const explainProvisionAuth = createTextProvisionAuthExplainer();
+      const explainProvisionAuth = createTextProvisionAuthExplainer(provisionCollisions);
       const explainTokenAuth = createTextTokenAuthExplainer();
       if (provisionResults.length > 0) {
         for (let i2 = 1; i2 <= provisionResults.length; ++i2) {
@@ -121633,7 +121663,7 @@ Secret #${i2}:
 }
 
 // src/provision-auth-explainer/markdown.ts
-function createMarkdownProvisionAuthExplainer() {
+function createMarkdownProvisionAuthExplainer(collisions) {
   const tokenSeq = createSequencer();
   return (result) => {
     const summary2 = listItem2(...explainSummary(result));
@@ -121712,7 +121742,8 @@ function createMarkdownProvisionAuthExplainer() {
       list3(
         listItem2(...explainTargetToken(result)),
         listItem2(...explainBasedOnRules(target, result)),
-        ...isRepoProvisionAuthTargetResult(result) ? [] : explainSelectedRepositories(target, result)
+        ...isRepoProvisionAuthTargetResult(result) ? [] : explainSelectedRepositories(target, result),
+        ...explainCollision(result)
       )
     ];
   }
@@ -121738,6 +121769,37 @@ function createMarkdownProvisionAuthExplainer() {
         strong2(text2(isTokenAllowed ? "allowed" : "denied")),
         text2(" access to token "),
         inlineCode2(ref)
+      )
+    ];
+  }
+  function explainCollision(result) {
+    const collision = collisions.get(result);
+    if (!collision || collision.isBlocking) return [];
+    const participants = [];
+    for (const { requester, name, token } of collision.participants) {
+      participants.push(
+        listItem2(
+          paragraph2(
+            text2(`${FAIL_ICON} Also declared by `),
+            inlineCode2(repoRefToString(requester)),
+            text2(" as secret "),
+            inlineCode2(name),
+            text2(" using token declaration "),
+            inlineCode2(token)
+          )
+        )
+      );
+    }
+    return [
+      listItem2(
+        paragraph2(
+          text2(`${FAIL_ICON} `),
+          strong2(text2("Provision collision")),
+          text2(" for "),
+          ...explainSubject(result.target),
+          text2(":")
+        ),
+        list3(...participants)
       )
     ];
   }
@@ -122502,7 +122564,7 @@ var DASHBOARD_LABEL = "gh-token-dashboard";
 var DASHBOARD_LABEL_DESCRIPTION = "A summary of GitHub token provisioning";
 var FAILURE_DASHBOARD_TITLE = "GitHub tokens couldn't be provisioned";
 var CONFIG_ISSUE_DASHBOARD_TITLE = "Token provisioning config is invalid";
-function renderFailureDashboard(context, secrets, tokenResults, tokenCreationResults, provisionResults) {
+function renderFailureDashboard(context, secrets, tokenResults, tokenCreationResults, provisionResults, provisionCollisions) {
   const secretProvisioning = [];
   const tokenCreation = [];
   const requestAuthorization = [];
@@ -122514,7 +122576,7 @@ function renderFailureDashboard(context, secrets, tokenResults, tokenCreationRes
   }
   const explainProvision = createMarkdownProvisionExplainer();
   const explainTokenCreation = createMarkdownTokenCreationExplainer();
-  const explainProvisionAuth = createMarkdownProvisionAuthExplainer();
+  const explainProvisionAuth = createMarkdownProvisionAuthExplainer(provisionCollisions);
   const explainTokenAuth = createMarkdownTokenAuthExplainer();
   for (let i2 = 0; i2 < secrets.length; ++i2) {
     const secret = secrets[i2];
@@ -122697,7 +122759,7 @@ function isFullyProvisioned(authResult, provisionResults) {
 
 // src/reconcile-dashboards.ts
 function createReconcileDashboards(findProvisionerOctokit) {
-  return async (context, config, requesters, tokenResults, tokenCreationResults, provisionResults) => {
+  return async (context, config, requesters, tokenResults, tokenCreationResults, provisionResults, provisionCollisions) => {
     debug("Reconciling token dashboards");
     const entries = [...requesters.entries()].sort(
       ([a2], [b2]) => a2.localeCompare(b2)
@@ -122762,7 +122824,8 @@ function createReconcileDashboards(findProvisionerOctokit) {
             secrets,
             tokenResults,
             tokenCreationResults,
-            provisionResults
+            provisionResults,
+            provisionCollisions
           );
         }
       }
@@ -123689,7 +123752,8 @@ try {
       requesters,
       authorizeResult.tokenResults,
       tokenCreationResults,
-      provisionResults
+      provisionResults,
+      authorizeResult.provisionCollisions
     );
   });
   const summaryMarkdown = renderSummary(

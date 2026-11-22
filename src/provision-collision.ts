@@ -22,31 +22,46 @@ export type ProvisionCollisionParticipant = {
   token: string;
 };
 
+export type ProvisionCollisions = Map<
+  ProvisionAuthTargetResult,
+  ProvisionCollision
+>;
+
 export function resolveProvisionCollisions(
   authResults: ProvisionAuthResult[],
-): Map<ProvisionAuthTargetResult, ProvisionCollision> {
-  const collisions = new Map<ProvisionAuthTargetResult, ProvisionCollision>();
+): ProvisionCollisions {
+  const collisions: ProvisionCollisions = new Map();
 
   for (const group of collisionGroups(authResults)) {
     const writable: CollisionEntry[] = [];
+    const unwritable: CollisionEntry[] = [];
 
     for (const entry of group) {
-      if (entry.auth.isAllowed) writable.push(entry);
+      if (entry.auth.isAllowed) {
+        writable.push(entry);
+      } else {
+        unwritable.push(entry);
+      }
     }
 
-    if (writable.length < 2) continue;
-    if (isIdentical(writable)) continue;
-
-    for (const entry of writable) {
-      const participants: ProvisionCollisionParticipant[] = [];
-
-      for (const other of group) {
-        if (other !== entry) participants.push(toParticipant(other));
+    if (writable.length >= 2 && !isIdentical(writable)) {
+      for (const entry of writable) {
+        collisions.set(entry.target, {
+          isBlocking: true,
+          participants: participantsFor(entry, group),
+        });
       }
+    }
 
-      participants.sort(compareParticipants);
-
-      collisions.set(entry.target, { isBlocking: true, participants });
+    // Non-writers hear about every disagreement, including one that already
+    // refuses the writable requests above.
+    if (unwritable.length > 0 && !isIdentical(group)) {
+      for (const entry of unwritable) {
+        collisions.set(entry.target, {
+          isBlocking: false,
+          participants: participantsFor(entry, group),
+        });
+      }
     }
   }
 
@@ -137,6 +152,21 @@ function toParticipant({
   const { requester, name, secretDec } = auth.request;
 
   return { requester, name, token: secretDec.token };
+}
+
+function participantsFor(
+  entry: CollisionEntry,
+  group: CollisionEntry[],
+): ProvisionCollisionParticipant[] {
+  const participants: ProvisionCollisionParticipant[] = [];
+
+  for (const other of group) {
+    if (other !== entry) participants.push(toParticipant(other));
+  }
+
+  participants.sort(compareParticipants);
+
+  return participants;
 }
 
 function compareParticipants(

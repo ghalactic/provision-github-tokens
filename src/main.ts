@@ -158,6 +158,7 @@ try {
       authorizeResult.tokenResults,
       tokenCreationResults,
       provisionResults,
+      authorizeResult.provisionCollisions,
     );
   });
 

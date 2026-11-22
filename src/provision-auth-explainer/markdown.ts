@@ -17,6 +17,7 @@ import {
 } from "../markdown.js";
 import { pluralize } from "../pluralize.js";
 import { isRepoProvisionAuthTargetResult } from "../provision-auth-result.js";
+import type { ProvisionCollisions } from "../provision-collision.js";
 import {
   isRepoProvisionRequestTarget,
   type ProvisionRequestTarget,
@@ -35,9 +36,9 @@ import type { ProvisionSecretsRule } from "../type/provision-rule.js";
 import type { TokenAuthResult } from "../type/token-auth-result.js";
 import { accountSecretVisibilityCategoryLabel } from "./account-secret-visibility-category.js";
 
-export function createMarkdownProvisionAuthExplainer(): ProvisionAuthResultExplainer<
-  RootContent[]
-> {
+export function createMarkdownProvisionAuthExplainer(
+  collisions: ProvisionCollisions,
+): ProvisionAuthResultExplainer<RootContent[]> {
   const tokenSeq = createSequencer<TokenAuthResult>();
 
   return (result) => {
@@ -134,6 +135,7 @@ export function createMarkdownProvisionAuthExplainer(): ProvisionAuthResultExpla
         ...(isRepoProvisionAuthTargetResult(result)
           ? []
           : explainSelectedRepositories(target, result)),
+        ...explainCollision(result),
       ),
     ];
   }
@@ -164,6 +166,42 @@ export function createMarkdownProvisionAuthExplainer(): ProvisionAuthResultExpla
         strong(text(isTokenAllowed ? "allowed" : "denied")),
         text(" access to token "),
         inlineCode(ref),
+      ),
+    ];
+  }
+
+  function explainCollision(result: ProvisionAuthTargetResult): ListItem[] {
+    const collision = collisions.get(result);
+
+    // Blocking collisions are reported by the provision explanation.
+    if (!collision || collision.isBlocking) return [];
+
+    const participants: ListItem[] = [];
+    for (const { requester, name, token } of collision.participants) {
+      participants.push(
+        listItem(
+          paragraph(
+            text(`${FAIL_ICON} Also declared by `),
+            inlineCode(repoRefToString(requester)),
+            text(" as secret "),
+            inlineCode(name),
+            text(" using token declaration "),
+            inlineCode(token),
+          ),
+        ),
+      );
+    }
+
+    return [
+      listItem(
+        paragraph(
+          text(`${FAIL_ICON} `),
+          strong(text("Provision collision")),
+          text(" for "),
+          ...explainSubject(result.target),
+          text(":"),
+        ),
+        list(...participants),
       ),
     ];
   }
