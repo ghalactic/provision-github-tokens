@@ -222,6 +222,62 @@ it("renders a failure dashboard with multiple secrets and request errors", async
   );
 });
 
+it("renders a collision for a secret that can't be provisioned", async () => {
+  const target = createTestAccountProvisionRequestTarget(
+    "actions",
+    "account-a",
+    "private",
+  );
+  const tokenAuthResult = createTestTokenAuthResult();
+  const targetResult = createTestProvisionAuthTargetResult({
+    target,
+    tokenAuthResult,
+    isAllowed: false,
+  });
+  const secret = createTestProvisionAuthResult({
+    request: createTestProvisionRequest({
+      requester: { account: "account-b", repo: "repo-b" },
+      secretDec: createTestSecretDec({ token: "account-b/repo-b.token" }),
+      to: [target],
+    }),
+    results: [targetResult],
+  });
+
+  const provisionResults = new Map<
+    ProvisionAuthResult,
+    Map<ProvisionAuthTargetResult, ProvisionResult>
+  >([[secret, new Map([[targetResult, { type: "NOT_ALLOWED" }]])]]);
+  const provisionCollisions: ProvisionCollisions = new Map([
+    [
+      targetResult,
+      {
+        isBlocking: false,
+        participants: [
+          {
+            requester: { account: "account-a", repo: "repo-a" },
+            name: "SECRET_A",
+            token: "account-a/repo-a.token",
+          },
+        ],
+      },
+    ],
+  ]);
+
+  const issue = renderFailureDashboard(
+    testContext,
+    [secret],
+    [tokenAuthResult],
+    new Map(),
+    provisionResults,
+    provisionCollisions,
+  );
+
+  expect(issue.title).toBe(FAILURE_DASHBOARD_TITLE);
+  await expect(toMarkdown(issue.body)).toMatchFileSnapshot(
+    join(fixturesPath, "not-allowed-collision.md"),
+  );
+});
+
 it("renders a config issue dashboard for root-level errors", async () => {
   const issue = renderConfigIssueDashboard(testContext, {
     requester: { account: "account-x", repo: "repo-x" },
@@ -532,65 +588,4 @@ it("omits token sections when authorization has no token result", () => {
   expect(toMarkdown(issue.body)).toContain("## Request authorization");
   expect(toMarkdown(issue.body)).not.toContain("## Token creation");
   expect(toMarkdown(issue.body)).not.toContain("### Token");
-});
-
-it("renders a collision for a secret that can't be provisioned", () => {
-  const target = createTestAccountProvisionRequestTarget(
-    "actions",
-    "account-a",
-    "private",
-  );
-  const tokenAuthResult = createTestTokenAuthResult();
-  const targetResult = createTestProvisionAuthTargetResult({
-    target,
-    tokenAuthResult,
-    isAllowed: false,
-  });
-  const secret = createTestProvisionAuthResult({
-    request: createTestProvisionRequest({
-      requester: { account: "account-b", repo: "repo-b" },
-      secretDec: createTestSecretDec({ token: "account-b/repo-b.token" }),
-      to: [target],
-    }),
-    results: [targetResult],
-  });
-
-  const provisionResults = new Map<
-    ProvisionAuthResult,
-    Map<ProvisionAuthTargetResult, ProvisionResult>
-  >([[secret, new Map([[targetResult, { type: "NOT_ALLOWED" }]])]]);
-  const provisionCollisions: ProvisionCollisions = new Map([
-    [
-      targetResult,
-      {
-        isBlocking: false,
-        participants: [
-          {
-            requester: { account: "account-a", repo: "repo-a" },
-            name: "SECRET_A",
-            token: "account-a/repo-a.token",
-          },
-        ],
-      },
-    ],
-  ]);
-
-  const issue = renderFailureDashboard(
-    testContext,
-    [secret],
-    [tokenAuthResult],
-    new Map(),
-    provisionResults,
-    provisionCollisions,
-  );
-
-  const markdown = toMarkdown(issue.body);
-
-  expect(markdown).toContain(
-    "**Provision collision** for **GitHub Actions** secret in account `account-a`",
-  );
-  expect(markdown).toContain(
-    "Also declared by `account-a/repo-a` as secret `SECRET_A` " +
-      "using token declaration `account-a/repo-a.token`",
-  );
 });
