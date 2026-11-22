@@ -235,6 +235,7 @@ export function renderSummary(
     let provisionedCount = 0;
     let failedCount = 0;
     let hasNoProvisioner = false;
+    let hasCollision = false;
 
     for (const result of targetResults.values()) {
       if (result.type === "PROVISIONED") {
@@ -242,8 +243,11 @@ export function renderSummary(
       } else {
         ++failedCount;
         if (result.type === "NO_PROVISIONER") hasNoProvisioner = true;
+        if (result.type === "COLLISION") hasCollision = true;
       }
     }
+
+    if (hasCollision) return "Provision collision";
 
     if (hasNoProvisioner && failedCount === targetResults.size) {
       return "No suitable provisioner";

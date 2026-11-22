@@ -1539,3 +1539,103 @@ it("renders a failure reason when provisioning fails for all targets", async () 
     join(fixturesPath, "provisioning-all-targets-failed.md"),
   );
 });
+
+it("reports a provision collision as the failure reason", () => {
+  const accountAActionsTarget = createTestAccountProvisionRequestTarget(
+    "actions",
+    "account-a",
+    "private",
+  );
+  const accountBActionsTarget = createTestAccountProvisionRequestTarget(
+    "actions",
+    "account-b",
+    "private",
+  );
+
+  const tokenAuthResult = createTestTokenAuthResult();
+
+  const collidedTargetResult = createTestProvisionAuthTargetResult({
+    target: accountAActionsTarget,
+    tokenAuthResult,
+  });
+  collidedTargetResult.collision = {
+    isBlocking: true,
+    participants: [
+      {
+        requester: { account: "account-x", repo: "repo-x" },
+        name: "SECRET_A",
+        token: "account-x/repo-x.token-x",
+      },
+    ],
+  };
+  const provisionedTargetResult = createTestProvisionAuthTargetResult({
+    target: accountBActionsTarget,
+    tokenAuthResult,
+  });
+
+  const provisionAuthResult = createTestProvisionAuthResult({
+    request: createTestProvisionRequest({
+      requester: { account: "account-x", repo: "repo-x" },
+      secretDec: createTestSecretDec({
+        github: {
+          accounts: {
+            "account-a": { actions: "private" },
+            "account-b": { actions: "private" },
+          },
+        },
+      }),
+      to: [accountAActionsTarget, accountBActionsTarget],
+    }),
+    results: [collidedTargetResult, provisionedTargetResult],
+  });
+
+  const authResult: AuthorizeResult = {
+    provisionResults: [provisionAuthResult],
+    tokenResults: [tokenAuthResult],
+  };
+
+  const tokenCreationResults = new Map<TokenAuthResult, TokenCreationResult>([
+    [
+      tokenAuthResult,
+      {
+        type: "CREATED",
+        token: { token: "<token-a>", expires_at: "2001-02-03T04:05:06Z" },
+      },
+    ],
+  ]);
+
+  const provisionResults = new Map<
+    ProvisionAuthResult,
+    Map<ProvisionAuthTargetResult, ProvisionResult>
+  >([
+    [
+      provisionAuthResult,
+      new Map<ProvisionAuthTargetResult, ProvisionResult>([
+        [collidedTargetResult, { type: "COLLISION" }],
+        [provisionedTargetResult, { type: "PROVISIONED" }],
+      ]),
+    ],
+  ]);
+
+  expect(
+    renderSummary(
+      testContext,
+      authResult,
+      tokenCreationResults,
+      provisionResults,
+    ),
+  ).toMatchInlineSnapshot(`
+    "### Provisioned 0 of 1 secret
+
+    |    | Requester                               | Secret     | Targets                                              | Reason              |
+    | :- | :-------------------------------------- | :--------- | :--------------------------------------------------- | :------------------ |
+    | ❌  | [account-x/repo-x][gh/account-x/repo-x] | \`SECRET_A\` | [account-a][gh/account-a], [account-b][gh/account-b] | Provision collision |
+
+    [gh/account-a]: https://github.example.com/account-a
+
+    [gh/account-b]: https://github.example.com/account-b
+
+    [gh/account-x/repo-x]: https://github.example.com/account-x/repo-x
+    "
+  `);
+});

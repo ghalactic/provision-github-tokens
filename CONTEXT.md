@@ -122,12 +122,12 @@ account, which can override a pattern result.
 provision authorization decision, doubling as an audit trail.
 
 **Provision collision**: Two or more provision requests in a single run that
-would write different content under the same secret name at the same provision
-target. Requests that would write identical content don't collide.
+write different content under the same secret name at the same provision target.
+Requests that write identical content don't collide.
 
 **Provision target**: The secret type and the account, repo, or environment
 where a secret is provisioned. A target says where a secret goes, not which
-secret it is.
+secret it holds.
 
 **Provisioning result**: The result of trying to create a secret in a provision
 target.

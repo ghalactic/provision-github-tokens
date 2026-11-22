@@ -24,6 +24,10 @@ import {
 } from "../provision-request.js";
 import { secretTypeMdast } from "../secret-type.js";
 import type {
+  ProvisionAuthTargetResult,
+  ProvisionCollision,
+} from "../type/provision-auth-result.js";
+import type {
   ProvisionResult,
   ProvisionResultExplainer,
 } from "../type/provision-result.js";
@@ -68,9 +72,7 @@ export function createMarkdownProvisionExplainer(): ProvisionResultExplainer<
     const targets = list();
 
     for (const [targetAuth, result] of sortedTargetResults) {
-      targets.children.push(
-        listItem(...explainTarget(targetAuth.target, result)),
-      );
+      targets.children.push(listItem(...explainTarget(targetAuth, result)));
     }
 
     return [
@@ -100,9 +102,10 @@ export function createMarkdownProvisionExplainer(): ProvisionResultExplainer<
   };
 
   function explainTarget(
-    target: ProvisionRequestTarget,
+    targetAuth: ProvisionAuthTargetResult,
     result: ProvisionResult,
   ): ListItem["children"] {
+    const target = targetAuth.target;
     const subject = explainSubject(target);
     const isProvisioned = result.type === "PROVISIONED";
     const visibility = explainVisibility(target, isProvisioned);
@@ -148,6 +151,18 @@ export function createMarkdownProvisionExplainer(): ProvisionResultExplainer<
             ...subject,
           ),
           ...nestedList(...visibility),
+        ];
+
+      case "COLLISION":
+        return [
+          paragraph(
+            text(`${FAIL_ICON} `),
+            strong(text("Provision collision")),
+            text(" for "),
+            ...subject,
+            text(":"),
+          ),
+          list(...visibility, ...explainParticipants(targetAuth.collision)),
         ];
 
       case "REQUEST_ERROR": {
@@ -199,6 +214,35 @@ export function createMarkdownProvisionExplainer(): ProvisionResultExplainer<
           ),
         ];
     }
+  }
+
+  function explainParticipants(
+    collision: ProvisionCollision | undefined,
+  ): ListItem[] {
+    /* istanbul ignore next - only reached for a COLLISION result - @preserve */
+    if (!collision) {
+      throw new Error(
+        "Invariant violation: Collision result without collision details",
+      );
+    }
+
+    const participants: ListItem[] = [];
+    for (const { requester, name, token } of collision.participants) {
+      participants.push(
+        listItem(
+          paragraph(
+            text(`${FAIL_ICON} Also declared by `),
+            inlineCode(repoRefToString(requester)),
+            text(" as secret "),
+            inlineCode(name),
+            text(" using token declaration "),
+            inlineCode(token),
+          ),
+        ),
+      );
+    }
+
+    return participants;
   }
 
   function explainSubject(target: ProvisionRequestTarget): PhrasingContent[] {

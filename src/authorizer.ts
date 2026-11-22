@@ -4,6 +4,7 @@ import { compareTokenRequest } from "./compare-token-request.js";
 import type { DiscoveredRequester } from "./discover-requesters.js";
 import { createTextProvisionAuthExplainer } from "./provision-auth-explainer/text.js";
 import type { ProvisionAuthorizer } from "./provision-authorizer.js";
+import { resolveProvisionCollisions } from "./provision-collision.js";
 import type { ProvisionRequestFactory } from "./provision-request.js";
 import { createTextTokenAuthExplainer } from "./token-auth-explainer/text.js";
 import type { TokenAuthorizer } from "./token-authorizer.js";
@@ -46,6 +47,8 @@ export function createAuthorizer(
       const tokenResults = tokenAuthorizer
         .listResults()
         .sort((a, b) => compareTokenRequest(a.request, b.request));
+
+      resolveProvisionCollisions(provisionResults);
 
       const explainProvisionAuth = createTextProvisionAuthExplainer();
       const explainTokenAuth = createTextTokenAuthExplainer();

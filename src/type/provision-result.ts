@@ -13,6 +13,7 @@ export type ProvisionResult =
   | ProvisionNotAllowedResult
   | ProvisionNoTokenResult
   | ProvisionNoProvisionerResult
+  | ProvisionCollisionResult
   | ProvisionProvisionedResult
   | ProvisionRequestErrorResult
   | ProvisionErrorResult;
@@ -27,6 +28,10 @@ export type ProvisionNoTokenResult = {
 
 export type ProvisionNoProvisionerResult = {
   type: "NO_PROVISIONER";
+};
+
+export type ProvisionCollisionResult = {
+  type: "COLLISION";
 };
 
 export type ProvisionProvisionedResult = {

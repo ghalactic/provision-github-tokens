@@ -146,16 +146,16 @@ across your repositories.
 
   <dt>Provision collision</dt>
   <dd>
-    Two or more provision requests in a single run that would write different
-    content under the same secret name at the same provision target. Requests
-    that would write identical content don't collide.
+    Two or more provision requests in a single run that write different content
+    under the same secret name at the same provision target. Requests that write
+    identical content don't collide.
   </dd>
 
   <dt>Provision target</dt>
   <dd>
     The secret type and the account, repo, or environment where the action
     provisions a secret. A target says where a secret goes, not which secret it
-    is.
+    holds.
   </dd>
 
   <dt>Secret type</dt>

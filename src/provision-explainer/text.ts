@@ -13,6 +13,10 @@ import {
 import { secretTypeText } from "../secret-type.js";
 import { prefixLines } from "../text.js";
 import type {
+  ProvisionAuthTargetResult,
+  ProvisionCollision,
+} from "../type/provision-auth-result.js";
+import type {
   ProvisionResult,
   ProvisionResultExplainer,
 } from "../type/provision-result.js";
@@ -49,16 +53,17 @@ export function createTextProvisionExplainer(): ProvisionResultExplainer<string>
       `for repo ${repoRefToString(authResult.request.requester)}:`;
 
     for (const [targetAuth, result] of sortedTargetResults) {
-      output += explainTarget(targetAuth.target, result);
+      output += explainTarget(targetAuth, result);
     }
 
     return output;
   };
 
   function explainTarget(
-    target: ProvisionRequestTarget,
+    targetAuth: ProvisionAuthTargetResult,
     result: ProvisionResult,
   ): string {
+    const target = targetAuth.target;
     const subject = explainSubject(target);
     const isProvisioned = result.type === "PROVISIONED";
     const visibility = explainVisibility(target, isProvisioned);
@@ -83,6 +88,12 @@ export function createTextProvisionExplainer(): ProvisionResultExplainer<string>
         return (
           `\n  ${FAIL_ICON} No suitable provisioner ` +
           `for ${subject}${visibility}`
+        );
+
+      case "COLLISION":
+        return (
+          `\n  ${FAIL_ICON} Provision collision for ${subject}${visibility}` +
+          explainParticipants(targetAuth.collision)
         );
 
       case "REQUEST_ERROR": {
@@ -110,6 +121,26 @@ export function createTextProvisionExplainer(): ProvisionResultExplainer<string>
         );
       }
     }
+  }
+
+  function explainParticipants(
+    collision: ProvisionCollision | undefined,
+  ): string {
+    /* istanbul ignore next - only reached for a COLLISION result - @preserve */
+    if (!collision) {
+      throw new Error(
+        "Invariant violation: Collision result without collision details",
+      );
+    }
+
+    let explained = "";
+    for (const { requester, name, token } of collision.participants) {
+      explained +=
+        `\n    ${FAIL_ICON} Also declared by ${repoRefToString(requester)} ` +
+        `as secret ${name} using token declaration ${token}`;
+    }
+
+    return explained;
   }
 
   function explainSubject(target: ProvisionRequestTarget): string {

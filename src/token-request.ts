@@ -32,6 +32,15 @@ export function normalizeTokenRequest(request: TokenRequest): TokenRequest {
   };
 }
 
+export function tokenShapeKey(request: TokenRequest): string {
+  return stringify({
+    account: request.tokenDec.account,
+    as: request.tokenDec.as,
+    permissions: request.tokenDec.permissions,
+    repos: request.repos,
+  });
+}
+
 export type TokenRequestFactory = (
   tokenDec: TokenDeclaration,
   consumer: AccountOrRepoReference,

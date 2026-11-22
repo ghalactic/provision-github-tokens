@@ -50,6 +50,12 @@ export function createProvisioner(
           continue;
         }
 
+        if (targetAuth.collision?.isBlocking) {
+          targetResults.set(targetAuth, { type: "COLLISION" });
+
+          continue;
+        }
+
         /* istanbul ignore next - @preserve */
         if (!targetAuth.tokenAuthResult) {
           throw new Error(

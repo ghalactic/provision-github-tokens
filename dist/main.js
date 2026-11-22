@@ -20793,6 +20793,62 @@ var require_source_map_support = __commonJS({
   }
 });
 
+// node_modules/.pnpm/fast-json-stable-stringify@2.1.0/node_modules/fast-json-stable-stringify/index.js
+var require_fast_json_stable_stringify = __commonJS({
+  "node_modules/.pnpm/fast-json-stable-stringify@2.1.0/node_modules/fast-json-stable-stringify/index.js"(exports, module2) {
+    "use strict";
+    module2.exports = function(data, opts) {
+      if (!opts) opts = {};
+      if (typeof opts === "function") opts = { cmp: opts };
+      var cycles = typeof opts.cycles === "boolean" ? opts.cycles : false;
+      var cmp = opts.cmp && /* @__PURE__ */ (function(f2) {
+        return function(node2) {
+          return function(a2, b2) {
+            var aobj = { key: a2, value: node2[a2] };
+            var bobj = { key: b2, value: node2[b2] };
+            return f2(aobj, bobj);
+          };
+        };
+      })(opts.cmp);
+      var seen = [];
+      return (function stringify3(node2) {
+        if (node2 && node2.toJSON && typeof node2.toJSON === "function") {
+          node2 = node2.toJSON();
+        }
+        if (node2 === void 0) return;
+        if (typeof node2 == "number") return isFinite(node2) ? "" + node2 : "null";
+        if (typeof node2 !== "object") return JSON.stringify(node2);
+        var i2, out;
+        if (Array.isArray(node2)) {
+          out = "[";
+          for (i2 = 0; i2 < node2.length; i2++) {
+            if (i2) out += ",";
+            out += stringify3(node2[i2]) || "null";
+          }
+          return out + "]";
+        }
+        if (node2 === null) return "null";
+        if (seen.indexOf(node2) !== -1) {
+          if (cycles) return JSON.stringify("__cycle__");
+          throw new TypeError("Converting circular structure to JSON");
+        }
+        var seenIndex = seen.push(node2) - 1;
+        var keys = Object.keys(node2).sort(cmp && cmp(node2));
+        out = "";
+        for (i2 = 0; i2 < keys.length; i2++) {
+          var key = keys[i2];
+          var value = stringify3(node2[key]);
+          if (!value) continue;
+          if (out) out += ",";
+          out += JSON.stringify(key) + ":" + value;
+        }
+        seen.splice(seenIndex, 1);
+        return "{" + out + "}";
+      })(data);
+    };
+  }
+});
+
 // node_modules/.pnpm/ajv@8.20.0/node_modules/ajv/dist/compile/codegen/code.js
 var require_code = __commonJS({
   "node_modules/.pnpm/ajv@8.20.0/node_modules/ajv/dist/compile/codegen/code.js"(exports) {
@@ -59605,62 +59661,6 @@ var require_light = __commonJS({
   }
 });
 
-// node_modules/.pnpm/fast-json-stable-stringify@2.1.0/node_modules/fast-json-stable-stringify/index.js
-var require_fast_json_stable_stringify = __commonJS({
-  "node_modules/.pnpm/fast-json-stable-stringify@2.1.0/node_modules/fast-json-stable-stringify/index.js"(exports, module2) {
-    "use strict";
-    module2.exports = function(data, opts) {
-      if (!opts) opts = {};
-      if (typeof opts === "function") opts = { cmp: opts };
-      var cycles = typeof opts.cycles === "boolean" ? opts.cycles : false;
-      var cmp = opts.cmp && /* @__PURE__ */ (function(f2) {
-        return function(node2) {
-          return function(a2, b2) {
-            var aobj = { key: a2, value: node2[a2] };
-            var bobj = { key: b2, value: node2[b2] };
-            return f2(aobj, bobj);
-          };
-        };
-      })(opts.cmp);
-      var seen = [];
-      return (function stringify3(node2) {
-        if (node2 && node2.toJSON && typeof node2.toJSON === "function") {
-          node2 = node2.toJSON();
-        }
-        if (node2 === void 0) return;
-        if (typeof node2 == "number") return isFinite(node2) ? "" + node2 : "null";
-        if (typeof node2 !== "object") return JSON.stringify(node2);
-        var i2, out;
-        if (Array.isArray(node2)) {
-          out = "[";
-          for (i2 = 0; i2 < node2.length; i2++) {
-            if (i2) out += ",";
-            out += stringify3(node2[i2]) || "null";
-          }
-          return out + "]";
-        }
-        if (node2 === null) return "null";
-        if (seen.indexOf(node2) !== -1) {
-          if (cycles) return JSON.stringify("__cycle__");
-          throw new TypeError("Converting circular structure to JSON");
-        }
-        var seenIndex = seen.push(node2) - 1;
-        var keys = Object.keys(node2).sort(cmp && cmp(node2));
-        out = "";
-        for (i2 = 0; i2 < keys.length; i2++) {
-          var key = keys[i2];
-          var value = stringify3(node2[key]);
-          if (!value) continue;
-          if (out) out += ",";
-          out += JSON.stringify(key) + ":" + value;
-        }
-        seen.splice(seenIndex, 1);
-        return "{" + out + "}";
-      })(data);
-    };
-  }
-});
-
 // node_modules/.pnpm/@actions+core@3.0.1/node_modules/@actions/core/lib/command.js
 import * as os from "os";
 
@@ -65883,6 +65883,126 @@ function createTextProvisionAuthExplainer() {
   }
 }
 
+// src/provision-collision.ts
+var import_fast_json_stable_stringify2 = __toESM(require_fast_json_stable_stringify(), 1);
+
+// src/token-request.ts
+var import_fast_json_stable_stringify = __toESM(require_fast_json_stable_stringify(), 1);
+
+// src/token-declaration.ts
+function normalizeTokenDeclaration(declaration) {
+  const { repos } = declaration;
+  return { ...declaration, repos: repos === "all" ? "all" : repos.toSorted() };
+}
+
+// src/token-request.ts
+function normalizeTokenRequest(request2) {
+  const { consumer, tokenDec, repos } = request2;
+  return {
+    consumer: isRepoRef(consumer) ? createRepoRef(consumer.account, consumer.repo) : createAccountRef(consumer.account),
+    repos: repos === "all" ? "all" : repos.toSorted(),
+    tokenDec: normalizeTokenDeclaration(tokenDec)
+  };
+}
+function tokenShapeKey(request2) {
+  return (0, import_fast_json_stable_stringify.default)({
+    account: request2.tokenDec.account,
+    as: request2.tokenDec.as,
+    permissions: request2.tokenDec.permissions,
+    repos: request2.repos
+  });
+}
+function createTokenRequestFactory(appRegistry) {
+  const cache = {};
+  return (tokenDec, consumer) => {
+    let repos;
+    if (tokenDec.repos === "all") {
+      repos = "all";
+    } else {
+      const repoPatterns = tokenDec.repos.map((repo) => {
+        return createGitHubPattern(
+          repoRefToString(createRepoRef(tokenDec.account, repo))
+        );
+      });
+      repos = appRegistry.resolveIssuerRepos(repoPatterns).map((repo) => repoRefFromName(repo).repo);
+    }
+    const tokenReq = normalizeTokenRequest({ consumer, tokenDec, repos });
+    return cache[(0, import_fast_json_stable_stringify.default)(tokenReq)] ??= tokenReq;
+  };
+}
+
+// src/provision-collision.ts
+function resolveProvisionCollisions(authResults) {
+  for (const group2 of collisionGroups(authResults)) {
+    const writable = group2.filter(({ auth: auth6 }) => auth6.isAllowed);
+    if (writable.length < 2) continue;
+    if (isIdentical(writable)) continue;
+    for (const entry of writable) {
+      entry.target.collision = {
+        isBlocking: true,
+        participants: group2.filter((other) => other !== entry).map(toParticipant).sort(compareParticipants)
+      };
+    }
+  }
+}
+function collisionGroups(authResults) {
+  const groups = /* @__PURE__ */ new Map();
+  for (const auth6 of authResults) {
+    for (const target of auth6.results) {
+      const key = collisionKey(auth6.request.name, target.target);
+      const group2 = groups.get(key);
+      if (group2) {
+        group2.push({ auth: auth6, target });
+      } else {
+        groups.set(key, [{ auth: auth6, target }]);
+      }
+    }
+  }
+  return Array.from(groups.values()).filter((group2) => group2.length > 1);
+}
+function collisionKey(name, target) {
+  return (0, import_fast_json_stable_stringify2.default)({
+    name: name.toLowerCase(),
+    target: target.target,
+    type: target.type
+  });
+}
+function isIdentical(entries) {
+  const first = writeDescriptor(entries[0]);
+  return entries.every((entry) => {
+    const other = writeDescriptor(entry);
+    return other !== void 0 && other === first;
+  });
+}
+function writeDescriptor(entry) {
+  const { auth: auth6, target } = entry;
+  const tokenRequest = target.tokenAuthResult?.request;
+  if (!tokenRequest) return void 0;
+  return (0, import_fast_json_stable_stringify2.default)({
+    name: auth6.request.name,
+    token: tokenShapeKey(tokenRequest),
+    visibility: visibilityDescriptor(target.target)
+  });
+}
+function visibilityDescriptor(target) {
+  if (isRepoProvisionRequestTarget(target)) return void 0;
+  const { visibility } = target;
+  if (visibility === "all" || visibility === "private") return visibility;
+  return {
+    category: "selected",
+    repos: visibility.repos.map(({ id }) => id).toSorted((a2, b2) => a2 - b2)
+  };
+}
+function toParticipant({
+  auth: auth6
+}) {
+  const { requester, name, secretDec } = auth6.request;
+  return { requester, name, token: secretDec.token };
+}
+function compareParticipants(a2, b2) {
+  return compareRef(a2.requester, b2.requester) || a2.name.localeCompare(b2.name);
+}
+
 // src/token-auth-explainer/access-level.ts
 var ACCESS_LEVEL_LABELS = {
   none: "No",
@@ -66014,6 +66134,7 @@ function createAuthorizer(createProvisionRequest, provisionAuthorizer, tokenAuth
       }
       const provisionResults = provisionAuthorizer.listResults().sort((a2, b2) => compareProvisionRequest(a2.request, b2.request));
       const tokenResults = tokenAuthorizer.listResults().sort((a2, b2) => compareTokenRequest(a2.request, b2.request));
+      resolveProvisionCollisions(provisionResults);
       const explainProvisionAuth = createTextProvisionAuthExplainer();
       const explainTokenAuth = createTextTokenAuthExplainer();
       if (provisionResults.length > 0) {
@@ -121229,11 +121350,12 @@ function createTextProvisionExplainer() {
     const status = allProvisioned ? "was provisioned" : noneProvisioned ? "wasn't provisioned" : "was partially provisioned";
     let output = `${icon(allProvisioned)} Secret ${authResult.request.name} ${status} for repo ${repoRefToString(authResult.request.requester)}:`;
     for (const [targetAuth, result] of sortedTargetResults) {
-      output += explainTarget(targetAuth.target, result);
+      output += explainTarget(targetAuth, result);
     }
     return output;
   };
-  function explainTarget(target, result) {
+  function explainTarget(targetAuth, result) {
+    const target = targetAuth.target;
     const subject = explainSubject(target);
     const isProvisioned = result.type === "PROVISIONED";
     const visibility = explainVisibility(target, isProvisioned);
@@ -121250,6 +121372,9 @@ function createTextProvisionExplainer() {
       case "NO_PROVISIONER":
         return `
   ${FAIL_ICON} No suitable provisioner for ${subject}${visibility}`;
+      case "COLLISION":
+        return `
+  ${FAIL_ICON} Provision collision for ${subject}${visibility}` + explainParticipants(targetAuth.collision);
       case "REQUEST_ERROR": {
         const summary2 = `${FAIL_ICON} Failed to provision to ${subject}: ${result.error.status} - ${result.error.message}`;
         const body = result.error.response?.data;
@@ -121264,6 +121389,19 @@ ${prefixLines("::debug::      ", detail)}`;
 ${prefixLines("::debug::      ", errorStack(result.error))}`;
       }
     }
+  }
+  function explainParticipants(collision) {
+    if (!collision) {
+      throw new Error(
+        "Invariant violation: Collision result without collision details"
+      );
+    }
+    let explained = "";
+    for (const { requester, name, token } of collision.participants) {
+      explained += `
+    ${FAIL_ICON} Also declared by ${repoRefToString(requester)} as secret ${name} using token declaration ${token}`;
+    }
+    return explained;
   }
   function explainSubject(target) {
     return `${secretTypeText(target)} secret in ${accountOrRepoRefToString(target.target)}`;
@@ -121300,6 +121438,10 @@ function createProvisioner(findProvisionerOctokit, encryptSecret) {
       for (const targetAuth of auth6.results) {
         if (!auth6.isAllowed) {
           targetResults.set(targetAuth, { type: "NOT_ALLOWED" });
+          continue;
+        }
+        if (targetAuth.collision?.isBlocking) {
+          targetResults.set(targetAuth, { type: "COLLISION" });
           continue;
         }
         if (!targetAuth.tokenAuthResult) {
@@ -121744,9 +121886,7 @@ function createMarkdownProvisionExplainer() {
     );
     const targets = list3();
     for (const [targetAuth, result] of sortedTargetResults) {
-      targets.children.push(
-        listItem2(...explainTarget(targetAuth.target, result))
-      );
+      targets.children.push(listItem2(...explainTarget(targetAuth, result)));
     }
     return [
       list3(
@@ -121769,7 +121909,8 @@ function createMarkdownProvisionExplainer() {
       )
     ];
   };
-  function explainTarget(target, result) {
+  function explainTarget(targetAuth, result) {
+    const target = targetAuth.target;
     const subject = explainSubject(target);
     const isProvisioned = result.type === "PROVISIONED";
     const visibility = explainVisibility(target, isProvisioned);
@@ -121811,6 +121952,17 @@ function createMarkdownProvisionExplainer() {
             ...subject
           ),
           ...nestedList(...visibility)
+        ];
+      case "COLLISION":
+        return [
+          paragraph2(
+            text2(`${FAIL_ICON} `),
+            strong2(text2("Provision collision")),
+            text2(" for "),
+            ...subject,
+            text2(":")
+          ),
+          list3(...visibility, ...explainParticipants(targetAuth.collision))
         ];
       case "REQUEST_ERROR": {
         const body = result.error.response?.data;
@@ -121857,6 +122009,29 @@ function createMarkdownProvisionExplainer() {
           )
         ];
     }
+  }
+  function explainParticipants(collision) {
+    if (!collision) {
+      throw new Error(
+        "Invariant violation: Collision result without collision details"
+      );
+    }
+    const participants = [];
+    for (const { requester, name, token } of collision.participants) {
+      participants.push(
+        listItem2(
+          paragraph2(
+            text2(`${FAIL_ICON} Also declared by `),
+            inlineCode2(repoRefToString(requester)),
+            text2(" as secret "),
+            inlineCode2(name),
+            text2(" using token declaration "),
+            inlineCode2(token)
+          )
+        )
+      );
+    }
+    return participants;
   }
   function explainSubject(target) {
     return [
@@ -122904,14 +123079,17 @@ function renderSummary(context, authResult, tokenCreationResults, provisionResul
     let provisionedCount = 0;
     let failedCount = 0;
     let hasNoProvisioner = false;
+    let hasCollision = false;
     for (const result of targetResults.values()) {
       if (result.type === "PROVISIONED") {
         ++provisionedCount;
       } else {
         ++failedCount;
         if (result.type === "NO_PROVISIONER") hasNoProvisioner = true;
+        if (result.type === "COLLISION") hasCollision = true;
       }
     }
+    if (hasCollision) return "Provision collision";
     if (hasNoProvisioner && failedCount === targetResults.size) {
       return "No suitable provisioner";
     }
@@ -123239,9 +123417,6 @@ function createTokenDeclarationRegistry() {
   };
 }
 
-// src/token-factory.ts
-var import_fast_json_stable_stringify = __toESM(require_fast_json_stable_stringify(), 1);
-
 // src/token-creation-explainer/text.ts
 function createTextTokenCreationExplainer() {
   const tokenSeq = createSequencer();
@@ -123353,7 +123528,7 @@ function createTokenFactory(findIssuerOctokit) {
         creationResults.set(auth6, { type: "NOT_ALLOWED" });
         continue;
       }
-      const key = tokenCreationCacheKey(auth6.request);
+      const key = tokenShapeKey(auth6.request);
       const cached = cache[key];
       if (cached) {
         creationResults.set(auth6, cached);
@@ -123392,51 +123567,6 @@ Token #${i2}:
     }
     info("");
     return creationResults;
-  };
-}
-function tokenCreationCacheKey(request2) {
-  return (0, import_fast_json_stable_stringify.default)({
-    account: request2.tokenDec.account,
-    as: request2.tokenDec.as,
-    permissions: request2.tokenDec.permissions,
-    repos: request2.repos
-  });
-}
-
-// src/token-request.ts
-var import_fast_json_stable_stringify2 = __toESM(require_fast_json_stable_stringify(), 1);
-
-// src/token-declaration.ts
-function normalizeTokenDeclaration(declaration) {
-  const { repos } = declaration;
-  return { ...declaration, repos: repos === "all" ? "all" : repos.toSorted() };
-}
-
-// src/token-request.ts
-function normalizeTokenRequest(request2) {
-  const { consumer, tokenDec, repos } = request2;
-  return {
-    consumer: isRepoRef(consumer) ? createRepoRef(consumer.account, consumer.repo) : createAccountRef(consumer.account),
-    repos: repos === "all" ? "all" : repos.toSorted(),
-    tokenDec: normalizeTokenDeclaration(tokenDec)
-  };
-}
-function createTokenRequestFactory(appRegistry) {
-  const cache = {};
-  return (tokenDec, consumer) => {
-    let repos;
-    if (tokenDec.repos === "all") {
-      repos = "all";
-    } else {
-      const repoPatterns = tokenDec.repos.map((repo) => {
-        return createGitHubPattern(
-          repoRefToString(createRepoRef(tokenDec.account, repo))
-        );
-      });
-      repos = appRegistry.resolveIssuerRepos(repoPatterns).map((repo) => repoRefFromName(repo).repo);
-    }
-    const tokenReq = normalizeTokenRequest({ consumer, tokenDec, repos });
-    return cache[(0, import_fast_json_stable_stringify2.default)(tokenReq)] ??= tokenReq;
   };
 }
 
@@ -123574,6 +123704,7 @@ try {
 /* istanbul ignore next - Header guarantees string data - @preserve */
 /* istanbul ignore next - parseRequesterConfig always throws with a cause - @preserve */
 /* istanbul ignore else - @preserve */
+/* istanbul ignore next - only reached for a COLLISION result - @preserve */
 /* istanbul ignore next - only called for requesters with a config error - @preserve */
 /* istanbul ignore next - GitHub always populates a known visibility - @preserve */
 /* istanbul ignore next - prevented by discovery - @preserve */
