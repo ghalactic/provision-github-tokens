@@ -72,9 +72,7 @@ export function createMarkdownProvisionExplainer(): ProvisionResultExplainer<
     const targets = list();
 
     for (const [targetAuth, result] of sortedTargetResults) {
-      targets.children.push(
-        listItem(...explainTarget(targetAuth, result, authResult.request.name)),
-      );
+      targets.children.push(listItem(...explainTarget(targetAuth, result)));
     }
 
     return [
@@ -106,7 +104,6 @@ export function createMarkdownProvisionExplainer(): ProvisionResultExplainer<
   function explainTarget(
     targetAuth: ProvisionAuthTargetResult,
     result: ProvisionResult,
-    secretName: string,
   ): ListItem["children"] {
     const target = targetAuth.target;
     const subject = explainSubject(target);
@@ -174,10 +171,7 @@ export function createMarkdownProvisionExplainer(): ProvisionResultExplainer<
             ...subject,
             text(":"),
           ),
-          list(
-            ...visibility,
-            ...explainCollisionParticipants(collision, secretName),
-          ),
+          list(...visibility, ...explainCollisionParticipants(collision)),
         ];
       }
 
@@ -294,23 +288,21 @@ export function createMarkdownProvisionExplainer(): ProvisionResultExplainer<
 
   function explainCollisionParticipants(
     collision: ProvisionCollision,
-    secretName: string,
   ): ListItem[] {
     const participants: ListItem[] = [];
-
     for (const { requester, name, token } of collision.participants) {
-      const children: PhrasingContent[] = [
-        text(`${FAIL_ICON} Also declared by `),
-        inlineCode(repoRefToString(requester)),
-      ];
-
-      if (name !== secretName) {
-        children.push(text(" as secret "), inlineCode(name));
-      }
-
-      children.push(text(" using token declaration "), inlineCode(token));
-
-      participants.push(listItem(paragraph(...children)));
+      participants.push(
+        listItem(
+          paragraph(
+            text(`${FAIL_ICON} Also declared by `),
+            inlineCode(repoRefToString(requester)),
+            text(" as secret "),
+            inlineCode(name),
+            text(" using token declaration "),
+            inlineCode(token),
+          ),
+        ),
+      );
     }
 
     return participants;

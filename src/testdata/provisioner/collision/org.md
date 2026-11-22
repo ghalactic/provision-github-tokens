@@ -1,5 +1,4 @@
 - ❌ Secret `SECRET_A` **wasn't** provisioned for repo `account-a/repo-a`:
   - ❌ **Provision collision** for **GitHub Actions** secret in `account-a`:
     - ❌ Would've been readable by **private repos**
-    - ❌ Also declared by `account-b/repo-b` using token declaration `account-b/repo-b.token`
-    - ❌ Also declared by `account-c/repo-c` as secret `secret_a` using token declaration `account-c/repo-c.token`
+    - ❌ Also declared by `account-b/repo-b` as secret `SECRET_A` using token declaration `account-b/repo-b.token`

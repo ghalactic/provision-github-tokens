@@ -121363,11 +121363,11 @@ function createTextProvisionExplainer() {
     const status = allProvisioned ? "was provisioned" : noneProvisioned ? "wasn't provisioned" : "was partially provisioned";
     let output = `${icon(allProvisioned)} Secret ${authResult.request.name} ${status} for repo ${repoRefToString(authResult.request.requester)}:`;
     for (const [targetAuth, result] of sortedTargetResults) {
-      output += explainTarget(targetAuth, result, authResult.request.name);
+      output += explainTarget(targetAuth, result);
     }
     return output;
   };
-  function explainTarget(targetAuth, result, secretName) {
+  function explainTarget(targetAuth, result) {
     const target = targetAuth.target;
     const subject = explainSubject(target);
     const isProvisioned = result.type === "PROVISIONED";
@@ -121393,7 +121393,7 @@ function createTextProvisionExplainer() {
           );
         }
         return `
-  ${FAIL_ICON} Provision collision for ${subject}${visibility}` + explainCollisionParticipants(collision, secretName);
+  ${FAIL_ICON} Provision collision for ${subject}${visibility}` + explainCollisionParticipants(collision);
       }
       case "REQUEST_ERROR": {
         const summary2 = `${FAIL_ICON} Failed to provision to ${subject}: ${result.error.status} - ${result.error.message}`;
@@ -121433,13 +121433,11 @@ ${prefixLines("::debug::      ", errorStack(result.error))}`;
       ${statusIcon} ${repo}`;
     return output;
   }
-  function explainCollisionParticipants(collision, secretName) {
+  function explainCollisionParticipants(collision) {
     let explained = "";
     for (const { requester, name, token } of collision.participants) {
       explained += `
-    ${FAIL_ICON} Also declared by ${repoRefToString(requester)}`;
-      if (name !== secretName) explained += ` as secret ${name}`;
-      explained += ` using token declaration ${token}`;
+    ${FAIL_ICON} Also declared by ${repoRefToString(requester)} as secret ${name} using token declaration ${token}`;
     }
     return explained;
   }
@@ -121903,9 +121901,7 @@ function createMarkdownProvisionExplainer() {
     );
     const targets = list3();
     for (const [targetAuth, result] of sortedTargetResults) {
-      targets.children.push(
-        listItem2(...explainTarget(targetAuth, result, authResult.request.name))
-      );
+      targets.children.push(listItem2(...explainTarget(targetAuth, result)));
     }
     return [
       list3(
@@ -121928,7 +121924,7 @@ function createMarkdownProvisionExplainer() {
       )
     ];
   };
-  function explainTarget(targetAuth, result, secretName) {
+  function explainTarget(targetAuth, result) {
     const target = targetAuth.target;
     const subject = explainSubject(target);
     const isProvisioned = result.type === "PROVISIONED";
@@ -121987,10 +121983,7 @@ function createMarkdownProvisionExplainer() {
             ...subject,
             text2(":")
           ),
-          list3(
-            ...visibility,
-            ...explainCollisionParticipants(collision, secretName)
-          )
+          list3(...visibility, ...explainCollisionParticipants(collision))
         ];
       }
       case "REQUEST_ERROR": {
@@ -122088,18 +122081,21 @@ function createMarkdownProvisionExplainer() {
       )
     ];
   }
-  function explainCollisionParticipants(collision, secretName) {
+  function explainCollisionParticipants(collision) {
     const participants = [];
     for (const { requester, name, token } of collision.participants) {
-      const children = [
-        text2(`${FAIL_ICON} Also declared by `),
-        inlineCode2(repoRefToString(requester))
-      ];
-      if (name !== secretName) {
-        children.push(text2(" as secret "), inlineCode2(name));
-      }
-      children.push(text2(" using token declaration "), inlineCode2(token));
-      participants.push(listItem2(paragraph2(...children)));
+      participants.push(
+        listItem2(
+          paragraph2(
+            text2(`${FAIL_ICON} Also declared by `),
+            inlineCode2(repoRefToString(requester)),
+            text2(" as secret "),
+            inlineCode2(name),
+            text2(" using token declaration "),
+            inlineCode2(token)
+          )
+        )
+      );
     }
     return participants;
   }
