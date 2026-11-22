@@ -9,7 +9,7 @@ target**, and writes are upserts, so the last would silently win. A **Provision
 collision** is any disagreement among those requests about what the consumer
 would get — token shape, secret visibility, or name casing, matched
 case-insensitively. Identical writes don't collide; they share one write and
-outcome. When two or more writable requests disagree, none writes. Non-writers
-are still told about any disagreement, even when writable requests are already
-refused, so fixing authorization can't reveal a second problem. Collisions are
-provision failures, not run failures.
+outcome. When two or more allowed requests disagree, none writes. Denied
+requests are still told about any disagreement, even when allowed requests are
+already refused, so fixing authorization can't reveal a second problem.
+Collisions are provision failures, not run failures.

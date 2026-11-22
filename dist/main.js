@@ -65946,30 +65946,19 @@ function createTokenRequestFactory(appRegistry) {
 function resolveProvisionCollisions(authResults) {
   const collisions = /* @__PURE__ */ new Map();
   for (const group2 of collisionGroups(authResults)) {
-    const writable = [];
-    const unwritable = [];
+    const allowed = [];
     for (const entry of group2) {
-      if (entry.auth.isAllowed) {
-        writable.push(entry);
-      } else {
-        unwritable.push(entry);
-      }
+      if (entry.auth.isAllowed) allowed.push(entry);
     }
-    if (writable.length >= 2 && !isIdentical(writable)) {
-      for (const entry of writable) {
-        collisions.set(entry.target, {
-          isBlocking: true,
-          participants: participantsFor(entry, group2)
-        });
-      }
-    }
-    if (unwritable.length > 0 && !isIdentical(group2)) {
-      for (const entry of unwritable) {
-        collisions.set(entry.target, {
-          isBlocking: false,
-          participants: participantsFor(entry, group2)
-        });
-      }
+    const areAllowedIdentical = allowed.length < 2 || isIdentical(allowed);
+    const isGroupIdentical = isIdentical(group2);
+    for (const entry of group2) {
+      const isBlocking = entry.auth.isAllowed;
+      if (isBlocking ? areAllowedIdentical : isGroupIdentical) continue;
+      collisions.set(entry.target, {
+        isBlocking,
+        participants: participantsFor(entry, group2)
+      });
     }
   }
   return collisions;

@@ -15,7 +15,7 @@ import {
 } from "../test/result.js";
 import { resolveProvisionCollisions } from "./provision-collision.js";
 
-it("refuses writable requests that write different tokens", () => {
+it("refuses allowed requests that write different tokens", () => {
   const target = createTestAccountProvisionRequestTarget(
     "actions",
     "account-a",
@@ -96,7 +96,7 @@ it("refuses writable requests that write different tokens", () => {
   });
 });
 
-it("doesn't collide when every writable request writes identical content", () => {
+it("doesn't collide when every allowed request writes identical content", () => {
   const target = createTestAccountProvisionRequestTarget(
     "actions",
     "account-a",
@@ -805,7 +805,7 @@ it("doesn't collide across secret types or targets", () => {
   expect(collisions.size).toBe(0);
 });
 
-it("reports a potential collision to a request that can't write", () => {
+it("reports a potential collision to a denied request", () => {
   const target = createTestAccountProvisionRequestTarget(
     "actions",
     "account-a",
@@ -833,7 +833,7 @@ it("reports a potential collision to a request that can't write", () => {
     maxWant: "read",
   });
 
-  const writable = createTestProvisionAuthResult({
+  const allowed = createTestProvisionAuthResult({
     request: createTestProvisionRequest({
       requester: { account: "account-a", repo: "repo-a" },
       tokenDec: tokenDecA,
@@ -863,9 +863,9 @@ it("reports a potential collision to a request that can't write", () => {
     ],
   });
 
-  const collisions = resolveProvisionCollisions([writable, denied]);
+  const collisions = resolveProvisionCollisions([allowed, denied]);
 
-  expect(collisions.get(writable.results[0])).toBeUndefined();
+  expect(collisions.get(allowed.results[0])).toBeUndefined();
   expect(collisions.get(denied.results[0])).toEqual({
     isBlocking: false,
     participants: [
@@ -878,7 +878,7 @@ it("reports a potential collision to a request that can't write", () => {
   });
 });
 
-it("reports a potential collision to every request that can't write", () => {
+it("reports a potential collision to every denied request", () => {
   const target = createTestAccountProvisionRequestTarget(
     "actions",
     "account-a",
@@ -961,7 +961,7 @@ it("reports a potential collision to every request that can't write", () => {
   });
 });
 
-it("reports a potential collision when writable requests are already refused", () => {
+it("reports a potential collision when allowed requests are already refused", () => {
   const target = createTestAccountProvisionRequestTarget(
     "actions",
     "account-a",
@@ -1084,7 +1084,7 @@ it("doesn't report a potential collision for identical writes", () => {
     maxWant: "read",
   });
 
-  const writable = createTestProvisionAuthResult({
+  const allowed = createTestProvisionAuthResult({
     request: createTestProvisionRequest({
       requester: { account: "account-a", repo: "repo-a" },
       tokenDec,
@@ -1114,7 +1114,7 @@ it("doesn't report a potential collision for identical writes", () => {
     ],
   });
 
-  const collisions = resolveProvisionCollisions([writable, denied]);
+  const collisions = resolveProvisionCollisions([allowed, denied]);
 
   expect(collisions.size).toBe(0);
 });
@@ -1199,6 +1199,7 @@ it("treats an unknown descriptor as disagreeing", () => {
       createTestProvisionAuthTargetResult({
         target,
         tokenAuthResult: undefined,
+        isTokenAllowed: false,
       }),
     ],
   });

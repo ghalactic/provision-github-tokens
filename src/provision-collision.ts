@@ -33,35 +33,23 @@ export function resolveProvisionCollisions(
   const collisions: ProvisionCollisions = new Map();
 
   for (const group of collisionGroups(authResults)) {
-    const writable: CollisionEntry[] = [];
-    const unwritable: CollisionEntry[] = [];
+    const allowed: CollisionEntry[] = [];
 
     for (const entry of group) {
-      if (entry.auth.isAllowed) {
-        writable.push(entry);
-      } else {
-        unwritable.push(entry);
-      }
+      if (entry.auth.isAllowed) allowed.push(entry);
     }
 
-    if (writable.length >= 2 && !isIdentical(writable)) {
-      for (const entry of writable) {
-        collisions.set(entry.target, {
-          isBlocking: true,
-          participants: participantsFor(entry, group),
-        });
-      }
-    }
+    const areAllowedIdentical = allowed.length < 2 || isIdentical(allowed);
+    const isGroupIdentical = isIdentical(group);
 
-    // Non-writers hear about every disagreement, including one that already
-    // refuses the writable requests above.
-    if (unwritable.length > 0 && !isIdentical(group)) {
-      for (const entry of unwritable) {
-        collisions.set(entry.target, {
-          isBlocking: false,
-          participants: participantsFor(entry, group),
-        });
-      }
+    for (const entry of group) {
+      const isBlocking = entry.auth.isAllowed;
+      if (isBlocking ? areAllowedIdentical : isGroupIdentical) continue;
+
+      collisions.set(entry.target, {
+        isBlocking,
+        participants: participantsFor(entry, group),
+      });
     }
   }
 
