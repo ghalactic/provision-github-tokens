@@ -95,19 +95,23 @@ it("handles secrets with no targets to provision to", async () => {
     ],
   ]);
 
-  const [[resultA, targetResultsA]] = await provisionSecrets(tokenResults, [
-    {
-      request: createTestProvisionRequest({
-        secretDec: createTestSecretDec({
-          github: {},
+  const [[resultA, targetResultsA]] = await provisionSecrets(
+    tokenResults,
+    [
+      {
+        request: createTestProvisionRequest({
+          secretDec: createTestSecretDec({
+            github: {},
+          }),
+          to: [],
         }),
-        to: [],
-      }),
-      results: [],
-      isMissingTargets: true,
-      isAllowed: false,
-    },
-  ]);
+        results: [],
+        isMissingTargets: true,
+        isAllowed: false,
+      },
+    ],
+    new Map(),
+  );
 
   const toMdast = createMarkdownProvisionExplainer();
 
@@ -167,28 +171,32 @@ it("doesn't provision secrets when provisioning isn't allowed", async () => {
     ],
   ]);
 
-  const [[resultA, targetResultsA]] = await provisionSecrets(tokenResults, [
-    {
-      request: createTestProvisionRequest({
-        secretDec: createTestSecretDec({
-          github: { accounts: { "account-a": { actions: "private" } } },
+  const [[resultA, targetResultsA]] = await provisionSecrets(
+    tokenResults,
+    [
+      {
+        request: createTestProvisionRequest({
+          secretDec: createTestSecretDec({
+            github: { accounts: { "account-a": { actions: "private" } } },
+          }),
         }),
-      }),
-      results: [
-        createTestProvisionAuthTargetResult({
-          isAllowed: false,
-          target: createTestAccountProvisionRequestTarget(
-            "actions",
-            "account-a",
-            "private",
-          ),
-          tokenAuthResult,
-        }),
-      ],
-      isMissingTargets: false,
-      isAllowed: false,
-    },
-  ]);
+        results: [
+          createTestProvisionAuthTargetResult({
+            isAllowed: false,
+            target: createTestAccountProvisionRequestTarget(
+              "actions",
+              "account-a",
+              "private",
+            ),
+            tokenAuthResult,
+          }),
+        ],
+        isMissingTargets: false,
+        isAllowed: false,
+      },
+    ],
+    new Map(),
+  );
 
   const toMdast = createMarkdownProvisionExplainer();
 
@@ -285,69 +293,73 @@ it("doesn't provision secrets when the token wasn't created", async () => {
     ],
   ]);
 
-  const [[resultA, targetResultsA]] = await provisionSecrets(tokenResults, [
-    {
-      request: createTestProvisionRequest({
-        secretDec: createTestSecretDec({
-          github: {
-            accounts: { "account-a": { actions: "private" } },
-            repos: {
-              "account-a/repo-a": { actions: true, environments: ["env-a"] },
+  const [[resultA, targetResultsA]] = await provisionSecrets(
+    tokenResults,
+    [
+      {
+        request: createTestProvisionRequest({
+          secretDec: createTestSecretDec({
+            github: {
+              accounts: { "account-a": { actions: "private" } },
+              repos: {
+                "account-a/repo-a": { actions: true, environments: ["env-a"] },
+              },
             },
-          },
+          }),
+          to: [
+            createTestAccountProvisionRequestTarget(
+              "actions",
+              "account-a",
+              "private",
+            ),
+            createTestRepoProvisionRequestTarget(
+              "actions",
+              "account-a",
+              "repo-a",
+              "private",
+            ),
+            createTestEnvironmentProvisionRequestTarget(
+              "account-a",
+              "repo-a",
+              "env-a",
+              "private",
+            ),
+          ],
         }),
-        to: [
-          createTestAccountProvisionRequestTarget(
-            "actions",
-            "account-a",
-            "private",
-          ),
-          createTestRepoProvisionRequestTarget(
-            "actions",
-            "account-a",
-            "repo-a",
-            "private",
-          ),
-          createTestEnvironmentProvisionRequestTarget(
-            "account-a",
-            "repo-a",
-            "env-a",
-            "private",
-          ),
+        results: [
+          createTestProvisionAuthTargetResult({
+            target: createTestAccountProvisionRequestTarget(
+              "actions",
+              "account-a",
+              "private",
+            ),
+            tokenAuthResult: tokenAuthResultNotAllowed,
+          }),
+          createTestProvisionAuthTargetResult({
+            target: createTestRepoProvisionRequestTarget(
+              "actions",
+              "account-a",
+              "repo-a",
+              "private",
+            ),
+            tokenAuthResult: tokenAuthResultRequestError,
+          }),
+          createTestProvisionAuthTargetResult({
+            target: createTestEnvironmentProvisionRequestTarget(
+              "account-a",
+              "repo-a",
+              "env-a",
+              "private",
+            ),
+            tokenAuthResult: tokenAuthResultError,
+          }),
         ],
-      }),
-      results: [
-        createTestProvisionAuthTargetResult({
-          target: createTestAccountProvisionRequestTarget(
-            "actions",
-            "account-a",
-            "private",
-          ),
-          tokenAuthResult: tokenAuthResultNotAllowed,
-        }),
-        createTestProvisionAuthTargetResult({
-          target: createTestRepoProvisionRequestTarget(
-            "actions",
-            "account-a",
-            "repo-a",
-            "private",
-          ),
-          tokenAuthResult: tokenAuthResultRequestError,
-        }),
-        createTestProvisionAuthTargetResult({
-          target: createTestEnvironmentProvisionRequestTarget(
-            "account-a",
-            "repo-a",
-            "env-a",
-            "private",
-          ),
-          tokenAuthResult: tokenAuthResultError,
-        }),
-      ],
-      isMissingTargets: false,
-      isAllowed: true,
-    },
-  ]);
+        isMissingTargets: false,
+        isAllowed: true,
+      },
+    ],
+    new Map(),
+  );
 
   const toMdast = createMarkdownProvisionExplainer();
 
@@ -410,34 +422,38 @@ it("doesn't provision secrets when no suitable provisioners are found", async ()
     ],
   ]);
 
-  const [[resultA, targetResultsA]] = await provisionSecrets(tokenResults, [
-    {
-      request: createTestProvisionRequest({
-        secretDec: createTestSecretDec({
-          github: { accounts: { "account-x": { actions: "private" } } },
+  const [[resultA, targetResultsA]] = await provisionSecrets(
+    tokenResults,
+    [
+      {
+        request: createTestProvisionRequest({
+          secretDec: createTestSecretDec({
+            github: { accounts: { "account-x": { actions: "private" } } },
+          }),
+          to: [
+            createTestAccountProvisionRequestTarget(
+              "actions",
+              "account-x",
+              "private",
+            ),
+          ],
         }),
-        to: [
-          createTestAccountProvisionRequestTarget(
-            "actions",
-            "account-x",
-            "private",
-          ),
+        results: [
+          createTestProvisionAuthTargetResult({
+            target: createTestAccountProvisionRequestTarget(
+              "actions",
+              "account-x",
+              "private",
+            ),
+            tokenAuthResult,
+          }),
         ],
-      }),
-      results: [
-        createTestProvisionAuthTargetResult({
-          target: createTestAccountProvisionRequestTarget(
-            "actions",
-            "account-x",
-            "private",
-          ),
-          tokenAuthResult,
-        }),
-      ],
-      isMissingTargets: false,
-      isAllowed: true,
-    },
-  ]);
+        isMissingTargets: false,
+        isAllowed: true,
+      },
+    ],
+    new Map(),
+  );
 
   const toMdast = createMarkdownProvisionExplainer();
 
@@ -502,27 +518,31 @@ it("doesn't provision secrets when target provisioning fails with a GitHub API e
     ],
   ]);
 
-  const [[resultA, targetResultsA]] = await provisionSecrets(tokenResults, [
-    {
-      request: createTestProvisionRequest({
-        secretDec: createTestSecretDec({
-          github: { accounts: { "account-a": { actions: "private" } } },
+  const [[resultA, targetResultsA]] = await provisionSecrets(
+    tokenResults,
+    [
+      {
+        request: createTestProvisionRequest({
+          secretDec: createTestSecretDec({
+            github: { accounts: { "account-a": { actions: "private" } } },
+          }),
         }),
-      }),
-      results: [
-        createTestProvisionAuthTargetResult({
-          target: createTestAccountProvisionRequestTarget(
-            "actions",
-            "account-a",
-            "private",
-          ),
-          tokenAuthResult,
-        }),
-      ],
-      isMissingTargets: false,
-      isAllowed: true,
-    },
-  ]);
+        results: [
+          createTestProvisionAuthTargetResult({
+            target: createTestAccountProvisionRequestTarget(
+              "actions",
+              "account-a",
+              "private",
+            ),
+            tokenAuthResult,
+          }),
+        ],
+        isMissingTargets: false,
+        isAllowed: true,
+      },
+    ],
+    new Map(),
+  );
 
   const toMdast = createMarkdownProvisionExplainer();
 
@@ -590,27 +610,31 @@ it("doesn't provision secrets when target provisioning fails with an unexpected 
     ],
   ]);
 
-  const [[resultA, targetResultsA]] = await provisionSecrets(tokenResults, [
-    {
-      request: createTestProvisionRequest({
-        secretDec: createTestSecretDec({
-          github: { accounts: { "account-a": { actions: "private" } } },
+  const [[resultA, targetResultsA]] = await provisionSecrets(
+    tokenResults,
+    [
+      {
+        request: createTestProvisionRequest({
+          secretDec: createTestSecretDec({
+            github: { accounts: { "account-a": { actions: "private" } } },
+          }),
         }),
-      }),
-      results: [
-        createTestProvisionAuthTargetResult({
-          target: createTestAccountProvisionRequestTarget(
-            "actions",
-            "account-a",
-            "private",
-          ),
-          tokenAuthResult,
-        }),
-      ],
-      isMissingTargets: false,
-      isAllowed: true,
-    },
-  ]);
+        results: [
+          createTestProvisionAuthTargetResult({
+            target: createTestAccountProvisionRequestTarget(
+              "actions",
+              "account-a",
+              "private",
+            ),
+            tokenAuthResult,
+          }),
+        ],
+        isMissingTargets: false,
+        isAllowed: true,
+      },
+    ],
+    new Map(),
+  );
 
   const toMdast = createMarkdownProvisionExplainer();
 
@@ -672,27 +696,31 @@ it("doesn't provision secrets when encryption fails with a GitHub API error", as
     ],
   ]);
 
-  const [[resultA, targetResultsA]] = await provisionSecrets(tokenResults, [
-    {
-      request: createTestProvisionRequest({
-        secretDec: createTestSecretDec({
-          github: { accounts: { "account-a": { actions: "private" } } },
+  const [[resultA, targetResultsA]] = await provisionSecrets(
+    tokenResults,
+    [
+      {
+        request: createTestProvisionRequest({
+          secretDec: createTestSecretDec({
+            github: { accounts: { "account-a": { actions: "private" } } },
+          }),
         }),
-      }),
-      results: [
-        createTestProvisionAuthTargetResult({
-          target: createTestAccountProvisionRequestTarget(
-            "actions",
-            "account-a",
-            "private",
-          ),
-          tokenAuthResult,
-        }),
-      ],
-      isMissingTargets: false,
-      isAllowed: true,
-    },
-  ]);
+        results: [
+          createTestProvisionAuthTargetResult({
+            target: createTestAccountProvisionRequestTarget(
+              "actions",
+              "account-a",
+              "private",
+            ),
+            tokenAuthResult,
+          }),
+        ],
+        isMissingTargets: false,
+        isAllowed: true,
+      },
+    ],
+    new Map(),
+  );
 
   const toMdast = createMarkdownProvisionExplainer();
 
@@ -758,27 +786,31 @@ it("doesn't provision secrets when encryption fails with an unexpected error", a
     ],
   ]);
 
-  const [[resultA, targetResultsA]] = await provisionSecrets(tokenResults, [
-    {
-      request: createTestProvisionRequest({
-        secretDec: createTestSecretDec({
-          github: { accounts: { "account-a": { actions: "private" } } },
+  const [[resultA, targetResultsA]] = await provisionSecrets(
+    tokenResults,
+    [
+      {
+        request: createTestProvisionRequest({
+          secretDec: createTestSecretDec({
+            github: { accounts: { "account-a": { actions: "private" } } },
+          }),
         }),
-      }),
-      results: [
-        createTestProvisionAuthTargetResult({
-          target: createTestAccountProvisionRequestTarget(
-            "actions",
-            "account-a",
-            "private",
-          ),
-          tokenAuthResult,
-        }),
-      ],
-      isMissingTargets: false,
-      isAllowed: true,
-    },
-  ]);
+        results: [
+          createTestProvisionAuthTargetResult({
+            target: createTestAccountProvisionRequestTarget(
+              "actions",
+              "account-a",
+              "private",
+            ),
+            tokenAuthResult,
+          }),
+        ],
+        isMissingTargets: false,
+        isAllowed: true,
+      },
+    ],
+    new Map(),
+  );
 
   const toMdast = createMarkdownProvisionExplainer();
 
@@ -860,132 +892,144 @@ it("can provision multiple secrets of the same type", async () => {
   ]);
 
   const [[resultA, targetResultsA], [resultB, targetResultsB]] =
-    await provisionSecrets(tokenResults, [
-      {
-        request: createTestProvisionRequest({
-          secretDec: createTestSecretDec({
-            github: {
-              accounts: { "account-a": { actions: "private" } },
-              repos: {
-                "account-a/repo-a": { actions: true, environments: ["env-a"] },
+    await provisionSecrets(
+      tokenResults,
+      [
+        {
+          request: createTestProvisionRequest({
+            secretDec: createTestSecretDec({
+              github: {
+                accounts: { "account-a": { actions: "private" } },
+                repos: {
+                  "account-a/repo-a": {
+                    actions: true,
+                    environments: ["env-a"],
+                  },
+                },
               },
-            },
+            }),
+            to: [
+              createTestAccountProvisionRequestTarget(
+                "actions",
+                "account-a",
+                "private",
+              ),
+              createTestRepoProvisionRequestTarget(
+                "actions",
+                "account-a",
+                "repo-a",
+                "private",
+              ),
+              createTestEnvironmentProvisionRequestTarget(
+                "account-a",
+                "repo-a",
+                "env-a",
+                "private",
+              ),
+            ],
           }),
-          to: [
-            createTestAccountProvisionRequestTarget(
-              "actions",
-              "account-a",
-              "private",
-            ),
-            createTestRepoProvisionRequestTarget(
-              "actions",
-              "account-a",
-              "repo-a",
-              "private",
-            ),
-            createTestEnvironmentProvisionRequestTarget(
-              "account-a",
-              "repo-a",
-              "env-a",
-              "private",
-            ),
+          results: [
+            createTestProvisionAuthTargetResult({
+              target: createTestAccountProvisionRequestTarget(
+                "actions",
+                "account-a",
+                "private",
+              ),
+              tokenAuthResult: tokenAuthResultA,
+            }),
+            createTestProvisionAuthTargetResult({
+              target: createTestRepoProvisionRequestTarget(
+                "actions",
+                "account-a",
+                "repo-a",
+                "private",
+              ),
+              tokenAuthResult: tokenAuthResultA,
+            }),
+            createTestProvisionAuthTargetResult({
+              target: createTestEnvironmentProvisionRequestTarget(
+                "account-a",
+                "repo-a",
+                "env-a",
+                "private",
+              ),
+              tokenAuthResult: tokenAuthResultA,
+            }),
           ],
-        }),
-        results: [
-          createTestProvisionAuthTargetResult({
-            target: createTestAccountProvisionRequestTarget(
-              "actions",
-              "account-a",
-              "private",
-            ),
-            tokenAuthResult: tokenAuthResultA,
-          }),
-          createTestProvisionAuthTargetResult({
-            target: createTestRepoProvisionRequestTarget(
-              "actions",
-              "account-a",
-              "repo-a",
-              "private",
-            ),
-            tokenAuthResult: tokenAuthResultA,
-          }),
-          createTestProvisionAuthTargetResult({
-            target: createTestEnvironmentProvisionRequestTarget(
-              "account-a",
-              "repo-a",
-              "env-a",
-              "private",
-            ),
-            tokenAuthResult: tokenAuthResultA,
-          }),
-        ],
-        isMissingTargets: false,
-        isAllowed: true,
-      },
-      {
-        request: createTestProvisionRequest({
-          tokenDec: createTestTokenDec({ permissions: { contents: "write" } }),
-          secretDec: createTestSecretDec({
-            github: {
-              accounts: { "account-a": { actions: "private" } },
-              repos: {
-                "account-a/repo-a": { actions: true, environments: ["env-a"] },
+          isMissingTargets: false,
+          isAllowed: true,
+        },
+        {
+          request: createTestProvisionRequest({
+            tokenDec: createTestTokenDec({
+              permissions: { contents: "write" },
+            }),
+            secretDec: createTestSecretDec({
+              github: {
+                accounts: { "account-a": { actions: "private" } },
+                repos: {
+                  "account-a/repo-a": {
+                    actions: true,
+                    environments: ["env-a"],
+                  },
+                },
               },
-            },
+            }),
+            name: "SECRET_B",
+            to: [
+              createTestAccountProvisionRequestTarget(
+                "actions",
+                "account-a",
+                "private",
+              ),
+              createTestRepoProvisionRequestTarget(
+                "actions",
+                "account-a",
+                "repo-a",
+                "private",
+              ),
+              createTestEnvironmentProvisionRequestTarget(
+                "account-a",
+                "repo-a",
+                "env-a",
+                "private",
+              ),
+            ],
           }),
-          name: "SECRET_B",
-          to: [
-            createTestAccountProvisionRequestTarget(
-              "actions",
-              "account-a",
-              "private",
-            ),
-            createTestRepoProvisionRequestTarget(
-              "actions",
-              "account-a",
-              "repo-a",
-              "private",
-            ),
-            createTestEnvironmentProvisionRequestTarget(
-              "account-a",
-              "repo-a",
-              "env-a",
-              "private",
-            ),
+          results: [
+            createTestProvisionAuthTargetResult({
+              target: createTestAccountProvisionRequestTarget(
+                "actions",
+                "account-a",
+                "private",
+              ),
+              tokenAuthResult: tokenAuthResultB,
+            }),
+            createTestProvisionAuthTargetResult({
+              target: createTestRepoProvisionRequestTarget(
+                "actions",
+                "account-a",
+                "repo-a",
+                "private",
+              ),
+              tokenAuthResult: tokenAuthResultB,
+            }),
+            createTestProvisionAuthTargetResult({
+              target: createTestEnvironmentProvisionRequestTarget(
+                "account-a",
+                "repo-a",
+                "env-a",
+                "private",
+              ),
+              tokenAuthResult: tokenAuthResultB,
+            }),
           ],
-        }),
-        results: [
-          createTestProvisionAuthTargetResult({
-            target: createTestAccountProvisionRequestTarget(
-              "actions",
-              "account-a",
-              "private",
-            ),
-            tokenAuthResult: tokenAuthResultB,
-          }),
-          createTestProvisionAuthTargetResult({
-            target: createTestRepoProvisionRequestTarget(
-              "actions",
-              "account-a",
-              "repo-a",
-              "private",
-            ),
-            tokenAuthResult: tokenAuthResultB,
-          }),
-          createTestProvisionAuthTargetResult({
-            target: createTestEnvironmentProvisionRequestTarget(
-              "account-a",
-              "repo-a",
-              "env-a",
-              "private",
-            ),
-            tokenAuthResult: tokenAuthResultB,
-          }),
-        ],
-        isMissingTargets: false,
-        isAllowed: true,
-      },
-    ]);
+          isMissingTargets: false,
+          isAllowed: true,
+        },
+      ],
+      new Map(),
+    );
 
   const toMdast = createMarkdownProvisionExplainer();
 
@@ -1102,136 +1146,140 @@ it("can provision a secret to multiple targets", async () => {
     ],
   ]);
 
-  const [[resultA, targetResultsA]] = await provisionSecrets(tokenResults, [
-    {
-      request: createTestProvisionRequest({
-        secretDec: createTestSecretDec({
-          github: {
-            accounts: {
-              "account-a": {
-                actions: "private",
-                codespaces: "private",
-                dependabot: "private",
+  const [[resultA, targetResultsA]] = await provisionSecrets(
+    tokenResults,
+    [
+      {
+        request: createTestProvisionRequest({
+          secretDec: createTestSecretDec({
+            github: {
+              accounts: {
+                "account-a": {
+                  actions: "private",
+                  codespaces: "private",
+                  dependabot: "private",
+                },
+              },
+              repos: {
+                "account-a/repo-a": {
+                  actions: true,
+                  codespaces: true,
+                  dependabot: true,
+                  environments: ["env-a"],
+                },
               },
             },
-            repos: {
-              "account-a/repo-a": {
-                actions: true,
-                codespaces: true,
-                dependabot: true,
-                environments: ["env-a"],
-              },
-            },
-          },
+          }),
+          to: [
+            createTestAccountProvisionRequestTarget(
+              "actions",
+              "account-a",
+              "private",
+            ),
+            createTestAccountProvisionRequestTarget(
+              "codespaces",
+              "account-a",
+              "private",
+            ),
+            createTestAccountProvisionRequestTarget(
+              "dependabot",
+              "account-a",
+              "private",
+            ),
+            createTestRepoProvisionRequestTarget(
+              "actions",
+              "account-a",
+              "repo-a",
+              "private",
+            ),
+            createTestRepoProvisionRequestTarget(
+              "codespaces",
+              "account-a",
+              "repo-a",
+              "private",
+            ),
+            createTestRepoProvisionRequestTarget(
+              "dependabot",
+              "account-a",
+              "repo-a",
+              "private",
+            ),
+            createTestEnvironmentProvisionRequestTarget(
+              "account-a",
+              "repo-a",
+              "env-a",
+              "private",
+            ),
+          ],
         }),
-        to: [
-          createTestAccountProvisionRequestTarget(
-            "actions",
-            "account-a",
-            "private",
-          ),
-          createTestAccountProvisionRequestTarget(
-            "codespaces",
-            "account-a",
-            "private",
-          ),
-          createTestAccountProvisionRequestTarget(
-            "dependabot",
-            "account-a",
-            "private",
-          ),
-          createTestRepoProvisionRequestTarget(
-            "actions",
-            "account-a",
-            "repo-a",
-            "private",
-          ),
-          createTestRepoProvisionRequestTarget(
-            "codespaces",
-            "account-a",
-            "repo-a",
-            "private",
-          ),
-          createTestRepoProvisionRequestTarget(
-            "dependabot",
-            "account-a",
-            "repo-a",
-            "private",
-          ),
-          createTestEnvironmentProvisionRequestTarget(
-            "account-a",
-            "repo-a",
-            "env-a",
-            "private",
-          ),
+        results: [
+          createTestProvisionAuthTargetResult({
+            target: createTestAccountProvisionRequestTarget(
+              "actions",
+              "account-a",
+              "private",
+            ),
+            tokenAuthResult,
+          }),
+          createTestProvisionAuthTargetResult({
+            target: createTestAccountProvisionRequestTarget(
+              "codespaces",
+              "account-a",
+              "private",
+            ),
+            tokenAuthResult,
+          }),
+          createTestProvisionAuthTargetResult({
+            target: createTestAccountProvisionRequestTarget(
+              "dependabot",
+              "account-a",
+              "private",
+            ),
+            tokenAuthResult,
+          }),
+          createTestProvisionAuthTargetResult({
+            target: createTestRepoProvisionRequestTarget(
+              "actions",
+              "account-a",
+              "repo-a",
+              "private",
+            ),
+            tokenAuthResult,
+          }),
+          createTestProvisionAuthTargetResult({
+            target: createTestRepoProvisionRequestTarget(
+              "codespaces",
+              "account-a",
+              "repo-a",
+              "private",
+            ),
+            tokenAuthResult,
+          }),
+          createTestProvisionAuthTargetResult({
+            target: createTestRepoProvisionRequestTarget(
+              "dependabot",
+              "account-a",
+              "repo-a",
+              "private",
+            ),
+            tokenAuthResult,
+          }),
+          createTestProvisionAuthTargetResult({
+            target: createTestEnvironmentProvisionRequestTarget(
+              "account-a",
+              "repo-a",
+              "env-a",
+              "private",
+            ),
+            tokenAuthResult,
+          }),
         ],
-      }),
-      results: [
-        createTestProvisionAuthTargetResult({
-          target: createTestAccountProvisionRequestTarget(
-            "actions",
-            "account-a",
-            "private",
-          ),
-          tokenAuthResult,
-        }),
-        createTestProvisionAuthTargetResult({
-          target: createTestAccountProvisionRequestTarget(
-            "codespaces",
-            "account-a",
-            "private",
-          ),
-          tokenAuthResult,
-        }),
-        createTestProvisionAuthTargetResult({
-          target: createTestAccountProvisionRequestTarget(
-            "dependabot",
-            "account-a",
-            "private",
-          ),
-          tokenAuthResult,
-        }),
-        createTestProvisionAuthTargetResult({
-          target: createTestRepoProvisionRequestTarget(
-            "actions",
-            "account-a",
-            "repo-a",
-            "private",
-          ),
-          tokenAuthResult,
-        }),
-        createTestProvisionAuthTargetResult({
-          target: createTestRepoProvisionRequestTarget(
-            "codespaces",
-            "account-a",
-            "repo-a",
-            "private",
-          ),
-          tokenAuthResult,
-        }),
-        createTestProvisionAuthTargetResult({
-          target: createTestRepoProvisionRequestTarget(
-            "dependabot",
-            "account-a",
-            "repo-a",
-            "private",
-          ),
-          tokenAuthResult,
-        }),
-        createTestProvisionAuthTargetResult({
-          target: createTestEnvironmentProvisionRequestTarget(
-            "account-a",
-            "repo-a",
-            "env-a",
-            "private",
-          ),
-          tokenAuthResult,
-        }),
-      ],
-      isMissingTargets: false,
-      isAllowed: true,
-    },
-  ]);
+        isMissingTargets: false,
+        isAllowed: true,
+      },
+    ],
+    new Map(),
+  );
 
   const toMdast = createMarkdownProvisionExplainer();
 
@@ -1351,16 +1399,20 @@ it("renders the visibility of provisioned account secrets", async () => {
     ),
   ];
 
-  const [[resultA, targetResultsA]] = await provisionSecrets(tokenResults, [
-    {
-      request: createTestProvisionRequest({ to: targets }),
-      results: targets.map((target) =>
-        createTestProvisionAuthTargetResult({ target, tokenAuthResult }),
-      ),
-      isMissingTargets: false,
-      isAllowed: true,
-    },
-  ]);
+  const [[resultA, targetResultsA]] = await provisionSecrets(
+    tokenResults,
+    [
+      {
+        request: createTestProvisionRequest({ to: targets }),
+        results: targets.map((target) =>
+          createTestProvisionAuthTargetResult({ target, tokenAuthResult }),
+        ),
+        isMissingTargets: false,
+        isAllowed: true,
+      },
+    ],
+    new Map(),
+  );
 
   const toMdast = createMarkdownProvisionExplainer();
 
@@ -1451,16 +1503,20 @@ it("renders the visibility of a failed account secret", async () => {
     selectedRepos,
   );
 
-  const [[resultA, targetResultsA]] = await provisionSecrets(tokenResults, [
-    {
-      request: createTestProvisionRequest({ to: [target] }),
-      results: [
-        createTestProvisionAuthTargetResult({ target, tokenAuthResult }),
-      ],
-      isMissingTargets: false,
-      isAllowed: true,
-    },
-  ]);
+  const [[resultA, targetResultsA]] = await provisionSecrets(
+    tokenResults,
+    [
+      {
+        request: createTestProvisionRequest({ to: [target] }),
+        results: [
+          createTestProvisionAuthTargetResult({ target, tokenAuthResult }),
+        ],
+        isMissingTargets: false,
+        isAllowed: true,
+      },
+    ],
+    new Map(),
+  );
 
   const toMdast = createMarkdownProvisionExplainer();
 
@@ -1529,63 +1585,67 @@ it("doesn't stop provisioning when some targets fail", async () => {
   ]);
 
   const [[resultA, targetResultsA], [resultB, targetResultsB]] =
-    await provisionSecrets(tokenResults, [
-      {
-        request: createTestProvisionRequest({
-          secretDec: createTestSecretDec({
-            github: { accounts: { "account-a": { actions: "private" } } },
+    await provisionSecrets(
+      tokenResults,
+      [
+        {
+          request: createTestProvisionRequest({
+            secretDec: createTestSecretDec({
+              github: { accounts: { "account-a": { actions: "private" } } },
+            }),
           }),
-        }),
-        results: [
-          createTestProvisionAuthTargetResult({
-            isAllowed: false,
-            target: createTestAccountProvisionRequestTarget(
-              "actions",
-              "account-a",
-              "private",
-            ),
-            tokenAuthResult: tokenAuthResultA,
+          results: [
+            createTestProvisionAuthTargetResult({
+              isAllowed: false,
+              target: createTestAccountProvisionRequestTarget(
+                "actions",
+                "account-a",
+                "private",
+              ),
+              tokenAuthResult: tokenAuthResultA,
+            }),
+          ],
+          isMissingTargets: false,
+          isAllowed: false,
+        },
+        {
+          request: createTestProvisionRequest({
+            secretDec: createTestSecretDec({
+              github: { accounts: { "account-a": { actions: "private" } } },
+            }),
           }),
-        ],
-        isMissingTargets: false,
-        isAllowed: false,
-      },
-      {
-        request: createTestProvisionRequest({
-          secretDec: createTestSecretDec({
-            github: { accounts: { "account-a": { actions: "private" } } },
-          }),
-        }),
-        results: [
-          createTestProvisionAuthTargetResult({
-            target: createTestAccountProvisionRequestTarget(
-              "actions",
-              "account-a",
-              "private",
-            ),
-            tokenAuthResult: tokenAuthResultB,
-          }),
-          createTestProvisionAuthTargetResult({
-            target: createTestAccountProvisionRequestTarget(
-              "actions",
-              "account-x",
-              "private",
-            ),
-            tokenAuthResult: tokenAuthResultA,
-          }),
-          createTestProvisionAuthTargetResult({
-            target: createTestAccountProvisionRequestTarget(
-              "actions",
-              "account-a",
-              "private",
-            ),
-            tokenAuthResult: tokenAuthResultA,
-          }),
-        ],
-        isMissingTargets: false,
-        isAllowed: true,
-      },
-    ]);
+          results: [
+            createTestProvisionAuthTargetResult({
+              target: createTestAccountProvisionRequestTarget(
+                "actions",
+                "account-a",
+                "private",
+              ),
+              tokenAuthResult: tokenAuthResultB,
+            }),
+            createTestProvisionAuthTargetResult({
+              target: createTestAccountProvisionRequestTarget(
+                "actions",
+                "account-x",
+                "private",
+              ),
+              tokenAuthResult: tokenAuthResultA,
+            }),
+            createTestProvisionAuthTargetResult({
+              target: createTestAccountProvisionRequestTarget(
+                "actions",
+                "account-a",
+                "private",
+              ),
+              tokenAuthResult: tokenAuthResultA,
+            }),
+          ],
+          isMissingTargets: false,
+          isAllowed: true,
+        },
+      ],
+      new Map(),
+    );
 
   const toMdast = createMarkdownProvisionExplainer();
 
@@ -1648,7 +1708,7 @@ it("warns when no auth results are provided", async () => {
     encryptSecret,
   );
 
-  const results = await provisionSecrets(new Map(), []);
+  const results = await provisionSecrets(new Map(), [], new Map());
 
   expect(results.size).toBe(0);
   expect(__getOutput()).toMatchInlineSnapshot(`

@@ -4,11 +4,17 @@ import { compareTokenRequest } from "./compare-token-request.js";
 import type { DiscoveredRequester } from "./discover-requesters.js";
 import { createTextProvisionAuthExplainer } from "./provision-auth-explainer/text.js";
 import type { ProvisionAuthorizer } from "./provision-authorizer.js";
-import { resolveProvisionCollisions } from "./provision-collision.js";
+import {
+  resolveProvisionCollisions,
+  type ProvisionCollision,
+} from "./provision-collision.js";
 import type { ProvisionRequestFactory } from "./provision-request.js";
 import { createTextTokenAuthExplainer } from "./token-auth-explainer/text.js";
 import type { TokenAuthorizer } from "./token-authorizer.js";
-import type { ProvisionAuthResult } from "./type/provision-auth-result.js";
+import type {
+  ProvisionAuthResult,
+  ProvisionAuthTargetResult,
+} from "./type/provision-auth-result.js";
 import type { TokenAuthResult } from "./type/token-auth-result.js";
 
 export type Authorizer = {
@@ -17,6 +23,7 @@ export type Authorizer = {
 
 export type AuthorizeResult = {
   provisionResults: ProvisionAuthResult[];
+  provisionCollisions: Map<ProvisionAuthTargetResult, ProvisionCollision>;
   tokenResults: TokenAuthResult[];
 };
 
@@ -48,7 +55,7 @@ export function createAuthorizer(
         .listResults()
         .sort((a, b) => compareTokenRequest(a.request, b.request));
 
-      resolveProvisionCollisions(provisionResults);
+      const provisionCollisions = resolveProvisionCollisions(provisionResults);
 
       const explainProvisionAuth = createTextProvisionAuthExplainer();
       const explainTokenAuth = createTextTokenAuthExplainer();
@@ -75,7 +82,7 @@ export function createAuthorizer(
 
       info("");
 
-      return { provisionResults, tokenResults };
+      return { provisionResults, provisionCollisions, tokenResults };
     },
   };
 }

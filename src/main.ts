@@ -145,7 +145,8 @@ try {
   const provisionResults = await group("Provisioning secrets", async () => {
     return await provisionSecrets(
       tokenCreationResults,
-      provisionAuthorizer.listResults(),
+      authorizeResult.provisionResults,
+      authorizeResult.provisionCollisions,
     );
   });
 

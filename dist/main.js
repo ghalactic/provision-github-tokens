@@ -65933,6 +65933,7 @@ function createTokenRequestFactory(appRegistry) {
 
 // src/provision-collision.ts
 function resolveProvisionCollisions(authResults) {
+  const collisions = /* @__PURE__ */ new Map();
   for (const group2 of collisionGroups(authResults)) {
     const writable = [];
     for (const entry of group2) {
@@ -65946,12 +65947,10 @@ function resolveProvisionCollisions(authResults) {
         if (other !== entry) participants.push(toParticipant(other));
       }
       participants.sort(compareParticipants);
-      entry.target.collision = {
-        isBlocking: true,
-        participants
-      };
+      collisions.set(entry.target, { isBlocking: true, participants });
     }
   }
+  return collisions;
 }
 function collisionGroups(authResults) {
   const groups = /* @__PURE__ */ new Map();
@@ -66147,7 +66146,7 @@ function createAuthorizer(createProvisionRequest, provisionAuthorizer, tokenAuth
       }
       const provisionResults = provisionAuthorizer.listResults().sort((a2, b2) => compareProvisionRequest(a2.request, b2.request));
       const tokenResults = tokenAuthorizer.listResults().sort((a2, b2) => compareTokenRequest(a2.request, b2.request));
-      resolveProvisionCollisions(provisionResults);
+      const provisionCollisions = resolveProvisionCollisions(provisionResults);
       const explainProvisionAuth = createTextProvisionAuthExplainer();
       const explainTokenAuth = createTextTokenAuthExplainer();
       if (provisionResults.length > 0) {
@@ -66173,7 +66172,7 @@ Token #${i2}:
         warning("\u26A0\uFE0F No tokens were authorized");
       }
       info("");
-      return { provisionResults, tokenResults };
+      return { provisionResults, provisionCollisions, tokenResults };
     }
   };
 }
@@ -121385,16 +121384,9 @@ function createTextProvisionExplainer() {
       case "NO_PROVISIONER":
         return `
   ${FAIL_ICON} No suitable provisioner for ${subject}${visibility}`;
-      case "COLLISION": {
-        const { collision } = targetAuth;
-        if (!collision) {
-          throw new Error(
-            "Invariant violation: Collision result without collision details"
-          );
-        }
+      case "COLLISION":
         return `
-  ${FAIL_ICON} Provision collision for ${subject}${visibility}` + explainCollisionParticipants(collision);
-      }
+  ${FAIL_ICON} Provision collision for ${subject}${visibility}` + explainCollisionParticipants(result.collision);
       case "REQUEST_ERROR": {
         const summary2 = `${FAIL_ICON} Failed to provision to ${subject}: ${result.error.status} - ${result.error.message}`;
         const body = result.error.response?.data;
@@ -121445,7 +121437,7 @@ ${prefixLines("::debug::      ", errorStack(result.error))}`;
 
 // src/provisioner.ts
 function createProvisioner(findProvisionerOctokit, encryptSecret) {
-  return async (tokens, authResults) => {
+  return async (tokens, authResults, collisions) => {
     const provisionResults = /* @__PURE__ */ new Map();
     for (const auth6 of authResults) {
       const targetResults = /* @__PURE__ */ new Map();
@@ -121455,8 +121447,9 @@ function createProvisioner(findProvisionerOctokit, encryptSecret) {
           targetResults.set(targetAuth, { type: "NOT_ALLOWED" });
           continue;
         }
-        if (targetAuth.collision?.isBlocking) {
-          targetResults.set(targetAuth, { type: "COLLISION" });
+        const collision = collisions.get(targetAuth);
+        if (collision?.isBlocking) {
+          targetResults.set(targetAuth, { type: "COLLISION", collision });
           continue;
         }
         if (!targetAuth.tokenAuthResult) {
@@ -121968,13 +121961,7 @@ function createMarkdownProvisionExplainer() {
           ),
           ...nestedList(...visibility)
         ];
-      case "COLLISION": {
-        const { collision } = targetAuth;
-        if (!collision) {
-          throw new Error(
-            "Invariant violation: Collision result without collision details"
-          );
-        }
+      case "COLLISION":
         return [
           paragraph2(
             text2(`${FAIL_ICON} `),
@@ -121983,9 +121970,11 @@ function createMarkdownProvisionExplainer() {
             ...subject,
             text2(":")
           ),
-          list3(...visibility, ...explainCollisionParticipants(collision))
+          list3(
+            ...visibility,
+            ...explainCollisionParticipants(result.collision)
+          )
         ];
-      }
       case "REQUEST_ERROR": {
         const body = result.error.response?.data;
         return [
@@ -123689,7 +123678,8 @@ try {
   const provisionResults = await group("Provisioning secrets", async () => {
     return await provisionSecrets(
       tokenCreationResults,
-      provisionAuthorizer.listResults()
+      authorizeResult.provisionResults,
+      authorizeResult.provisionCollisions
     );
   });
   await group("Reconciling dashboards", async () => {

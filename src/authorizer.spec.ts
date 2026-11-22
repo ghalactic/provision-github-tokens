@@ -290,6 +290,7 @@ it("authorizes all requests and outputs the results", async () => {
         ],
       },
     ],
+    provisionCollisions: new Map(),
     tokenResults: [expectedTokenResultA, expectedTokenResultB],
   } satisfies AuthorizeResult);
   expect(__getOutput()).toMatchInlineSnapshot(`
@@ -465,6 +466,7 @@ it("handles empty token requests", async () => {
         ],
       },
     ],
+    provisionCollisions: new Map(),
     tokenResults: [],
   } satisfies AuthorizeResult);
   expect(__getOutput()).toMatchInlineSnapshot(`
@@ -514,6 +516,7 @@ it("handles empty provision requests", async () => {
 
   expect(result).toEqual({
     provisionResults: [],
+    provisionCollisions: new Map(),
     tokenResults: [],
   } satisfies AuthorizeResult);
   expect(__getOutput()).toMatchInlineSnapshot(`
@@ -563,6 +566,7 @@ it("handles requester configs that can't be parsed", async () => {
 
   expect(result).toEqual({
     provisionResults: [],
+    provisionCollisions: new Map(),
     tokenResults: [],
   } satisfies AuthorizeResult);
   expect(__getOutput()).toMatchInlineSnapshot(`

@@ -72,9 +72,9 @@ it("refuses writable requests that write different tokens", () => {
     ],
   });
 
-  resolveProvisionCollisions([a, b]);
+  const collisions = resolveProvisionCollisions([a, b]);
 
-  expect(a.results[0].collision).toEqual({
+  expect(collisions.get(a.results[0])).toEqual({
     isBlocking: true,
     participants: [
       {
@@ -84,7 +84,7 @@ it("refuses writable requests that write different tokens", () => {
       },
     ],
   });
-  expect(b.results[0].collision).toEqual({
+  expect(collisions.get(b.results[0])).toEqual({
     isBlocking: true,
     participants: [
       {
@@ -152,10 +152,9 @@ it("doesn't collide when every writable request writes identical content", () =>
     ],
   });
 
-  resolveProvisionCollisions([a, b]);
+  const collisions = resolveProvisionCollisions([a, b]);
 
-  expect(a.results[0].collision).toBeUndefined();
-  expect(b.results[0].collision).toBeUndefined();
+  expect(collisions.size).toBe(0);
 });
 
 it("collides when account secret visibility differs", () => {
@@ -219,10 +218,10 @@ it("collides when account secret visibility differs", () => {
     ],
   });
 
-  resolveProvisionCollisions([a, b]);
+  const collisions = resolveProvisionCollisions([a, b]);
 
-  expect(a.results[0].collision?.isBlocking).toBe(true);
-  expect(b.results[0].collision?.isBlocking).toBe(true);
+  expect(collisions.get(a.results[0])?.isBlocking).toBe(true);
+  expect(collisions.get(b.results[0])?.isBlocking).toBe(true);
 });
 
 it("doesn't collide identical repo targets", () => {
@@ -282,10 +281,9 @@ it("doesn't collide identical repo targets", () => {
     ],
   });
 
-  resolveProvisionCollisions([a, b]);
+  const collisions = resolveProvisionCollisions([a, b]);
 
-  expect(a.results[0].collision).toBeUndefined();
-  expect(b.results[0].collision).toBeUndefined();
+  expect(collisions.size).toBe(0);
 });
 
 it("sorts collision participants by requester", () => {
@@ -394,11 +392,12 @@ it("sorts collision participants by requester", () => {
     ],
   });
 
-  resolveProvisionCollisions([a, a2, a3, b]);
+  const collisions = resolveProvisionCollisions([a, a2, a3, b]);
 
+  const collision = collisions.get(a.results[0]);
   const repos: string[] = [];
 
-  for (const { requester } of a.results[0].collision?.participants ?? []) {
+  for (const { requester } of collision?.participants ?? []) {
     repos.push(requester.repo);
   }
 
@@ -494,10 +493,9 @@ it("compares selected repo IDs order-insensitively", () => {
     ],
   });
 
-  resolveProvisionCollisions([a, b]);
+  const collisions = resolveProvisionCollisions([a, b]);
 
-  expect(a.results[0].collision).toBeUndefined();
-  expect(b.results[0].collision).toBeUndefined();
+  expect(collisions.size).toBe(0);
 });
 
 it("collides when selected repo IDs differ", () => {
@@ -579,10 +577,10 @@ it("collides when selected repo IDs differ", () => {
     ],
   });
 
-  resolveProvisionCollisions([a, b]);
+  const collisions = resolveProvisionCollisions([a, b]);
 
-  expect(a.results[0].collision?.isBlocking).toBe(true);
-  expect(b.results[0].collision?.isBlocking).toBe(true);
+  expect(collisions.get(a.results[0])?.isBlocking).toBe(true);
+  expect(collisions.get(b.results[0])?.isBlocking).toBe(true);
 });
 
 it("collides when only the secret name casing differs", () => {
@@ -643,10 +641,10 @@ it("collides when only the secret name casing differs", () => {
     ],
   });
 
-  resolveProvisionCollisions([a, b]);
+  const collisions = resolveProvisionCollisions([a, b]);
 
-  expect(a.results[0].collision?.participants[0].name).toBe("secret_a");
-  expect(b.results[0].collision?.participants[0].name).toBe("SECRET_A");
+  expect(collisions.get(a.results[0])?.participants[0].name).toBe("secret_a");
+  expect(collisions.get(b.results[0])?.participants[0].name).toBe("SECRET_A");
 });
 
 it("matches secret names case-insensitively", () => {
@@ -707,10 +705,9 @@ it("matches secret names case-insensitively", () => {
     ],
   });
 
-  resolveProvisionCollisions([a, b]);
+  const collisions = resolveProvisionCollisions([a, b]);
 
-  expect(a.results[0].collision).toBeUndefined();
-  expect(b.results[0].collision).toBeUndefined();
+  expect(collisions.size).toBe(0);
 });
 
 it("doesn't collide across secret types or targets", () => {
@@ -803,11 +800,9 @@ it("doesn't collide across secret types or targets", () => {
     ],
   });
 
-  resolveProvisionCollisions([a, b, c]);
+  const collisions = resolveProvisionCollisions([a, b, c]);
 
-  expect(a.results[0].collision).toBeUndefined();
-  expect(b.results[0].collision).toBeUndefined();
-  expect(c.results[0].collision).toBeUndefined();
+  expect(collisions.size).toBe(0);
 });
 
 it("doesn't refuse when fewer than two requests can write", () => {
@@ -868,10 +863,9 @@ it("doesn't refuse when fewer than two requests can write", () => {
     ],
   });
 
-  resolveProvisionCollisions([writable, denied]);
+  const collisions = resolveProvisionCollisions([writable, denied]);
 
-  expect(writable.results[0].collision).toBeUndefined();
-  expect(denied.results[0].collision).toBeUndefined();
+  expect(collisions.size).toBe(0);
 });
 
 it("doesn't refuse a single request", () => {
@@ -907,9 +901,9 @@ it("doesn't refuse a single request", () => {
     ],
   });
 
-  resolveProvisionCollisions([result]);
+  const collisions = resolveProvisionCollisions([result]);
 
-  expect(result.results[0].collision).toBeUndefined();
+  expect(collisions.size).toBe(0);
 });
 
 it("treats an unknown descriptor as disagreeing", () => {
@@ -958,8 +952,8 @@ it("treats an unknown descriptor as disagreeing", () => {
     ],
   });
 
-  resolveProvisionCollisions([known, unknown]);
+  const collisions = resolveProvisionCollisions([known, unknown]);
 
-  expect(known.results[0].collision?.isBlocking).toBe(true);
-  expect(unknown.results[0].collision?.isBlocking).toBe(true);
+  expect(collisions.get(known.results[0])?.isBlocking).toBe(true);
+  expect(collisions.get(unknown.results[0])?.isBlocking).toBe(true);
 });

@@ -92,34 +92,38 @@ it("handles GitHub API errors when provisioning org-level Dependabot secrets", a
     ],
   ]);
 
-  const [[resultA, targetResultsA]] = await provisionSecrets(tokenResults, [
-    {
-      request: createTestProvisionRequest({
-        secretDec: createTestSecretDec({
-          github: { accounts: { "account-a": { dependabot: "private" } } },
+  const [[resultA, targetResultsA]] = await provisionSecrets(
+    tokenResults,
+    [
+      {
+        request: createTestProvisionRequest({
+          secretDec: createTestSecretDec({
+            github: { accounts: { "account-a": { dependabot: "private" } } },
+          }),
+          to: [
+            createTestAccountProvisionRequestTarget(
+              "dependabot",
+              "account-a",
+              "private",
+            ),
+          ],
         }),
-        to: [
-          createTestAccountProvisionRequestTarget(
-            "dependabot",
-            "account-a",
-            "private",
-          ),
+        results: [
+          createTestProvisionAuthTargetResult({
+            target: createTestAccountProvisionRequestTarget(
+              "dependabot",
+              "account-a",
+              "private",
+            ),
+            tokenAuthResult,
+          }),
         ],
-      }),
-      results: [
-        createTestProvisionAuthTargetResult({
-          target: createTestAccountProvisionRequestTarget(
-            "dependabot",
-            "account-a",
-            "private",
-          ),
-          tokenAuthResult,
-        }),
-      ],
-      isMissingTargets: false,
-      isAllowed: true,
-    },
-  ]);
+        isMissingTargets: false,
+        isAllowed: true,
+      },
+    ],
+    new Map(),
+  );
 
   const toMdast = createMarkdownProvisionExplainer();
 
@@ -185,34 +189,38 @@ it("handles unexpected errors when provisioning org-level Dependabot secrets", a
     ],
   ]);
 
-  const [[resultA, targetResultsA]] = await provisionSecrets(tokenResults, [
-    {
-      request: createTestProvisionRequest({
-        secretDec: createTestSecretDec({
-          github: { accounts: { "account-a": { dependabot: "private" } } },
+  const [[resultA, targetResultsA]] = await provisionSecrets(
+    tokenResults,
+    [
+      {
+        request: createTestProvisionRequest({
+          secretDec: createTestSecretDec({
+            github: { accounts: { "account-a": { dependabot: "private" } } },
+          }),
+          to: [
+            createTestAccountProvisionRequestTarget(
+              "dependabot",
+              "account-a",
+              "private",
+            ),
+          ],
         }),
-        to: [
-          createTestAccountProvisionRequestTarget(
-            "dependabot",
-            "account-a",
-            "private",
-          ),
+        results: [
+          createTestProvisionAuthTargetResult({
+            target: createTestAccountProvisionRequestTarget(
+              "dependabot",
+              "account-a",
+              "private",
+            ),
+            tokenAuthResult,
+          }),
         ],
-      }),
-      results: [
-        createTestProvisionAuthTargetResult({
-          target: createTestAccountProvisionRequestTarget(
-            "dependabot",
-            "account-a",
-            "private",
-          ),
-          tokenAuthResult,
-        }),
-      ],
-      isMissingTargets: false,
-      isAllowed: true,
-    },
-  ]);
+        isMissingTargets: false,
+        isAllowed: true,
+      },
+    ],
+    new Map(),
+  );
 
   const toMdast = createMarkdownProvisionExplainer();
 
@@ -275,34 +283,38 @@ it("can provision org-level Dependabot secrets", async () => {
     ],
   ]);
 
-  const [[resultA, targetResultsA]] = await provisionSecrets(tokenResults, [
-    {
-      request: createTestProvisionRequest({
-        secretDec: createTestSecretDec({
-          github: { accounts: { "account-a": { dependabot: "private" } } },
+  const [[resultA, targetResultsA]] = await provisionSecrets(
+    tokenResults,
+    [
+      {
+        request: createTestProvisionRequest({
+          secretDec: createTestSecretDec({
+            github: { accounts: { "account-a": { dependabot: "private" } } },
+          }),
+          to: [
+            createTestAccountProvisionRequestTarget(
+              "dependabot",
+              "account-a",
+              "private",
+            ),
+          ],
         }),
-        to: [
-          createTestAccountProvisionRequestTarget(
-            "dependabot",
-            "account-a",
-            "private",
-          ),
+        results: [
+          createTestProvisionAuthTargetResult({
+            target: createTestAccountProvisionRequestTarget(
+              "dependabot",
+              "account-a",
+              "private",
+            ),
+            tokenAuthResult,
+          }),
         ],
-      }),
-      results: [
-        createTestProvisionAuthTargetResult({
-          target: createTestAccountProvisionRequestTarget(
-            "dependabot",
-            "account-a",
-            "private",
-          ),
-          tokenAuthResult,
-        }),
-      ],
-      isMissingTargets: false,
-      isAllowed: true,
-    },
-  ]);
+        isMissingTargets: false,
+        isAllowed: true,
+      },
+    ],
+    new Map(),
+  );
 
   const toMdast = createMarkdownProvisionExplainer();
 
@@ -374,36 +386,40 @@ it("handles GitHub API errors when provisioning repo-level Dependabot secrets", 
     ],
   ]);
 
-  const [[resultA, targetResultsA]] = await provisionSecrets(tokenResults, [
-    {
-      request: createTestProvisionRequest({
-        secretDec: createTestSecretDec({
-          github: { repos: { "account-a/repo-a": { dependabot: true } } },
+  const [[resultA, targetResultsA]] = await provisionSecrets(
+    tokenResults,
+    [
+      {
+        request: createTestProvisionRequest({
+          secretDec: createTestSecretDec({
+            github: { repos: { "account-a/repo-a": { dependabot: true } } },
+          }),
+          to: [
+            createTestRepoProvisionRequestTarget(
+              "dependabot",
+              "account-a",
+              "repo-a",
+              "private",
+            ),
+          ],
         }),
-        to: [
-          createTestRepoProvisionRequestTarget(
-            "dependabot",
-            "account-a",
-            "repo-a",
-            "private",
-          ),
+        results: [
+          createTestProvisionAuthTargetResult({
+            target: createTestRepoProvisionRequestTarget(
+              "dependabot",
+              "account-a",
+              "repo-a",
+              "private",
+            ),
+            tokenAuthResult,
+          }),
         ],
-      }),
-      results: [
-        createTestProvisionAuthTargetResult({
-          target: createTestRepoProvisionRequestTarget(
-            "dependabot",
-            "account-a",
-            "repo-a",
-            "private",
-          ),
-          tokenAuthResult,
-        }),
-      ],
-      isMissingTargets: false,
-      isAllowed: true,
-    },
-  ]);
+        isMissingTargets: false,
+        isAllowed: true,
+      },
+    ],
+    new Map(),
+  );
 
   const toMdast = createMarkdownProvisionExplainer();
 
@@ -472,36 +488,40 @@ it("handles unexpected errors when provisioning repo-level Dependabot secrets", 
     ],
   ]);
 
-  const [[resultA, targetResultsA]] = await provisionSecrets(tokenResults, [
-    {
-      request: createTestProvisionRequest({
-        secretDec: createTestSecretDec({
-          github: { repos: { "account-a/repo-a": { dependabot: true } } },
+  const [[resultA, targetResultsA]] = await provisionSecrets(
+    tokenResults,
+    [
+      {
+        request: createTestProvisionRequest({
+          secretDec: createTestSecretDec({
+            github: { repos: { "account-a/repo-a": { dependabot: true } } },
+          }),
+          to: [
+            createTestRepoProvisionRequestTarget(
+              "dependabot",
+              "account-a",
+              "repo-a",
+              "private",
+            ),
+          ],
         }),
-        to: [
-          createTestRepoProvisionRequestTarget(
-            "dependabot",
-            "account-a",
-            "repo-a",
-            "private",
-          ),
+        results: [
+          createTestProvisionAuthTargetResult({
+            target: createTestRepoProvisionRequestTarget(
+              "dependabot",
+              "account-a",
+              "repo-a",
+              "private",
+            ),
+            tokenAuthResult,
+          }),
         ],
-      }),
-      results: [
-        createTestProvisionAuthTargetResult({
-          target: createTestRepoProvisionRequestTarget(
-            "dependabot",
-            "account-a",
-            "repo-a",
-            "private",
-          ),
-          tokenAuthResult,
-        }),
-      ],
-      isMissingTargets: false,
-      isAllowed: true,
-    },
-  ]);
+        isMissingTargets: false,
+        isAllowed: true,
+      },
+    ],
+    new Map(),
+  );
 
   const toMdast = createMarkdownProvisionExplainer();
 
@@ -567,36 +587,40 @@ it("can provision repo-level Dependabot secrets", async () => {
     ],
   ]);
 
-  const [[resultA, targetResultsA]] = await provisionSecrets(tokenResults, [
-    {
-      request: createTestProvisionRequest({
-        secretDec: createTestSecretDec({
-          github: { repos: { "account-a/repo-a": { dependabot: true } } },
+  const [[resultA, targetResultsA]] = await provisionSecrets(
+    tokenResults,
+    [
+      {
+        request: createTestProvisionRequest({
+          secretDec: createTestSecretDec({
+            github: { repos: { "account-a/repo-a": { dependabot: true } } },
+          }),
+          to: [
+            createTestRepoProvisionRequestTarget(
+              "dependabot",
+              "account-a",
+              "repo-a",
+              "private",
+            ),
+          ],
         }),
-        to: [
-          createTestRepoProvisionRequestTarget(
-            "dependabot",
-            "account-a",
-            "repo-a",
-            "private",
-          ),
+        results: [
+          createTestProvisionAuthTargetResult({
+            target: createTestRepoProvisionRequestTarget(
+              "dependabot",
+              "account-a",
+              "repo-a",
+              "private",
+            ),
+            tokenAuthResult,
+          }),
         ],
-      }),
-      results: [
-        createTestProvisionAuthTargetResult({
-          target: createTestRepoProvisionRequestTarget(
-            "dependabot",
-            "account-a",
-            "repo-a",
-            "private",
-          ),
-          tokenAuthResult,
-        }),
-      ],
-      isMissingTargets: false,
-      isAllowed: true,
-    },
-  ]);
+        isMissingTargets: false,
+        isAllowed: true,
+      },
+    ],
+    new Map(),
+  );
 
   const toMdast = createMarkdownProvisionExplainer();
 

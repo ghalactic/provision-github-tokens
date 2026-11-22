@@ -3,6 +3,7 @@ import { RequestError } from "@octokit/request-error";
 import type { EncryptSecret } from "./encrypt-secret.js";
 import { createAgentsOctokit } from "./octokit-agents.js";
 import type { Octokit } from "./octokit.js";
+import type { ProvisionCollision } from "./provision-collision.js";
 import { createTextProvisionExplainer } from "./provision-explainer/text.js";
 import {
   isEnvironmentProvisionRequestTarget,
@@ -22,6 +23,7 @@ import type { TokenCreationResult } from "./type/token-creation-result.js";
 export type Provisioner = (
   tokens: Map<TokenAuthResult, TokenCreationResult>,
   authResults: ProvisionAuthResult[],
+  collisions: Map<ProvisionAuthTargetResult, ProvisionCollision>,
 ) => Promise<
   Map<ProvisionAuthResult, Map<ProvisionAuthTargetResult, ProvisionResult>>
 >;
@@ -30,7 +32,7 @@ export function createProvisioner(
   findProvisionerOctokit: FindProvisionerOctokit,
   encryptSecret: EncryptSecret,
 ): Provisioner {
-  return async (tokens, authResults) => {
+  return async (tokens, authResults, collisions) => {
     const provisionResults = new Map<
       ProvisionAuthResult,
       Map<ProvisionAuthTargetResult, ProvisionResult>
@@ -50,8 +52,10 @@ export function createProvisioner(
           continue;
         }
 
-        if (targetAuth.collision?.isBlocking) {
-          targetResults.set(targetAuth, { type: "COLLISION" });
+        const collision = collisions.get(targetAuth);
+
+        if (collision?.isBlocking) {
+          targetResults.set(targetAuth, { type: "COLLISION", collision });
 
           continue;
         }

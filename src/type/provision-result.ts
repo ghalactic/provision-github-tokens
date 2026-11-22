@@ -1,4 +1,5 @@
 import { type RequestError } from "@octokit/request-error";
+import type { ProvisionCollision } from "../provision-collision.js";
 import type {
   ProvisionAuthResult,
   ProvisionAuthTargetResult,
@@ -32,6 +33,7 @@ export type ProvisionNoProvisionerResult = {
 
 export type ProvisionCollisionResult = {
   type: "COLLISION";
+  collision: ProvisionCollision;
 };
 
 export type ProvisionProvisionedResult = {

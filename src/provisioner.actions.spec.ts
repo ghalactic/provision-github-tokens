@@ -97,27 +97,31 @@ it("handles GitHub API errors when provisioning org-level Actions secrets", asyn
     ],
   ]);
 
-  const [[resultA, targetResultsA]] = await provisionSecrets(tokenResults, [
-    {
-      request: createTestProvisionRequest({
-        secretDec: createTestSecretDec({
-          github: { accounts: { "account-a": { actions: "private" } } },
+  const [[resultA, targetResultsA]] = await provisionSecrets(
+    tokenResults,
+    [
+      {
+        request: createTestProvisionRequest({
+          secretDec: createTestSecretDec({
+            github: { accounts: { "account-a": { actions: "private" } } },
+          }),
         }),
-      }),
-      results: [
-        createTestProvisionAuthTargetResult({
-          target: createTestAccountProvisionRequestTarget(
-            "actions",
-            "account-a",
-            "private",
-          ),
-          tokenAuthResult,
-        }),
-      ],
-      isMissingTargets: false,
-      isAllowed: true,
-    },
-  ]);
+        results: [
+          createTestProvisionAuthTargetResult({
+            target: createTestAccountProvisionRequestTarget(
+              "actions",
+              "account-a",
+              "private",
+            ),
+            tokenAuthResult,
+          }),
+        ],
+        isMissingTargets: false,
+        isAllowed: true,
+      },
+    ],
+    new Map(),
+  );
 
   const toMdast = createMarkdownProvisionExplainer();
 
@@ -185,27 +189,31 @@ it("handles unexpected errors when provisioning org-level Actions secrets", asyn
     ],
   ]);
 
-  const [[resultA, targetResultsA]] = await provisionSecrets(tokenResults, [
-    {
-      request: createTestProvisionRequest({
-        secretDec: createTestSecretDec({
-          github: { accounts: { "account-a": { actions: "private" } } },
+  const [[resultA, targetResultsA]] = await provisionSecrets(
+    tokenResults,
+    [
+      {
+        request: createTestProvisionRequest({
+          secretDec: createTestSecretDec({
+            github: { accounts: { "account-a": { actions: "private" } } },
+          }),
         }),
-      }),
-      results: [
-        createTestProvisionAuthTargetResult({
-          target: createTestAccountProvisionRequestTarget(
-            "actions",
-            "account-a",
-            "private",
-          ),
-          tokenAuthResult,
-        }),
-      ],
-      isMissingTargets: false,
-      isAllowed: true,
-    },
-  ]);
+        results: [
+          createTestProvisionAuthTargetResult({
+            target: createTestAccountProvisionRequestTarget(
+              "actions",
+              "account-a",
+              "private",
+            ),
+            tokenAuthResult,
+          }),
+        ],
+        isMissingTargets: false,
+        isAllowed: true,
+      },
+    ],
+    new Map(),
+  );
 
   const toMdast = createMarkdownProvisionExplainer();
 
@@ -268,27 +276,31 @@ it("can provision org-level Actions secrets", async () => {
     ],
   ]);
 
-  const [[resultA, targetResultsA]] = await provisionSecrets(tokenResults, [
-    {
-      request: createTestProvisionRequest({
-        secretDec: createTestSecretDec({
-          github: { accounts: { "account-a": { actions: "private" } } },
+  const [[resultA, targetResultsA]] = await provisionSecrets(
+    tokenResults,
+    [
+      {
+        request: createTestProvisionRequest({
+          secretDec: createTestSecretDec({
+            github: { accounts: { "account-a": { actions: "private" } } },
+          }),
         }),
-      }),
-      results: [
-        createTestProvisionAuthTargetResult({
-          target: createTestAccountProvisionRequestTarget(
-            "actions",
-            "account-a",
-            "private",
-          ),
-          tokenAuthResult,
-        }),
-      ],
-      isMissingTargets: false,
-      isAllowed: true,
-    },
-  ]);
+        results: [
+          createTestProvisionAuthTargetResult({
+            target: createTestAccountProvisionRequestTarget(
+              "actions",
+              "account-a",
+              "private",
+            ),
+            tokenAuthResult,
+          }),
+        ],
+        isMissingTargets: false,
+        isAllowed: true,
+      },
+    ],
+    new Map(),
+  );
 
   const toMdast = createMarkdownProvisionExplainer();
 
@@ -358,36 +370,40 @@ it("handles GitHub API errors when provisioning repo-level Actions secrets", asy
     ],
   ]);
 
-  const [[resultA, targetResultsA]] = await provisionSecrets(tokenResults, [
-    {
-      request: createTestProvisionRequest({
-        secretDec: createTestSecretDec({
-          github: { repos: { "account-a/repo-a": { actions: true } } },
+  const [[resultA, targetResultsA]] = await provisionSecrets(
+    tokenResults,
+    [
+      {
+        request: createTestProvisionRequest({
+          secretDec: createTestSecretDec({
+            github: { repos: { "account-a/repo-a": { actions: true } } },
+          }),
+          to: [
+            createTestRepoProvisionRequestTarget(
+              "actions",
+              "account-a",
+              "repo-a",
+              "private",
+            ),
+          ],
         }),
-        to: [
-          createTestRepoProvisionRequestTarget(
-            "actions",
-            "account-a",
-            "repo-a",
-            "private",
-          ),
+        results: [
+          createTestProvisionAuthTargetResult({
+            target: createTestRepoProvisionRequestTarget(
+              "actions",
+              "account-a",
+              "repo-a",
+              "private",
+            ),
+            tokenAuthResult,
+          }),
         ],
-      }),
-      results: [
-        createTestProvisionAuthTargetResult({
-          target: createTestRepoProvisionRequestTarget(
-            "actions",
-            "account-a",
-            "repo-a",
-            "private",
-          ),
-          tokenAuthResult,
-        }),
-      ],
-      isMissingTargets: false,
-      isAllowed: true,
-    },
-  ]);
+        isMissingTargets: false,
+        isAllowed: true,
+      },
+    ],
+    new Map(),
+  );
 
   const toMdast = createMarkdownProvisionExplainer();
 
@@ -454,36 +470,40 @@ it("handles unexpected errors when provisioning repo-level Actions secrets", asy
     ],
   ]);
 
-  const [[resultA, targetResultsA]] = await provisionSecrets(tokenResults, [
-    {
-      request: createTestProvisionRequest({
-        secretDec: createTestSecretDec({
-          github: { repos: { "account-a/repo-a": { actions: true } } },
+  const [[resultA, targetResultsA]] = await provisionSecrets(
+    tokenResults,
+    [
+      {
+        request: createTestProvisionRequest({
+          secretDec: createTestSecretDec({
+            github: { repos: { "account-a/repo-a": { actions: true } } },
+          }),
+          to: [
+            createTestRepoProvisionRequestTarget(
+              "actions",
+              "account-a",
+              "repo-a",
+              "private",
+            ),
+          ],
         }),
-        to: [
-          createTestRepoProvisionRequestTarget(
-            "actions",
-            "account-a",
-            "repo-a",
-            "private",
-          ),
+        results: [
+          createTestProvisionAuthTargetResult({
+            target: createTestRepoProvisionRequestTarget(
+              "actions",
+              "account-a",
+              "repo-a",
+              "private",
+            ),
+            tokenAuthResult,
+          }),
         ],
-      }),
-      results: [
-        createTestProvisionAuthTargetResult({
-          target: createTestRepoProvisionRequestTarget(
-            "actions",
-            "account-a",
-            "repo-a",
-            "private",
-          ),
-          tokenAuthResult,
-        }),
-      ],
-      isMissingTargets: false,
-      isAllowed: true,
-    },
-  ]);
+        isMissingTargets: false,
+        isAllowed: true,
+      },
+    ],
+    new Map(),
+  );
 
   const toMdast = createMarkdownProvisionExplainer();
 
@@ -547,36 +567,40 @@ it("can provision repo-level Actions secrets", async () => {
     ],
   ]);
 
-  const [[resultA, targetResultsA]] = await provisionSecrets(tokenResults, [
-    {
-      request: createTestProvisionRequest({
-        secretDec: createTestSecretDec({
-          github: { repos: { "account-a/repo-a": { actions: true } } },
+  const [[resultA, targetResultsA]] = await provisionSecrets(
+    tokenResults,
+    [
+      {
+        request: createTestProvisionRequest({
+          secretDec: createTestSecretDec({
+            github: { repos: { "account-a/repo-a": { actions: true } } },
+          }),
+          to: [
+            createTestRepoProvisionRequestTarget(
+              "actions",
+              "account-a",
+              "repo-a",
+              "private",
+            ),
+          ],
         }),
-        to: [
-          createTestRepoProvisionRequestTarget(
-            "actions",
-            "account-a",
-            "repo-a",
-            "private",
-          ),
+        results: [
+          createTestProvisionAuthTargetResult({
+            target: createTestRepoProvisionRequestTarget(
+              "actions",
+              "account-a",
+              "repo-a",
+              "private",
+            ),
+            tokenAuthResult,
+          }),
         ],
-      }),
-      results: [
-        createTestProvisionAuthTargetResult({
-          target: createTestRepoProvisionRequestTarget(
-            "actions",
-            "account-a",
-            "repo-a",
-            "private",
-          ),
-          tokenAuthResult,
-        }),
-      ],
-      isMissingTargets: false,
-      isAllowed: true,
-    },
-  ]);
+        isMissingTargets: false,
+        isAllowed: true,
+      },
+    ],
+    new Map(),
+  );
 
   const toMdast = createMarkdownProvisionExplainer();
 
@@ -689,23 +713,27 @@ it.each<
       ],
     ]);
 
-    await provisionSecrets(tokenResults, [
-      {
-        request: createTestProvisionRequest(),
-        results: [
-          createTestProvisionAuthTargetResult({
-            target: createTestAccountProvisionRequestTarget(
-              type,
-              "account-a",
-              visibility,
-            ),
-            tokenAuthResult,
-          }),
-        ],
-        isMissingTargets: false,
-        isAllowed: true,
-      },
-    ]);
+    await provisionSecrets(
+      tokenResults,
+      [
+        {
+          request: createTestProvisionRequest(),
+          results: [
+            createTestProvisionAuthTargetResult({
+              target: createTestAccountProvisionRequestTarget(
+                type,
+                "account-a",
+                visibility,
+              ),
+              tokenAuthResult,
+            }),
+          ],
+          isMissingTargets: false,
+          isAllowed: true,
+        },
+      ],
+      new Map(),
+    );
 
     expect(__getOrgSecrets("account-a")[type]).toEqual({
       SECRET_A: {

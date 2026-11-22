@@ -96,6 +96,7 @@ it("renders a summary with all secrets provisioned", async () => {
 
   const authResult: AuthorizeResult = {
     provisionResults: [provisionAuthResultA, provisionAuthResultB],
+    provisionCollisions: new Map(),
     tokenResults: [tokenAuthResultA, tokenAuthResultB],
   };
 
@@ -215,6 +216,7 @@ it("renders a summary with some secrets denied", async () => {
 
   const authResult: AuthorizeResult = {
     provisionResults: [provisionAuthResultA, provisionAuthResultB],
+    provisionCollisions: new Map(),
     tokenResults: [tokenAuthResultA, tokenAuthResultB],
   };
 
@@ -304,6 +306,7 @@ it("renders a summary with all secrets denied", async () => {
 
   const authResult: AuthorizeResult = {
     provisionResults: [provisionAuthResultA],
+    provisionCollisions: new Map(),
     tokenResults: [tokenAuthResultA],
   };
 
@@ -342,6 +345,7 @@ it("renders a summary with all secrets denied", async () => {
 it("renders a summary with no secrets requested", async () => {
   const authResult: AuthorizeResult = {
     provisionResults: [],
+    provisionCollisions: new Map(),
     tokenResults: [],
   };
 
@@ -401,6 +405,7 @@ it("renders a summary with environment targets", async () => {
 
   const authResult: AuthorizeResult = {
     provisionResults: [provisionAuthResultA],
+    provisionCollisions: new Map(),
     tokenResults: [tokenAuthResultA],
   };
 
@@ -505,6 +510,7 @@ it("renders a summary with multiple requesters", async () => {
 
   const authResult: AuthorizeResult = {
     provisionResults: [provisionAuthResultA, provisionAuthResultB],
+    provisionCollisions: new Map(),
     tokenResults: [tokenAuthResultA, tokenAuthResultB],
   };
 
@@ -613,6 +619,7 @@ it("renders a summary with a missing token declaration", async () => {
 
   const authResult: AuthorizeResult = {
     provisionResults: [provisionAuthResultA, provisionAuthResultB],
+    provisionCollisions: new Map(),
     tokenResults: [tokenAuthResultA],
   };
 
@@ -713,6 +720,7 @@ it("renders a summary with an unshared token declaration", async () => {
 
   const authResult: AuthorizeResult = {
     provisionResults: [provisionAuthResultA, provisionAuthResultB],
+    provisionCollisions: new Map(),
     tokenResults: [tokenAuthResultA],
   };
 
@@ -807,6 +815,7 @@ it("renders a summary with missing targets", async () => {
 
   const authResult: AuthorizeResult = {
     provisionResults: [provisionAuthResultA, provisionAuthResultB],
+    provisionCollisions: new Map(),
     tokenResults: [tokenAuthResultA],
   };
 
@@ -930,6 +939,7 @@ it("renders a summary with multiple distinct targets", async () => {
 
   const authResult: AuthorizeResult = {
     provisionResults: [provisionAuthResultA],
+    provisionCollisions: new Map(),
     tokenResults: [tokenAuthResultA],
   };
 
@@ -1007,6 +1017,7 @@ it("truncates rows beyond the limit and shows a notice", async () => {
 
   const authResult: AuthorizeResult = {
     provisionResults: provisionAuthResults,
+    provisionCollisions: new Map(),
     tokenResults: [],
   };
 
@@ -1062,6 +1073,7 @@ it("renders a failure reason when tokens aren't allowed", async () => {
 
   const authResult: AuthorizeResult = {
     provisionResults: [provisionAuthResult],
+    provisionCollisions: new Map(),
     tokenResults: [tokenAuthResult],
   };
 
@@ -1126,6 +1138,7 @@ it("renders a failure reason when no suitable issuer is found", async () => {
 
   const authResult: AuthorizeResult = {
     provisionResults: [provisionAuthResult],
+    provisionCollisions: new Map(),
     tokenResults: [tokenAuthResult],
   };
 
@@ -1192,6 +1205,7 @@ it("renders a failure reason when token issuance fails", async () => {
 
   const authResult: AuthorizeResult = {
     provisionResults: [provisionAuthResult],
+    provisionCollisions: new Map(),
     tokenResults: [tokenAuthResult],
   };
 
@@ -1258,6 +1272,7 @@ it("renders a failure reason when no suitable provisioner is found", async () =>
 
   const authResult: AuthorizeResult = {
     provisionResults: [provisionAuthResult],
+    provisionCollisions: new Map(),
     tokenResults: [tokenAuthResult],
   };
 
@@ -1333,6 +1348,7 @@ it("renders a failure reason when provisioning has no target results", async () 
 
   const authResult: AuthorizeResult = {
     provisionResults: [provisionAuthResult],
+    provisionCollisions: new Map(),
     tokenResults: [tokenAuthResult],
   };
 
@@ -1424,6 +1440,7 @@ it("renders a failure reason when provisioning partially fails across targets", 
 
   const authResult: AuthorizeResult = {
     provisionResults: [provisionAuthResult],
+    provisionCollisions: new Map(),
     tokenResults: [tokenAuthResult],
   };
 
@@ -1500,6 +1517,7 @@ it("renders a failure reason when provisioning fails for all targets", async () 
 
   const authResult: AuthorizeResult = {
     provisionResults: [provisionAuthResult],
+    provisionCollisions: new Map(),
     tokenResults: [tokenAuthResult],
   };
 
@@ -1558,16 +1576,6 @@ it("reports a provision collision as the failure reason", () => {
     target: accountAActionsTarget,
     tokenAuthResult,
   });
-  collidedTargetResult.collision = {
-    isBlocking: true,
-    participants: [
-      {
-        requester: { account: "account-x", repo: "repo-x" },
-        name: "SECRET_A",
-        token: "account-x/repo-x.token-x",
-      },
-    ],
-  };
   const provisionedTargetResult = createTestProvisionAuthTargetResult({
     target: accountBActionsTarget,
     tokenAuthResult,
@@ -1591,6 +1599,7 @@ it("reports a provision collision as the failure reason", () => {
 
   const authResult: AuthorizeResult = {
     provisionResults: [provisionAuthResult],
+    provisionCollisions: new Map(),
     tokenResults: [tokenAuthResult],
   };
 
@@ -1611,7 +1620,22 @@ it("reports a provision collision as the failure reason", () => {
     [
       provisionAuthResult,
       new Map<ProvisionAuthTargetResult, ProvisionResult>([
-        [collidedTargetResult, { type: "COLLISION" }],
+        [
+          collidedTargetResult,
+          {
+            type: "COLLISION",
+            collision: {
+              isBlocking: true,
+              participants: [
+                {
+                  requester: { account: "account-x", repo: "repo-x" },
+                  name: "SECRET_A",
+                  token: "account-x/repo-x.token-x",
+                },
+              ],
+            },
+          },
+        ],
         [provisionedTargetResult, { type: "PROVISIONED" }],
       ]),
     ],

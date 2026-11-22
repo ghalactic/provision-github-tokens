@@ -86,7 +86,7 @@ it("refuses to provision a colliding target", async () => {
     tokenAuthResult,
   });
 
-  targetResult.collision = {
+  const collision = {
     isBlocking: true,
     participants: [
       {
@@ -97,23 +97,30 @@ it("refuses to provision a colliding target", async () => {
     ],
   };
 
-  const [[resultA, targetResultsA]] = await provisionSecrets(new Map(), [
-    {
-      request: createTestProvisionRequest({
-        secretDec: createTestSecretDec({
-          github: { accounts: { "account-a": { actions: "private" } } },
+  const [[resultA, targetResultsA]] = await provisionSecrets(
+    new Map(),
+    [
+      {
+        request: createTestProvisionRequest({
+          secretDec: createTestSecretDec({
+            github: { accounts: { "account-a": { actions: "private" } } },
+          }),
         }),
-      }),
-      results: [targetResult],
-      isMissingTargets: false,
-      isAllowed: true,
-    },
-  ]);
+        results: [targetResult],
+        isMissingTargets: false,
+        isAllowed: true,
+      },
+    ],
+    new Map([[targetResult, collision]]),
+  );
 
   const toMdast = createMarkdownProvisionExplainer();
 
   expect(__getOrgSecrets("account-a")).toBeUndefined();
-  expect(targetResultsA.get(targetResult)).toEqual({ type: "COLLISION" });
+  expect(targetResultsA.get(targetResult)).toEqual({
+    type: "COLLISION",
+    collision,
+  });
   expect(encryptSecret).not.toHaveBeenCalled();
   expect(__getOutput()).toMatchInlineSnapshot(`
     "

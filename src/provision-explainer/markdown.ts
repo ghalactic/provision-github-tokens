@@ -18,15 +18,13 @@ import {
   text,
 } from "../markdown.js";
 import { pluralize } from "../pluralize.js";
+import type { ProvisionCollision } from "../provision-collision.js";
 import {
   isRepoProvisionRequestTarget,
   type ProvisionRequestTarget,
 } from "../provision-request.js";
 import { secretTypeMdast } from "../secret-type.js";
-import type {
-  ProvisionAuthTargetResult,
-  ProvisionCollision,
-} from "../type/provision-auth-result.js";
+import type { ProvisionAuthTargetResult } from "../type/provision-auth-result.js";
 import type {
   ProvisionResult,
   ProvisionResultExplainer,
@@ -153,16 +151,7 @@ export function createMarkdownProvisionExplainer(): ProvisionResultExplainer<
           ...nestedList(...visibility),
         ];
 
-      case "COLLISION": {
-        const { collision } = targetAuth;
-
-        /* istanbul ignore next - @preserve */
-        if (!collision) {
-          throw new Error(
-            "Invariant violation: Collision result without collision details",
-          );
-        }
-
+      case "COLLISION":
         return [
           paragraph(
             text(`${FAIL_ICON} `),
@@ -171,9 +160,11 @@ export function createMarkdownProvisionExplainer(): ProvisionResultExplainer<
             ...subject,
             text(":"),
           ),
-          list(...visibility, ...explainCollisionParticipants(collision)),
+          list(
+            ...visibility,
+            ...explainCollisionParticipants(result.collision),
+          ),
         ];
-      }
 
       case "REQUEST_ERROR": {
         const body = result.error.response?.data;

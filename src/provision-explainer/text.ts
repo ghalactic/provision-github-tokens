@@ -6,16 +6,14 @@ import {
 } from "../github-reference.js";
 import { FAIL_ICON, icon, PASS_ICON } from "../icon.js";
 import { pluralize } from "../pluralize.js";
+import type { ProvisionCollision } from "../provision-collision.js";
 import {
   isRepoProvisionRequestTarget,
   type ProvisionRequestTarget,
 } from "../provision-request.js";
 import { secretTypeText } from "../secret-type.js";
 import { prefixLines } from "../text.js";
-import type {
-  ProvisionAuthTargetResult,
-  ProvisionCollision,
-} from "../type/provision-auth-result.js";
+import type { ProvisionAuthTargetResult } from "../type/provision-auth-result.js";
 import type {
   ProvisionResult,
   ProvisionResultExplainer,
@@ -90,21 +88,11 @@ export function createTextProvisionExplainer(): ProvisionResultExplainer<string>
           `for ${subject}${visibility}`
         );
 
-      case "COLLISION": {
-        const { collision } = targetAuth;
-
-        /* istanbul ignore next - @preserve */
-        if (!collision) {
-          throw new Error(
-            "Invariant violation: Collision result without collision details",
-          );
-        }
-
+      case "COLLISION":
         return (
           `\n  ${FAIL_ICON} Provision collision for ${subject}${visibility}` +
-          explainCollisionParticipants(collision)
+          explainCollisionParticipants(result.collision)
         );
-      }
 
       case "REQUEST_ERROR": {
         const summary =

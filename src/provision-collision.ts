@@ -1,5 +1,6 @@
 import stringify from "fast-json-stable-stringify";
 import { compareRef } from "./compare-ref.js";
+import type { RepoReference } from "./github-reference.js";
 import {
   isRepoProvisionRequestTarget,
   type ProvisionRequestTarget,
@@ -8,12 +9,24 @@ import { tokenShapeKey } from "./token-request.js";
 import type {
   ProvisionAuthResult,
   ProvisionAuthTargetResult,
-  ProvisionCollisionParticipant,
 } from "./type/provision-auth-result.js";
+
+export type ProvisionCollision = {
+  isBlocking: boolean;
+  participants: ProvisionCollisionParticipant[];
+};
+
+export type ProvisionCollisionParticipant = {
+  requester: RepoReference;
+  name: string;
+  token: string;
+};
 
 export function resolveProvisionCollisions(
   authResults: ProvisionAuthResult[],
-): void {
+): Map<ProvisionAuthTargetResult, ProvisionCollision> {
+  const collisions = new Map<ProvisionAuthTargetResult, ProvisionCollision>();
+
   for (const group of collisionGroups(authResults)) {
     const writable: CollisionEntry[] = [];
 
@@ -33,12 +46,11 @@ export function resolveProvisionCollisions(
 
       participants.sort(compareParticipants);
 
-      entry.target.collision = {
-        isBlocking: true,
-        participants,
-      };
+      collisions.set(entry.target, { isBlocking: true, participants });
     }
   }
+
+  return collisions;
 }
 
 function collisionGroups(

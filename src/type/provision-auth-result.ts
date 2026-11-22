@@ -1,4 +1,3 @@
-import type { RepoReference } from "../github-reference.js";
 import type {
   GitHubAccountProvisionRequestTarget,
   GitHubEnvironmentProvisionRequestTarget,
@@ -52,17 +51,6 @@ export type ProvisionAuthTargetRuleResult = {
   have: "allow" | "deny" | undefined;
 };
 
-export type ProvisionCollision = {
-  isBlocking: boolean;
-  participants: ProvisionCollisionParticipant[];
-};
-
-export type ProvisionCollisionParticipant = {
-  requester: RepoReference;
-  name: string;
-  token: string;
-};
-
 type ProvisionAuthTargetResultCommon = {
   rules: ProvisionAuthTargetRuleResult[];
   have: "allow" | "deny" | undefined;
@@ -71,5 +59,4 @@ type ProvisionAuthTargetResultCommon = {
   isSecretVisibilityCategoryAllowed: boolean;
   isProvisionAllowed: boolean;
   isAllowed: boolean;
-  collision?: ProvisionCollision;
 };
