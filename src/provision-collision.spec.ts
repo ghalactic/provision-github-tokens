@@ -8,31 +8,68 @@ import {
   createTestProvisionRequest,
   createTestRepoProvisionRequestTarget,
 } from "../test/provision-request.js";
-import { createTestTokenAuthResult } from "../test/result.js";
-import type { RepoReference } from "./github-reference.js";
+import {
+  createTestProvisionAuthResult,
+  createTestProvisionAuthTargetResult,
+  createTestTokenAuthResult,
+} from "../test/result.js";
 import { resolveProvisionCollisions } from "./provision-collision.js";
-import type {
-  AccountSecretVisibility,
-  ProvisionRequestTarget,
-} from "./provision-request.js";
-import type { TokenDeclaration } from "./token-declaration.js";
-import type {
-  ProvisionAuthResult,
-  ProvisionAuthTargetResult,
-} from "./type/provision-auth-result.js";
 
 it("refuses writable requests that write different tokens", () => {
-  const target = accountTarget();
+  const target = createTestAccountProvisionRequestTarget(
+    "actions",
+    "account-a",
+    "private",
+  );
+  const tokenDecA = createTestTokenDec({ permissions: { contents: "read" } });
+  const tokenDecB = createTestTokenDec({ permissions: { issues: "write" } });
 
-  const a = createAuthResult({
-    requester: { account: "account-a", repo: "repo-a" },
-    tokenDec: createTestTokenDec({ permissions: { contents: "read" } }),
-    target,
+  const tokenAuthResultA = createTestTokenAuthResult({
+    request: {
+      consumer: { account: "account-a" },
+      repos: "all",
+      tokenDec: tokenDecA,
+    },
+    have: tokenDecA.permissions,
+    maxWant: "read",
   });
-  const b = createAuthResult({
-    requester: { account: "account-b", repo: "repo-b" },
-    tokenDec: createTestTokenDec({ permissions: { issues: "write" } }),
-    target,
+  const tokenAuthResultB = createTestTokenAuthResult({
+    request: {
+      consumer: { account: "account-b" },
+      repos: "all",
+      tokenDec: tokenDecB,
+    },
+    have: tokenDecB.permissions,
+    maxWant: "read",
+  });
+
+  const a = createTestProvisionAuthResult({
+    request: createTestProvisionRequest({
+      requester: { account: "account-a", repo: "repo-a" },
+      tokenDec: tokenDecA,
+      secretDec: createTestSecretDec({ token: "account-a/repo-a.token" }),
+      to: [target],
+    }),
+    results: [
+      createTestProvisionAuthTargetResult({
+        target,
+        tokenAuthResult: tokenAuthResultA,
+      }),
+    ],
+  });
+  const b = createTestProvisionAuthResult({
+    request: createTestProvisionRequest({
+      requester: { account: "account-b", repo: "repo-b" },
+      tokenDec: tokenDecB,
+      secretDec: createTestSecretDec({ token: "account-b/repo-b.token" }),
+      to: [target],
+    }),
+    results: [
+      createTestProvisionAuthTargetResult({
+        target,
+        tokenAuthResult: tokenAuthResultB,
+      }),
+    ],
   });
 
   resolveProvisionCollisions([a, b]);
@@ -60,14 +97,59 @@ it("refuses writable requests that write different tokens", () => {
 });
 
 it("doesn't collide when every writable request writes identical content", () => {
-  const target = accountTarget();
+  const target = createTestAccountProvisionRequestTarget(
+    "actions",
+    "account-a",
+    "private",
+  );
   const tokenDec = createTestTokenDec({ permissions: { contents: "read" } });
 
-  const a = createAuthResult({ target, tokenDec });
-  const b = createAuthResult({
-    requester: { account: "account-b", repo: "repo-b" },
-    target,
-    tokenDec,
+  const tokenAuthResultA = createTestTokenAuthResult({
+    request: {
+      consumer: { account: "account-a" },
+      repos: "all",
+      tokenDec,
+    },
+    have: tokenDec.permissions,
+    maxWant: "read",
+  });
+  const tokenAuthResultB = createTestTokenAuthResult({
+    request: {
+      consumer: { account: "account-b" },
+      repos: "all",
+      tokenDec,
+    },
+    have: tokenDec.permissions,
+    maxWant: "read",
+  });
+
+  const a = createTestProvisionAuthResult({
+    request: createTestProvisionRequest({
+      requester: { account: "account-a", repo: "repo-a" },
+      tokenDec,
+      secretDec: createTestSecretDec({ token: "account-a/repo-a.token" }),
+      to: [target],
+    }),
+    results: [
+      createTestProvisionAuthTargetResult({
+        target,
+        tokenAuthResult: tokenAuthResultA,
+      }),
+    ],
+  });
+  const b = createTestProvisionAuthResult({
+    request: createTestProvisionRequest({
+      requester: { account: "account-b", repo: "repo-b" },
+      tokenDec,
+      secretDec: createTestSecretDec({ token: "account-b/repo-b.token" }),
+      to: [target],
+    }),
+    results: [
+      createTestProvisionAuthTargetResult({
+        target,
+        tokenAuthResult: tokenAuthResultB,
+      }),
+    ],
   });
 
   resolveProvisionCollisions([a, b]);
@@ -77,16 +159,64 @@ it("doesn't collide when every writable request writes identical content", () =>
 });
 
 it("collides when account secret visibility differs", () => {
+  const targetA = createTestAccountProvisionRequestTarget(
+    "actions",
+    "account-a",
+    "private",
+  );
+  const targetB = createTestAccountProvisionRequestTarget(
+    "actions",
+    "account-a",
+    "all",
+  );
   const tokenDec = createTestTokenDec({ permissions: { contents: "read" } });
 
-  const a = createAuthResult({
-    target: accountTarget("private"),
-    tokenDec,
+  const tokenAuthResultA = createTestTokenAuthResult({
+    request: {
+      consumer: { account: "account-a" },
+      repos: "all",
+      tokenDec,
+    },
+    have: tokenDec.permissions,
+    maxWant: "read",
   });
-  const b = createAuthResult({
-    requester: { account: "account-b", repo: "repo-b" },
-    target: accountTarget("all"),
-    tokenDec,
+  const tokenAuthResultB = createTestTokenAuthResult({
+    request: {
+      consumer: { account: "account-b" },
+      repos: "all",
+      tokenDec,
+    },
+    have: tokenDec.permissions,
+    maxWant: "read",
+  });
+
+  const a = createTestProvisionAuthResult({
+    request: createTestProvisionRequest({
+      requester: { account: "account-a", repo: "repo-a" },
+      tokenDec,
+      secretDec: createTestSecretDec({ token: "account-a/repo-a.token" }),
+      to: [targetA],
+    }),
+    results: [
+      createTestProvisionAuthTargetResult({
+        target: targetA,
+        tokenAuthResult: tokenAuthResultA,
+      }),
+    ],
+  });
+  const b = createTestProvisionAuthResult({
+    request: createTestProvisionRequest({
+      requester: { account: "account-b", repo: "repo-b" },
+      tokenDec,
+      secretDec: createTestSecretDec({ token: "account-b/repo-b.token" }),
+      to: [targetB],
+    }),
+    results: [
+      createTestProvisionAuthTargetResult({
+        target: targetB,
+        tokenAuthResult: tokenAuthResultB,
+      }),
+    ],
   });
 
   resolveProvisionCollisions([a, b]);
@@ -104,11 +234,52 @@ it("doesn't collide identical repo targets", () => {
   );
   const tokenDec = createTestTokenDec({ permissions: { contents: "read" } });
 
-  const a = createAuthResult({ target, tokenDec });
-  const b = createAuthResult({
-    requester: { account: "account-b", repo: "repo-b" },
-    target,
-    tokenDec,
+  const tokenAuthResultA = createTestTokenAuthResult({
+    request: {
+      consumer: { account: "account-a" },
+      repos: "all",
+      tokenDec,
+    },
+    have: tokenDec.permissions,
+    maxWant: "read",
+  });
+  const tokenAuthResultB = createTestTokenAuthResult({
+    request: {
+      consumer: { account: "account-b" },
+      repos: "all",
+      tokenDec,
+    },
+    have: tokenDec.permissions,
+    maxWant: "read",
+  });
+
+  const a = createTestProvisionAuthResult({
+    request: createTestProvisionRequest({
+      requester: { account: "account-a", repo: "repo-a" },
+      tokenDec,
+      secretDec: createTestSecretDec({ token: "account-a/repo-a.token" }),
+      to: [target],
+    }),
+    results: [
+      createTestProvisionAuthTargetResult({
+        target,
+        tokenAuthResult: tokenAuthResultA,
+      }),
+    ],
+  });
+  const b = createTestProvisionAuthResult({
+    request: createTestProvisionRequest({
+      requester: { account: "account-b", repo: "repo-b" },
+      tokenDec,
+      secretDec: createTestSecretDec({ token: "account-b/repo-b.token" }),
+      to: [target],
+    }),
+    results: [
+      createTestProvisionAuthTargetResult({
+        target,
+        tokenAuthResult: tokenAuthResultB,
+      }),
+    ],
   });
 
   resolveProvisionCollisions([a, b]);
@@ -118,37 +289,209 @@ it("doesn't collide identical repo targets", () => {
 });
 
 it("sorts collision participants by requester", () => {
-  const target = accountTarget();
+  const target = createTestAccountProvisionRequestTarget(
+    "actions",
+    "account-a",
+    "private",
+  );
   const tokenDec = createTestTokenDec({ permissions: { contents: "read" } });
 
-  const a = createAuthResult({ name: "SECRET_A", target, tokenDec });
-  const b = createAuthResult({ name: "secret_a", target, tokenDec });
-  const b2 = createAuthResult({ name: "Secret_A", target, tokenDec });
-  const c = createAuthResult({
-    requester: { account: "account-b", repo: "repo-b" },
-    name: "SECRET_A",
-    target,
-    tokenDec,
+  const tokenAuthResultA = createTestTokenAuthResult({
+    request: {
+      consumer: { account: "account-a" },
+      repos: "all",
+      tokenDec,
+    },
+    have: tokenDec.permissions,
+    maxWant: "read",
+  });
+  const tokenAuthResultA2 = createTestTokenAuthResult({
+    request: {
+      consumer: { account: "account-a" },
+      repos: "all",
+      tokenDec,
+    },
+    have: tokenDec.permissions,
+    maxWant: "read",
+  });
+  const tokenAuthResultA3 = createTestTokenAuthResult({
+    request: {
+      consumer: { account: "account-a" },
+      repos: "all",
+      tokenDec,
+    },
+    have: tokenDec.permissions,
+    maxWant: "read",
+  });
+  const tokenAuthResultB = createTestTokenAuthResult({
+    request: {
+      consumer: { account: "account-b" },
+      repos: "all",
+      tokenDec,
+    },
+    have: tokenDec.permissions,
+    maxWant: "read",
   });
 
-  resolveProvisionCollisions([a, b, b2, c]);
+  const a = createTestProvisionAuthResult({
+    request: createTestProvisionRequest({
+      requester: { account: "account-a", repo: "repo-a" },
+      tokenDec,
+      secretDec: createTestSecretDec({ token: "account-a/repo-a.token-a" }),
+      name: "SECRET_A",
+      to: [target],
+    }),
+    results: [
+      createTestProvisionAuthTargetResult({
+        target,
+        tokenAuthResult: tokenAuthResultA,
+      }),
+    ],
+  });
+  const a2 = createTestProvisionAuthResult({
+    request: createTestProvisionRequest({
+      requester: { account: "account-a", repo: "repo-a" },
+      tokenDec,
+      secretDec: createTestSecretDec({ token: "account-a/repo-a.token-a2" }),
+      name: "secret_a",
+      to: [target],
+    }),
+    results: [
+      createTestProvisionAuthTargetResult({
+        target,
+        tokenAuthResult: tokenAuthResultA2,
+      }),
+    ],
+  });
+  const a3 = createTestProvisionAuthResult({
+    request: createTestProvisionRequest({
+      requester: { account: "account-a", repo: "repo-a" },
+      tokenDec,
+      secretDec: createTestSecretDec({ token: "account-a/repo-a.token-a3" }),
+      name: "Secret_A",
+      to: [target],
+    }),
+    results: [
+      createTestProvisionAuthTargetResult({
+        target,
+        tokenAuthResult: tokenAuthResultA3,
+      }),
+    ],
+  });
+  const b = createTestProvisionAuthResult({
+    request: createTestProvisionRequest({
+      requester: { account: "account-b", repo: "repo-b" },
+      tokenDec,
+      secretDec: createTestSecretDec({ token: "account-b/repo-b.token" }),
+      name: "SECRET_A",
+      to: [target],
+    }),
+    results: [
+      createTestProvisionAuthTargetResult({
+        target,
+        tokenAuthResult: tokenAuthResultB,
+      }),
+    ],
+  });
 
-  expect(
-    a.results[0].collision?.participants.map(({ requester }) => requester.repo),
-  ).toEqual(["repo-a", "repo-a", "repo-b"]);
+  resolveProvisionCollisions([a, a2, a3, b]);
+
+  const repos: string[] = [];
+
+  for (const { requester } of a.results[0].collision?.participants ?? []) {
+    repos.push(requester.repo);
+  }
+
+  expect(repos).toEqual(["repo-a", "repo-a", "repo-b"]);
 });
 
 it("compares selected repo IDs order-insensitively", () => {
+  const targetA = createTestAccountProvisionRequestTarget(
+    "actions",
+    "account-a",
+    {
+      patterns: ["*"],
+      repos: [
+        {
+          ref: { account: "account-a", repo: "repo-2" },
+          id: 2,
+          visibility: "private",
+        },
+        {
+          ref: { account: "account-a", repo: "repo-1" },
+          id: 1,
+          visibility: "private",
+        },
+      ],
+    },
+  );
+  const targetB = createTestAccountProvisionRequestTarget(
+    "actions",
+    "account-a",
+    {
+      patterns: ["*"],
+      repos: [
+        {
+          ref: { account: "account-a", repo: "repo-1" },
+          id: 1,
+          visibility: "private",
+        },
+        {
+          ref: { account: "account-a", repo: "repo-2" },
+          id: 2,
+          visibility: "private",
+        },
+      ],
+    },
+  );
   const tokenDec = createTestTokenDec({ permissions: { contents: "read" } });
 
-  const a = createAuthResult({
-    target: accountTarget(selectedVisibility([2, 1])),
-    tokenDec,
+  const tokenAuthResultA = createTestTokenAuthResult({
+    request: {
+      consumer: { account: "account-a" },
+      repos: "all",
+      tokenDec,
+    },
+    have: tokenDec.permissions,
+    maxWant: "read",
   });
-  const b = createAuthResult({
-    requester: { account: "account-b", repo: "repo-b" },
-    target: accountTarget(selectedVisibility([1, 2])),
-    tokenDec,
+  const tokenAuthResultB = createTestTokenAuthResult({
+    request: {
+      consumer: { account: "account-b" },
+      repos: "all",
+      tokenDec,
+    },
+    have: tokenDec.permissions,
+    maxWant: "read",
+  });
+
+  const a = createTestProvisionAuthResult({
+    request: createTestProvisionRequest({
+      requester: { account: "account-a", repo: "repo-a" },
+      tokenDec,
+      secretDec: createTestSecretDec({ token: "account-a/repo-a.token" }),
+      to: [targetA],
+    }),
+    results: [
+      createTestProvisionAuthTargetResult({
+        target: targetA,
+        tokenAuthResult: tokenAuthResultA,
+      }),
+    ],
+  });
+  const b = createTestProvisionAuthResult({
+    request: createTestProvisionRequest({
+      requester: { account: "account-b", repo: "repo-b" },
+      tokenDec,
+      secretDec: createTestSecretDec({ token: "account-b/repo-b.token" }),
+      to: [targetB],
+    }),
+    results: [
+      createTestProvisionAuthTargetResult({
+        target: targetB,
+        tokenAuthResult: tokenAuthResultB,
+      }),
+    ],
   });
 
   resolveProvisionCollisions([a, b]);
@@ -158,16 +501,82 @@ it("compares selected repo IDs order-insensitively", () => {
 });
 
 it("collides when selected repo IDs differ", () => {
+  const targetA = createTestAccountProvisionRequestTarget(
+    "actions",
+    "account-a",
+    {
+      patterns: ["*"],
+      repos: [
+        {
+          ref: { account: "account-a", repo: "repo-1" },
+          id: 1,
+          visibility: "private",
+        },
+      ],
+    },
+  );
+  const targetB = createTestAccountProvisionRequestTarget(
+    "actions",
+    "account-a",
+    {
+      patterns: ["*"],
+      repos: [
+        {
+          ref: { account: "account-a", repo: "repo-2" },
+          id: 2,
+          visibility: "private",
+        },
+      ],
+    },
+  );
   const tokenDec = createTestTokenDec({ permissions: { contents: "read" } });
 
-  const a = createAuthResult({
-    target: accountTarget(selectedVisibility([1])),
-    tokenDec,
+  const tokenAuthResultA = createTestTokenAuthResult({
+    request: {
+      consumer: { account: "account-a" },
+      repos: "all",
+      tokenDec,
+    },
+    have: tokenDec.permissions,
+    maxWant: "read",
   });
-  const b = createAuthResult({
-    requester: { account: "account-b", repo: "repo-b" },
-    target: accountTarget(selectedVisibility([2])),
-    tokenDec,
+  const tokenAuthResultB = createTestTokenAuthResult({
+    request: {
+      consumer: { account: "account-b" },
+      repos: "all",
+      tokenDec,
+    },
+    have: tokenDec.permissions,
+    maxWant: "read",
+  });
+
+  const a = createTestProvisionAuthResult({
+    request: createTestProvisionRequest({
+      requester: { account: "account-a", repo: "repo-a" },
+      tokenDec,
+      secretDec: createTestSecretDec({ token: "account-a/repo-a.token" }),
+      to: [targetA],
+    }),
+    results: [
+      createTestProvisionAuthTargetResult({
+        target: targetA,
+        tokenAuthResult: tokenAuthResultA,
+      }),
+    ],
+  });
+  const b = createTestProvisionAuthResult({
+    request: createTestProvisionRequest({
+      requester: { account: "account-b", repo: "repo-b" },
+      tokenDec,
+      secretDec: createTestSecretDec({ token: "account-b/repo-b.token" }),
+      to: [targetB],
+    }),
+    results: [
+      createTestProvisionAuthTargetResult({
+        target: targetB,
+        tokenAuthResult: tokenAuthResultB,
+      }),
+    ],
   });
 
   resolveProvisionCollisions([a, b]);
@@ -177,15 +586,61 @@ it("collides when selected repo IDs differ", () => {
 });
 
 it("collides when only the secret name casing differs", () => {
-  const target = accountTarget();
+  const target = createTestAccountProvisionRequestTarget(
+    "actions",
+    "account-a",
+    "private",
+  );
   const tokenDec = createTestTokenDec({ permissions: { contents: "read" } });
 
-  const a = createAuthResult({ name: "SECRET_A", target, tokenDec });
-  const b = createAuthResult({
-    requester: { account: "account-b", repo: "repo-b" },
-    name: "secret_a",
-    target,
-    tokenDec,
+  const tokenAuthResultA = createTestTokenAuthResult({
+    request: {
+      consumer: { account: "account-a" },
+      repos: "all",
+      tokenDec,
+    },
+    have: tokenDec.permissions,
+    maxWant: "read",
+  });
+  const tokenAuthResultB = createTestTokenAuthResult({
+    request: {
+      consumer: { account: "account-b" },
+      repos: "all",
+      tokenDec,
+    },
+    have: tokenDec.permissions,
+    maxWant: "read",
+  });
+
+  const a = createTestProvisionAuthResult({
+    request: createTestProvisionRequest({
+      requester: { account: "account-a", repo: "repo-a" },
+      tokenDec,
+      secretDec: createTestSecretDec({ token: "account-a/repo-a.token" }),
+      name: "SECRET_A",
+      to: [target],
+    }),
+    results: [
+      createTestProvisionAuthTargetResult({
+        target,
+        tokenAuthResult: tokenAuthResultA,
+      }),
+    ],
+  });
+  const b = createTestProvisionAuthResult({
+    request: createTestProvisionRequest({
+      requester: { account: "account-b", repo: "repo-b" },
+      tokenDec,
+      secretDec: createTestSecretDec({ token: "account-b/repo-b.token" }),
+      name: "secret_a",
+      to: [target],
+    }),
+    results: [
+      createTestProvisionAuthTargetResult({
+        target,
+        tokenAuthResult: tokenAuthResultB,
+      }),
+    ],
   });
 
   resolveProvisionCollisions([a, b]);
@@ -195,15 +650,61 @@ it("collides when only the secret name casing differs", () => {
 });
 
 it("matches secret names case-insensitively", () => {
-  const target = accountTarget();
+  const target = createTestAccountProvisionRequestTarget(
+    "actions",
+    "account-a",
+    "private",
+  );
   const tokenDec = createTestTokenDec({ permissions: { contents: "read" } });
 
-  const a = createAuthResult({ name: "SECRET_A", target, tokenDec });
-  const b = createAuthResult({
-    requester: { account: "account-b", repo: "repo-b" },
-    name: "SECRET_B",
-    target,
-    tokenDec,
+  const tokenAuthResultA = createTestTokenAuthResult({
+    request: {
+      consumer: { account: "account-a" },
+      repos: "all",
+      tokenDec,
+    },
+    have: tokenDec.permissions,
+    maxWant: "read",
+  });
+  const tokenAuthResultB = createTestTokenAuthResult({
+    request: {
+      consumer: { account: "account-b" },
+      repos: "all",
+      tokenDec,
+    },
+    have: tokenDec.permissions,
+    maxWant: "read",
+  });
+
+  const a = createTestProvisionAuthResult({
+    request: createTestProvisionRequest({
+      requester: { account: "account-a", repo: "repo-a" },
+      tokenDec,
+      secretDec: createTestSecretDec({ token: "account-a/repo-a.token" }),
+      name: "SECRET_A",
+      to: [target],
+    }),
+    results: [
+      createTestProvisionAuthTargetResult({
+        target,
+        tokenAuthResult: tokenAuthResultA,
+      }),
+    ],
+  });
+  const b = createTestProvisionAuthResult({
+    request: createTestProvisionRequest({
+      requester: { account: "account-b", repo: "repo-b" },
+      tokenDec,
+      secretDec: createTestSecretDec({ token: "account-b/repo-b.token" }),
+      name: "SECRET_B",
+      to: [target],
+    }),
+    results: [
+      createTestProvisionAuthTargetResult({
+        target,
+        tokenAuthResult: tokenAuthResultB,
+      }),
+    ],
   });
 
   resolveProvisionCollisions([a, b]);
@@ -213,29 +714,93 @@ it("matches secret names case-insensitively", () => {
 });
 
 it("doesn't collide across secret types or targets", () => {
+  const accountTarget = createTestAccountProvisionRequestTarget(
+    "actions",
+    "account-a",
+    "private",
+  );
+  const agentsTarget = createTestAccountProvisionRequestTarget(
+    "agents",
+    "account-a",
+    "private",
+  );
+  const repoTarget = createTestRepoProvisionRequestTarget(
+    "actions",
+    "account-a",
+    "repo-a",
+    "private",
+  );
   const tokenDec = createTestTokenDec({ permissions: { contents: "read" } });
 
-  const a = createAuthResult({
-    target: accountTarget(),
-    tokenDec,
-  });
-  const b = createAuthResult({
-    requester: { account: "account-b", repo: "repo-b" },
-    target: {
-      ...accountTarget(),
-      type: "agents",
+  const tokenAuthResultA = createTestTokenAuthResult({
+    request: {
+      consumer: { account: "account-a" },
+      repos: "all",
+      tokenDec,
     },
-    tokenDec,
+    have: tokenDec.permissions,
+    maxWant: "read",
   });
-  const c = createAuthResult({
-    requester: { account: "account-c", repo: "repo-c" },
-    target: createTestRepoProvisionRequestTarget(
-      "actions",
-      "account-a",
-      "repo-a",
-      "private",
-    ),
-    tokenDec,
+  const tokenAuthResultB = createTestTokenAuthResult({
+    request: {
+      consumer: { account: "account-b" },
+      repos: "all",
+      tokenDec,
+    },
+    have: tokenDec.permissions,
+    maxWant: "read",
+  });
+  const tokenAuthResultC = createTestTokenAuthResult({
+    request: {
+      consumer: { account: "account-c" },
+      repos: "all",
+      tokenDec,
+    },
+    have: tokenDec.permissions,
+    maxWant: "read",
+  });
+
+  const a = createTestProvisionAuthResult({
+    request: createTestProvisionRequest({
+      requester: { account: "account-a", repo: "repo-a" },
+      tokenDec,
+      secretDec: createTestSecretDec({ token: "account-a/repo-a.token" }),
+      to: [accountTarget],
+    }),
+    results: [
+      createTestProvisionAuthTargetResult({
+        target: accountTarget,
+        tokenAuthResult: tokenAuthResultA,
+      }),
+    ],
+  });
+  const b = createTestProvisionAuthResult({
+    request: createTestProvisionRequest({
+      requester: { account: "account-b", repo: "repo-b" },
+      tokenDec,
+      secretDec: createTestSecretDec({ token: "account-b/repo-b.token" }),
+      to: [agentsTarget],
+    }),
+    results: [
+      createTestProvisionAuthTargetResult({
+        target: agentsTarget,
+        tokenAuthResult: tokenAuthResultB,
+      }),
+    ],
+  });
+  const c = createTestProvisionAuthResult({
+    request: createTestProvisionRequest({
+      requester: { account: "account-c", repo: "repo-c" },
+      tokenDec,
+      secretDec: createTestSecretDec({ token: "account-c/repo-c.token" }),
+      to: [repoTarget],
+    }),
+    results: [
+      createTestProvisionAuthTargetResult({
+        target: repoTarget,
+        tokenAuthResult: tokenAuthResultC,
+      }),
+    ],
   });
 
   resolveProvisionCollisions([a, b, c]);
@@ -246,17 +811,61 @@ it("doesn't collide across secret types or targets", () => {
 });
 
 it("doesn't refuse when fewer than two requests can write", () => {
-  const target = accountTarget();
+  const target = createTestAccountProvisionRequestTarget(
+    "actions",
+    "account-a",
+    "private",
+  );
+  const tokenDecA = createTestTokenDec({ permissions: { contents: "read" } });
+  const tokenDecB = createTestTokenDec({ permissions: { issues: "write" } });
 
-  const writable = createAuthResult({
-    tokenDec: createTestTokenDec({ permissions: { contents: "read" } }),
-    target,
+  const tokenAuthResultA = createTestTokenAuthResult({
+    request: {
+      consumer: { account: "account-a" },
+      repos: "all",
+      tokenDec: tokenDecA,
+    },
+    have: tokenDecA.permissions,
+    maxWant: "read",
   });
-  const denied = createAuthResult({
-    requester: { account: "account-b", repo: "repo-b" },
-    tokenDec: createTestTokenDec({ permissions: { issues: "write" } }),
-    target,
-    isAllowed: false,
+  const tokenAuthResultB = createTestTokenAuthResult({
+    request: {
+      consumer: { account: "account-b" },
+      repos: "all",
+      tokenDec: tokenDecB,
+    },
+    have: tokenDecB.permissions,
+    maxWant: "read",
+  });
+
+  const writable = createTestProvisionAuthResult({
+    request: createTestProvisionRequest({
+      requester: { account: "account-a", repo: "repo-a" },
+      tokenDec: tokenDecA,
+      secretDec: createTestSecretDec({ token: "account-a/repo-a.token" }),
+      to: [target],
+    }),
+    results: [
+      createTestProvisionAuthTargetResult({
+        target,
+        tokenAuthResult: tokenAuthResultA,
+      }),
+    ],
+  });
+  const denied = createTestProvisionAuthResult({
+    request: createTestProvisionRequest({
+      requester: { account: "account-b", repo: "repo-b" },
+      tokenDec: tokenDecB,
+      secretDec: createTestSecretDec({ token: "account-b/repo-b.token" }),
+      to: [target],
+    }),
+    results: [
+      createTestProvisionAuthTargetResult({
+        target,
+        tokenAuthResult: tokenAuthResultB,
+        isAllowed: false,
+      }),
+    ],
   });
 
   resolveProvisionCollisions([writable, denied]);
@@ -266,9 +875,36 @@ it("doesn't refuse when fewer than two requests can write", () => {
 });
 
 it("doesn't refuse a single request", () => {
-  const result = createAuthResult({
-    tokenDec: createTestTokenDec({ permissions: { contents: "read" } }),
-    target: accountTarget(),
+  const target = createTestAccountProvisionRequestTarget(
+    "actions",
+    "account-a",
+    "private",
+  );
+  const tokenDec = createTestTokenDec({ permissions: { contents: "read" } });
+
+  const tokenAuthResult = createTestTokenAuthResult({
+    request: {
+      consumer: { account: "account-a" },
+      repos: "all",
+      tokenDec,
+    },
+    have: tokenDec.permissions,
+    maxWant: "read",
+  });
+
+  const result = createTestProvisionAuthResult({
+    request: createTestProvisionRequest({
+      requester: { account: "account-a", repo: "repo-a" },
+      tokenDec,
+      secretDec: createTestSecretDec({ token: "account-a/repo-a.token" }),
+      to: [target],
+    }),
+    results: [
+      createTestProvisionAuthTargetResult({
+        target,
+        tokenAuthResult,
+      }),
+    ],
   });
 
   resolveProvisionCollisions([result]);
@@ -277,15 +913,49 @@ it("doesn't refuse a single request", () => {
 });
 
 it("treats an unknown descriptor as disagreeing", () => {
-  const target = accountTarget();
+  const target = createTestAccountProvisionRequestTarget(
+    "actions",
+    "account-a",
+    "private",
+  );
+  const tokenDec = createTestTokenDec({ permissions: { contents: "read" } });
 
-  const known = createAuthResult({
-    tokenDec: createTestTokenDec({ permissions: { contents: "read" } }),
-    target,
+  const tokenAuthResult = createTestTokenAuthResult({
+    request: {
+      consumer: { account: "account-a" },
+      repos: "all",
+      tokenDec,
+    },
+    have: tokenDec.permissions,
+    maxWant: "read",
   });
-  const unknown = createAuthResult({
-    requester: { account: "account-b", repo: "repo-b" },
-    target,
+
+  const known = createTestProvisionAuthResult({
+    request: createTestProvisionRequest({
+      requester: { account: "account-a", repo: "repo-a" },
+      tokenDec,
+      secretDec: createTestSecretDec({ token: "account-a/repo-a.token" }),
+      to: [target],
+    }),
+    results: [
+      createTestProvisionAuthTargetResult({
+        target,
+        tokenAuthResult,
+      }),
+    ],
+  });
+  const unknown = createTestProvisionAuthResult({
+    request: createTestProvisionRequest({
+      requester: { account: "account-b", repo: "repo-b" },
+      secretDec: createTestSecretDec({ token: "account-b/repo-b.token" }),
+      to: [target],
+    }),
+    results: [
+      createTestProvisionAuthTargetResult({
+        target,
+        tokenAuthResult: undefined,
+      }),
+    ],
   });
 
   resolveProvisionCollisions([known, unknown]);
@@ -293,77 +963,3 @@ it("treats an unknown descriptor as disagreeing", () => {
   expect(known.results[0].collision?.isBlocking).toBe(true);
   expect(unknown.results[0].collision?.isBlocking).toBe(true);
 });
-
-function accountTarget(
-  visibility: AccountSecretVisibility = "private",
-): ProvisionRequestTarget {
-  return createTestAccountProvisionRequestTarget(
-    "actions",
-    "account-a",
-    visibility,
-  );
-}
-
-function selectedVisibility(ids: number[]): AccountSecretVisibility {
-  return {
-    patterns: ["*"],
-    repos: ids.map((id) => ({
-      ref: { account: "account-a", repo: `repo-${id}` },
-      id,
-      visibility: "private",
-    })),
-  };
-}
-
-function createAuthResult({
-  requester = { account: "account-a", repo: "repo-a" },
-  name = "SECRET_A",
-  target,
-  tokenDec,
-  isAllowed = true,
-}: {
-  requester?: RepoReference;
-  name?: string;
-  target: ProvisionRequestTarget;
-  tokenDec?: TokenDeclaration;
-  isAllowed?: boolean;
-}): ProvisionAuthResult {
-  const tokenAuthResult =
-    tokenDec == null
-      ? undefined
-      : createTestTokenAuthResult({
-          request: {
-            consumer: { account: requester.account },
-            repos: "all",
-            tokenDec,
-          },
-          have: tokenDec.permissions,
-          maxWant: "read",
-        });
-
-  const targetResult: ProvisionAuthTargetResult = {
-    target,
-    rules: [],
-    have: isAllowed ? "allow" : "deny",
-    tokenAuthResult,
-    isTokenAllowed: tokenAuthResult?.isAllowed ?? false,
-    isSecretVisibilityCategoryAllowed: isAllowed,
-    isProvisionAllowed: isAllowed,
-    isAllowed,
-  } as ProvisionAuthTargetResult;
-
-  return {
-    request: createTestProvisionRequest({
-      requester,
-      name,
-      tokenDec,
-      secretDec: createTestSecretDec({
-        token: `${requester.account}/${requester.repo}.token`,
-      }),
-      to: [target],
-    }),
-    results: [targetResult],
-    isMissingTargets: false,
-    isAllowed,
-  };
-}
