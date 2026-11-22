@@ -123115,7 +123115,7 @@ function renderSummary(context, authResult, tokenCreationResults, provisionResul
         if (result.type === "COLLISION") hasCollision = true;
       }
     }
-    if (hasCollision) return "Provision collision";
+    if (hasCollision) return "Conflicting declarations";
     if (hasNoProvisioner && failedCount === targetResults.size) {
       return "No suitable provisioner";
     }

@@ -1651,9 +1651,9 @@ it("reports a provision collision as the failure reason", () => {
   ).toMatchInlineSnapshot(`
     "### Provisioned 0 of 1 secret
 
-    |    | Requester                               | Secret     | Targets                                              | Reason              |
-    | :- | :-------------------------------------- | :--------- | :--------------------------------------------------- | :------------------ |
-    | ❌  | [account-x/repo-x][gh/account-x/repo-x] | \`SECRET_A\` | [account-a][gh/account-a], [account-b][gh/account-b] | Provision collision |
+    |    | Requester                               | Secret     | Targets                                              | Reason                   |
+    | :- | :-------------------------------------- | :--------- | :--------------------------------------------------- | :----------------------- |
+    | ❌  | [account-x/repo-x][gh/account-x/repo-x] | \`SECRET_A\` | [account-a][gh/account-a], [account-b][gh/account-b] | Conflicting declarations |
 
     [gh/account-a]: https://github.example.com/account-a
 

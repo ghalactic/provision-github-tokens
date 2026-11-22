@@ -247,7 +247,7 @@ export function renderSummary(
       }
     }
 
-    if (hasCollision) return "Provision collision";
+    if (hasCollision) return "Conflicting declarations";
 
     if (hasNoProvisioner && failedCount === targetResults.size) {
       return "No suitable provisioner";
