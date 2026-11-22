@@ -15,18 +15,27 @@ export function resolveProvisionCollisions(
   authResults: ProvisionAuthResult[],
 ): void {
   for (const group of collisionGroups(authResults)) {
-    const writable = group.filter(({ auth }) => auth.isAllowed);
+    const writable: CollisionEntry[] = [];
+
+    for (const entry of group) {
+      if (entry.auth.isAllowed) writable.push(entry);
+    }
 
     if (writable.length < 2) continue;
     if (isIdentical(writable)) continue;
 
     for (const entry of writable) {
+      const participants: ProvisionCollisionParticipant[] = [];
+
+      for (const other of group) {
+        if (other !== entry) participants.push(toParticipant(other));
+      }
+
+      participants.sort(compareParticipants);
+
       entry.target.collision = {
         isBlocking: true,
-        participants: group
-          .filter((other) => other !== entry)
-          .map(toParticipant)
-          .sort(compareParticipants),
+        participants,
       };
     }
   }
@@ -50,7 +59,13 @@ function collisionGroups(
     }
   }
 
-  return Array.from(groups.values()).filter((group) => group.length > 1);
+  const collisions: CollisionEntry[][] = [];
+
+  for (const group of groups.values()) {
+    if (group.length > 1) collisions.push(group);
+  }
+
+  return collisions;
 }
 
 function collisionKey(name: string, target: ProvisionRequestTarget): string {
@@ -64,11 +79,13 @@ function collisionKey(name: string, target: ProvisionRequestTarget): string {
 function isIdentical(entries: CollisionEntry[]): boolean {
   const first = writeDescriptor(entries[0]);
 
-  return entries.every((entry) => {
+  for (const entry of entries) {
     const other = writeDescriptor(entry);
 
-    return other !== undefined && other === first;
-  });
+    if (other == null || other !== first) return false;
+  }
+
+  return true;
 }
 
 function writeDescriptor(entry: CollisionEntry): string | undefined {
@@ -93,10 +110,13 @@ function visibilityDescriptor(
 
   if (visibility === "all" || visibility === "private") return visibility;
 
-  return {
-    category: "selected",
-    repos: visibility.repos.map(({ id }) => id).toSorted((a, b) => a - b),
-  };
+  const repos: number[] = [];
+
+  for (const { id } of visibility.repos) repos.push(id);
+
+  repos.sort((a, b) => a - b);
+
+  return { category: "selected", repos };
 }
 
 function toParticipant({

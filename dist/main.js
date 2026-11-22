@@ -65934,13 +65934,21 @@ function createTokenRequestFactory(appRegistry) {
 // src/provision-collision.ts
 function resolveProvisionCollisions(authResults) {
   for (const group2 of collisionGroups(authResults)) {
-    const writable = group2.filter(({ auth: auth6 }) => auth6.isAllowed);
+    const writable = [];
+    for (const entry of group2) {
+      if (entry.auth.isAllowed) writable.push(entry);
+    }
     if (writable.length < 2) continue;
     if (isIdentical(writable)) continue;
     for (const entry of writable) {
+      const participants = [];
+      for (const other of group2) {
+        if (other !== entry) participants.push(toParticipant(other));
+      }
+      participants.sort(compareParticipants);
       entry.target.collision = {
         isBlocking: true,
-        participants: group2.filter((other) => other !== entry).map(toParticipant).sort(compareParticipants)
+        participants
       };
     }
   }
@@ -65958,7 +65966,11 @@ function collisionGroups(authResults) {
       }
     }
   }
-  return Array.from(groups.values()).filter((group2) => group2.length > 1);
+  const collisions = [];
+  for (const group2 of groups.values()) {
+    if (group2.length > 1) collisions.push(group2);
+  }
+  return collisions;
 }
 function collisionKey(name, target) {
   return (0, import_fast_json_stable_stringify2.default)({
@@ -65969,10 +65981,11 @@ function collisionKey(name, target) {
 }
 function isIdentical(entries) {
   const first = writeDescriptor(entries[0]);
-  return entries.every((entry) => {
+  for (const entry of entries) {
     const other = writeDescriptor(entry);
-    return other !== void 0 && other === first;
-  });
+    if (other == null || other !== first) return false;
+  }
+  return true;
 }
 function writeDescriptor(entry) {
   const { auth: auth6, target } = entry;
@@ -65988,10 +66001,10 @@ function visibilityDescriptor(target) {
   if (isRepoProvisionRequestTarget(target)) return void 0;
   const { visibility } = target;
   if (visibility === "all" || visibility === "private") return visibility;
-  return {
-    category: "selected",
-    repos: visibility.repos.map(({ id }) => id).toSorted((a2, b2) => a2 - b2)
-  };
+  const repos = [];
+  for (const { id } of visibility.repos) repos.push(id);
+  repos.sort((a2, b2) => a2 - b2);
+  return { category: "selected", repos };
 }
 function toParticipant({
   auth: auth6
