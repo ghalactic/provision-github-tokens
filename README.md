@@ -144,10 +144,18 @@ across your repositories.
     The result of trying to create a secret in a provision target.
   </dd>
 
+  <dt>Provision collision</dt>
+  <dd>
+    Two or more provision requests in a single run that would write different
+    content under the same secret name at the same provision target. Requests
+    that would write identical content don't collide.
+  </dd>
+
   <dt>Provision target</dt>
   <dd>
-    A secret type plus the account, repo, or environment where the action
-    provisions that secret.
+    The secret type and the account, repo, or environment where the action
+    provisions a secret. A target says where a secret goes, not which secret it
+    is.
   </dd>
 
   <dt>Secret type</dt>

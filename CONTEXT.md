@@ -100,8 +100,8 @@ access to a token with given permissions for given repos.
 
 ### Resolution
 
-**Deny-by-default**: The rule that a provision target no rule explicitly allows
-is denied.
+**Deny-by-default**: The rule that a secret name at a provision target is denied
+unless a rule explicitly allows it.
 
 **Deny-wins**: The rule that, within a single provision rule, a deny from any
 matching pattern vetoes the result for that target.
@@ -121,8 +121,13 @@ account, which can override a pattern result.
 **Authorization explanation**: The human-readable basis for each token and
 provision authorization decision, doubling as an audit trail.
 
-**Provision target**: A secret type plus the account, repo, or environment where
-a secret is provisioned.
+**Provision collision**: Two or more provision requests in a single run that
+would write different content under the same secret name at the same provision
+target. Requests that would write identical content don't collide.
+
+**Provision target**: The secret type and the account, repo, or environment
+where a secret is provisioned. A target says where a secret goes, not which
+secret it is.
 
 **Provisioning result**: The result of trying to create a secret in a provision
 target.
