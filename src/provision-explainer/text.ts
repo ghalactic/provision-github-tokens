@@ -90,11 +90,21 @@ export function createTextProvisionExplainer(): ProvisionResultExplainer<string>
           `for ${subject}${visibility}`
         );
 
-      case "COLLISION":
+      case "COLLISION": {
+        const { collision } = targetAuth;
+
+        /* istanbul ignore next - @preserve */
+        if (!collision) {
+          throw new Error(
+            "Invariant violation: Collision result without collision details",
+          );
+        }
+
         return (
           `\n  ${FAIL_ICON} Provision collision for ${subject}${visibility}` +
-          explainParticipants(targetAuth.collision)
+          explainCollisionParticipants(collision)
         );
+      }
 
       case "REQUEST_ERROR": {
         const summary =
@@ -121,26 +131,6 @@ export function createTextProvisionExplainer(): ProvisionResultExplainer<string>
         );
       }
     }
-  }
-
-  function explainParticipants(
-    collision: ProvisionCollision | undefined,
-  ): string {
-    /* istanbul ignore next - only reached for a COLLISION result - @preserve */
-    if (!collision) {
-      throw new Error(
-        "Invariant violation: Collision result without collision details",
-      );
-    }
-
-    let explained = "";
-    for (const { requester, name, token } of collision.participants) {
-      explained +=
-        `\n    ${FAIL_ICON} Also declared by ${repoRefToString(requester)} ` +
-        `as secret ${name} using token declaration ${token}`;
-    }
-
-    return explained;
   }
 
   function explainSubject(target: ProvisionRequestTarget): string {
@@ -177,5 +167,16 @@ export function createTextProvisionExplainer(): ProvisionResultExplainer<string>
     for (const repo of repos) output += `\n      ${statusIcon} ${repo}`;
 
     return output;
+  }
+
+  function explainCollisionParticipants(collision: ProvisionCollision): string {
+    let explained = "";
+    for (const { requester, name, token } of collision.participants) {
+      explained +=
+        `\n    ${FAIL_ICON} Also declared by ${repoRefToString(requester)} ` +
+        `as secret ${name} using token declaration ${token}`;
+    }
+
+    return explained;
   }
 }

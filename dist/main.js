@@ -121372,9 +121372,16 @@ function createTextProvisionExplainer() {
       case "NO_PROVISIONER":
         return `
   ${FAIL_ICON} No suitable provisioner for ${subject}${visibility}`;
-      case "COLLISION":
+      case "COLLISION": {
+        const { collision } = targetAuth;
+        if (!collision) {
+          throw new Error(
+            "Invariant violation: Collision result without collision details"
+          );
+        }
         return `
-  ${FAIL_ICON} Provision collision for ${subject}${visibility}` + explainParticipants(targetAuth.collision);
+  ${FAIL_ICON} Provision collision for ${subject}${visibility}` + explainCollisionParticipants(collision);
+      }
       case "REQUEST_ERROR": {
         const summary2 = `${FAIL_ICON} Failed to provision to ${subject}: ${result.error.status} - ${result.error.message}`;
         const body = result.error.response?.data;
@@ -121389,19 +121396,6 @@ ${prefixLines("::debug::      ", detail)}`;
 ${prefixLines("::debug::      ", errorStack(result.error))}`;
       }
     }
-  }
-  function explainParticipants(collision) {
-    if (!collision) {
-      throw new Error(
-        "Invariant violation: Collision result without collision details"
-      );
-    }
-    let explained = "";
-    for (const { requester, name, token } of collision.participants) {
-      explained += `
-    ${FAIL_ICON} Also declared by ${repoRefToString(requester)} as secret ${name} using token declaration ${token}`;
-    }
-    return explained;
   }
   function explainSubject(target) {
     return `${secretTypeText(target)} secret in ${accountOrRepoRefToString(target.target)}`;
@@ -121425,6 +121419,14 @@ ${prefixLines("::debug::      ", errorStack(result.error))}`;
     for (const repo of repos) output += `
       ${statusIcon} ${repo}`;
     return output;
+  }
+  function explainCollisionParticipants(collision) {
+    let explained = "";
+    for (const { requester, name, token } of collision.participants) {
+      explained += `
+    ${FAIL_ICON} Also declared by ${repoRefToString(requester)} as secret ${name} using token declaration ${token}`;
+    }
+    return explained;
   }
 }
 
@@ -121953,7 +121955,13 @@ function createMarkdownProvisionExplainer() {
           ),
           ...nestedList(...visibility)
         ];
-      case "COLLISION":
+      case "COLLISION": {
+        const { collision } = targetAuth;
+        if (!collision) {
+          throw new Error(
+            "Invariant violation: Collision result without collision details"
+          );
+        }
         return [
           paragraph2(
             text2(`${FAIL_ICON} `),
@@ -121962,8 +121970,9 @@ function createMarkdownProvisionExplainer() {
             ...subject,
             text2(":")
           ),
-          list3(...visibility, ...explainParticipants(targetAuth.collision))
+          list3(...visibility, ...explainCollisionParticipants(collision))
         ];
+      }
       case "REQUEST_ERROR": {
         const body = result.error.response?.data;
         return [
@@ -122009,29 +122018,6 @@ function createMarkdownProvisionExplainer() {
           )
         ];
     }
-  }
-  function explainParticipants(collision) {
-    if (!collision) {
-      throw new Error(
-        "Invariant violation: Collision result without collision details"
-      );
-    }
-    const participants = [];
-    for (const { requester, name, token } of collision.participants) {
-      participants.push(
-        listItem2(
-          paragraph2(
-            text2(`${FAIL_ICON} Also declared by `),
-            inlineCode2(repoRefToString(requester)),
-            text2(" as secret "),
-            inlineCode2(name),
-            text2(" using token declaration "),
-            inlineCode2(token)
-          )
-        )
-      );
-    }
-    return participants;
   }
   function explainSubject(target) {
     return [
@@ -122081,6 +122067,24 @@ function createMarkdownProvisionExplainer() {
         list3(...repoItems)
       )
     ];
+  }
+  function explainCollisionParticipants(collision) {
+    const participants = [];
+    for (const { requester, name, token } of collision.participants) {
+      participants.push(
+        listItem2(
+          paragraph2(
+            text2(`${FAIL_ICON} Also declared by `),
+            inlineCode2(repoRefToString(requester)),
+            text2(" as secret "),
+            inlineCode2(name),
+            text2(" using token declaration "),
+            inlineCode2(token)
+          )
+        )
+      );
+    }
+    return participants;
   }
   function nestedList(...children) {
     return children.length > 0 ? [list3(...children)] : [];
@@ -123704,7 +123708,6 @@ try {
 /* istanbul ignore next - Header guarantees string data - @preserve */
 /* istanbul ignore next - parseRequesterConfig always throws with a cause - @preserve */
 /* istanbul ignore else - @preserve */
-/* istanbul ignore next - only reached for a COLLISION result - @preserve */
 /* istanbul ignore next - only called for requesters with a config error - @preserve */
 /* istanbul ignore next - GitHub always populates a known visibility - @preserve */
 /* istanbul ignore next - prevented by discovery - @preserve */

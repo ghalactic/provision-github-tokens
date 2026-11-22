@@ -153,7 +153,16 @@ export function createMarkdownProvisionExplainer(): ProvisionResultExplainer<
           ...nestedList(...visibility),
         ];
 
-      case "COLLISION":
+      case "COLLISION": {
+        const { collision } = targetAuth;
+
+        /* istanbul ignore next - @preserve */
+        if (!collision) {
+          throw new Error(
+            "Invariant violation: Collision result without collision details",
+          );
+        }
+
         return [
           paragraph(
             text(`${FAIL_ICON} `),
@@ -162,8 +171,9 @@ export function createMarkdownProvisionExplainer(): ProvisionResultExplainer<
             ...subject,
             text(":"),
           ),
-          list(...visibility, ...explainParticipants(targetAuth.collision)),
+          list(...visibility, ...explainCollisionParticipants(collision)),
         ];
+      }
 
       case "REQUEST_ERROR": {
         const body = result.error.response?.data;
@@ -214,35 +224,6 @@ export function createMarkdownProvisionExplainer(): ProvisionResultExplainer<
           ),
         ];
     }
-  }
-
-  function explainParticipants(
-    collision: ProvisionCollision | undefined,
-  ): ListItem[] {
-    /* istanbul ignore next - only reached for a COLLISION result - @preserve */
-    if (!collision) {
-      throw new Error(
-        "Invariant violation: Collision result without collision details",
-      );
-    }
-
-    const participants: ListItem[] = [];
-    for (const { requester, name, token } of collision.participants) {
-      participants.push(
-        listItem(
-          paragraph(
-            text(`${FAIL_ICON} Also declared by `),
-            inlineCode(repoRefToString(requester)),
-            text(" as secret "),
-            inlineCode(name),
-            text(" using token declaration "),
-            inlineCode(token),
-          ),
-        ),
-      );
-    }
-
-    return participants;
   }
 
   function explainSubject(target: ProvisionRequestTarget): PhrasingContent[] {
@@ -303,6 +284,28 @@ export function createMarkdownProvisionExplainer(): ProvisionResultExplainer<
         list(...repoItems),
       ),
     ];
+  }
+
+  function explainCollisionParticipants(
+    collision: ProvisionCollision,
+  ): ListItem[] {
+    const participants: ListItem[] = [];
+    for (const { requester, name, token } of collision.participants) {
+      participants.push(
+        listItem(
+          paragraph(
+            text(`${FAIL_ICON} Also declared by `),
+            inlineCode(repoRefToString(requester)),
+            text(" as secret "),
+            inlineCode(name),
+            text(" using token declaration "),
+            inlineCode(token),
+          ),
+        ),
+      );
+    }
+
+    return participants;
   }
 
   function nestedList(...children: ListItem[]): List[] {
