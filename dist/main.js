@@ -65953,18 +65953,18 @@ function resolveProvisionConflicts(authResults) {
     const areAllowedIdentical = allowed.length < 2 || isIdentical(allowed);
     const isGroupIdentical = isIdentical(group2);
     for (const entry of group2) {
-      const isWriter = entry.auth.isAllowed;
-      if (isWriter ? areAllowedIdentical : isGroupIdentical) continue;
+      const isAllowed = entry.auth.isAllowed;
+      if (isAllowed ? areAllowedIdentical : isGroupIdentical) continue;
       resolutions.push({
         entry,
-        isWriter,
+        isAllowed,
         participants: participantsFor(entry, group2)
       });
     }
   }
-  for (const { entry, isWriter, participants } of resolutions) {
+  for (const { entry, isAllowed, participants } of resolutions) {
     entry.target.conflict = { participants };
-    if (!isWriter) continue;
+    if (!isAllowed) continue;
     entry.target.isAllowed = false;
     entry.auth.isAllowed = false;
   }

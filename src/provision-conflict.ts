@@ -27,22 +27,22 @@ export function resolveProvisionConflicts(
     const isGroupIdentical = isIdentical(group);
 
     for (const entry of group) {
-      const isWriter = entry.auth.isAllowed;
+      const isAllowed = entry.auth.isAllowed;
 
-      if (isWriter ? areAllowedIdentical : isGroupIdentical) continue;
+      if (isAllowed ? areAllowedIdentical : isGroupIdentical) continue;
 
       resolutions.push({
         entry,
-        isWriter,
+        isAllowed,
         participants: participantsFor(entry, group),
       });
     }
   }
 
-  for (const { entry, isWriter, participants } of resolutions) {
+  for (const { entry, isAllowed, participants } of resolutions) {
     entry.target.conflict = { participants };
 
-    if (!isWriter) continue;
+    if (!isAllowed) continue;
 
     entry.target.isAllowed = false;
     entry.auth.isAllowed = false;
@@ -160,6 +160,6 @@ type ConflictEntry = {
 
 type ConflictResolution = {
   entry: ConflictEntry;
-  isWriter: boolean;
+  isAllowed: boolean;
   participants: ProvisionConflictParticipant[];
 };
