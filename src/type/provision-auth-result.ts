@@ -4,6 +4,7 @@ import type {
   GitHubRepoProvisionRequestTarget,
   ProvisionRequest,
 } from "../provision-request.js";
+import type { ProvisionConflict } from "./provision-conflict.js";
 import type { ProvisionSecretsRule } from "./provision-rule.js";
 import type { TokenAuthResult } from "./token-auth-result.js";
 import type { Visibility } from "./visibility.js";
@@ -59,4 +60,5 @@ type ProvisionAuthTargetResultCommon = {
   isSecretVisibilityCategoryAllowed: boolean;
   isProvisionAllowed: boolean;
   isAllowed: boolean;
+  conflict?: ProvisionConflict;
 };

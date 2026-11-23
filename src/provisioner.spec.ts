@@ -1617,6 +1617,274 @@ it("doesn't stop provisioning when some targets fail", async () => {
   ).toMatchFileSnapshot(join(fixturesPath, "partial-failure/b.md"));
 });
 
+it("provisions identical declarations once", async () => {
+  const [[accountA, [repoA]]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "account-a",
+    ["repo-a"],
+  ]);
+  const [[appA, [appAInstallationA]]] = createTestApps([
+    "App A",
+    {},
+    [[accountA, "selected"]],
+  ]);
+  const accountAActionsKey = await createTestKeyPair("actions.account-a");
+
+  __setOrgKeys("account-a", { actions: accountAActionsKey });
+
+  const appRegistry = createTestAppRegistry(createTestRepoRegistry(), {
+    app: appA,
+    provisioner: true,
+    installations: [[appAInstallationA, [repoA]]],
+  });
+
+  const { findProvisionerOctokit } = createTestOctokitFactory(appRegistry);
+  const encryptSecret = vi.fn(createEncryptSecret(findProvisionerOctokit));
+
+  const provisionSecrets = createProvisioner(
+    findProvisionerOctokit,
+    encryptSecret,
+  );
+
+  const tokenAuthResultA = createTestTokenAuthResult();
+  const tokenAuthResultB = createTestTokenAuthResult();
+  const created = {
+    type: "CREATED" as const,
+    token: { token: "<token-a>", expires_at: "2001-02-03T04:05:06Z" },
+  };
+  const tokenResults = new Map([
+    [tokenAuthResultA, created],
+    [tokenAuthResultB, created],
+  ]);
+
+  const [[, targetResultsA], [, targetResultsB]] = await provisionSecrets(
+    tokenResults,
+    [
+      {
+        request: createTestProvisionRequest({
+          secretDec: createTestSecretDec({
+            github: { accounts: { "account-a": { actions: "private" } } },
+          }),
+          to: [
+            createTestAccountProvisionRequestTarget(
+              "actions",
+              "account-a",
+              "private",
+            ),
+          ],
+        }),
+        results: [
+          createTestProvisionAuthTargetResult({
+            target: createTestAccountProvisionRequestTarget(
+              "actions",
+              "account-a",
+              "private",
+            ),
+            tokenAuthResult: tokenAuthResultA,
+          }),
+        ],
+        isMissingTargets: false,
+        isAllowed: true,
+      },
+      {
+        request: createTestProvisionRequest({
+          requester: { account: "account-a", repo: "repo-b" },
+          secretDec: createTestSecretDec({
+            github: { accounts: { "account-a": { actions: "private" } } },
+          }),
+          to: [
+            createTestAccountProvisionRequestTarget(
+              "actions",
+              "account-a",
+              "private",
+            ),
+          ],
+        }),
+        results: [
+          createTestProvisionAuthTargetResult({
+            target: createTestAccountProvisionRequestTarget(
+              "actions",
+              "account-a",
+              "private",
+            ),
+            tokenAuthResult: tokenAuthResultB,
+          }),
+        ],
+        isMissingTargets: false,
+        isAllowed: true,
+      },
+    ],
+  );
+
+  const [targetResultA] = targetResultsA.values();
+  const [targetResultB] = targetResultsB.values();
+
+  expect(encryptSecret).toHaveBeenCalledTimes(1);
+  expect(targetResultA).toBe(targetResultB);
+  expect(targetResultA).toEqual({ type: "PROVISIONED" });
+  expect(__getOrgSecrets("account-a")).toEqual({
+    actions: {
+      SECRET_A: { value: "<token-a>", visibility: "private" },
+    },
+    agents: {},
+    codespaces: {},
+    dependabot: {},
+  });
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "
+    Secret #1:
+
+    ✅ Secret SECRET_A was provisioned for repo account-a/repo-a:
+      ✅ Provisioned to GitHub Actions secret in account-a
+        ✅ Readable by private repos
+
+    Secret #2:
+
+    ✅ Secret SECRET_A was provisioned for repo account-a/repo-b:
+      ✅ Provisioned to GitHub Actions secret in account-a
+        ✅ Readable by private repos
+
+    "
+  `);
+});
+
+it("shares a failed write between identical declarations", async () => {
+  const [[accountA, [repoA]]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "account-a",
+    ["repo-a"],
+  ]);
+  const [[appA, [appAInstallationA]]] = createTestApps([
+    "App A",
+    {},
+    [[accountA, "selected"]],
+  ]);
+  const accountAActionsKey = await createTestKeyPair("actions.account-a");
+
+  __setOrgKeys("account-a", { actions: accountAActionsKey });
+  __setErrors("actions.createOrUpdateOrgSecret", [
+    new TestRequestError(403, { message: "Resource not accessible" }),
+  ]);
+
+  const appRegistry = createTestAppRegistry(createTestRepoRegistry(), {
+    app: appA,
+    provisioner: true,
+    installations: [[appAInstallationA, [repoA]]],
+  });
+
+  const { findProvisionerOctokit } = createTestOctokitFactory(appRegistry);
+  const encryptSecret = vi.fn(createEncryptSecret(findProvisionerOctokit));
+
+  const provisionSecrets = createProvisioner(
+    findProvisionerOctokit,
+    encryptSecret,
+  );
+
+  const tokenAuthResultA = createTestTokenAuthResult();
+  const tokenAuthResultB = createTestTokenAuthResult();
+  const created = {
+    type: "CREATED" as const,
+    token: { token: "<token-a>", expires_at: "2001-02-03T04:05:06Z" },
+  };
+  const tokenResults = new Map([
+    [tokenAuthResultA, created],
+    [tokenAuthResultB, created],
+  ]);
+
+  const [[, targetResultsA], [, targetResultsB]] = await provisionSecrets(
+    tokenResults,
+    [
+      {
+        request: createTestProvisionRequest({
+          secretDec: createTestSecretDec({
+            github: { accounts: { "account-a": { actions: "private" } } },
+          }),
+          to: [
+            createTestAccountProvisionRequestTarget(
+              "actions",
+              "account-a",
+              "private",
+            ),
+          ],
+        }),
+        results: [
+          createTestProvisionAuthTargetResult({
+            target: createTestAccountProvisionRequestTarget(
+              "actions",
+              "account-a",
+              "private",
+            ),
+            tokenAuthResult: tokenAuthResultA,
+          }),
+        ],
+        isMissingTargets: false,
+        isAllowed: true,
+      },
+      {
+        request: createTestProvisionRequest({
+          requester: { account: "account-a", repo: "repo-b" },
+          secretDec: createTestSecretDec({
+            github: { accounts: { "account-a": { actions: "private" } } },
+          }),
+          to: [
+            createTestAccountProvisionRequestTarget(
+              "actions",
+              "account-a",
+              "private",
+            ),
+          ],
+        }),
+        results: [
+          createTestProvisionAuthTargetResult({
+            target: createTestAccountProvisionRequestTarget(
+              "actions",
+              "account-a",
+              "private",
+            ),
+            tokenAuthResult: tokenAuthResultB,
+          }),
+        ],
+        isMissingTargets: false,
+        isAllowed: true,
+      },
+    ],
+  );
+
+  const [targetResultA] = targetResultsA.values();
+  const [targetResultB] = targetResultsB.values();
+
+  expect(encryptSecret).toHaveBeenCalledTimes(1);
+  expect(targetResultA).toBe(targetResultB);
+  expect(targetResultA).toMatchObject({
+    type: "REQUEST_ERROR",
+    error: { status: 403 },
+  });
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "
+    Secret #1:
+
+    ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
+      ❌ Failed to provision to GitHub Actions secret in account-a: 403 - Forbidden
+        ❌ Would've been readable by private repos
+    ::debug::      {
+    ::debug::        "message": "Resource not accessible"
+    ::debug::      }
+
+    Secret #2:
+
+    ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-b:
+      ❌ Failed to provision to GitHub Actions secret in account-a: 403 - Forbidden
+        ❌ Would've been readable by private repos
+    ::debug::      {
+    ::debug::        "message": "Resource not accessible"
+    ::debug::      }
+
+    "
+  `);
+});
+
 it("warns when no auth results are provided", async () => {
   const [[accountA, [repoA], [[envA]]]] = createTestInstallationAccounts([
     "Organization",

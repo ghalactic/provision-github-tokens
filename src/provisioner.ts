@@ -4,6 +4,7 @@ import type { EncryptSecret } from "./encrypt-secret.js";
 import { createAgentsOctokit } from "./octokit-agents.js";
 import type { Octokit } from "./octokit.js";
 import { createTextProvisionExplainer } from "./provision-explainer/text.js";
+import { provisionWriteKey } from "./provision-key.js";
 import {
   isEnvironmentProvisionRequestTarget,
   isRepoProvisionRequestTarget,
@@ -17,7 +18,10 @@ import type {
 } from "./type/provision-auth-result.js";
 import type { ProvisionResult } from "./type/provision-result.js";
 import type { TokenAuthResult } from "./type/token-auth-result.js";
-import type { TokenCreationResult } from "./type/token-creation-result.js";
+import type {
+  TokenCreationCreatedResult,
+  TokenCreationResult,
+} from "./type/token-creation-result.js";
 
 export type Provisioner = (
   tokens: Map<TokenAuthResult, TokenCreationResult>,
@@ -35,6 +39,7 @@ export function createProvisioner(
       ProvisionAuthResult,
       Map<ProvisionAuthTargetResult, ProvisionResult>
     >();
+    const writeResults = new Map<string, ProvisionResult>();
 
     for (const auth of authResults) {
       const targetResults = new Map<
@@ -73,49 +78,26 @@ export function createProvisioner(
           continue;
         }
 
-        const found = findProvisionerOctokit(targetAuth.target.target);
-        if (!found) {
-          targetResults.set(targetAuth, { type: "NO_PROVISIONER" });
+        const key = provisionWriteKey(
+          auth.request.name,
+          targetAuth.target,
+          targetAuth.tokenAuthResult.request,
+        );
+        const shared = writeResults.get(key);
 
-          continue;
-        }
-        const [octokit] = found;
-
-        let encrypted: string;
-        let keyId: string;
-
-        try {
-          [encrypted, keyId] = await encryptSecret(
-            targetAuth.target,
-            tokenResult.token.token,
-          );
-        } catch (error) {
-          if (error instanceof RequestError) {
-            targetResults.set(targetAuth, { type: "REQUEST_ERROR", error });
-          } else {
-            targetResults.set(targetAuth, { type: "ERROR", error });
-          }
+        if (shared) {
+          targetResults.set(targetAuth, shared);
 
           continue;
         }
 
-        try {
-          await provisionToTarget(
-            octokit,
-            encrypted,
-            keyId,
-            auth.request.name,
-            targetAuth.target,
-          );
-
-          targetResults.set(targetAuth, { type: "PROVISIONED" });
-        } catch (error) {
-          if (error instanceof RequestError) {
-            targetResults.set(targetAuth, { type: "REQUEST_ERROR", error });
-          } else {
-            targetResults.set(targetAuth, { type: "ERROR", error });
-          }
-        }
+        const result = await provisionToTarget(
+          tokenResult,
+          auth.request.name,
+          targetAuth.target,
+        );
+        writeResults.set(key, result);
+        targetResults.set(targetAuth, result);
       }
     }
 
@@ -139,6 +121,51 @@ export function createProvisioner(
   };
 
   async function provisionToTarget(
+    tokenResult: TokenCreationCreatedResult,
+    name: string,
+    requestTarget: ProvisionRequestTarget,
+  ): Promise<ProvisionResult> {
+    const found = findProvisionerOctokit(requestTarget.target);
+    if (!found) return { type: "NO_PROVISIONER" };
+
+    const [octokit] = found;
+
+    let encrypted: string;
+    let keyId: string;
+
+    try {
+      [encrypted, keyId] = await encryptSecret(
+        requestTarget,
+        tokenResult.token.token,
+      );
+    } catch (error) {
+      if (error instanceof RequestError) {
+        return { type: "REQUEST_ERROR", error };
+      }
+
+      return { type: "ERROR", error };
+    }
+
+    try {
+      await createOrUpdateSecret(
+        octokit,
+        encrypted,
+        keyId,
+        name,
+        requestTarget,
+      );
+
+      return { type: "PROVISIONED" };
+    } catch (error) {
+      if (error instanceof RequestError) {
+        return { type: "REQUEST_ERROR", error };
+      }
+
+      return { type: "ERROR", error };
+    }
+  }
+
+  async function createOrUpdateSecret(
     octokit: Octokit,
     encrypted: string,
     keyId: string,

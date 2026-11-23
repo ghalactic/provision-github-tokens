@@ -144,6 +144,13 @@ across your repositories.
     The result of trying to create a secret in a provision target.
   </dd>
 
+  <dt>Conflicting declarations</dt>
+  <dd>
+    Two or more provision requests in a single run that write different content
+    under the same secret name at the same provision target. Requests that write
+    identical content don't conflict.
+  </dd>
+
   <dt>Provision target</dt>
   <dd>
     A secret type plus the account, repo, or environment where the action

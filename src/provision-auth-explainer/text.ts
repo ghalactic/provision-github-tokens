@@ -84,8 +84,25 @@ export function createTextProvisionAuthExplainer(): ProvisionAuthResultExplainer
       explainBasedOnRules(target, result) +
       (isRepoProvisionAuthTargetResult(result)
         ? ""
-        : explainSelectedRepositories(target, result))
+        : explainSelectedRepositories(target, result)) +
+      explainConflict(result)
     );
+  }
+
+  function explainConflict(result: ProvisionAuthTargetResult): string {
+    const conflict = result.conflict;
+
+    if (!conflict) return "";
+
+    let explained = `\n    ${FAIL_ICON} Conflicting declarations were found:`;
+
+    for (const { requester, name, token } of conflict.participants) {
+      explained +=
+        `\n      ${FAIL_ICON} Declared by ${repoRefToString(requester)} ` +
+        `as secret ${name} using token declaration ${token}`;
+    }
+
+    return explained;
   }
 
   function explainTargetToken({

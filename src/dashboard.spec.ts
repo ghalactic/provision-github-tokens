@@ -8,11 +8,14 @@ import {
 } from "../test/declaration.js";
 import {
   createTestAccountProvisionRequestTarget,
+  createTestEnvironmentProvisionRequestTarget,
   createTestProvisionRequest,
+  createTestRepoProvisionRequestTarget,
 } from "../test/provision-request.js";
 import {
   createTestProvisionAuthResult,
   createTestProvisionAuthTargetResult,
+  createTestProvisionAuthTargetRuleResult,
   createTestTokenAuthResult,
 } from "../test/result.js";
 import { ValidateError } from "./config/validation.js";
@@ -216,6 +219,330 @@ it("renders a failure dashboard with multiple secrets and request errors", async
   expect(issue.title).toBe(FAILURE_DASHBOARD_TITLE);
   await expect(toMarkdown(issue.body)).toMatchFileSnapshot(
     join(fixturesPath, "multiple-secrets.md"),
+  );
+});
+
+it("renders a conflict for an account secret", async () => {
+  const target = createTestAccountProvisionRequestTarget(
+    "actions",
+    "account-a",
+    "private",
+  );
+  const tokenAuthResult = createTestTokenAuthResult();
+  const targetResult = createTestProvisionAuthTargetResult({
+    target,
+    tokenAuthResult,
+  });
+  targetResult.isAllowed = false;
+  targetResult.conflict = {
+    participants: [
+      {
+        requester: { account: "account-c", repo: "repo-c" },
+        name: "SECRET_A",
+        token: "account-c/repo-c.token",
+      },
+    ],
+  };
+  const secret = createTestProvisionAuthResult({
+    request: createTestProvisionRequest({
+      requester: { account: "account-b", repo: "repo-b" },
+      secretDec: createTestSecretDec({ token: "account-b/repo-b.token" }),
+      to: [target],
+    }),
+    results: [targetResult],
+  });
+  secret.isAllowed = false;
+
+  const provisionResults = new Map<
+    ProvisionAuthResult,
+    Map<ProvisionAuthTargetResult, ProvisionResult>
+  >([
+    [
+      secret,
+      new Map<ProvisionAuthTargetResult, ProvisionResult>([
+        [targetResult, { type: "NOT_ALLOWED" }],
+      ]),
+    ],
+  ]);
+
+  const issue = renderFailureDashboard(
+    testContext,
+    [secret],
+    [tokenAuthResult],
+    new Map(),
+    provisionResults,
+  );
+
+  expect(issue.title).toBe(FAILURE_DASHBOARD_TITLE);
+  await expect(toMarkdown(issue.body)).toMatchFileSnapshot(
+    join(fixturesPath, "conflict-account.md"),
+  );
+});
+
+it("renders a conflict for a repo secret", async () => {
+  const target = createTestRepoProvisionRequestTarget(
+    "actions",
+    "account-a",
+    "repo-a",
+    "private",
+  );
+  const tokenAuthResult = createTestTokenAuthResult();
+  const targetResult = createTestProvisionAuthTargetResult({
+    target,
+    tokenAuthResult,
+  });
+  targetResult.isAllowed = false;
+  targetResult.conflict = {
+    participants: [
+      {
+        requester: { account: "account-c", repo: "repo-c" },
+        name: "SECRET_A",
+        token: "account-c/repo-c.token",
+      },
+    ],
+  };
+  const secret = createTestProvisionAuthResult({
+    request: createTestProvisionRequest({
+      requester: { account: "account-b", repo: "repo-b" },
+      secretDec: createTestSecretDec({ token: "account-b/repo-b.token" }),
+      to: [target],
+    }),
+    results: [targetResult],
+  });
+  secret.isAllowed = false;
+
+  const provisionResults = new Map<
+    ProvisionAuthResult,
+    Map<ProvisionAuthTargetResult, ProvisionResult>
+  >([
+    [
+      secret,
+      new Map<ProvisionAuthTargetResult, ProvisionResult>([
+        [targetResult, { type: "NOT_ALLOWED" }],
+      ]),
+    ],
+  ]);
+
+  const issue = renderFailureDashboard(
+    testContext,
+    [secret],
+    [tokenAuthResult],
+    new Map(),
+    provisionResults,
+  );
+
+  expect(issue.title).toBe(FAILURE_DASHBOARD_TITLE);
+  await expect(toMarkdown(issue.body)).toMatchFileSnapshot(
+    join(fixturesPath, "conflict-repo.md"),
+  );
+});
+
+it("renders a conflict for an environment secret", async () => {
+  const target = createTestEnvironmentProvisionRequestTarget(
+    "account-a",
+    "repo-a",
+    "production",
+    "private",
+  );
+  const tokenAuthResult = createTestTokenAuthResult();
+  const targetResult = createTestProvisionAuthTargetResult({
+    target,
+    tokenAuthResult,
+  });
+  targetResult.isAllowed = false;
+  targetResult.conflict = {
+    participants: [
+      {
+        requester: { account: "account-c", repo: "repo-c" },
+        name: "SECRET_A",
+        token: "account-c/repo-c.token",
+      },
+    ],
+  };
+  const secret = createTestProvisionAuthResult({
+    request: createTestProvisionRequest({
+      requester: { account: "account-b", repo: "repo-b" },
+      secretDec: createTestSecretDec({ token: "account-b/repo-b.token" }),
+      to: [target],
+    }),
+    results: [targetResult],
+  });
+  secret.isAllowed = false;
+
+  const provisionResults = new Map<
+    ProvisionAuthResult,
+    Map<ProvisionAuthTargetResult, ProvisionResult>
+  >([
+    [
+      secret,
+      new Map<ProvisionAuthTargetResult, ProvisionResult>([
+        [targetResult, { type: "NOT_ALLOWED" }],
+      ]),
+    ],
+  ]);
+
+  const issue = renderFailureDashboard(
+    testContext,
+    [secret],
+    [tokenAuthResult],
+    new Map(),
+    provisionResults,
+  );
+
+  expect(issue.title).toBe(FAILURE_DASHBOARD_TITLE);
+  await expect(toMarkdown(issue.body)).toMatchFileSnapshot(
+    join(fixturesPath, "conflict-environment.md"),
+  );
+});
+
+it("renders a conflict after an account secret's selected repos", async () => {
+  const target = createTestAccountProvisionRequestTarget(
+    "actions",
+    "account-a",
+    {
+      patterns: ["repo-*"],
+      repos: [
+        {
+          ref: { account: "account-a", repo: "repo-a" },
+          id: 1,
+          visibility: "private",
+        },
+        {
+          ref: { account: "account-a", repo: "repo-b" },
+          id: 2,
+          visibility: "private",
+        },
+      ],
+    },
+  );
+  const selectedRepoRule = createTestProvisionAuthTargetRuleResult();
+  const tokenAuthResult = createTestTokenAuthResult();
+  const targetResult = createTestProvisionAuthTargetResult({
+    target,
+    tokenAuthResult,
+    selectedRepos: {
+      results: {
+        "account-a/repo-a": {
+          rules: [selectedRepoRule],
+          have: "allow",
+          isAllowed: true,
+          visibility: "private",
+        },
+        "account-a/repo-b": {
+          rules: [selectedRepoRule],
+          have: "allow",
+          isAllowed: true,
+          visibility: "private",
+        },
+      },
+      isMatched: true,
+    },
+  });
+  targetResult.isAllowed = false;
+  targetResult.conflict = {
+    participants: [
+      {
+        requester: { account: "account-c", repo: "repo-c" },
+        name: "SECRET_A",
+        token: "account-c/repo-c.token",
+      },
+    ],
+  };
+  const secret = createTestProvisionAuthResult({
+    request: createTestProvisionRequest({
+      requester: { account: "account-b", repo: "repo-b" },
+      secretDec: createTestSecretDec({ token: "account-b/repo-b.token" }),
+      to: [target],
+    }),
+    results: [targetResult],
+  });
+  secret.isAllowed = false;
+
+  const provisionResults = new Map<
+    ProvisionAuthResult,
+    Map<ProvisionAuthTargetResult, ProvisionResult>
+  >([
+    [
+      secret,
+      new Map<ProvisionAuthTargetResult, ProvisionResult>([
+        [targetResult, { type: "NOT_ALLOWED" }],
+      ]),
+    ],
+  ]);
+
+  const issue = renderFailureDashboard(
+    testContext,
+    [secret],
+    [tokenAuthResult],
+    new Map(),
+    provisionResults,
+  );
+
+  expect(issue.title).toBe(FAILURE_DASHBOARD_TITLE);
+  await expect(toMarkdown(issue.body)).toMatchFileSnapshot(
+    join(fixturesPath, "conflict-selected-repos.md"),
+  );
+});
+
+it("renders a conflict with multiple declarations", async () => {
+  const target = createTestAccountProvisionRequestTarget(
+    "actions",
+    "account-a",
+    "private",
+  );
+  const tokenAuthResult = createTestTokenAuthResult();
+  const targetResult = createTestProvisionAuthTargetResult({
+    target,
+    tokenAuthResult,
+  });
+  targetResult.isAllowed = false;
+  targetResult.conflict = {
+    participants: [
+      {
+        requester: { account: "account-a", repo: "repo-a" },
+        name: "SECRET_A",
+        token: "account-a/repo-a.token",
+      },
+      {
+        requester: { account: "account-c", repo: "repo-c" },
+        name: "SECRET_A",
+        token: "account-c/repo-c.token",
+      },
+    ],
+  };
+  const secret = createTestProvisionAuthResult({
+    request: createTestProvisionRequest({
+      requester: { account: "account-b", repo: "repo-b" },
+      secretDec: createTestSecretDec({ token: "account-b/repo-b.token" }),
+      to: [target],
+    }),
+    results: [targetResult],
+  });
+  secret.isAllowed = false;
+
+  const provisionResults = new Map<
+    ProvisionAuthResult,
+    Map<ProvisionAuthTargetResult, ProvisionResult>
+  >([
+    [
+      secret,
+      new Map<ProvisionAuthTargetResult, ProvisionResult>([
+        [targetResult, { type: "NOT_ALLOWED" }],
+      ]),
+    ],
+  ]);
+
+  const issue = renderFailureDashboard(
+    testContext,
+    [secret],
+    [tokenAuthResult],
+    new Map(),
+    provisionResults,
+  );
+
+  expect(issue.title).toBe(FAILURE_DASHBOARD_TITLE);
+  await expect(toMarkdown(issue.body)).toMatchFileSnapshot(
+    join(fixturesPath, "conflict-multiple-participants.md"),
   );
 });
 

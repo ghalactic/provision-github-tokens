@@ -258,7 +258,7 @@ function createTestPermissionsRule(permissions: Permissions): PermissionsRule {
   };
 }
 
-function createTestProvisionAuthTargetRuleResult(): ProvisionAuthTargetRuleResult {
+export function createTestProvisionAuthTargetRuleResult(): ProvisionAuthTargetRuleResult {
   return {
     index: 0,
     rule: createTestProvisionSecretsRule(),
