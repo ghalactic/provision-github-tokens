@@ -131,6 +131,9 @@ a secret is provisioned.
 **Provisioning result**: The result of trying to create a secret in a provision
 target.
 
+**Shared write**: The single provision write and outcome that identical
+declarations share.
+
 **Secret type**: The kind of secret a provision target holds: `actions`,
 `agents`, `codespaces`, `dependabot`, or `environment`.
 

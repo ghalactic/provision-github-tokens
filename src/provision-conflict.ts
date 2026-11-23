@@ -1,10 +1,5 @@
-import stringify from "fast-json-stable-stringify";
 import { compareRef } from "./compare-ref.js";
-import {
-  isRepoProvisionRequestTarget,
-  type ProvisionRequestTarget,
-} from "./provision-request.js";
-import { tokenShapeKey } from "./token-request.js";
+import { provisionSecretKey, provisionWriteKey } from "./provision-write.js";
 import type {
   ProvisionAuthResult,
   ProvisionAuthTargetResult,
@@ -54,7 +49,7 @@ function conflictGroups(authResults: ProvisionAuthResult[]): ConflictEntry[][] {
 
   for (const auth of authResults) {
     for (const target of auth.results) {
-      const key = conflictKey(auth.request.name, target.target);
+      const key = provisionSecretKey(auth.request.name, target.target);
       const group = groups.get(key);
 
       if (group) {
@@ -74,55 +69,22 @@ function conflictGroups(authResults: ProvisionAuthResult[]): ConflictEntry[][] {
   return conflicts;
 }
 
-function conflictKey(name: string, target: ProvisionRequestTarget): string {
-  return stringify({
-    name: name.toLowerCase(),
-    target: target.target,
-    type: target.type,
-  });
-}
-
 function isIdentical(entries: ConflictEntry[]): boolean {
-  const first = writeDescriptor(entries[0]);
+  const first = writeKey(entries[0]);
 
   for (const entry of entries) {
-    const other = writeDescriptor(entry);
-
-    if (other == null || other !== first) return false;
+    if (writeKey(entry) !== first) return false;
   }
 
-  return true;
+  return first != null;
 }
 
-function writeDescriptor(entry: ConflictEntry): string | undefined {
-  const { auth, target } = entry;
-  const tokenRequest = target.tokenAuthResult?.request;
-
-  if (!tokenRequest) return undefined;
-
-  return stringify({
-    name: auth.request.name,
-    token: tokenShapeKey(tokenRequest),
-    visibility: visibilityDescriptor(target.target),
-  });
-}
-
-function visibilityDescriptor(
-  target: ProvisionRequestTarget,
-): string | { category: "selected"; repos: number[] } | undefined {
-  if (isRepoProvisionRequestTarget(target)) return undefined;
-
-  const { visibility } = target;
-
-  if (visibility === "all" || visibility === "private") return visibility;
-
-  const repos: number[] = [];
-
-  for (const { id } of visibility.repos) repos.push(id);
-
-  repos.sort((a, b) => a - b);
-
-  return { category: "selected", repos };
+function writeKey({ auth, target }: ConflictEntry): string | undefined {
+  return provisionWriteKey(
+    auth.request.name,
+    target.target,
+    target.tokenAuthResult?.request,
+  );
 }
 
 function toParticipant({ auth }: ConflictEntry): ProvisionConflictParticipant {
