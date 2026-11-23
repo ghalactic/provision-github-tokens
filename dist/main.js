@@ -65894,7 +65894,7 @@ function createTextProvisionAuthExplainer() {
   }
 }
 
-// src/provision-write.ts
+// src/provision-key.ts
 var import_fast_json_stable_stringify2 = __toESM(require_fast_json_stable_stringify(), 1);
 
 // src/token-request.ts
@@ -65942,8 +65942,8 @@ function createTokenRequestFactory(appRegistry) {
   };
 }
 
-// src/provision-write.ts
-function provisionSecretKey(name, target) {
+// src/provision-key.ts
+function provisionTargetKey(name, target) {
   return (0, import_fast_json_stable_stringify2.default)({
     name: name.toLowerCase(),
     target: target.target,
@@ -66001,7 +66001,7 @@ function conflictGroups(authResults) {
   const groups = /* @__PURE__ */ new Map();
   for (const auth6 of authResults) {
     for (const target of auth6.results) {
-      const key = provisionSecretKey(auth6.request.name, target.target);
+      const key = provisionTargetKey(auth6.request.name, target.target);
       const group2 = groups.get(key);
       if (group2) {
         group2.push({ auth: auth6, target });
@@ -121492,7 +121492,7 @@ function createProvisioner(findProvisionerOctokit, encryptSecret) {
           targetResults.set(targetAuth, shared);
           continue;
         }
-        const result = await provisionTarget(
+        const result = await provisionToTarget(
           tokenResult,
           auth6.request.name,
           targetAuth.target
@@ -121518,7 +121518,7 @@ Secret #${i2}:
     info("");
     return provisionResults;
   };
-  async function provisionTarget(tokenResult, name, requestTarget) {
+  async function provisionToTarget(tokenResult, name, requestTarget) {
     const found = findProvisionerOctokit(requestTarget.target);
     if (!found) return { type: "NO_PROVISIONER" };
     const [octokit] = found;
@@ -121530,16 +121530,28 @@ Secret #${i2}:
         tokenResult.token.token
       );
     } catch (error2) {
-      return provisionErrorResult(error2);
+      if (error2 instanceof RequestError) {
+        return { type: "REQUEST_ERROR", error: error2 };
+      }
+      return { type: "ERROR", error: error2 };
     }
     try {
-      await provisionToTarget(octokit, encrypted, keyId, name, requestTarget);
+      await createOrUpdateSecret(
+        octokit,
+        encrypted,
+        keyId,
+        name,
+        requestTarget
+      );
       return { type: "PROVISIONED" };
     } catch (error2) {
-      return provisionErrorResult(error2);
+      if (error2 instanceof RequestError) {
+        return { type: "REQUEST_ERROR", error: error2 };
+      }
+      return { type: "ERROR", error: error2 };
     }
   }
-  async function provisionToTarget(octokit, encrypted, keyId, name, requestTarget) {
+  async function createOrUpdateSecret(octokit, encrypted, keyId, name, requestTarget) {
     const { type } = requestTarget;
     if (type === "actions") {
       if (isRepoProvisionRequestTarget(requestTarget)) {
@@ -121636,9 +121648,6 @@ Secret #${i2}:
     throw new Error(
       `Invariant violation: Unexpected target type ${JSON.stringify(type)}`
     );
-  }
-  function provisionErrorResult(error2) {
-    return error2 instanceof RequestError ? { type: "REQUEST_ERROR", error: error2 } : { type: "ERROR", error: error2 };
   }
   function toOrgSecretVisibilityParams(visibility) {
     if (visibility === "all" || visibility === "private") {

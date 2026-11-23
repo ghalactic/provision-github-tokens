@@ -5,11 +5,7 @@ import {
 } from "./provision-request.js";
 import { tokenShapeKey, type TokenRequest } from "./token-request.js";
 
-/**
- * Identifies the secret slot a provision request writes to: the target and the
- * secret name, compared the way GitHub compares names.
- */
-export function provisionSecretKey(
+export function provisionTargetKey(
   name: string,
   target: ProvisionRequestTarget,
 ): string {
@@ -20,11 +16,6 @@ export function provisionSecretKey(
   });
 }
 
-/**
- * Identifies exactly what a provision request writes, so identical declarations
- * share a write. Undefined when the token declaration is unknown, because its
- * content is unknown.
- */
 export function provisionWriteKey(
   name: string,
   target: ProvisionRequestTarget,

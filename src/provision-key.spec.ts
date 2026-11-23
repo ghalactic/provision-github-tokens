@@ -5,7 +5,7 @@ import {
   createTestRepoProvisionRequestTarget,
 } from "../test/provision-request.js";
 import { createTestTokenAuthResult } from "../test/result.js";
-import { provisionSecretKey, provisionWriteKey } from "./provision-write.js";
+import { provisionTargetKey, provisionWriteKey } from "./provision-key.js";
 
 it("compares secret names case-insensitively", () => {
   const target = createTestAccountProvisionRequestTarget(
@@ -14,8 +14,8 @@ it("compares secret names case-insensitively", () => {
     "private",
   );
 
-  expect(provisionSecretKey("SECRET_A", target)).toBe(
-    provisionSecretKey("secret_a", target),
+  expect(provisionTargetKey("SECRET_A", target)).toBe(
+    provisionTargetKey("secret_a", target),
   );
 });
 
@@ -37,11 +37,11 @@ it("distinguishes secret keys by secret type and target", () => {
     "private",
   );
 
-  expect(provisionSecretKey("SECRET_A", target)).not.toBe(
-    provisionSecretKey("SECRET_A", otherType),
+  expect(provisionTargetKey("SECRET_A", target)).not.toBe(
+    provisionTargetKey("SECRET_A", otherType),
   );
-  expect(provisionSecretKey("SECRET_A", target)).not.toBe(
-    provisionSecretKey("SECRET_A", otherTarget),
+  expect(provisionTargetKey("SECRET_A", target)).not.toBe(
+    provisionTargetKey("SECRET_A", otherTarget),
   );
 });
 

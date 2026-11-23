@@ -1,5 +1,5 @@
 import { compareRef } from "./compare-ref.js";
-import { provisionSecretKey, provisionWriteKey } from "./provision-write.js";
+import { provisionTargetKey, provisionWriteKey } from "./provision-key.js";
 import type {
   ProvisionAuthResult,
   ProvisionAuthTargetResult,
@@ -49,7 +49,7 @@ function conflictGroups(authResults: ProvisionAuthResult[]): ConflictEntry[][] {
 
   for (const auth of authResults) {
     for (const target of auth.results) {
-      const key = provisionSecretKey(auth.request.name, target.target);
+      const key = provisionTargetKey(auth.request.name, target.target);
       const group = groups.get(key);
 
       if (group) {

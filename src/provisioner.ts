@@ -4,13 +4,13 @@ import type { EncryptSecret } from "./encrypt-secret.js";
 import { createAgentsOctokit } from "./octokit-agents.js";
 import type { Octokit } from "./octokit.js";
 import { createTextProvisionExplainer } from "./provision-explainer/text.js";
+import { provisionWriteKey } from "./provision-key.js";
 import {
   isEnvironmentProvisionRequestTarget,
   isRepoProvisionRequestTarget,
   type AccountSecretVisibility,
   type ProvisionRequestTarget,
 } from "./provision-request.js";
-import { provisionWriteKey } from "./provision-write.js";
 import type { FindProvisionerOctokit } from "./provisioner-octokit.js";
 import type {
   ProvisionAuthResult,
@@ -91,7 +91,7 @@ export function createProvisioner(
           continue;
         }
 
-        const result = await provisionTarget(
+        const result = await provisionToTarget(
           tokenResult,
           auth.request.name,
           targetAuth.target,
@@ -120,7 +120,7 @@ export function createProvisioner(
     return provisionResults;
   };
 
-  async function provisionTarget(
+  async function provisionToTarget(
     tokenResult: TokenCreationCreatedResult,
     name: string,
     requestTarget: ProvisionRequestTarget,
@@ -139,19 +139,33 @@ export function createProvisioner(
         tokenResult.token.token,
       );
     } catch (error) {
-      return provisionErrorResult(error);
+      if (error instanceof RequestError) {
+        return { type: "REQUEST_ERROR", error };
+      }
+
+      return { type: "ERROR", error };
     }
 
     try {
-      await provisionToTarget(octokit, encrypted, keyId, name, requestTarget);
+      await createOrUpdateSecret(
+        octokit,
+        encrypted,
+        keyId,
+        name,
+        requestTarget,
+      );
 
       return { type: "PROVISIONED" };
     } catch (error) {
-      return provisionErrorResult(error);
+      if (error instanceof RequestError) {
+        return { type: "REQUEST_ERROR", error };
+      }
+
+      return { type: "ERROR", error };
     }
   }
 
-  async function provisionToTarget(
+  async function createOrUpdateSecret(
     octokit: Octokit,
     encrypted: string,
     keyId: string,
@@ -268,12 +282,6 @@ export function createProvisioner(
     throw new Error(
       `Invariant violation: Unexpected target type ${JSON.stringify(type)}`,
     );
-  }
-
-  function provisionErrorResult(error: unknown): ProvisionResult {
-    return error instanceof RequestError
-      ? { type: "REQUEST_ERROR", error }
-      : { type: "ERROR", error };
   }
 
   function toOrgSecretVisibilityParams(visibility: AccountSecretVisibility): {
