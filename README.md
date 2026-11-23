@@ -144,11 +144,6 @@ across your repositories.
     The result of trying to create a secret in a provision target.
   </dd>
 
-  <dt>Shared write</dt>
-  <dd>
-    The single provision write and outcome that identical declarations share.
-  </dd>
-
   <dt>Conflicting declarations</dt>
   <dd>
     Two or more provision requests in a single run that write different content
