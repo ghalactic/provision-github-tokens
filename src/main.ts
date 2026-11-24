@@ -162,6 +162,7 @@ try {
 
   const summaryMarkdown = renderSummary(
     context,
+    requesters,
     authorizeResult,
     tokenCreationResults,
     provisionResults,

@@ -1,3 +1,13 @@
+### Config issues
+
+> \[!WARNING]
+>
+> 1 requester config couldn't be parsed or validated.
+
+|    | Requester                                                                                                                                         | Reason                                                                                                   |
+| :- | :------------------------------------------------------------------------------------------------------------------------------------------------ | :------------------------------------------------------------------------------------------------------- |
+| ❌  | [ghalactic-fixtures/provision-github-tokens-ci-consumer-invalid-config][gh/ghalactic-fixtures/provision-github-tokens-ci-consumer-invalid-config] | [Invalid configuration][gh/ghalactic-fixtures/provision-github-tokens-ci-consumer-invalid-config/config] |
+
 ### Provisioned 2 of 5 secrets
 
 |    | Requester                                                                                                           | Secret                           | Targets                                                                                                                                                                                        | Reason             |
@@ -12,5 +22,9 @@
 | ✅  | [ghalactic-fixtures/provision-github-tokens-ci-consumer][gh/ghalactic-fixtures/provision-github-tokens-ci-consumer] | `READ_SECRETS_TOKEN`  | [ghalactic-fixtures/provision-github-tokens-ci-consumer][gh/ghalactic-fixtures/provision-github-tokens-ci-consumer] |
 
 [gh/ghalactic-fixtures/provision-github-tokens-ci-consumer]: https://github.com/ghalactic-fixtures/provision-github-tokens-ci-consumer
+
+[gh/ghalactic-fixtures/provision-github-tokens-ci-consumer-invalid-config]: https://github.com/ghalactic-fixtures/provision-github-tokens-ci-consumer-invalid-config
+
+[gh/ghalactic-fixtures/provision-github-tokens-ci-consumer-invalid-config/config]: https://github.com/ghalactic-fixtures/provision-github-tokens-ci-consumer-invalid-config/blob/6e3005c8f058e7451909edc2a999b78439d75130/.github/ghalactic/provision-github-tokens.yml
 
 [gh/ghalactic/provision-github-tokens]: https://github.com/ghalactic/provision-github-tokens
