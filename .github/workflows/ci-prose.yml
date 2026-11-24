@@ -21,3 +21,5 @@ jobs:
         with:
           reporter: github-check
           fail_on_error: "true"
+          # https://github.com/reviewdog/reviewdog/pull/2865
+          reviewdog_version: 0.21.3
