@@ -1,8 +1,12 @@
 import type { LinkReference, RootContent, TableCell } from "mdast";
 import type { AuthorizeResult } from "./authorizer.js";
+import { ValidateError } from "./config/validation.js";
+import { ParseYamlError } from "./config/yaml.js";
 import type { Context } from "./context.js";
+import type { DiscoveredRequester } from "./discover-requesters.js";
 import {
   accountOrRepoRefToString,
+  repoRefToString,
   type AccountOrRepoReference,
 } from "./github-reference.js";
 import { FAIL_ICON, PASS_ICON } from "./icon.js";
@@ -34,6 +38,7 @@ const MAX_ROWS = 1000;
 
 export function renderSummary(
   context: Context,
+  requesters: Map<string, DiscoveredRequester>,
   authResult: AuthorizeResult,
   tokenCreationResults: Map<TokenAuthResult, TokenCreationResult>,
   provisionResults: Map<
@@ -43,6 +48,13 @@ export function renderSummary(
 ): string {
   const { provisionResults: authResults } = authResult;
 
+  const allConfigIssues = discoveredConfigIssues();
+  const configIssues = allConfigIssues.slice(0, MAX_ROWS);
+  const remainingAfterConfigIssues = Math.max(
+    0,
+    MAX_ROWS - configIssues.length,
+  );
+
   const allDeniedRows = authResults.filter(
     (r) => !isFullyProvisioned(r, provisionResults),
   );
@@ -50,8 +62,11 @@ export function renderSummary(
     isFullyProvisioned(r, provisionResults),
   );
 
-  const deniedRows = allDeniedRows.slice(0, MAX_ROWS);
-  const remainingRowCount = Math.max(0, MAX_ROWS - deniedRows.length);
+  const deniedRows = allDeniedRows.slice(0, remainingAfterConfigIssues);
+  const remainingRowCount = Math.max(
+    0,
+    remainingAfterConfigIssues - deniedRows.length,
+  );
   const allowedRows = allAllowedRows.slice(0, remainingRowCount);
 
   const omittedDeniedCount = allDeniedRows.length - deniedRows.length;
@@ -61,13 +76,97 @@ export function renderSummary(
   const definitions: Record<string, string> = {};
 
   return toMarkdown([
+    ...configIssuesSection(),
     statsHeading(),
     ...emptySection(),
     ...failuresTable(),
     ...successesTable(),
-    ...omittedNotice(),
+    ...omittedNotice(
+      authResults.length - omittedCount,
+      authResults.length,
+      "secrets",
+    ),
     ...definitionsAst(),
   ]);
+
+  function discoveredConfigIssues(): ConfigIssue[] {
+    const configIssues: ConfigIssue[] = [];
+
+    for (const discovered of requesters.values()) {
+      if (discovered.configError) {
+        configIssues.push({ discovered, error: discovered.configError });
+      }
+    }
+
+    configIssues.sort((a, b) =>
+      repoRefToString(a.discovered.requester).localeCompare(
+        repoRefToString(b.discovered.requester),
+      ),
+    );
+
+    return configIssues;
+  }
+
+  function configIssuesSection(): RootContent[] {
+    if (configIssues.length < 1) return [];
+
+    const rows: TableCell["children"][][] = [];
+
+    for (const configIssue of configIssues) {
+      rows.push(configIssueRow(configIssue));
+    }
+
+    const requesterConfigCount = pluralize(
+      allConfigIssues.length,
+      "requester config",
+      "requester configs",
+    );
+
+    return [
+      heading(3, text("Config issues")),
+      gfmAlert(
+        "WARNING",
+        paragraph(
+          text(`${requesterConfigCount} couldn't be parsed or validated.`),
+        ),
+      ),
+      table(
+        ["left", "left", "left"],
+        [[], [text("Requester")], [text("Reason")]],
+        rows,
+      ),
+      ...omittedNotice(
+        configIssues.length,
+        allConfigIssues.length,
+        "config issues",
+      ),
+    ];
+  }
+
+  function configIssueRow(configIssue: ConfigIssue): TableCell["children"][] {
+    const { discovered, error } = configIssue;
+
+    addAccountOrRepoDef(discovered.requester);
+
+    return [
+      [text(FAIL_ICON)],
+      [accountOrRepoLinkRef(discovered.requester)],
+      [
+        linkReference(
+          "full",
+          addConfigDef(discovered),
+          text(configIssueReason(error)),
+        ),
+      ],
+    ];
+  }
+
+  function configIssueReason(error: Error): string {
+    if (error instanceof ParseYamlError) return "Invalid YAML";
+    if (error instanceof ValidateError) return "Invalid configuration";
+
+    return "Unexpected error";
+  }
 
   function statsHeading(): RootContent {
     const totalCount = authResults.length;
@@ -87,7 +186,13 @@ export function renderSummary(
   }
 
   function emptySection(): RootContent[] {
-    if (authResults.length > 0 || authResult.tokenResults.length > 0) return [];
+    if (
+      allConfigIssues.length > 0 ||
+      authResults.length > 0 ||
+      authResult.tokenResults.length > 0
+    ) {
+      return [];
+    }
 
     return [
       gfmAlert(
@@ -158,16 +263,19 @@ export function renderSummary(
     ];
   }
 
-  function omittedNotice(): RootContent[] {
-    if (omittedCount < 1) return [];
+  function omittedNotice(
+    shownCount: number,
+    totalCount: number,
+    noun: string,
+  ): RootContent[] {
+    if (totalCount - shownCount < 1) return [];
 
     return [
       gfmAlert(
         "IMPORTANT",
         paragraph(
           text(
-            `Showing ${authResults.length - omittedCount} of ` +
-              `${authResults.length} secrets. ` +
+            `Showing ${shownCount} of ${totalCount} ${noun}. ` +
               `Check the logs for the full list.`,
           ),
         ),
@@ -311,4 +419,23 @@ export function renderSummary(
 
     return identifier;
   }
+
+  function addConfigDef(discovered: DiscoveredRequester): string {
+    const { requester, configSha, configPath } = discovered;
+    const slug = repoRefToString(requester).toLowerCase();
+    const identifier = `${LINK_REF_PREFIX}${slug}/config`;
+
+    definitions[identifier] = new URL(
+      `${requester.account}/${requester.repo}` +
+        `/blob/${configSha}/${configPath}`,
+      context.githubServerUrl,
+    ).toString();
+
+    return identifier;
+  }
 }
+
+type ConfigIssue = {
+  discovered: DiscoveredRequester;
+  error: Error;
+};

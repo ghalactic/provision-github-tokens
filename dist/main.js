@@ -122966,29 +122966,108 @@ function createRepoRegistry() {
 // src/summary.ts
 var LINK_REF_PREFIX = "gh/";
 var MAX_ROWS = 1e3;
-function renderSummary(context, authResult, tokenCreationResults, provisionResults) {
+function renderSummary(context, requesters, authResult, tokenCreationResults, provisionResults) {
   const { provisionResults: authResults } = authResult;
+  const allConfigIssues = discoveredConfigIssues();
+  const configIssues = allConfigIssues.slice(0, MAX_ROWS);
+  const remainingAfterConfigIssues = Math.max(
+    0,
+    MAX_ROWS - configIssues.length
+  );
   const allDeniedRows = authResults.filter(
     (r2) => !isFullyProvisioned(r2, provisionResults)
   );
   const allAllowedRows = authResults.filter(
     (r2) => isFullyProvisioned(r2, provisionResults)
   );
-  const deniedRows = allDeniedRows.slice(0, MAX_ROWS);
-  const remainingRowCount = Math.max(0, MAX_ROWS - deniedRows.length);
+  const deniedRows = allDeniedRows.slice(0, remainingAfterConfigIssues);
+  const remainingRowCount = Math.max(
+    0,
+    remainingAfterConfigIssues - deniedRows.length
+  );
   const allowedRows = allAllowedRows.slice(0, remainingRowCount);
   const omittedDeniedCount = allDeniedRows.length - deniedRows.length;
   const omittedAllowedCount = allAllowedRows.length - allowedRows.length;
   const omittedCount = omittedDeniedCount + omittedAllowedCount;
   const definitions = {};
   return toMarkdown2([
+    ...configIssuesSection(),
     statsHeading(),
     ...emptySection(),
     ...failuresTable(),
     ...successesTable(),
-    ...omittedNotice(),
+    ...omittedNotice(
+      authResults.length - omittedCount,
+      authResults.length,
+      "secrets"
+    ),
     ...definitionsAst()
   ]);
+  function discoveredConfigIssues() {
+    const configIssues2 = [];
+    for (const discovered of requesters.values()) {
+      if (discovered.configError) {
+        configIssues2.push({ discovered, error: discovered.configError });
+      }
+    }
+    configIssues2.sort(
+      (a2, b2) => repoRefToString(a2.discovered.requester).localeCompare(
+        repoRefToString(b2.discovered.requester)
+      )
+    );
+    return configIssues2;
+  }
+  function configIssuesSection() {
+    if (configIssues.length < 1) return [];
+    const rows = [];
+    for (const configIssue of configIssues) {
+      rows.push(configIssueRow(configIssue));
+    }
+    const requesterConfigCount = pluralize(
+      allConfigIssues.length,
+      "requester config",
+      "requester configs"
+    );
+    return [
+      heading2(3, text2("Config issues")),
+      gfmAlert(
+        "WARNING",
+        paragraph2(
+          text2(`${requesterConfigCount} couldn't be parsed or validated.`)
+        )
+      ),
+      table(
+        ["left", "left", "left"],
+        [[], [text2("Requester")], [text2("Reason")]],
+        rows
+      ),
+      ...omittedNotice(
+        configIssues.length,
+        allConfigIssues.length,
+        "config issues"
+      )
+    ];
+  }
+  function configIssueRow(configIssue) {
+    const { discovered, error: error2 } = configIssue;
+    addAccountOrRepoDef(discovered.requester);
+    return [
+      [text2(FAIL_ICON)],
+      [accountOrRepoLinkRef(discovered.requester)],
+      [
+        linkReference2(
+          "full",
+          addConfigDef(discovered),
+          text2(configIssueReason(error2))
+        )
+      ]
+    ];
+  }
+  function configIssueReason(error2) {
+    if (error2 instanceof ParseYamlError) return "Invalid YAML";
+    if (error2 instanceof ValidateError) return "Invalid configuration";
+    return "Unexpected error";
+  }
   function statsHeading() {
     const totalCount = authResults.length;
     const allowedCount = authResults.filter(
@@ -123002,7 +123081,9 @@ function renderSummary(context, authResult, tokenCreationResults, provisionResul
     );
   }
   function emptySection() {
-    if (authResults.length > 0 || authResult.tokenResults.length > 0) return [];
+    if (allConfigIssues.length > 0 || authResults.length > 0 || authResult.tokenResults.length > 0) {
+      return [];
+    }
     return [
       gfmAlert(
         "TIP",
@@ -123063,14 +123144,14 @@ function renderSummary(context, authResult, tokenCreationResults, provisionResul
       targetCellChildren(result.request.to)
     ];
   }
-  function omittedNotice() {
-    if (omittedCount < 1) return [];
+  function omittedNotice(shownCount, totalCount, noun) {
+    if (totalCount - shownCount < 1) return [];
     return [
       gfmAlert(
         "IMPORTANT",
         paragraph2(
           text2(
-            `Showing ${authResults.length - omittedCount} of ${authResults.length} secrets. Check the logs for the full list.`
+            `Showing ${shownCount} of ${totalCount} ${noun}. Check the logs for the full list.`
           )
         )
       )
@@ -123162,6 +123243,16 @@ function renderSummary(context, authResult, tokenCreationResults, provisionResul
     const slug = accountOrRepoRefToString(accountOrRepo).toLowerCase();
     const identifier = `${LINK_REF_PREFIX}${slug}`.toLowerCase();
     definitions[identifier] = new URL(slug, context.githubServerUrl).toString();
+    return identifier;
+  }
+  function addConfigDef(discovered) {
+    const { requester, configSha, configPath } = discovered;
+    const slug = repoRefToString(requester).toLowerCase();
+    const identifier = `${LINK_REF_PREFIX}${slug}/config`;
+    definitions[identifier] = new URL(
+      `${requester.account}/${requester.repo}/blob/${configSha}/${configPath}`,
+      context.githubServerUrl
+    ).toString();
     return identifier;
   }
 }
@@ -123717,6 +123808,7 @@ try {
   });
   const summaryMarkdown = renderSummary(
     context,
+    requesters,
     authorizeResult,
     tokenCreationResults,
     provisionResults
