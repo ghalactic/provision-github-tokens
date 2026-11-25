@@ -79,6 +79,16 @@ All Markdown should read well in both raw text and rendered HTML.
 - The `vitest/no-mocks-import` ESLint rule is disabled because tests import
   helpers from `__mocks__/`
 
+#### Don't use helpers or hooks when they reduce clarity
+
+Using test helpers or hooks (i.e. `beforeAll`, `beforeEach`) can sometimes be
+(ab)used to avoid repetitive or verbose test code, but this can also make tests
+harder to read, understand, and maintain.
+
+Where there's a genuine need for a helper or hook, make sure that it doesn't
+reduce readability or clarity of the tests. Don't make the reader jump around
+the code to understand what a test is doing.
+
 #### Coverage
 
 The project targets **100% test coverage** (`mise run coverage`). A human
