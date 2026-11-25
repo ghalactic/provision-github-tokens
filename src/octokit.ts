@@ -6,7 +6,7 @@ import type { AppInput } from "./type/input.js";
 
 const GITHUB_API_VERSION = "2026-03-10";
 
-// eslint-disable-next-line @typescript-eslint/naming-convention -- class constructor
+// eslint-disable-next-line ts-naming/naming-convention -- class constructor
 const CustomOctokit = OctokitAction.plugin(retry);
 
 export type Octokit = InstanceType<typeof CustomOctokit>;

@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/naming-convention */
+/* eslint-disable ts-naming/naming-convention */
 declare module "@octokit/openapi" {
   import type { JSONSchema7 } from "json-schema";
 

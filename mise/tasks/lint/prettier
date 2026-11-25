@@ -1,8 +1,0 @@
-#!/usr/bin/env bash
-set -euo pipefail
-
-#MISE description="Run Prettier with the shared options"
-#MISE depends=["deps"]
-#MISE hide=true
-
-pnpm exec prettier --config .prettierrc.json "$@" .

@@ -317,6 +317,8 @@ export function createReconcileDashboards(
         handleRequestError(cause, {
           422: (cause) => {
             if (!requestErrorHasError(cause, { code: "already_exists" })) {
+              // Oxlint does not recognize the attached cause through this callback parameter.
+              // eslint-disable-next-line preserve-caught-error
               throw new Error("Unable to create token dashboard label", {
                 cause,
               });

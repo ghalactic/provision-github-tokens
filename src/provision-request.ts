@@ -52,7 +52,9 @@ export type AccountSecretSelectedRepos = {
 };
 
 export type AccountSecretVisibility =
-  "all" | "private" | AccountSecretSelectedRepos;
+  | "all"
+  | "private"
+  | AccountSecretSelectedRepos;
 
 export type GitHubAccountProvisionRequestTarget = {
   platform: "github";
@@ -78,7 +80,8 @@ export type GitHubEnvironmentProvisionRequestTarget = {
 export function isRepoProvisionRequestTarget(
   target: ProvisionRequestTarget,
 ): target is
-  GitHubRepoProvisionRequestTarget | GitHubEnvironmentProvisionRequestTarget {
+  | GitHubRepoProvisionRequestTarget
+  | GitHubEnvironmentProvisionRequestTarget {
   return isRepoRef(target.target);
 }
 

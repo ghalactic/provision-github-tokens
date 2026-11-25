@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/naming-convention */
+/* eslint-disable ts-naming/naming-convention */
 import { components } from "@octokit/openapi-types";
 import { Endpoints } from "@octokit/types";
 

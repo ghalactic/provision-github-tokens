@@ -16,10 +16,13 @@ export type SecretDeclarationGitHubAccountSecretTypes = {
 };
 
 export type SecretDeclarationGitHubAccountSecretSetting =
-  SecretDeclarationGitHubAccountSecretVisibility | false;
+  | SecretDeclarationGitHubAccountSecretVisibility
+  | false;
 
 export type SecretDeclarationGitHubAccountSecretVisibility =
-  "private" | "all" | string[];
+  | "private"
+  | "all"
+  | string[];
 
 export type SecretDeclarationGitHubRepoSecretTypes = {
   actions?: boolean;

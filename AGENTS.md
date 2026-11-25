@@ -29,6 +29,16 @@ pnpm exec vitest --run -t "pattern"
 
 This project does not use `package.json` scripts.
 
+Linting is [Oxlint] with type-aware rules (`.oxlintrc.json`), and formatting is
+[Oxfmt] (`.oxfmtrc.json`). Import organization runs separately through
+`organize-imports-cli` so that it matches VS Code's "Organize imports". Oxlint
+has no native `@typescript-eslint/naming-convention`, so
+`script/oxlint/naming-convention.js` loads that rule through Oxlint's JS plugin
+bridge.
+
+[Oxfmt]: https://oxc.rs/docs/guide/usage/formatter.html
+[Oxlint]: https://oxc.rs/docs/guide/usage/linter.html
+
 ### Generated files
 
 The build bundles `src/main.ts` → `dist/main.js` using esbuild (via
@@ -54,12 +64,12 @@ file.
 
 All Markdown should read well in both raw text and rendered HTML.
 
-- **Run Prettier before committing any Markdown file.** Use
-  `npx prettier --write <file>` and stage the result. Prettier rewraps prose,
+- **Run Oxfmt before committing any Markdown file.** Use
+  `pnpm exec oxfmt --write <file>` and stage the result. Oxfmt rewraps prose,
   reformats tables, and adjusts whitespace — you must incorporate these changes
   before committing, not in a separate fixup commit.
-- Prettier config: `proseWrap: "always"`, `printWidth: 80`. Wrap prose to 80
-  columns.
+- Oxfmt config for Markdown: `proseWrap: "always"`, `printWidth: 80`. Wrap prose
+  to 80 columns.
 - **Link references** — Prefer `[text]` / `[text][ref]` with `[ref]: URL`
   definitions close to where they are used (lowercased), rather than inline
   `[text](URL)`. This keeps prose scannable in plain text and avoids long URLs
@@ -77,7 +87,7 @@ All Markdown should read well in both raw text and rendered HTML.
 - `__mocks__/@actions/core.ts` — Manual mock of `@actions/core` with
   `__setInputs()`, `__getOutput()`, and `__reset()` helpers for
   controlling/inspecting action I/O in tests
-- The `vitest/no-mocks-import` ESLint rule is disabled because tests import
+- The `vitest/no-mocks-import` Oxlint rule is disabled because tests import
   helpers from `__mocks__/`
 
 #### Don't use helpers or hooks when they reduce clarity
