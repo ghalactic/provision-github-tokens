@@ -5,4 +5,4 @@ set -euo pipefail
 #MISE depends=["deps"]
 #MISE hide=true
 
-pnpm exec oxlint --config .oxlintrc.json "$@" .
+pnpm exec oxlint "$@" .

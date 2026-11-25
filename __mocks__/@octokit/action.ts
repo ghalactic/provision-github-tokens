@@ -1,4 +1,4 @@
-/* eslint-disable ts-naming/naming-convention */
+/* eslint-disable id-match */
 /* eslint-disable @typescript-eslint/require-await */
 import type { RestEndpointMethodTypes } from "@octokit/action";
 import { RequestError } from "@octokit/request-error";

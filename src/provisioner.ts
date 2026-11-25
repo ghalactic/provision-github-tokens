@@ -286,7 +286,7 @@ export function createProvisioner(
 
   function toOrgSecretVisibilityParams(visibility: AccountSecretVisibility): {
     visibility: "all" | "private" | "selected";
-    // eslint-disable-next-line ts-naming/naming-convention -- GitHub API parameter
+    // eslint-disable-next-line id-match -- GitHub API parameter
     selected_repository_ids?: number[];
   } {
     if (visibility === "all" || visibility === "private") {

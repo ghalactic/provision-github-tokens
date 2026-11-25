@@ -1,6 +1,2 @@
 allowBuilds:
   esbuild: true
-
-peerDependencyRules:
-  allowedVersions:
-    "@typescript-eslint/typescript-estree>@typescript/native": "7.0.2"

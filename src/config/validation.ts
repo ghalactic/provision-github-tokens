@@ -10,7 +10,6 @@ import type { ProviderConfig } from "../type/provider-config.js";
 import type { PartialRequesterConfig } from "../type/requester-config.js";
 
 // see https://github.com/ajv-validator/ajv/issues/2132
-// eslint-disable-next-line ts-naming/naming-convention -- class constructor
 const Ajv = ajvModule.default;
 const ajvErrors = ajvErrorsModule.default;
 

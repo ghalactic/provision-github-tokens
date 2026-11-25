@@ -29,16 +29,6 @@ pnpm exec vitest --run -t "pattern"
 
 This project does not use `package.json` scripts.
 
-Linting is [Oxlint] with type-aware rules (`.oxlintrc.json`), and formatting is
-[Oxfmt] (`.oxfmtrc.json`). Import organization runs separately through
-`organize-imports-cli` so that it matches VS Code's "Organize imports". Oxlint
-has no native `@typescript-eslint/naming-convention`, so
-`script/oxlint/naming-convention.js` loads that rule through Oxlint's JS plugin
-bridge.
-
-[Oxfmt]: https://oxc.rs/docs/guide/usage/formatter.html
-[Oxlint]: https://oxc.rs/docs/guide/usage/linter.html
-
 ### Generated files
 
 The build bundles `src/main.ts` → `dist/main.js` using esbuild (via
@@ -130,6 +120,19 @@ Do **not** use coverage ignores to skip writing tests for reachable code paths.
 If a branch can be reached through normal inputs, write tests for it.
 
 ### Code style
+
+#### Naming conventions
+
+- Use strict camelCase for variables, functions, parameters, and type
+  properties.
+- Use PascalCase for types, interfaces, classes, enums, and type aliases.
+- Use UPPER_CASE for constants.
+- Leading underscores are allowed for unused parameters and for the existing
+  `__`-prefixed test mock helpers.
+- Imported names and object-literal properties are exempt.
+- In test files, camelCase names may contain consecutive capitals.
+
+`id-match` catches snake_case and kebab-case outliers; the rest is convention.
 
 #### Exported symbols before unexported symbols
 

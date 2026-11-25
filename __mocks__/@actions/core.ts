@@ -1,4 +1,3 @@
-/* eslint-disable ts-naming/naming-convention */
 import { vi } from "vitest";
 import { errorMessage } from "../../src/error.js";
 
