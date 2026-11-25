@@ -1,0 +1,75 @@
+min_version = "2026.2.8"
+
+[settings]
+idiomatic_version_file_enable_tools = ["node", "pnpm"]
+idiomatic_version_file_disable_files = ["node:package.json"]
+
+[vars]
+generated_files = "src/schema/generated.requester-token-permissions.v1.schema.json src/schema/generated.provider-rule-permissions.v1.schema.json dist/main.js dist/main.js.map"
+
+[tools]
+vale = "3.28.1"
+
+[tasks.default]
+description = "Run the unit tests"
+run = [{ task = "test" }]
+
+[tasks.test]
+description = "Run all tests"
+alias = "t"
+run = [{ task = "test:vitest" }]
+
+[tasks."test:coverage"]
+description = "Open the HTML coverage report"
+alias = ["c", "coverage", "co", "coverage:open"]
+run = [{ task = "open", args = ["out/coverage/vitest/index.html"] }]
+
+[tasks.lint]
+description = "Fix formatting and lint issues, then check types and prose"
+alias = "l"
+run = [
+  { task = "lint:eslint", args = ["--fix"] },
+  { task = "lint:prettier", args = ["--write"] },
+  { task = "lint:typecheck" },
+  { task = "lint:prose" },
+]
+
+[tasks."lint:check"]
+description = "Check lint rules, formatting, and types without changing files"
+run = [
+  { task = "lint:eslint", args = ["--max-warnings", "0"] },
+  { task = "lint:prettier", args = ["--check"] },
+  { task = "lint:typecheck" },
+]
+
+[tasks.generate]
+description = "Generate all committed files"
+alias = ["g", "gen"]
+run = [{ task = "generate:github-schemas" }, { task = "generate:dist" }]
+
+[tasks.regenerate]
+description = "Remove generated files and rebuild them"
+alias = ["rg", "regen"]
+run = [{ task = "clean:generated" }, { task = "generate" }]
+
+[tasks.clean]
+description = "Remove generated and ignored files"
+run = [{ task = "clean:generated" }, { task = "clean:ignored" }]
+
+[tasks.pre-commit]
+description = "Run all pre-commit checks"
+alias = ["pc", "precommit"]
+run = [
+  { task = "lint:check" },
+  { task = "lint:prose" },
+  { task = "test:vitest", args = ["--allowOnly=false"] },
+  { task = "lint:generated" },
+]
+
+[tasks.ci]
+description = "Run all continuous integration checks"
+run = [
+  { task = "lint:check" },
+  { task = "test:vitest", args = ["--allowOnly=false"] },
+  { task = "lint:generated" },
+]

@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+#MISE description="Sync Vale styles and vocabularies"
+#MISE hide=true
+#MISE sources=[".vale.ini"]
+#MISE outputs=["out/vale/sync.touch"]
+
+vale sync
+mkdir -p out/vale
+touch out/vale/sync.touch

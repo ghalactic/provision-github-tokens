@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+#MISE description="Check TypeScript types"
+#MISE alias=["tc", "typecheck"]
+#MISE depends=["deps"]
+
+pnpm exec tsc --noEmit --skipLibCheck

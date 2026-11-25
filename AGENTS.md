@@ -8,52 +8,33 @@ repos.
 
 ## Build, test, and lint
 
-This project uses a Make-based build system (via [makefiles.dev]) with
-`pnpm exec` under the hood. Run `make` with no arguments to execute the default
-target (test).
+This project uses [mise] for both tool installation and task running. Run
+`mise install` to install the tools. Run `mise tasks` to list available tasks.
 
-[makefiles.dev]: https://makefiles.dev
+[mise]: https://mise.jdx.dev
 
 ```sh
-make          # Run all unit tests (default target)
-make lint     # TypeScript type-check + ESLint + Prettier
-make test     # Run all Vitest tests
-make coverage # Run tests with coverage reports
+# Run all unit tests
+mise run test
+
+# Run all tests, lint, and other pre-commit checks
+mise run pre-commit
 
 # Run a single test file
 pnpm exec vitest --run src/token-factory.spec.ts
 
 # Run tests matching a name pattern
 pnpm exec vitest --run -t "pattern"
-
-# Regenerate all generated files (schemas, dist bundle, etc.)
-make regenerate
-
-# Full pre-commit check (lint + tests + verify-generated)
-make precommit
 ```
 
-### Generated files and the change workflow
+This project does not use `package.json` scripts.
+
+### Generated files
 
 The build bundles `src/main.ts` → `dist/main.js` using esbuild (via
 `script/build.ts`). Because this is a GitHub Action, GitHub runs `dist/main.js`
-directly — it doesn't build from source at runtime. The bundled output and other
-generated files (schemas, source maps) **must be committed to the repository**.
-The `GENERATED_FILES` variable in `Makefile` is the authoritative list.
-
-After modifying source files, follow this workflow **in order** before
-committing:
-
-1. **Regenerate** — Run `make regenerate` to rebuild all generated files.
-2. **Stage** — Run `git status` to see what changed, then stage the regenerated
-   files. Trust that the generators produce correct output — don't read through
-   generated files to verify them.
-3. **Precommit** — Run `make precommit` to lint, test, and verify that all
-   generated files are up to date.
-
-This order matters. `make precommit` includes a `verify-generated` step that
-fails if the committed generated files don't match the source. Regenerating and
-staging first avoids a wasted round-trip.
+directly — it doesn't build from source at runtime. All generated files are
+listed in `[vars] generated_files` in `mise.toml` and **must be committed**.
 
 ## Conventions
 
@@ -100,8 +81,8 @@ All Markdown should read well in both raw text and rendered HTML.
 
 #### Coverage
 
-The project targets **100% test coverage** (`make coverage`). A human reviewer
-should be able to run coverage and immediately see pass/fail without
+The project targets **100% test coverage** (`mise run coverage`). A human
+reviewer should be able to run coverage and immediately see pass/fail without
 investigating individual files.
 
 When introducing new code, write tests that fully cover it. If a branch is
@@ -129,10 +110,12 @@ If a branch can be reached through normal inputs, write tests for it.
 
 ### Code style
 
-**Exported symbols before unexported symbols.** In every module, place exported
-functions, types, interfaces, and classes above unexported ones. Use function
-hoisting to keep exports at the top — define unexported helper functions below
-the exported functions that call them, not above.
+#### Exported symbols before unexported symbols
+
+In every module, place exported functions, types, interfaces, and classes above
+unexported ones. Use function hoisting to keep exports at the top — define
+unexported helper functions below the exported functions that call them, not
+above.
 
 ### Access level hierarchy
 

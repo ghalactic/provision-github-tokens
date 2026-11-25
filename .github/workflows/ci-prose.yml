@@ -19,6 +19,7 @@ jobs:
       - name: Vale
         uses: vale-cli/vale-action@v3
         with:
+          version: 3.28.1
           reporter: github-check
           fail_on_error: "true"
           # https://github.com/reviewdog/reviewdog/pull/2865

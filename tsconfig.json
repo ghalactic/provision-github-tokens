@@ -11,6 +11,6 @@
     "strict": true,
     "target": "ESNext"
   },
-  "exclude": ["dist", "artifacts", ".makefiles"],
+  "exclude": [".makefiles", "dist", "out"],
   "include": ["**/*.js", "**/*.ts", ".agents/**/*.js"]
 }

@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+#MISE description="Generate the GitHub permission schema JSON files"
+#MISE depends=["deps"]
+
+node script/build-github-schemas.ts

@@ -1,6 +1,6 @@
 /.makefiles/
-/artifacts/
 /node_modules/
+/out/
 
 /.vale/styles/*
 !/.vale/styles/config

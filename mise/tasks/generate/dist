@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+#MISE description="Build the dist bundle and source map"
+#MISE depends=["deps"]
+
+node script/build.ts dist/main.js

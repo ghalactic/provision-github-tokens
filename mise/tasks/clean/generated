@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+#MISE description="Remove generated files"
+#MISE env={GENERATED_FILES = "{{vars.generated_files}}"}
+
+rm -f $GENERATED_FILES
