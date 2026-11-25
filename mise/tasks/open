@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+#MISE description="Open a file or URL with the platform's default handler"
+#MISE hide=true
+#USAGE arg "<target>" help="The file path or URL to open"
+
+for opener in open wslview xdg-open; do
+  if command -v "$opener" > /dev/null 2>&1; then
+    exec "$opener" "$usage_target"
+  fi
+done
+
+echo "No file opener available" >&2
+exit 1

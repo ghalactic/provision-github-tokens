@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+#MISE description="Lint prose with Vale"
+#MISE alias="prose"
+#MISE depends=["vale:sync"]
+
+vale .

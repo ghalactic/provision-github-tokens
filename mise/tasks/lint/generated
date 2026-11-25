@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+#MISE description="Regenerate files and check them against the index"
+#MISE depends=["deps"]
+#MISE env={GENERATED_FILES = "{{vars.generated_files}}"}
+
+mise run regenerate
+git diff --exit-code -- $GENERATED_FILES

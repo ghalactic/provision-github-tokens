@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+#MISE description="Run ESLint with the shared options"
+#MISE depends=["deps"]
+#MISE hide=true
+
+pnpm exec eslint \
+  --config eslint.config.js \
+  --cache \
+  --cache-location out/lint/eslint/cache \
+  "$@" \
+  .
