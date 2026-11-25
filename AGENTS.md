@@ -34,7 +34,8 @@ This project does not use `package.json` scripts.
 The build bundles `src/main.ts` → `dist/main.js` using esbuild (via
 `script/build.ts`). Because this is a GitHub Action, GitHub runs `dist/main.js`
 directly — it doesn't build from source at runtime. All generated files are
-listed in `[vars] generated_files` in `mise.toml` and **must be committed**.
+listed in `[vars] generated_files` in `mise/config.toml` and **must be
+committed**.
 
 ## Conventions
 

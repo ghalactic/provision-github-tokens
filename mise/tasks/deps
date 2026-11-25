@@ -3,7 +3,7 @@ set -euo pipefail
 
 #MISE description="Install dependencies from the frozen lockfile"
 #MISE alias="d"
-#MISE sources=["package.json", "pnpm-lock.yaml", "pnpm-workspace.yaml", "mise.toml"]
+#MISE sources=["package.json", "pnpm-lock.yaml", "pnpm-workspace.yaml", "mise/config.toml"]
 #MISE outputs=["node_modules/.modules.yaml"]
 
 pnpm install --frozen-lockfile --reporter=append-only
