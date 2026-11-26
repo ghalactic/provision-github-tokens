@@ -4,6 +4,15 @@ export default defineConfig({
   printWidth: 80,
   sortImports: false,
   sortPackageJson: false,
+
+  ignorePatterns: [
+    "/dist/",
+    "/out/",
+    "/pnpm-lock.yaml",
+    "/src/schema/generated.*",
+    "testdata/",
+  ],
+
   overrides: [
     {
       files: ["*.md"],
@@ -12,12 +21,5 @@ export default defineConfig({
         proseWrap: "always",
       },
     },
-  ],
-  ignorePatterns: [
-    "/dist/",
-    "/out/",
-    "/pnpm-lock.yaml",
-    "/src/schema/generated.*",
-    "testdata/",
   ],
 });
