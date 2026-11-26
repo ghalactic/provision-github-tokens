@@ -89,7 +89,7 @@ export function handleRequestError(
   if (!handler) {
     throw new Error(
       `Unexpected HTTP status ${error.status} from GitHub API: ` +
-        `${error.message}`,
+        error.message,
       { cause: error },
     );
   }
@@ -101,6 +101,8 @@ export function requestErrorHasError(
   error: RequestError,
   match: object,
 ): boolean {
+  // GitHub error response bodies are untyped.
+  // eslint-disable-next-line typescript/no-unsafe-type-assertion
   const data = error.response?.data as RequestErrorData | undefined;
 
   if (!data) return false;

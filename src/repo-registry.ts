@@ -1,14 +1,17 @@
 import { repoRefToString, type RepoReference } from "./github-reference.js";
 import type { Repo } from "./type/github-api.js";
+import type { Visibility } from "./type/visibility.js";
 import { isVisibility } from "./visibility.js";
+
+export type RegisteredRepo = Repo & { visibility: Visibility };
 
 export type RepoRegistry = {
   register: (repo: Repo) => void;
-  find: (reference: RepoReference) => Repo;
+  find: (reference: RepoReference) => RegisteredRepo;
 };
 
 export function createRepoRegistry(): RepoRegistry {
-  const repos = new Map<string, Repo>();
+  const repos = new Map<string, RegisteredRepo>();
 
   return {
     register: (repo) => {
@@ -20,7 +23,11 @@ export function createRepoRegistry(): RepoRegistry {
         );
       }
 
-      repos.set(repo.full_name, repo);
+      // The guard above narrows visibility; preserve object identity.
+      repos.set(
+        repo.full_name,
+        Object.assign(repo, { visibility: repo.visibility }),
+      );
     },
 
     find: (reference) => {

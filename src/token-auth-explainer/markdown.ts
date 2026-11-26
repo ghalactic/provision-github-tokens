@@ -163,7 +163,7 @@ export function createMarkdownTokenAuthExplainer(): TokenAuthResultExplainer<
     return [
       paragraph(
         text(`${icon(!isMissingRole)} `),
-        strong(text(`${ACCESS_LEVEL_LABELS[maxWant]}`)),
+        strong(text(ACCESS_LEVEL_LABELS[maxWant])),
         text(" access to "),
         ...accessTo,
         ...(request.tokenDec.as

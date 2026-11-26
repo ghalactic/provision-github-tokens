@@ -85,7 +85,7 @@ export function createTokenAuthorizer(
 
       for (let j = 0; j < rule.resources.length; ++j) {
         isRelevant =
-          rule.resources[j].allRepos === true &&
+          rule.resources[j].allRepos &&
           anyPatternMatches(
             resourcePatterns[i][j].accounts,
             request.tokenDec.account,
@@ -146,7 +146,7 @@ export function createTokenAuthorizer(
 
       for (let j = 0; j < rule.resources.length; ++j) {
         isRelevant =
-          rule.resources[j].noRepos === true &&
+          rule.resources[j].noRepos &&
           anyPatternMatches(
             resourcePatterns[i][j].accounts,
             request.tokenDec.account,
@@ -206,7 +206,7 @@ export function createTokenAuthorizer(
     for (const reqRepo of request.repos) {
       const ref = createRepoRef(request.tokenDec.account, reqRepo);
       const reqResource = repoRefToString(ref);
-      const targetVisibility = repoRegistry.find(ref).visibility as Visibility;
+      const targetVisibility = repoRegistry.find(ref).visibility;
       const ruleResults: TokenAuthResourceResultRuleResult[] = [];
       const have: Permissions = {};
       let isResourceSufficient = false;

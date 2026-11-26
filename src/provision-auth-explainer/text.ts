@@ -134,7 +134,7 @@ export function createTextProvisionAuthExplainer(): ProvisionAuthResultExplainer
       (isRepoProvisionRequestTarget(target)
         ? `${target.visibility} repo `
         : "account ") +
-      `${accountOrRepoRefToString(target.target)}`
+      accountOrRepoRefToString(target.target)
     );
   }
 

@@ -263,14 +263,10 @@ export function renderConfigIssueDashboard(
       );
     }
 
-    const { additionalProperty } = error.params as {
-      additionalProperty: string;
-    };
-
     return paragraph(
       inlineCode(error.instancePath || "/"),
       text(` ${error.message} (`),
-      inlineCode(String(additionalProperty)),
+      inlineCode(String(error.params.additionalProperty)),
       text(")"),
     );
   }

@@ -207,7 +207,7 @@ export function createProvisionRequestFactory(
     for (const repoName in typesByRepo) {
       const types = typesByRepo[repoName];
       const ref = repoRefFromName(repoName);
-      const visibility = repoRegistry.find(ref).visibility as Visibility;
+      const visibility = repoRegistry.find(ref).visibility;
 
       for (const type of SECRET_TYPES) {
         if (types[type]) {
@@ -299,7 +299,7 @@ export function createProvisionRequestFactory(
       selectedRepos.push({
         ref,
         id: Number(info.id),
-        visibility: info.visibility as Visibility,
+        visibility: info.visibility,
       });
     }
 

@@ -40,7 +40,7 @@ export function normalizeTokenReference(
   }
 
   return accountPart === "."
-    ? `${repoRefToString(createRepoRef(definingRepo.account, repoPart))}` +
+    ? repoRefToString(createRepoRef(definingRepo.account, repoPart)) +
         `.${namePart}`
     : reference;
 }

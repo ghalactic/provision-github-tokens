@@ -65830,7 +65830,7 @@ function createTextProvisionAuthExplainer() {
     ${icon(isTokenAllowed)} ${kind} ${name} was ${isTokenAllowed ? "allowed" : "denied"} access to token ${ref}`;
   }
   function explainSubject(target) {
-    return `${secretTypeText(target)} secret in ` + (isRepoProvisionRequestTarget(target) ? `${target.visibility} repo ` : "account ") + `${accountOrRepoRefToString(target.target)}`;
+    return `${secretTypeText(target)} secret in ` + (isRepoProvisionRequestTarget(target) ? `${target.visibility} repo ` : "account ") + accountOrRepoRefToString(target.target);
   }
   function explainBasedOnRules(target, {
     isProvisionAllowed,
@@ -73731,7 +73731,7 @@ function handleRequestError(error2, handlers = {}) {
   const handler2 = handlers[error2.status];
   if (!handler2) {
     throw new Error(
-      `Unexpected HTTP status ${error2.status} from GitHub API: ${error2.message}`,
+      `Unexpected HTTP status ${error2.status} from GitHub API: ` + error2.message,
       { cause: error2 }
     );
   }
@@ -73900,18 +73900,18 @@ async function discoverInstallation(octokitFactory, appRegistry, appsInput, appI
     debug(`Installation ${installation.id} has no permissions`);
   } else {
     debug(
-      `Installation ${installation.id} has permissions ${JSON.stringify(installation.permissions)}`
+      `Installation ${installation.id} has permissions ` + JSON.stringify(installation.permissions)
     );
   }
   if (installation.repository_selection === "all") {
     debug(
-      `Installation ${installation.id} has access to all repos ${JSON.stringify(repoNames)}`
+      `Installation ${installation.id} has access to all repos ` + JSON.stringify(repoNames)
     );
   } else if (repos.length < 1) {
     debug(`Installation ${installation.id} has access to no repos`);
   } else {
     debug(
-      `Installation ${installation.id} has access to selected repos ${JSON.stringify(repoNames)}`
+      `Installation ${installation.id} has access to selected repos ` + JSON.stringify(repoNames)
     );
   }
   appRegistry.registerInstallation({ installation, repos });
@@ -73940,7 +73940,7 @@ function normalizeTokenReference(definingRepo, reference) {
       `Token reference ${JSON.stringify(reference)} repo name part can't be empty`
     );
   }
-  return accountPart === "." ? `${repoRefToString(createRepoRef(definingRepo.account, repoPart))}.${namePart}` : reference;
+  return accountPart === "." ? repoRefToString(createRepoRef(definingRepo.account, repoPart)) + `.${namePart}` : reference;
 }
 
 // src/config/requester-config.ts
@@ -121430,7 +121430,7 @@ ${prefixLines("::debug::      ", errorStack(result.error))}`;
     }
   }
   function explainSubject(target) {
-    return `${secretTypeText(target)} secret in ${accountOrRepoRefToString(target.target)}`;
+    return `${secretTypeText(target)} secret in ` + accountOrRepoRefToString(target.target);
   }
   function explainVisibility(target, isProvisioned) {
     if (isRepoProvisionRequestTarget(target)) return "";
@@ -122230,7 +122230,7 @@ function createMarkdownTokenAuthExplainer() {
     return [
       paragraph2(
         text2(`${icon(!isMissingRole)} `),
-        strong2(text2(`${ACCESS_LEVEL_LABELS[maxWant]}`)),
+        strong2(text2(ACCESS_LEVEL_LABELS[maxWant])),
         text2(" access to "),
         ...accessTo,
         ...request2.tokenDec.as ? [text2(" requested with role "), inlineCode2(request2.tokenDec.as)] : [text2(" requested without a role")]
@@ -122466,7 +122466,7 @@ function createMarkdownTokenCreationExplainer() {
       listItem2(
         paragraph2(
           text2(`${icon2} ${verb} access to `),
-          strong2(text2(`${pluralize(repos.length, "repo", "repos")}`)),
+          strong2(text2(pluralize(repos.length, "repo", "repos"))),
           text2(" in "),
           inlineCode2(account)
         ),
@@ -122517,7 +122517,7 @@ function createMarkdownTokenCreationExplainer() {
       return [inlineCode2(account)];
     }
     return [
-      strong2(text2(`${pluralize(repos.length, "repo", "repos")}`)),
+      strong2(text2(pluralize(repos.length, "repo", "repos"))),
       text2(" in "),
       inlineCode2(account)
     ];
@@ -122702,11 +122702,10 @@ function renderConfigIssueDashboard(context, discovered) {
         text2(` ${error2.message ?? "is invalid"}`)
       );
     }
-    const { additionalProperty } = error2.params;
     return paragraph2(
       inlineCode2(error2.instancePath || "/"),
       text2(` ${error2.message} (`),
-      inlineCode2(String(additionalProperty)),
+      inlineCode2(String(error2.params.additionalProperty)),
       text2(")")
     );
   }
@@ -122949,7 +122948,10 @@ function createRepoRegistry() {
           `Invariant violation: Repo ${repo.full_name} doesn't have a known visibility`
         );
       }
-      repos.set(repo.full_name, repo);
+      repos.set(
+        repo.full_name,
+        Object.assign(repo, { visibility: repo.visibility })
+      );
     },
     find: (reference) => {
       const repo = repos.get(repoRefToString(reference));
@@ -123076,7 +123078,7 @@ function renderSummary(context, requesters, authResult, tokenCreationResults, pr
     return heading2(
       3,
       text2(
-        allowedCount === totalCount ? `Provisioned ${pluralize(totalCount, "secret", "secrets")}` : `Provisioned ${allowedCount} of ${pluralize(totalCount, "secret", "secrets")}`
+        allowedCount === totalCount ? `Provisioned ${pluralize(totalCount, "secret", "secrets")}` : `Provisioned ${allowedCount} of ` + pluralize(totalCount, "secret", "secrets")
       )
     );
   }
@@ -123292,7 +123294,7 @@ function createTokenAuthorizer(repoRegistry, config) {
       const rule = config.rules[i2];
       let isRelevant = false;
       for (let j2 = 0; j2 < rule.resources.length; ++j2) {
-        isRelevant = rule.resources[j2].allRepos === true && anyPatternMatches(
+        isRelevant = rule.resources[j2].allRepos && anyPatternMatches(
           resourcePatterns[i2][j2].accounts,
           request2.tokenDec.account
         );
@@ -123339,7 +123341,7 @@ function createTokenAuthorizer(repoRegistry, config) {
       const rule = config.rules[i2];
       let isRelevant = false;
       for (let j2 = 0; j2 < rule.resources.length; ++j2) {
-        isRelevant = rule.resources[j2].noRepos === true && anyPatternMatches(
+        isRelevant = rule.resources[j2].noRepos && anyPatternMatches(
           resourcePatterns[i2][j2].accounts,
           request2.tokenDec.account
         );

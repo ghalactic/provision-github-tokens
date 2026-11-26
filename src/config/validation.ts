@@ -51,6 +51,8 @@ export class ValidateError extends Error {
   }
 }
 
+// T is the validated output type; AJV cannot narrow to it.
+// eslint-disable-next-line typescript/no-unnecessary-type-parameters
 function createValidate<T>(
   schemaId: string,
   label: string,
@@ -63,6 +65,8 @@ function createValidate<T>(
       throw new Error(`Invariant violation: Undefined schema ${schemaId}`);
     }
 
+    // The value was validated against the schema above.
+    // eslint-disable-next-line typescript/no-unsafe-type-assertion
     if (validator(value)) return value as T;
 
     /* istanbul ignore next - never seen errors be nullish - @preserve */

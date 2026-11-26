@@ -132,6 +132,8 @@ export function createMarkdownTokenCreationExplainer(): TokenCreationResultExpla
     );
   }
 
+  // The switch is exhaustive over the TokenCreationResult union.
+  // eslint-disable-next-line typescript/consistent-return
   function renderErrorLines(
     result: TokenCreationResult,
     consumer: AccountOrRepoReference,
@@ -227,7 +229,7 @@ export function createMarkdownTokenCreationExplainer(): TokenCreationResultExpla
       listItem(
         paragraph(
           text(`${icon} ${verb} access to `),
-          strong(text(`${pluralize(repos.length, "repo", "repos")}`)),
+          strong(text(pluralize(repos.length, "repo", "repos"))),
           text(" in "),
           inlineCode(account),
         ),
@@ -290,7 +292,7 @@ export function createMarkdownTokenCreationExplainer(): TokenCreationResultExpla
     }
 
     return [
-      strong(text(`${pluralize(repos.length, "repo", "repos")}`)),
+      strong(text(pluralize(repos.length, "repo", "repos"))),
       text(" in "),
       inlineCode(account),
     ];

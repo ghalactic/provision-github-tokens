@@ -99,6 +99,8 @@ export function createMarkdownProvisionExplainer(): ProvisionResultExplainer<
     ];
   };
 
+  // The switch is exhaustive over the ProvisionResult union.
+  // eslint-disable-next-line typescript/consistent-return
   function explainTarget(
     target: ProvisionRequestTarget,
     result: ProvisionResult,
