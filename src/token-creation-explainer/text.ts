@@ -96,6 +96,8 @@ export function createTextTokenCreationExplainer(): TokenCreationResultExplainer
     );
   }
 
+  // The switch is exhaustive over the TokenCreationResult union.
+  // eslint-disable-next-line typescript/consistent-return
   function renderErrorLines(
     result: TokenCreationResult,
     consumer: AccountOrRepoReference,

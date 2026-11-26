@@ -55,6 +55,8 @@ export function createTextProvisionExplainer(): ProvisionResultExplainer<string>
     return output;
   };
 
+  // The switch is exhaustive over the ProvisionResult union.
+  // eslint-disable-next-line typescript/consistent-return
   function explainTarget(
     target: ProvisionRequestTarget,
     result: ProvisionResult,
@@ -115,7 +117,7 @@ export function createTextProvisionExplainer(): ProvisionResultExplainer<string>
   function explainSubject(target: ProvisionRequestTarget): string {
     return (
       `${secretTypeText(target)} secret in ` +
-      `${accountOrRepoRefToString(target.target)}`
+      accountOrRepoRefToString(target.target)
     );
   }
 

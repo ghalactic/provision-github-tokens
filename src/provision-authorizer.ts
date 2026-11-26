@@ -451,7 +451,10 @@ type TargetCriteriaPatterns = {
 };
 
 type AccountSecretVisibilityCategory =
-  "allRepos" | "privateRepos" | "selectedRepos" | "noRepos";
+  | "allRepos"
+  | "privateRepos"
+  | "selectedRepos"
+  | "noRepos";
 
 type SelectedReposEvaluation = {
   isAllowed: boolean;

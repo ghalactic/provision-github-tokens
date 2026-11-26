@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/naming-convention */
+/* eslint-disable id-match */
 import openapi from "@octokit/openapi";
 import type { components } from "@octokit/openapi-types";
 import { createHash } from "node:crypto";

@@ -52,6 +52,8 @@ export function createEnvironmentResolver(
     const names: string[] = [];
 
     for await (const { data: envs } of envPages) {
+      // Octokit normalizes list responses to arrays at runtime.
+      // eslint-disable-next-line typescript/no-unsafe-type-assertion
       for (const env of envs as Environment[]) names.push(env.name);
     }
 

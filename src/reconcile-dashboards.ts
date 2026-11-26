@@ -317,6 +317,7 @@ export function createReconcileDashboards(
         handleRequestError(cause, {
           422: (cause) => {
             if (!requestErrorHasError(cause, { code: "already_exists" })) {
+              // eslint-disable-next-line preserve-caught-error
               throw new Error("Unable to create token dashboard label", {
                 cause,
               });

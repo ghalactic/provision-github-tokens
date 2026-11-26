@@ -180,7 +180,7 @@ export function renderSummary(
         allowedCount === totalCount
           ? `Provisioned ${pluralize(totalCount, "secret", "secrets")}`
           : `Provisioned ${allowedCount} of ` +
-              `${pluralize(totalCount, "secret", "secrets")}`,
+              pluralize(totalCount, "secret", "secrets"),
       ),
     );
   }

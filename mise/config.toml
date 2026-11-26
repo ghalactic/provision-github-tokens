@@ -28,8 +28,13 @@ run = [{ task = "open", args = ["out/coverage/vitest/index.html"] }]
 description = "Fix formatting and lint issues, then check types and prose"
 alias = "l"
 run = [
-  { task = "lint:eslint", args = ["--fix"] },
-  { task = "lint:prettier", args = ["--write"] },
+  { task = "lint:imports" },
+  { task = "lint:oxlint", args = [
+    "--fix",
+  ] },
+  { task = "lint:oxfmt", args = [
+    "--write",
+  ] },
   { task = "lint:typecheck" },
   { task = "lint:prose" },
 ]
@@ -37,8 +42,16 @@ run = [
 [tasks."lint:check"]
 description = "Check lint rules, formatting, and types without changing files"
 run = [
-  { task = "lint:eslint", args = ["--max-warnings", "0"] },
-  { task = "lint:prettier", args = ["--check"] },
+  { task = "lint:oxlint", args = [
+    "--max-warnings",
+    "0",
+  ] },
+  { task = "lint:imports", args = [
+    "--list-different",
+  ] },
+  { task = "lint:oxfmt", args = [
+    "--check",
+  ] },
   { task = "lint:typecheck" },
 ]
 
@@ -62,7 +75,9 @@ alias = ["pc", "precommit"]
 run = [
   { task = "lint:check" },
   { task = "lint:prose" },
-  { task = "test:vitest", args = ["--allowOnly=false"] },
+  { task = "test:vitest", args = [
+    "--allowOnly=false",
+  ] },
   { task = "lint:generated" },
 ]
 
@@ -70,6 +85,8 @@ run = [
 description = "Run all continuous integration checks"
 run = [
   { task = "lint:check" },
-  { task = "test:vitest", args = ["--allowOnly=false"] },
+  { task = "test:vitest", args = [
+    "--allowOnly=false",
+  ] },
   { task = "lint:generated" },
 ]

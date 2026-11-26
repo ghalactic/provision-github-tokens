@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+#MISE description="Organize imports with TypeScript, matching VS Code"
+#MISE depends=["deps"]
+#MISE hide=true
+
+pnpm exec organize-imports-cli "$@" tsconfig.json

@@ -38,6 +38,8 @@ export async function readProviderConfig(
     path: configPath,
     mediaType: { format: "raw" },
   });
+  // The raw media type returns a string at runtime.
+  // eslint-disable-next-line typescript/no-unsafe-type-assertion
   const configYaml = res.data as unknown as string;
 
   const config = parseProviderConfig(provider, configPath, configYaml);

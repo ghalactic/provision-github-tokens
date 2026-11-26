@@ -6,7 +6,6 @@ import type { AppInput } from "./type/input.js";
 
 const GITHUB_API_VERSION = "2026-03-10";
 
-// eslint-disable-next-line @typescript-eslint/naming-convention -- class constructor
 const CustomOctokit = OctokitAction.plugin(retry);
 
 export type Octokit = InstanceType<typeof CustomOctokit>;
@@ -90,7 +89,7 @@ export function handleRequestError(
   if (!handler) {
     throw new Error(
       `Unexpected HTTP status ${error.status} from GitHub API: ` +
-        `${error.message}`,
+        error.message,
       { cause: error },
     );
   }
@@ -102,6 +101,8 @@ export function requestErrorHasError(
   error: RequestError,
   match: object,
 ): boolean {
+  // GitHub error response bodies are untyped.
+  // eslint-disable-next-line typescript/no-unsafe-type-assertion
   const data = error.response?.data as RequestErrorData | undefined;
 
   if (!data) return false;

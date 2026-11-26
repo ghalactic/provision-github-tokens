@@ -230,21 +230,21 @@ async function discoverInstallation(
   } else {
     debug(
       `Installation ${installation.id} has permissions ` +
-        `${JSON.stringify(installation.permissions)}`,
+        JSON.stringify(installation.permissions),
     );
   }
 
   if (installation.repository_selection === "all") {
     debug(
       `Installation ${installation.id} has access to all repos ` +
-        `${JSON.stringify(repoNames)}`,
+        JSON.stringify(repoNames),
     );
   } else if (repos.length < 1) {
     debug(`Installation ${installation.id} has access to no repos`);
   } else {
     debug(
       `Installation ${installation.id} has access to selected repos ` +
-        `${JSON.stringify(repoNames)}`,
+        JSON.stringify(repoNames),
     );
   }
 

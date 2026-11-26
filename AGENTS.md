@@ -54,12 +54,12 @@ file.
 
 All Markdown should read well in both raw text and rendered HTML.
 
-- **Run Prettier before committing any Markdown file.** Use
-  `npx prettier --write <file>` and stage the result. Prettier rewraps prose,
+- **Run Oxfmt before committing any Markdown file.** Use
+  `pnpm exec oxfmt --write <file>` and stage the result. Oxfmt rewraps prose,
   reformats tables, and adjusts whitespace — you must incorporate these changes
   before committing, not in a separate fixup commit.
-- Prettier config: `proseWrap: "always"`, `printWidth: 80`. Wrap prose to 80
-  columns.
+- Oxfmt config for Markdown: `proseWrap: "always"`, `printWidth: 80`. Wrap prose
+  to 80 columns.
 - **Link references** — Prefer `[text]` / `[text][ref]` with `[ref]: URL`
   definitions close to where they are used (lowercased), rather than inline
   `[text](URL)`. This keeps prose scannable in plain text and avoids long URLs
@@ -77,7 +77,7 @@ All Markdown should read well in both raw text and rendered HTML.
 - `__mocks__/@actions/core.ts` — Manual mock of `@actions/core` with
   `__setInputs()`, `__getOutput()`, and `__reset()` helpers for
   controlling/inspecting action I/O in tests
-- The `vitest/no-mocks-import` ESLint rule is disabled because tests import
+- The `vitest/no-mocks-import` Oxlint rule is disabled because tests import
   helpers from `__mocks__/`
 
 #### Don't use helpers or hooks when they reduce clarity
@@ -120,6 +120,19 @@ Do **not** use coverage ignores to skip writing tests for reachable code paths.
 If a branch can be reached through normal inputs, write tests for it.
 
 ### Code style
+
+#### Naming conventions
+
+- Use strict camelCase for variables, functions, parameters, and type
+  properties.
+- Use PascalCase for types, interfaces, classes, enums, and type aliases.
+- Use UPPER_CASE for constants.
+- Leading underscores are allowed for unused parameters and for the existing
+  `__`-prefixed test mock helpers.
+- Imported names and object-literal properties are exempt.
+- In test files, camelCase names may contain consecutive capitals.
+
+`id-match` catches snake_case and kebab-case outliers; the rest is convention.
 
 #### Exported symbols before unexported symbols
 
