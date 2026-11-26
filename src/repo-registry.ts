@@ -23,11 +23,9 @@ export function createRepoRegistry(): RepoRegistry {
         );
       }
 
-      // The guard above narrows visibility; preserve object identity.
-      repos.set(
-        repo.full_name,
-        Object.assign(repo, { visibility: repo.visibility }),
-      );
+      // The guard above proves visibility is a Visibility.
+      // eslint-disable-next-line typescript/no-unsafe-type-assertion
+      repos.set(repo.full_name, repo as RegisteredRepo);
     },
 
     find: (reference) => {

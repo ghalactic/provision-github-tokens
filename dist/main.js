@@ -122948,10 +122948,7 @@ function createRepoRegistry() {
           `Invariant violation: Repo ${repo.full_name} doesn't have a known visibility`
         );
       }
-      repos.set(
-        repo.full_name,
-        Object.assign(repo, { visibility: repo.visibility })
-      );
+      repos.set(repo.full_name, repo);
     },
     find: (reference) => {
       const repo = repos.get(repoRefToString(reference));
