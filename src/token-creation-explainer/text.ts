@@ -5,7 +5,7 @@ import {
   isRepoRef,
   repoRefToString,
 } from "../github-reference.js";
-import { FAIL_ICON, icon } from "../icon.js";
+import { FAIL_ICON, WARN_ICON, icon } from "../icon.js";
 import { effectivePermissions } from "../permissions.js";
 import { pluralize } from "../pluralize.js";
 import { createSequencer } from "../sequencer.js";
@@ -69,6 +69,11 @@ export function createTextTokenCreationExplainer(): TokenCreationResultExplainer
     lines.push(...renderRepoLines(subIcon, verb, repos, account));
     lines.push(...renderPermissionLines(subIcon, verb, permEntries));
 
+    const attempts = resultAttempts(result);
+    if (attempts.length > 0) {
+      lines.push(...renderFailedAttemptLines(attempts, isSuccess));
+    }
+
     return lines.join("\n");
   }
 
@@ -105,7 +110,8 @@ export function createTextTokenCreationExplainer(): TokenCreationResultExplainer
   ): string[] {
     switch (result.type) {
       case "CREATED":
-        return renderAttemptLines(result.failedAttempts);
+      case "FAILED":
+        return [];
 
       case "NOT_ALLOWED": {
         const suffix = isRepoRef(consumer)
@@ -117,14 +123,22 @@ export function createTextTokenCreationExplainer(): TokenCreationResultExplainer
 
       case "NO_ISSUER":
         return [`  ${FAIL_ICON} No suitable issuer`];
-
-      case "FAILED":
-        return renderAttemptLines(result.attempts);
     }
   }
 
-  function renderAttemptLines(attempts: TokenCreationAttempt[]): string[] {
-    const lines: string[] = [];
+  function resultAttempts(result: TokenCreationResult): TokenCreationAttempt[] {
+    if (result.type === "CREATED") return result.failedAttempts;
+    if (result.type === "FAILED") return result.attempts;
+
+    return [];
+  }
+
+  function renderFailedAttemptLines(
+    attempts: TokenCreationAttempt[],
+    isSuccess: boolean,
+  ): string[] {
+    const statusIcon = isSuccess ? WARN_ICON : FAIL_ICON;
+    const lines = [`  ${statusIcon} Failed attempts:`];
     let index = 0;
 
     for (const attempt of attempts) {
@@ -139,12 +153,12 @@ export function createTextTokenCreationExplainer(): TokenCreationResultExplainer
             : JSON.stringify(body, null, 2);
 
         lines.push(
-          `  ${FAIL_ICON} ${label}` +
+          `    ${statusIcon} ${label}` +
             `${attempt.error.status} - ${attempt.error.message}`,
         );
         lines.push(prefixLines("::debug::      ", detail));
       } else {
-        lines.push(`  ${FAIL_ICON} ${label}${errorMessage(attempt.error)}`);
+        lines.push(`    ${statusIcon} ${label}${errorMessage(attempt.error)}`);
         lines.push(prefixLines("::debug::      ", errorStack(attempt.error)));
       }
     }

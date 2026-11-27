@@ -6,7 +6,7 @@ import {
   isRepoRef,
   repoRefToString,
 } from "../github-reference.js";
-import { FAIL_ICON, icon } from "../icon.js";
+import { FAIL_ICON, WARN_ICON, icon } from "../icon.js";
 import {
   code,
   details,
@@ -95,6 +95,11 @@ export function createMarkdownTokenCreationExplainer(): TokenCreationResultExpla
     nested.children.push(...renderRepoLines(subIcon, verb, repos, account));
     nested.children.push(...renderPermissionLines(subIcon, verb, permEntries));
 
+    const attempts = resultAttempts(result);
+    if (attempts.length > 0) {
+      nested.children.push(renderFailedAttempts(attempts, isSuccess));
+    }
+
     summary.children.push(nested);
 
     return [list(summary)];
@@ -141,7 +146,8 @@ export function createMarkdownTokenCreationExplainer(): TokenCreationResultExpla
   ): ListItem[] {
     switch (result.type) {
       case "CREATED":
-        return renderAttemptLines(result.failedAttempts);
+      case "FAILED":
+        return [];
 
       case "NOT_ALLOWED": {
         return [
@@ -159,13 +165,36 @@ export function createMarkdownTokenCreationExplainer(): TokenCreationResultExpla
 
       case "NO_ISSUER":
         return [listItem(paragraph(text(`${FAIL_ICON} No suitable issuer`)))];
-
-      case "FAILED":
-        return renderAttemptLines(result.attempts);
     }
   }
 
-  function renderAttemptLines(attempts: TokenCreationAttempt[]): ListItem[] {
+  function resultAttempts(result: TokenCreationResult): TokenCreationAttempt[] {
+    if (result.type === "CREATED") return result.failedAttempts;
+    if (result.type === "FAILED") return result.attempts;
+
+    return [];
+  }
+
+  function renderFailedAttempts(
+    attempts: TokenCreationAttempt[],
+    isSuccess: boolean,
+  ): ListItem {
+    const statusIcon = isSuccess ? WARN_ICON : FAIL_ICON;
+
+    return listItem(
+      paragraph(
+        text(`${statusIcon} `),
+        strong(text("Failed attempts")),
+        text(":"),
+      ),
+      list(...renderAttemptItems(statusIcon, attempts)),
+    );
+  }
+
+  function renderAttemptItems(
+    statusIcon: string,
+    attempts: TokenCreationAttempt[],
+  ): ListItem[] {
     const items: ListItem[] = [];
     let index = 0;
 
@@ -179,7 +208,7 @@ export function createMarkdownTokenCreationExplainer(): TokenCreationResultExpla
         items.push(
           listItem(
             paragraph(
-              text(`${FAIL_ICON} ${label}`),
+              text(`${statusIcon} ${label}`),
               strong(text(String(attempt.error.status))),
               text(" - "),
               emphasis(text(attempt.error.message)),
@@ -196,7 +225,7 @@ export function createMarkdownTokenCreationExplainer(): TokenCreationResultExpla
         items.push(
           listItem(
             paragraph(
-              text(`${FAIL_ICON} ${label}${errorMessage(attempt.error)}`),
+              text(`${statusIcon} ${label}${errorMessage(attempt.error)}`),
             ),
             ...details("Error stack", code("text", errorStack(attempt.error))),
           ),

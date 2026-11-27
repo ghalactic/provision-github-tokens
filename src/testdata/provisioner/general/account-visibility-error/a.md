@@ -3,14 +3,15 @@
     - ❌ Would've been readable by **2 repos**:
       - ❌ `repo-a`
       - ❌ `repo-b`
-    - ❌ **403** - _Forbidden_
-      <details>
-      <summary>Response body</summary>
+    - ❌ **Failed attempts**:
+      - ❌ **403** - _Forbidden_
+        <details>
+        <summary>Response body</summary>
 
-      ```json
-      {
-        "message": "Resource not accessible"
-      }
-      ```
+        ```json
+        {
+          "message": "Resource not accessible"
+        }
+        ```
 
-      </details>
+        </details>

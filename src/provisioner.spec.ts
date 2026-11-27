@@ -544,7 +544,8 @@ it("doesn't provision secrets when target provisioning fails with a GitHub API e
     ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
       ❌ Failed to provision to GitHub Actions secret in account-a:
         ❌ Would've been readable by private repos
-        ❌ 403 - Forbidden
+        ❌ Failed attempts:
+          ❌ 403 - Forbidden
     ::debug::      {
     ::debug::        "message": "Resource not accessible"
     ::debug::      }
@@ -633,7 +634,8 @@ it("doesn't provision secrets when target provisioning fails with an unexpected 
     ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
       ❌ Failed to provision to GitHub Actions secret in account-a:
         ❌ Would've been readable by private repos
-        ❌ <message>
+        ❌ Failed attempts:
+          ❌ <message>
     ::debug::      Error: <message>
     ::debug::          at provisioner.ts:1:1
 
@@ -716,7 +718,8 @@ it("doesn't provision secrets when encryption fails with a GitHub API error", as
     ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
       ❌ Failed to provision to GitHub Actions secret in account-a:
         ❌ Would've been readable by private repos
-        ❌ 401 - Unauthorized
+        ❌ Failed attempts:
+          ❌ 401 - Unauthorized
     ::debug::      (no response data)
 
     "
@@ -803,7 +806,8 @@ it("doesn't provision secrets when encryption fails with an unexpected error", a
     ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
       ❌ Failed to provision to GitHub Actions secret in account-a:
         ❌ Would've been readable by private repos
-        ❌ <message>
+        ❌ Failed attempts:
+          ❌ <message>
     ::debug::      Error: <message>
     ::debug::          at encrypt.ts:1:1
 
@@ -1501,7 +1505,8 @@ it("renders the visibility of a failed account secret", async () => {
         ❌ Would've been readable by 2 repos:
           ❌ repo-a
           ❌ repo-b
-        ❌ 403 - Forbidden
+        ❌ Failed attempts:
+          ❌ 403 - Forbidden
     ::debug::      {
     ::debug::        "message": "Resource not accessible"
     ::debug::      }
@@ -1900,7 +1905,8 @@ it("shares a failed write between identical declarations", async () => {
     ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
       ❌ Failed to provision to GitHub Actions secret in account-a:
         ❌ Would've been readable by private repos
-        ❌ 403 - Forbidden
+        ❌ Failed attempts:
+          ❌ 403 - Forbidden
     ::debug::      {
     ::debug::        "message": "Resource not accessible"
     ::debug::      }
@@ -1910,7 +1916,8 @@ it("shares a failed write between identical declarations", async () => {
     ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-b:
       ❌ Failed to provision to GitHub Actions secret in account-a:
         ❌ Would've been readable by private repos
-        ❌ 403 - Forbidden
+        ❌ Failed attempts:
+          ❌ 403 - Forbidden
     ::debug::      {
     ::debug::        "message": "Resource not accessible"
     ::debug::      }
@@ -2505,9 +2512,10 @@ it("explains a secret provisioned after falling back to another provisioner for 
 
     ✅ Secret SECRET_A was provisioned for repo account-a/repo-a:
       ✅ Provisioned to GitHub Actions secret in account-a:
-        ❌ 401 - Unauthorized
-    ::debug::      (no response data)
         ✅ Readable by private repos
+        ⚠️ Failed attempts:
+          ⚠️ 401 - Unauthorized
+    ::debug::      (no response data)
 
     "
   `);
@@ -2611,9 +2619,10 @@ it("explains every provisioner attempt when encryption fails for all", async () 
     ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
       ❌ Failed to provision to GitHub Actions secret in account-a:
         ❌ Would've been readable by private repos
-        ❌ Attempt 1: 401 - Unauthorized
+        ❌ Failed attempts:
+          ❌ Attempt 1: 401 - Unauthorized
     ::debug::      (no response data)
-        ❌ Attempt 2: 500 - Internal Server Error
+          ❌ Attempt 2: 500 - Internal Server Error
     ::debug::      (no response data)
 
     "
@@ -2716,11 +2725,12 @@ it("explains a secret provisioned after falling back to another provisioner for 
 
     ✅ Secret SECRET_A was provisioned for repo account-a/repo-a:
       ✅ Provisioned to GitHub Actions secret in account-a:
-        ❌ 403 - Forbidden
+        ✅ Readable by private repos
+        ⚠️ Failed attempts:
+          ⚠️ 403 - Forbidden
     ::debug::      {
     ::debug::        "message": "Resource not accessible"
     ::debug::      }
-        ✅ Readable by private repos
 
     "
   `);
@@ -2824,11 +2834,12 @@ it("explains every provisioner attempt when the write fails for all", async () =
     ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
       ❌ Failed to provision to GitHub Actions secret in account-a:
         ❌ Would've been readable by private repos
-        ❌ Attempt 1: 403 - Forbidden
+        ❌ Failed attempts:
+          ❌ Attempt 1: 403 - Forbidden
     ::debug::      {
     ::debug::        "message": "Resource not accessible"
     ::debug::      }
-        ❌ Attempt 2: 500 - Internal Server Error
+          ❌ Attempt 2: 500 - Internal Server Error
     ::debug::      (no response data)
 
     "

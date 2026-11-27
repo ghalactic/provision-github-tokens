@@ -5,7 +5,7 @@ import {
   accountOrRepoRefToString,
   repoRefToString,
 } from "../github-reference.js";
-import { FAIL_ICON, PASS_ICON, icon } from "../icon.js";
+import { FAIL_ICON, PASS_ICON, WARN_ICON, icon } from "../icon.js";
 import {
   code,
   details,
@@ -112,7 +112,10 @@ export function createMarkdownProvisionExplainer(): ProvisionResultExplainer<
 
     switch (result.type) {
       case "PROVISIONED": {
-        const failed = renderAttempts(result.failedAttempts);
+        const failed = renderFailedAttempts(
+          result.failedAttempts,
+          isProvisioned,
+        );
 
         return [
           paragraph(
@@ -122,7 +125,7 @@ export function createMarkdownProvisionExplainer(): ProvisionResultExplainer<
             ...subject,
             ...(failed.length > 0 ? [text(":")] : []),
           ),
-          ...nestedList(...failed, ...visibility),
+          ...nestedList(...visibility, ...failed),
         ];
       }
 
@@ -166,12 +169,38 @@ export function createMarkdownProvisionExplainer(): ProvisionResultExplainer<
             ...subject,
             text(":"),
           ),
-          list(...visibility, ...renderAttempts(result.attempts)),
+          list(
+            ...visibility,
+            ...renderFailedAttempts(result.attempts, isProvisioned),
+          ),
         ];
     }
   }
 
-  function renderAttempts(attempts: ProvisionAttempt[]): ListItem[] {
+  function renderFailedAttempts(
+    attempts: ProvisionAttempt[],
+    isProvisioned: boolean,
+  ): ListItem[] {
+    if (attempts.length < 1) return [];
+
+    const statusIcon = isProvisioned ? WARN_ICON : FAIL_ICON;
+
+    return [
+      listItem(
+        paragraph(
+          text(`${statusIcon} `),
+          strong(text("Failed attempts")),
+          text(":"),
+        ),
+        list(...renderAttemptItems(statusIcon, attempts)),
+      ),
+    ];
+  }
+
+  function renderAttemptItems(
+    statusIcon: string,
+    attempts: ProvisionAttempt[],
+  ): ListItem[] {
     const items: ListItem[] = [];
     let index = 0;
 
@@ -185,7 +214,7 @@ export function createMarkdownProvisionExplainer(): ProvisionResultExplainer<
         items.push(
           listItem(
             paragraph(
-              text(`${FAIL_ICON} ${label}`),
+              text(`${statusIcon} ${label}`),
               strong(text(String(attempt.error.status))),
               text(" - "),
               emphasis(text(attempt.error.message)),
@@ -202,7 +231,7 @@ export function createMarkdownProvisionExplainer(): ProvisionResultExplainer<
         items.push(
           listItem(
             paragraph(
-              text(`${FAIL_ICON} ${label}${errorMessage(attempt.error)}`),
+              text(`${statusIcon} ${label}${errorMessage(attempt.error)}`),
             ),
             ...details("Error stack", code("text", errorStack(attempt.error))),
           ),

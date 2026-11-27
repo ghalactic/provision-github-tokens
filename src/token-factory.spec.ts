@@ -693,14 +693,15 @@ it("reuses the same failure outcome for identical requests", async () => {
     Token #1:
 
     ❌ Failed to create read-only token with access to all repos in account-a:
-      ❌ 403 - Forbidden
-    ::debug::      {
-    ::debug::        "message": "Resource not accessible"
-    ::debug::      }
       ➖ Wanted read access without a role
       ➖ Wanted access to all repos in account-a
       ➖ Wanted 1 permission:
         ➖ metadata: read
+      ❌ Failed attempts:
+        ❌ 403 - Forbidden
+    ::debug::      {
+    ::debug::        "message": "Resource not accessible"
+    ::debug::      }
 
     Token #2:
 
@@ -709,13 +710,14 @@ it("reuses the same failure outcome for identical requests", async () => {
     Token #3:
 
     ❌ Failed to create read-only token with access to all repos in account-a:
-      ❌ <message>
-    ::debug::      Error: <message>
-    ::debug::          at token-factory.ts:1:1
       ➖ Wanted read access without a role
       ➖ Wanted access to all repos in account-a
       ➖ Wanted 1 permission:
         ➖ contents: read
+      ❌ Failed attempts:
+        ❌ <message>
+    ::debug::      Error: <message>
+    ::debug::          at token-factory.ts:1:1
 
     Token #4:
 
@@ -1372,25 +1374,27 @@ it("explains failures caused by GitHub API errors", async () => {
     Token #1:
 
     ❌ Failed to create read-only token with access to all repos in account-a:
-      ❌ 403 - Forbidden
-    ::debug::      {
-    ::debug::        "message": "Resource not accessible"
-    ::debug::      }
       ➖ Wanted read access without a role
       ➖ Wanted access to all repos in account-a
       ➖ Wanted 1 permission:
         ➖ metadata: read
+      ❌ Failed attempts:
+        ❌ 403 - Forbidden
+    ::debug::      {
+    ::debug::        "message": "Resource not accessible"
+    ::debug::      }
 
     Token #2:
 
     ❌ Failed to create read-only token with access to 1 repo in account-a:
-      ❌ 500 - Internal Server Error
-    ::debug::      (no response data)
       ➖ Wanted read access without a role
       ➖ Wanted access to 1 repo in account-a:
         ➖ account-a/repo-a
       ➖ Wanted 1 permission:
         ➖ metadata: read
+      ❌ Failed attempts:
+        ❌ 500 - Internal Server Error
+    ::debug::      (no response data)
 
     "
   `);
@@ -1450,13 +1454,14 @@ it("explains failures caused by unexpected errors", async () => {
     Token #1:
 
     ❌ Failed to create read-only token with access to all repos in account-a:
-      ❌ <message>
-    ::debug::      Error: <message>
-    ::debug::          at token-factory.ts:1:1
       ➖ Wanted read access without a role
       ➖ Wanted access to all repos in account-a
       ➖ Wanted 1 permission:
         ➖ metadata: read
+      ❌ Failed attempts:
+        ❌ <message>
+    ::debug::      Error: <message>
+    ::debug::          at token-factory.ts:1:1
 
     "
   `);
@@ -1781,14 +1786,15 @@ it("explains a token created after falling back to another issuer", async () => 
     Token #1:
 
     ✅ Read-only token created with access to all repos in account-a:
-      ❌ 403 - Forbidden
-    ::debug::      {
-    ::debug::        "message": "Resource not accessible"
-    ::debug::      }
       ✅ Has read access without a role
       ✅ Has access to all repos in account-a
       ✅ Has 1 permission:
         ✅ metadata: read
+      ⚠️ Failed attempts:
+        ⚠️ 403 - Forbidden
+    ::debug::      {
+    ::debug::        "message": "Resource not accessible"
+    ::debug::      }
 
     "
   `);
@@ -1863,17 +1869,18 @@ it("explains every issuer attempt when every issuer fails", async () => {
     Token #1:
 
     ❌ Failed to create read-only token with access to all repos in account-a:
-      ❌ Attempt 1: 403 - Forbidden
-    ::debug::      {
-    ::debug::        "message": "Resource not accessible"
-    ::debug::      }
-      ❌ Attempt 2: <message>
-    ::debug::      Error: <message>
-    ::debug::          at token-factory.ts:1:1
       ➖ Wanted read access without a role
       ➖ Wanted access to all repos in account-a
       ➖ Wanted 1 permission:
         ➖ metadata: read
+      ❌ Failed attempts:
+        ❌ Attempt 1: 403 - Forbidden
+    ::debug::      {
+    ::debug::        "message": "Resource not accessible"
+    ::debug::      }
+        ❌ Attempt 2: <message>
+    ::debug::      Error: <message>
+    ::debug::          at token-factory.ts:1:1
 
     "
   `);

@@ -121479,9 +121479,12 @@ function createTextProvisionExplainer() {
     const visibility = explainVisibility(target, isProvisioned);
     switch (result.type) {
       case "PROVISIONED": {
-        const failed = renderAttempts(result.failedAttempts);
+        const failed = renderFailedAttempts(
+          result.failedAttempts,
+          isProvisioned
+        );
         return `
-  ${PASS_ICON} Provisioned to ${subject}${failed ? ":" : ""}${failed}${visibility}`;
+  ${PASS_ICON} Provisioned to ${subject}${failed ? ":" : ""}${visibility}${failed}`;
       }
       case "NOT_ALLOWED":
         return `
@@ -121494,11 +121497,14 @@ function createTextProvisionExplainer() {
   ${FAIL_ICON} No suitable provisioner for ${subject}${visibility}`;
       case "FAILED":
         return `
-  ${FAIL_ICON} Failed to provision to ${subject}:${visibility}${renderAttempts(result.attempts)}`;
+  ${FAIL_ICON} Failed to provision to ${subject}:${visibility}${renderFailedAttempts(result.attempts, isProvisioned)}`;
     }
   }
-  function renderAttempts(attempts) {
-    let output = "";
+  function renderFailedAttempts(attempts, isProvisioned) {
+    if (attempts.length < 1) return "";
+    const statusIcon = isProvisioned ? WARN_ICON : FAIL_ICON;
+    let output = `
+    ${statusIcon} Failed attempts:`;
     let index = 0;
     for (const attempt of attempts) {
       ++index;
@@ -121507,12 +121513,12 @@ function createTextProvisionExplainer() {
         const body = attempt.error.response?.data;
         const detail = typeof body === "undefined" ? "(no response data)" : JSON.stringify(body, null, 2);
         output += `
-    ${FAIL_ICON} ${label}${attempt.error.status} - ${attempt.error.message}`;
+      ${statusIcon} ${label}${attempt.error.status} - ${attempt.error.message}`;
         output += `
 ${prefixLines("::debug::      ", detail)}`;
       } else {
         output += `
-    ${FAIL_ICON} ${label}` + errorMessage(attempt.error);
+      ${statusIcon} ${label}` + errorMessage(attempt.error);
         output += `
 ${prefixLines("::debug::      ", errorStack(attempt.error))}`;
       }
@@ -122079,7 +122085,10 @@ function createMarkdownProvisionExplainer() {
     const visibility = explainVisibility(target, isProvisioned);
     switch (result.type) {
       case "PROVISIONED": {
-        const failed = renderAttempts(result.failedAttempts);
+        const failed = renderFailedAttempts(
+          result.failedAttempts,
+          isProvisioned
+        );
         return [
           paragraph2(
             text2(`${PASS_ICON} `),
@@ -122088,7 +122097,7 @@ function createMarkdownProvisionExplainer() {
             ...subject,
             ...failed.length > 0 ? [text2(":")] : []
           ),
-          ...nestedList(...failed, ...visibility)
+          ...nestedList(...visibility, ...failed)
         ];
       }
       case "NOT_ALLOWED":
@@ -122128,11 +122137,28 @@ function createMarkdownProvisionExplainer() {
             ...subject,
             text2(":")
           ),
-          list3(...visibility, ...renderAttempts(result.attempts))
+          list3(
+            ...visibility,
+            ...renderFailedAttempts(result.attempts, isProvisioned)
+          )
         ];
     }
   }
-  function renderAttempts(attempts) {
+  function renderFailedAttempts(attempts, isProvisioned) {
+    if (attempts.length < 1) return [];
+    const statusIcon = isProvisioned ? WARN_ICON : FAIL_ICON;
+    return [
+      listItem2(
+        paragraph2(
+          text2(`${statusIcon} `),
+          strong2(text2("Failed attempts")),
+          text2(":")
+        ),
+        list3(...renderAttemptItems(statusIcon, attempts))
+      )
+    ];
+  }
+  function renderAttemptItems(statusIcon, attempts) {
     const items = [];
     let index = 0;
     for (const attempt of attempts) {
@@ -122143,7 +122169,7 @@ function createMarkdownProvisionExplainer() {
         items.push(
           listItem2(
             paragraph2(
-              text2(`${FAIL_ICON} ${label}`),
+              text2(`${statusIcon} ${label}`),
               strong2(text2(String(attempt.error.status))),
               text2(" - "),
               emphasis2(text2(attempt.error.message))
@@ -122158,7 +122184,7 @@ function createMarkdownProvisionExplainer() {
         items.push(
           listItem2(
             paragraph2(
-              text2(`${FAIL_ICON} ${label}${errorMessage(attempt.error)}`)
+              text2(`${statusIcon} ${label}${errorMessage(attempt.error)}`)
             ),
             ...details("Error stack", code3("text", errorStack(attempt.error)))
           )
@@ -122466,6 +122492,10 @@ function createMarkdownTokenCreationExplainer() {
     }
     nested.children.push(...renderRepoLines(subIcon, verb, repos, account));
     nested.children.push(...renderPermissionLines(subIcon, verb, permEntries));
+    const attempts = resultAttempts(result);
+    if (attempts.length > 0) {
+      nested.children.push(renderFailedAttempts(attempts, isSuccess));
+    }
     summary2.children.push(nested);
     return [list3(summary2)];
   }
@@ -122496,7 +122526,8 @@ function createMarkdownTokenCreationExplainer() {
   function renderErrorLines(result, consumer) {
     switch (result.type) {
       case "CREATED":
-        return renderAttemptLines(result.failedAttempts);
+      case "FAILED":
+        return [];
       case "NOT_ALLOWED": {
         return [
           listItem2(
@@ -122510,11 +122541,25 @@ function createMarkdownTokenCreationExplainer() {
       }
       case "NO_ISSUER":
         return [listItem2(paragraph2(text2(`${FAIL_ICON} No suitable issuer`)))];
-      case "FAILED":
-        return renderAttemptLines(result.attempts);
     }
   }
-  function renderAttemptLines(attempts) {
+  function resultAttempts(result) {
+    if (result.type === "CREATED") return result.failedAttempts;
+    if (result.type === "FAILED") return result.attempts;
+    return [];
+  }
+  function renderFailedAttempts(attempts, isSuccess) {
+    const statusIcon = isSuccess ? WARN_ICON : FAIL_ICON;
+    return listItem2(
+      paragraph2(
+        text2(`${statusIcon} `),
+        strong2(text2("Failed attempts")),
+        text2(":")
+      ),
+      list3(...renderAttemptItems(statusIcon, attempts))
+    );
+  }
+  function renderAttemptItems(statusIcon, attempts) {
     const items = [];
     let index = 0;
     for (const attempt of attempts) {
@@ -122525,7 +122570,7 @@ function createMarkdownTokenCreationExplainer() {
         items.push(
           listItem2(
             paragraph2(
-              text2(`${FAIL_ICON} ${label}`),
+              text2(`${statusIcon} ${label}`),
               strong2(text2(String(attempt.error.status))),
               text2(" - "),
               emphasis2(text2(attempt.error.message))
@@ -122540,7 +122585,7 @@ function createMarkdownTokenCreationExplainer() {
         items.push(
           listItem2(
             paragraph2(
-              text2(`${FAIL_ICON} ${label}${errorMessage(attempt.error)}`)
+              text2(`${statusIcon} ${label}${errorMessage(attempt.error)}`)
             ),
             ...details("Error stack", code3("text", errorStack(attempt.error)))
           )
@@ -123725,6 +123770,10 @@ function createTextTokenCreationExplainer() {
     }
     lines.push(...renderRepoLines(subIcon, verb, repos, account));
     lines.push(...renderPermissionLines(subIcon, verb, permEntries));
+    const attempts = resultAttempts(result);
+    if (attempts.length > 0) {
+      lines.push(...renderFailedAttemptLines(attempts, isSuccess));
+    }
     return lines.join("\n");
   }
   function renderHeader(type, access2, repos, account) {
@@ -123740,19 +123789,24 @@ function createTextTokenCreationExplainer() {
   function renderErrorLines(result, consumer) {
     switch (result.type) {
       case "CREATED":
-        return renderAttemptLines(result.failedAttempts);
+      case "FAILED":
+        return [];
       case "NOT_ALLOWED": {
         const suffix = isRepoRef(consumer) ? ` for repo ${repoRefToString(consumer)}` : ` for account ${consumer.account}`;
         return [`  ${FAIL_ICON} Token not allowed${suffix}`];
       }
       case "NO_ISSUER":
         return [`  ${FAIL_ICON} No suitable issuer`];
-      case "FAILED":
-        return renderAttemptLines(result.attempts);
     }
   }
-  function renderAttemptLines(attempts) {
-    const lines = [];
+  function resultAttempts(result) {
+    if (result.type === "CREATED") return result.failedAttempts;
+    if (result.type === "FAILED") return result.attempts;
+    return [];
+  }
+  function renderFailedAttemptLines(attempts, isSuccess) {
+    const statusIcon = isSuccess ? WARN_ICON : FAIL_ICON;
+    const lines = [`  ${statusIcon} Failed attempts:`];
     let index = 0;
     for (const attempt of attempts) {
       ++index;
@@ -123761,11 +123815,11 @@ function createTextTokenCreationExplainer() {
         const body = attempt.error.response?.data;
         const detail = typeof body === "undefined" ? "(no response data)" : JSON.stringify(body, null, 2);
         lines.push(
-          `  ${FAIL_ICON} ${label}${attempt.error.status} - ${attempt.error.message}`
+          `    ${statusIcon} ${label}${attempt.error.status} - ${attempt.error.message}`
         );
         lines.push(prefixLines("::debug::      ", detail));
       } else {
-        lines.push(`  ${FAIL_ICON} ${label}${errorMessage(attempt.error)}`);
+        lines.push(`    ${statusIcon} ${label}${errorMessage(attempt.error)}`);
         lines.push(prefixLines("::debug::      ", errorStack(attempt.error)));
       }
     }

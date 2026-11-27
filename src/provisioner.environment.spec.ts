@@ -135,7 +135,8 @@ it("handles GitHub API errors when provisioning environment secrets", async () =
 
     ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
       ❌ Failed to provision to GitHub environment env-a secret in account-a/repo-a:
-        ❌ 401 - Unauthorized
+        ❌ Failed attempts:
+          ❌ 401 - Unauthorized
     ::debug::      (no response data)
 
     "
@@ -236,7 +237,8 @@ it("handles unexpected errors when provisioning environment secrets", async () =
 
     ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
       ❌ Failed to provision to GitHub environment env-a secret in account-a/repo-a:
-        ❌ <message>
+        ❌ Failed attempts:
+          ❌ <message>
     ::debug::      Error: <message>
     ::debug::          at provisioner.ts:1:1
 

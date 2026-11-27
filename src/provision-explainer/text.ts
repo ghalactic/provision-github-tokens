@@ -4,7 +4,7 @@ import {
   accountOrRepoRefToString,
   repoRefToString,
 } from "../github-reference.js";
-import { FAIL_ICON, icon, PASS_ICON } from "../icon.js";
+import { FAIL_ICON, PASS_ICON, WARN_ICON, icon } from "../icon.js";
 import { pluralize } from "../pluralize.js";
 import {
   isRepoProvisionRequestTarget,
@@ -68,11 +68,14 @@ export function createTextProvisionExplainer(): ProvisionResultExplainer<string>
 
     switch (result.type) {
       case "PROVISIONED": {
-        const failed = renderAttempts(result.failedAttempts);
+        const failed = renderFailedAttempts(
+          result.failedAttempts,
+          isProvisioned,
+        );
 
         return (
           `\n  ${PASS_ICON} Provisioned to ${subject}` +
-          `${failed ? ":" : ""}${failed}${visibility}`
+          `${failed ? ":" : ""}${visibility}${failed}`
         );
       }
 
@@ -97,13 +100,19 @@ export function createTextProvisionExplainer(): ProvisionResultExplainer<string>
       case "FAILED":
         return (
           `\n  ${FAIL_ICON} Failed to provision to ${subject}:` +
-          `${visibility}${renderAttempts(result.attempts)}`
+          `${visibility}${renderFailedAttempts(result.attempts, isProvisioned)}`
         );
     }
   }
 
-  function renderAttempts(attempts: ProvisionAttempt[]): string {
-    let output = "";
+  function renderFailedAttempts(
+    attempts: ProvisionAttempt[],
+    isProvisioned: boolean,
+  ): string {
+    if (attempts.length < 1) return "";
+
+    const statusIcon = isProvisioned ? WARN_ICON : FAIL_ICON;
+    let output = `\n    ${statusIcon} Failed attempts:`;
     let index = 0;
 
     for (const attempt of attempts) {
@@ -118,11 +127,12 @@ export function createTextProvisionExplainer(): ProvisionResultExplainer<string>
             : JSON.stringify(body, null, 2);
 
         output +=
-          `\n    ${FAIL_ICON} ${label}` +
+          `\n      ${statusIcon} ${label}` +
           `${attempt.error.status} - ${attempt.error.message}`;
         output += `\n${prefixLines("::debug::      ", detail)}`;
       } else {
-        output += `\n    ${FAIL_ICON} ${label}` + errorMessage(attempt.error);
+        output +=
+          `\n      ${statusIcon} ${label}` + errorMessage(attempt.error);
         output += `\n${prefixLines("::debug::      ", errorStack(attempt.error))}`;
       }
     }
