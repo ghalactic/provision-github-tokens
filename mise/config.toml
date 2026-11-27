@@ -8,7 +8,7 @@ idiomatic_version_file_disable_files = ["node:package.json"]
 generated_files = "src/schema/generated.requester-token-permissions.v1.schema.json src/schema/generated.provider-rule-permissions.v1.schema.json dist/main.js dist/main.js.map"
 
 [tools]
-vale = "3.28.1"
+vale = "3.29.0"
 
 [tasks.default]
 description = "Run the unit tests"
