@@ -1720,3 +1720,134 @@ it("fails after every issuer fails", async () => {
   expect(markdown).toContain("Attempt 1:");
   expect(markdown).toContain("Attempt 2:");
 });
+
+it("explains a token created after falling back to another issuer", async () => {
+  const [[accountA, [repoA]]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "account-a",
+    ["repo-a"],
+  ]);
+  const [[appA, [appAInstallationA]], [appB, [appBInstallationB]]] =
+    createTestApps(
+      ["App A", { metadata: "read" }, [[accountA]]],
+      ["App B", { metadata: "read" }, [[accountA]]],
+    );
+  const appRegistry = createTestAppRegistry(
+    createTestRepoRegistry(),
+    {
+      app: appA,
+      issuer: [],
+      installations: [[appAInstallationA, [repoA]]],
+    },
+    {
+      app: appB,
+      issuer: [],
+      installations: [[appBInstallationB, [repoA]]],
+    },
+  );
+
+  const { findIssuerOctokit } = createTestOctokitFactory(appRegistry);
+  const createTokens = createTokenFactory(findIssuerOctokit);
+
+  __addInstallationToken(appAInstallationA.id, "all", { metadata: "read" });
+  __addInstallationToken(appBInstallationB.id, "all", { metadata: "read" });
+  __setErrors("apps.createInstallationAccessToken", [
+    new TestRequestError(403, { message: "Resource not accessible" }),
+  ]);
+
+  const authResult = createTestTokenAuthResult({
+    request: {
+      consumer: { account: "consumer-a" },
+      tokenDec: createTestTokenDec(),
+      repos: "all",
+    },
+  });
+
+  const candidates = findIssuerOctokit(authResult.request);
+  const results = await createTokens([authResult]);
+  const result = results.get(authResult)!;
+
+  expect(result).toMatchObject({
+    type: "CREATED",
+    issuer: candidates[1].issuer,
+    failedAttempts: [{ type: "REQUEST_ERROR", issuer: candidates[0].issuer }],
+  });
+
+  await expect(__getOutput()).toMatchFileSnapshot(
+    join(fixturesPath, "fallback-success/text.txt"),
+  );
+
+  const toMdast = createMarkdownTokenCreationExplainer();
+
+  await expect(toMarkdown(toMdast(authResult, result))).toMatchFileSnapshot(
+    join(fixturesPath, "fallback-success/auth.md"),
+  );
+});
+
+it("explains every issuer attempt when every issuer fails", async () => {
+  const [[accountA, [repoA]]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "account-a",
+    ["repo-a"],
+  ]);
+  const [[appA, [appAInstallationA]], [appB, [appBInstallationB]]] =
+    createTestApps(
+      ["App A", { metadata: "read" }, [[accountA]]],
+      ["App B", { metadata: "read" }, [[accountA]]],
+    );
+  const appRegistry = createTestAppRegistry(
+    createTestRepoRegistry(),
+    {
+      app: appA,
+      issuer: [],
+      installations: [[appAInstallationA, [repoA]]],
+    },
+    {
+      app: appB,
+      issuer: [],
+      installations: [[appBInstallationB, [repoA]]],
+    },
+  );
+
+  const { findIssuerOctokit } = createTestOctokitFactory(appRegistry);
+  const createTokens = createTokenFactory(findIssuerOctokit);
+
+  const unexpectedError = new Error("<message>");
+  unexpectedError.stack = "Error: <message>\n    at token-factory.ts:1:1";
+  __setErrors("apps.createInstallationAccessToken", [
+    new TestRequestError(403, { message: "Resource not accessible" }),
+    unexpectedError,
+  ]);
+
+  const authResult = createTestTokenAuthResult({
+    request: {
+      consumer: { account: "consumer-a" },
+      tokenDec: createTestTokenDec(),
+      repos: "all",
+    },
+  });
+
+  const candidates = findIssuerOctokit(authResult.request);
+  const results = await createTokens([authResult]);
+  const result = results.get(authResult)!;
+
+  expect(result).toMatchObject({
+    type: "FAILED",
+    attempts: [
+      { type: "REQUEST_ERROR", issuer: candidates[0].issuer },
+      { type: "ERROR", issuer: candidates[1].issuer },
+    ],
+  });
+
+  await expect(__getOutput()).toMatchFileSnapshot(
+    join(fixturesPath, "all-failed/text.txt"),
+  );
+
+  const toMdast = createMarkdownTokenCreationExplainer();
+
+  await expect(toMarkdown(toMdast(authResult, result))).toMatchFileSnapshot(
+    join(fixturesPath, "all-failed/auth.md"),
+  );
+});

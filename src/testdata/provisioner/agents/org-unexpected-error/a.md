@@ -1,5 +1,6 @@
 - ❌ Secret `SECRET_A` **wasn't** provisioned for repo `account-a/repo-a`:
   - ❌ **Failed** to provision to **GitHub Agents** secret in `account-a`:
+    - ❌ Would've been readable by **private repos**
     - ❌ \<message>
       <details>
       <summary>Error stack</summary>
@@ -10,4 +11,3 @@
       ```
 
       </details>
-    - ❌ Would've been readable by **private repos**

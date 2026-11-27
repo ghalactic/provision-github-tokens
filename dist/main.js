@@ -121494,7 +121494,7 @@ function createTextProvisionExplainer() {
   ${FAIL_ICON} No suitable provisioner for ${subject}${visibility}`;
       case "FAILED":
         return `
-  ${FAIL_ICON} Failed to provision to ${subject}:${renderAttempts(result.attempts)}${visibility}`;
+  ${FAIL_ICON} Failed to provision to ${subject}:${visibility}${renderAttempts(result.attempts)}`;
     }
   }
   function renderAttempts(attempts) {
@@ -122128,7 +122128,7 @@ function createMarkdownProvisionExplainer() {
             ...subject,
             text2(":")
           ),
-          list3(...renderAttempts(result.attempts), ...visibility)
+          list3(...visibility, ...renderAttempts(result.attempts))
         ];
     }
   }

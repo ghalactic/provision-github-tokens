@@ -166,7 +166,7 @@ export function createMarkdownProvisionExplainer(): ProvisionResultExplainer<
             ...subject,
             text(":"),
           ),
-          list(...renderAttempts(result.attempts), ...visibility),
+          list(...visibility, ...renderAttempts(result.attempts)),
         ];
     }
   }

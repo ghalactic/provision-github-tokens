@@ -20,6 +20,7 @@
   - ✅ **Provisioned** to **GitHub Actions** secret in `account-a`
     - ✅ Readable by **private repos**
   - ❌ **Failed** to provision to **GitHub Actions** secret in `account-b`:
+    - ❌ Would've been readable by **private repos**
     - ❌ **500** - _boom_
       <details>
       <summary>Response body</summary>
@@ -32,7 +33,6 @@
       ```
 
       </details>
-    - ❌ Would've been readable by **private repos**
 
 ## Token creation
 

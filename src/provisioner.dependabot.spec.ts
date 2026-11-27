@@ -130,9 +130,9 @@ it("handles GitHub API errors when provisioning org-level Dependabot secrets", a
 
     ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
       ❌ Failed to provision to Dependabot secret in account-a:
+        ❌ Would've been readable by private repos
         ❌ 401 - Unauthorized
     ::debug::      (no response data)
-        ❌ Would've been readable by private repos
 
     "
   `);
@@ -224,10 +224,10 @@ it("handles unexpected errors when provisioning org-level Dependabot secrets", a
 
     ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
       ❌ Failed to provision to Dependabot secret in account-a:
+        ❌ Would've been readable by private repos
         ❌ <message>
     ::debug::      Error: <message>
     ::debug::          at provisioner.ts:1:1
-        ❌ Would've been readable by private repos
 
     "
   `);

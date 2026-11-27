@@ -1,0 +1,15 @@
+::debug::Trying issuer app 947161494 installation 2133206579
+::debug::Trying issuer app 571481606 installation 1539634462
+
+Token #1:
+
+✅ Read-only token created with access to all repos in account-a:
+  ❌ 403 - Forbidden
+::debug::      {
+::debug::        "message": "Resource not accessible"
+::debug::      }
+  ✅ Has read access without a role
+  ✅ Has access to all repos in account-a
+  ✅ Has 1 permission:
+    ✅ metadata: read
+

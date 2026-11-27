@@ -97,7 +97,7 @@ export function createTextProvisionExplainer(): ProvisionResultExplainer<string>
       case "FAILED":
         return (
           `\n  ${FAIL_ICON} Failed to provision to ${subject}:` +
-          `${renderAttempts(result.attempts)}${visibility}`
+          `${visibility}${renderAttempts(result.attempts)}`
         );
     }
   }
