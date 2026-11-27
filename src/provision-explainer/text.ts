@@ -112,7 +112,18 @@ export function createTextProvisionExplainer(): ProvisionResultExplainer<string>
     if (attempts.length < 1) return "";
 
     const statusIcon = isProvisioned ? WARN_ICON : FAIL_ICON;
-    let output = `\n    ${statusIcon} Failed attempts:`;
+
+    return (
+      `\n    ${statusIcon} Failed attempts:` +
+      renderAttemptItems(statusIcon, attempts)
+    );
+  }
+
+  function renderAttemptItems(
+    statusIcon: string,
+    attempts: ProvisionAttempt[],
+  ): string {
+    let output = "";
 
     for (const attempt of attempts) {
       if (attempt.type === "REQUEST_ERROR") {

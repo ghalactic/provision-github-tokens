@@ -121503,8 +121503,11 @@ function createTextProvisionExplainer() {
   function renderFailedAttempts(attempts, isProvisioned) {
     if (attempts.length < 1) return "";
     const statusIcon = isProvisioned ? WARN_ICON : FAIL_ICON;
-    let output = `
-    ${statusIcon} Failed attempts:`;
+    return `
+    ${statusIcon} Failed attempts:` + renderAttemptItems(statusIcon, attempts);
+  }
+  function renderAttemptItems(statusIcon, attempts) {
+    let output = "";
     for (const attempt of attempts) {
       if (attempt.type === "REQUEST_ERROR") {
         const body = attempt.error.response?.data;
@@ -123759,7 +123762,7 @@ function createTextTokenCreationExplainer() {
     lines.push(...renderPermissionLines(subIcon, verb, permEntries));
     const attempts = resultAttempts(result);
     if (attempts.length > 0) {
-      lines.push(...renderFailedAttemptLines(attempts, isSuccess));
+      lines.push(...renderFailedAttempts(attempts, isSuccess));
     }
     return lines.join("\n");
   }
@@ -123791,9 +123794,15 @@ function createTextTokenCreationExplainer() {
     if (result.type === "FAILED") return result.attempts;
     return [];
   }
-  function renderFailedAttemptLines(attempts, isSuccess) {
+  function renderFailedAttempts(attempts, isSuccess) {
     const statusIcon = isSuccess ? WARN_ICON : FAIL_ICON;
-    const lines = [`  ${statusIcon} Failed attempts:`];
+    return [
+      `  ${statusIcon} Failed attempts:`,
+      ...renderAttemptItems(statusIcon, attempts)
+    ];
+  }
+  function renderAttemptItems(statusIcon, attempts) {
+    const lines = [];
     for (const attempt of attempts) {
       if (attempt.type === "REQUEST_ERROR") {
         const body = attempt.error.response?.data;

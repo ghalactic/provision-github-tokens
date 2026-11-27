@@ -71,7 +71,7 @@ export function createTextTokenCreationExplainer(): TokenCreationResultExplainer
 
     const attempts = resultAttempts(result);
     if (attempts.length > 0) {
-      lines.push(...renderFailedAttemptLines(attempts, isSuccess));
+      lines.push(...renderFailedAttempts(attempts, isSuccess));
     }
 
     return lines.join("\n");
@@ -133,12 +133,23 @@ export function createTextTokenCreationExplainer(): TokenCreationResultExplainer
     return [];
   }
 
-  function renderFailedAttemptLines(
+  function renderFailedAttempts(
     attempts: TokenCreationAttempt[],
     isSuccess: boolean,
   ): string[] {
     const statusIcon = isSuccess ? WARN_ICON : FAIL_ICON;
-    const lines = [`  ${statusIcon} Failed attempts:`];
+
+    return [
+      `  ${statusIcon} Failed attempts:`,
+      ...renderAttemptItems(statusIcon, attempts),
+    ];
+  }
+
+  function renderAttemptItems(
+    statusIcon: string,
+    attempts: TokenCreationAttempt[],
+  ): string[] {
+    const lines: string[] = [];
 
     for (const attempt of attempts) {
       if (attempt.type === "REQUEST_ERROR") {
