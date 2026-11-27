@@ -23,7 +23,10 @@ import {
 import { createTestOctokitFactory } from "../test/octokit-factory.js";
 import { createTestProvisionRequest } from "../test/provision-request.js";
 import { createTestRepoRegistry } from "../test/repo-registry.js";
-import { createTestProvisionAuthResult } from "../test/result.js";
+import {
+  createTestProvisionAuthResult,
+  createTestProvisionedResult,
+} from "../test/result.js";
 import { ValidateError } from "./config/validation.js";
 import {
   CONFIG_ISSUE_DASHBOARD_TITLE,
@@ -627,7 +630,7 @@ it("closes dashboards when everything is provisioned", async () => {
   const provisionResults = new Map<
     ProvisionAuthResult,
     Map<ProvisionAuthTargetResult, ProvisionResult>
-  >([[secret, new Map([[targetResult, { type: "PROVISIONED" }]])]]);
+  >([[secret, new Map([[targetResult, createTestProvisionedResult()]])]]);
 
   const config: ProviderConfig = {
     dashboards: { enabled: true },

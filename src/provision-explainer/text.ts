@@ -13,6 +13,7 @@ import {
 import { secretTypeText } from "../secret-type.js";
 import { prefixLines } from "../text.js";
 import type {
+  ProvisionAttempt,
   ProvisionResult,
   ProvisionResultExplainer,
 } from "../type/provision-result.js";
@@ -66,8 +67,14 @@ export function createTextProvisionExplainer(): ProvisionResultExplainer<string>
     const visibility = explainVisibility(target, isProvisioned);
 
     switch (result.type) {
-      case "PROVISIONED":
-        return `\n  ${PASS_ICON} Provisioned to ${subject}${visibility}`;
+      case "PROVISIONED": {
+        const failed = renderAttempts(result.failedAttempts);
+
+        return (
+          `\n  ${PASS_ICON} Provisioned to ${subject}` +
+          `${failed ? ":" : ""}${failed}${visibility}`
+        );
+      }
 
       case "NOT_ALLOWED":
         return (
@@ -87,31 +94,40 @@ export function createTextProvisionExplainer(): ProvisionResultExplainer<string>
           `for ${subject}${visibility}`
         );
 
-      case "REQUEST_ERROR": {
-        const summary =
-          `${FAIL_ICON} Failed to provision to ${subject}: ` +
-          `${result.error.status} - ${result.error.message}`;
-        const body = result.error.response?.data;
+      case "FAILED":
+        return (
+          `\n  ${FAIL_ICON} Failed to provision to ${subject}:` +
+          `${renderAttempts(result.attempts)}${visibility}`
+        );
+    }
+  }
 
+  function renderAttempts(attempts: ProvisionAttempt[]): string {
+    let output = "";
+    let index = 0;
+
+    for (const attempt of attempts) {
+      ++index;
+      const label = attempts.length > 1 ? `Attempt ${index}: ` : "";
+
+      if (attempt.type === "REQUEST_ERROR") {
+        const body = attempt.error.response?.data;
         const detail =
           typeof body === "undefined"
             ? "(no response data)"
             : JSON.stringify(body, null, 2);
 
-        return (
-          `\n  ${summary}${visibility}` +
-          `\n${prefixLines("::debug::      ", detail)}`
-        );
-      }
-
-      case "ERROR": {
-        return (
-          `\n  ${FAIL_ICON} Failed to provision to ${subject}: ` +
-          `${errorMessage(result.error)}${visibility}` +
-          `\n${prefixLines("::debug::      ", errorStack(result.error))}`
-        );
+        output +=
+          `\n    ${FAIL_ICON} ${label}` +
+          `${attempt.error.status} - ${attempt.error.message}`;
+        output += `\n${prefixLines("::debug::      ", detail)}`;
+      } else {
+        output += `\n    ${FAIL_ICON} ${label}` + errorMessage(attempt.error);
+        output += `\n${prefixLines("::debug::      ", errorStack(attempt.error))}`;
       }
     }
+
+    return output;
   }
 
   function explainSubject(target: ProvisionRequestTarget): string {

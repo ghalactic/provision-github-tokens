@@ -39,10 +39,10 @@ export function createEnvironmentResolver(
     if (envsByRepo[repoName]) return envsByRepo[repoName];
 
     const found = findProvisionerOctokit(repo);
-    if (!found) {
+    if (found.length < 1) {
       throw new Error(`No provisioners found for repo ${repoName}`);
     }
-    const [octokit] = found;
+    const [{ octokit }] = found;
 
     const envPages = octokit.paginate.iterator(
       octokit.rest.repos.getAllEnvironments,

@@ -13,6 +13,7 @@ import { capitalize, prefixLines } from "../text.js";
 import type { PermissionAccess } from "../type/permissions.js";
 import type { TokenAuthResult } from "../type/token-auth-result.js";
 import type {
+  TokenCreationAttempt,
   TokenCreationResult,
   TokenCreationResultExplainer,
 } from "../type/token-creation-result.js";
@@ -104,7 +105,7 @@ export function createTextTokenCreationExplainer(): TokenCreationResultExplainer
   ): string[] {
     switch (result.type) {
       case "CREATED":
-        return [];
+        return renderAttemptLines(result.failedAttempts);
 
       case "NOT_ALLOWED": {
         const suffix = isRepoRef(consumer)
@@ -117,25 +118,38 @@ export function createTextTokenCreationExplainer(): TokenCreationResultExplainer
       case "NO_ISSUER":
         return [`  ${FAIL_ICON} No suitable issuer`];
 
-      case "REQUEST_ERROR": {
-        const body = result.error.response?.data;
+      case "FAILED":
+        return renderAttemptLines(result.attempts);
+    }
+  }
+
+  function renderAttemptLines(attempts: TokenCreationAttempt[]): string[] {
+    const lines: string[] = [];
+    let index = 0;
+
+    for (const attempt of attempts) {
+      ++index;
+      const label = attempts.length > 1 ? `Attempt ${index}: ` : "";
+
+      if (attempt.type === "REQUEST_ERROR") {
+        const body = attempt.error.response?.data;
         const detail =
           typeof body === "undefined"
             ? "(no response data)"
             : JSON.stringify(body, null, 2);
 
-        return [
-          `  ${FAIL_ICON} ${result.error.status} - ${result.error.message}`,
-          prefixLines("::debug::      ", detail),
-        ];
+        lines.push(
+          `  ${FAIL_ICON} ${label}` +
+            `${attempt.error.status} - ${attempt.error.message}`,
+        );
+        lines.push(prefixLines("::debug::      ", detail));
+      } else {
+        lines.push(`  ${FAIL_ICON} ${label}${errorMessage(attempt.error)}`);
+        lines.push(prefixLines("::debug::      ", errorStack(attempt.error)));
       }
-
-      case "ERROR":
-        return [
-          `  ${FAIL_ICON} ${errorMessage(result.error)}`,
-          prefixLines("::debug::      ", errorStack(result.error)),
-        ];
     }
+
+    return lines;
   }
 
   function renderRepoLines(

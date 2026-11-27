@@ -1,41 +1,31 @@
 import sodium from "libsodium-wrappers";
-import {
-  accountOrRepoRefToString,
-  isEnvRef,
-  isRepoRef,
-} from "./github-reference.js";
+import { isEnvRef, isRepoRef } from "./github-reference.js";
 import { createAgentsOctokit } from "./octokit-agents.js";
 import type { Octokit } from "./octokit.js";
 import type { ProvisionRequestTarget } from "./provision-request.js";
-import type { FindProvisionerOctokit } from "./provisioner-octokit.js";
 import type { PublicKey } from "./type/github-api.js";
 
 export type EncryptSecret = (
+  octokit: Octokit,
   target: ProvisionRequestTarget,
   plaintext: string,
 ) => Promise<[encrypted: string, keyId: string]>;
 
-export function createEncryptSecret(
-  findProvisionerOctokit: FindProvisionerOctokit,
-): EncryptSecret {
+export function createEncryptSecret(): EncryptSecret {
   const keys: Record<string, PublicKey> = {};
+  const payloads: Record<string, [encrypted: string, keyId: string]> = {};
 
-  return async (target, plaintext) => {
-    const found = findProvisionerOctokit(target.target);
-    if (!found) {
-      throw new Error(
-        "No provisioners found for target " +
-          accountOrRepoRefToString(target.target),
-      );
-    }
-    const [octokit] = found;
-
+  return async (octokit, target, plaintext) => {
     const keyCacheId = JSON.stringify([
       target.type,
       target.target.account,
       isRepoRef(target.target) ? target.target.repo : undefined,
       isEnvRef(target.target) ? target.target.environment : undefined,
     ]);
+    const payloadCacheId = JSON.stringify([keyCacheId, plaintext]);
+    const cachedPayload = payloads[payloadCacheId];
+    if (cachedPayload) return cachedPayload;
+
     const key = keys[keyCacheId] ?? (await getPublicKey(octokit, target));
     keys[keyCacheId] = key;
 
@@ -53,7 +43,10 @@ export function createEncryptSecret(
       sodium.base64_variants.ORIGINAL,
     );
 
-    return [encrypted, key.key_id];
+    const payload: [encrypted: string, keyId: string] = [encrypted, key.key_id];
+    payloads[payloadCacheId] = payload;
+
+    return payload;
   };
 
   async function getPublicKey(

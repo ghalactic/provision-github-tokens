@@ -1,10 +1,12 @@
 import { join } from "node:path";
 import { expect, it } from "vitest";
+import { TestRequestError } from "../__mocks__/@octokit/action.js";
 import { testContext } from "../test/context.js";
 import {
   createTestSecretDec,
   createTestTokenDec,
 } from "../test/declaration.js";
+import { createTestInstallationRegistration } from "../test/github-api.js";
 import {
   createTestAccountProvisionRequestTarget,
   createTestEnvironmentProvisionRequestTarget,
@@ -13,7 +15,11 @@ import {
 import {
   createTestProvisionAuthResult,
   createTestProvisionAuthTargetResult,
+  createTestProvisionFailedResult,
+  createTestProvisionedResult,
   createTestTokenAuthResult,
+  createTestTokenCreationCreatedResult,
+  createTestTokenCreationFailedResult,
 } from "../test/result.js";
 import type { AuthorizeResult } from "./authorizer.js";
 import { ValidateError } from "./config/validation.js";
@@ -74,10 +80,9 @@ it("renders a summary with config issues", async () => {
   const tokenCreationResults = new Map<TokenAuthResult, TokenCreationResult>([
     [
       tokenAuthResult,
-      {
-        type: "CREATED",
+      createTestTokenCreationCreatedResult({
         token: { token: "<token-a>", expires_at: "2001-02-03T04:05:06Z" },
-      },
+      }),
     ],
   ]);
 
@@ -88,7 +93,7 @@ it("renders a summary with config issues", async () => {
     [
       provisionAuthResult,
       new Map<ProvisionAuthTargetResult, ProvisionResult>([
-        [targetResult, { type: "PROVISIONED" }],
+        [targetResult, createTestProvisionedResult()],
       ]),
     ],
   ]);
@@ -332,17 +337,15 @@ it("renders a summary with all secrets provisioned", async () => {
   const tokenCreationResults = new Map<TokenAuthResult, TokenCreationResult>([
     [
       tokenAuthResultA,
-      {
-        type: "CREATED",
+      createTestTokenCreationCreatedResult({
         token: { token: "<token-a>", expires_at: "2001-02-03T04:05:06Z" },
-      },
+      }),
     ],
     [
       tokenAuthResultB,
-      {
-        type: "CREATED",
+      createTestTokenCreationCreatedResult({
         token: { token: "<token-b>", expires_at: "2001-02-03T04:05:06Z" },
-      },
+      }),
     ],
   ]);
 
@@ -353,26 +356,29 @@ it("renders a summary with all secrets provisioned", async () => {
     [
       provisionAuthResultA,
       new Map<ProvisionAuthTargetResult, ProvisionResult>([
-        [targetResultA, { type: "PROVISIONED" }],
+        [targetResultA, createTestProvisionedResult()],
       ]),
     ],
     [
       provisionAuthResultB,
       new Map<ProvisionAuthTargetResult, ProvisionResult>([
-        [targetResultB, { type: "PROVISIONED" }],
+        [targetResultB, createTestProvisionedResult()],
       ]),
     ],
   ]);
 
-  await expect(
-    renderSummary(
-      testContext,
-      new Map(),
-      authResult,
-      tokenCreationResults,
-      provisionResults,
-    ),
-  ).toMatchFileSnapshot(join(fixturesPath, "all-provisioned.md"));
+  const summary = renderSummary(
+    testContext,
+    new Map(),
+    authResult,
+    tokenCreationResults,
+    provisionResults,
+  );
+
+  expect(summary).not.toContain("[^fallback]");
+  await expect(summary).toMatchFileSnapshot(
+    join(fixturesPath, "all-provisioned.md"),
+  );
 });
 
 it("renders a summary with some secrets denied", async () => {
@@ -452,17 +458,15 @@ it("renders a summary with some secrets denied", async () => {
   const tokenCreationResults = new Map<TokenAuthResult, TokenCreationResult>([
     [
       tokenAuthResultA,
-      {
-        type: "CREATED",
+      createTestTokenCreationCreatedResult({
         token: { token: "<token-a>", expires_at: "2001-02-03T04:05:06Z" },
-      },
+      }),
     ],
     [
       tokenAuthResultB,
-      {
-        type: "CREATED",
+      createTestTokenCreationCreatedResult({
         token: { token: "<token-b>", expires_at: "2001-02-03T04:05:06Z" },
-      },
+      }),
     ],
   ]);
 
@@ -473,7 +477,7 @@ it("renders a summary with some secrets denied", async () => {
     [
       provisionAuthResultA,
       new Map<ProvisionAuthTargetResult, ProvisionResult>([
-        [targetResultA, { type: "PROVISIONED" }],
+        [targetResultA, createTestProvisionedResult()],
       ]),
     ],
     [
@@ -542,10 +546,9 @@ it("renders a summary with all secrets denied", async () => {
   const tokenCreationResults = new Map<TokenAuthResult, TokenCreationResult>([
     [
       tokenAuthResultA,
-      {
-        type: "CREATED",
+      createTestTokenCreationCreatedResult({
         token: { token: "<token-a>", expires_at: "2001-02-03T04:05:06Z" },
-      },
+      }),
     ],
   ]);
 
@@ -641,10 +644,9 @@ it("renders a summary with environment targets", async () => {
   const tokenCreationResults = new Map<TokenAuthResult, TokenCreationResult>([
     [
       tokenAuthResultA,
-      {
-        type: "CREATED",
+      createTestTokenCreationCreatedResult({
         token: { token: "<token-a>", expires_at: "2001-02-03T04:05:06Z" },
-      },
+      }),
     ],
   ]);
 
@@ -655,7 +657,7 @@ it("renders a summary with environment targets", async () => {
     [
       provisionAuthResultA,
       new Map<ProvisionAuthTargetResult, ProvisionResult>([
-        [targetResultA, { type: "PROVISIONED" }],
+        [targetResultA, createTestProvisionedResult()],
       ]),
     ],
   ]);
@@ -746,17 +748,15 @@ it("renders a summary with multiple requesters", async () => {
   const tokenCreationResults = new Map<TokenAuthResult, TokenCreationResult>([
     [
       tokenAuthResultA,
-      {
-        type: "CREATED",
+      createTestTokenCreationCreatedResult({
         token: { token: "<token-a>", expires_at: "2001-02-03T04:05:06Z" },
-      },
+      }),
     ],
     [
       tokenAuthResultB,
-      {
-        type: "CREATED",
+      createTestTokenCreationCreatedResult({
         token: { token: "<token-b>", expires_at: "2001-02-03T04:05:06Z" },
-      },
+      }),
     ],
   ]);
 
@@ -767,13 +767,13 @@ it("renders a summary with multiple requesters", async () => {
     [
       provisionAuthResultA,
       new Map<ProvisionAuthTargetResult, ProvisionResult>([
-        [targetResultA, { type: "PROVISIONED" }],
+        [targetResultA, createTestProvisionedResult()],
       ]),
     ],
     [
       provisionAuthResultB,
       new Map<ProvisionAuthTargetResult, ProvisionResult>([
-        [targetResultB, { type: "PROVISIONED" }],
+        [targetResultB, createTestProvisionedResult()],
       ]),
     ],
   ]);
@@ -855,10 +855,9 @@ it("renders a summary with a missing token declaration", async () => {
   const tokenCreationResults = new Map<TokenAuthResult, TokenCreationResult>([
     [
       tokenAuthResultA,
-      {
-        type: "CREATED",
+      createTestTokenCreationCreatedResult({
         token: { token: "<token-a>", expires_at: "2001-02-03T04:05:06Z" },
-      },
+      }),
     ],
   ]);
 
@@ -869,7 +868,7 @@ it("renders a summary with a missing token declaration", async () => {
     [
       provisionAuthResultA,
       new Map<ProvisionAuthTargetResult, ProvisionResult>([
-        [targetResultA, { type: "PROVISIONED" }],
+        [targetResultA, createTestProvisionedResult()],
       ]),
     ],
     [
@@ -956,10 +955,9 @@ it("renders a summary with an unshared token declaration", async () => {
   const tokenCreationResults = new Map<TokenAuthResult, TokenCreationResult>([
     [
       tokenAuthResultA,
-      {
-        type: "CREATED",
+      createTestTokenCreationCreatedResult({
         token: { token: "<token-a>", expires_at: "2001-02-03T04:05:06Z" },
-      },
+      }),
     ],
   ]);
 
@@ -970,7 +968,7 @@ it("renders a summary with an unshared token declaration", async () => {
     [
       provisionAuthResultA,
       new Map<ProvisionAuthTargetResult, ProvisionResult>([
-        [targetResultA, { type: "PROVISIONED" }],
+        [targetResultA, createTestProvisionedResult()],
       ]),
     ],
     [
@@ -1051,10 +1049,9 @@ it("renders a summary with missing targets", async () => {
   const tokenCreationResults = new Map<TokenAuthResult, TokenCreationResult>([
     [
       tokenAuthResultA,
-      {
-        type: "CREATED",
+      createTestTokenCreationCreatedResult({
         token: { token: "<token-a>", expires_at: "2001-02-03T04:05:06Z" },
-      },
+      }),
     ],
   ]);
 
@@ -1065,7 +1062,7 @@ it("renders a summary with missing targets", async () => {
     [
       provisionAuthResultA,
       new Map<ProvisionAuthTargetResult, ProvisionResult>([
-        [targetResultA, { type: "PROVISIONED" }],
+        [targetResultA, createTestProvisionedResult()],
       ]),
     ],
     [
@@ -1175,10 +1172,9 @@ it("renders a summary with multiple distinct targets", async () => {
   const tokenCreationResults = new Map<TokenAuthResult, TokenCreationResult>([
     [
       tokenAuthResultA,
-      {
-        type: "CREATED",
+      createTestTokenCreationCreatedResult({
         token: { token: "<token-a>", expires_at: "2001-02-03T04:05:06Z" },
-      },
+      }),
     ],
   ]);
 
@@ -1189,10 +1185,10 @@ it("renders a summary with multiple distinct targets", async () => {
     [
       provisionAuthResultA,
       new Map<ProvisionAuthTargetResult, ProvisionResult>([
-        [targetResultA, { type: "PROVISIONED" }],
-        [targetResultA2, { type: "PROVISIONED" }],
-        [targetResultA3, { type: "PROVISIONED" }],
-        [targetResultB, { type: "PROVISIONED" }],
+        [targetResultA, createTestProvisionedResult()],
+        [targetResultA2, createTestProvisionedResult()],
+        [targetResultA3, createTestProvisionedResult()],
+        [targetResultB, createTestProvisionedResult()],
       ]),
     ],
   ]);
@@ -1439,7 +1435,16 @@ it("renders a failure reason when token issuance fails", async () => {
   };
 
   const tokenCreationResults = new Map<TokenAuthResult, TokenCreationResult>([
-    [tokenAuthResult, { type: "ERROR", error: new Error("boom") }],
+    [
+      tokenAuthResult,
+      createTestTokenCreationFailedResult([
+        {
+          type: "ERROR",
+          issuer: createTestInstallationRegistration(),
+          error: new Error("boom"),
+        },
+      ]),
+    ],
   ]);
 
   const provisionResults = new Map<
@@ -1508,13 +1513,12 @@ it("renders a failure reason when no suitable provisioner is found", async () =>
   const tokenCreationResults = new Map<TokenAuthResult, TokenCreationResult>([
     [
       tokenAuthResult,
-      {
-        type: "CREATED",
+      createTestTokenCreationCreatedResult({
         token: {
           token: "<token-no-provisioner>",
           expires_at: "2001-02-03T04:05:06Z",
         },
-      },
+      }),
     ],
   ]);
 
@@ -1584,13 +1588,12 @@ it("renders a failure reason when provisioning has no target results", async () 
   const tokenCreationResults = new Map<TokenAuthResult, TokenCreationResult>([
     [
       tokenAuthResult,
-      {
-        type: "CREATED",
+      createTestTokenCreationCreatedResult({
         token: {
           token: "<token-failed-provision-empty>",
           expires_at: "2001-02-03T04:05:06Z",
         },
-      },
+      }),
     ],
   ]);
 
@@ -1676,13 +1679,12 @@ it("renders a failure reason when provisioning partially fails across targets", 
   const tokenCreationResults = new Map<TokenAuthResult, TokenCreationResult>([
     [
       tokenAuthResult,
-      {
-        type: "CREATED",
+      createTestTokenCreationCreatedResult({
         token: {
           token: "<token-partial-failure>",
           expires_at: "2001-02-03T04:05:06Z",
         },
-      },
+      }),
     ],
   ]);
 
@@ -1693,8 +1695,17 @@ it("renders a failure reason when provisioning partially fails across targets", 
     [
       provisionAuthResult,
       new Map<ProvisionAuthTargetResult, ProvisionResult>([
-        [targetResultA, { type: "PROVISIONED" }],
-        [targetResultB, { type: "ERROR", error: new Error("boom") }],
+        [targetResultA, createTestProvisionedResult()],
+        [
+          targetResultB,
+          createTestProvisionFailedResult([
+            {
+              type: "ERROR",
+              provisioner: createTestInstallationRegistration(),
+              error: new Error("boom"),
+            },
+          ]),
+        ],
       ]),
     ],
   ]);
@@ -1753,13 +1764,12 @@ it("renders a failure reason when provisioning fails for all targets", async () 
   const tokenCreationResults = new Map<TokenAuthResult, TokenCreationResult>([
     [
       tokenAuthResult,
-      {
-        type: "CREATED",
+      createTestTokenCreationCreatedResult({
         token: {
           token: "<token-failed-provision>",
           expires_at: "2001-02-03T04:05:06Z",
         },
-      },
+      }),
     ],
   ]);
 
@@ -1770,7 +1780,16 @@ it("renders a failure reason when provisioning fails for all targets", async () 
     [
       provisionAuthResult,
       new Map<ProvisionAuthTargetResult, ProvisionResult>([
-        [targetResult, { type: "ERROR", error: new Error("boom") }],
+        [
+          targetResult,
+          createTestProvisionFailedResult([
+            {
+              type: "ERROR",
+              provisioner: createTestInstallationRegistration(),
+              error: new Error("boom"),
+            },
+          ]),
+        ],
       ]),
     ],
   ]);
@@ -1786,4 +1805,261 @@ it("renders a failure reason when provisioning fails for all targets", async () 
   ).toMatchFileSnapshot(
     join(fixturesPath, "provisioning-all-targets-failed.md"),
   );
+});
+
+it("warns and adds a footnote when a fallback was used", async () => {
+  const accountAActionsTarget = createTestAccountProvisionRequestTarget(
+    "actions",
+    "account-a",
+    "private",
+  );
+
+  const issuerFallbackToken = createTestTokenAuthResult({
+    request: {
+      consumer: { account: "account-a" },
+      repos: "all",
+      tokenDec: createTestTokenDec({ permissions: { metadata: "read" } }),
+    },
+    have: { metadata: "read" },
+    maxWant: "read",
+  });
+
+  const provisionerFallbackToken = createTestTokenAuthResult({
+    request: {
+      consumer: { account: "account-a" },
+      repos: "all",
+      tokenDec: createTestTokenDec({ permissions: { contents: "read" } }),
+    },
+    have: { contents: "read" },
+    maxWant: "read",
+  });
+
+  const bothFallbackToken = createTestTokenAuthResult({
+    request: {
+      consumer: { account: "account-a" },
+      repos: "all",
+      tokenDec: createTestTokenDec({ permissions: { actions: "read" } }),
+    },
+    have: { actions: "read" },
+    maxWant: "read",
+  });
+
+  const noFallbackToken = createTestTokenAuthResult({
+    request: {
+      consumer: { account: "account-a" },
+      repos: "all",
+      tokenDec: createTestTokenDec({ permissions: { issues: "read" } }),
+    },
+    have: { issues: "read" },
+    maxWant: "read",
+  });
+
+  const issuerFallbackTarget = createTestProvisionAuthTargetResult({
+    target: accountAActionsTarget,
+    tokenAuthResult: issuerFallbackToken,
+  });
+
+  const provisionerFallbackTarget = createTestProvisionAuthTargetResult({
+    target: accountAActionsTarget,
+    tokenAuthResult: provisionerFallbackToken,
+  });
+
+  const bothFallbackTarget = createTestProvisionAuthTargetResult({
+    target: accountAActionsTarget,
+    tokenAuthResult: bothFallbackToken,
+  });
+
+  const noFallbackTarget = createTestProvisionAuthTargetResult({
+    target: accountAActionsTarget,
+    tokenAuthResult: noFallbackToken,
+  });
+
+  const issuerFallbackAuthResult = createTestProvisionAuthResult({
+    request: createTestProvisionRequest({
+      requester: { account: "account-x", repo: "repo-x" },
+      tokenDec: issuerFallbackToken.request.tokenDec,
+      secretDec: createTestSecretDec({
+        token: "account-a/repo-a.token-a",
+        github: { accounts: { "account-a": { actions: "private" } } },
+      }),
+      name: "SECRET_ISSUER_FALLBACK",
+      to: [accountAActionsTarget],
+    }),
+    results: [issuerFallbackTarget],
+  });
+
+  const provisionerFallbackAuthResult = createTestProvisionAuthResult({
+    request: createTestProvisionRequest({
+      requester: { account: "account-x", repo: "repo-x" },
+      tokenDec: provisionerFallbackToken.request.tokenDec,
+      secretDec: createTestSecretDec({
+        token: "account-a/repo-a.token-b",
+        github: { accounts: { "account-a": { actions: "private" } } },
+      }),
+      name: "SECRET_PROVISIONER_FALLBACK",
+      to: [accountAActionsTarget],
+    }),
+    results: [provisionerFallbackTarget],
+  });
+
+  const bothFallbackAuthResult = createTestProvisionAuthResult({
+    request: createTestProvisionRequest({
+      requester: { account: "account-x", repo: "repo-x" },
+      tokenDec: bothFallbackToken.request.tokenDec,
+      secretDec: createTestSecretDec({
+        token: "account-a/repo-a.token-c",
+        github: { accounts: { "account-a": { actions: "private" } } },
+      }),
+      name: "SECRET_BOTH_FALLBACK",
+      to: [accountAActionsTarget],
+    }),
+    results: [bothFallbackTarget],
+  });
+
+  const noFallbackAuthResult = createTestProvisionAuthResult({
+    request: createTestProvisionRequest({
+      requester: { account: "account-x", repo: "repo-x" },
+      tokenDec: noFallbackToken.request.tokenDec,
+      secretDec: createTestSecretDec({
+        token: "account-a/repo-a.token-d",
+        github: { accounts: { "account-a": { actions: "private" } } },
+      }),
+      name: "SECRET_NO_FALLBACK",
+      to: [accountAActionsTarget],
+    }),
+    results: [noFallbackTarget],
+  });
+
+  const authResult: AuthorizeResult = {
+    provisionResults: [
+      issuerFallbackAuthResult,
+      provisionerFallbackAuthResult,
+      bothFallbackAuthResult,
+      noFallbackAuthResult,
+    ],
+    tokenResults: [
+      issuerFallbackToken,
+      provisionerFallbackToken,
+      bothFallbackToken,
+      noFallbackToken,
+    ],
+  };
+
+  const issuerFallbackRegistration = createTestInstallationRegistration();
+  const provisionerFallbackRegistration = createTestInstallationRegistration();
+  const bothFallbackRegistration = createTestInstallationRegistration();
+
+  const tokenCreationResults = new Map<TokenAuthResult, TokenCreationResult>([
+    [
+      issuerFallbackToken,
+      createTestTokenCreationCreatedResult({
+        failedAttempts: [
+          {
+            type: "REQUEST_ERROR",
+            issuer: issuerFallbackRegistration,
+            error: new TestRequestError(403),
+          },
+        ],
+      }),
+    ],
+    [
+      provisionerFallbackToken,
+      createTestTokenCreationCreatedResult({
+        token: { token: "<token-b>", expires_at: "2001-02-03T04:05:06Z" },
+      }),
+    ],
+    [
+      bothFallbackToken,
+      createTestTokenCreationCreatedResult({
+        token: { token: "<token-c>", expires_at: "2001-02-03T04:05:06Z" },
+        failedAttempts: [
+          {
+            type: "REQUEST_ERROR",
+            issuer: bothFallbackRegistration,
+            error: new TestRequestError(403),
+          },
+        ],
+      }),
+    ],
+    [
+      noFallbackToken,
+      createTestTokenCreationCreatedResult({
+        token: { token: "<token-d>", expires_at: "2001-02-03T04:05:06Z" },
+      }),
+    ],
+  ]);
+
+  const provisionResults = new Map<
+    ProvisionAuthResult,
+    Map<ProvisionAuthTargetResult, ProvisionResult>
+  >([
+    [
+      issuerFallbackAuthResult,
+      new Map<ProvisionAuthTargetResult, ProvisionResult>([
+        [issuerFallbackTarget, createTestProvisionedResult()],
+      ]),
+    ],
+    [
+      provisionerFallbackAuthResult,
+      new Map<ProvisionAuthTargetResult, ProvisionResult>([
+        [
+          provisionerFallbackTarget,
+          createTestProvisionedResult({
+            failedAttempts: [
+              {
+                type: "ERROR",
+                provisioner: provisionerFallbackRegistration,
+                error: new Error("boom"),
+              },
+            ],
+          }),
+        ],
+      ]),
+    ],
+    [
+      bothFallbackAuthResult,
+      new Map<ProvisionAuthTargetResult, ProvisionResult>([
+        [
+          bothFallbackTarget,
+          createTestProvisionedResult({
+            failedAttempts: [
+              {
+                type: "ERROR",
+                provisioner: bothFallbackRegistration,
+                error: new Error("boom"),
+              },
+            ],
+          }),
+        ],
+      ]),
+    ],
+    [
+      noFallbackAuthResult,
+      new Map<ProvisionAuthTargetResult, ProvisionResult>([
+        [noFallbackTarget, createTestProvisionedResult()],
+      ]),
+    ],
+  ]);
+
+  const summary = renderSummary(
+    testContext,
+    new Map(),
+    authResult,
+    tokenCreationResults,
+    provisionResults,
+  );
+
+  expect(summary.match(/⚠️\[\^fallback\]/g)).toHaveLength(3);
+  expect(summary.match(/✅/g)).toHaveLength(1);
+  expect(summary.match(/\[\^fallback\]:/g)).toHaveLength(1);
+  expect(summary).not.toContain(
+    String(issuerFallbackRegistration.installation.app_id),
+  );
+  expect(summary).not.toContain(
+    String(provisionerFallbackRegistration.installation.app_id),
+  );
+  expect(summary).not.toContain(
+    String(bothFallbackRegistration.installation.app_id),
+  );
+  await expect(summary).toMatchFileSnapshot(join(fixturesPath, "fallback.md"));
 });

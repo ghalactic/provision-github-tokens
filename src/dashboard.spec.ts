@@ -6,6 +6,7 @@ import {
   createTestSecretDec,
   createTestTokenDec,
 } from "../test/declaration.js";
+import { createTestInstallationRegistration } from "../test/github-api.js";
 import {
   createTestAccountProvisionRequestTarget,
   createTestEnvironmentProvisionRequestTarget,
@@ -16,7 +17,10 @@ import {
   createTestProvisionAuthResult,
   createTestProvisionAuthTargetResult,
   createTestProvisionAuthTargetRuleResult,
+  createTestProvisionFailedResult,
+  createTestProvisionedResult,
   createTestTokenAuthResult,
+  createTestTokenCreationCreatedResult,
 } from "../test/result.js";
 import { ValidateError } from "./config/validation.js";
 import { parseYaml } from "./config/yaml.js";
@@ -172,10 +176,9 @@ it("renders a failure dashboard with multiple secrets and request errors", async
   const tokenCreationResults = new Map<TokenAuthResult, TokenCreationResult>([
     [
       tokenAuthResult,
-      {
-        type: "CREATED",
+      createTestTokenCreationCreatedResult({
         token: { token: "<token-a>", expires_at: "2001-02-03T04:05:06Z" },
-      },
+      }),
     ],
   ]);
 
@@ -196,14 +199,23 @@ it("renders a failure dashboard with multiple secrets and request errors", async
     [
       secretA,
       new Map<ProvisionAuthTargetResult, ProvisionResult>([
-        [targetResultA, { type: "PROVISIONED" }],
+        [targetResultA, createTestProvisionedResult()],
       ]),
     ],
     [
       secretB,
       new Map<ProvisionAuthTargetResult, ProvisionResult>([
-        [targetResultA, { type: "PROVISIONED" }],
-        [targetResultB, { type: "REQUEST_ERROR", error: requestError }],
+        [targetResultA, createTestProvisionedResult()],
+        [
+          targetResultB,
+          createTestProvisionFailedResult([
+            {
+              type: "REQUEST_ERROR",
+              provisioner: createTestInstallationRegistration(),
+              error: requestError,
+            },
+          ]),
+        ],
       ]),
     ],
   ]);
@@ -619,7 +631,16 @@ it("skips the token creation section for a token not created this run", async ()
     [
       secret,
       new Map<ProvisionAuthTargetResult, ProvisionResult>([
-        [targetResult, { type: "REQUEST_ERROR", error: requestError }],
+        [
+          targetResult,
+          createTestProvisionFailedResult([
+            {
+              type: "REQUEST_ERROR",
+              provisioner: createTestInstallationRegistration(),
+              error: requestError,
+            },
+          ]),
+        ],
       ]),
     ],
   ]);

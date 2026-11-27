@@ -9,11 +9,13 @@ import {
   repoRefToString,
   type AccountOrRepoReference,
 } from "./github-reference.js";
-import { FAIL_ICON, PASS_ICON } from "./icon.js";
+import { FAIL_ICON, PASS_ICON, WARN_ICON } from "./icon.js";
 import { isFullyProvisioned } from "./is-fully-provisioned.js";
 import {
   definition,
   emphasis,
+  footnoteDefinition,
+  footnoteReference,
   gfmAlert,
   heading,
   inlineCode,
@@ -35,6 +37,10 @@ import type { TokenCreationResult } from "./type/token-creation-result.js";
 
 const LINK_REF_PREFIX = "gh/";
 const MAX_ROWS = 1000;
+const FALLBACK_FOOTNOTE_ID = "fallback";
+const FALLBACK_FOOTNOTE_TEXT =
+  "One or more issuers or provisioners failed, and a fallback was used. " +
+  "Re-run with debug logging enabled for details.";
 
 export function renderSummary(
   context: Context,
@@ -73,6 +79,16 @@ export function renderSummary(
   const omittedAllowedCount = allAllowedRows.length - allowedRows.length;
   const omittedCount = omittedDeniedCount + omittedAllowedCount;
 
+  let anyFallback = false;
+
+  for (const row of allowedRows) {
+    if (rowUsesFallback(row)) {
+      anyFallback = true;
+
+      break;
+    }
+  }
+
   const definitions: Record<string, string> = {};
 
   return toMarkdown([
@@ -87,6 +103,7 @@ export function renderSummary(
       "secrets",
     ),
     ...definitionsAst(),
+    ...fallbackFootnote(),
   ]);
 
   function discoveredConfigIssues(): ConfigIssue[] {
@@ -255,11 +272,63 @@ export function renderSummary(
   function successRow(result: ProvisionAuthResult): TableCell["children"][] {
     addAccountOrRepoDef(result.request.requester);
 
+    const fallback = rowUsesFallback(result);
+    const statusCell: TableCell["children"] = [
+      text(fallback ? WARN_ICON : PASS_ICON),
+    ];
+
+    if (fallback) statusCell.push(footnoteReference(FALLBACK_FOOTNOTE_ID));
+
     return [
-      [text(PASS_ICON)],
+      statusCell,
       [accountOrRepoLinkRef(result.request.requester)],
       [inlineCode(result.request.name)],
       targetCellChildren(result.request.to),
+    ];
+  }
+
+  function rowUsesFallback(result: ProvisionAuthResult): boolean {
+    // All targets in a secret share the same token declaration, so every
+    // target uses the same token creation result.
+    const firstTarget = result.results[0];
+
+    /* istanbul ignore next - allowed rows always have a token result - @preserve */
+    if (!firstTarget?.tokenAuthResult) return false;
+
+    const tokenResult = tokenCreationResults.get(firstTarget.tokenAuthResult);
+
+    if (
+      tokenResult?.type === "CREATED" &&
+      tokenResult.failedAttempts.length > 0
+    ) {
+      return true;
+    }
+
+    const targetResults = provisionResults.get(result);
+
+    /* istanbul ignore next - allowed rows always have provision results - @preserve */
+    if (!targetResults) return false;
+
+    for (const targetResult of targetResults.values()) {
+      if (
+        targetResult.type === "PROVISIONED" &&
+        targetResult.failedAttempts.length > 0
+      ) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  function fallbackFootnote(): RootContent[] {
+    if (!anyFallback) return [];
+
+    return [
+      footnoteDefinition(
+        FALLBACK_FOOTNOTE_ID,
+        paragraph(text(FALLBACK_FOOTNOTE_TEXT)),
+      ),
     ];
   }
 
@@ -327,7 +396,7 @@ export function renderSummary(
 
     if (tokenResult.type === "NO_ISSUER") return "No suitable issuer";
 
-    if (tokenResult.type === "REQUEST_ERROR" || tokenResult.type === "ERROR") {
+    if (tokenResult.type === "FAILED") {
       return "Failed to issue token";
     }
 

@@ -24,6 +24,7 @@ import {
 } from "../provision-request.js";
 import { secretTypeMdast } from "../secret-type.js";
 import type {
+  ProvisionAttempt,
   ProvisionResult,
   ProvisionResultExplainer,
 } from "../type/provision-result.js";
@@ -110,16 +111,20 @@ export function createMarkdownProvisionExplainer(): ProvisionResultExplainer<
     const visibility = explainVisibility(target, isProvisioned);
 
     switch (result.type) {
-      case "PROVISIONED":
+      case "PROVISIONED": {
+        const failed = renderAttempts(result.failedAttempts);
+
         return [
           paragraph(
             text(`${PASS_ICON} `),
             strong(text("Provisioned")),
             text(" to "),
             ...subject,
+            ...(failed.length > 0 ? [text(":")] : []),
           ),
-          ...nestedList(...visibility),
+          ...nestedList(...failed, ...visibility),
         ];
+      }
 
       case "NOT_ALLOWED":
         return [
@@ -152,9 +157,7 @@ export function createMarkdownProvisionExplainer(): ProvisionResultExplainer<
           ...nestedList(...visibility),
         ];
 
-      case "REQUEST_ERROR": {
-        const body = result.error.response?.data;
-
+      case "FAILED":
         return [
           paragraph(
             text(`${FAIL_ICON} `),
@@ -163,44 +166,51 @@ export function createMarkdownProvisionExplainer(): ProvisionResultExplainer<
             ...subject,
             text(":"),
           ),
-          list(
-            ...visibility,
-            listItem(
-              paragraph(
-                text(`${FAIL_ICON} `),
-                strong(text(String(result.error.status))),
-                text(" - "),
-                emphasis(text(result.error.message)),
-              ),
-              ...details(
-                "Response body",
-                typeof body === "undefined"
-                  ? paragraph(emphasis(text("(no response data)")))
-                  : code("json", JSON.stringify(body, null, 2)),
-              ),
-            ),
-          ),
-        ];
-      }
-
-      case "ERROR":
-        return [
-          paragraph(
-            text(`${FAIL_ICON} `),
-            strong(text("Failed")),
-            text(" to provision to "),
-            ...subject,
-            text(":"),
-          ),
-          list(
-            ...visibility,
-            listItem(
-              paragraph(text(`${FAIL_ICON} ${errorMessage(result.error)}`)),
-              ...details("Error stack", code("text", errorStack(result.error))),
-            ),
-          ),
+          list(...renderAttempts(result.attempts), ...visibility),
         ];
     }
+  }
+
+  function renderAttempts(attempts: ProvisionAttempt[]): ListItem[] {
+    const items: ListItem[] = [];
+    let index = 0;
+
+    for (const attempt of attempts) {
+      ++index;
+      const label = attempts.length > 1 ? `Attempt ${index}: ` : "";
+
+      if (attempt.type === "REQUEST_ERROR") {
+        const body = attempt.error.response?.data;
+
+        items.push(
+          listItem(
+            paragraph(
+              text(`${FAIL_ICON} ${label}`),
+              strong(text(String(attempt.error.status))),
+              text(" - "),
+              emphasis(text(attempt.error.message)),
+            ),
+            ...details(
+              "Response body",
+              typeof body === "undefined"
+                ? paragraph(emphasis(text("(no response data)")))
+                : code("json", JSON.stringify(body, null, 2)),
+            ),
+          ),
+        );
+      } else {
+        items.push(
+          listItem(
+            paragraph(
+              text(`${FAIL_ICON} ${label}${errorMessage(attempt.error)}`),
+            ),
+            ...details("Error stack", code("text", errorStack(attempt.error))),
+          ),
+        );
+      }
+    }
+
+    return items;
   }
 
   function explainSubject(target: ProvisionRequestTarget): PhrasingContent[] {

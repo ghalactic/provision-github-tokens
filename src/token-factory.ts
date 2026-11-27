@@ -1,10 +1,13 @@
-import { info, warning } from "@actions/core";
+import { debug, info, warning } from "@actions/core";
 import { RequestError } from "@octokit/request-error";
 import type { FindIssuerOctokit } from "./issuer-octokit.js";
 import { createTextTokenCreationExplainer } from "./token-creation-explainer/text.js";
 import { tokenShapeKey } from "./token-request.js";
 import type { TokenAuthResult } from "./type/token-auth-result.js";
-import type { TokenCreationResult } from "./type/token-creation-result.js";
+import type {
+  TokenCreationAttempt,
+  TokenCreationResult,
+} from "./type/token-creation-result.js";
 
 export type TokenFactory = (
   authResults: TokenAuthResult[],
@@ -34,27 +37,48 @@ export function createTokenFactory(
       }
 
       const result: TokenCreationResult = await (async () => {
-        const found = findIssuerOctokit(auth.request);
+        const candidates = findIssuerOctokit(auth.request);
 
-        if (!found) return { type: "NO_ISSUER" };
+        if (candidates.length < 1) return { type: "NO_ISSUER" };
 
-        const [octokit, issuerReg] = found;
+        const failedAttempts: TokenCreationAttempt[] = [];
 
-        try {
-          const { data: token } =
-            await octokit.rest.apps.createInstallationAccessToken({
-              installation_id: issuerReg.installation.id,
-              repositories:
-                auth.request.repos === "all" ? undefined : auth.request.repos,
-              permissions: auth.request.tokenDec.permissions,
-            });
+        for (const candidate of candidates) {
+          const { installation } = candidate.issuer;
+          debug(
+            `Trying issuer app ${installation.app_id} ` +
+              `installation ${installation.id}`,
+          );
 
-          return { type: "CREATED", token };
-        } catch (error) {
-          return error instanceof RequestError
-            ? { type: "REQUEST_ERROR", error }
-            : { type: "ERROR", error };
+          try {
+            const { data: token } =
+              await candidate.octokit.rest.apps.createInstallationAccessToken({
+                installation_id: installation.id,
+                repositories:
+                  auth.request.repos === "all" ? undefined : auth.request.repos,
+                permissions: auth.request.tokenDec.permissions,
+              });
+
+            return {
+              type: "CREATED",
+              token,
+              issuer: candidate.issuer,
+              failedAttempts,
+            };
+          } catch (error) {
+            failedAttempts.push(
+              error instanceof RequestError
+                ? {
+                    type: "REQUEST_ERROR",
+                    issuer: candidate.issuer,
+                    error,
+                  }
+                : { type: "ERROR", issuer: candidate.issuer, error },
+            );
+          }
         }
+
+        return { type: "FAILED", attempts: failedAttempts };
       })();
 
       creationResults.set(auth, (cache[key] = result));

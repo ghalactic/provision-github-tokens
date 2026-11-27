@@ -1,11 +1,21 @@
 import type { AppRegistry, InstallationRegistration } from "./app-registry.js";
-import type { AccountOrRepoReference } from "./github-reference.js";
+import {
+  isEnvRef,
+  isRepoRef,
+  type AccountOrRepoOrEnvReference,
+} from "./github-reference.js";
 import type { Octokit, OctokitFactory } from "./octokit.js";
+import { orderCandidates } from "./order-candidates.js";
 import type { AppInput } from "./type/input.js";
 
+export type ProvisionerCandidate = {
+  octokit: Octokit;
+  provisioner: InstallationRegistration;
+};
+
 export type FindProvisionerOctokit = (
-  target: AccountOrRepoReference,
-) => [octokit: Octokit, reg: InstallationRegistration] | undefined;
+  target: AccountOrRepoOrEnvReference,
+) => ProvisionerCandidate[];
 
 export function createFindProvisionerOctokit(
   octokitFactory: OctokitFactory,
@@ -13,17 +23,32 @@ export function createFindProvisionerOctokit(
   appsInput: AppInput[],
 ): FindProvisionerOctokit {
   return (target) => {
-    const [reg] = appRegistry.findProvisionersForAccountOrRepo(target);
+    const regs = orderCandidates(
+      provisionerWorkKey(target),
+      appRegistry.findProvisionersForAccountOrRepo(target),
+      (reg) => reg.installation.app_id,
+    );
+    const candidates: ProvisionerCandidate[] = [];
 
-    if (!reg) return undefined;
+    for (const reg of regs) {
+      candidates.push({
+        octokit: octokitFactory.installationOctokit(
+          appsInput,
+          reg.installation.app_id,
+          reg.installation.id,
+        ),
+        provisioner: reg,
+      });
+    }
 
-    return [
-      octokitFactory.installationOctokit(
-        appsInput,
-        reg.installation.app_id,
-        reg.installation.id,
-      ),
-      reg,
-    ];
+    return candidates;
   };
+}
+
+function provisionerWorkKey(target: AccountOrRepoOrEnvReference): string {
+  return JSON.stringify([
+    target.account,
+    isRepoRef(target) ? target.repo : undefined,
+    isEnvRef(target) ? target.environment : undefined,
+  ]);
 }

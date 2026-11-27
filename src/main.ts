@@ -112,7 +112,7 @@ try {
     tokenAuthorizer,
   );
   const createTokens = createTokenFactory(findIssuerOctokit);
-  const encryptSecret = createEncryptSecret(findProvisionerOctokit);
+  const encryptSecret = createEncryptSecret();
   const provisionSecrets = createProvisioner(
     findProvisionerOctokit,
     encryptSecret,

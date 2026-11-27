@@ -6,6 +6,10 @@ import type {
   ProvisionAuthTargetResult,
   ProvisionAuthTargetRuleResult,
 } from "../src/type/provision-auth-result.js";
+import type {
+  ProvisionFailedResult,
+  ProvisionProvisionedResult,
+} from "../src/type/provision-result.js";
 import type { ProvisionSecretsRule } from "../src/type/provision-rule.js";
 import type {
   TokenAuthResourceResultRuleResult,
@@ -15,7 +19,15 @@ import type {
   TokenAuthResultNoRepos,
   TokenAuthResultSelectedRepos,
 } from "../src/type/token-auth-result.js";
+import type {
+  TokenCreationCreatedResult,
+  TokenCreationFailedResult,
+} from "../src/type/token-creation-result.js";
 import { createTestSecretDec, createTestTokenDec } from "./declaration.js";
+import {
+  createTestInstallationRegistration,
+  createTestInstallationToken,
+} from "./github-api.js";
 
 export function createTestTokenAuthResult(): TokenAuthResultAllRepos;
 export function createTestTokenAuthResult(
@@ -256,6 +268,41 @@ function createTestPermissionsRule(permissions: Permissions): PermissionsRule {
     consumers: ["*", "*/*"],
     permissions,
   };
+}
+
+export function createTestTokenCreationCreatedResult(
+  result: Partial<Omit<TokenCreationCreatedResult, "type">> = {},
+): TokenCreationCreatedResult {
+  return {
+    type: "CREATED",
+    token: createTestInstallationToken("token", "all", {}),
+    issuer: createTestInstallationRegistration(),
+    failedAttempts: [],
+    ...result,
+  };
+}
+
+export function createTestTokenCreationFailedResult(
+  attempts: TokenCreationFailedResult["attempts"],
+): TokenCreationFailedResult {
+  return { type: "FAILED", attempts };
+}
+
+export function createTestProvisionedResult(
+  result: Partial<Omit<ProvisionProvisionedResult, "type">> = {},
+): ProvisionProvisionedResult {
+  return {
+    type: "PROVISIONED",
+    provisioner: createTestInstallationRegistration(),
+    failedAttempts: [],
+    ...result,
+  };
+}
+
+export function createTestProvisionFailedResult(
+  attempts: ProvisionFailedResult["attempts"],
+): ProvisionFailedResult {
+  return { type: "FAILED", attempts };
 }
 
 export function createTestProvisionAuthTargetRuleResult(): ProvisionAuthTargetRuleResult {

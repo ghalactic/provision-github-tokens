@@ -46,6 +46,7 @@ it("can encrypt secrets for all secret types", async () => {
     installations: [[appAInstallationA, [repoA]]],
   });
   const { findProvisionerOctokit } = createTestOctokitFactory(appRegistry);
+  const octokit = findProvisionerOctokit({ account: "org-a" })[0].octokit;
 
   const orgAActionsKey = await createTestKeyPair("1111");
   const orgAAgentsKey = await createTestKeyPair("9999");
@@ -75,9 +76,10 @@ it("can encrypt secrets for all secret types", async () => {
     },
   });
 
-  const encryptSecret = createEncryptSecret(findProvisionerOctokit);
+  const encryptSecret = createEncryptSecret();
 
   const forOrgAActions = await encryptSecret(
+    octokit,
     createTestAccountProvisionRequestTarget("actions", "org-a", "private"),
     "<plaintext>",
   );
@@ -86,6 +88,7 @@ it("can encrypt secrets for all secret types", async () => {
   expect(forOrgAActions[1]).toBe("1111");
 
   const forOrgAAgents = await encryptSecret(
+    octokit,
     createTestAccountProvisionRequestTarget("agents", "org-a", "private"),
     "<plaintext>",
   );
@@ -94,6 +97,7 @@ it("can encrypt secrets for all secret types", async () => {
   expect(forOrgAAgents[1]).toBe("9999");
 
   const forOrgACodespaces = await encryptSecret(
+    octokit,
     createTestAccountProvisionRequestTarget("codespaces", "org-a", "private"),
     "<plaintext>",
   );
@@ -104,6 +108,7 @@ it("can encrypt secrets for all secret types", async () => {
   expect(forOrgACodespaces[1]).toBe("2222");
 
   const forOrgADependabot = await encryptSecret(
+    octokit,
     createTestAccountProvisionRequestTarget("dependabot", "org-a", "private"),
     "<plaintext>",
   );
@@ -114,6 +119,7 @@ it("can encrypt secrets for all secret types", async () => {
   expect(forOrgADependabot[1]).toBe("3333");
 
   const forRepoAActions = await encryptSecret(
+    octokit,
     createTestRepoProvisionRequestTarget(
       "actions",
       "org-a",
@@ -129,6 +135,7 @@ it("can encrypt secrets for all secret types", async () => {
   expect(forRepoAActions[1]).toBe("4444");
 
   const forRepoAAgents = await encryptSecret(
+    octokit,
     createTestRepoProvisionRequestTarget(
       "agents",
       "org-a",
@@ -142,6 +149,7 @@ it("can encrypt secrets for all secret types", async () => {
   expect(forRepoAAgents[1]).toBe("0000");
 
   const forRepoACodespaces = await encryptSecret(
+    octokit,
     createTestRepoProvisionRequestTarget(
       "codespaces",
       "org-a",
@@ -157,6 +165,7 @@ it("can encrypt secrets for all secret types", async () => {
   expect(forRepoACodespaces[1]).toBe("5555");
 
   const forRepoADependabot = await encryptSecret(
+    octokit,
     createTestRepoProvisionRequestTarget(
       "dependabot",
       "org-a",
@@ -172,6 +181,7 @@ it("can encrypt secrets for all secret types", async () => {
   expect(forRepoADependabot[1]).toBe("6666");
 
   const forEnvA = await encryptSecret(
+    octokit,
     createTestEnvironmentProvisionRequestTarget(
       "org-a",
       "repo-a",
@@ -185,6 +195,7 @@ it("can encrypt secrets for all secret types", async () => {
   expect(forEnvA[1]).toBe("7777");
 
   const forEnvB = await encryptSecret(
+    octokit,
     createTestEnvironmentProvisionRequestTarget(
       "org-a",
       "repo-a",
@@ -198,15 +209,37 @@ it("can encrypt secrets for all secret types", async () => {
   expect(forEnvB[1]).toBe("8888");
 });
 
-it("throws if no provisioners are found for the target", async () => {
-  const emptyRegistry = createTestAppRegistry(createTestRepoRegistry());
-  const { findProvisionerOctokit } = createTestOctokitFactory(emptyRegistry);
-  const encryptSecret = createEncryptSecret(findProvisionerOctokit);
+it("reuses an encrypted payload for the same target", async () => {
+  const [[accountA, [repoA]]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "org-a",
+    ["repo-a"],
+  ]);
+  const [[appA, [appAInstallationA]]] = createTestApps([
+    "App A",
+    { metadata: "read" },
+    [[accountA]],
+  ]);
+  const appRegistry = createTestAppRegistry(createTestRepoRegistry(), {
+    app: appA,
+    provisioner: true,
+    installations: [[appAInstallationA, [repoA]]],
+  });
+  const { findProvisionerOctokit } = createTestOctokitFactory(appRegistry);
+  const octokit = findProvisionerOctokit({ account: "org-a" })[0].octokit;
 
-  await expect(
-    encryptSecret(
-      createTestAccountProvisionRequestTarget("actions", "org-a", "private"),
-      "<plaintext>",
-    ),
-  ).rejects.toThrow("No provisioners found for target org-a");
+  __setOrgKeys("org-a", { actions: await createTestKeyPair("1111") });
+
+  const encryptSecret = createEncryptSecret();
+  const target = createTestAccountProvisionRequestTarget(
+    "actions",
+    "org-a",
+    "private",
+  );
+
+  const first = await encryptSecret(octokit, target, "<plaintext>");
+  const second = await encryptSecret(octokit, target, "<plaintext>");
+
+  expect(second).toBe(first);
 });

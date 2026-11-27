@@ -66,13 +66,14 @@ it("can find octokit instances for issuers", () => {
   const actualA = findIssuerOctokit(tokenReq);
   const actualB = findIssuerOctokit(tokenReq);
 
-  expect(actualA?.[0]).toBeInstanceOf(Octokit);
-  expect(actualA?.[1]).toEqual(appAInstallationRegA);
-  expect(actualB?.[0]).toBe(actualA?.[0]);
-  expect(actualB?.[1]).toBe(actualA?.[1]);
+  expect(actualA).toHaveLength(1);
+  expect(actualA[0].octokit).toBeInstanceOf(Octokit);
+  expect(actualA[0].issuer).toEqual(appAInstallationRegA);
+  expect(actualB[0].octokit).toBe(actualA[0].octokit);
+  expect(actualB[0].issuer).toBe(actualA[0].issuer);
 });
 
-it("returns undefined if no matching installation is found", () => {
+it("returns an empty list if no matching installation is found", () => {
   const octokitFactory = createOctokitFactory();
 
   const [[accountA, [repoA]]] = createTestInstallationAccounts([
@@ -119,5 +120,5 @@ it("returns undefined if no matching installation is found", () => {
     repos: "all",
   });
 
-  expect(actualA).toBeUndefined();
+  expect(actualA).toEqual([]);
 });

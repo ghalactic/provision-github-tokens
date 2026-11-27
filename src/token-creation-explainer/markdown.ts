@@ -25,6 +25,7 @@ import { capitalize } from "../text.js";
 import type { PermissionAccess } from "../type/permissions.js";
 import type { TokenAuthResult } from "../type/token-auth-result.js";
 import type {
+  TokenCreationAttempt,
   TokenCreationResult,
   TokenCreationResultExplainer,
 } from "../type/token-creation-result.js";
@@ -140,7 +141,7 @@ export function createMarkdownTokenCreationExplainer(): TokenCreationResultExpla
   ): ListItem[] {
     switch (result.type) {
       case "CREATED":
-        return [];
+        return renderAttemptLines(result.failedAttempts);
 
       case "NOT_ALLOWED": {
         return [
@@ -159,16 +160,29 @@ export function createMarkdownTokenCreationExplainer(): TokenCreationResultExpla
       case "NO_ISSUER":
         return [listItem(paragraph(text(`${FAIL_ICON} No suitable issuer`)))];
 
-      case "REQUEST_ERROR": {
-        const body = result.error.response?.data;
+      case "FAILED":
+        return renderAttemptLines(result.attempts);
+    }
+  }
 
-        return [
+  function renderAttemptLines(attempts: TokenCreationAttempt[]): ListItem[] {
+    const items: ListItem[] = [];
+    let index = 0;
+
+    for (const attempt of attempts) {
+      ++index;
+      const label = attempts.length > 1 ? `Attempt ${index}: ` : "";
+
+      if (attempt.type === "REQUEST_ERROR") {
+        const body = attempt.error.response?.data;
+
+        items.push(
           listItem(
             paragraph(
-              text(`${FAIL_ICON} `),
-              strong(text(String(result.error.status))),
+              text(`${FAIL_ICON} ${label}`),
+              strong(text(String(attempt.error.status))),
               text(" - "),
-              emphasis(text(result.error.message)),
+              emphasis(text(attempt.error.message)),
             ),
             ...details(
               "Response body",
@@ -177,17 +191,20 @@ export function createMarkdownTokenCreationExplainer(): TokenCreationResultExpla
                 : code("json", JSON.stringify(body, null, 2)),
             ),
           ),
-        ];
-      }
-
-      case "ERROR":
-        return [
+        );
+      } else {
+        items.push(
           listItem(
-            paragraph(text(`${FAIL_ICON} ${errorMessage(result.error)}`)),
-            ...details("Error stack", code("text", errorStack(result.error))),
+            paragraph(
+              text(`${FAIL_ICON} ${label}${errorMessage(attempt.error)}`),
+            ),
+            ...details("Error stack", code("text", errorStack(attempt.error))),
           ),
-        ];
+        );
+      }
     }
+
+    return items;
   }
 
   function renderRepoLines(

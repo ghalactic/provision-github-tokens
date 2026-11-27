@@ -77,12 +77,12 @@ export function createReconcileDashboards(
 
       const found = findProvisionerOctokit(requester);
       /* istanbul ignore next - @preserve */
-      if (!found) {
+      if (found.length < 1) {
         throw new Error(
           `Invariant violation: No provisioner found for requester ${repoName}`,
         );
       }
-      const [octokit] = found;
+      const [{ octokit }] = found;
 
       if (!config.dashboards.enabled) {
         await closeOpenDashboards(
