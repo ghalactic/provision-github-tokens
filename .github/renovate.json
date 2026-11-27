@@ -2,6 +2,8 @@
   "description": "DO NOT EDIT - This file is managed by ghalactic/repos.",
   "extends": ["github>ghalactic/renovate"],
   "postUpgradeTasks": {
-    "commands": ["mise run regenerate"]
+    "commands": ["mise run regenerate"],
+    "executionMode": "branch",
+    "installTools": { "mise": {} }
   }
 }
