@@ -1774,9 +1774,24 @@ it("explains a token created after falling back to another issuer", async () => 
     failedAttempts: [{ type: "REQUEST_ERROR", issuer: candidates[0].issuer }],
   });
 
-  await expect(__getOutput()).toMatchFileSnapshot(
-    join(fixturesPath, "fallback-success/text.txt"),
-  );
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "::debug::Trying issuer app 947161494 installation 2133206579
+    ::debug::Trying issuer app 571481606 installation 1539634462
+
+    Token #1:
+
+    ✅ Read-only token created with access to all repos in account-a:
+      ❌ 403 - Forbidden
+    ::debug::      {
+    ::debug::        "message": "Resource not accessible"
+    ::debug::      }
+      ✅ Has read access without a role
+      ✅ Has access to all repos in account-a
+      ✅ Has 1 permission:
+        ✅ metadata: read
+
+    "
+  `);
 
   const toMdast = createMarkdownTokenCreationExplainer();
 
@@ -1841,9 +1856,27 @@ it("explains every issuer attempt when every issuer fails", async () => {
     ],
   });
 
-  await expect(__getOutput()).toMatchFileSnapshot(
-    join(fixturesPath, "all-failed/text.txt"),
-  );
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "::debug::Trying issuer app 947161494 installation 2133206579
+    ::debug::Trying issuer app 571481606 installation 1539634462
+
+    Token #1:
+
+    ❌ Failed to create read-only token with access to all repos in account-a:
+      ❌ Attempt 1: 403 - Forbidden
+    ::debug::      {
+    ::debug::        "message": "Resource not accessible"
+    ::debug::      }
+      ❌ Attempt 2: <message>
+    ::debug::      Error: <message>
+    ::debug::          at token-factory.ts:1:1
+      ➖ Wanted read access without a role
+      ➖ Wanted access to all repos in account-a
+      ➖ Wanted 1 permission:
+        ➖ metadata: read
+
+    "
+  `);
 
   const toMdast = createMarkdownTokenCreationExplainer();
 

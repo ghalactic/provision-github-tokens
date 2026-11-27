@@ -2497,9 +2497,20 @@ it("explains a secret provisioned after falling back to another provisioner for 
     ],
   });
 
-  await expect(__getOutput()).toMatchFileSnapshot(
-    join(fixturesPath, "encryption-fallback/text.txt"),
-  );
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "::debug::Trying provisioner app 947161494 installation 2133206579
+    ::debug::Trying provisioner app 571481606 installation 1539634462
+
+    Secret #1:
+
+    ✅ Secret SECRET_A was provisioned for repo account-a/repo-a:
+      ✅ Provisioned to GitHub Actions secret in account-a:
+        ❌ 401 - Unauthorized
+    ::debug::      (no response data)
+        ✅ Readable by private repos
+
+    "
+  `);
 
   const toMdast = createMarkdownProvisionExplainer();
 
@@ -2591,9 +2602,22 @@ it("explains every provisioner attempt when encryption fails for all", async () 
     ],
   });
 
-  await expect(__getOutput()).toMatchFileSnapshot(
-    join(fixturesPath, "encryption-all-failed/text.txt"),
-  );
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "::debug::Trying provisioner app 947161494 installation 2133206579
+    ::debug::Trying provisioner app 571481606 installation 1539634462
+
+    Secret #1:
+
+    ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
+      ❌ Failed to provision to GitHub Actions secret in account-a:
+        ❌ Would've been readable by private repos
+        ❌ Attempt 1: 401 - Unauthorized
+    ::debug::      (no response data)
+        ❌ Attempt 2: 500 - Internal Server Error
+    ::debug::      (no response data)
+
+    "
+  `);
 
   const toMdast = createMarkdownProvisionExplainer();
 
@@ -2684,9 +2708,22 @@ it("explains a secret provisioned after falling back to another provisioner for 
     ],
   });
 
-  await expect(__getOutput()).toMatchFileSnapshot(
-    join(fixturesPath, "write-fallback/text.txt"),
-  );
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "::debug::Trying provisioner app 947161494 installation 2133206579
+    ::debug::Trying provisioner app 571481606 installation 1539634462
+
+    Secret #1:
+
+    ✅ Secret SECRET_A was provisioned for repo account-a/repo-a:
+      ✅ Provisioned to GitHub Actions secret in account-a:
+        ❌ 403 - Forbidden
+    ::debug::      {
+    ::debug::        "message": "Resource not accessible"
+    ::debug::      }
+        ✅ Readable by private repos
+
+    "
+  `);
 
   const toMdast = createMarkdownProvisionExplainer();
 
@@ -2778,9 +2815,24 @@ it("explains every provisioner attempt when the write fails for all", async () =
     ],
   });
 
-  await expect(__getOutput()).toMatchFileSnapshot(
-    join(fixturesPath, "write-all-failed/text.txt"),
-  );
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "::debug::Trying provisioner app 947161494 installation 2133206579
+    ::debug::Trying provisioner app 571481606 installation 1539634462
+
+    Secret #1:
+
+    ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
+      ❌ Failed to provision to GitHub Actions secret in account-a:
+        ❌ Would've been readable by private repos
+        ❌ Attempt 1: 403 - Forbidden
+    ::debug::      {
+    ::debug::        "message": "Resource not accessible"
+    ::debug::      }
+        ❌ Attempt 2: 500 - Internal Server Error
+    ::debug::      (no response data)
+
+    "
+  `);
 
   const toMdast = createMarkdownProvisionExplainer();
 
