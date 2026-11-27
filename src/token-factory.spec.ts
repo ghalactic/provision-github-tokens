@@ -1717,13 +1717,15 @@ it("fails after every issuer fails", async () => {
       { type: "REQUEST_ERROR", issuer: candidates[1].issuer },
     ],
   });
-  expect(__getOutput()).toContain("Attempt 1");
-  expect(__getOutput()).toContain("Attempt 2");
+  expect(__getOutput()).toContain("Failed attempts:");
+  expect(__getOutput()).toContain("403 - Forbidden");
+  expect(__getOutput()).toContain("500 - Internal Server Error");
 
   const toMdast = createMarkdownTokenCreationExplainer();
   const markdown = toMarkdown(toMdast(authResult, results.get(authResult)!));
-  expect(markdown).toContain("Attempt 1:");
-  expect(markdown).toContain("Attempt 2:");
+  expect(markdown).toContain("**Failed attempts**");
+  expect(markdown).toContain("**403** - _Forbidden_");
+  expect(markdown).toContain("**500** - _Internal Server Error_");
 });
 
 it("explains a token created after falling back to another issuer", async () => {
@@ -1874,11 +1876,11 @@ it("explains every issuer attempt when every issuer fails", async () => {
       ➖ Wanted 1 permission:
         ➖ metadata: read
       ❌ Failed attempts:
-        ❌ Attempt 1: 403 - Forbidden
+        ❌ 403 - Forbidden
     ::debug::      {
     ::debug::        "message": "Resource not accessible"
     ::debug::      }
-        ❌ Attempt 2: <message>
+        ❌ <message>
     ::debug::      Error: <message>
     ::debug::          at token-factory.ts:1:1
 

@@ -139,12 +139,8 @@ export function createTextTokenCreationExplainer(): TokenCreationResultExplainer
   ): string[] {
     const statusIcon = isSuccess ? WARN_ICON : FAIL_ICON;
     const lines = [`  ${statusIcon} Failed attempts:`];
-    let index = 0;
 
     for (const attempt of attempts) {
-      ++index;
-      const label = attempts.length > 1 ? `Attempt ${index}: ` : "";
-
       if (attempt.type === "REQUEST_ERROR") {
         const body = attempt.error.response?.data;
         const detail =
@@ -153,12 +149,12 @@ export function createTextTokenCreationExplainer(): TokenCreationResultExplainer
             : JSON.stringify(body, null, 2);
 
         lines.push(
-          `    ${statusIcon} ${label}` +
+          `    ${statusIcon} ` +
             `${attempt.error.status} - ${attempt.error.message}`,
         );
         lines.push(prefixLines("::debug::      ", detail));
       } else {
-        lines.push(`    ${statusIcon} ${label}${errorMessage(attempt.error)}`);
+        lines.push(`    ${statusIcon} ${errorMessage(attempt.error)}`);
         lines.push(prefixLines("::debug::      ", errorStack(attempt.error)));
       }
     }

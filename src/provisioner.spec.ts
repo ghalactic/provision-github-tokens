@@ -2322,8 +2322,9 @@ it("fails after every provisioner fails", async () => {
 
   const toMdast = createMarkdownProvisionExplainer();
   const markdown = toMarkdown(toMdast(authResult, targetResults));
-  expect(markdown).toContain("Attempt 1:");
-  expect(markdown).toContain("Attempt 2:");
+  expect(markdown).toContain("**Failed attempts**");
+  expect(markdown).toContain("**403** - _Forbidden_");
+  expect(markdown).toContain("**500** - _Internal Server Error_");
 });
 
 it("doesn't let the secret type affect provisioner affinity", async () => {
@@ -2620,9 +2621,9 @@ it("explains every provisioner attempt when encryption fails for all", async () 
       ❌ Failed to provision to GitHub Actions secret in account-a:
         ❌ Would've been readable by private repos
         ❌ Failed attempts:
-          ❌ Attempt 1: 401 - Unauthorized
+          ❌ 401 - Unauthorized
     ::debug::      (no response data)
-          ❌ Attempt 2: 500 - Internal Server Error
+          ❌ 500 - Internal Server Error
     ::debug::      (no response data)
 
     "
@@ -2835,11 +2836,11 @@ it("explains every provisioner attempt when the write fails for all", async () =
       ❌ Failed to provision to GitHub Actions secret in account-a:
         ❌ Would've been readable by private repos
         ❌ Failed attempts:
-          ❌ Attempt 1: 403 - Forbidden
+          ❌ 403 - Forbidden
     ::debug::      {
     ::debug::        "message": "Resource not accessible"
     ::debug::      }
-          ❌ Attempt 2: 500 - Internal Server Error
+          ❌ 500 - Internal Server Error
     ::debug::      (no response data)
 
     "

@@ -4,7 +4,7 @@
   - ➖ Wanted **1 permission**:
     - ➖ _metadata_: `read`
   - ❌ **Failed attempts**:
-    - ❌ Attempt 1: **403** - _Forbidden_
+    - ❌ **403** - _Forbidden_
       <details>
       <summary>Response body</summary>
 
@@ -15,7 +15,7 @@
       ```
 
       </details>
-    - ❌ Attempt 2: \<message>
+    - ❌ \<message>
       <details>
       <summary>Error stack</summary>
 

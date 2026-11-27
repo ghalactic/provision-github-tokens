@@ -113,12 +113,8 @@ export function createTextProvisionExplainer(): ProvisionResultExplainer<string>
 
     const statusIcon = isProvisioned ? WARN_ICON : FAIL_ICON;
     let output = `\n    ${statusIcon} Failed attempts:`;
-    let index = 0;
 
     for (const attempt of attempts) {
-      ++index;
-      const label = attempts.length > 1 ? `Attempt ${index}: ` : "";
-
       if (attempt.type === "REQUEST_ERROR") {
         const body = attempt.error.response?.data;
         const detail =
@@ -127,12 +123,11 @@ export function createTextProvisionExplainer(): ProvisionResultExplainer<string>
             : JSON.stringify(body, null, 2);
 
         output +=
-          `\n      ${statusIcon} ${label}` +
+          `\n      ${statusIcon} ` +
           `${attempt.error.status} - ${attempt.error.message}`;
         output += `\n${prefixLines("::debug::      ", detail)}`;
       } else {
-        output +=
-          `\n      ${statusIcon} ${label}` + errorMessage(attempt.error);
+        output += `\n      ${statusIcon} ` + errorMessage(attempt.error);
         output += `\n${prefixLines("::debug::      ", errorStack(attempt.error))}`;
       }
     }

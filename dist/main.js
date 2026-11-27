@@ -121505,20 +121505,17 @@ function createTextProvisionExplainer() {
     const statusIcon = isProvisioned ? WARN_ICON : FAIL_ICON;
     let output = `
     ${statusIcon} Failed attempts:`;
-    let index = 0;
     for (const attempt of attempts) {
-      ++index;
-      const label = attempts.length > 1 ? `Attempt ${index}: ` : "";
       if (attempt.type === "REQUEST_ERROR") {
         const body = attempt.error.response?.data;
         const detail = typeof body === "undefined" ? "(no response data)" : JSON.stringify(body, null, 2);
         output += `
-      ${statusIcon} ${label}${attempt.error.status} - ${attempt.error.message}`;
+      ${statusIcon} ${attempt.error.status} - ${attempt.error.message}`;
         output += `
 ${prefixLines("::debug::      ", detail)}`;
       } else {
         output += `
-      ${statusIcon} ${label}` + errorMessage(attempt.error);
+      ${statusIcon} ` + errorMessage(attempt.error);
         output += `
 ${prefixLines("::debug::      ", errorStack(attempt.error))}`;
       }
@@ -122160,16 +122157,13 @@ function createMarkdownProvisionExplainer() {
   }
   function renderAttemptItems(statusIcon, attempts) {
     const items = [];
-    let index = 0;
     for (const attempt of attempts) {
-      ++index;
-      const label = attempts.length > 1 ? `Attempt ${index}: ` : "";
       if (attempt.type === "REQUEST_ERROR") {
         const body = attempt.error.response?.data;
         items.push(
           listItem2(
             paragraph2(
-              text2(`${statusIcon} ${label}`),
+              text2(`${statusIcon} `),
               strong2(text2(String(attempt.error.status))),
               text2(" - "),
               emphasis2(text2(attempt.error.message))
@@ -122183,9 +122177,7 @@ function createMarkdownProvisionExplainer() {
       } else {
         items.push(
           listItem2(
-            paragraph2(
-              text2(`${statusIcon} ${label}${errorMessage(attempt.error)}`)
-            ),
+            paragraph2(text2(`${statusIcon} ${errorMessage(attempt.error)}`)),
             ...details("Error stack", code3("text", errorStack(attempt.error)))
           )
         );
@@ -122561,16 +122553,13 @@ function createMarkdownTokenCreationExplainer() {
   }
   function renderAttemptItems(statusIcon, attempts) {
     const items = [];
-    let index = 0;
     for (const attempt of attempts) {
-      ++index;
-      const label = attempts.length > 1 ? `Attempt ${index}: ` : "";
       if (attempt.type === "REQUEST_ERROR") {
         const body = attempt.error.response?.data;
         items.push(
           listItem2(
             paragraph2(
-              text2(`${statusIcon} ${label}`),
+              text2(`${statusIcon} `),
               strong2(text2(String(attempt.error.status))),
               text2(" - "),
               emphasis2(text2(attempt.error.message))
@@ -122584,9 +122573,7 @@ function createMarkdownTokenCreationExplainer() {
       } else {
         items.push(
           listItem2(
-            paragraph2(
-              text2(`${statusIcon} ${label}${errorMessage(attempt.error)}`)
-            ),
+            paragraph2(text2(`${statusIcon} ${errorMessage(attempt.error)}`)),
             ...details("Error stack", code3("text", errorStack(attempt.error)))
           )
         );
@@ -123807,19 +123794,16 @@ function createTextTokenCreationExplainer() {
   function renderFailedAttemptLines(attempts, isSuccess) {
     const statusIcon = isSuccess ? WARN_ICON : FAIL_ICON;
     const lines = [`  ${statusIcon} Failed attempts:`];
-    let index = 0;
     for (const attempt of attempts) {
-      ++index;
-      const label = attempts.length > 1 ? `Attempt ${index}: ` : "";
       if (attempt.type === "REQUEST_ERROR") {
         const body = attempt.error.response?.data;
         const detail = typeof body === "undefined" ? "(no response data)" : JSON.stringify(body, null, 2);
         lines.push(
-          `    ${statusIcon} ${label}${attempt.error.status} - ${attempt.error.message}`
+          `    ${statusIcon} ${attempt.error.status} - ${attempt.error.message}`
         );
         lines.push(prefixLines("::debug::      ", detail));
       } else {
-        lines.push(`    ${statusIcon} ${label}${errorMessage(attempt.error)}`);
+        lines.push(`    ${statusIcon} ${errorMessage(attempt.error)}`);
         lines.push(prefixLines("::debug::      ", errorStack(attempt.error)));
       }
     }

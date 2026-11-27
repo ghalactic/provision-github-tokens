@@ -2,7 +2,7 @@
   - ❌ **Failed** to provision to **GitHub Actions** secret in `account-a`:
     - ❌ Would've been readable by **private repos**
     - ❌ **Failed attempts**:
-      - ❌ Attempt 1: **403** - _Forbidden_
+      - ❌ **403** - _Forbidden_
         <details>
         <summary>Response body</summary>
 
@@ -13,7 +13,7 @@
         ```
 
         </details>
-      - ❌ Attempt 2: **500** - _Internal Server Error_
+      - ❌ **500** - _Internal Server Error_
         <details>
         <summary>Response body</summary>
 

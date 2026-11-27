@@ -202,19 +202,15 @@ export function createMarkdownProvisionExplainer(): ProvisionResultExplainer<
     attempts: ProvisionAttempt[],
   ): ListItem[] {
     const items: ListItem[] = [];
-    let index = 0;
 
     for (const attempt of attempts) {
-      ++index;
-      const label = attempts.length > 1 ? `Attempt ${index}: ` : "";
-
       if (attempt.type === "REQUEST_ERROR") {
         const body = attempt.error.response?.data;
 
         items.push(
           listItem(
             paragraph(
-              text(`${statusIcon} ${label}`),
+              text(`${statusIcon} `),
               strong(text(String(attempt.error.status))),
               text(" - "),
               emphasis(text(attempt.error.message)),
@@ -230,9 +226,7 @@ export function createMarkdownProvisionExplainer(): ProvisionResultExplainer<
       } else {
         items.push(
           listItem(
-            paragraph(
-              text(`${statusIcon} ${label}${errorMessage(attempt.error)}`),
-            ),
+            paragraph(text(`${statusIcon} ${errorMessage(attempt.error)}`)),
             ...details("Error stack", code("text", errorStack(attempt.error))),
           ),
         );
