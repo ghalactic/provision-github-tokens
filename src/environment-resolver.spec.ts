@@ -6,6 +6,8 @@ import {
 import {
   __reset as __resetOctokit,
   __setEnvironments,
+  __setErrors,
+  TestRequestError,
 } from "../__mocks__/@octokit/action.js";
 import { createTestAppRegistry } from "../test/app-registry.js";
 import {
@@ -83,6 +85,94 @@ it("resolves environment names for a repo", async () => {
     ::debug::Environment patterns ["env-a*","env-b*"] for org-a/repo-a resolved to ["env-a1","env-a2","env-b1","env-b2"]
     "
   `);
+});
+
+it("falls over to the next provisioner when listing fails", async () => {
+  const [[accountA, [repoA], [[envA1]]]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "org-a",
+    [["repo-a", ["env-a1"]]],
+  ]);
+  const [[appA, [appAInstallationA]], [appB, [appBInstallationB]]] =
+    createTestApps(["App A", {}, [[accountA]]], ["App B", {}, [[accountA]]]);
+
+  const appRegistry = createTestAppRegistry(
+    createTestRepoRegistry(),
+    {
+      app: appA,
+      provisioner: true,
+      installations: [[appAInstallationA, [repoA]]],
+    },
+    {
+      app: appB,
+      provisioner: true,
+      installations: [[appBInstallationB, [repoA]]],
+    },
+  );
+
+  __setEnvironments([[repoA, [envA1]]]);
+  __setErrors("repos.getAllEnvironments", [
+    new TestRequestError(403, { message: "Resource not accessible" }),
+  ]);
+
+  const { findProvisionerOctokit } = createTestOctokitFactory(appRegistry);
+
+  const environmentResolver = createEnvironmentResolver(findProvisionerOctokit);
+
+  expect(
+    await environmentResolver.resolveEnvironments(
+      { account: "org-a", repo: "repo-a" },
+      [createNamePattern("*")],
+    ),
+  ).toEqual(["env-a1"]);
+});
+
+it("throws an aggregate error after every provisioner fails", async () => {
+  const [[accountA, [repoA], [[envA1]]]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "org-a",
+    [["repo-a", ["env-a1"]]],
+  ]);
+  const [[appA, [appAInstallationA]], [appB, [appBInstallationB]]] =
+    createTestApps(["App A", {}, [[accountA]]], ["App B", {}, [[accountA]]]);
+
+  const appRegistry = createTestAppRegistry(
+    createTestRepoRegistry(),
+    {
+      app: appA,
+      provisioner: true,
+      installations: [[appAInstallationA, [repoA]]],
+    },
+    {
+      app: appB,
+      provisioner: true,
+      installations: [[appBInstallationB, [repoA]]],
+    },
+  );
+
+  const firstError = new TestRequestError(403, {
+    message: "Resource not accessible",
+  });
+  const secondError = new Error("boom");
+
+  __setEnvironments([[repoA, [envA1]]]);
+  __setErrors("repos.getAllEnvironments", [firstError, secondError]);
+
+  const { findProvisionerOctokit } = createTestOctokitFactory(appRegistry);
+
+  const environmentResolver = createEnvironmentResolver(findProvisionerOctokit);
+
+  await expect(
+    environmentResolver.resolveEnvironments(
+      { account: "org-a", repo: "repo-a" },
+      [createNamePattern("*")],
+    ),
+  ).rejects.toMatchObject({
+    message: "No provisioner could list environments for repo org-a/repo-a",
+    errors: [firstError, secondError],
+  });
 });
 
 it("throws if no provisioner is found", async () => {
