@@ -121094,6 +121094,12 @@ function createEnvironmentResolver(findProvisionerOctokit) {
       () => true,
       found
     );
+    for (const { candidate, error: error2 } of result.failures) {
+      const { installation } = candidate.provisioner;
+      debug(
+        `Provisioner app ${installation.app_id} installation ${installation.id} couldn't list environments for ${repoName}: ${errorMessage(error2)}`
+      );
+    }
     if (result.type === "FAILED") {
       const errors = [];
       for (const failure of result.failures) errors.push(failure.error);

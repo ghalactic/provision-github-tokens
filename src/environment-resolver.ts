@@ -1,4 +1,5 @@
 import { debug } from "@actions/core";
+import { errorMessage } from "./error.js";
 import { repoRefToString, type RepoReference } from "./github-reference.js";
 import { anyPatternMatches, type Pattern } from "./pattern.js";
 import type { FindProvisionerOctokit } from "./provisioner-octokit.js";
@@ -64,6 +65,15 @@ export function createEnvironmentResolver(
       () => true,
       found,
     );
+
+    for (const { candidate, error } of result.failures) {
+      const { installation } = candidate.provisioner;
+      debug(
+        `Provisioner app ${installation.app_id} ` +
+          `installation ${installation.id} couldn't list environments ` +
+          `for ${repoName}: ${errorMessage(error)}`,
+      );
+    }
 
     if (result.type === "FAILED") {
       const errors: unknown[] = [];
