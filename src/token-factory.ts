@@ -1,8 +1,9 @@
 import { debug, info, warning } from "@actions/core";
 import { RequestError } from "@octokit/request-error";
-import type { FindIssuerOctokit } from "./issuer-octokit.js";
+import type { FindIssuerOctokit, IssuerCandidate } from "./issuer-octokit.js";
 import { createTextTokenCreationExplainer } from "./token-creation-explainer/text.js";
 import { tokenShapeKey } from "./token-request.js";
+import { tryEach, type TryEachFailedAttempt } from "./try-each.js";
 import type { TokenAuthResult } from "./type/token-auth-result.js";
 import type {
   TokenCreationAttempt,
@@ -41,16 +42,14 @@ export function createTokenFactory(
 
         if (candidates.length < 1) return { type: "NO_ISSUER" };
 
-        const failedAttempts: TokenCreationAttempt[] = [];
+        const result = await tryEach(
+          async (candidate) => {
+            const { installation } = candidate.issuer;
+            debug(
+              `Trying issuer app ${installation.app_id} ` +
+                `installation ${installation.id}`,
+            );
 
-        for (const candidate of candidates) {
-          const { installation } = candidate.issuer;
-          debug(
-            `Trying issuer app ${installation.app_id} ` +
-              `installation ${installation.id}`,
-          );
-
-          try {
             const { data: token } =
               await candidate.octokit.rest.apps.createInstallationAccessToken({
                 installation_id: installation.id,
@@ -59,26 +58,22 @@ export function createTokenFactory(
                 permissions: auth.request.tokenDec.permissions,
               });
 
-            return {
-              type: "CREATED",
-              token,
-              issuer: candidate.issuer,
-              failedAttempts,
-            };
-          } catch (error) {
-            failedAttempts.push(
-              error instanceof RequestError
-                ? {
-                    type: "REQUEST_ERROR",
-                    issuer: candidate.issuer,
-                    error,
-                  }
-                : { type: "ERROR", issuer: candidate.issuer, error },
-            );
-          }
-        }
+            return token;
+          },
+          () => true,
+          candidates,
+        );
 
-        return { type: "FAILED", attempts: failedAttempts };
+        const attempts = toTokenCreationAttempts(result.failures);
+
+        if (result.type === "FAILED") return { type: "FAILED", attempts };
+
+        return {
+          type: "CREATED",
+          token: result.value,
+          issuer: result.candidate.issuer,
+          failedAttempts: attempts,
+        };
       })();
 
       creationResults.set(auth, (cache[key] = result));
@@ -102,4 +97,20 @@ export function createTokenFactory(
 
     return creationResults;
   };
+}
+
+function toTokenCreationAttempts(
+  failures: readonly TryEachFailedAttempt<IssuerCandidate>[],
+): TokenCreationAttempt[] {
+  const attempts: TokenCreationAttempt[] = [];
+
+  for (const { candidate, error } of failures) {
+    attempts.push(
+      error instanceof RequestError
+        ? { type: "REQUEST_ERROR", issuer: candidate.issuer, error }
+        : { type: "ERROR", issuer: candidate.issuer, error },
+    );
+  }
+
+  return attempts;
 }

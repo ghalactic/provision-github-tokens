@@ -121550,6 +121550,31 @@ ${prefixLines("::debug::      ", errorStack(attempt.error))}`;
   }
 }
 
+// src/try-each.ts
+async function tryEach(fn, shouldTryNext, candidates2) {
+  if (candidates2.length < 1) {
+    throw new Error("Invariant violation: Expected at least one candidate");
+  }
+  const failures = [];
+  for (let i2 = 0; i2 < candidates2.length; ++i2) {
+    const candidate = candidates2[i2];
+    try {
+      return {
+        type: "SUCCEEDED",
+        failures,
+        candidate,
+        value: await fn(candidate)
+      };
+    } catch (error2) {
+      failures.push({ candidate, error: error2 });
+      if (i2 + 1 < candidates2.length && !shouldTryNext(error2)) {
+        return { type: "FAILED", failures, exhausted: false };
+      }
+    }
+  }
+  return { type: "FAILED", failures, exhausted: true };
+}
+
 // src/provisioner.ts
 function createProvisioner(findProvisionerOctokit, encryptSecret) {
   return async (tokens, authResults) => {
@@ -121617,13 +121642,12 @@ Secret #${i2}:
   async function provisionToTarget(tokenResult, name, requestTarget) {
     const candidates2 = findProvisionerOctokit(requestTarget.target);
     if (candidates2.length < 1) return { type: "NO_PROVISIONER" };
-    const failedAttempts = [];
-    for (const candidate of candidates2) {
-      const { installation } = candidate.provisioner;
-      debug(
-        `Trying provisioner app ${installation.app_id} installation ${installation.id}`
-      );
-      try {
+    const result = await tryEach(
+      async (candidate) => {
+        const { installation } = candidate.provisioner;
+        debug(
+          `Trying provisioner app ${installation.app_id} installation ${installation.id}`
+        );
         const [encrypted, keyId] = await encryptSecret(
           candidate.octokit,
           requestTarget,
@@ -121636,22 +121660,17 @@ Secret #${i2}:
           name,
           requestTarget
         );
-        return {
-          type: "PROVISIONED",
-          provisioner: candidate.provisioner,
-          failedAttempts
-        };
-      } catch (error2) {
-        failedAttempts.push(
-          error2 instanceof RequestError ? {
-            type: "REQUEST_ERROR",
-            provisioner: candidate.provisioner,
-            error: error2
-          } : { type: "ERROR", provisioner: candidate.provisioner, error: error2 }
-        );
-      }
-    }
-    return { type: "FAILED", attempts: failedAttempts };
+      },
+      () => true,
+      candidates2
+    );
+    const attempts = toProvisionAttempts(result.failures);
+    if (result.type === "FAILED") return { type: "FAILED", attempts };
+    return {
+      type: "PROVISIONED",
+      provisioner: result.candidate.provisioner,
+      failedAttempts: attempts
+    };
   }
   async function createOrUpdateSecret(octokit, encrypted, keyId, name, requestTarget) {
     const { type } = requestTarget;
@@ -121760,6 +121779,15 @@ Secret #${i2}:
       selected_repository_ids: visibility.repos.map(({ id }) => id)
     };
   }
+}
+function toProvisionAttempts(failures) {
+  const attempts = [];
+  for (const { candidate, error: error2 } of failures) {
+    attempts.push(
+      error2 instanceof RequestError ? { type: "REQUEST_ERROR", provisioner: candidate.provisioner, error: error2 } : { type: "ERROR", provisioner: candidate.provisioner, error: error2 }
+    );
+  }
+  return attempts;
 }
 
 // src/provision-auth-explainer/markdown.ts
@@ -123867,35 +123895,30 @@ function createTokenFactory(findIssuerOctokit) {
       const result = await (async () => {
         const candidates2 = findIssuerOctokit(auth6.request);
         if (candidates2.length < 1) return { type: "NO_ISSUER" };
-        const failedAttempts = [];
-        for (const candidate of candidates2) {
-          const { installation } = candidate.issuer;
-          debug(
-            `Trying issuer app ${installation.app_id} installation ${installation.id}`
-          );
-          try {
+        const result2 = await tryEach(
+          async (candidate) => {
+            const { installation } = candidate.issuer;
+            debug(
+              `Trying issuer app ${installation.app_id} installation ${installation.id}`
+            );
             const { data: token } = await candidate.octokit.rest.apps.createInstallationAccessToken({
               installation_id: installation.id,
               repositories: auth6.request.repos === "all" ? void 0 : auth6.request.repos,
               permissions: auth6.request.tokenDec.permissions
             });
-            return {
-              type: "CREATED",
-              token,
-              issuer: candidate.issuer,
-              failedAttempts
-            };
-          } catch (error2) {
-            failedAttempts.push(
-              error2 instanceof RequestError ? {
-                type: "REQUEST_ERROR",
-                issuer: candidate.issuer,
-                error: error2
-              } : { type: "ERROR", issuer: candidate.issuer, error: error2 }
-            );
-          }
-        }
-        return { type: "FAILED", attempts: failedAttempts };
+            return token;
+          },
+          () => true,
+          candidates2
+        );
+        const attempts = toTokenCreationAttempts(result2.failures);
+        if (result2.type === "FAILED") return { type: "FAILED", attempts };
+        return {
+          type: "CREATED",
+          token: result2.value,
+          issuer: result2.candidate.issuer,
+          failedAttempts: attempts
+        };
       })();
       creationResults.set(auth6, cache[key] = result);
     }
@@ -123916,6 +123939,15 @@ Token #${i2}:
     info("");
     return creationResults;
   };
+}
+function toTokenCreationAttempts(failures) {
+  const attempts = [];
+  for (const { candidate, error: error2 } of failures) {
+    attempts.push(
+      error2 instanceof RequestError ? { type: "REQUEST_ERROR", issuer: candidate.issuer, error: error2 } : { type: "ERROR", issuer: candidate.issuer, error: error2 }
+    );
+  }
+  return attempts;
 }
 
 // src/main.ts

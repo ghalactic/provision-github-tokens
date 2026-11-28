@@ -11,7 +11,11 @@ import {
   type AccountSecretVisibility,
   type ProvisionRequestTarget,
 } from "./provision-request.js";
-import type { FindProvisionerOctokit } from "./provisioner-octokit.js";
+import {
+  type FindProvisionerOctokit,
+  type ProvisionerCandidate,
+} from "./provisioner-octokit.js";
+import { tryEach, type TryEachFailedAttempt } from "./try-each.js";
 import type {
   ProvisionAuthResult,
   ProvisionAuthTargetResult,
@@ -132,16 +136,14 @@ export function createProvisioner(
 
     if (candidates.length < 1) return { type: "NO_PROVISIONER" };
 
-    const failedAttempts: ProvisionAttempt[] = [];
+    const result = await tryEach(
+      async (candidate) => {
+        const { installation } = candidate.provisioner;
+        debug(
+          `Trying provisioner app ${installation.app_id} ` +
+            `installation ${installation.id}`,
+        );
 
-    for (const candidate of candidates) {
-      const { installation } = candidate.provisioner;
-      debug(
-        `Trying provisioner app ${installation.app_id} ` +
-          `installation ${installation.id}`,
-      );
-
-      try {
         const [encrypted, keyId] = await encryptSecret(
           candidate.octokit,
           requestTarget,
@@ -155,26 +157,20 @@ export function createProvisioner(
           name,
           requestTarget,
         );
+      },
+      () => true,
+      candidates,
+    );
 
-        return {
-          type: "PROVISIONED",
-          provisioner: candidate.provisioner,
-          failedAttempts,
-        };
-      } catch (error) {
-        failedAttempts.push(
-          error instanceof RequestError
-            ? {
-                type: "REQUEST_ERROR",
-                provisioner: candidate.provisioner,
-                error,
-              }
-            : { type: "ERROR", provisioner: candidate.provisioner, error },
-        );
-      }
-    }
+    const attempts = toProvisionAttempts(result.failures);
 
-    return { type: "FAILED", attempts: failedAttempts };
+    if (result.type === "FAILED") return { type: "FAILED", attempts };
+
+    return {
+      type: "PROVISIONED",
+      provisioner: result.candidate.provisioner,
+      failedAttempts: attempts,
+    };
   }
 
   async function createOrUpdateSecret(
@@ -310,4 +306,20 @@ export function createProvisioner(
       selected_repository_ids: visibility.repos.map(({ id }) => id),
     };
   }
+}
+
+function toProvisionAttempts(
+  failures: readonly TryEachFailedAttempt<ProvisionerCandidate>[],
+): ProvisionAttempt[] {
+  const attempts: ProvisionAttempt[] = [];
+
+  for (const { candidate, error } of failures) {
+    attempts.push(
+      error instanceof RequestError
+        ? { type: "REQUEST_ERROR", provisioner: candidate.provisioner, error }
+        : { type: "ERROR", provisioner: candidate.provisioner, error },
+    );
+  }
+
+  return attempts;
 }
