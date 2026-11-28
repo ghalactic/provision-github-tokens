@@ -73,6 +73,21 @@ export type TryEachResult<C, T> =
 export type TryEachFn<C, T> = (candidate: C) => Promise<T>;
 
 /**
+ * Decides whether to try the next candidate after a failed attempt.
+ *
+ * Can be used to log failures as they occur.
+ *
+ * @typeParam C - The type of the candidates.
+ *
+ * @param failure - The failed attempt.
+ *
+ * @returns Whether to try the next candidate.
+ */
+export type TryEachShouldTryNextFn<C> = (
+  failure: TryEachFailedAttempt<C>,
+) => boolean;
+
+/**
  * Attempts to do some work with each candidate until one succeeds or all fail.
  *
  * Candidates are tried in order and only one at a time. Every attempt is
@@ -82,9 +97,8 @@ export type TryEachFn<C, T> = (candidate: C) => Promise<T>;
  * @typeParam T - The result type.
  *
  * @param fn - The work to attempt with each candidate.
- * @param shouldTryNext - Called after every failed attempt, including the last,
- * so that callers can log each failure as it happens. Returns whether to try
- * the next candidate; ignored when no candidate remains.
+ * @param shouldTryNext - Determines whether the next candidate should be tried
+ *   after a failed attempt.
  * @param candidates - The candidates to try. Must not be empty.
  *
  * @returns The successful result, or the failures if trying stopped.
@@ -93,7 +107,7 @@ export type TryEachFn<C, T> = (candidate: C) => Promise<T>;
  */
 export async function tryEach<C, T>(
   fn: TryEachFn<C, T>,
-  shouldTryNext: (failure: TryEachFailedAttempt<C>) => boolean,
+  shouldTryNext: TryEachShouldTryNextFn<C>,
   candidates: readonly C[],
 ): Promise<TryEachResult<C, T>> {
   if (candidates.length < 1) {
