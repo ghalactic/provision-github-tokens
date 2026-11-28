@@ -204,6 +204,15 @@ export function __getRepoIssueLabels(repo: string) {
   return repoIssueLabels[repo] ?? [];
 }
 
+export function __setIssueComments(
+  owner: string,
+  repo: string,
+  number: number,
+  newComments: string[],
+) {
+  issueComments[`${owner}/${repo}/${number}`] = newComments;
+}
+
 export function __getIssueComments(
   owner: string,
   repo: string,
@@ -285,6 +294,18 @@ export function Octokit({
               repo: string;
               state?: string;
               labels?: string | string[];
+            },
+          );
+        }
+
+        if (endpoint === "issues.listComments") {
+          return listIssueComments(
+            appId,
+            installationId,
+            params as {
+              owner: string;
+              repo: string;
+              issue_number: number;
             },
           );
         }
@@ -605,6 +626,8 @@ export function Octokit({
 
           return { data: { name } };
         },
+
+        listComments: "issues.listComments",
 
         listForRepo: "issues.listForRepo",
 
@@ -938,6 +961,46 @@ async function* listIssuesForRepo(
         }
 
         page.push(issue);
+
+        if (page.length >= per_page) {
+          yield { data: page };
+          page = [];
+        }
+      }
+    }
+  }
+
+  yield { data: page };
+}
+
+async function* listIssueComments(
+  appId: number,
+  installationId: number,
+  options: {
+    owner: string;
+    repo: string;
+    issue_number: number;
+  },
+) {
+  throwIfEndpointError("issues.listComments");
+
+  const per_page = 2;
+  let page: { body: string }[] = [];
+
+  for (const [installation, repos] of installations) {
+    if (installation.app_id !== appId) continue;
+    if (installation.id !== installationId) continue;
+
+    for (const r of repos) {
+      if (r.full_name !== `${options.owner}/${options.repo}`) continue;
+
+      const comments =
+        issueComments[
+          `${options.owner}/${options.repo}/${options.issue_number}`
+        ] ?? [];
+
+      for (const body of comments) {
+        page.push({ body });
 
         if (page.length >= per_page) {
           yield { data: page };

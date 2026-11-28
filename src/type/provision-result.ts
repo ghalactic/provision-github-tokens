@@ -1,4 +1,5 @@
 import { type RequestError } from "@octokit/request-error";
+import type { InstallationRegistration } from "../app-registry.js";
 import type {
   ProvisionAuthResult,
   ProvisionAuthTargetResult,
@@ -14,8 +15,7 @@ export type ProvisionResult =
   | ProvisionNoTokenResult
   | ProvisionNoProvisionerResult
   | ProvisionProvisionedResult
-  | ProvisionRequestErrorResult
-  | ProvisionErrorResult;
+  | ProvisionFailedResult;
 
 export type ProvisionNotAllowedResult = {
   type: "NOT_ALLOWED";
@@ -31,14 +31,27 @@ export type ProvisionNoProvisionerResult = {
 
 export type ProvisionProvisionedResult = {
   type: "PROVISIONED";
+  provisioner: InstallationRegistration;
+  failedAttempts: ProvisionAttempt[];
 };
 
-export type ProvisionRequestErrorResult = {
+export type ProvisionFailedResult = {
+  type: "FAILED";
+  attempts: ProvisionAttempt[];
+};
+
+export type ProvisionAttempt =
+  | ProvisionRequestErrorAttempt
+  | ProvisionErrorAttempt;
+
+export type ProvisionRequestErrorAttempt = {
   type: "REQUEST_ERROR";
+  provisioner: InstallationRegistration;
   error: RequestError;
 };
 
-export type ProvisionErrorResult = {
+export type ProvisionErrorAttempt = {
   type: "ERROR";
+  provisioner: InstallationRegistration;
   error: unknown;
 };

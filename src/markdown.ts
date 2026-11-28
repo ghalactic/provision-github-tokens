@@ -5,6 +5,8 @@ import type {
   Code,
   Definition,
   Emphasis,
+  FootnoteDefinition,
+  FootnoteReference,
   Heading,
   InlineCode,
   LinkReference,
@@ -59,6 +61,26 @@ export function definition(identifier: string, url: string | URL): Definition {
 
 export function emphasis(...children: Emphasis["children"]): Emphasis {
   return { type: "emphasis", children };
+}
+
+export function footnoteDefinition(
+  identifier: string,
+  ...children: FootnoteDefinition["children"]
+): FootnoteDefinition {
+  return {
+    type: "footnoteDefinition",
+    identifier,
+    label: identifier,
+    children,
+  };
+}
+
+export function footnoteReference(identifier: string): FootnoteReference {
+  return {
+    type: "footnoteReference",
+    identifier,
+    label: identifier,
+  };
 }
 
 export function gfmAlert(

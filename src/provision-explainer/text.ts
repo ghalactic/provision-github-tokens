@@ -4,7 +4,7 @@ import {
   accountOrRepoRefToString,
   repoRefToString,
 } from "../github-reference.js";
-import { FAIL_ICON, icon, PASS_ICON } from "../icon.js";
+import { FAIL_ICON, PASS_ICON, WARN_ICON, icon } from "../icon.js";
 import { pluralize } from "../pluralize.js";
 import {
   isRepoProvisionRequestTarget,
@@ -13,6 +13,7 @@ import {
 import { secretTypeText } from "../secret-type.js";
 import { prefixLines } from "../text.js";
 import type {
+  ProvisionAttempt,
   ProvisionResult,
   ProvisionResultExplainer,
 } from "../type/provision-result.js";
@@ -66,8 +67,17 @@ export function createTextProvisionExplainer(): ProvisionResultExplainer<string>
     const visibility = explainVisibility(target, isProvisioned);
 
     switch (result.type) {
-      case "PROVISIONED":
-        return `\n  ${PASS_ICON} Provisioned to ${subject}${visibility}`;
+      case "PROVISIONED": {
+        const failed = renderFailedAttempts(
+          result.failedAttempts,
+          isProvisioned,
+        );
+
+        return (
+          `\n  ${PASS_ICON} Provisioned to ${subject}` +
+          `${failed ? ":" : ""}${visibility}${failed}`
+        );
+      }
 
       case "NOT_ALLOWED":
         return (
@@ -87,31 +97,53 @@ export function createTextProvisionExplainer(): ProvisionResultExplainer<string>
           `for ${subject}${visibility}`
         );
 
-      case "REQUEST_ERROR": {
-        const summary =
-          `${FAIL_ICON} Failed to provision to ${subject}: ` +
-          `${result.error.status} - ${result.error.message}`;
-        const body = result.error.response?.data;
+      case "FAILED":
+        return (
+          `\n  ${FAIL_ICON} Failed to provision to ${subject}:` +
+          `${visibility}${renderFailedAttempts(result.attempts, isProvisioned)}`
+        );
+    }
+  }
 
+  function renderFailedAttempts(
+    attempts: ProvisionAttempt[],
+    isProvisioned: boolean,
+  ): string {
+    if (attempts.length < 1) return "";
+
+    const statusIcon = isProvisioned ? WARN_ICON : FAIL_ICON;
+
+    return (
+      `\n    ${statusIcon} Failed attempts:` +
+      renderAttemptItems(statusIcon, attempts)
+    );
+  }
+
+  function renderAttemptItems(
+    statusIcon: string,
+    attempts: ProvisionAttempt[],
+  ): string {
+    let output = "";
+
+    for (const attempt of attempts) {
+      if (attempt.type === "REQUEST_ERROR") {
+        const body = attempt.error.response?.data;
         const detail =
           typeof body === "undefined"
             ? "(no response data)"
             : JSON.stringify(body, null, 2);
 
-        return (
-          `\n  ${summary}${visibility}` +
-          `\n${prefixLines("::debug::      ", detail)}`
-        );
-      }
-
-      case "ERROR": {
-        return (
-          `\n  ${FAIL_ICON} Failed to provision to ${subject}: ` +
-          `${errorMessage(result.error)}${visibility}` +
-          `\n${prefixLines("::debug::      ", errorStack(result.error))}`
-        );
+        output +=
+          `\n      ${statusIcon} ` +
+          `${attempt.error.status} - ${attempt.error.message}`;
+        output += `\n${prefixLines("::debug::      ", detail)}`;
+      } else {
+        output += `\n      ${statusIcon} ` + errorMessage(attempt.error);
+        output += `\n${prefixLines("::debug::      ", errorStack(attempt.error))}`;
       }
     }
+
+    return output;
   }
 
   function explainSubject(target: ProvisionRequestTarget): string {

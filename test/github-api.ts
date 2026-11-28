@@ -3,6 +3,7 @@ import openapi from "@octokit/openapi";
 import type { components } from "@octokit/openapi-types";
 import { createHash } from "node:crypto";
 import openapiSampler from "openapi-sampler";
+import type { InstallationRegistration } from "../src/app-registry.js";
 import type {
   App,
   Commit,
@@ -138,6 +139,17 @@ export function createTestInstallationToken(
     permissions: permissions,
     repository_selection: repos === "all" ? "all" : "selected",
   };
+}
+
+export function createTestInstallationRegistration(): InstallationRegistration {
+  const [[account]] = createTestInstallationAccounts([
+    "Organization",
+    1,
+    "account-test",
+  ]);
+  const [[, [installation]]] = createTestApps(["App Test", {}, [[account]]]);
+
+  return { installation, repos: [] };
 }
 
 export function createTestInstallationAccounts(

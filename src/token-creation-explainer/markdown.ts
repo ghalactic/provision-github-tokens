@@ -6,7 +6,7 @@ import {
   isRepoRef,
   repoRefToString,
 } from "../github-reference.js";
-import { FAIL_ICON, icon } from "../icon.js";
+import { FAIL_ICON, WARN_ICON, icon } from "../icon.js";
 import {
   code,
   details,
@@ -25,6 +25,7 @@ import { capitalize } from "../text.js";
 import type { PermissionAccess } from "../type/permissions.js";
 import type { TokenAuthResult } from "../type/token-auth-result.js";
 import type {
+  TokenCreationAttempt,
   TokenCreationResult,
   TokenCreationResultExplainer,
 } from "../type/token-creation-result.js";
@@ -94,6 +95,11 @@ export function createMarkdownTokenCreationExplainer(): TokenCreationResultExpla
     nested.children.push(...renderRepoLines(subIcon, verb, repos, account));
     nested.children.push(...renderPermissionLines(subIcon, verb, permEntries));
 
+    const attempts = resultAttempts(result);
+    if (attempts.length > 0) {
+      nested.children.push(renderFailedAttempts(attempts, isSuccess));
+    }
+
     summary.children.push(nested);
 
     return [list(summary)];
@@ -140,6 +146,7 @@ export function createMarkdownTokenCreationExplainer(): TokenCreationResultExpla
   ): ListItem[] {
     switch (result.type) {
       case "CREATED":
+      case "FAILED":
         return [];
 
       case "NOT_ALLOWED": {
@@ -158,17 +165,49 @@ export function createMarkdownTokenCreationExplainer(): TokenCreationResultExpla
 
       case "NO_ISSUER":
         return [listItem(paragraph(text(`${FAIL_ICON} No suitable issuer`)))];
+    }
+  }
 
-      case "REQUEST_ERROR": {
-        const body = result.error.response?.data;
+  function resultAttempts(result: TokenCreationResult): TokenCreationAttempt[] {
+    if (result.type === "CREATED") return result.failedAttempts;
+    if (result.type === "FAILED") return result.attempts;
 
-        return [
+    return [];
+  }
+
+  function renderFailedAttempts(
+    attempts: TokenCreationAttempt[],
+    isSuccess: boolean,
+  ): ListItem {
+    const statusIcon = isSuccess ? WARN_ICON : FAIL_ICON;
+
+    return listItem(
+      paragraph(
+        text(`${statusIcon} `),
+        strong(text("Failed attempts")),
+        text(":"),
+      ),
+      list(...renderAttemptItems(statusIcon, attempts)),
+    );
+  }
+
+  function renderAttemptItems(
+    statusIcon: string,
+    attempts: TokenCreationAttempt[],
+  ): ListItem[] {
+    const items: ListItem[] = [];
+
+    for (const attempt of attempts) {
+      if (attempt.type === "REQUEST_ERROR") {
+        const body = attempt.error.response?.data;
+
+        items.push(
           listItem(
             paragraph(
-              text(`${FAIL_ICON} `),
-              strong(text(String(result.error.status))),
+              text(`${statusIcon} `),
+              strong(text(String(attempt.error.status))),
               text(" - "),
-              emphasis(text(result.error.message)),
+              emphasis(text(attempt.error.message)),
             ),
             ...details(
               "Response body",
@@ -177,17 +216,18 @@ export function createMarkdownTokenCreationExplainer(): TokenCreationResultExpla
                 : code("json", JSON.stringify(body, null, 2)),
             ),
           ),
-        ];
-      }
-
-      case "ERROR":
-        return [
+        );
+      } else {
+        items.push(
           listItem(
-            paragraph(text(`${FAIL_ICON} ${errorMessage(result.error)}`)),
-            ...details("Error stack", code("text", errorStack(result.error))),
+            paragraph(text(`${statusIcon} ${errorMessage(attempt.error)}`)),
+            ...details("Error stack", code("text", errorStack(attempt.error))),
           ),
-        ];
+        );
+      }
     }
+
+    return items;
   }
 
   function renderRepoLines(

@@ -30,6 +30,7 @@ import { createTestRepoRegistry } from "../test/repo-registry.js";
 import {
   createTestProvisionAuthTargetResult,
   createTestTokenAuthResult,
+  createTestTokenCreationCreatedResult,
 } from "../test/result.js";
 import { createEncryptSecret } from "./encrypt-secret.js";
 import { toMarkdown } from "./markdown.js";
@@ -73,7 +74,7 @@ it("handles GitHub API errors when provisioning org-level Codespaces secrets", a
   });
 
   const { findProvisionerOctokit } = createTestOctokitFactory(appRegistry);
-  const encryptSecret = vi.fn(createEncryptSecret(findProvisionerOctokit));
+  const encryptSecret = vi.fn(createEncryptSecret());
   encryptSecret.mockResolvedValue(["XXXX", "XXXX"]);
 
   const provisionSecrets = createProvisioner(
@@ -85,10 +86,9 @@ it("handles GitHub API errors when provisioning org-level Codespaces secrets", a
   const tokenResults = new Map([
     [
       tokenAuthResult,
-      {
-        type: "CREATED" as const,
+      createTestTokenCreationCreatedResult({
         token: { token: "<token-a>", expires_at: "2001-02-03T04:05:06Z" },
-      },
+      }),
     ],
   ]);
 
@@ -124,12 +124,15 @@ it("handles GitHub API errors when provisioning org-level Codespaces secrets", a
   const toMdast = createMarkdownProvisionExplainer();
 
   expect(__getOutput()).toMatchInlineSnapshot(`
-    "
+    "::debug::Trying provisioner app 947161494 installation 2133206579
+
     Secret #1:
 
     ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
-      ❌ Failed to provision to GitHub Codespaces secret in account-a: 401 - Unauthorized
+      ❌ Failed to provision to GitHub Codespaces secret in account-a:
         ❌ Would've been readable by private repos
+        ❌ Failed attempts:
+          ❌ 401 - Unauthorized
     ::debug::      (no response data)
 
     "
@@ -167,7 +170,7 @@ it("handles unexpected errors when provisioning org-level Codespaces secrets", a
   });
 
   const { findProvisionerOctokit } = createTestOctokitFactory(appRegistry);
-  const encryptSecret = vi.fn(createEncryptSecret(findProvisionerOctokit));
+  const encryptSecret = vi.fn(createEncryptSecret());
 
   const provisionSecrets = createProvisioner(
     findProvisionerOctokit,
@@ -178,10 +181,9 @@ it("handles unexpected errors when provisioning org-level Codespaces secrets", a
   const tokenResults = new Map([
     [
       tokenAuthResult,
-      {
-        type: "CREATED" as const,
+      createTestTokenCreationCreatedResult({
         token: { token: "<token-a>", expires_at: "2001-02-03T04:05:06Z" },
-      },
+      }),
     ],
   ]);
 
@@ -217,12 +219,15 @@ it("handles unexpected errors when provisioning org-level Codespaces secrets", a
   const toMdast = createMarkdownProvisionExplainer();
 
   expect(__getOutput()).toMatchInlineSnapshot(`
-    "
+    "::debug::Trying provisioner app 947161494 installation 2133206579
+
     Secret #1:
 
     ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
-      ❌ Failed to provision to GitHub Codespaces secret in account-a: <message>
+      ❌ Failed to provision to GitHub Codespaces secret in account-a:
         ❌ Would've been readable by private repos
+        ❌ Failed attempts:
+          ❌ <message>
     ::debug::      Error: <message>
     ::debug::          at provisioner.ts:1:1
 
@@ -257,7 +262,7 @@ it("can provision org-level Codespaces secrets", async () => {
   });
 
   const { findProvisionerOctokit } = createTestOctokitFactory(appRegistry);
-  const encryptSecret = vi.fn(createEncryptSecret(findProvisionerOctokit));
+  const encryptSecret = vi.fn(createEncryptSecret());
 
   const provisionSecrets = createProvisioner(
     findProvisionerOctokit,
@@ -268,10 +273,9 @@ it("can provision org-level Codespaces secrets", async () => {
   const tokenResults = new Map([
     [
       tokenAuthResult,
-      {
-        type: "CREATED" as const,
+      createTestTokenCreationCreatedResult({
         token: { token: "<token-a>", expires_at: "2001-02-03T04:05:06Z" },
-      },
+      }),
     ],
   ]);
 
@@ -313,7 +317,8 @@ it("can provision org-level Codespaces secrets", async () => {
     dependabot: {},
   });
   expect(__getOutput()).toMatchInlineSnapshot(`
-    "
+    "::debug::Trying provisioner app 947161494 installation 2133206579
+
     Secret #1:
 
     ✅ Secret SECRET_A was provisioned for repo account-a/repo-a:
@@ -355,7 +360,7 @@ it("handles GitHub API errors when provisioning repo-level Codespaces secrets", 
   });
 
   const { findProvisionerOctokit } = createTestOctokitFactory(appRegistry);
-  const encryptSecret = vi.fn(createEncryptSecret(findProvisionerOctokit));
+  const encryptSecret = vi.fn(createEncryptSecret());
   encryptSecret.mockResolvedValue(["XXXX", "XXXX"]);
 
   const provisionSecrets = createProvisioner(
@@ -367,10 +372,9 @@ it("handles GitHub API errors when provisioning repo-level Codespaces secrets", 
   const tokenResults = new Map([
     [
       tokenAuthResult,
-      {
-        type: "CREATED" as const,
+      createTestTokenCreationCreatedResult({
         token: { token: "<token-a>", expires_at: "2001-02-03T04:05:06Z" },
-      },
+      }),
     ],
   ]);
 
@@ -408,11 +412,14 @@ it("handles GitHub API errors when provisioning repo-level Codespaces secrets", 
   const toMdast = createMarkdownProvisionExplainer();
 
   expect(__getOutput()).toMatchInlineSnapshot(`
-    "
+    "::debug::Trying provisioner app 947161494 installation 2133206579
+
     Secret #1:
 
     ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
-      ❌ Failed to provision to GitHub Codespaces secret in account-a/repo-a: 401 - Unauthorized
+      ❌ Failed to provision to GitHub Codespaces secret in account-a/repo-a:
+        ❌ Failed attempts:
+          ❌ 401 - Unauthorized
     ::debug::      (no response data)
 
     "
@@ -454,7 +461,7 @@ it("handles unexpected errors when provisioning repo-level Codespaces secrets", 
   });
 
   const { findProvisionerOctokit } = createTestOctokitFactory(appRegistry);
-  const encryptSecret = vi.fn(createEncryptSecret(findProvisionerOctokit));
+  const encryptSecret = vi.fn(createEncryptSecret());
 
   const provisionSecrets = createProvisioner(
     findProvisionerOctokit,
@@ -465,10 +472,9 @@ it("handles unexpected errors when provisioning repo-level Codespaces secrets", 
   const tokenResults = new Map([
     [
       tokenAuthResult,
-      {
-        type: "CREATED" as const,
+      createTestTokenCreationCreatedResult({
         token: { token: "<token-a>", expires_at: "2001-02-03T04:05:06Z" },
-      },
+      }),
     ],
   ]);
 
@@ -506,11 +512,14 @@ it("handles unexpected errors when provisioning repo-level Codespaces secrets", 
   const toMdast = createMarkdownProvisionExplainer();
 
   expect(__getOutput()).toMatchInlineSnapshot(`
-    "
+    "::debug::Trying provisioner app 947161494 installation 2133206579
+
     Secret #1:
 
     ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
-      ❌ Failed to provision to GitHub Codespaces secret in account-a/repo-a: <message>
+      ❌ Failed to provision to GitHub Codespaces secret in account-a/repo-a:
+        ❌ Failed attempts:
+          ❌ <message>
     ::debug::      Error: <message>
     ::debug::          at provisioner.ts:1:1
 
@@ -549,7 +558,7 @@ it("can provision repo-level Codespaces secrets", async () => {
   });
 
   const { findProvisionerOctokit } = createTestOctokitFactory(appRegistry);
-  const encryptSecret = vi.fn(createEncryptSecret(findProvisionerOctokit));
+  const encryptSecret = vi.fn(createEncryptSecret());
 
   const provisionSecrets = createProvisioner(
     findProvisionerOctokit,
@@ -560,10 +569,9 @@ it("can provision repo-level Codespaces secrets", async () => {
   const tokenResults = new Map([
     [
       tokenAuthResult,
-      {
-        type: "CREATED" as const,
+      createTestTokenCreationCreatedResult({
         token: { token: "<token-a>", expires_at: "2001-02-03T04:05:06Z" },
-      },
+      }),
     ],
   ]);
 
@@ -607,7 +615,8 @@ it("can provision repo-level Codespaces secrets", async () => {
     dependabot: {},
   });
   expect(__getOutput()).toMatchInlineSnapshot(`
-    "
+    "::debug::Trying provisioner app 947161494 installation 2133206579
+
     Secret #1:
 
     ✅ Secret SECRET_A was provisioned for repo account-a/repo-a:

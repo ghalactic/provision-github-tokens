@@ -21,18 +21,19 @@
     - ✅ Readable by **private repos**
   - ❌ **Failed** to provision to **GitHub Actions** secret in `account-b`:
     - ❌ Would've been readable by **private repos**
-    - ❌ **500** - _boom_
-      <details>
-      <summary>Response body</summary>
+    - ❌ **Failed attempts**:
+      - ❌ **500** - _boom_
+        <details>
+        <summary>Response body</summary>
 
-      ```json
-      {
-        "message": "boom",
-        "documentation_url": "https://docs.example.com/"
-      }
-      ```
+        ```json
+        {
+          "message": "boom",
+          "documentation_url": "https://docs.example.com/"
+        }
+        ```
 
-      </details>
+        </details>
 
 ## Token creation
 

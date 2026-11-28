@@ -1,4 +1,4 @@
-import { info, warning } from "@actions/core";
+import { debug, info, warning } from "@actions/core";
 import { RequestError } from "@octokit/request-error";
 import type { EncryptSecret } from "./encrypt-secret.js";
 import { createAgentsOctokit } from "./octokit-agents.js";
@@ -11,12 +11,19 @@ import {
   type AccountSecretVisibility,
   type ProvisionRequestTarget,
 } from "./provision-request.js";
-import type { FindProvisionerOctokit } from "./provisioner-octokit.js";
+import {
+  type FindProvisionerOctokit,
+  type ProvisionerCandidate,
+} from "./provisioner-octokit.js";
+import { tryEach, type TryEachFailedAttempt } from "./try-each.js";
 import type {
   ProvisionAuthResult,
   ProvisionAuthTargetResult,
 } from "./type/provision-auth-result.js";
-import type { ProvisionResult } from "./type/provision-result.js";
+import type {
+  ProvisionAttempt,
+  ProvisionResult,
+} from "./type/provision-result.js";
 import type { TokenAuthResult } from "./type/token-auth-result.js";
 import type {
   TokenCreationCreatedResult,
@@ -125,44 +132,45 @@ export function createProvisioner(
     name: string,
     requestTarget: ProvisionRequestTarget,
   ): Promise<ProvisionResult> {
-    const found = findProvisionerOctokit(requestTarget.target);
-    if (!found) return { type: "NO_PROVISIONER" };
+    const candidates = findProvisionerOctokit(requestTarget.target);
 
-    const [octokit] = found;
+    if (candidates.length < 1) return { type: "NO_PROVISIONER" };
 
-    let encrypted: string;
-    let keyId: string;
+    const result = await tryEach(
+      async (candidate) => {
+        const { installation } = candidate.provisioner;
+        debug(
+          `Trying provisioner app ${installation.app_id} ` +
+            `installation ${installation.id}`,
+        );
 
-    try {
-      [encrypted, keyId] = await encryptSecret(
-        requestTarget,
-        tokenResult.token.token,
-      );
-    } catch (error) {
-      if (error instanceof RequestError) {
-        return { type: "REQUEST_ERROR", error };
-      }
+        const [encrypted, keyId] = await encryptSecret(
+          candidate.octokit,
+          requestTarget,
+          tokenResult.token.token,
+        );
 
-      return { type: "ERROR", error };
-    }
+        await createOrUpdateSecret(
+          candidate.octokit,
+          encrypted,
+          keyId,
+          name,
+          requestTarget,
+        );
+      },
+      () => true,
+      candidates,
+    );
 
-    try {
-      await createOrUpdateSecret(
-        octokit,
-        encrypted,
-        keyId,
-        name,
-        requestTarget,
-      );
+    const attempts = toProvisionAttempts(result.failures);
 
-      return { type: "PROVISIONED" };
-    } catch (error) {
-      if (error instanceof RequestError) {
-        return { type: "REQUEST_ERROR", error };
-      }
+    if (result.type === "FAILED") return { type: "FAILED", attempts };
 
-      return { type: "ERROR", error };
-    }
+    return {
+      type: "PROVISIONED",
+      provisioner: result.candidate.provisioner,
+      failedAttempts: attempts,
+    };
   }
 
   async function createOrUpdateSecret(
@@ -298,4 +306,20 @@ export function createProvisioner(
       selected_repository_ids: visibility.repos.map(({ id }) => id),
     };
   }
+}
+
+function toProvisionAttempts(
+  failures: readonly TryEachFailedAttempt<ProvisionerCandidate>[],
+): ProvisionAttempt[] {
+  const attempts: ProvisionAttempt[] = [];
+
+  for (const { candidate, error } of failures) {
+    attempts.push(
+      error instanceof RequestError
+        ? { type: "REQUEST_ERROR", provisioner: candidate.provisioner, error }
+        : { type: "ERROR", provisioner: candidate.provisioner, error },
+    );
+  }
+
+  return attempts;
 }

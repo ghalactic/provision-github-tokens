@@ -1,7 +1,9 @@
-import { debug } from "@actions/core";
+import { debug, warning } from "@actions/core";
+import { errorMessage } from "./error.js";
 import { repoRefToString, type RepoReference } from "./github-reference.js";
 import { anyPatternMatches, type Pattern } from "./pattern.js";
 import type { FindProvisionerOctokit } from "./provisioner-octokit.js";
+import { tryEach } from "./try-each.js";
 import type { Environment } from "./type/github-api.js";
 
 export type EnvironmentResolver = {
@@ -39,26 +41,56 @@ export function createEnvironmentResolver(
     if (envsByRepo[repoName]) return envsByRepo[repoName];
 
     const found = findProvisionerOctokit(repo);
-    if (!found) {
+    if (found.length < 1) {
       throw new Error(`No provisioners found for repo ${repoName}`);
     }
-    const [octokit] = found;
 
-    const envPages = octokit.paginate.iterator(
-      octokit.rest.repos.getAllEnvironments,
-      { owner: repo.account, repo: repo.repo },
+    const result = await tryEach(
+      async (candidate) => {
+        const envPages = candidate.octokit.paginate.iterator(
+          candidate.octokit.rest.repos.getAllEnvironments,
+          { owner: repo.account, repo: repo.repo },
+        );
+
+        const names: string[] = [];
+
+        for await (const { data: envs } of envPages) {
+          // Octokit normalizes list responses to arrays at runtime.
+          // eslint-disable-next-line typescript/no-unsafe-type-assertion
+          for (const env of envs as Environment[]) names.push(env.name);
+        }
+
+        return names;
+      },
+      (failure) => {
+        const { installation } = failure.candidate.provisioner;
+        debug(
+          `Provisioner app ${installation.app_id} ` +
+            `installation ${installation.id} couldn't list environments ` +
+            `for ${repoName}: ${errorMessage(failure.error)}`,
+        );
+        warning(
+          `Provisioner couldn't list environments for ${repoName}: ` +
+            errorMessage(failure.error),
+        );
+
+        return true;
+      },
+      found,
     );
 
-    const names: string[] = [];
+    if (result.type === "FAILED") {
+      const errors: unknown[] = [];
+      for (const failure of result.failures) errors.push(failure.error);
 
-    for await (const { data: envs } of envPages) {
-      // Octokit normalizes list responses to arrays at runtime.
-      // eslint-disable-next-line typescript/no-unsafe-type-assertion
-      for (const env of envs as Environment[]) names.push(env.name);
+      throw new AggregateError(
+        errors,
+        `No provisioner could list environments for repo ${repoName}`,
+      );
     }
 
-    debug(`Repo ${repoName} has environments ${JSON.stringify(names)}`);
+    debug(`Repo ${repoName} has environments ${JSON.stringify(result.value)}`);
 
-    return (envsByRepo[repoName] = names);
+    return (envsByRepo[repoName] = result.value);
   }
 }

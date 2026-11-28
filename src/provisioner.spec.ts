@@ -23,6 +23,7 @@ import {
 import {
   createTestApps,
   createTestInstallationAccounts,
+  createTestInstallationRegistration,
 } from "../test/github-api.js";
 import { createTestKeyPair } from "../test/key.js";
 import { createTestOctokitFactory } from "../test/octokit-factory.js";
@@ -36,12 +37,16 @@ import { createTestRepoRegistry } from "../test/repo-registry.js";
 import {
   createTestProvisionAuthTargetResult,
   createTestTokenAuthResult,
+  createTestTokenCreationCreatedResult,
+  createTestTokenCreationFailedResult,
 } from "../test/result.js";
 import { createEncryptSecret } from "./encrypt-secret.js";
 import { toMarkdown } from "./markdown.js";
 import { createMarkdownProvisionExplainer } from "./provision-explainer/markdown.js";
 import type { AccountSecretSelectedRepos } from "./provision-request.js";
 import { createProvisioner } from "./provisioner.js";
+import type { TokenAuthResult } from "./type/token-auth-result.js";
+import type { TokenCreationResult } from "./type/token-creation-result.js";
 
 vi.mock("@actions/core");
 vi.mock("@octokit/action");
@@ -77,7 +82,7 @@ it("handles secrets with no targets to provision to", async () => {
   });
 
   const { findProvisionerOctokit } = createTestOctokitFactory(appRegistry);
-  const encryptSecret = vi.fn(createEncryptSecret(findProvisionerOctokit));
+  const encryptSecret = vi.fn(createEncryptSecret());
 
   const provisionSecrets = createProvisioner(
     findProvisionerOctokit,
@@ -88,10 +93,9 @@ it("handles secrets with no targets to provision to", async () => {
   const tokenResults = new Map([
     [
       tokenAuthResult,
-      {
-        type: "CREATED" as const,
+      createTestTokenCreationCreatedResult({
         token: { token: "<token-a>", expires_at: "2001-02-03T04:05:06Z" },
-      },
+      }),
     ],
   ]);
 
@@ -149,7 +153,7 @@ it("doesn't provision secrets when provisioning isn't allowed", async () => {
   });
 
   const { findProvisionerOctokit } = createTestOctokitFactory(appRegistry);
-  const encryptSecret = vi.fn(createEncryptSecret(findProvisionerOctokit));
+  const encryptSecret = vi.fn(createEncryptSecret());
 
   const provisionSecrets = createProvisioner(
     findProvisionerOctokit,
@@ -160,10 +164,9 @@ it("doesn't provision secrets when provisioning isn't allowed", async () => {
   const tokenResults = new Map([
     [
       tokenAuthResult,
-      {
-        type: "CREATED" as const,
+      createTestTokenCreationCreatedResult({
         token: { token: "<token-a>", expires_at: "2001-02-03T04:05:06Z" },
-      },
+      }),
     ],
   ]);
 
@@ -241,7 +244,7 @@ it("doesn't provision secrets when the token wasn't created", async () => {
   });
 
   const { findProvisionerOctokit } = createTestOctokitFactory(appRegistry);
-  const encryptSecret = vi.fn(createEncryptSecret(findProvisionerOctokit));
+  const encryptSecret = vi.fn(createEncryptSecret());
 
   const provisionSecrets = createProvisioner(
     findProvisionerOctokit,
@@ -270,18 +273,27 @@ it("doesn't provision secrets when the token wasn't created", async () => {
       consumer: { account: "consumer-error" },
     },
   };
-  const tokenResults = new Map([
-    [tokenAuthResultNotAllowed, { type: "NOT_ALLOWED" as const }],
+  const tokenResults = new Map<TokenAuthResult, TokenCreationResult>([
+    [tokenAuthResultNotAllowed, { type: "NOT_ALLOWED" }],
     [
       tokenAuthResultRequestError,
-      {
-        type: "REQUEST_ERROR" as const,
-        error: new TestRequestError(500),
-      },
+      createTestTokenCreationFailedResult([
+        {
+          type: "REQUEST_ERROR",
+          issuer: createTestInstallationRegistration(),
+          error: new TestRequestError(500),
+        },
+      ]),
     ],
     [
       tokenAuthResultError,
-      { type: "ERROR" as const, error: new Error("boom") },
+      createTestTokenCreationFailedResult([
+        {
+          type: "ERROR",
+          issuer: createTestInstallationRegistration(),
+          error: new Error("boom"),
+        },
+      ]),
     ],
   ]);
 
@@ -392,7 +404,7 @@ it("doesn't provision secrets when no suitable provisioners are found", async ()
   });
 
   const { findProvisionerOctokit } = createTestOctokitFactory(appRegistry);
-  const encryptSecret = vi.fn(createEncryptSecret(findProvisionerOctokit));
+  const encryptSecret = vi.fn(createEncryptSecret());
 
   const provisionSecrets = createProvisioner(
     findProvisionerOctokit,
@@ -403,10 +415,9 @@ it("doesn't provision secrets when no suitable provisioners are found", async ()
   const tokenResults = new Map([
     [
       tokenAuthResult,
-      {
-        type: "CREATED" as const,
+      createTestTokenCreationCreatedResult({
         token: { token: "<token-a>", expires_at: "2001-02-03T04:05:06Z" },
-      },
+      }),
     ],
   ]);
 
@@ -483,7 +494,7 @@ it("doesn't provision secrets when target provisioning fails with a GitHub API e
   });
 
   const { findProvisionerOctokit } = createTestOctokitFactory(appRegistry);
-  const encryptSecret = vi.fn(createEncryptSecret(findProvisionerOctokit));
+  const encryptSecret = vi.fn(createEncryptSecret());
   encryptSecret.mockResolvedValue(["XXXX", "XXXX"]);
 
   const provisionSecrets = createProvisioner(
@@ -495,10 +506,9 @@ it("doesn't provision secrets when target provisioning fails with a GitHub API e
   const tokenResults = new Map([
     [
       tokenAuthResult,
-      {
-        type: "CREATED" as const,
+      createTestTokenCreationCreatedResult({
         token: { token: "<token-a>", expires_at: "2001-02-03T04:05:06Z" },
-      },
+      }),
     ],
   ]);
 
@@ -527,12 +537,15 @@ it("doesn't provision secrets when target provisioning fails with a GitHub API e
   const toMdast = createMarkdownProvisionExplainer();
 
   expect(__getOutput()).toMatchInlineSnapshot(`
-    "
+    "::debug::Trying provisioner app 947161494 installation 2133206579
+
     Secret #1:
 
     ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
-      ❌ Failed to provision to GitHub Actions secret in account-a: 403 - Forbidden
+      ❌ Failed to provision to GitHub Actions secret in account-a:
         ❌ Would've been readable by private repos
+        ❌ Failed attempts:
+          ❌ 403 - Forbidden
     ::debug::      {
     ::debug::        "message": "Resource not accessible"
     ::debug::      }
@@ -572,7 +585,7 @@ it("doesn't provision secrets when target provisioning fails with an unexpected 
   });
 
   const { findProvisionerOctokit } = createTestOctokitFactory(appRegistry);
-  const encryptSecret = vi.fn(createEncryptSecret(findProvisionerOctokit));
+  const encryptSecret = vi.fn(createEncryptSecret());
 
   const provisionSecrets = createProvisioner(
     findProvisionerOctokit,
@@ -583,10 +596,9 @@ it("doesn't provision secrets when target provisioning fails with an unexpected 
   const tokenResults = new Map([
     [
       tokenAuthResult,
-      {
-        type: "CREATED" as const,
+      createTestTokenCreationCreatedResult({
         token: { token: "<token-a>", expires_at: "2001-02-03T04:05:06Z" },
-      },
+      }),
     ],
   ]);
 
@@ -615,12 +627,15 @@ it("doesn't provision secrets when target provisioning fails with an unexpected 
   const toMdast = createMarkdownProvisionExplainer();
 
   expect(__getOutput()).toMatchInlineSnapshot(`
-    "
+    "::debug::Trying provisioner app 947161494 installation 2133206579
+
     Secret #1:
 
     ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
-      ❌ Failed to provision to GitHub Actions secret in account-a: <message>
+      ❌ Failed to provision to GitHub Actions secret in account-a:
         ❌ Would've been readable by private repos
+        ❌ Failed attempts:
+          ❌ <message>
     ::debug::      Error: <message>
     ::debug::          at provisioner.ts:1:1
 
@@ -654,7 +669,7 @@ it("doesn't provision secrets when encryption fails with a GitHub API error", as
   });
 
   const { findProvisionerOctokit } = createTestOctokitFactory(appRegistry);
-  const encryptSecret = vi.fn(createEncryptSecret(findProvisionerOctokit));
+  const encryptSecret = vi.fn(createEncryptSecret());
 
   const provisionSecrets = createProvisioner(
     findProvisionerOctokit,
@@ -665,10 +680,9 @@ it("doesn't provision secrets when encryption fails with a GitHub API error", as
   const tokenResults = new Map([
     [
       tokenAuthResult,
-      {
-        type: "CREATED" as const,
+      createTestTokenCreationCreatedResult({
         token: { token: "<token-a>", expires_at: "2001-02-03T04:05:06Z" },
-      },
+      }),
     ],
   ]);
 
@@ -697,12 +711,15 @@ it("doesn't provision secrets when encryption fails with a GitHub API error", as
   const toMdast = createMarkdownProvisionExplainer();
 
   expect(__getOutput()).toMatchInlineSnapshot(`
-    "
+    "::debug::Trying provisioner app 947161494 installation 2133206579
+
     Secret #1:
 
     ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
-      ❌ Failed to provision to GitHub Actions secret in account-a: 401 - Unauthorized
+      ❌ Failed to provision to GitHub Actions secret in account-a:
         ❌ Would've been readable by private repos
+        ❌ Failed attempts:
+          ❌ 401 - Unauthorized
     ::debug::      (no response data)
 
     "
@@ -740,7 +757,7 @@ it("doesn't provision secrets when encryption fails with an unexpected error", a
   });
 
   const { findProvisionerOctokit } = createTestOctokitFactory(appRegistry);
-  const encryptSecret = vi.fn(createEncryptSecret(findProvisionerOctokit));
+  const encryptSecret = vi.fn(createEncryptSecret());
 
   const provisionSecrets = createProvisioner(
     findProvisionerOctokit,
@@ -751,10 +768,9 @@ it("doesn't provision secrets when encryption fails with an unexpected error", a
   const tokenResults = new Map([
     [
       tokenAuthResult,
-      {
-        type: "CREATED" as const,
+      createTestTokenCreationCreatedResult({
         token: { token: "<token-a>", expires_at: "2001-02-03T04:05:06Z" },
-      },
+      }),
     ],
   ]);
 
@@ -783,12 +799,15 @@ it("doesn't provision secrets when encryption fails with an unexpected error", a
   const toMdast = createMarkdownProvisionExplainer();
 
   expect(__getOutput()).toMatchInlineSnapshot(`
-    "
+    "::debug::Trying provisioner app 947161494 installation 2133206579
+
     Secret #1:
 
     ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
-      ❌ Failed to provision to GitHub Actions secret in account-a: <message>
+      ❌ Failed to provision to GitHub Actions secret in account-a:
         ❌ Would've been readable by private repos
+        ❌ Failed attempts:
+          ❌ <message>
     ::debug::      Error: <message>
     ::debug::          at encrypt.ts:1:1
 
@@ -833,7 +852,7 @@ it("can provision multiple secrets of the same type", async () => {
   });
 
   const { findProvisionerOctokit } = createTestOctokitFactory(appRegistry);
-  const encryptSecret = vi.fn(createEncryptSecret(findProvisionerOctokit));
+  const encryptSecret = vi.fn(createEncryptSecret());
 
   const provisionSecrets = createProvisioner(
     findProvisionerOctokit,
@@ -845,17 +864,15 @@ it("can provision multiple secrets of the same type", async () => {
   const tokenResults = new Map([
     [
       tokenAuthResultA,
-      {
-        type: "CREATED" as const,
+      createTestTokenCreationCreatedResult({
         token: { token: "<token-a>", expires_at: "2001-02-03T04:05:06Z" },
-      },
+      }),
     ],
     [
       tokenAuthResultB,
-      {
-        type: "CREATED" as const,
+      createTestTokenCreationCreatedResult({
         token: { token: "<token-b>", expires_at: "2001-02-03T04:05:06Z" },
-      },
+      }),
     ],
   ]);
 
@@ -990,7 +1007,13 @@ it("can provision multiple secrets of the same type", async () => {
   const toMdast = createMarkdownProvisionExplainer();
 
   expect(__getOutput()).toMatchInlineSnapshot(`
-    "
+    "::debug::Trying provisioner app 947161494 installation 2133206579
+    ::debug::Trying provisioner app 947161494 installation 2133206579
+    ::debug::Trying provisioner app 947161494 installation 2133206579
+    ::debug::Trying provisioner app 947161494 installation 2133206579
+    ::debug::Trying provisioner app 947161494 installation 2133206579
+    ::debug::Trying provisioner app 947161494 installation 2133206579
+
     Secret #1:
 
     ✅ Secret SECRET_A was provisioned for repo account-a/repo-a:
@@ -1084,7 +1107,7 @@ it("can provision a secret to multiple targets", async () => {
   });
 
   const { findProvisionerOctokit } = createTestOctokitFactory(appRegistry);
-  const encryptSecret = vi.fn(createEncryptSecret(findProvisionerOctokit));
+  const encryptSecret = vi.fn(createEncryptSecret());
 
   const provisionSecrets = createProvisioner(
     findProvisionerOctokit,
@@ -1095,10 +1118,9 @@ it("can provision a secret to multiple targets", async () => {
   const tokenResults = new Map([
     [
       tokenAuthResult,
-      {
-        type: "CREATED" as const,
+      createTestTokenCreationCreatedResult({
         token: { token: "<token-a>", expires_at: "2001-02-03T04:05:06Z" },
-      },
+      }),
     ],
   ]);
 
@@ -1236,7 +1258,14 @@ it("can provision a secret to multiple targets", async () => {
   const toMdast = createMarkdownProvisionExplainer();
 
   expect(__getOutput()).toMatchInlineSnapshot(`
-    "
+    "::debug::Trying provisioner app 947161494 installation 2133206579
+    ::debug::Trying provisioner app 947161494 installation 2133206579
+    ::debug::Trying provisioner app 947161494 installation 2133206579
+    ::debug::Trying provisioner app 947161494 installation 2133206579
+    ::debug::Trying provisioner app 947161494 installation 2133206579
+    ::debug::Trying provisioner app 947161494 installation 2133206579
+    ::debug::Trying provisioner app 947161494 installation 2133206579
+
     Secret #1:
 
     ✅ Secret SECRET_A was provisioned for repo account-a/repo-a:
@@ -1300,7 +1329,7 @@ it("renders the visibility of provisioned account secrets", async () => {
   });
 
   const { findProvisionerOctokit } = createTestOctokitFactory(appRegistry);
-  const encryptSecret = vi.fn(createEncryptSecret(findProvisionerOctokit));
+  const encryptSecret = vi.fn(createEncryptSecret());
   const provisionSecrets = createProvisioner(
     findProvisionerOctokit,
     encryptSecret,
@@ -1310,10 +1339,9 @@ it("renders the visibility of provisioned account secrets", async () => {
   const tokenResults = new Map([
     [
       tokenAuthResult,
-      {
-        type: "CREATED" as const,
+      createTestTokenCreationCreatedResult({
         token: { token: "<token-a>", expires_at: "2001-02-03T04:05:06Z" },
-      },
+      }),
     ],
   ]);
 
@@ -1365,7 +1393,11 @@ it("renders the visibility of provisioned account secrets", async () => {
   const toMdast = createMarkdownProvisionExplainer();
 
   expect(__getOutput()).toMatchInlineSnapshot(`
-    "
+    "::debug::Trying provisioner app 947161494 installation 2133206579
+    ::debug::Trying provisioner app 947161494 installation 2133206579
+    ::debug::Trying provisioner app 947161494 installation 2133206579
+    ::debug::Trying provisioner app 947161494 installation 2133206579
+
     Secret #1:
 
     ✅ Secret SECRET_A was provisioned for repo account-a/repo-a:
@@ -1413,7 +1445,7 @@ it("renders the visibility of a failed account secret", async () => {
   });
 
   const { findProvisionerOctokit } = createTestOctokitFactory(appRegistry);
-  const encryptSecret = vi.fn(createEncryptSecret(findProvisionerOctokit));
+  const encryptSecret = vi.fn(createEncryptSecret());
   const provisionSecrets = createProvisioner(
     findProvisionerOctokit,
     encryptSecret,
@@ -1423,10 +1455,9 @@ it("renders the visibility of a failed account secret", async () => {
   const tokenResults = new Map([
     [
       tokenAuthResult,
-      {
-        type: "CREATED" as const,
+      createTestTokenCreationCreatedResult({
         token: { token: "<token-a>", expires_at: "2001-02-03T04:05:06Z" },
-      },
+      }),
     ],
   ]);
 
@@ -1465,14 +1496,17 @@ it("renders the visibility of a failed account secret", async () => {
   const toMdast = createMarkdownProvisionExplainer();
 
   expect(__getOutput()).toMatchInlineSnapshot(`
-    "
+    "::debug::Trying provisioner app 947161494 installation 2133206579
+
     Secret #1:
 
     ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
-      ❌ Failed to provision to GitHub Actions secret in account-a: 403 - Forbidden
+      ❌ Failed to provision to GitHub Actions secret in account-a:
         ❌ Would've been readable by 2 repos:
           ❌ repo-a
           ❌ repo-b
+        ❌ Failed attempts:
+          ❌ 403 - Forbidden
     ::debug::      {
     ::debug::        "message": "Resource not accessible"
     ::debug::      }
@@ -1508,7 +1542,7 @@ it("doesn't stop provisioning when some targets fail", async () => {
   });
 
   const { findProvisionerOctokit } = createTestOctokitFactory(appRegistry);
-  const encryptSecret = vi.fn(createEncryptSecret(findProvisionerOctokit));
+  const encryptSecret = vi.fn(createEncryptSecret());
 
   const provisionSecrets = createProvisioner(
     findProvisionerOctokit,
@@ -1517,15 +1551,14 @@ it("doesn't stop provisioning when some targets fail", async () => {
 
   const tokenAuthResultA = createTestTokenAuthResult();
   const tokenAuthResultB = createTestTokenAuthResult();
-  const tokenResults = new Map([
+  const tokenResults = new Map<TokenAuthResult, TokenCreationResult>([
     [
       tokenAuthResultA,
-      {
-        type: "CREATED" as const,
+      createTestTokenCreationCreatedResult({
         token: { token: "<token-a>", expires_at: "2001-02-03T04:05:06Z" },
-      },
+      }),
     ],
-    [tokenAuthResultB, { type: "NO_ISSUER" as const }],
+    [tokenAuthResultB, { type: "NO_ISSUER" }],
   ]);
 
   const [[resultA, targetResultsA], [resultB, targetResultsB]] =
@@ -1590,7 +1623,8 @@ it("doesn't stop provisioning when some targets fail", async () => {
   const toMdast = createMarkdownProvisionExplainer();
 
   expect(__getOutput()).toMatchInlineSnapshot(`
-    "
+    "::debug::Trying provisioner app 947161494 installation 2133206579
+
     Secret #1:
 
     ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
@@ -1640,7 +1674,7 @@ it("provisions identical declarations once", async () => {
   });
 
   const { findProvisionerOctokit } = createTestOctokitFactory(appRegistry);
-  const encryptSecret = vi.fn(createEncryptSecret(findProvisionerOctokit));
+  const encryptSecret = vi.fn(createEncryptSecret());
 
   const provisionSecrets = createProvisioner(
     findProvisionerOctokit,
@@ -1649,145 +1683,9 @@ it("provisions identical declarations once", async () => {
 
   const tokenAuthResultA = createTestTokenAuthResult();
   const tokenAuthResultB = createTestTokenAuthResult();
-  const created = {
-    type: "CREATED" as const,
+  const created = createTestTokenCreationCreatedResult({
     token: { token: "<token-a>", expires_at: "2001-02-03T04:05:06Z" },
-  };
-  const tokenResults = new Map([
-    [tokenAuthResultA, created],
-    [tokenAuthResultB, created],
-  ]);
-
-  const [[, targetResultsA], [, targetResultsB]] = await provisionSecrets(
-    tokenResults,
-    [
-      {
-        request: createTestProvisionRequest({
-          secretDec: createTestSecretDec({
-            github: { accounts: { "account-a": { actions: "private" } } },
-          }),
-          to: [
-            createTestAccountProvisionRequestTarget(
-              "actions",
-              "account-a",
-              "private",
-            ),
-          ],
-        }),
-        results: [
-          createTestProvisionAuthTargetResult({
-            target: createTestAccountProvisionRequestTarget(
-              "actions",
-              "account-a",
-              "private",
-            ),
-            tokenAuthResult: tokenAuthResultA,
-          }),
-        ],
-        isMissingTargets: false,
-        isAllowed: true,
-      },
-      {
-        request: createTestProvisionRequest({
-          requester: { account: "account-a", repo: "repo-b" },
-          secretDec: createTestSecretDec({
-            github: { accounts: { "account-a": { actions: "private" } } },
-          }),
-          to: [
-            createTestAccountProvisionRequestTarget(
-              "actions",
-              "account-a",
-              "private",
-            ),
-          ],
-        }),
-        results: [
-          createTestProvisionAuthTargetResult({
-            target: createTestAccountProvisionRequestTarget(
-              "actions",
-              "account-a",
-              "private",
-            ),
-            tokenAuthResult: tokenAuthResultB,
-          }),
-        ],
-        isMissingTargets: false,
-        isAllowed: true,
-      },
-    ],
-  );
-
-  const [targetResultA] = targetResultsA.values();
-  const [targetResultB] = targetResultsB.values();
-
-  expect(encryptSecret).toHaveBeenCalledTimes(1);
-  expect(targetResultA).toBe(targetResultB);
-  expect(targetResultA).toEqual({ type: "PROVISIONED" });
-  expect(__getOrgSecrets("account-a")).toEqual({
-    actions: {
-      SECRET_A: { value: "<token-a>", visibility: "private" },
-    },
-    agents: {},
-    codespaces: {},
-    dependabot: {},
   });
-  expect(__getOutput()).toMatchInlineSnapshot(`
-    "
-    Secret #1:
-
-    ✅ Secret SECRET_A was provisioned for repo account-a/repo-a:
-      ✅ Provisioned to GitHub Actions secret in account-a
-        ✅ Readable by private repos
-
-    Secret #2:
-
-    ✅ Secret SECRET_A was provisioned for repo account-a/repo-b:
-      ✅ Provisioned to GitHub Actions secret in account-a
-        ✅ Readable by private repos
-
-    "
-  `);
-});
-
-it("shares a failed write between identical declarations", async () => {
-  const [[accountA, [repoA]]] = createTestInstallationAccounts([
-    "Organization",
-    100,
-    "account-a",
-    ["repo-a"],
-  ]);
-  const [[appA, [appAInstallationA]]] = createTestApps([
-    "App A",
-    {},
-    [[accountA, "selected"]],
-  ]);
-  const accountAActionsKey = await createTestKeyPair("actions.account-a");
-
-  __setOrgKeys("account-a", { actions: accountAActionsKey });
-  __setErrors("actions.createOrUpdateOrgSecret", [
-    new TestRequestError(403, { message: "Resource not accessible" }),
-  ]);
-
-  const appRegistry = createTestAppRegistry(createTestRepoRegistry(), {
-    app: appA,
-    provisioner: true,
-    installations: [[appAInstallationA, [repoA]]],
-  });
-
-  const { findProvisionerOctokit } = createTestOctokitFactory(appRegistry);
-  const encryptSecret = vi.fn(createEncryptSecret(findProvisionerOctokit));
-
-  const provisionSecrets = createProvisioner(
-    findProvisionerOctokit,
-    encryptSecret,
-  );
-
-  const tokenAuthResultA = createTestTokenAuthResult();
-  const tokenAuthResultB = createTestTokenAuthResult();
-  const created = {
-    type: "CREATED" as const,
-    token: { token: "<token-a>", expires_at: "2001-02-03T04:05:06Z" },
-  };
   const tokenResults = new Map([
     [tokenAuthResultA, created],
     [tokenAuthResultB, created],
@@ -1858,16 +1756,157 @@ it("shares a failed write between identical declarations", async () => {
   expect(encryptSecret).toHaveBeenCalledTimes(1);
   expect(targetResultA).toBe(targetResultB);
   expect(targetResultA).toMatchObject({
-    type: "REQUEST_ERROR",
-    error: { status: 403 },
+    type: "PROVISIONED",
+    failedAttempts: [],
+  });
+  expect(__getOrgSecrets("account-a")).toEqual({
+    actions: {
+      SECRET_A: { value: "<token-a>", visibility: "private" },
+    },
+    agents: {},
+    codespaces: {},
+    dependabot: {},
   });
   expect(__getOutput()).toMatchInlineSnapshot(`
+    "::debug::Trying provisioner app 947161494 installation 2133206579
+
+    Secret #1:
+
+    ✅ Secret SECRET_A was provisioned for repo account-a/repo-a:
+      ✅ Provisioned to GitHub Actions secret in account-a
+        ✅ Readable by private repos
+
+    Secret #2:
+
+    ✅ Secret SECRET_A was provisioned for repo account-a/repo-b:
+      ✅ Provisioned to GitHub Actions secret in account-a
+        ✅ Readable by private repos
+
     "
+  `);
+});
+
+it("shares a failed write between identical declarations", async () => {
+  const [[accountA, [repoA]]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "account-a",
+    ["repo-a"],
+  ]);
+  const [[appA, [appAInstallationA]]] = createTestApps([
+    "App A",
+    {},
+    [[accountA, "selected"]],
+  ]);
+  const accountAActionsKey = await createTestKeyPair("actions.account-a");
+
+  __setOrgKeys("account-a", { actions: accountAActionsKey });
+  __setErrors("actions.createOrUpdateOrgSecret", [
+    new TestRequestError(403, { message: "Resource not accessible" }),
+  ]);
+
+  const appRegistry = createTestAppRegistry(createTestRepoRegistry(), {
+    app: appA,
+    provisioner: true,
+    installations: [[appAInstallationA, [repoA]]],
+  });
+
+  const { findProvisionerOctokit } = createTestOctokitFactory(appRegistry);
+  const encryptSecret = vi.fn(createEncryptSecret());
+
+  const provisionSecrets = createProvisioner(
+    findProvisionerOctokit,
+    encryptSecret,
+  );
+
+  const tokenAuthResultA = createTestTokenAuthResult();
+  const tokenAuthResultB = createTestTokenAuthResult();
+  const created = createTestTokenCreationCreatedResult({
+    token: { token: "<token-a>", expires_at: "2001-02-03T04:05:06Z" },
+  });
+  const tokenResults = new Map([
+    [tokenAuthResultA, created],
+    [tokenAuthResultB, created],
+  ]);
+
+  const [[, targetResultsA], [, targetResultsB]] = await provisionSecrets(
+    tokenResults,
+    [
+      {
+        request: createTestProvisionRequest({
+          secretDec: createTestSecretDec({
+            github: { accounts: { "account-a": { actions: "private" } } },
+          }),
+          to: [
+            createTestAccountProvisionRequestTarget(
+              "actions",
+              "account-a",
+              "private",
+            ),
+          ],
+        }),
+        results: [
+          createTestProvisionAuthTargetResult({
+            target: createTestAccountProvisionRequestTarget(
+              "actions",
+              "account-a",
+              "private",
+            ),
+            tokenAuthResult: tokenAuthResultA,
+          }),
+        ],
+        isMissingTargets: false,
+        isAllowed: true,
+      },
+      {
+        request: createTestProvisionRequest({
+          requester: { account: "account-a", repo: "repo-b" },
+          secretDec: createTestSecretDec({
+            github: { accounts: { "account-a": { actions: "private" } } },
+          }),
+          to: [
+            createTestAccountProvisionRequestTarget(
+              "actions",
+              "account-a",
+              "private",
+            ),
+          ],
+        }),
+        results: [
+          createTestProvisionAuthTargetResult({
+            target: createTestAccountProvisionRequestTarget(
+              "actions",
+              "account-a",
+              "private",
+            ),
+            tokenAuthResult: tokenAuthResultB,
+          }),
+        ],
+        isMissingTargets: false,
+        isAllowed: true,
+      },
+    ],
+  );
+
+  const [targetResultA] = targetResultsA.values();
+  const [targetResultB] = targetResultsB.values();
+
+  expect(encryptSecret).toHaveBeenCalledTimes(1);
+  expect(targetResultA).toBe(targetResultB);
+  expect(targetResultA).toMatchObject({
+    type: "FAILED",
+    attempts: [{ type: "REQUEST_ERROR", error: { status: 403 } }],
+  });
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "::debug::Trying provisioner app 947161494 installation 2133206579
+
     Secret #1:
 
     ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
-      ❌ Failed to provision to GitHub Actions secret in account-a: 403 - Forbidden
+      ❌ Failed to provision to GitHub Actions secret in account-a:
         ❌ Would've been readable by private repos
+        ❌ Failed attempts:
+          ❌ 403 - Forbidden
     ::debug::      {
     ::debug::        "message": "Resource not accessible"
     ::debug::      }
@@ -1875,8 +1914,10 @@ it("shares a failed write between identical declarations", async () => {
     Secret #2:
 
     ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-b:
-      ❌ Failed to provision to GitHub Actions secret in account-a: 403 - Forbidden
+      ❌ Failed to provision to GitHub Actions secret in account-a:
         ❌ Would've been readable by private repos
+        ❌ Failed attempts:
+          ❌ 403 - Forbidden
     ::debug::      {
     ::debug::        "message": "Resource not accessible"
     ::debug::      }
@@ -1909,7 +1950,7 @@ it("warns when no auth results are provided", async () => {
   });
 
   const { findProvisionerOctokit } = createTestOctokitFactory(appRegistry);
-  const encryptSecret = vi.fn(createEncryptSecret(findProvisionerOctokit));
+  const encryptSecret = vi.fn(createEncryptSecret());
 
   const provisionSecrets = createProvisioner(
     findProvisionerOctokit,
@@ -1925,4 +1966,889 @@ it("warns when no auth results are provided", async () => {
 
     "
   `);
+});
+
+it("keeps a provision target on the same provisioner across runs", async () => {
+  const [[accountA, [repoA]]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "account-a",
+    ["repo-a"],
+  ]);
+  const [[appA, [appAInstallationA]], [appB, [appBInstallationB]]] =
+    createTestApps(
+      ["App A", {}, [[accountA, "selected"]]],
+      ["App B", {}, [[accountA, "selected"]]],
+    );
+  const accountAActionsKey = await createTestKeyPair("actions.account-a");
+
+  __setOrgKeys("account-a", { actions: accountAActionsKey });
+
+  const appRegistry = createTestAppRegistry(
+    createTestRepoRegistry(),
+    {
+      app: appA,
+      provisioner: true,
+      installations: [[appAInstallationA, [repoA]]],
+    },
+    {
+      app: appB,
+      provisioner: true,
+      installations: [[appBInstallationB, [repoA]]],
+    },
+  );
+
+  const { findProvisionerOctokit } = createTestOctokitFactory(appRegistry);
+  const encryptSecret = createEncryptSecret();
+  const provisionSecrets = createProvisioner(
+    findProvisionerOctokit,
+    encryptSecret,
+  );
+
+  const target = createTestAccountProvisionRequestTarget(
+    "actions",
+    "account-a",
+    "private",
+  );
+  const tokenAuthResult = createTestTokenAuthResult();
+  const tokenResults = new Map([
+    [
+      tokenAuthResult,
+      createTestTokenCreationCreatedResult({
+        token: { token: "<token-a>", expires_at: "2001-02-03T04:05:06Z" },
+      }),
+    ],
+  ]);
+
+  const [expected] = findProvisionerOctokit({ account: "account-a" });
+  const [[, firstTargetResults]] = await provisionSecrets(tokenResults, [
+    {
+      request: createTestProvisionRequest({
+        secretDec: createTestSecretDec({
+          github: { accounts: { "account-a": { actions: "private" } } },
+        }),
+        to: [target],
+      }),
+      results: [
+        createTestProvisionAuthTargetResult({ target, tokenAuthResult }),
+      ],
+      isMissingTargets: false,
+      isAllowed: true,
+    },
+  ]);
+  const [[, secondTargetResults]] = await provisionSecrets(tokenResults, [
+    {
+      request: createTestProvisionRequest({
+        secretDec: createTestSecretDec({
+          github: { accounts: { "account-a": { actions: "private" } } },
+        }),
+        to: [target],
+      }),
+      results: [
+        createTestProvisionAuthTargetResult({ target, tokenAuthResult }),
+      ],
+      isMissingTargets: false,
+      isAllowed: true,
+    },
+  ]);
+  const [firstResult] = firstTargetResults.values();
+  const [secondResult] = secondTargetResults.values();
+
+  expect(firstResult).toMatchObject({
+    type: "PROVISIONED",
+    provisioner: expected.provisioner,
+    failedAttempts: [],
+  });
+  expect(secondResult).toMatchObject({
+    type: "PROVISIONED",
+    provisioner: expected.provisioner,
+    failedAttempts: [],
+  });
+});
+
+it("fails over when a provisioner can't fetch the public key", async () => {
+  const [[accountA, [repoA]]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "account-a",
+    ["repo-a"],
+  ]);
+  const [[appA, [appAInstallationA]], [appB, [appBInstallationB]]] =
+    createTestApps(
+      ["App A", {}, [[accountA, "selected"]]],
+      ["App B", {}, [[accountA, "selected"]]],
+    );
+  const accountAActionsKey = await createTestKeyPair("actions.account-a");
+
+  __setOrgKeys("account-a", { actions: accountAActionsKey });
+  __setErrors("actions.getOrgPublicKey", [new TestRequestError(401)]);
+
+  const appRegistry = createTestAppRegistry(
+    createTestRepoRegistry(),
+    {
+      app: appA,
+      provisioner: true,
+      installations: [[appAInstallationA, [repoA]]],
+    },
+    {
+      app: appB,
+      provisioner: true,
+      installations: [[appBInstallationB, [repoA]]],
+    },
+  );
+
+  const { findProvisionerOctokit } = createTestOctokitFactory(appRegistry);
+  const encryptSecret = createEncryptSecret();
+  const provisionSecrets = createProvisioner(
+    findProvisionerOctokit,
+    encryptSecret,
+  );
+
+  const target = createTestAccountProvisionRequestTarget(
+    "actions",
+    "account-a",
+    "private",
+  );
+  const tokenAuthResult = createTestTokenAuthResult();
+  const tokenResults = new Map([
+    [
+      tokenAuthResult,
+      createTestTokenCreationCreatedResult({
+        token: { token: "<token-a>", expires_at: "2001-02-03T04:05:06Z" },
+      }),
+    ],
+  ]);
+  const candidates = findProvisionerOctokit({ account: "account-a" });
+
+  const [[authResult, targetResults]] = await provisionSecrets(tokenResults, [
+    {
+      request: createTestProvisionRequest({
+        secretDec: createTestSecretDec({
+          github: { accounts: { "account-a": { actions: "private" } } },
+        }),
+        to: [target],
+      }),
+      results: [
+        createTestProvisionAuthTargetResult({ target, tokenAuthResult }),
+      ],
+      isMissingTargets: false,
+      isAllowed: true,
+    },
+  ]);
+
+  expect(targetResults.get([...targetResults.keys()][0])).toMatchObject({
+    type: "PROVISIONED",
+    provisioner: candidates[1].provisioner,
+    failedAttempts: [
+      { type: "REQUEST_ERROR", provisioner: candidates[0].provisioner },
+    ],
+  });
+  expect(__getOrgSecrets("account-a")?.actions.SECRET_A?.value).toBe(
+    "<token-a>",
+  );
+
+  const toMdast = createMarkdownProvisionExplainer();
+  const markdown = toMarkdown(toMdast(authResult, targetResults));
+  expect(markdown).toContain("401");
+});
+
+it("fails over when a provisioner can't write the secret", async () => {
+  const [[accountA, [repoA]]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "account-a",
+    ["repo-a"],
+  ]);
+  const [[appA, [appAInstallationA]], [appB, [appBInstallationB]]] =
+    createTestApps(
+      ["App A", {}, [[accountA, "selected"]]],
+      ["App B", {}, [[accountA, "selected"]]],
+    );
+  const accountAActionsKey = await createTestKeyPair("actions.account-a");
+
+  __setOrgKeys("account-a", { actions: accountAActionsKey });
+  __setErrors("actions.createOrUpdateOrgSecret", [new TestRequestError(403)]);
+  // If the second provisioner fetched the key again, this error would fail it.
+  __setErrors("actions.getOrgPublicKey", [
+    undefined,
+    new TestRequestError(500),
+  ]);
+
+  const appRegistry = createTestAppRegistry(
+    createTestRepoRegistry(),
+    {
+      app: appA,
+      provisioner: true,
+      installations: [[appAInstallationA, [repoA]]],
+    },
+    {
+      app: appB,
+      provisioner: true,
+      installations: [[appBInstallationB, [repoA]]],
+    },
+  );
+
+  const { findProvisionerOctokit } = createTestOctokitFactory(appRegistry);
+  const encryptSecret = createEncryptSecret();
+  const provisionSecrets = createProvisioner(
+    findProvisionerOctokit,
+    encryptSecret,
+  );
+
+  const target = createTestAccountProvisionRequestTarget(
+    "actions",
+    "account-a",
+    "private",
+  );
+  const tokenAuthResult = createTestTokenAuthResult();
+  const tokenResults = new Map([
+    [
+      tokenAuthResult,
+      createTestTokenCreationCreatedResult({
+        token: { token: "<token-a>", expires_at: "2001-02-03T04:05:06Z" },
+      }),
+    ],
+  ]);
+  const candidates = findProvisionerOctokit({ account: "account-a" });
+
+  const [[, targetResults]] = await provisionSecrets(tokenResults, [
+    {
+      request: createTestProvisionRequest({
+        secretDec: createTestSecretDec({
+          github: { accounts: { "account-a": { actions: "private" } } },
+        }),
+        to: [target],
+      }),
+      results: [
+        createTestProvisionAuthTargetResult({ target, tokenAuthResult }),
+      ],
+      isMissingTargets: false,
+      isAllowed: true,
+    },
+  ]);
+
+  expect(targetResults.get([...targetResults.keys()][0])).toMatchObject({
+    type: "PROVISIONED",
+    provisioner: candidates[1].provisioner,
+    failedAttempts: [
+      { type: "REQUEST_ERROR", provisioner: candidates[0].provisioner },
+    ],
+  });
+  expect(__getOrgSecrets("account-a")?.actions.SECRET_A?.value).toBe(
+    "<token-a>",
+  );
+});
+
+it("fails after every provisioner fails", async () => {
+  const [[accountA, [repoA]]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "account-a",
+    ["repo-a"],
+  ]);
+  const [[appA, [appAInstallationA]], [appB, [appBInstallationB]]] =
+    createTestApps(
+      ["App A", {}, [[accountA, "selected"]]],
+      ["App B", {}, [[accountA, "selected"]]],
+    );
+  const accountAActionsKey = await createTestKeyPair("actions.account-a");
+
+  __setOrgKeys("account-a", { actions: accountAActionsKey });
+  __setErrors("actions.createOrUpdateOrgSecret", [
+    new TestRequestError(403),
+    new TestRequestError(500),
+  ]);
+
+  const appRegistry = createTestAppRegistry(
+    createTestRepoRegistry(),
+    {
+      app: appA,
+      provisioner: true,
+      installations: [[appAInstallationA, [repoA]]],
+    },
+    {
+      app: appB,
+      provisioner: true,
+      installations: [[appBInstallationB, [repoA]]],
+    },
+  );
+
+  const { findProvisionerOctokit } = createTestOctokitFactory(appRegistry);
+  const encryptSecret = createEncryptSecret();
+  const provisionSecrets = createProvisioner(
+    findProvisionerOctokit,
+    encryptSecret,
+  );
+
+  const target = createTestAccountProvisionRequestTarget(
+    "actions",
+    "account-a",
+    "private",
+  );
+  const tokenAuthResult = createTestTokenAuthResult();
+  const tokenResults = new Map([
+    [
+      tokenAuthResult,
+      createTestTokenCreationCreatedResult({
+        token: { token: "<token-a>", expires_at: "2001-02-03T04:05:06Z" },
+      }),
+    ],
+  ]);
+  const candidates = findProvisionerOctokit({ account: "account-a" });
+
+  const [[authResult, targetResults]] = await provisionSecrets(tokenResults, [
+    {
+      request: createTestProvisionRequest({
+        secretDec: createTestSecretDec({
+          github: { accounts: { "account-a": { actions: "private" } } },
+        }),
+        to: [target],
+      }),
+      results: [
+        createTestProvisionAuthTargetResult({ target, tokenAuthResult }),
+      ],
+      isMissingTargets: false,
+      isAllowed: true,
+    },
+  ]);
+
+  expect(targetResults.get([...targetResults.keys()][0])).toMatchObject({
+    type: "FAILED",
+    attempts: [
+      { type: "REQUEST_ERROR", provisioner: candidates[0].provisioner },
+      { type: "REQUEST_ERROR", provisioner: candidates[1].provisioner },
+    ],
+  });
+
+  const toMdast = createMarkdownProvisionExplainer();
+  const markdown = toMarkdown(toMdast(authResult, targetResults));
+  expect(markdown).toContain("**Failed attempts**");
+  expect(markdown).toContain("**403** - _Forbidden_");
+  expect(markdown).toContain("**500** - _Internal Server Error_");
+});
+
+it("doesn't let the secret type affect provisioner affinity", async () => {
+  const [[accountA, [repoA]]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "account-a",
+    ["repo-a"],
+  ]);
+  const [[appA, [appAInstallationA]], [appB, [appBInstallationB]]] =
+    createTestApps(
+      ["App A", {}, [[accountA, "selected"]]],
+      ["App B", {}, [[accountA, "selected"]]],
+    );
+  const accountAActionsKey = await createTestKeyPair("actions.account-a");
+  const accountADependabotKey = await createTestKeyPair("dependabot.account-a");
+
+  __setOrgKeys("account-a", {
+    actions: accountAActionsKey,
+    dependabot: accountADependabotKey,
+  });
+
+  const appRegistry = createTestAppRegistry(
+    createTestRepoRegistry(),
+    {
+      app: appA,
+      provisioner: true,
+      installations: [[appAInstallationA, [repoA]]],
+    },
+    {
+      app: appB,
+      provisioner: true,
+      installations: [[appBInstallationB, [repoA]]],
+    },
+  );
+
+  const { findProvisionerOctokit } = createTestOctokitFactory(appRegistry);
+  const encryptSecret = createEncryptSecret();
+  const provisionSecrets = createProvisioner(
+    findProvisionerOctokit,
+    encryptSecret,
+  );
+
+  const actionsTarget = createTestAccountProvisionRequestTarget(
+    "actions",
+    "account-a",
+    "private",
+  );
+  const dependabotTarget = createTestAccountProvisionRequestTarget(
+    "dependabot",
+    "account-a",
+    "private",
+  );
+  const tokenAuthResult = createTestTokenAuthResult();
+  const tokenResults = new Map([
+    [
+      tokenAuthResult,
+      createTestTokenCreationCreatedResult({
+        token: { token: "<token-a>", expires_at: "2001-02-03T04:05:06Z" },
+      }),
+    ],
+  ]);
+  const [expected] = findProvisionerOctokit({ account: "account-a" });
+
+  const [[, targetResults]] = await provisionSecrets(tokenResults, [
+    {
+      request: createTestProvisionRequest({
+        secretDec: createTestSecretDec({
+          github: {
+            accounts: {
+              "account-a": { actions: "private", dependabot: "private" },
+            },
+          },
+        }),
+        to: [actionsTarget, dependabotTarget],
+      }),
+      results: [
+        createTestProvisionAuthTargetResult({
+          target: actionsTarget,
+          tokenAuthResult,
+        }),
+        createTestProvisionAuthTargetResult({
+          target: dependabotTarget,
+          tokenAuthResult,
+        }),
+      ],
+      isMissingTargets: false,
+      isAllowed: true,
+    },
+  ]);
+
+  for (const targetResult of targetResults.values()) {
+    expect(targetResult).toMatchObject({
+      type: "PROVISIONED",
+      provisioner: expected.provisioner,
+      failedAttempts: [],
+    });
+  }
+});
+
+it("explains a secret provisioned after falling back to another provisioner for encryption", async () => {
+  const [[accountA, [repoA]]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "account-a",
+    ["repo-a"],
+  ]);
+  const [[appA, [appAInstallationA]], [appB, [appBInstallationB]]] =
+    createTestApps(
+      ["App A", {}, [[accountA, "selected"]]],
+      ["App B", {}, [[accountA, "selected"]]],
+    );
+  const accountAActionsKey = await createTestKeyPair("actions.account-a");
+
+  __setOrgKeys("account-a", { actions: accountAActionsKey });
+  __setErrors("actions.getOrgPublicKey", [new TestRequestError(401)]);
+
+  const appRegistry = createTestAppRegistry(
+    createTestRepoRegistry(),
+    {
+      app: appA,
+      provisioner: true,
+      installations: [[appAInstallationA, [repoA]]],
+    },
+    {
+      app: appB,
+      provisioner: true,
+      installations: [[appBInstallationB, [repoA]]],
+    },
+  );
+
+  const { findProvisionerOctokit } = createTestOctokitFactory(appRegistry);
+  const encryptSecret = createEncryptSecret();
+  const provisionSecrets = createProvisioner(
+    findProvisionerOctokit,
+    encryptSecret,
+  );
+
+  const target = createTestAccountProvisionRequestTarget(
+    "actions",
+    "account-a",
+    "private",
+  );
+  const tokenAuthResult = createTestTokenAuthResult();
+  const tokenResults = new Map([
+    [
+      tokenAuthResult,
+      createTestTokenCreationCreatedResult({
+        token: { token: "<token-a>", expires_at: "2001-02-03T04:05:06Z" },
+      }),
+    ],
+  ]);
+
+  const candidates = findProvisionerOctokit({ account: "account-a" });
+
+  const [[resultA, targetResultsA]] = await provisionSecrets(tokenResults, [
+    {
+      request: createTestProvisionRequest({
+        secretDec: createTestSecretDec({
+          github: { accounts: { "account-a": { actions: "private" } } },
+        }),
+        to: [target],
+      }),
+      results: [
+        createTestProvisionAuthTargetResult({ target, tokenAuthResult }),
+      ],
+      isMissingTargets: false,
+      isAllowed: true,
+    },
+  ]);
+  const [targetResult] = targetResultsA.values();
+
+  expect(targetResult).toMatchObject({
+    type: "PROVISIONED",
+    provisioner: candidates[1].provisioner,
+    failedAttempts: [
+      { type: "REQUEST_ERROR", provisioner: candidates[0].provisioner },
+    ],
+  });
+
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "::debug::Trying provisioner app 947161494 installation 2133206579
+    ::debug::Trying provisioner app 571481606 installation 1539634462
+
+    Secret #1:
+
+    ✅ Secret SECRET_A was provisioned for repo account-a/repo-a:
+      ✅ Provisioned to GitHub Actions secret in account-a:
+        ✅ Readable by private repos
+        ⚠️ Failed attempts:
+          ⚠️ 401 - Unauthorized
+    ::debug::      (no response data)
+
+    "
+  `);
+
+  const toMdast = createMarkdownProvisionExplainer();
+
+  await expect(
+    toMarkdown(toMdast(resultA, targetResultsA)),
+  ).toMatchFileSnapshot(join(fixturesPath, "encryption-fallback/a.md"));
+});
+
+it("explains every provisioner attempt when encryption fails for all", async () => {
+  const [[accountA, [repoA]]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "account-a",
+    ["repo-a"],
+  ]);
+  const [[appA, [appAInstallationA]], [appB, [appBInstallationB]]] =
+    createTestApps(
+      ["App A", {}, [[accountA, "selected"]]],
+      ["App B", {}, [[accountA, "selected"]]],
+    );
+  const accountAActionsKey = await createTestKeyPair("actions.account-a");
+
+  __setOrgKeys("account-a", { actions: accountAActionsKey });
+  __setErrors("actions.getOrgPublicKey", [
+    new TestRequestError(401),
+    new TestRequestError(500),
+  ]);
+
+  const appRegistry = createTestAppRegistry(
+    createTestRepoRegistry(),
+    {
+      app: appA,
+      provisioner: true,
+      installations: [[appAInstallationA, [repoA]]],
+    },
+    {
+      app: appB,
+      provisioner: true,
+      installations: [[appBInstallationB, [repoA]]],
+    },
+  );
+
+  const { findProvisionerOctokit } = createTestOctokitFactory(appRegistry);
+  const encryptSecret = createEncryptSecret();
+  const provisionSecrets = createProvisioner(
+    findProvisionerOctokit,
+    encryptSecret,
+  );
+
+  const target = createTestAccountProvisionRequestTarget(
+    "actions",
+    "account-a",
+    "private",
+  );
+  const tokenAuthResult = createTestTokenAuthResult();
+  const tokenResults = new Map([
+    [
+      tokenAuthResult,
+      createTestTokenCreationCreatedResult({
+        token: { token: "<token-a>", expires_at: "2001-02-03T04:05:06Z" },
+      }),
+    ],
+  ]);
+
+  const candidates = findProvisionerOctokit({ account: "account-a" });
+
+  const [[resultA, targetResultsA]] = await provisionSecrets(tokenResults, [
+    {
+      request: createTestProvisionRequest({
+        secretDec: createTestSecretDec({
+          github: { accounts: { "account-a": { actions: "private" } } },
+        }),
+        to: [target],
+      }),
+      results: [
+        createTestProvisionAuthTargetResult({ target, tokenAuthResult }),
+      ],
+      isMissingTargets: false,
+      isAllowed: true,
+    },
+  ]);
+  const [targetResult] = targetResultsA.values();
+
+  expect(targetResult).toMatchObject({
+    type: "FAILED",
+    attempts: [
+      { type: "REQUEST_ERROR", provisioner: candidates[0].provisioner },
+      { type: "REQUEST_ERROR", provisioner: candidates[1].provisioner },
+    ],
+  });
+
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "::debug::Trying provisioner app 947161494 installation 2133206579
+    ::debug::Trying provisioner app 571481606 installation 1539634462
+
+    Secret #1:
+
+    ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
+      ❌ Failed to provision to GitHub Actions secret in account-a:
+        ❌ Would've been readable by private repos
+        ❌ Failed attempts:
+          ❌ 401 - Unauthorized
+    ::debug::      (no response data)
+          ❌ 500 - Internal Server Error
+    ::debug::      (no response data)
+
+    "
+  `);
+
+  const toMdast = createMarkdownProvisionExplainer();
+
+  await expect(
+    toMarkdown(toMdast(resultA, targetResultsA)),
+  ).toMatchFileSnapshot(join(fixturesPath, "encryption-all-failed/a.md"));
+});
+
+it("explains a secret provisioned after falling back to another provisioner for the write", async () => {
+  const [[accountA, [repoA]]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "account-a",
+    ["repo-a"],
+  ]);
+  const [[appA, [appAInstallationA]], [appB, [appBInstallationB]]] =
+    createTestApps(
+      ["App A", {}, [[accountA, "selected"]]],
+      ["App B", {}, [[accountA, "selected"]]],
+    );
+  const accountAActionsKey = await createTestKeyPair("actions.account-a");
+
+  __setOrgKeys("account-a", { actions: accountAActionsKey });
+  __setErrors("actions.createOrUpdateOrgSecret", [
+    new TestRequestError(403, { message: "Resource not accessible" }),
+  ]);
+
+  const appRegistry = createTestAppRegistry(
+    createTestRepoRegistry(),
+    {
+      app: appA,
+      provisioner: true,
+      installations: [[appAInstallationA, [repoA]]],
+    },
+    {
+      app: appB,
+      provisioner: true,
+      installations: [[appBInstallationB, [repoA]]],
+    },
+  );
+
+  const { findProvisionerOctokit } = createTestOctokitFactory(appRegistry);
+  const encryptSecret = createEncryptSecret();
+  const provisionSecrets = createProvisioner(
+    findProvisionerOctokit,
+    encryptSecret,
+  );
+
+  const target = createTestAccountProvisionRequestTarget(
+    "actions",
+    "account-a",
+    "private",
+  );
+  const tokenAuthResult = createTestTokenAuthResult();
+  const tokenResults = new Map([
+    [
+      tokenAuthResult,
+      createTestTokenCreationCreatedResult({
+        token: { token: "<token-a>", expires_at: "2001-02-03T04:05:06Z" },
+      }),
+    ],
+  ]);
+
+  const candidates = findProvisionerOctokit({ account: "account-a" });
+
+  const [[resultA, targetResultsA]] = await provisionSecrets(tokenResults, [
+    {
+      request: createTestProvisionRequest({
+        secretDec: createTestSecretDec({
+          github: { accounts: { "account-a": { actions: "private" } } },
+        }),
+        to: [target],
+      }),
+      results: [
+        createTestProvisionAuthTargetResult({ target, tokenAuthResult }),
+      ],
+      isMissingTargets: false,
+      isAllowed: true,
+    },
+  ]);
+  const [targetResult] = targetResultsA.values();
+
+  expect(targetResult).toMatchObject({
+    type: "PROVISIONED",
+    provisioner: candidates[1].provisioner,
+    failedAttempts: [
+      { type: "REQUEST_ERROR", provisioner: candidates[0].provisioner },
+    ],
+  });
+
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "::debug::Trying provisioner app 947161494 installation 2133206579
+    ::debug::Trying provisioner app 571481606 installation 1539634462
+
+    Secret #1:
+
+    ✅ Secret SECRET_A was provisioned for repo account-a/repo-a:
+      ✅ Provisioned to GitHub Actions secret in account-a:
+        ✅ Readable by private repos
+        ⚠️ Failed attempts:
+          ⚠️ 403 - Forbidden
+    ::debug::      {
+    ::debug::        "message": "Resource not accessible"
+    ::debug::      }
+
+    "
+  `);
+
+  const toMdast = createMarkdownProvisionExplainer();
+
+  await expect(
+    toMarkdown(toMdast(resultA, targetResultsA)),
+  ).toMatchFileSnapshot(join(fixturesPath, "write-fallback/a.md"));
+});
+
+it("explains every provisioner attempt when the write fails for all", async () => {
+  const [[accountA, [repoA]]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "account-a",
+    ["repo-a"],
+  ]);
+  const [[appA, [appAInstallationA]], [appB, [appBInstallationB]]] =
+    createTestApps(
+      ["App A", {}, [[accountA, "selected"]]],
+      ["App B", {}, [[accountA, "selected"]]],
+    );
+  const accountAActionsKey = await createTestKeyPair("actions.account-a");
+
+  __setOrgKeys("account-a", { actions: accountAActionsKey });
+  __setErrors("actions.createOrUpdateOrgSecret", [
+    new TestRequestError(403, { message: "Resource not accessible" }),
+    new TestRequestError(500),
+  ]);
+
+  const appRegistry = createTestAppRegistry(
+    createTestRepoRegistry(),
+    {
+      app: appA,
+      provisioner: true,
+      installations: [[appAInstallationA, [repoA]]],
+    },
+    {
+      app: appB,
+      provisioner: true,
+      installations: [[appBInstallationB, [repoA]]],
+    },
+  );
+
+  const { findProvisionerOctokit } = createTestOctokitFactory(appRegistry);
+  const encryptSecret = createEncryptSecret();
+  const provisionSecrets = createProvisioner(
+    findProvisionerOctokit,
+    encryptSecret,
+  );
+
+  const target = createTestAccountProvisionRequestTarget(
+    "actions",
+    "account-a",
+    "private",
+  );
+  const tokenAuthResult = createTestTokenAuthResult();
+  const tokenResults = new Map([
+    [
+      tokenAuthResult,
+      createTestTokenCreationCreatedResult({
+        token: { token: "<token-a>", expires_at: "2001-02-03T04:05:06Z" },
+      }),
+    ],
+  ]);
+
+  const candidates = findProvisionerOctokit({ account: "account-a" });
+
+  const [[resultA, targetResultsA]] = await provisionSecrets(tokenResults, [
+    {
+      request: createTestProvisionRequest({
+        secretDec: createTestSecretDec({
+          github: { accounts: { "account-a": { actions: "private" } } },
+        }),
+        to: [target],
+      }),
+      results: [
+        createTestProvisionAuthTargetResult({ target, tokenAuthResult }),
+      ],
+      isMissingTargets: false,
+      isAllowed: true,
+    },
+  ]);
+  const [targetResult] = targetResultsA.values();
+
+  expect(targetResult).toMatchObject({
+    type: "FAILED",
+    attempts: [
+      { type: "REQUEST_ERROR", provisioner: candidates[0].provisioner },
+      { type: "REQUEST_ERROR", provisioner: candidates[1].provisioner },
+    ],
+  });
+
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "::debug::Trying provisioner app 947161494 installation 2133206579
+    ::debug::Trying provisioner app 571481606 installation 1539634462
+
+    Secret #1:
+
+    ❌ Secret SECRET_A wasn't provisioned for repo account-a/repo-a:
+      ❌ Failed to provision to GitHub Actions secret in account-a:
+        ❌ Would've been readable by private repos
+        ❌ Failed attempts:
+          ❌ 403 - Forbidden
+    ::debug::      {
+    ::debug::        "message": "Resource not accessible"
+    ::debug::      }
+          ❌ 500 - Internal Server Error
+    ::debug::      (no response data)
+
+    "
+  `);
+
+  const toMdast = createMarkdownProvisionExplainer();
+
+  await expect(
+    toMarkdown(toMdast(resultA, targetResultsA)),
+  ).toMatchFileSnapshot(join(fixturesPath, "write-all-failed/a.md"));
 });

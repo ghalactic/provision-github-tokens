@@ -1,10 +1,14 @@
-import { info, warning } from "@actions/core";
+import { debug, info, warning } from "@actions/core";
 import { RequestError } from "@octokit/request-error";
-import type { FindIssuerOctokit } from "./issuer-octokit.js";
+import type { FindIssuerOctokit, IssuerCandidate } from "./issuer-octokit.js";
 import { createTextTokenCreationExplainer } from "./token-creation-explainer/text.js";
 import { tokenShapeKey } from "./token-request.js";
+import { tryEach, type TryEachFailedAttempt } from "./try-each.js";
 import type { TokenAuthResult } from "./type/token-auth-result.js";
-import type { TokenCreationResult } from "./type/token-creation-result.js";
+import type {
+  TokenCreationAttempt,
+  TokenCreationResult,
+} from "./type/token-creation-result.js";
 
 export type TokenFactory = (
   authResults: TokenAuthResult[],
@@ -34,27 +38,42 @@ export function createTokenFactory(
       }
 
       const result: TokenCreationResult = await (async () => {
-        const found = findIssuerOctokit(auth.request);
+        const candidates = findIssuerOctokit(auth.request);
 
-        if (!found) return { type: "NO_ISSUER" };
+        if (candidates.length < 1) return { type: "NO_ISSUER" };
 
-        const [octokit, issuerReg] = found;
+        const result = await tryEach(
+          async (candidate) => {
+            const { installation } = candidate.issuer;
+            debug(
+              `Trying issuer app ${installation.app_id} ` +
+                `installation ${installation.id}`,
+            );
 
-        try {
-          const { data: token } =
-            await octokit.rest.apps.createInstallationAccessToken({
-              installation_id: issuerReg.installation.id,
-              repositories:
-                auth.request.repos === "all" ? undefined : auth.request.repos,
-              permissions: auth.request.tokenDec.permissions,
-            });
+            const { data: token } =
+              await candidate.octokit.rest.apps.createInstallationAccessToken({
+                installation_id: installation.id,
+                repositories:
+                  auth.request.repos === "all" ? undefined : auth.request.repos,
+                permissions: auth.request.tokenDec.permissions,
+              });
 
-          return { type: "CREATED", token };
-        } catch (error) {
-          return error instanceof RequestError
-            ? { type: "REQUEST_ERROR", error }
-            : { type: "ERROR", error };
-        }
+            return token;
+          },
+          () => true,
+          candidates,
+        );
+
+        const attempts = toTokenCreationAttempts(result.failures);
+
+        if (result.type === "FAILED") return { type: "FAILED", attempts };
+
+        return {
+          type: "CREATED",
+          token: result.value,
+          issuer: result.candidate.issuer,
+          failedAttempts: attempts,
+        };
       })();
 
       creationResults.set(auth, (cache[key] = result));
@@ -78,4 +97,20 @@ export function createTokenFactory(
 
     return creationResults;
   };
+}
+
+function toTokenCreationAttempts(
+  failures: readonly TryEachFailedAttempt<IssuerCandidate>[],
+): TokenCreationAttempt[] {
+  const attempts: TokenCreationAttempt[] = [];
+
+  for (const { candidate, error } of failures) {
+    attempts.push(
+      error instanceof RequestError
+        ? { type: "REQUEST_ERROR", issuer: candidate.issuer, error }
+        : { type: "ERROR", issuer: candidate.issuer, error },
+    );
+  }
+
+  return attempts;
 }

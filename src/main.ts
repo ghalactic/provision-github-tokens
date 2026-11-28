@@ -112,7 +112,7 @@ try {
     tokenAuthorizer,
   );
   const createTokens = createTokenFactory(findIssuerOctokit);
-  const encryptSecret = createEncryptSecret(findProvisionerOctokit);
+  const encryptSecret = createEncryptSecret();
   const provisionSecrets = createProvisioner(
     findProvisionerOctokit,
     encryptSecret,
@@ -125,9 +125,8 @@ try {
 
   const requesters = await group("Discovering requesters", async () => {
     const requesters = await discoverRequesters(
-      octokitFactory,
+      findProvisionerOctokit,
       appRegistry,
-      appsInput,
     );
     registerTokenDeclarations(declarationRegistry, requesters);
 
@@ -135,7 +134,7 @@ try {
   });
 
   const authorizeResult = await group("Authorizing requests", async () => {
-    return await authorizer.authorize(Array.from(requesters.values()));
+    return await authorizer.authorize(requesters);
   });
 
   const tokenCreationResults = await group("Creating tokens", async () => {

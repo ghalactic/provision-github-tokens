@@ -3,6 +3,8 @@ import { beforeEach, expect, it, vi } from "vitest";
 import {
   __getOutput,
   __reset as __resetCore,
+  debug,
+  info,
 } from "../__mocks__/@actions/core.js";
 import {
   TestRequestError,
@@ -85,7 +87,8 @@ it("creates read-only tokens", async () => {
   const toMdast = createMarkdownTokenCreationExplainer();
 
   expect(__getOutput()).toMatchInlineSnapshot(`
-    "
+    "::debug::Trying issuer app 947161494 installation 2133206579
+
     Token #1:
 
     ✅ Read-only token created with access to all repos in account-a:
@@ -143,7 +146,8 @@ it("creates write tokens", async () => {
   const toMdast = createMarkdownTokenCreationExplainer();
 
   expect(__getOutput()).toMatchInlineSnapshot(`
-    "
+    "::debug::Trying issuer app 947161494 installation 2133206579
+
     Token #1:
 
     ✅ Write token created with access to all repos in account-a:
@@ -203,7 +207,8 @@ it("creates admin tokens", async () => {
   const toMdast = createMarkdownTokenCreationExplainer();
 
   expect(__getOutput()).toMatchInlineSnapshot(`
-    "
+    "::debug::Trying issuer app 947161494 installation 2133206579
+
     Token #1:
 
     ✅ Admin token created with access to all repos in account-a:
@@ -265,7 +270,8 @@ it("creates account-only tokens", async () => {
   const toMdast = createMarkdownTokenCreationExplainer();
 
   expect(__getOutput()).toMatchInlineSnapshot(`
-    "
+    "::debug::Trying issuer app 947161494 installation 2133206579
+
     Token #1:
 
     ✅ Admin token created with access to account-a:
@@ -318,7 +324,8 @@ it("creates all-repos tokens", async () => {
   const toMdast = createMarkdownTokenCreationExplainer();
 
   expect(__getOutput()).toMatchInlineSnapshot(`
-    "
+    "::debug::Trying issuer app 947161494 installation 2133206579
+
     Token #1:
 
     ✅ Read-only token created with access to all repos in account-a:
@@ -391,7 +398,8 @@ it("creates selected-repos tokens", async () => {
   const toMdast = createMarkdownTokenCreationExplainer();
 
   expect(__getOutput()).toMatchInlineSnapshot(`
-    "
+    "::debug::Trying issuer app 947161494 installation 2133206579
+
     Token #1:
 
     ✅ Read-only token created with access to 2 repos in account-a:
@@ -450,7 +458,8 @@ it('ignores permissions with "none" access level', async () => {
   const toMdast = createMarkdownTokenCreationExplainer();
 
   expect(__getOutput()).toMatchInlineSnapshot(`
-    "
+    "::debug::Trying issuer app 947161494 installation 2133206579
+
     Token #1:
 
     ✅ Read-only token created with access to all repos in account-a:
@@ -521,7 +530,8 @@ it("reuses one token for identical requests", async () => {
   const toMdast = createMarkdownTokenCreationExplainer();
 
   expect(__getOutput()).toMatchInlineSnapshot(`
-    "
+    "::debug::Trying issuer app 947161494 installation 2133206579
+
     Token #1:
 
     ✅ Read-only token created with access to all repos in account-a:
@@ -677,18 +687,21 @@ it("reuses the same failure outcome for identical requests", async () => {
   expect(results.get(authResultA)).toBe(results.get(authResultB));
   expect(results.get(authResultC)).toBe(results.get(authResultD));
   expect(__getOutput()).toMatchInlineSnapshot(`
-    "
+    "::debug::Trying issuer app 947161494 installation 2133206579
+    ::debug::Trying issuer app 947161494 installation 2133206579
+
     Token #1:
 
     ❌ Failed to create read-only token with access to all repos in account-a:
-      ❌ 403 - Forbidden
-    ::debug::      {
-    ::debug::        "message": "Resource not accessible"
-    ::debug::      }
       ➖ Wanted read access without a role
       ➖ Wanted access to all repos in account-a
       ➖ Wanted 1 permission:
         ➖ metadata: read
+      ❌ Failed attempts:
+        ❌ 403 - Forbidden
+    ::debug::      {
+    ::debug::        "message": "Resource not accessible"
+    ::debug::      }
 
     Token #2:
 
@@ -697,13 +710,14 @@ it("reuses the same failure outcome for identical requests", async () => {
     Token #3:
 
     ❌ Failed to create read-only token with access to all repos in account-a:
-      ❌ <message>
-    ::debug::      Error: <message>
-    ::debug::          at token-factory.ts:1:1
       ➖ Wanted read access without a role
       ➖ Wanted access to all repos in account-a
       ➖ Wanted 1 permission:
         ➖ contents: read
+      ❌ Failed attempts:
+        ❌ <message>
+    ::debug::      Error: <message>
+    ::debug::          at token-factory.ts:1:1
 
     Token #4:
 
@@ -772,7 +786,9 @@ it("creates separate tokens when the requested account is different", async () =
   const toMdast = createMarkdownTokenCreationExplainer();
 
   expect(__getOutput()).toMatchInlineSnapshot(`
-    "
+    "::debug::Trying issuer app 947161494 installation 2133206579
+    ::debug::Trying issuer app 947161494 installation 3516594614
+
     Token #1:
 
     ✅ Read-only token created with access to all repos in account-a:
@@ -853,7 +869,9 @@ it("creates separate tokens when the requested role is different", async () => {
   const toMdast = createMarkdownTokenCreationExplainer();
 
   expect(__getOutput()).toMatchInlineSnapshot(`
-    "
+    "::debug::Trying issuer app 947161494 installation 2133206579
+    ::debug::Trying issuer app 947161494 installation 2133206579
+
     Token #1:
 
     ✅ Write token created with access to all repos in account-a:
@@ -920,7 +938,9 @@ it("creates separate tokens when requested permissions are different", async () 
   const toMdast = createMarkdownTokenCreationExplainer();
 
   expect(__getOutput()).toMatchInlineSnapshot(`
-    "
+    "::debug::Trying issuer app 947161494 installation 2133206579
+    ::debug::Trying issuer app 947161494 installation 2133206579
+
     Token #1:
 
     ✅ Read-only token created with access to all repos in account-a:
@@ -1000,7 +1020,9 @@ it("creates separate tokens when requested repository access is different", asyn
   const toMdast = createMarkdownTokenCreationExplainer();
 
   expect(__getOutput()).toMatchInlineSnapshot(`
-    "
+    "::debug::Trying issuer app 947161494 installation 2133206579
+    ::debug::Trying issuer app 947161494 installation 2133206579
+
     Token #1:
 
     ✅ Read-only token created with access to all repos in account-a:
@@ -1346,29 +1368,33 @@ it("explains failures caused by GitHub API errors", async () => {
   const toMdast = createMarkdownTokenCreationExplainer();
 
   expect(__getOutput()).toMatchInlineSnapshot(`
-    "
+    "::debug::Trying issuer app 947161494 installation 2133206579
+    ::debug::Trying issuer app 947161494 installation 2133206579
+
     Token #1:
 
     ❌ Failed to create read-only token with access to all repos in account-a:
-      ❌ 403 - Forbidden
-    ::debug::      {
-    ::debug::        "message": "Resource not accessible"
-    ::debug::      }
       ➖ Wanted read access without a role
       ➖ Wanted access to all repos in account-a
       ➖ Wanted 1 permission:
         ➖ metadata: read
+      ❌ Failed attempts:
+        ❌ 403 - Forbidden
+    ::debug::      {
+    ::debug::        "message": "Resource not accessible"
+    ::debug::      }
 
     Token #2:
 
     ❌ Failed to create read-only token with access to 1 repo in account-a:
-      ❌ 500 - Internal Server Error
-    ::debug::      (no response data)
       ➖ Wanted read access without a role
       ➖ Wanted access to 1 repo in account-a:
         ➖ account-a/repo-a
       ➖ Wanted 1 permission:
         ➖ metadata: read
+      ❌ Failed attempts:
+        ❌ 500 - Internal Server Error
+    ::debug::      (no response data)
 
     "
   `);
@@ -1423,21 +1449,447 @@ it("explains failures caused by unexpected errors", async () => {
   const toMdast = createMarkdownTokenCreationExplainer();
 
   expect(__getOutput()).toMatchInlineSnapshot(`
-    "
+    "::debug::Trying issuer app 947161494 installation 2133206579
+
     Token #1:
 
     ❌ Failed to create read-only token with access to all repos in account-a:
-      ❌ <message>
-    ::debug::      Error: <message>
-    ::debug::          at token-factory.ts:1:1
       ➖ Wanted read access without a role
       ➖ Wanted access to all repos in account-a
       ➖ Wanted 1 permission:
         ➖ metadata: read
+      ❌ Failed attempts:
+        ❌ <message>
+    ::debug::      Error: <message>
+    ::debug::          at token-factory.ts:1:1
 
     "
   `);
   await expect(
     toMarkdown(toMdast(authResult, results.get(authResult)!)),
   ).toMatchFileSnapshot(join(fixturesPath, "unexpected-error/auth.md"));
+});
+
+it("keeps a token shape on the same issuer across runs", async () => {
+  const [[accountA, [repoA]]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "account-a",
+    ["repo-a"],
+  ]);
+  const [[appA, [appAInstallationA]], [appB, [appBInstallationB]]] =
+    createTestApps(
+      ["App A", { metadata: "read" }, [[accountA]]],
+      ["App B", { metadata: "read" }, [[accountA]]],
+    );
+  const appRegistry = createTestAppRegistry(
+    createTestRepoRegistry(),
+    {
+      app: appA,
+      issuer: [],
+      installations: [[appAInstallationA, [repoA]]],
+    },
+    {
+      app: appB,
+      issuer: [],
+      installations: [[appBInstallationB, [repoA]]],
+    },
+  );
+
+  const { findIssuerOctokit } = createTestOctokitFactory(appRegistry);
+  const createTokens = createTokenFactory(findIssuerOctokit);
+
+  __addInstallationToken(appAInstallationA.id, "all", { metadata: "read" });
+  __addInstallationToken(appBInstallationB.id, "all", { metadata: "read" });
+
+  const authResultA = createTestTokenAuthResult({
+    request: {
+      consumer: { account: "consumer-a" },
+      tokenDec: createTestTokenDec({ permissions: { metadata: "read" } }),
+      repos: "all",
+    },
+  });
+  const authResultB = createTestTokenAuthResult({
+    request: {
+      consumer: { account: "consumer-b" },
+      tokenDec: createTestTokenDec({ permissions: { metadata: "read" } }),
+      repos: "all",
+    },
+  });
+
+  const [expected] = findIssuerOctokit(authResultA.request);
+  const firstRun = await createTokens([authResultA]);
+  const secondRun = await createTokens([authResultB]);
+
+  expect(firstRun.get(authResultA)).toMatchObject({
+    type: "CREATED",
+    issuer: expected.issuer,
+    failedAttempts: [],
+  });
+  expect(secondRun.get(authResultB)).toMatchObject({
+    type: "CREATED",
+    issuer: expected.issuer,
+    failedAttempts: [],
+  });
+});
+
+it("fails over to the next issuer after a request error", async () => {
+  const [[accountA, [repoA]]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "account-a",
+    ["repo-a"],
+  ]);
+  const [[appA, [appAInstallationA]], [appB, [appBInstallationB]]] =
+    createTestApps(
+      ["App A", { metadata: "read" }, [[accountA]]],
+      ["App B", { metadata: "read" }, [[accountA]]],
+    );
+  const appRegistry = createTestAppRegistry(
+    createTestRepoRegistry(),
+    {
+      app: appA,
+      issuer: [],
+      installations: [[appAInstallationA, [repoA]]],
+    },
+    {
+      app: appB,
+      issuer: [],
+      installations: [[appBInstallationB, [repoA]]],
+    },
+  );
+
+  const { findIssuerOctokit } = createTestOctokitFactory(appRegistry);
+  const createTokens = createTokenFactory(findIssuerOctokit);
+
+  __addInstallationToken(appAInstallationA.id, "all", { metadata: "read" });
+  __addInstallationToken(appBInstallationB.id, "all", { metadata: "read" });
+  __setErrors("apps.createInstallationAccessToken", [
+    new TestRequestError(403, { message: "Resource not accessible" }),
+  ]);
+
+  const authResult = createTestTokenAuthResult({
+    request: {
+      consumer: { account: "consumer-a" },
+      tokenDec: createTestTokenDec({ permissions: { metadata: "read" } }),
+      repos: "all",
+    },
+  });
+  const candidates = findIssuerOctokit(authResult.request);
+
+  const results = await createTokens([authResult]);
+
+  expect(results.get(authResult)).toMatchObject({
+    type: "CREATED",
+    issuer: candidates[1].issuer,
+    failedAttempts: [
+      {
+        type: "REQUEST_ERROR",
+        issuer: candidates[0].issuer,
+      },
+    ],
+  });
+
+  const debugMessages = vi.mocked(debug).mock.calls.map(([message]) => message);
+  expect(debugMessages).toEqual([
+    `Trying issuer app ${candidates[0].issuer.installation.app_id} ` +
+      `installation ${candidates[0].issuer.installation.id}`,
+    `Trying issuer app ${candidates[1].issuer.installation.app_id} ` +
+      `installation ${candidates[1].issuer.installation.id}`,
+  ]);
+
+  const infoMessages = vi.mocked(info).mock.calls.map(([message]) => message);
+  const normalOutput = infoMessages.join("\n");
+  expect(normalOutput).not.toContain(
+    String(candidates[0].issuer.installation.app_id),
+  );
+  expect(normalOutput).not.toContain(
+    String(candidates[1].issuer.installation.app_id),
+  );
+});
+
+it("fails over to the next issuer after an unexpected error", async () => {
+  const [[accountA, [repoA]]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "account-a",
+    ["repo-a"],
+  ]);
+  const [[appA, [appAInstallationA]], [appB, [appBInstallationB]]] =
+    createTestApps(
+      ["App A", { metadata: "read" }, [[accountA]]],
+      ["App B", { metadata: "read" }, [[accountA]]],
+    );
+  const appRegistry = createTestAppRegistry(
+    createTestRepoRegistry(),
+    {
+      app: appA,
+      issuer: [],
+      installations: [[appAInstallationA, [repoA]]],
+    },
+    {
+      app: appB,
+      issuer: [],
+      installations: [[appBInstallationB, [repoA]]],
+    },
+  );
+
+  const { findIssuerOctokit } = createTestOctokitFactory(appRegistry);
+  const createTokens = createTokenFactory(findIssuerOctokit);
+
+  __addInstallationToken(appAInstallationA.id, "all", { metadata: "read" });
+  __addInstallationToken(appBInstallationB.id, "all", { metadata: "read" });
+  __setErrors("apps.createInstallationAccessToken", [new Error("boom")]);
+
+  const authResult = createTestTokenAuthResult({
+    request: {
+      consumer: { account: "consumer-a" },
+      tokenDec: createTestTokenDec({ permissions: { metadata: "read" } }),
+      repos: "all",
+    },
+  });
+  const candidates = findIssuerOctokit(authResult.request);
+
+  const results = await createTokens([authResult]);
+
+  expect(results.get(authResult)).toMatchObject({
+    type: "CREATED",
+    issuer: candidates[1].issuer,
+    failedAttempts: [
+      {
+        type: "ERROR",
+        issuer: candidates[0].issuer,
+        error: new Error("boom"),
+      },
+    ],
+  });
+});
+
+it("fails after every issuer fails", async () => {
+  const [[accountA, [repoA]]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "account-a",
+    ["repo-a"],
+  ]);
+  const [[appA, [appAInstallationA]], [appB, [appBInstallationB]]] =
+    createTestApps(
+      ["App A", { metadata: "read" }, [[accountA]]],
+      ["App B", { metadata: "read" }, [[accountA]]],
+    );
+  const appRegistry = createTestAppRegistry(
+    createTestRepoRegistry(),
+    {
+      app: appA,
+      issuer: [],
+      installations: [[appAInstallationA, [repoA]]],
+    },
+    {
+      app: appB,
+      issuer: [],
+      installations: [[appBInstallationB, [repoA]]],
+    },
+  );
+
+  const { findIssuerOctokit } = createTestOctokitFactory(appRegistry);
+  const createTokens = createTokenFactory(findIssuerOctokit);
+
+  __setErrors("apps.createInstallationAccessToken", [
+    new TestRequestError(403, { message: "Resource not accessible" }),
+    new TestRequestError(500),
+  ]);
+
+  const authResult = createTestTokenAuthResult({
+    request: {
+      consumer: { account: "consumer-a" },
+      tokenDec: createTestTokenDec({ permissions: { metadata: "read" } }),
+      repos: "all",
+    },
+  });
+  const candidates = findIssuerOctokit(authResult.request);
+
+  const results = await createTokens([authResult]);
+
+  expect(results.get(authResult)).toMatchObject({
+    type: "FAILED",
+    attempts: [
+      { type: "REQUEST_ERROR", issuer: candidates[0].issuer },
+      { type: "REQUEST_ERROR", issuer: candidates[1].issuer },
+    ],
+  });
+  expect(__getOutput()).toContain("Failed attempts:");
+  expect(__getOutput()).toContain("403 - Forbidden");
+  expect(__getOutput()).toContain("500 - Internal Server Error");
+
+  const toMdast = createMarkdownTokenCreationExplainer();
+  const markdown = toMarkdown(toMdast(authResult, results.get(authResult)!));
+  expect(markdown).toContain("**Failed attempts**");
+  expect(markdown).toContain("**403** - _Forbidden_");
+  expect(markdown).toContain("**500** - _Internal Server Error_");
+});
+
+it("explains a token created after falling back to another issuer", async () => {
+  const [[accountA, [repoA]]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "account-a",
+    ["repo-a"],
+  ]);
+  const [[appA, [appAInstallationA]], [appB, [appBInstallationB]]] =
+    createTestApps(
+      ["App A", { metadata: "read" }, [[accountA]]],
+      ["App B", { metadata: "read" }, [[accountA]]],
+    );
+  const appRegistry = createTestAppRegistry(
+    createTestRepoRegistry(),
+    {
+      app: appA,
+      issuer: [],
+      installations: [[appAInstallationA, [repoA]]],
+    },
+    {
+      app: appB,
+      issuer: [],
+      installations: [[appBInstallationB, [repoA]]],
+    },
+  );
+
+  const { findIssuerOctokit } = createTestOctokitFactory(appRegistry);
+  const createTokens = createTokenFactory(findIssuerOctokit);
+
+  __addInstallationToken(appAInstallationA.id, "all", { metadata: "read" });
+  __addInstallationToken(appBInstallationB.id, "all", { metadata: "read" });
+  __setErrors("apps.createInstallationAccessToken", [
+    new TestRequestError(403, { message: "Resource not accessible" }),
+  ]);
+
+  const authResult = createTestTokenAuthResult({
+    request: {
+      consumer: { account: "consumer-a" },
+      tokenDec: createTestTokenDec(),
+      repos: "all",
+    },
+  });
+
+  const candidates = findIssuerOctokit(authResult.request);
+  const results = await createTokens([authResult]);
+  const result = results.get(authResult)!;
+
+  expect(result).toMatchObject({
+    type: "CREATED",
+    issuer: candidates[1].issuer,
+    failedAttempts: [{ type: "REQUEST_ERROR", issuer: candidates[0].issuer }],
+  });
+
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "::debug::Trying issuer app 947161494 installation 2133206579
+    ::debug::Trying issuer app 571481606 installation 1539634462
+
+    Token #1:
+
+    ✅ Read-only token created with access to all repos in account-a:
+      ✅ Has read access without a role
+      ✅ Has access to all repos in account-a
+      ✅ Has 1 permission:
+        ✅ metadata: read
+      ⚠️ Failed attempts:
+        ⚠️ 403 - Forbidden
+    ::debug::      {
+    ::debug::        "message": "Resource not accessible"
+    ::debug::      }
+
+    "
+  `);
+
+  const toMdast = createMarkdownTokenCreationExplainer();
+
+  await expect(toMarkdown(toMdast(authResult, result))).toMatchFileSnapshot(
+    join(fixturesPath, "fallback-success/auth.md"),
+  );
+});
+
+it("explains every issuer attempt when every issuer fails", async () => {
+  const [[accountA, [repoA]]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "account-a",
+    ["repo-a"],
+  ]);
+  const [[appA, [appAInstallationA]], [appB, [appBInstallationB]]] =
+    createTestApps(
+      ["App A", { metadata: "read" }, [[accountA]]],
+      ["App B", { metadata: "read" }, [[accountA]]],
+    );
+  const appRegistry = createTestAppRegistry(
+    createTestRepoRegistry(),
+    {
+      app: appA,
+      issuer: [],
+      installations: [[appAInstallationA, [repoA]]],
+    },
+    {
+      app: appB,
+      issuer: [],
+      installations: [[appBInstallationB, [repoA]]],
+    },
+  );
+
+  const { findIssuerOctokit } = createTestOctokitFactory(appRegistry);
+  const createTokens = createTokenFactory(findIssuerOctokit);
+
+  const unexpectedError = new Error("<message>");
+  unexpectedError.stack = "Error: <message>\n    at token-factory.ts:1:1";
+  __setErrors("apps.createInstallationAccessToken", [
+    new TestRequestError(403, { message: "Resource not accessible" }),
+    unexpectedError,
+  ]);
+
+  const authResult = createTestTokenAuthResult({
+    request: {
+      consumer: { account: "consumer-a" },
+      tokenDec: createTestTokenDec(),
+      repos: "all",
+    },
+  });
+
+  const candidates = findIssuerOctokit(authResult.request);
+  const results = await createTokens([authResult]);
+  const result = results.get(authResult)!;
+
+  expect(result).toMatchObject({
+    type: "FAILED",
+    attempts: [
+      { type: "REQUEST_ERROR", issuer: candidates[0].issuer },
+      { type: "ERROR", issuer: candidates[1].issuer },
+    ],
+  });
+
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "::debug::Trying issuer app 947161494 installation 2133206579
+    ::debug::Trying issuer app 571481606 installation 1539634462
+
+    Token #1:
+
+    ❌ Failed to create read-only token with access to all repos in account-a:
+      ➖ Wanted read access without a role
+      ➖ Wanted access to all repos in account-a
+      ➖ Wanted 1 permission:
+        ➖ metadata: read
+      ❌ Failed attempts:
+        ❌ 403 - Forbidden
+    ::debug::      {
+    ::debug::        "message": "Resource not accessible"
+    ::debug::      }
+        ❌ <message>
+    ::debug::      Error: <message>
+    ::debug::          at token-factory.ts:1:1
+
+    "
+  `);
+
+  const toMdast = createMarkdownTokenCreationExplainer();
+
+  await expect(toMarkdown(toMdast(authResult, result))).toMatchFileSnapshot(
+    join(fixturesPath, "all-failed/auth.md"),
+  );
 });

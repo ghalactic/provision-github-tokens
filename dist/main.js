@@ -60586,6 +60586,7 @@ function compareTokenRequest(a2, b2) {
 var DASH_ICON = "\u2796";
 var FAIL_ICON = "\u274C";
 var PASS_ICON = "\u2705";
+var WARN_ICON = "\u26A0\uFE0F";
 function icon(status) {
   return typeof status === "undefined" ? DASH_ICON : status ? PASS_ICON : FAIL_ICON;
 }
@@ -61073,11 +61074,11 @@ function gfmFootnoteToMarkdown(options) {
     firstLineBlank = true;
   }
   return {
-    handlers: { footnoteDefinition, footnoteReference },
+    handlers: { footnoteDefinition: footnoteDefinition2, footnoteReference },
     // This is on by default already.
     unsafe: [{ character: "[", inConstruct: ["label", "phrasing", "reference"] }]
   };
-  function footnoteDefinition(node2, _2, state, info2) {
+  function footnoteDefinition2(node2, _2, state, info2) {
     const tracker = state.createTracker(info2);
     let value = tracker.move("[^");
     const exit = state.enter("footnoteDefinition");
@@ -65650,6 +65651,21 @@ function definition2(identifier, url) {
 function emphasis2(...children) {
   return { type: "emphasis", children };
 }
+function footnoteDefinition(identifier, ...children) {
+  return {
+    type: "footnoteDefinition",
+    identifier,
+    label: identifier,
+    children
+  };
+}
+function footnoteReference2(identifier) {
+  return {
+    type: "footnoteReference",
+    identifier,
+    label: identifier
+  };
+}
 function gfmAlert(type, ...children) {
   return blockquote2(paragraph2(text2(`[!${type}]`)), ...children);
 }
@@ -66165,7 +66181,7 @@ function createTextTokenAuthExplainer() {
 function createAuthorizer(createProvisionRequest, provisionAuthorizer, tokenAuthorizer) {
   return {
     async authorize(requesters) {
-      for (const { config, requester } of requesters.values()) {
+      for (const { config, requester } of requesters) {
         if (!config) continue;
         for (const name in config.provision.secrets) {
           provisionAuthorizer.authorizeSecret(
@@ -73980,106 +73996,159 @@ function normalizeRequesterConfig(definingRepo, config) {
   return config;
 }
 
+// src/try-each.ts
+async function tryEach(fn, shouldTryNext, candidates2) {
+  if (candidates2.length < 1) {
+    throw new Error("Invariant violation: Expected at least one candidate");
+  }
+  const failures = [];
+  for (let i2 = 0; i2 < candidates2.length; ++i2) {
+    const candidate = candidates2[i2];
+    try {
+      return {
+        type: "SUCCEEDED",
+        failures,
+        candidate,
+        value: await fn(candidate)
+      };
+    } catch (error2) {
+      const failure = { candidate, error: error2 };
+      failures.push(failure);
+      if (!shouldTryNext(failure) && i2 + 1 < candidates2.length) {
+        return { type: "FAILED", failures, exhausted: false };
+      }
+    }
+  }
+  return { type: "FAILED", failures, exhausted: true };
+}
+
 // src/discover-requesters.ts
 var CONFIG_PATH = ".github/ghalactic/provision-github-tokens.yml";
-async function discoverRequesters(octokitFactory, appRegistry, appsInput) {
-  const discovered = /* @__PURE__ */ new Map();
+async function discoverRequesters(findProvisionerOctokit, appRegistry) {
+  const discovered = [];
   let discoverCount = 0;
-  for (const [, instReg] of appRegistry.provisioners) {
-    const { installation, repos } = instReg;
-    const octokit = octokitFactory.installationOctokit(
-      appsInput,
-      installation.app_id,
-      installation.id
+  for (const requester of requestersForDiscovery(appRegistry)) {
+    const repoName = repoRefToString(requester);
+    const result = await tryEach(
+      async (candidate) => readRequester(candidate.octokit, requester),
+      ({ candidate, error: error2 }) => {
+        const { installation } = candidate.provisioner;
+        debug(
+          `Provisioner app ${installation.app_id} installation ${installation.id} couldn't discover requester ${repoName}: ${errorMessage(error2)}`
+        );
+        warning(
+          `Provisioner couldn't discover requester ${repoName}: ` + errorMessage(error2)
+        );
+        return true;
+      },
+      findProvisionerOctokit(requester)
     );
-    for (const r2 of repos) {
-      if (discovered.has(r2.full_name)) continue;
-      const requester = createRepoRef(r2.owner.login, r2.name);
-      const commits = await octokit.rest.repos.listCommits({
-        owner: requester.account,
-        repo: requester.repo,
-        path: CONFIG_PATH,
-        per_page: 1
-      });
-      const head = commits.data[0];
-      if (!head) {
-        debug(`Repo ${r2.full_name} isn't a requester`);
-        continue;
-      }
-      const configSha = head.sha;
-      let configYaml;
-      try {
-        const res = await octokit.rest.repos.getContent({
-          owner: requester.account,
-          repo: requester.repo,
-          path: CONFIG_PATH,
-          ref: configSha,
-          mediaType: { format: "raw" }
-        });
-        if (typeof res.data !== "string") {
-          throw new Error(
-            `Invariant violation: Unexpected repo contents type ${typeof res.data}`
-          );
-        }
-        configYaml = res.data;
-      } catch (error2) {
-        handleRequestError(error2, {
-          404: () => {
-            debug(`Repo ${r2.full_name} isn't a requester`);
+    if (result.type === "FAILED") {
+      const errors = [];
+      for (const failure of result.failures) errors.push(failure.error);
+      throw new AggregateError(
+        errors,
+        `No provisioner could discover requester ${repoName}`
+      );
+    }
+    if (!result.value) {
+      debug(`Repo ${repoName} isn't a requester`);
+      continue;
+    }
+    const { configSha, configYaml } = result.value;
+    debug(`Discovered requester ${repoName}`);
+    let config;
+    try {
+      config = parseRequesterConfig(requester, CONFIG_PATH, configYaml);
+    } catch (error2) {
+      warning(`Requester ${repoName} has invalid config`);
+      const cause = errorCause(error2);
+      if (!cause) {
+        throw new Error(
+          "Invariant violation: Requester config error has no cause",
+          {
+            cause: error2
           }
-        });
-        continue;
+        );
       }
-      debug(`Discovered requester ${r2.full_name}`);
-      let config;
-      try {
-        config = parseRequesterConfig(requester, CONFIG_PATH, configYaml);
-      } catch (error2) {
-        warning(`Requester ${r2.full_name} has invalid config`);
-        const cause = errorCause(error2);
-        if (!cause) {
-          throw new Error(
-            "Invariant violation: Requester config error has no cause",
-            { cause: error2 }
-          );
-        }
-        discovered.set(r2.full_name, {
-          requester,
-          configPath: CONFIG_PATH,
-          configSha,
-          configError: cause
-        });
-        continue;
-      }
-      const tokenDecNames = Object.keys(config.tokens);
-      const tokenDecs = pluralize(
-        tokenDecNames.length,
-        "token declaration",
-        "token declarations"
-      );
-      debug(
-        `Requester ${r2.full_name} has ${tokenDecs} ` + JSON.stringify(tokenDecNames)
-      );
-      const secretDecNames = Object.keys(config.provision.secrets);
-      const secretDecs = pluralize(
-        secretDecNames.length,
-        "secret declaration",
-        "secret declarations"
-      );
-      debug(
-        `Requester ${r2.full_name} has ${secretDecs} ` + JSON.stringify(secretDecNames)
-      );
-      ++discoverCount;
-      discovered.set(r2.full_name, {
+      discovered.push({
         requester,
         configPath: CONFIG_PATH,
-        config,
-        configSha
+        configSha,
+        configError: cause
       });
+      continue;
     }
+    const tokenDecNames = Object.keys(config.tokens);
+    const tokenDecs = pluralize(
+      tokenDecNames.length,
+      "token declaration",
+      "token declarations"
+    );
+    debug(
+      `Requester ${repoName} has ${tokenDecs} ` + JSON.stringify(tokenDecNames)
+    );
+    const secretDecNames = Object.keys(config.provision.secrets);
+    const secretDecs = pluralize(
+      secretDecNames.length,
+      "secret declaration",
+      "secret declarations"
+    );
+    debug(
+      `Requester ${repoName} has ${secretDecs} ` + JSON.stringify(secretDecNames)
+    );
+    ++discoverCount;
+    discovered.push({
+      requester,
+      configPath: CONFIG_PATH,
+      config,
+      configSha
+    });
   }
   info(`Discovered ${pluralize(discoverCount, "requester", "requesters")}`);
   return discovered;
+}
+async function readRequester(octokit, requester) {
+  const commits = await octokit.rest.repos.listCommits({
+    owner: requester.account,
+    repo: requester.repo,
+    path: CONFIG_PATH,
+    per_page: 1
+  });
+  const head = commits.data[0];
+  if (!head) return void 0;
+  const configSha = head.sha;
+  try {
+    const res = await octokit.rest.repos.getContent({
+      owner: requester.account,
+      repo: requester.repo,
+      path: CONFIG_PATH,
+      ref: configSha,
+      mediaType: { format: "raw" }
+    });
+    if (typeof res.data !== "string") {
+      throw new Error(
+        `Invariant violation: Unexpected repo contents type ${typeof res.data}`
+      );
+    }
+    return { configSha, configYaml: res.data };
+  } catch (error2) {
+    if (error2 instanceof RequestError && error2.status === 404) return void 0;
+    throw error2;
+  }
+}
+function requestersForDiscovery(appRegistry) {
+  const found = /* @__PURE__ */ new Map();
+  for (const [, { repos }] of appRegistry.provisioners) {
+    for (const repo of repos) {
+      const requester = createRepoRef(repo.owner.login, repo.name);
+      const repoName = repoRefToString(requester);
+      if (!found.has(repoName)) found.set(repoName, requester);
+    }
+  }
+  const requesters = Array.from(found.values());
+  requesters.sort(compareRef);
+  return requesters;
 }
 
 // node_modules/.pnpm/libsodium@0.8.0/node_modules/libsodium/dist/modules-esm/libsodium.mjs
@@ -120927,22 +120996,19 @@ function createAgentsOctokit(octokit) {
 }
 
 // src/encrypt-secret.ts
-function createEncryptSecret(findProvisionerOctokit) {
+function createEncryptSecret() {
   const keys = {};
-  return async (target, plaintext) => {
-    const found = findProvisionerOctokit(target.target);
-    if (!found) {
-      throw new Error(
-        "No provisioners found for target " + accountOrRepoRefToString(target.target)
-      );
-    }
-    const [octokit] = found;
+  const payloads = {};
+  return async (octokit, target, plaintext) => {
     const keyCacheId = JSON.stringify([
       target.type,
       target.target.account,
       isRepoRef(target.target) ? target.target.repo : void 0,
       isEnvRef(target.target) ? target.target.environment : void 0
     ]);
+    const payloadCacheId = JSON.stringify([keyCacheId, plaintext]);
+    const cachedPayload = payloads[payloadCacheId];
+    if (cachedPayload) return cachedPayload;
     const key = keys[keyCacheId] ?? await getPublicKey(octokit, target);
     keys[keyCacheId] = key;
     await libsodium_wrappers_default.ready;
@@ -120957,7 +121023,9 @@ function createEncryptSecret(findProvisionerOctokit) {
       encryptedBytes,
       libsodium_wrappers_default.base64_variants.ORIGINAL
     );
-    return [encrypted, key.key_id];
+    const payload = [encrypted, key.key_id];
+    payloads[payloadCacheId] = payload;
+    return payload;
   };
   async function getPublicKey(octokit, { type, target }) {
     if (type === "actions") {
@@ -121036,36 +121104,104 @@ function createEnvironmentResolver(findProvisionerOctokit) {
     const repoName = repoRefToString(repo);
     if (envsByRepo[repoName]) return envsByRepo[repoName];
     const found = findProvisionerOctokit(repo);
-    if (!found) {
+    if (found.length < 1) {
       throw new Error(`No provisioners found for repo ${repoName}`);
     }
-    const [octokit] = found;
-    const envPages = octokit.paginate.iterator(
-      octokit.rest.repos.getAllEnvironments,
-      { owner: repo.account, repo: repo.repo }
+    const result = await tryEach(
+      async (candidate) => {
+        const envPages = candidate.octokit.paginate.iterator(
+          candidate.octokit.rest.repos.getAllEnvironments,
+          { owner: repo.account, repo: repo.repo }
+        );
+        const names = [];
+        for await (const { data: envs } of envPages) {
+          for (const env of envs) names.push(env.name);
+        }
+        return names;
+      },
+      (failure) => {
+        const { installation } = failure.candidate.provisioner;
+        debug(
+          `Provisioner app ${installation.app_id} installation ${installation.id} couldn't list environments for ${repoName}: ${errorMessage(failure.error)}`
+        );
+        warning(
+          `Provisioner couldn't list environments for ${repoName}: ` + errorMessage(failure.error)
+        );
+        return true;
+      },
+      found
     );
-    const names = [];
-    for await (const { data: envs } of envPages) {
-      for (const env of envs) names.push(env.name);
+    if (result.type === "FAILED") {
+      const errors = [];
+      for (const failure of result.failures) errors.push(failure.error);
+      throw new AggregateError(
+        errors,
+        `No provisioner could list environments for repo ${repoName}`
+      );
     }
-    debug(`Repo ${repoName} has environments ${JSON.stringify(names)}`);
-    return envsByRepo[repoName] = names;
+    debug(`Repo ${repoName} has environments ${JSON.stringify(result.value)}`);
+    return envsByRepo[repoName] = result.value;
   }
+}
+
+// src/order-candidates.ts
+function orderCandidates(workKey, candidates2, appId) {
+  const scored = [];
+  for (const candidate of candidates2) {
+    const id = appId(candidate);
+    scored.push({
+      candidate,
+      appId: id,
+      weight: candidateWeight(workKey, id)
+    });
+  }
+  scored.sort((a2, b2) => b2.weight - a2.weight || a2.appId - b2.appId);
+  const ordered = [];
+  for (const { candidate } of scored) ordered.push(candidate);
+  return ordered;
+}
+function candidateWeight(workKey, appId) {
+  return mulberry32(fnv1a32(`${workKey}\0${appId}`))();
+}
+function fnv1a32(value) {
+  let hash = 2166136261;
+  for (let i2 = 0; i2 < value.length; ++i2) {
+    hash ^= value.charCodeAt(i2);
+    hash = Math.imul(hash, 16777619);
+  }
+  return hash >>> 0;
+}
+function mulberry32(seed) {
+  let state = seed;
+  return () => {
+    state = state + 1831565813 | 0;
+    let t2 = state;
+    t2 = Math.imul(t2 ^ t2 >>> 15, t2 | 1);
+    t2 ^= t2 + Math.imul(t2 ^ t2 >>> 7, t2 | 61);
+    return ((t2 ^ t2 >>> 14) >>> 0) / 4294967296;
+  };
 }
 
 // src/issuer-octokit.ts
 function createFindIssuerOctokit(octokitFactory, appRegistry, appsInput) {
   return (request2) => {
-    const [reg] = appRegistry.findIssuersForRequest(request2);
-    if (!reg) return void 0;
-    return [
-      octokitFactory.installationOctokit(
-        appsInput,
-        reg.installation.app_id,
-        reg.installation.id
-      ),
-      reg
-    ];
+    const regs = orderCandidates(
+      tokenShapeKey(request2),
+      appRegistry.findIssuersForRequest(request2),
+      (reg) => reg.installation.app_id
+    );
+    const candidates2 = [];
+    for (const reg of regs) {
+      candidates2.push({
+        octokit: octokitFactory.installationOctokit(
+          appsInput,
+          reg.installation.app_id,
+          reg.installation.id
+        ),
+        issuer: reg
+      });
+    }
+    return candidates2;
   };
 }
 
@@ -121354,17 +121490,31 @@ function createProvisionAuthorizer(createTokenRequest, tokenAuthorizer, config) 
 // src/provisioner-octokit.ts
 function createFindProvisionerOctokit(octokitFactory, appRegistry, appsInput) {
   return (target) => {
-    const [reg] = appRegistry.findProvisionersForAccountOrRepo(target);
-    if (!reg) return void 0;
-    return [
-      octokitFactory.installationOctokit(
-        appsInput,
-        reg.installation.app_id,
-        reg.installation.id
-      ),
-      reg
-    ];
+    const regs = orderCandidates(
+      provisionerWorkKey(target),
+      appRegistry.findProvisionersForAccountOrRepo(target),
+      (reg) => reg.installation.app_id
+    );
+    const candidates2 = [];
+    for (const reg of regs) {
+      candidates2.push({
+        octokit: octokitFactory.installationOctokit(
+          appsInput,
+          reg.installation.app_id,
+          reg.installation.id
+        ),
+        provisioner: reg
+      });
+    }
+    return candidates2;
   };
+}
+function provisionerWorkKey(target) {
+  return JSON.stringify([
+    target.account,
+    isRepoRef(target) ? target.repo : void 0,
+    isEnvRef(target) ? target.environment : void 0
+  ]);
 }
 
 // src/text.ts
@@ -121404,9 +121554,14 @@ function createTextProvisionExplainer() {
     const isProvisioned = result.type === "PROVISIONED";
     const visibility = explainVisibility(target, isProvisioned);
     switch (result.type) {
-      case "PROVISIONED":
+      case "PROVISIONED": {
+        const failed = renderFailedAttempts(
+          result.failedAttempts,
+          isProvisioned
+        );
         return `
-  ${PASS_ICON} Provisioned to ${subject}${visibility}`;
+  ${PASS_ICON} Provisioned to ${subject}${failed ? ":" : ""}${visibility}${failed}`;
+      }
       case "NOT_ALLOWED":
         return `
   ${FAIL_ICON} Not allowed to provision to ${subject}${visibility}`;
@@ -121416,20 +121571,35 @@ function createTextProvisionExplainer() {
       case "NO_PROVISIONER":
         return `
   ${FAIL_ICON} No suitable provisioner for ${subject}${visibility}`;
-      case "REQUEST_ERROR": {
-        const summary2 = `${FAIL_ICON} Failed to provision to ${subject}: ${result.error.status} - ${result.error.message}`;
-        const body = result.error.response?.data;
+      case "FAILED":
+        return `
+  ${FAIL_ICON} Failed to provision to ${subject}:${visibility}${renderFailedAttempts(result.attempts, isProvisioned)}`;
+    }
+  }
+  function renderFailedAttempts(attempts, isProvisioned) {
+    if (attempts.length < 1) return "";
+    const statusIcon = isProvisioned ? WARN_ICON : FAIL_ICON;
+    return `
+    ${statusIcon} Failed attempts:` + renderAttemptItems(statusIcon, attempts);
+  }
+  function renderAttemptItems(statusIcon, attempts) {
+    let output = "";
+    for (const attempt of attempts) {
+      if (attempt.type === "REQUEST_ERROR") {
+        const body = attempt.error.response?.data;
         const detail = typeof body === "undefined" ? "(no response data)" : JSON.stringify(body, null, 2);
-        return `
-  ${summary2}${visibility}
+        output += `
+      ${statusIcon} ${attempt.error.status} - ${attempt.error.message}`;
+        output += `
 ${prefixLines("::debug::      ", detail)}`;
-      }
-      case "ERROR": {
-        return `
-  ${FAIL_ICON} Failed to provision to ${subject}: ${errorMessage(result.error)}${visibility}
-${prefixLines("::debug::      ", errorStack(result.error))}`;
+      } else {
+        output += `
+      ${statusIcon} ` + errorMessage(attempt.error);
+        output += `
+${prefixLines("::debug::      ", errorStack(attempt.error))}`;
       }
     }
+    return output;
   }
   function explainSubject(target) {
     return `${secretTypeText(target)} secret in ` + accountOrRepoRefToString(target.target);
@@ -121521,37 +121691,37 @@ Secret #${i2}:
     return provisionResults;
   };
   async function provisionToTarget(tokenResult, name, requestTarget) {
-    const found = findProvisionerOctokit(requestTarget.target);
-    if (!found) return { type: "NO_PROVISIONER" };
-    const [octokit] = found;
-    let encrypted;
-    let keyId;
-    try {
-      [encrypted, keyId] = await encryptSecret(
-        requestTarget,
-        tokenResult.token.token
-      );
-    } catch (error2) {
-      if (error2 instanceof RequestError) {
-        return { type: "REQUEST_ERROR", error: error2 };
-      }
-      return { type: "ERROR", error: error2 };
-    }
-    try {
-      await createOrUpdateSecret(
-        octokit,
-        encrypted,
-        keyId,
-        name,
-        requestTarget
-      );
-      return { type: "PROVISIONED" };
-    } catch (error2) {
-      if (error2 instanceof RequestError) {
-        return { type: "REQUEST_ERROR", error: error2 };
-      }
-      return { type: "ERROR", error: error2 };
-    }
+    const candidates2 = findProvisionerOctokit(requestTarget.target);
+    if (candidates2.length < 1) return { type: "NO_PROVISIONER" };
+    const result = await tryEach(
+      async (candidate) => {
+        const { installation } = candidate.provisioner;
+        debug(
+          `Trying provisioner app ${installation.app_id} installation ${installation.id}`
+        );
+        const [encrypted, keyId] = await encryptSecret(
+          candidate.octokit,
+          requestTarget,
+          tokenResult.token.token
+        );
+        await createOrUpdateSecret(
+          candidate.octokit,
+          encrypted,
+          keyId,
+          name,
+          requestTarget
+        );
+      },
+      () => true,
+      candidates2
+    );
+    const attempts = toProvisionAttempts(result.failures);
+    if (result.type === "FAILED") return { type: "FAILED", attempts };
+    return {
+      type: "PROVISIONED",
+      provisioner: result.candidate.provisioner,
+      failedAttempts: attempts
+    };
   }
   async function createOrUpdateSecret(octokit, encrypted, keyId, name, requestTarget) {
     const { type } = requestTarget;
@@ -121660,6 +121830,15 @@ Secret #${i2}:
       selected_repository_ids: visibility.repos.map(({ id }) => id)
     };
   }
+}
+function toProvisionAttempts(failures) {
+  const attempts = [];
+  for (const { candidate, error: error2 } of failures) {
+    attempts.push(
+      error2 instanceof RequestError ? { type: "REQUEST_ERROR", provisioner: candidate.provisioner, error: error2 } : { type: "ERROR", provisioner: candidate.provisioner, error: error2 }
+    );
+  }
+  return attempts;
 }
 
 // src/provision-auth-explainer/markdown.ts
@@ -121984,16 +122163,22 @@ function createMarkdownProvisionExplainer() {
     const isProvisioned = result.type === "PROVISIONED";
     const visibility = explainVisibility(target, isProvisioned);
     switch (result.type) {
-      case "PROVISIONED":
+      case "PROVISIONED": {
+        const failed = renderFailedAttempts(
+          result.failedAttempts,
+          isProvisioned
+        );
         return [
           paragraph2(
             text2(`${PASS_ICON} `),
             strong2(text2("Provisioned")),
             text2(" to "),
-            ...subject
+            ...subject,
+            ...failed.length > 0 ? [text2(":")] : []
           ),
-          ...nestedList(...visibility)
+          ...nestedList(...visibility, ...failed)
         ];
+      }
       case "NOT_ALLOWED":
         return [
           paragraph2(
@@ -122022,8 +122207,7 @@ function createMarkdownProvisionExplainer() {
           ),
           ...nestedList(...visibility)
         ];
-      case "REQUEST_ERROR": {
-        const body = result.error.response?.data;
+      case "FAILED":
         return [
           paragraph2(
             text2(`${FAIL_ICON} `),
@@ -122034,39 +122218,54 @@ function createMarkdownProvisionExplainer() {
           ),
           list3(
             ...visibility,
-            listItem2(
-              paragraph2(
-                text2(`${FAIL_ICON} `),
-                strong2(text2(String(result.error.status))),
-                text2(" - "),
-                emphasis2(text2(result.error.message))
-              ),
-              ...details(
-                "Response body",
-                typeof body === "undefined" ? paragraph2(emphasis2(text2("(no response data)"))) : code3("json", JSON.stringify(body, null, 2))
-              )
-            )
-          )
-        ];
-      }
-      case "ERROR":
-        return [
-          paragraph2(
-            text2(`${FAIL_ICON} `),
-            strong2(text2("Failed")),
-            text2(" to provision to "),
-            ...subject,
-            text2(":")
-          ),
-          list3(
-            ...visibility,
-            listItem2(
-              paragraph2(text2(`${FAIL_ICON} ${errorMessage(result.error)}`)),
-              ...details("Error stack", code3("text", errorStack(result.error)))
-            )
+            ...renderFailedAttempts(result.attempts, isProvisioned)
           )
         ];
     }
+  }
+  function renderFailedAttempts(attempts, isProvisioned) {
+    if (attempts.length < 1) return [];
+    const statusIcon = isProvisioned ? WARN_ICON : FAIL_ICON;
+    return [
+      listItem2(
+        paragraph2(
+          text2(`${statusIcon} `),
+          strong2(text2("Failed attempts")),
+          text2(":")
+        ),
+        list3(...renderAttemptItems(statusIcon, attempts))
+      )
+    ];
+  }
+  function renderAttemptItems(statusIcon, attempts) {
+    const items = [];
+    for (const attempt of attempts) {
+      if (attempt.type === "REQUEST_ERROR") {
+        const body = attempt.error.response?.data;
+        items.push(
+          listItem2(
+            paragraph2(
+              text2(`${statusIcon} `),
+              strong2(text2(String(attempt.error.status))),
+              text2(" - "),
+              emphasis2(text2(attempt.error.message))
+            ),
+            ...details(
+              "Response body",
+              typeof body === "undefined" ? paragraph2(emphasis2(text2("(no response data)"))) : code3("json", JSON.stringify(body, null, 2))
+            )
+          )
+        );
+      } else {
+        items.push(
+          listItem2(
+            paragraph2(text2(`${statusIcon} ${errorMessage(attempt.error)}`)),
+            ...details("Error stack", code3("text", errorStack(attempt.error)))
+          )
+        );
+      }
+    }
+    return items;
   }
   function explainSubject(target) {
     return [
@@ -122367,6 +122566,10 @@ function createMarkdownTokenCreationExplainer() {
     }
     nested.children.push(...renderRepoLines(subIcon, verb, repos, account));
     nested.children.push(...renderPermissionLines(subIcon, verb, permEntries));
+    const attempts = resultAttempts(result);
+    if (attempts.length > 0) {
+      nested.children.push(renderFailedAttempts(attempts, isSuccess));
+    }
     summary2.children.push(nested);
     return [list3(summary2)];
   }
@@ -122397,6 +122600,7 @@ function createMarkdownTokenCreationExplainer() {
   function renderErrorLines(result, consumer) {
     switch (result.type) {
       case "CREATED":
+      case "FAILED":
         return [];
       case "NOT_ALLOWED": {
         return [
@@ -122411,31 +122615,53 @@ function createMarkdownTokenCreationExplainer() {
       }
       case "NO_ISSUER":
         return [listItem2(paragraph2(text2(`${FAIL_ICON} No suitable issuer`)))];
-      case "REQUEST_ERROR": {
-        const body = result.error.response?.data;
-        return [
+    }
+  }
+  function resultAttempts(result) {
+    if (result.type === "CREATED") return result.failedAttempts;
+    if (result.type === "FAILED") return result.attempts;
+    return [];
+  }
+  function renderFailedAttempts(attempts, isSuccess) {
+    const statusIcon = isSuccess ? WARN_ICON : FAIL_ICON;
+    return listItem2(
+      paragraph2(
+        text2(`${statusIcon} `),
+        strong2(text2("Failed attempts")),
+        text2(":")
+      ),
+      list3(...renderAttemptItems(statusIcon, attempts))
+    );
+  }
+  function renderAttemptItems(statusIcon, attempts) {
+    const items = [];
+    for (const attempt of attempts) {
+      if (attempt.type === "REQUEST_ERROR") {
+        const body = attempt.error.response?.data;
+        items.push(
           listItem2(
             paragraph2(
-              text2(`${FAIL_ICON} `),
-              strong2(text2(String(result.error.status))),
+              text2(`${statusIcon} `),
+              strong2(text2(String(attempt.error.status))),
               text2(" - "),
-              emphasis2(text2(result.error.message))
+              emphasis2(text2(attempt.error.message))
             ),
             ...details(
               "Response body",
               typeof body === "undefined" ? paragraph2(emphasis2(text2("(no response data)"))) : code3("json", JSON.stringify(body, null, 2))
             )
           )
-        ];
-      }
-      case "ERROR":
-        return [
+        );
+      } else {
+        items.push(
           listItem2(
-            paragraph2(text2(`${FAIL_ICON} ${errorMessage(result.error)}`)),
-            ...details("Error stack", code3("text", errorStack(result.error)))
+            paragraph2(text2(`${statusIcon} ${errorMessage(attempt.error)}`)),
+            ...details("Error stack", code3("text", errorStack(attempt.error)))
           )
-        ];
+        );
+      }
     }
+    return items;
   }
   function renderRepoLines(icon2, verb, repos, account) {
     if (repos === "all") {
@@ -122727,29 +122953,32 @@ function isFullyProvisioned(authResult, provisionResults) {
 function createReconcileDashboards(findProvisionerOctokit) {
   return async (context, config, requesters, tokenResults, tokenCreationResults, provisionResults) => {
     debug("Reconciling token dashboards");
-    const entries = [...requesters.entries()].sort(
-      ([a2], [b2]) => a2.localeCompare(b2)
+    const entries = [...requesters].sort(
+      (a2, b2) => repoRefToString(a2.requester).localeCompare(repoRefToString(b2.requester))
     );
-    for (const [repoName, discovered] of entries) {
-      try {
-        await reconcileRepo(discovered);
-      } catch (cause) {
-        debug(
-          `Failed to reconcile dashboard for ${repoName}: ` + errorMessage(cause)
-        );
+    for (const discovered of entries) {
+      const repoName = repoRefToString(discovered.requester);
+      const result = await tryEach(
+        async ({ octokit }) => reconcileRepo(octokit, discovered),
+        ({ candidate, error: error2 }) => {
+          const { installation } = candidate.provisioner;
+          debug(
+            `Provisioner app ${installation.app_id} installation ${installation.id} couldn't reconcile dashboard for ${repoName}: ${errorMessage(error2)}`
+          );
+          warning(
+            `Provisioner couldn't reconcile dashboard for ${repoName}: ` + errorMessage(error2)
+          );
+          return true;
+        },
+        findProvisionerOctokit(discovered.requester)
+      );
+      if (result.type === "FAILED") {
         error(`Failed to reconcile dashboard for ${repoName}`);
       }
     }
-    async function reconcileRepo(discovered) {
+    async function reconcileRepo(octokit, discovered) {
       const { requester } = discovered;
       const repoName = repoRefToString(requester);
-      const found = findProvisionerOctokit(requester);
-      if (!found) {
-        throw new Error(
-          `Invariant violation: No provisioner found for requester ${repoName}`
-        );
-      }
-      const [octokit] = found;
       if (!config.dashboards.enabled) {
         await closeOpenDashboards(
           octokit,
@@ -122888,12 +123117,15 @@ function createReconcileDashboards(findProvisionerOctokit) {
       return openIssues;
     }
     async function closeIssue(octokit, ref, number, reason) {
-      await octokit.rest.issues.createComment({
-        owner: ref.account,
-        repo: ref.repo,
-        issue_number: number,
-        body: `Closing this dashboard because ${reason}`
-      });
+      const body = `Closing this dashboard because ${reason}`;
+      if (!await issueHasComment(octokit, ref, number, body)) {
+        await octokit.rest.issues.createComment({
+          owner: ref.account,
+          repo: ref.repo,
+          issue_number: number,
+          body
+        });
+      }
       await octokit.rest.issues.update({
         owner: ref.account,
         repo: ref.repo,
@@ -122903,6 +123135,23 @@ function createReconcileDashboards(findProvisionerOctokit) {
       info(
         `Closed dashboard ${context.githubServerUrl}/${repoRefToString(ref)}/issues/${number}`
       );
+    }
+    async function issueHasComment(octokit, ref, number, body) {
+      const commentPages = octokit.paginate.iterator(
+        octokit.rest.issues.listComments,
+        {
+          owner: ref.account,
+          repo: ref.repo,
+          issue_number: number,
+          per_page: 100
+        }
+      );
+      for await (const { data } of commentPages) {
+        for (const comment of data) {
+          if (comment.body === body) return true;
+        }
+      }
+      return false;
     }
     async function ensureDashboardLabel(octokit, ref) {
       try {
@@ -122932,7 +123181,7 @@ function createReconcileDashboards(findProvisionerOctokit) {
 
 // src/register-token-declarations.ts
 function registerTokenDeclarations(declarationRegistry, requesters) {
-  for (const { requester, config } of requesters.values()) {
+  for (const { requester, config } of requesters) {
     if (!config) continue;
     for (const [name, declaration] of Object.entries(config.tokens)) {
       declarationRegistry.registerDeclaration(requester, name, declaration);
@@ -122967,6 +123216,8 @@ function createRepoRegistry() {
 // src/summary.ts
 var LINK_REF_PREFIX = "gh/";
 var MAX_ROWS = 1e3;
+var FALLBACK_FOOTNOTE_ID = "fallback";
+var FALLBACK_FOOTNOTE_TEXT = "One or more issuers or provisioners failed, and a fallback was used. Re-run with debug logging enabled for details.";
 function renderSummary(context, requesters, authResult, tokenCreationResults, provisionResults) {
   const { provisionResults: authResults } = authResult;
   const allConfigIssues = discoveredConfigIssues();
@@ -122990,6 +123241,13 @@ function renderSummary(context, requesters, authResult, tokenCreationResults, pr
   const omittedDeniedCount = allDeniedRows.length - deniedRows.length;
   const omittedAllowedCount = allAllowedRows.length - allowedRows.length;
   const omittedCount = omittedDeniedCount + omittedAllowedCount;
+  let anyFallback = false;
+  for (const row of allowedRows) {
+    if (rowUsesFallback(row)) {
+      anyFallback = true;
+      break;
+    }
+  }
   const definitions = {};
   return toMarkdown2([
     ...configIssuesSection(),
@@ -123002,11 +123260,12 @@ function renderSummary(context, requesters, authResult, tokenCreationResults, pr
       authResults.length,
       "secrets"
     ),
-    ...definitionsAst()
+    ...definitionsAst(),
+    ...fallbackFootnote()
   ]);
   function discoveredConfigIssues() {
     const configIssues2 = [];
-    for (const discovered of requesters.values()) {
+    for (const discovered of requesters) {
       if (discovered.configError) {
         configIssues2.push({ discovered, error: discovered.configError });
       }
@@ -123138,11 +123397,41 @@ function renderSummary(context, requesters, authResult, tokenCreationResults, pr
   }
   function successRow(result) {
     addAccountOrRepoDef(result.request.requester);
+    const fallback = rowUsesFallback(result);
+    const statusCell = [
+      text2(fallback ? WARN_ICON : PASS_ICON)
+    ];
+    if (fallback) statusCell.push(footnoteReference2(FALLBACK_FOOTNOTE_ID));
     return [
-      [text2(PASS_ICON)],
+      statusCell,
       [accountOrRepoLinkRef(result.request.requester)],
       [inlineCode2(result.request.name)],
       targetCellChildren(result.request.to)
+    ];
+  }
+  function rowUsesFallback(result) {
+    const firstTarget = result.results[0];
+    if (!firstTarget?.tokenAuthResult) return false;
+    const tokenResult = tokenCreationResults.get(firstTarget.tokenAuthResult);
+    if (tokenResult?.type === "CREATED" && tokenResult.failedAttempts.length > 0) {
+      return true;
+    }
+    const targetResults = provisionResults.get(result);
+    if (!targetResults) return false;
+    for (const targetResult of targetResults.values()) {
+      if (targetResult.type === "PROVISIONED" && targetResult.failedAttempts.length > 0) {
+        return true;
+      }
+    }
+    return false;
+  }
+  function fallbackFootnote() {
+    if (!anyFallback) return [];
+    return [
+      footnoteDefinition(
+        FALLBACK_FOOTNOTE_ID,
+        paragraph2(text2(FALLBACK_FOOTNOTE_TEXT))
+      )
     ];
   }
   function omittedNotice(shownCount, totalCount, noun) {
@@ -123182,7 +123471,7 @@ function renderSummary(context, requesters, authResult, tokenCreationResults, pr
       );
     }
     if (tokenResult.type === "NO_ISSUER") return "No suitable issuer";
-    if (tokenResult.type === "REQUEST_ERROR" || tokenResult.type === "ERROR") {
+    if (tokenResult.type === "FAILED") {
       return "Failed to issue token";
     }
     const targetResults = provisionResults.get(authResult2);
@@ -123573,6 +123862,10 @@ function createTextTokenCreationExplainer() {
     }
     lines.push(...renderRepoLines(subIcon, verb, repos, account));
     lines.push(...renderPermissionLines(subIcon, verb, permEntries));
+    const attempts = resultAttempts(result);
+    if (attempts.length > 0) {
+      lines.push(...renderFailedAttempts(attempts, isSuccess));
+    }
     return lines.join("\n");
   }
   function renderHeader(type, access2, repos, account) {
@@ -123588,6 +123881,7 @@ function createTextTokenCreationExplainer() {
   function renderErrorLines(result, consumer) {
     switch (result.type) {
       case "CREATED":
+      case "FAILED":
         return [];
       case "NOT_ALLOWED": {
         const suffix = isRepoRef(consumer) ? ` for repo ${repoRefToString(consumer)}` : ` for account ${consumer.account}`;
@@ -123595,20 +123889,36 @@ function createTextTokenCreationExplainer() {
       }
       case "NO_ISSUER":
         return [`  ${FAIL_ICON} No suitable issuer`];
-      case "REQUEST_ERROR": {
-        const body = result.error.response?.data;
-        const detail = typeof body === "undefined" ? "(no response data)" : JSON.stringify(body, null, 2);
-        return [
-          `  ${FAIL_ICON} ${result.error.status} - ${result.error.message}`,
-          prefixLines("::debug::      ", detail)
-        ];
-      }
-      case "ERROR":
-        return [
-          `  ${FAIL_ICON} ${errorMessage(result.error)}`,
-          prefixLines("::debug::      ", errorStack(result.error))
-        ];
     }
+  }
+  function resultAttempts(result) {
+    if (result.type === "CREATED") return result.failedAttempts;
+    if (result.type === "FAILED") return result.attempts;
+    return [];
+  }
+  function renderFailedAttempts(attempts, isSuccess) {
+    const statusIcon = isSuccess ? WARN_ICON : FAIL_ICON;
+    return [
+      `  ${statusIcon} Failed attempts:`,
+      ...renderAttemptItems(statusIcon, attempts)
+    ];
+  }
+  function renderAttemptItems(statusIcon, attempts) {
+    const lines = [];
+    for (const attempt of attempts) {
+      if (attempt.type === "REQUEST_ERROR") {
+        const body = attempt.error.response?.data;
+        const detail = typeof body === "undefined" ? "(no response data)" : JSON.stringify(body, null, 2);
+        lines.push(
+          `    ${statusIcon} ${attempt.error.status} - ${attempt.error.message}`
+        );
+        lines.push(prefixLines("::debug::      ", detail));
+      } else {
+        lines.push(`    ${statusIcon} ${errorMessage(attempt.error)}`);
+        lines.push(prefixLines("::debug::      ", errorStack(attempt.error)));
+      }
+    }
+    return lines;
   }
   function renderRepoLines(icon2, verb, repos, account) {
     if (repos === "all") {
@@ -123657,19 +123967,32 @@ function createTokenFactory(findIssuerOctokit) {
         continue;
       }
       const result = await (async () => {
-        const found = findIssuerOctokit(auth6.request);
-        if (!found) return { type: "NO_ISSUER" };
-        const [octokit, issuerReg] = found;
-        try {
-          const { data: token } = await octokit.rest.apps.createInstallationAccessToken({
-            installation_id: issuerReg.installation.id,
-            repositories: auth6.request.repos === "all" ? void 0 : auth6.request.repos,
-            permissions: auth6.request.tokenDec.permissions
-          });
-          return { type: "CREATED", token };
-        } catch (error2) {
-          return error2 instanceof RequestError ? { type: "REQUEST_ERROR", error: error2 } : { type: "ERROR", error: error2 };
-        }
+        const candidates2 = findIssuerOctokit(auth6.request);
+        if (candidates2.length < 1) return { type: "NO_ISSUER" };
+        const result2 = await tryEach(
+          async (candidate) => {
+            const { installation } = candidate.issuer;
+            debug(
+              `Trying issuer app ${installation.app_id} installation ${installation.id}`
+            );
+            const { data: token } = await candidate.octokit.rest.apps.createInstallationAccessToken({
+              installation_id: installation.id,
+              repositories: auth6.request.repos === "all" ? void 0 : auth6.request.repos,
+              permissions: auth6.request.tokenDec.permissions
+            });
+            return token;
+          },
+          () => true,
+          candidates2
+        );
+        const attempts = toTokenCreationAttempts(result2.failures);
+        if (result2.type === "FAILED") return { type: "FAILED", attempts };
+        return {
+          type: "CREATED",
+          token: result2.value,
+          issuer: result2.candidate.issuer,
+          failedAttempts: attempts
+        };
       })();
       creationResults.set(auth6, cache[key] = result);
     }
@@ -123690,6 +124013,15 @@ Token #${i2}:
     info("");
     return creationResults;
   };
+}
+function toTokenCreationAttempts(failures) {
+  const attempts = [];
+  for (const { candidate, error: error2 } of failures) {
+    attempts.push(
+      error2 instanceof RequestError ? { type: "REQUEST_ERROR", issuer: candidate.issuer, error: error2 } : { type: "ERROR", issuer: candidate.issuer, error: error2 }
+    );
+  }
+  return attempts;
 }
 
 // src/main.ts
@@ -123767,7 +124099,7 @@ try {
     tokenAuthorizer
   );
   const createTokens = createTokenFactory(findIssuerOctokit);
-  const encryptSecret = createEncryptSecret(findProvisionerOctokit);
+  const encryptSecret = createEncryptSecret();
   const provisionSecrets = createProvisioner(
     findProvisionerOctokit,
     encryptSecret
@@ -123778,15 +124110,14 @@ try {
   });
   const requesters = await group("Discovering requesters", async () => {
     const requesters2 = await discoverRequesters(
-      octokitFactory,
-      appRegistry,
-      appsInput
+      findProvisionerOctokit,
+      appRegistry
     );
     registerTokenDeclarations(declarationRegistry, requesters2);
     return requesters2;
   });
   const authorizeResult = await group("Authorizing requests", async () => {
-    return await authorizer.authorize(Array.from(requesters.values()));
+    return await authorizer.authorize(requesters);
   });
   const tokenCreationResults = await group("Creating tokens", async () => {
     return await createTokens(tokenAuthorizer.listResults());
@@ -123824,12 +124155,14 @@ try {
 /* istanbul ignore next - @preserve */
 /* istanbul ignore next - never seen errors be nullish - @preserve */
 /* istanbul ignore next - never seen without an account login - @preserve */
-/* istanbul ignore next - Header guarantees string data - @preserve */
 /* istanbul ignore next - parseRequesterConfig always throws with a cause - @preserve */
+/* istanbul ignore next - Header guarantees string data - @preserve */
 /* istanbul ignore else - @preserve */
 /* istanbul ignore next - only called for requesters with a config error - @preserve */
 /* istanbul ignore next - GitHub always populates a known visibility - @preserve */
 /* istanbul ignore next - prevented by discovery - @preserve */
+/* istanbul ignore next - allowed rows always have a token result - @preserve */
+/* istanbul ignore next - allowed rows always have provision results - @preserve */
 /* istanbul ignore file - TODO: remove coverage ignore - @preserve */
 /*! Bundled license information:
 

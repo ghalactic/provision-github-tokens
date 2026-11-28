@@ -1,4 +1,4 @@
-import { debug, info, error as logError } from "@actions/core";
+import { debug, info, error as logError, warning } from "@actions/core";
 import type { Context } from "./context.js";
 import {
   DASHBOARD_LABEL,
@@ -19,6 +19,7 @@ import {
 } from "./octokit.js";
 import { pluralize } from "./pluralize.js";
 import type { FindProvisionerOctokit } from "./provisioner-octokit.js";
+import { tryEach } from "./try-each.js";
 import type { ProviderConfig } from "./type/provider-config.js";
 import type {
   ProvisionAuthResult,
@@ -31,7 +32,7 @@ import type { TokenCreationResult } from "./type/token-creation-result.js";
 export type ReconcileDashboards = (
   context: Context,
   config: ProviderConfig,
-  requesters: Map<string, DiscoveredRequester>,
+  requesters: readonly DiscoveredRequester[],
   tokenResults: TokenAuthResult[],
   tokenCreationResults: Map<TokenAuthResult, TokenCreationResult>,
   provisionResults: Map<
@@ -53,36 +54,44 @@ export function createReconcileDashboards(
   ) => {
     debug("Reconciling token dashboards");
 
-    const entries = [...requesters.entries()].sort(([a], [b]) =>
-      a.localeCompare(b),
+    const entries = [...requesters].sort((a, b) =>
+      repoRefToString(a.requester).localeCompare(repoRefToString(b.requester)),
     );
 
-    for (const [repoName, discovered] of entries) {
-      try {
-        await reconcileRepo(discovered);
-      } catch (cause) {
-        debug(
-          `Failed to reconcile dashboard for ${repoName}: ` +
-            errorMessage(cause),
-        );
+    for (const discovered of entries) {
+      const repoName = repoRefToString(discovered.requester);
+
+      const result = await tryEach(
+        async ({ octokit }) => reconcileRepo(octokit, discovered),
+        ({ candidate, error }) => {
+          const { installation } = candidate.provisioner;
+
+          debug(
+            `Provisioner app ${installation.app_id} ` +
+              `installation ${installation.id} couldn't reconcile dashboard ` +
+              `for ${repoName}: ${errorMessage(error)}`,
+          );
+          warning(
+            `Provisioner couldn't reconcile dashboard for ${repoName}: ` +
+              errorMessage(error),
+          );
+
+          return true;
+        },
+        findProvisionerOctokit(discovered.requester),
+      );
+
+      if (result.type === "FAILED") {
         logError(`Failed to reconcile dashboard for ${repoName}`);
       }
     }
 
     async function reconcileRepo(
+      octokit: Octokit,
       discovered: DiscoveredRequester,
     ): Promise<void> {
       const { requester } = discovered;
       const repoName = repoRefToString(requester);
-
-      const found = findProvisionerOctokit(requester);
-      /* istanbul ignore next - @preserve */
-      if (!found) {
-        throw new Error(
-          `Invariant violation: No provisioner found for requester ${repoName}`,
-        );
-      }
-      const [octokit] = found;
 
       if (!config.dashboards.enabled) {
         await closeOpenDashboards(
@@ -280,12 +289,17 @@ export function createReconcileDashboards(
       number: number,
       reason: string,
     ): Promise<void> {
-      await octokit.rest.issues.createComment({
-        owner: ref.account,
-        repo: ref.repo,
-        issue_number: number,
-        body: `Closing this dashboard because ${reason}`,
-      });
+      const body = `Closing this dashboard because ${reason}`;
+
+      if (!(await issueHasComment(octokit, ref, number, body))) {
+        await octokit.rest.issues.createComment({
+          owner: ref.account,
+          repo: ref.repo,
+          issue_number: number,
+          body,
+        });
+      }
+
       await octokit.rest.issues.update({
         owner: ref.account,
         repo: ref.repo,
@@ -297,6 +311,31 @@ export function createReconcileDashboards(
         `Closed dashboard ${context.githubServerUrl}` +
           `/${repoRefToString(ref)}/issues/${number}`,
       );
+    }
+
+    async function issueHasComment(
+      octokit: Octokit,
+      ref: RepoReference,
+      number: number,
+      body: string,
+    ): Promise<boolean> {
+      const commentPages = octokit.paginate.iterator(
+        octokit.rest.issues.listComments,
+        {
+          owner: ref.account,
+          repo: ref.repo,
+          issue_number: number,
+          per_page: 100,
+        },
+      );
+
+      for await (const { data } of commentPages) {
+        for (const comment of data) {
+          if (comment.body === body) return true;
+        }
+      }
+
+      return false;
     }
 
     async function ensureDashboardLabel(

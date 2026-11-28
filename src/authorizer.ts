@@ -12,7 +12,9 @@ import type { ProvisionAuthResult } from "./type/provision-auth-result.js";
 import type { TokenAuthResult } from "./type/token-auth-result.js";
 
 export type Authorizer = {
-  authorize: (requesters: DiscoveredRequester[]) => Promise<AuthorizeResult>;
+  authorize: (
+    requesters: readonly DiscoveredRequester[],
+  ) => Promise<AuthorizeResult>;
 };
 
 export type AuthorizeResult = {
@@ -27,7 +29,7 @@ export function createAuthorizer(
 ): Authorizer {
   return {
     async authorize(requesters) {
-      for (const { config, requester } of requesters.values()) {
+      for (const { config, requester } of requesters) {
         if (!config) continue;
 
         for (const name in config.provision.secrets) {

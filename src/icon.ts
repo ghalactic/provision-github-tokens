@@ -1,6 +1,7 @@
 export const DASH_ICON = "➖";
 export const FAIL_ICON = "❌";
 export const PASS_ICON = "✅";
+export const WARN_ICON = "⚠️";
 
 export function icon(status: unknown): string {
   return typeof status === "undefined"
