@@ -121047,8 +121047,9 @@ async function tryEach(fn, shouldTryNext, candidates2) {
         value: await fn(candidate)
       };
     } catch (error2) {
-      failures.push({ candidate, error: error2 });
-      if (i2 + 1 < candidates2.length && !shouldTryNext(error2)) {
+      const failure = { candidate, error: error2 };
+      failures.push(failure);
+      if (!shouldTryNext(failure) && i2 + 1 < candidates2.length) {
         return { type: "FAILED", failures, exhausted: false };
       }
     }
@@ -121091,15 +121092,18 @@ function createEnvironmentResolver(findProvisionerOctokit) {
         }
         return names;
       },
-      () => true,
+      (failure) => {
+        const { installation } = failure.candidate.provisioner;
+        debug(
+          `Provisioner app ${installation.app_id} installation ${installation.id} couldn't list environments for ${repoName}: ${errorMessage(failure.error)}`
+        );
+        warning(
+          `Provisioner couldn't list environments for ${repoName}: ` + errorMessage(failure.error)
+        );
+        return true;
+      },
       found
     );
-    for (const { candidate, error: error2 } of result.failures) {
-      const { installation } = candidate.provisioner;
-      debug(
-        `Provisioner app ${installation.app_id} installation ${installation.id} couldn't list environments for ${repoName}: ${errorMessage(error2)}`
-      );
-    }
     if (result.type === "FAILED") {
       const errors = [];
       for (const failure of result.failures) errors.push(failure.error);

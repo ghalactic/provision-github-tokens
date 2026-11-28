@@ -2,7 +2,6 @@ import { beforeEach, expect, it, vi } from "vitest";
 import {
   __getOutput,
   __reset as __resetCore,
-  debug,
 } from "../__mocks__/@actions/core.js";
 import {
   __reset as __resetOctokit,
@@ -118,10 +117,6 @@ it("falls over to the next provisioner when listing fails", async () => {
   ]);
 
   const { findProvisionerOctokit } = createTestOctokitFactory(appRegistry);
-  const [failed] = findProvisionerOctokit({
-    account: "org-a",
-    repo: "repo-a",
-  });
 
   const environmentResolver = createEnvironmentResolver(findProvisionerOctokit);
 
@@ -132,14 +127,13 @@ it("falls over to the next provisioner when listing fails", async () => {
     ),
   ).toEqual(["env-a1"]);
 
-  const debugMessages = vi.mocked(debug).mock.calls.map(([message]) => message);
-  expect(debugMessages).toEqual([
-    `Provisioner app ${failed.provisioner.installation.app_id} ` +
-      `installation ${failed.provisioner.installation.id} couldn't list ` +
-      `environments for org-a/repo-a: Forbidden`,
-    `Repo org-a/repo-a has environments ["env-a1"]`,
-    `Environment patterns ["*"] for org-a/repo-a resolved to ["env-a1"]`,
-  ]);
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "::debug::Provisioner app 571481606 installation 3349170939 couldn't list environments for org-a/repo-a: Forbidden
+    ::warning::Provisioner couldn't list environments for org-a/repo-a: Forbidden
+    ::debug::Repo org-a/repo-a has environments ["env-a1"]
+    ::debug::Environment patterns ["*"] for org-a/repo-a resolved to ["env-a1"]
+    "
+  `);
 });
 
 it("throws an aggregate error after every provisioner fails", async () => {
@@ -175,10 +169,6 @@ it("throws an aggregate error after every provisioner fails", async () => {
   __setErrors("repos.getAllEnvironments", [firstError, secondError]);
 
   const { findProvisionerOctokit } = createTestOctokitFactory(appRegistry);
-  const candidates = findProvisionerOctokit({
-    account: "org-a",
-    repo: "repo-a",
-  });
 
   const environmentResolver = createEnvironmentResolver(findProvisionerOctokit);
 
@@ -192,15 +182,13 @@ it("throws an aggregate error after every provisioner fails", async () => {
     errors: [firstError, secondError],
   });
 
-  const debugMessages = vi.mocked(debug).mock.calls.map(([message]) => message);
-  expect(debugMessages).toEqual([
-    `Provisioner app ${candidates[0].provisioner.installation.app_id} ` +
-      `installation ${candidates[0].provisioner.installation.id} couldn't ` +
-      `list environments for org-a/repo-a: Forbidden`,
-    `Provisioner app ${candidates[1].provisioner.installation.app_id} ` +
-      `installation ${candidates[1].provisioner.installation.id} couldn't ` +
-      `list environments for org-a/repo-a: boom`,
-  ]);
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "::debug::Provisioner app 571481606 installation 3349170939 couldn't list environments for org-a/repo-a: Forbidden
+    ::warning::Provisioner couldn't list environments for org-a/repo-a: Forbidden
+    ::debug::Provisioner app 947161494 installation 4101978852 couldn't list environments for org-a/repo-a: boom
+    ::warning::Provisioner couldn't list environments for org-a/repo-a: boom
+    "
+  `);
 });
 
 it("throws if no provisioner is found", async () => {

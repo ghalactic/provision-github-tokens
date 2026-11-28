@@ -87,14 +87,14 @@ it("fails after every candidate fails", async () => {
 it("stops when shouldTryNext returns false", async () => {
   const firstError = new Error("first");
   const tried: string[] = [];
-  const predicateCalls: unknown[] = [];
+  const predicateCalls: { candidate: string; error: unknown }[] = [];
   const result = await tryEach(
     (candidate) => {
       tried.push(candidate);
       throw firstError;
     },
-    (error) => {
-      predicateCalls.push(error);
+    (failure) => {
+      predicateCalls.push(failure);
 
       return false;
     },
@@ -107,20 +107,20 @@ it("stops when shouldTryNext returns false", async () => {
     failures: [{ candidate: "a", error: firstError }],
   });
   expect(tried).toEqual(["a"]);
-  expect(predicateCalls).toEqual([firstError]);
+  expect(predicateCalls).toEqual([{ candidate: "a", error: firstError }]);
 });
 
-it("doesn't call shouldTryNext when no next candidate exists", async () => {
+it("calls shouldTryNext with the last failure", async () => {
   const error = new Error("only");
-  const predicateCalls: unknown[] = [];
+  const predicateCalls: { candidate: string; error: unknown }[] = [];
   const result = await tryEach(
     () => {
       throw error;
     },
-    (predicateError) => {
-      predicateCalls.push(predicateError);
+    (failure) => {
+      predicateCalls.push(failure);
 
-      return true;
+      return false;
     },
     ["a"],
   );
@@ -130,7 +130,7 @@ it("doesn't call shouldTryNext when no next candidate exists", async () => {
     exhausted: true,
     failures: [{ candidate: "a", error }],
   });
-  expect(predicateCalls).toEqual([]);
+  expect(predicateCalls).toEqual([{ candidate: "a", error }]);
 });
 
 it("throws when candidates are empty", async () => {
@@ -152,10 +152,21 @@ it("tries candidates sequentially", async () => {
       events.push(`end ${candidate}`);
       throw new Error(candidate);
     },
-    () => true,
+    (failure) => {
+      events.push(`fail ${failure.candidate}`);
+
+      return true;
+    },
     ["a", "b"],
   );
 
-  expect(events).toEqual(["start a", "end a", "start b", "end b"]);
+  expect(events).toEqual([
+    "start a",
+    "end a",
+    "fail a",
+    "start b",
+    "end b",
+    "fail b",
+  ]);
   expect(result.type).toBe("FAILED");
 });
