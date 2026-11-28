@@ -73996,53 +73996,66 @@ function normalizeRequesterConfig(definingRepo, config) {
   return config;
 }
 
+// src/try-each.ts
+async function tryEach(fn, shouldTryNext, candidates2) {
+  if (candidates2.length < 1) {
+    throw new Error("Invariant violation: Expected at least one candidate");
+  }
+  const failures = [];
+  for (let i2 = 0; i2 < candidates2.length; ++i2) {
+    const candidate = candidates2[i2];
+    try {
+      return {
+        type: "SUCCEEDED",
+        failures,
+        candidate,
+        value: await fn(candidate)
+      };
+    } catch (error2) {
+      const failure = { candidate, error: error2 };
+      failures.push(failure);
+      if (!shouldTryNext(failure) && i2 + 1 < candidates2.length) {
+        return { type: "FAILED", failures, exhausted: false };
+      }
+    }
+  }
+  return { type: "FAILED", failures, exhausted: true };
+}
+
 // src/discover-requesters.ts
 var CONFIG_PATH = ".github/ghalactic/provision-github-tokens.yml";
-async function discoverRequesters(octokitFactory, appRegistry, appsInput) {
+async function discoverRequesters(findProvisionerOctokit, appRegistry) {
   const discovered = [];
   let discoverCount = 0;
-  for (const { installation, requester } of reposForDiscovery(appRegistry)) {
+  for (const requester of requestersForDiscovery(appRegistry)) {
     const repoName = repoRefToString(requester);
-    const octokit = octokitFactory.installationOctokit(
-      appsInput,
-      installation.app_id,
-      installation.id
+    const result = await tryEach(
+      async (candidate) => readRequester(candidate.octokit, requester),
+      ({ candidate, error: error2 }) => {
+        const { installation } = candidate.provisioner;
+        debug(
+          `Provisioner app ${installation.app_id} installation ${installation.id} couldn't discover requester ${repoName}: ${errorMessage(error2)}`
+        );
+        warning(
+          `Provisioner couldn't discover requester ${repoName}: ` + errorMessage(error2)
+        );
+        return true;
+      },
+      findProvisionerOctokit(requester)
     );
-    const commits = await octokit.rest.repos.listCommits({
-      owner: requester.account,
-      repo: requester.repo,
-      path: CONFIG_PATH,
-      per_page: 1
-    });
-    const head = commits.data[0];
-    if (!head) {
+    if (result.type === "FAILED") {
+      const errors = [];
+      for (const failure of result.failures) errors.push(failure.error);
+      throw new AggregateError(
+        errors,
+        `No provisioner could discover requester ${repoName}`
+      );
+    }
+    if (!result.value) {
       debug(`Repo ${repoName} isn't a requester`);
       continue;
     }
-    const configSha = head.sha;
-    let configYaml;
-    try {
-      const res = await octokit.rest.repos.getContent({
-        owner: requester.account,
-        repo: requester.repo,
-        path: CONFIG_PATH,
-        ref: configSha,
-        mediaType: { format: "raw" }
-      });
-      if (typeof res.data !== "string") {
-        throw new Error(
-          `Invariant violation: Unexpected repo contents type ${typeof res.data}`
-        );
-      }
-      configYaml = res.data;
-    } catch (error2) {
-      handleRequestError(error2, {
-        404: () => {
-          debug(`Repo ${repoName} isn't a requester`);
-        }
-      });
-      continue;
-    }
+    const { configSha, configYaml } = result.value;
     debug(`Discovered requester ${repoName}`);
     let config;
     try {
@@ -74095,20 +74108,47 @@ async function discoverRequesters(octokitFactory, appRegistry, appsInput) {
   info(`Discovered ${pluralize(discoverCount, "requester", "requesters")}`);
   return discovered;
 }
-function reposForDiscovery(appRegistry) {
+async function readRequester(octokit, requester) {
+  const commits = await octokit.rest.repos.listCommits({
+    owner: requester.account,
+    repo: requester.repo,
+    path: CONFIG_PATH,
+    per_page: 1
+  });
+  const head = commits.data[0];
+  if (!head) return void 0;
+  const configSha = head.sha;
+  try {
+    const res = await octokit.rest.repos.getContent({
+      owner: requester.account,
+      repo: requester.repo,
+      path: CONFIG_PATH,
+      ref: configSha,
+      mediaType: { format: "raw" }
+    });
+    if (typeof res.data !== "string") {
+      throw new Error(
+        `Invariant violation: Unexpected repo contents type ${typeof res.data}`
+      );
+    }
+    return { configSha, configYaml: res.data };
+  } catch (error2) {
+    if (error2 instanceof RequestError && error2.status === 404) return void 0;
+    throw error2;
+  }
+}
+function requestersForDiscovery(appRegistry) {
   const found = /* @__PURE__ */ new Map();
-  for (const [, { installation, repos: repos2 }] of appRegistry.provisioners) {
-    for (const repo of repos2) {
+  for (const [, { repos }] of appRegistry.provisioners) {
+    for (const repo of repos) {
       const requester = createRepoRef(repo.owner.login, repo.name);
       const repoName = repoRefToString(requester);
-      if (!found.has(repoName)) {
-        found.set(repoName, { installation, requester });
-      }
+      if (!found.has(repoName)) found.set(repoName, requester);
     }
   }
-  const repos = Array.from(found.values());
-  repos.sort((a2, b2) => compareRef(a2.requester, b2.requester));
-  return repos;
+  const requesters = Array.from(found.values());
+  requesters.sort(compareRef);
+  return requesters;
 }
 
 // node_modules/.pnpm/libsodium@0.8.0/node_modules/libsodium/dist/modules-esm/libsodium.mjs
@@ -121044,32 +121084,6 @@ function createEncryptSecret() {
   }
 }
 
-// src/try-each.ts
-async function tryEach(fn, shouldTryNext, candidates2) {
-  if (candidates2.length < 1) {
-    throw new Error("Invariant violation: Expected at least one candidate");
-  }
-  const failures = [];
-  for (let i2 = 0; i2 < candidates2.length; ++i2) {
-    const candidate = candidates2[i2];
-    try {
-      return {
-        type: "SUCCEEDED",
-        failures,
-        candidate,
-        value: await fn(candidate)
-      };
-    } catch (error2) {
-      const failure = { candidate, error: error2 };
-      failures.push(failure);
-      if (!shouldTryNext(failure) && i2 + 1 < candidates2.length) {
-        return { type: "FAILED", failures, exhausted: false };
-      }
-    }
-  }
-  return { type: "FAILED", failures, exhausted: true };
-}
-
 // src/environment-resolver.ts
 function createEnvironmentResolver(findProvisionerOctokit) {
   const envsByRepo = {};
@@ -124074,9 +124088,8 @@ try {
   });
   const requesters = await group("Discovering requesters", async () => {
     const requesters2 = await discoverRequesters(
-      octokitFactory,
-      appRegistry,
-      appsInput
+      findProvisionerOctokit,
+      appRegistry
     );
     registerTokenDeclarations(declarationRegistry, requesters2);
     return requesters2;
@@ -124120,8 +124133,8 @@ try {
 /* istanbul ignore next - @preserve */
 /* istanbul ignore next - never seen errors be nullish - @preserve */
 /* istanbul ignore next - never seen without an account login - @preserve */
-/* istanbul ignore next - Header guarantees string data - @preserve */
 /* istanbul ignore next - parseRequesterConfig always throws with a cause - @preserve */
+/* istanbul ignore next - Header guarantees string data - @preserve */
 /* istanbul ignore else - @preserve */
 /* istanbul ignore next - only called for requesters with a config error - @preserve */
 /* istanbul ignore next - GitHub always populates a known visibility - @preserve */

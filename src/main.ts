@@ -125,9 +125,8 @@ try {
 
   const requesters = await group("Discovering requesters", async () => {
     const requesters = await discoverRequesters(
-      octokitFactory,
+      findProvisionerOctokit,
       appRegistry,
-      appsInput,
     );
     registerTokenDeclarations(declarationRegistry, requesters);
 

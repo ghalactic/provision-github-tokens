@@ -6,7 +6,9 @@ import {
 import {
   __reset as __resetOctokit,
   __setCommits,
+  __setErrors,
   __setFiles,
+  TestRequestError,
 } from "../__mocks__/@octokit/action.js";
 import { createTestAppRegistry } from "../test/app-registry.js";
 import {
@@ -14,12 +16,12 @@ import {
   createTestCommit,
   createTestInstallationAccounts,
 } from "../test/github-api.js";
+import { createTestOctokitFactory } from "../test/octokit-factory.js";
 import { createTestRepoRegistry } from "../test/repo-registry.js";
 import { ValidateError } from "./config/validation.js";
 import { ParseYamlError } from "./config/yaml.js";
 import { discoverRequesters } from "./discover-requesters.js";
 import { repoRefToString } from "./github-reference.js";
-import { createOctokitFactory } from "./octokit.js";
 import type { RequesterConfig } from "./type/requester-config.js";
 
 vi.mock("@actions/core");
@@ -103,16 +105,12 @@ it("discovers requesters in a single account", async () => {
     },
   });
 
-  const octokitFactory = createOctokitFactory();
+  const { findProvisionerOctokit } = createTestOctokitFactory(appRegistry);
 
-  const discovered = await discoverRequesters(octokitFactory, appRegistry, [
-    {
-      appId: appA.id,
-      privateKey: appA.privateKey,
-      issuer: { enabled: false, roles: [] },
-      provisioner: { enabled: true },
-    },
-  ]);
+  const discovered = await discoverRequesters(
+    findProvisionerOctokit,
+    appRegistry,
+  );
 
   expect(__getOutput()).toMatchInlineSnapshot(`
     "::debug::Discovered requester org-a/repo-a
@@ -189,17 +187,11 @@ it("discovers requesters in reference order", async () => {
     },
   });
 
+  const { findProvisionerOctokit } = createTestOctokitFactory(appRegistry);
+
   const discovered = await discoverRequesters(
-    createOctokitFactory(),
+    findProvisionerOctokit,
     appRegistry,
-    [
-      {
-        appId: appA.id,
-        privateKey: appA.privateKey,
-        issuer: { enabled: false, roles: [] },
-        provisioner: { enabled: true },
-      },
-    ],
   );
 
   expect(__getOutput()).toMatchInlineSnapshot(`
@@ -289,22 +281,12 @@ it("discovers requesters in multiple account", async () => {
     },
   });
 
-  const octokitFactory = createOctokitFactory();
+  const { findProvisionerOctokit } = createTestOctokitFactory(appRegistry);
 
-  const discovered = await discoverRequesters(octokitFactory, appRegistry, [
-    {
-      appId: appA.id,
-      privateKey: appA.privateKey,
-      issuer: { enabled: false, roles: [] },
-      provisioner: { enabled: true },
-    },
-    {
-      appId: appB.id,
-      privateKey: appB.privateKey,
-      issuer: { enabled: false, roles: [] },
-      provisioner: { enabled: true },
-    },
-  ]);
+  const discovered = await discoverRequesters(
+    findProvisionerOctokit,
+    appRegistry,
+  );
 
   expect(__getOutput()).toMatchInlineSnapshot(`
     "::debug::Discovered requester org-a/repo-a
@@ -408,22 +390,12 @@ it("only discovers requesters once when multiple providers can access them", asy
     },
   });
 
-  const octokitFactory = createOctokitFactory();
+  const { findProvisionerOctokit } = createTestOctokitFactory(appRegistry);
 
-  const discovered = await discoverRequesters(octokitFactory, appRegistry, [
-    {
-      appId: appA.id,
-      privateKey: appA.privateKey,
-      issuer: { enabled: false, roles: [] },
-      provisioner: { enabled: true },
-    },
-    {
-      appId: appB.id,
-      privateKey: appB.privateKey,
-      issuer: { enabled: false, roles: [] },
-      provisioner: { enabled: true },
-    },
-  ]);
+  const discovered = await discoverRequesters(
+    findProvisionerOctokit,
+    appRegistry,
+  );
 
   expect(__getOutput()).toMatchInlineSnapshot(`
     "::debug::Discovered requester org-a/repo-a
@@ -458,6 +430,232 @@ it("only discovers requesters once when multiple providers can access them", asy
       config: expect.objectContaining({}) as RequesterConfig,
     },
   ]);
+});
+
+it("falls over when listing commits fails", async () => {
+  const [[accountA, [repoA]]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "org-a",
+    ["repo-a"],
+  ]);
+  const [[appA, [appAInstallationA]], [appB, [appBInstallationA]]] =
+    createTestApps(["App A", {}, [[accountA]]], ["App B", {}, [[accountA]]]);
+
+  const appRegistry = createTestAppRegistry(
+    createTestRepoRegistry(),
+    {
+      app: appA,
+      provisioner: true,
+      installations: [[appAInstallationA, [repoA]]],
+    },
+    {
+      app: appB,
+      provisioner: true,
+      installations: [[appBInstallationA, [repoA]]],
+    },
+  );
+
+  __setCommits(repoA.full_name, [
+    createTestCommit("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "Add config", [
+      ".github/ghalactic/provision-github-tokens.yml",
+    ]),
+  ]);
+  __setFiles(repoA.full_name, {
+    ".github/ghalactic/provision-github-tokens.yml": {
+      content: `
+          tokens: {}
+          provision:
+            secrets: {}`,
+      sha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    },
+  });
+  __setErrors("repos.listCommits", [
+    new TestRequestError(403, { message: "Resource not accessible" }),
+  ]);
+
+  const { findProvisionerOctokit } = createTestOctokitFactory(appRegistry);
+
+  const discovered = await discoverRequesters(
+    findProvisionerOctokit,
+    appRegistry,
+  );
+
+  expect(discovered).toHaveLength(1);
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "::debug::Provisioner app 571481606 installation 3349170939 couldn't discover requester org-a/repo-a: Forbidden
+    ::warning::Provisioner couldn't discover requester org-a/repo-a: Forbidden
+    ::debug::Discovered requester org-a/repo-a
+    ::debug::Requester org-a/repo-a has 0 token declarations []
+    ::debug::Requester org-a/repo-a has 0 secret declarations []
+    Discovered 1 requester
+    "
+  `);
+});
+
+it("falls over when reading the config fails", async () => {
+  const [[accountA, [repoA]]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "org-a",
+    ["repo-a"],
+  ]);
+  const [[appA, [appAInstallationA]], [appB, [appBInstallationA]]] =
+    createTestApps(["App A", {}, [[accountA]]], ["App B", {}, [[accountA]]]);
+
+  const appRegistry = createTestAppRegistry(
+    createTestRepoRegistry(),
+    {
+      app: appA,
+      provisioner: true,
+      installations: [[appAInstallationA, [repoA]]],
+    },
+    {
+      app: appB,
+      provisioner: true,
+      installations: [[appBInstallationA, [repoA]]],
+    },
+  );
+
+  __setCommits(repoA.full_name, [
+    createTestCommit("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "Add config", [
+      ".github/ghalactic/provision-github-tokens.yml",
+    ]),
+  ]);
+  __setFiles(repoA.full_name, {
+    ".github/ghalactic/provision-github-tokens.yml": {
+      content: `
+          tokens: {}
+          provision:
+            secrets: {}`,
+      sha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    },
+  });
+  __setErrors("repos.getContent", [
+    new TestRequestError(403, { message: "Resource not accessible" }),
+  ]);
+
+  const { findProvisionerOctokit } = createTestOctokitFactory(appRegistry);
+
+  const discovered = await discoverRequesters(
+    findProvisionerOctokit,
+    appRegistry,
+  );
+
+  expect(discovered).toHaveLength(1);
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "::debug::Provisioner app 571481606 installation 3349170939 couldn't discover requester org-a/repo-a: Forbidden
+    ::warning::Provisioner couldn't discover requester org-a/repo-a: Forbidden
+    ::debug::Discovered requester org-a/repo-a
+    ::debug::Requester org-a/repo-a has 0 token declarations []
+    ::debug::Requester org-a/repo-a has 0 secret declarations []
+    Discovered 1 requester
+    "
+  `);
+});
+
+it("doesn't fail over when the config no longer exists", async () => {
+  const [[accountA, [repoA]]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "org-a",
+    ["repo-a"],
+  ]);
+  const [[appA, [appAInstallationA]], [appB, [appBInstallationA]]] =
+    createTestApps(["App A", {}, [[accountA]]], ["App B", {}, [[accountA]]]);
+
+  const appRegistry = createTestAppRegistry(
+    createTestRepoRegistry(),
+    {
+      app: appA,
+      provisioner: true,
+      installations: [[appAInstallationA, [repoA]]],
+    },
+    {
+      app: appB,
+      provisioner: true,
+      installations: [[appBInstallationA, [repoA]]],
+    },
+  );
+
+  __setCommits(repoA.full_name, [
+    createTestCommit("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "Add config", [
+      ".github/ghalactic/provision-github-tokens.yml",
+    ]),
+  ]);
+  __setFiles(repoA.full_name, {
+    ".github/ghalactic/provision-github-tokens.yml": {
+      content: `
+          tokens: {}
+          provision:
+            secrets: {}`,
+      sha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    },
+  });
+  __setErrors("repos.getContent", [new TestRequestError(404)]);
+
+  const { findProvisionerOctokit } = createTestOctokitFactory(appRegistry);
+
+  const discovered = await discoverRequesters(
+    findProvisionerOctokit,
+    appRegistry,
+  );
+
+  expect(discovered).toEqual([]);
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "::debug::Repo org-a/repo-a isn't a requester
+    Discovered 0 requesters
+    "
+  `);
+});
+
+it("throws when every provisioner fails", async () => {
+  const [[accountA, [repoA]]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "org-a",
+    ["repo-a"],
+  ]);
+  const [[appA, [appAInstallationA]], [appB, [appBInstallationA]]] =
+    createTestApps(["App A", {}, [[accountA]]], ["App B", {}, [[accountA]]]);
+
+  const appRegistry = createTestAppRegistry(
+    createTestRepoRegistry(),
+    {
+      app: appA,
+      provisioner: true,
+      installations: [[appAInstallationA, [repoA]]],
+    },
+    {
+      app: appB,
+      provisioner: true,
+      installations: [[appBInstallationA, [repoA]]],
+    },
+  );
+
+  const firstError = new TestRequestError(403, {
+    message: "Resource not accessible",
+  });
+  const secondError = new Error("boom");
+
+  __setErrors("repos.listCommits", [firstError, secondError]);
+
+  const { findProvisionerOctokit } = createTestOctokitFactory(appRegistry);
+
+  await expect(
+    discoverRequesters(findProvisionerOctokit, appRegistry),
+  ).rejects.toMatchObject({
+    message: "No provisioner could discover requester org-a/repo-a",
+    errors: [firstError, secondError],
+  });
+
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "::debug::Provisioner app 571481606 installation 3349170939 couldn't discover requester org-a/repo-a: Forbidden
+    ::warning::Provisioner couldn't discover requester org-a/repo-a: Forbidden
+    ::debug::Provisioner app 947161494 installation 4101978852 couldn't discover requester org-a/repo-a: boom
+    ::warning::Provisioner couldn't discover requester org-a/repo-a: boom
+    "
+  `);
 });
 
 it("skips requesters with invalid configuration", async () => {
@@ -541,16 +739,12 @@ it("skips requesters with invalid configuration", async () => {
     },
   });
 
-  const octokitFactory = createOctokitFactory();
+  const { findProvisionerOctokit } = createTestOctokitFactory(appRegistry);
 
-  const discovered = await discoverRequesters(octokitFactory, appRegistry, [
-    {
-      appId: appA.id,
-      privateKey: appA.privateKey,
-      issuer: { enabled: false, roles: [] },
-      provisioner: { enabled: true },
-    },
-  ]);
+  const discovered = await discoverRequesters(
+    findProvisionerOctokit,
+    appRegistry,
+  );
 
   expect(__getOutput()).toMatchInlineSnapshot(`
     "::debug::Discovered requester org-a/repo-a
@@ -636,16 +830,12 @@ it("skips requesters with invalid YAML configuration", async () => {
     },
   });
 
-  const octokitFactory = createOctokitFactory();
+  const { findProvisionerOctokit } = createTestOctokitFactory(appRegistry);
 
-  const discovered = await discoverRequesters(octokitFactory, appRegistry, [
-    {
-      appId: appA.id,
-      privateKey: appA.privateKey,
-      issuer: { enabled: false, roles: [] },
-      provisioner: { enabled: true },
-    },
-  ]);
+  const discovered = await discoverRequesters(
+    findProvisionerOctokit,
+    appRegistry,
+  );
 
   expect(__getOutput()).toMatchInlineSnapshot(`
     "::debug::Discovered requester org-a/repo-a
@@ -700,16 +890,12 @@ it("skips requesters whose config no longer exists", async () => {
     ),
   ]);
 
-  const octokitFactory = createOctokitFactory();
+  const { findProvisionerOctokit } = createTestOctokitFactory(appRegistry);
 
-  const discovered = await discoverRequesters(octokitFactory, appRegistry, [
-    {
-      appId: appA.id,
-      privateKey: appA.privateKey,
-      issuer: { enabled: false, roles: [] },
-      provisioner: { enabled: true },
-    },
-  ]);
+  const discovered = await discoverRequesters(
+    findProvisionerOctokit,
+    appRegistry,
+  );
 
   expect(__getOutput()).toMatchInlineSnapshot(`
     "::debug::Repo org-a/repo-a isn't a requester

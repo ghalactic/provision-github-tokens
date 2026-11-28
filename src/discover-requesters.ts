@@ -1,17 +1,18 @@
 import { debug, info, warning } from "@actions/core";
+import { RequestError } from "@octokit/request-error";
 import type { AppRegistry } from "./app-registry.js";
 import { compareRef } from "./compare-ref.js";
 import { parseRequesterConfig } from "./config/requester-config.js";
-import { errorCause } from "./error.js";
+import { errorCause, errorMessage } from "./error.js";
 import {
   createRepoRef,
   repoRefToString,
   type RepoReference,
 } from "./github-reference.js";
-import { handleRequestError, type OctokitFactory } from "./octokit.js";
+import type { Octokit } from "./octokit.js";
 import { pluralize } from "./pluralize.js";
-import type { Installation } from "./type/github-api.js";
-import type { AppInput } from "./type/input.js";
+import type { FindProvisionerOctokit } from "./provisioner-octokit.js";
+import { tryEach } from "./try-each.js";
 import type { RequesterConfig } from "./type/requester-config.js";
 
 const CONFIG_PATH = ".github/ghalactic/provision-github-tokens.yml";
@@ -25,66 +26,52 @@ export type DiscoveredRequester = {
 };
 
 export async function discoverRequesters(
-  octokitFactory: OctokitFactory,
+  findProvisionerOctokit: FindProvisionerOctokit,
   appRegistry: AppRegistry,
-  appsInput: AppInput[],
 ): Promise<DiscoveredRequester[]> {
   const discovered: DiscoveredRequester[] = [];
   let discoverCount = 0;
 
-  for (const { installation, requester } of reposForDiscovery(appRegistry)) {
+  for (const requester of requestersForDiscovery(appRegistry)) {
     const repoName = repoRefToString(requester);
-    const octokit = octokitFactory.installationOctokit(
-      appsInput,
-      installation.app_id,
-      installation.id,
+
+    const result = await tryEach(
+      async (candidate) => readRequester(candidate.octokit, requester),
+      ({ candidate, error }) => {
+        const { installation } = candidate.provisioner;
+
+        debug(
+          `Provisioner app ${installation.app_id} ` +
+            `installation ${installation.id} couldn't discover requester ` +
+            `${repoName}: ${errorMessage(error)}`,
+        );
+        warning(
+          `Provisioner couldn't discover requester ${repoName}: ` +
+            errorMessage(error),
+        );
+
+        return true;
+      },
+      findProvisionerOctokit(requester),
     );
 
-    const commits = await octokit.rest.repos.listCommits({
-      owner: requester.account,
-      repo: requester.repo,
-      path: CONFIG_PATH,
-      per_page: 1,
-    });
+    if (result.type === "FAILED") {
+      const errors: unknown[] = [];
+      for (const failure of result.failures) errors.push(failure.error);
 
-    const head = commits.data[0];
+      throw new AggregateError(
+        errors,
+        `No provisioner could discover requester ${repoName}`,
+      );
+    }
 
-    if (!head) {
+    if (!result.value) {
       debug(`Repo ${repoName} isn't a requester`);
 
       continue;
     }
 
-    const configSha = head.sha;
-    let configYaml: string;
-
-    try {
-      const res = await octokit.rest.repos.getContent({
-        owner: requester.account,
-        repo: requester.repo,
-        path: CONFIG_PATH,
-        ref: configSha,
-        mediaType: { format: "raw" },
-      });
-
-      /* istanbul ignore next - Header guarantees string data - @preserve */
-      if (typeof res.data !== "string") {
-        throw new Error(
-          "Invariant violation: " +
-            `Unexpected repo contents type ${typeof res.data}`,
-        );
-      }
-
-      configYaml = res.data;
-    } catch (error) {
-      handleRequestError(error, {
-        404: () => {
-          debug(`Repo ${repoName} isn't a requester`);
-        },
-      });
-
-      continue;
-    }
+    const { configSha, configYaml } = result.value;
 
     debug(`Discovered requester ${repoName}`);
 
@@ -152,27 +139,67 @@ export async function discoverRequesters(
   return discovered;
 }
 
-type DiscoverableRepo = {
-  installation: Installation;
-  requester: RepoReference;
+type RequesterContents = {
+  configSha: string;
+  configYaml: string;
 };
 
-function reposForDiscovery(appRegistry: AppRegistry): DiscoverableRepo[] {
-  const found = new Map<string, DiscoverableRepo>();
+async function readRequester(
+  octokit: Octokit,
+  requester: RepoReference,
+): Promise<RequesterContents | undefined> {
+  const commits = await octokit.rest.repos.listCommits({
+    owner: requester.account,
+    repo: requester.repo,
+    path: CONFIG_PATH,
+    per_page: 1,
+  });
 
-  for (const [, { installation, repos }] of appRegistry.provisioners) {
+  const head = commits.data[0];
+
+  if (!head) return undefined;
+
+  const configSha = head.sha;
+
+  try {
+    const res = await octokit.rest.repos.getContent({
+      owner: requester.account,
+      repo: requester.repo,
+      path: CONFIG_PATH,
+      ref: configSha,
+      mediaType: { format: "raw" },
+    });
+
+    /* istanbul ignore next - Header guarantees string data - @preserve */
+    if (typeof res.data !== "string") {
+      throw new Error(
+        "Invariant violation: " +
+          `Unexpected repo contents type ${typeof res.data}`,
+      );
+    }
+
+    return { configSha, configYaml: res.data };
+  } catch (error) {
+    if (error instanceof RequestError && error.status === 404) return undefined;
+
+    throw error;
+  }
+}
+
+function requestersForDiscovery(appRegistry: AppRegistry): RepoReference[] {
+  const found = new Map<string, RepoReference>();
+
+  for (const [, { repos }] of appRegistry.provisioners) {
     for (const repo of repos) {
       const requester = createRepoRef(repo.owner.login, repo.name);
       const repoName = repoRefToString(requester);
 
-      if (!found.has(repoName)) {
-        found.set(repoName, { installation, requester });
-      }
+      if (!found.has(repoName)) found.set(repoName, requester);
     }
   }
 
-  const repos = Array.from(found.values());
-  repos.sort((a, b) => compareRef(a.requester, b.requester));
+  const requesters = Array.from(found.values());
+  requesters.sort(compareRef);
 
-  return repos;
+  return requesters;
 }
