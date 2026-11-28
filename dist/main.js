@@ -122958,25 +122958,27 @@ function createReconcileDashboards(findProvisionerOctokit) {
     );
     for (const discovered of entries) {
       const repoName = repoRefToString(discovered.requester);
-      try {
-        await reconcileRepo(discovered);
-      } catch (cause) {
-        debug(
-          `Failed to reconcile dashboard for ${repoName}: ` + errorMessage(cause)
-        );
+      const result = await tryEach(
+        async ({ octokit }) => reconcileRepo(octokit, discovered),
+        ({ candidate, error: error2 }) => {
+          const { installation } = candidate.provisioner;
+          debug(
+            `Provisioner app ${installation.app_id} installation ${installation.id} couldn't reconcile dashboard for ${repoName}: ${errorMessage(error2)}`
+          );
+          warning(
+            `Provisioner couldn't reconcile dashboard for ${repoName}: ` + errorMessage(error2)
+          );
+          return true;
+        },
+        findProvisionerOctokit(discovered.requester)
+      );
+      if (result.type === "FAILED") {
         error(`Failed to reconcile dashboard for ${repoName}`);
       }
     }
-    async function reconcileRepo(discovered) {
+    async function reconcileRepo(octokit, discovered) {
       const { requester } = discovered;
       const repoName = repoRefToString(requester);
-      const found = findProvisionerOctokit(requester);
-      if (found.length < 1) {
-        throw new Error(
-          `Invariant violation: No provisioner found for requester ${repoName}`
-        );
-      }
-      const [{ octokit }] = found;
       if (!config.dashboards.enabled) {
         await closeOpenDashboards(
           octokit,
@@ -123115,12 +123117,15 @@ function createReconcileDashboards(findProvisionerOctokit) {
       return openIssues;
     }
     async function closeIssue(octokit, ref, number, reason) {
-      await octokit.rest.issues.createComment({
-        owner: ref.account,
-        repo: ref.repo,
-        issue_number: number,
-        body: `Closing this dashboard because ${reason}`
-      });
+      const body = `Closing this dashboard because ${reason}`;
+      if (!await issueHasComment(octokit, ref, number, body)) {
+        await octokit.rest.issues.createComment({
+          owner: ref.account,
+          repo: ref.repo,
+          issue_number: number,
+          body
+        });
+      }
       await octokit.rest.issues.update({
         owner: ref.account,
         repo: ref.repo,
@@ -123130,6 +123135,23 @@ function createReconcileDashboards(findProvisionerOctokit) {
       info(
         `Closed dashboard ${context.githubServerUrl}/${repoRefToString(ref)}/issues/${number}`
       );
+    }
+    async function issueHasComment(octokit, ref, number, body) {
+      const commentPages = octokit.paginate.iterator(
+        octokit.rest.issues.listComments,
+        {
+          owner: ref.account,
+          repo: ref.repo,
+          issue_number: number,
+          per_page: 100
+        }
+      );
+      for await (const { data } of commentPages) {
+        for (const comment of data) {
+          if (comment.body === body) return true;
+        }
+      }
+      return false;
     }
     async function ensureDashboardLabel(octokit, ref) {
       try {

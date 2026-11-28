@@ -9,6 +9,7 @@ import {
   __getRepoIssueLabels,
   __reset as __resetOctokit,
   __setErrors,
+  __setIssueComments,
   __setIssues,
   __setRepoIssueLabels,
   TestRequestError,
@@ -1395,7 +1396,8 @@ it("warns when listing open issues fails", async () => {
 
   expect(__getOutput()).toMatchInlineSnapshot(`
     "::debug::Reconciling token dashboards
-    ::debug::Failed to reconcile dashboard for org-a/repo-a: HTTP 410
+    ::debug::Provisioner app 947161494 installation 4101978852 couldn't reconcile dashboard for org-a/repo-a: HTTP 410
+    ::warning::Provisioner couldn't reconcile dashboard for org-a/repo-a: HTTP 410
     ::error::Failed to reconcile dashboard for org-a/repo-a
     "
   `);
@@ -1469,9 +1471,444 @@ it("warns when failing to create the dashboard label", async () => {
   expect(__getOutput()).toMatchInlineSnapshot(`
     "::debug::Reconciling token dashboards
     ::debug::Found 0 open dashboards in org-a/repo-a
-    ::debug::Failed to reconcile dashboard for org-a/repo-a: Unable to create token dashboard label
+    ::debug::Provisioner app 947161494 installation 4101978852 couldn't reconcile dashboard for org-a/repo-a: Unable to create token dashboard label
+    ::warning::Provisioner couldn't reconcile dashboard for org-a/repo-a: Unable to create token dashboard label
     ::error::Failed to reconcile dashboard for org-a/repo-a
     "
   `);
   expect(__getIssues("org-a", "repo-a")).toEqual([]);
+});
+
+it("falls over when listing dashboards fails", async () => {
+  const [[orgA, [repoA]]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "org-a",
+    ["repo-a"],
+  ]);
+  const [[appA, [appAInstallationA]], [appB, [appBInstallationA]]] =
+    createTestApps(
+      ["App A", { issues: "write" }, [[orgA, "selected"]]],
+      ["App B", { issues: "write" }, [[orgA, "selected"]]],
+    );
+
+  const appRegistry = createTestAppRegistry(
+    createTestRepoRegistry(),
+    {
+      app: appA,
+      provisioner: true,
+      installations: [[appAInstallationA, [repoA]]],
+    },
+    {
+      app: appB,
+      provisioner: true,
+      installations: [[appBInstallationA, [repoA]]],
+    },
+  );
+  const { findProvisionerOctokit } = createTestOctokitFactory(appRegistry);
+  const reconcileDashboards = createReconcileDashboards(findProvisionerOctokit);
+
+  const secret = createTestProvisionAuthResult({
+    request: createTestProvisionRequest({
+      requester: createRepoRef("org-a", "repo-a"),
+    }),
+  });
+  const [targetResult] = secret.results;
+
+  const provisionResults = new Map<
+    ProvisionAuthResult,
+    Map<ProvisionAuthTargetResult, ProvisionResult>
+  >([[secret, new Map([[targetResult, { type: "NO_TOKEN" }]])]]);
+
+  const config: ProviderConfig = {
+    dashboards: { enabled: true },
+    permissions: { rules: [] },
+    provision: { rules: { secrets: [] } },
+  };
+
+  const discovered: DiscoveredRequester[] = [
+    {
+      requester: createRepoRef("org-a", "repo-a"),
+      configPath: ".github/ghalactic/provision-github-tokens.yml",
+      configSha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      config: {
+        $schema: "",
+        dashboard: { enabled: true },
+        tokens: {},
+        provision: { secrets: {} },
+      },
+    },
+  ];
+
+  __setErrors("issues.listForRepo", [
+    new TestRequestError(403, { message: "Resource not accessible" }),
+  ]);
+
+  await reconcileDashboards(
+    testContext,
+    config,
+    discovered,
+    [],
+    new Map(),
+    provisionResults,
+  );
+
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "::debug::Reconciling token dashboards
+    ::debug::Provisioner app 571481606 installation 3349170939 couldn't reconcile dashboard for org-a/repo-a: Forbidden
+    ::warning::Provisioner couldn't reconcile dashboard for org-a/repo-a: Forbidden
+    ::debug::Found 0 open dashboards in org-a/repo-a
+    ::debug::Created dashboard label in org-a/repo-a
+    Created dashboard https://github.example.com/org-a/repo-a/issues/1
+    "
+  `);
+  expect(__getIssues("org-a", "repo-a")).toHaveLength(1);
+});
+
+it("falls over when creating a dashboard fails", async () => {
+  const [[orgA, [repoA]]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "org-a",
+    ["repo-a"],
+  ]);
+  const [[appA, [appAInstallationA]], [appB, [appBInstallationA]]] =
+    createTestApps(
+      ["App A", { issues: "write" }, [[orgA, "selected"]]],
+      ["App B", { issues: "write" }, [[orgA, "selected"]]],
+    );
+
+  const appRegistry = createTestAppRegistry(
+    createTestRepoRegistry(),
+    {
+      app: appA,
+      provisioner: true,
+      installations: [[appAInstallationA, [repoA]]],
+    },
+    {
+      app: appB,
+      provisioner: true,
+      installations: [[appBInstallationA, [repoA]]],
+    },
+  );
+  const { findProvisionerOctokit } = createTestOctokitFactory(appRegistry);
+  const reconcileDashboards = createReconcileDashboards(findProvisionerOctokit);
+
+  const secret = createTestProvisionAuthResult({
+    request: createTestProvisionRequest({
+      requester: createRepoRef("org-a", "repo-a"),
+    }),
+  });
+  const [targetResult] = secret.results;
+
+  const provisionResults = new Map<
+    ProvisionAuthResult,
+    Map<ProvisionAuthTargetResult, ProvisionResult>
+  >([[secret, new Map([[targetResult, { type: "NO_TOKEN" }]])]]);
+
+  const config: ProviderConfig = {
+    dashboards: { enabled: true },
+    permissions: { rules: [] },
+    provision: { rules: { secrets: [] } },
+  };
+
+  const discovered: DiscoveredRequester[] = [
+    {
+      requester: createRepoRef("org-a", "repo-a"),
+      configPath: ".github/ghalactic/provision-github-tokens.yml",
+      configSha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      config: {
+        $schema: "",
+        dashboard: { enabled: true },
+        tokens: {},
+        provision: { secrets: {} },
+      },
+    },
+  ];
+
+  __setErrors("issues.create", [
+    new TestRequestError(403, { message: "Resource not accessible" }),
+  ]);
+
+  await reconcileDashboards(
+    testContext,
+    config,
+    discovered,
+    [],
+    new Map(),
+    provisionResults,
+  );
+
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "::debug::Reconciling token dashboards
+    ::debug::Found 0 open dashboards in org-a/repo-a
+    ::debug::Created dashboard label in org-a/repo-a
+    ::debug::Provisioner app 571481606 installation 3349170939 couldn't reconcile dashboard for org-a/repo-a: Forbidden
+    ::warning::Provisioner couldn't reconcile dashboard for org-a/repo-a: Forbidden
+    ::debug::Found 0 open dashboards in org-a/repo-a
+    ::debug::Dashboard label already exists in org-a/repo-a
+    Created dashboard https://github.example.com/org-a/repo-a/issues/1
+    "
+  `);
+  expect(__getIssues("org-a", "repo-a")).toHaveLength(1);
+});
+
+it("logs when every provisioner fails", async () => {
+  const [[orgA, [repoA]]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "org-a",
+    ["repo-a"],
+  ]);
+  const [[appA, [appAInstallationA]], [appB, [appBInstallationA]]] =
+    createTestApps(
+      ["App A", { issues: "write" }, [[orgA, "selected"]]],
+      ["App B", { issues: "write" }, [[orgA, "selected"]]],
+    );
+
+  const appRegistry = createTestAppRegistry(
+    createTestRepoRegistry(),
+    {
+      app: appA,
+      provisioner: true,
+      installations: [[appAInstallationA, [repoA]]],
+    },
+    {
+      app: appB,
+      provisioner: true,
+      installations: [[appBInstallationA, [repoA]]],
+    },
+  );
+  const { findProvisionerOctokit } = createTestOctokitFactory(appRegistry);
+  const reconcileDashboards = createReconcileDashboards(findProvisionerOctokit);
+
+  const secret = createTestProvisionAuthResult({
+    request: createTestProvisionRequest({
+      requester: createRepoRef("org-a", "repo-a"),
+    }),
+  });
+  const [targetResult] = secret.results;
+
+  const provisionResults = new Map<
+    ProvisionAuthResult,
+    Map<ProvisionAuthTargetResult, ProvisionResult>
+  >([[secret, new Map([[targetResult, { type: "NO_TOKEN" }]])]]);
+
+  const config: ProviderConfig = {
+    dashboards: { enabled: true },
+    permissions: { rules: [] },
+    provision: { rules: { secrets: [] } },
+  };
+
+  const discovered: DiscoveredRequester[] = [
+    {
+      requester: createRepoRef("org-a", "repo-a"),
+      configPath: ".github/ghalactic/provision-github-tokens.yml",
+      configSha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      config: {
+        $schema: "",
+        dashboard: { enabled: true },
+        tokens: {},
+        provision: { secrets: {} },
+      },
+    },
+  ];
+
+  __setErrors("issues.listForRepo", [
+    new TestRequestError(403, { message: "Resource not accessible" }),
+    new Error("boom"),
+  ]);
+
+  await reconcileDashboards(
+    testContext,
+    config,
+    discovered,
+    [],
+    new Map(),
+    provisionResults,
+  );
+
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "::debug::Reconciling token dashboards
+    ::debug::Provisioner app 571481606 installation 3349170939 couldn't reconcile dashboard for org-a/repo-a: Forbidden
+    ::warning::Provisioner couldn't reconcile dashboard for org-a/repo-a: Forbidden
+    ::debug::Provisioner app 947161494 installation 4101978852 couldn't reconcile dashboard for org-a/repo-a: boom
+    ::warning::Provisioner couldn't reconcile dashboard for org-a/repo-a: boom
+    ::error::Failed to reconcile dashboard for org-a/repo-a
+    "
+  `);
+  expect(__getIssues("org-a", "repo-a")).toEqual([]);
+});
+
+it("falls over without repeating a close comment", async () => {
+  const [[orgA, [repoA]]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "org-a",
+    ["repo-a"],
+  ]);
+  const [[appA, [appAInstallationA]], [appB, [appBInstallationA]]] =
+    createTestApps(
+      ["App A", { issues: "write" }, [[orgA, "selected"]]],
+      ["App B", { issues: "write" }, [[orgA, "selected"]]],
+    );
+
+  const appRegistry = createTestAppRegistry(
+    createTestRepoRegistry(),
+    {
+      app: appA,
+      provisioner: true,
+      installations: [[appAInstallationA, [repoA]]],
+    },
+    {
+      app: appB,
+      provisioner: true,
+      installations: [[appBInstallationA, [repoA]]],
+    },
+  );
+  const { findProvisionerOctokit } = createTestOctokitFactory(appRegistry);
+  const reconcileDashboards = createReconcileDashboards(findProvisionerOctokit);
+
+  const config: ProviderConfig = {
+    dashboards: { enabled: true },
+    permissions: { rules: [] },
+    provision: { rules: { secrets: [] } },
+  };
+
+  const discovered: DiscoveredRequester[] = [
+    {
+      requester: createRepoRef("org-a", "repo-a"),
+      configPath: ".github/ghalactic/provision-github-tokens.yml",
+      configSha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      config: {
+        $schema: "",
+        dashboard: { enabled: true },
+        tokens: {},
+        provision: { secrets: {} },
+      },
+    },
+  ];
+
+  __setIssues(repoA.full_name, [
+    createTestIssue(
+      "org-a",
+      "repo-a",
+      7,
+      "open",
+      FAILURE_DASHBOARD_TITLE,
+      null,
+      [DASHBOARD_LABEL],
+    ),
+  ]);
+  __setErrors("issues.update", [
+    new TestRequestError(403, { message: "Resource not accessible" }),
+  ]);
+
+  await reconcileDashboards(
+    testContext,
+    config,
+    discovered,
+    [],
+    new Map(),
+    new Map(),
+  );
+
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "::debug::Reconciling token dashboards
+    ::debug::Found 1 open dashboard in org-a/repo-a
+    ::debug::Provisioner app 571481606 installation 3349170939 couldn't reconcile dashboard for org-a/repo-a: Forbidden
+    ::warning::Provisioner couldn't reconcile dashboard for org-a/repo-a: Forbidden
+    ::debug::Found 1 open dashboard in org-a/repo-a
+    Closed dashboard https://github.example.com/org-a/repo-a/issues/7
+    "
+  `);
+  expect(__getIssues("org-a", "repo-a")[0]).toMatchObject({
+    number: 7,
+    state: "closed",
+  });
+  expect(__getIssueComments("org-a", "repo-a", 7)).toEqual([
+    "Closing this dashboard because all issues have been resolved.",
+  ]);
+});
+
+it("doesn't repeat an existing close comment", async () => {
+  const [[orgA, [repoA]]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "org-a",
+    ["repo-a"],
+  ]);
+  const [[appA, [appAInstallationA]]] = createTestApps([
+    "App A",
+    { issues: "write" },
+    [[orgA, "selected"]],
+  ]);
+
+  const appRegistry = createTestAppRegistry(createTestRepoRegistry(), {
+    app: appA,
+    provisioner: true,
+    installations: [[appAInstallationA, [repoA]]],
+  });
+  const { findProvisionerOctokit } = createTestOctokitFactory(appRegistry);
+  const reconcileDashboards = createReconcileDashboards(findProvisionerOctokit);
+
+  const config: ProviderConfig = {
+    dashboards: { enabled: true },
+    permissions: { rules: [] },
+    provision: { rules: { secrets: [] } },
+  };
+
+  const discovered: DiscoveredRequester[] = [
+    {
+      requester: createRepoRef("org-a", "repo-a"),
+      configPath: ".github/ghalactic/provision-github-tokens.yml",
+      configSha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      config: {
+        $schema: "",
+        dashboard: { enabled: true },
+        tokens: {},
+        provision: { secrets: {} },
+      },
+    },
+  ];
+
+  __setIssues(repoA.full_name, [
+    createTestIssue(
+      "org-a",
+      "repo-a",
+      7,
+      "open",
+      FAILURE_DASHBOARD_TITLE,
+      null,
+      [DASHBOARD_LABEL],
+    ),
+  ]);
+  __setIssueComments("org-a", "repo-a", 7, [
+    "A human comment.",
+    "Closing this dashboard because all issues have been resolved.",
+  ]);
+
+  await reconcileDashboards(
+    testContext,
+    config,
+    discovered,
+    [],
+    new Map(),
+    new Map(),
+  );
+
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "::debug::Reconciling token dashboards
+    ::debug::Found 1 open dashboard in org-a/repo-a
+    Closed dashboard https://github.example.com/org-a/repo-a/issues/7
+    "
+  `);
+  expect(__getIssues("org-a", "repo-a")[0]).toMatchObject({
+    number: 7,
+    state: "closed",
+  });
+  expect(__getIssueComments("org-a", "repo-a", 7)).toEqual([
+    "A human comment.",
+    "Closing this dashboard because all issues have been resolved.",
+  ]);
 });
