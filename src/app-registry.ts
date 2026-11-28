@@ -158,6 +158,11 @@ export function createAppRegistry(repoRegistry: RepoRegistry): AppRegistry {
 
       for (const [, instReg] of issuers) {
         const { installation, repos } = instReg;
+
+        if (installationAccount(installation) !== request.tokenDec.account) {
+          continue;
+        }
+
         const appReg = appRegForInstReg(instReg);
 
         if (tokenHasRole) {
@@ -190,18 +195,13 @@ export function createAppRegistry(repoRegistry: RepoRegistry): AppRegistry {
         if (permMatchCount !== tokenPerms.length) continue;
 
         if (installation.repository_selection === "all") {
-          if (installationAccount(installation) === request.tokenDec.account) {
-            found.push(instReg);
-          }
+          found.push(instReg);
 
           continue;
         }
 
         for (const repo of repos) {
-          if (
-            repo.owner.login === request.tokenDec.account &&
-            tokenRepos[repo.name]
-          ) {
+          if (tokenRepos[repo.name]) {
             ++repoMatchCount;
           }
         }

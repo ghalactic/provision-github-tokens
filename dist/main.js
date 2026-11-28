@@ -60417,6 +60417,9 @@ function createAppRegistry(repoRegistry) {
       const found = [];
       for (const [, instReg] of issuers) {
         const { installation, repos } = instReg;
+        if (installationAccount(installation) !== request2.tokenDec.account) {
+          continue;
+        }
         const appReg = appRegForInstReg(instReg);
         if (tokenHasRole) {
           let appHasRole = false;
@@ -60440,13 +60443,11 @@ function createAppRegistry(repoRegistry) {
         }
         if (permMatchCount !== tokenPerms.length) continue;
         if (installation.repository_selection === "all") {
-          if (installationAccount(installation) === request2.tokenDec.account) {
-            found.push(instReg);
-          }
+          found.push(instReg);
           continue;
         }
         for (const repo of repos) {
-          if (repo.owner.login === request2.tokenDec.account && tokenRepos[repo.name]) {
+          if (tokenRepos[repo.name]) {
             ++repoMatchCount;
           }
         }
@@ -67849,7 +67850,7 @@ var requester_v1_schema_default = {
                 const: "all"
               },
               {
-                description: "A list of repo name patterns to match against.",
+                description: "A list of repo name patterns to match against. An empty list grants account-only access.",
                 type: "array",
                 items: {
                   description: "A pattern which matches repos without their account prefix.",
@@ -67864,8 +67865,7 @@ var requester_v1_schema_default = {
                     "*-with-suffix",
                     "with-*-infix"
                   ]
-                },
-                minItems: 1
+                }
               }
             ]
           },

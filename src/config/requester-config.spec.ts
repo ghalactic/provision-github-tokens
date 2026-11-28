@@ -326,6 +326,39 @@ it("parses requester configs that are empty", () => {
   } satisfies RequesterConfig);
 });
 
+it("parses account-only token declarations", async () => {
+  const fixturePath = join(fixturesPath, "account-only.yml");
+  const yaml = await readFile(fixturePath, "utf-8");
+
+  expect(
+    parseRequesterConfig(
+      { account: "account-self", repo: "repo-self" },
+      "path/to/config.yml",
+      yaml,
+    ),
+  ).toEqual({
+    $schema: requesterSchema.$id,
+
+    dashboard: {
+      enabled: false,
+    },
+
+    tokens: {
+      accountOnly: {
+        shared: false,
+        as: undefined,
+        account: "account-self",
+        repos: [],
+        permissions: { organization_administration: "write" },
+      },
+    },
+
+    provision: {
+      secrets: {},
+    },
+  });
+});
+
 it("throws when an invalid token name is defined", async () => {
   const fixturePath = join(fixturesPath, "invalid-token-name.yml");
   const yaml = await readFile(fixturePath, "utf-8");
