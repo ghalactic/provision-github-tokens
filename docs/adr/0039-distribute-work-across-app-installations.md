@@ -16,7 +16,4 @@ with no in-run blacklist.
 
 Successes record the installation used and the failures before it; `FAILED`
 records every attempt; identity appears only in `::debug::` logs. Fallback rows
-show ⚠️ instead of ✅, with a footnote pointing at debug logging. Capability
-filtering is deferred to [#168].
-
-[#168]: https://github.com/ghalactic/provision-github-tokens/issues/168
+show ⚠️ instead of ✅, with a footnote pointing at debug logging.
