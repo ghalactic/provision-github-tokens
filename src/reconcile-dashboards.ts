@@ -31,7 +31,7 @@ import type { TokenCreationResult } from "./type/token-creation-result.js";
 export type ReconcileDashboards = (
   context: Context,
   config: ProviderConfig,
-  requesters: Map<string, DiscoveredRequester>,
+  requesters: readonly DiscoveredRequester[],
   tokenResults: TokenAuthResult[],
   tokenCreationResults: Map<TokenAuthResult, TokenCreationResult>,
   provisionResults: Map<
@@ -53,11 +53,13 @@ export function createReconcileDashboards(
   ) => {
     debug("Reconciling token dashboards");
 
-    const entries = [...requesters.entries()].sort(([a], [b]) =>
-      a.localeCompare(b),
+    const entries = [...requesters].sort((a, b) =>
+      repoRefToString(a.requester).localeCompare(repoRefToString(b.requester)),
     );
 
-    for (const [repoName, discovered] of entries) {
+    for (const discovered of entries) {
+      const repoName = repoRefToString(discovered.requester);
+
       try {
         await reconcileRepo(discovered);
       } catch (cause) {

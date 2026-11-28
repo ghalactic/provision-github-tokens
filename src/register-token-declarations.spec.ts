@@ -25,47 +25,38 @@ it("registers token declarations from discovered requesters", () => {
   });
 
   const declarationRegistry = createTokenDeclarationRegistry();
-  const requesters = new Map<string, DiscoveredRequester>([
-    [
-      "account-a/repo-a",
-      {
-        requester: { account: "account-a", repo: "repo-a" },
-        configPath: ".github/ghalactic/provision-github-tokens.yml",
-        configSha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-        config: {
-          $schema:
-            "https://ghalactic.github.io/provision-github-tokens/schema/requester.v1.schema.json",
-          dashboard: { enabled: true },
-          tokens: { tokenA: declarationA, tokenB: declarationB },
-          provision: { secrets: {} },
-        },
+  const requesters: DiscoveredRequester[] = [
+    {
+      requester: { account: "account-a", repo: "repo-a" },
+      configPath: ".github/ghalactic/provision-github-tokens.yml",
+      configSha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      config: {
+        $schema:
+          "https://ghalactic.github.io/provision-github-tokens/schema/requester.v1.schema.json",
+        dashboard: { enabled: true },
+        tokens: { tokenA: declarationA, tokenB: declarationB },
+        provision: { secrets: {} },
       },
-    ],
-    [
-      "account-b/repo-b",
-      {
-        requester: { account: "account-b", repo: "repo-b" },
-        configPath: ".github/ghalactic/provision-github-tokens.yml",
-        configSha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-        config: {
-          $schema:
-            "https://ghalactic.github.io/provision-github-tokens/schema/requester.v1.schema.json",
-          dashboard: { enabled: true },
-          tokens: { tokenC: declarationC },
-          provision: { secrets: {} },
-        },
+    },
+    {
+      requester: { account: "account-b", repo: "repo-b" },
+      configPath: ".github/ghalactic/provision-github-tokens.yml",
+      configSha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      config: {
+        $schema:
+          "https://ghalactic.github.io/provision-github-tokens/schema/requester.v1.schema.json",
+        dashboard: { enabled: true },
+        tokens: { tokenC: declarationC },
+        provision: { secrets: {} },
       },
-    ],
-    [
-      "account-c/repo-c",
-      {
-        requester: { account: "account-c", repo: "repo-c" },
-        configPath: ".github/ghalactic/provision-github-tokens.yml",
-        configSha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-        configError: new ValidateError("<error>", []),
-      },
-    ],
-  ]);
+    },
+    {
+      requester: { account: "account-c", repo: "repo-c" },
+      configPath: ".github/ghalactic/provision-github-tokens.yml",
+      configSha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      configError: new ValidateError("<error>", []),
+    },
+  ];
 
   registerTokenDeclarations(declarationRegistry, requesters);
 

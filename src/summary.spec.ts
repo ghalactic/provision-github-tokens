@@ -98,61 +98,49 @@ it("renders a summary with config issues", async () => {
     ],
   ]);
 
-  const requesters = new Map<string, DiscoveredRequester>([
-    [
-      "account-v/repo-v",
-      {
-        requester: createRepoRef("account-v", "repo-v"),
-        configPath: ".github/ghalactic/provision-github-tokens.yml",
-        configSha: "5555555555555555555555555555555555555555",
-        config: {
-          $schema: "",
-          dashboard: { enabled: true },
-          tokens: {},
-          provision: { secrets: {} },
+  const requesters: DiscoveredRequester[] = [
+    {
+      requester: createRepoRef("account-v", "repo-v"),
+      configPath: ".github/ghalactic/provision-github-tokens.yml",
+      configSha: "5555555555555555555555555555555555555555",
+      config: {
+        $schema: "",
+        dashboard: { enabled: true },
+        tokens: {},
+        provision: { secrets: {} },
+      },
+    },
+    {
+      requester: createRepoRef("account-z", "repo-z"),
+      configPath: ".github/ghalactic/provision-github-tokens.yml",
+      configSha: "3333333333333333333333333333333333333333",
+      configError: new Error("Something unexpected happened"),
+    },
+    {
+      requester: createRepoRef("account-x", "repo-x"),
+      configPath: ".github/ghalactic/provision-github-tokens.yml",
+      configSha: "1111111111111111111111111111111111111111",
+      configError: new ValidateError("Invalid requester configuration", [
+        {
+          instancePath: "/tokens/token-a/shared",
+          schemaPath: "#/properties/tokens/additionalProperties",
+          keyword: "additionalProperties",
+          params: { additionalProperty: "shared" },
+          message: "must NOT have additional properties",
         },
-      },
-    ],
-    [
-      "account-z/repo-z",
-      {
-        requester: createRepoRef("account-z", "repo-z"),
-        configPath: ".github/ghalactic/provision-github-tokens.yml",
-        configSha: "3333333333333333333333333333333333333333",
-        configError: new Error("Something unexpected happened"),
-      },
-    ],
-    [
-      "account-x/repo-x",
-      {
-        requester: createRepoRef("account-x", "repo-x"),
-        configPath: ".github/ghalactic/provision-github-tokens.yml",
-        configSha: "1111111111111111111111111111111111111111",
-        configError: new ValidateError("Invalid requester configuration", [
-          {
-            instancePath: "/tokens/token-a/shared",
-            schemaPath: "#/properties/tokens/additionalProperties",
-            keyword: "additionalProperties",
-            params: { additionalProperty: "shared" },
-            message: "must NOT have additional properties",
-          },
-        ]),
-      },
-    ],
-    [
-      "account-y/repo-y",
-      {
-        requester: createRepoRef("account-y", "repo-y"),
-        configPath: ".github/ghalactic/provision-github-tokens.yml",
-        configSha: "2222222222222222222222222222222222222222",
-        configError: new ParseYamlError(
-          new Error("Bad indentation"),
-          [],
-          "account-y/repo-y/.github/ghalactic/provision-github-tokens.yml",
-        ),
-      },
-    ],
-  ]);
+      ]),
+    },
+    {
+      requester: createRepoRef("account-y", "repo-y"),
+      configPath: ".github/ghalactic/provision-github-tokens.yml",
+      configSha: "2222222222222222222222222222222222222222",
+      configError: new ParseYamlError(
+        new Error("Bad indentation"),
+        [],
+        "account-y/repo-y/.github/ghalactic/provision-github-tokens.yml",
+      ),
+    },
+  ];
 
   await expect(
     renderSummary(
@@ -171,21 +159,18 @@ it("renders a summary with only config issues", async () => {
     tokenResults: [],
   };
 
-  const requesters = new Map<string, DiscoveredRequester>([
-    [
-      "account-x/repo-x",
-      {
-        requester: createRepoRef("account-x", "repo-x"),
-        configPath: ".github/ghalactic/provision-github-tokens.yml",
-        configSha: "1111111111111111111111111111111111111111",
-        configError: new ParseYamlError(
-          new Error("Bad indentation"),
-          [],
-          "account-x/repo-x/.github/ghalactic/provision-github-tokens.yml",
-        ),
-      },
-    ],
-  ]);
+  const requesters: DiscoveredRequester[] = [
+    {
+      requester: createRepoRef("account-x", "repo-x"),
+      configPath: ".github/ghalactic/provision-github-tokens.yml",
+      configSha: "1111111111111111111111111111111111111111",
+      configError: new ParseYamlError(
+        new Error("Bad indentation"),
+        [],
+        "account-x/repo-x/.github/ghalactic/provision-github-tokens.yml",
+      ),
+    },
+  ];
 
   await expect(
     renderSummary(
@@ -238,12 +223,12 @@ it("truncates config issues beyond the limit and shows notices", async () => {
     ],
   ]);
 
-  const requesters = new Map<string, DiscoveredRequester>();
+  const requesters: DiscoveredRequester[] = [];
 
   for (let i = 0; i < 1002; ++i) {
     const repo = `repo-${i.toString().padStart(4, "0")}`;
 
-    requesters.set(`account-x/${repo}`, {
+    requesters.push({
       requester: createRepoRef("account-x", repo),
       configPath: ".github/ghalactic/provision-github-tokens.yml",
       configSha: i.toString(16).padStart(40, "0"),
@@ -369,7 +354,7 @@ it("renders a summary with all secrets provisioned", async () => {
 
   const summary = renderSummary(
     testContext,
-    new Map(),
+    [],
     authResult,
     tokenCreationResults,
     provisionResults,
@@ -491,7 +476,7 @@ it("renders a summary with some secrets denied", async () => {
   await expect(
     renderSummary(
       testContext,
-      new Map(),
+      [],
       authResult,
       tokenCreationResults,
       provisionResults,
@@ -567,7 +552,7 @@ it("renders a summary with all secrets denied", async () => {
   await expect(
     renderSummary(
       testContext,
-      new Map(),
+      [],
       authResult,
       tokenCreationResults,
       provisionResults,
@@ -591,7 +576,7 @@ it("renders a summary with no secrets requested", async () => {
   await expect(
     renderSummary(
       testContext,
-      new Map(),
+      [],
       authResult,
       tokenCreationResults,
       provisionResults,
@@ -665,7 +650,7 @@ it("renders a summary with environment targets", async () => {
   await expect(
     renderSummary(
       testContext,
-      new Map(),
+      [],
       authResult,
       tokenCreationResults,
       provisionResults,
@@ -781,7 +766,7 @@ it("renders a summary with multiple requesters", async () => {
   await expect(
     renderSummary(
       testContext,
-      new Map(),
+      [],
       authResult,
       tokenCreationResults,
       provisionResults,
@@ -882,7 +867,7 @@ it("renders a summary with a missing token declaration", async () => {
   await expect(
     renderSummary(
       testContext,
-      new Map(),
+      [],
       authResult,
       tokenCreationResults,
       provisionResults,
@@ -982,7 +967,7 @@ it("renders a summary with an unshared token declaration", async () => {
   await expect(
     renderSummary(
       testContext,
-      new Map(),
+      [],
       authResult,
       tokenCreationResults,
       provisionResults,
@@ -1074,7 +1059,7 @@ it("renders a summary with missing targets", async () => {
   await expect(
     renderSummary(
       testContext,
-      new Map(),
+      [],
       authResult,
       tokenCreationResults,
       provisionResults,
@@ -1196,7 +1181,7 @@ it("renders a summary with multiple distinct targets", async () => {
   await expect(
     renderSummary(
       testContext,
-      new Map(),
+      [],
       authResult,
       tokenCreationResults,
       provisionResults,
@@ -1251,7 +1236,7 @@ it("truncates rows beyond the limit and shows a notice", async () => {
   await expect(
     renderSummary(
       testContext,
-      new Map(),
+      [],
       authResult,
       tokenCreationResults,
       provisionResults,
@@ -1319,7 +1304,7 @@ it("renders a failure reason when tokens aren't allowed", async () => {
   await expect(
     renderSummary(
       testContext,
-      new Map(),
+      [],
       authResult,
       tokenCreationResults,
       provisionResults,
@@ -1386,7 +1371,7 @@ it("renders a failure reason when no suitable issuer is found", async () => {
   await expect(
     renderSummary(
       testContext,
-      new Map(),
+      [],
       authResult,
       tokenCreationResults,
       provisionResults,
@@ -1462,7 +1447,7 @@ it("renders a failure reason when token issuance fails", async () => {
   await expect(
     renderSummary(
       testContext,
-      new Map(),
+      [],
       authResult,
       tokenCreationResults,
       provisionResults,
@@ -1537,7 +1522,7 @@ it("renders a failure reason when no suitable provisioner is found", async () =>
   await expect(
     renderSummary(
       testContext,
-      new Map(),
+      [],
       authResult,
       tokenCreationResults,
       provisionResults,
@@ -1610,7 +1595,7 @@ it("renders a failure reason when provisioning has no target results", async () 
   await expect(
     renderSummary(
       testContext,
-      new Map(),
+      [],
       authResult,
       tokenCreationResults,
       provisionResults,
@@ -1713,7 +1698,7 @@ it("renders a failure reason when provisioning partially fails across targets", 
   await expect(
     renderSummary(
       testContext,
-      new Map(),
+      [],
       authResult,
       tokenCreationResults,
       provisionResults,
@@ -1797,7 +1782,7 @@ it("renders a failure reason when provisioning fails for all targets", async () 
   await expect(
     renderSummary(
       testContext,
-      new Map(),
+      [],
       authResult,
       tokenCreationResults,
       provisionResults,
@@ -2043,7 +2028,7 @@ it("warns and adds a footnote when a fallback was used", async () => {
 
   const summary = renderSummary(
     testContext,
-    new Map(),
+    [],
     authResult,
     tokenCreationResults,
     provisionResults,

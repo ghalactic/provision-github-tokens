@@ -44,7 +44,7 @@ const FALLBACK_FOOTNOTE_TEXT =
 
 export function renderSummary(
   context: Context,
-  requesters: Map<string, DiscoveredRequester>,
+  requesters: readonly DiscoveredRequester[],
   authResult: AuthorizeResult,
   tokenCreationResults: Map<TokenAuthResult, TokenCreationResult>,
   provisionResults: Map<
@@ -109,7 +109,7 @@ export function renderSummary(
   function discoveredConfigIssues(): ConfigIssue[] {
     const configIssues: ConfigIssue[] = [];
 
-    for (const discovered of requesters.values()) {
+    for (const discovered of requesters) {
       if (discovered.configError) {
         configIssues.push({ discovered, error: discovered.configError });
       }

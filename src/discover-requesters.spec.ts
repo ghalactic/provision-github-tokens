@@ -17,10 +17,8 @@ import {
 import { createTestRepoRegistry } from "../test/repo-registry.js";
 import { ValidateError } from "./config/validation.js";
 import { ParseYamlError } from "./config/yaml.js";
-import {
-  discoverRequesters,
-  type DiscoveredRequester,
-} from "./discover-requesters.js";
+import { discoverRequesters } from "./discover-requesters.js";
+import { repoRefToString } from "./github-reference.js";
 import { createOctokitFactory } from "./octokit.js";
 import type { RequesterConfig } from "./type/requester-config.js";
 
@@ -127,27 +125,95 @@ it("discovers requesters in a single account", async () => {
     Discovered 2 requesters
     "
   `);
-  expect(discovered).toEqual(
-    new Map<string, DiscoveredRequester>([
-      [
-        "org-a/repo-a",
-        {
-          requester: { account: "org-a", repo: "repo-a" },
-          configPath: ".github/ghalactic/provision-github-tokens.yml",
-          configSha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-          config: expect.objectContaining({}) as RequesterConfig,
-        },
-      ],
-      [
-        "org-a/repo-c",
-        {
-          requester: { account: "org-a", repo: "repo-c" },
-          configPath: ".github/ghalactic/provision-github-tokens.yml",
-          configSha: "cccccccccccccccccccccccccccccccccccccccc",
-          config: expect.objectContaining({}) as RequesterConfig,
-        },
-      ],
+  expect(discovered).toEqual([
+    {
+      requester: { account: "org-a", repo: "repo-a" },
+      configPath: ".github/ghalactic/provision-github-tokens.yml",
+      configSha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      config: expect.objectContaining({}) as RequesterConfig,
+    },
+    {
+      requester: { account: "org-a", repo: "repo-c" },
+      configPath: ".github/ghalactic/provision-github-tokens.yml",
+      configSha: "cccccccccccccccccccccccccccccccccccccccc",
+      config: expect.objectContaining({}) as RequesterConfig,
+    },
+  ]);
+});
+
+it("discovers requesters in reference order", async () => {
+  const [[accountA, [repoB, repoA]]] = createTestInstallationAccounts([
+    "Organization",
+    100,
+    "org-a",
+    ["repo-b", "repo-a"],
+  ]);
+  const [[appA, [appAInstallationA]]] = createTestApps([
+    "App A",
+    {},
+    [[accountA, "selected"]],
+  ]);
+
+  const appRegistry = createTestAppRegistry(createTestRepoRegistry(), {
+    app: appA,
+    provisioner: true,
+    installations: [[appAInstallationA, [repoB, repoA]]],
+  });
+
+  __setCommits(repoA.full_name, [
+    createTestCommit("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "Add config", [
+      ".github/ghalactic/provision-github-tokens.yml",
     ]),
+  ]);
+  __setCommits(repoB.full_name, [
+    createTestCommit("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb", "Add config", [
+      ".github/ghalactic/provision-github-tokens.yml",
+    ]),
+  ]);
+  __setFiles(repoA.full_name, {
+    ".github/ghalactic/provision-github-tokens.yml": {
+      content: `
+          tokens: {}
+          provision:
+            secrets: {}`,
+      sha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    },
+  });
+  __setFiles(repoB.full_name, {
+    ".github/ghalactic/provision-github-tokens.yml": {
+      content: `
+          tokens: {}
+          provision:
+            secrets: {}`,
+      sha: "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    },
+  });
+
+  const discovered = await discoverRequesters(
+    createOctokitFactory(),
+    appRegistry,
+    [
+      {
+        appId: appA.id,
+        privateKey: appA.privateKey,
+        issuer: { enabled: false, roles: [] },
+        provisioner: { enabled: true },
+      },
+    ],
+  );
+
+  expect(__getOutput()).toMatchInlineSnapshot(`
+    "::debug::Discovered requester org-a/repo-a
+    ::debug::Requester org-a/repo-a has 0 token declarations []
+    ::debug::Requester org-a/repo-a has 0 secret declarations []
+    ::debug::Discovered requester org-a/repo-b
+    ::debug::Requester org-a/repo-b has 0 token declarations []
+    ::debug::Requester org-a/repo-b has 0 secret declarations []
+    Discovered 2 requesters
+    "
+  `);
+  expect(discovered.map(({ requester }) => repoRefToString(requester))).toEqual(
+    ["org-a/repo-a", "org-a/repo-b"],
   );
 });
 
@@ -252,28 +318,20 @@ it("discovers requesters in multiple account", async () => {
     Discovered 2 requesters
     "
   `);
-  expect(discovered).toEqual(
-    new Map<string, DiscoveredRequester>([
-      [
-        "org-a/repo-a",
-        {
-          requester: { account: "org-a", repo: "repo-a" },
-          configPath: ".github/ghalactic/provision-github-tokens.yml",
-          configSha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-          config: expect.objectContaining({}) as RequesterConfig,
-        },
-      ],
-      [
-        "user-b/repo-c",
-        {
-          requester: { account: "user-b", repo: "repo-c" },
-          configPath: ".github/ghalactic/provision-github-tokens.yml",
-          configSha: "cccccccccccccccccccccccccccccccccccccccc",
-          config: expect.objectContaining({}) as RequesterConfig,
-        },
-      ],
-    ]),
-  );
+  expect(discovered).toEqual([
+    {
+      requester: { account: "org-a", repo: "repo-a" },
+      configPath: ".github/ghalactic/provision-github-tokens.yml",
+      configSha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      config: expect.objectContaining({}) as RequesterConfig,
+    },
+    {
+      requester: { account: "user-b", repo: "repo-c" },
+      configPath: ".github/ghalactic/provision-github-tokens.yml",
+      configSha: "cccccccccccccccccccccccccccccccccccccccc",
+      config: expect.objectContaining({}) as RequesterConfig,
+    },
+  ]);
 });
 
 it("only discovers requesters once when multiple providers can access them", async () => {
@@ -380,37 +438,26 @@ it("only discovers requesters once when multiple providers can access them", asy
     Discovered 3 requesters
     "
   `);
-  expect(discovered).toEqual(
-    new Map<string, DiscoveredRequester>([
-      [
-        "org-a/repo-a",
-        {
-          requester: { account: "org-a", repo: "repo-a" },
-          configPath: ".github/ghalactic/provision-github-tokens.yml",
-          configSha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-          config: expect.objectContaining({}) as RequesterConfig,
-        },
-      ],
-      [
-        "org-a/repo-b",
-        {
-          requester: { account: "org-a", repo: "repo-b" },
-          configPath: ".github/ghalactic/provision-github-tokens.yml",
-          configSha: "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-          config: expect.objectContaining({}) as RequesterConfig,
-        },
-      ],
-      [
-        "org-a/repo-c",
-        {
-          requester: { account: "org-a", repo: "repo-c" },
-          configPath: ".github/ghalactic/provision-github-tokens.yml",
-          configSha: "cccccccccccccccccccccccccccccccccccccccc",
-          config: expect.objectContaining({}) as RequesterConfig,
-        },
-      ],
-    ]),
-  );
+  expect(discovered).toEqual([
+    {
+      requester: { account: "org-a", repo: "repo-a" },
+      configPath: ".github/ghalactic/provision-github-tokens.yml",
+      configSha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      config: expect.objectContaining({}) as RequesterConfig,
+    },
+    {
+      requester: { account: "org-a", repo: "repo-b" },
+      configPath: ".github/ghalactic/provision-github-tokens.yml",
+      configSha: "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      config: expect.objectContaining({}) as RequesterConfig,
+    },
+    {
+      requester: { account: "org-a", repo: "repo-c" },
+      configPath: ".github/ghalactic/provision-github-tokens.yml",
+      configSha: "cccccccccccccccccccccccccccccccccccccccc",
+      config: expect.objectContaining({}) as RequesterConfig,
+    },
+  ]);
 });
 
 it("skips requesters with invalid configuration", async () => {
@@ -519,37 +566,26 @@ it("skips requesters with invalid configuration", async () => {
     Discovered 2 requesters
     "
   `);
-  expect(discovered).toEqual(
-    new Map<string, DiscoveredRequester>([
-      [
-        "org-a/repo-a",
-        {
-          requester: { account: "org-a", repo: "repo-a" },
-          configPath: ".github/ghalactic/provision-github-tokens.yml",
-          configSha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-          config: expect.objectContaining({}) as RequesterConfig,
-        },
-      ],
-      [
-        "org-a/repo-b",
-        {
-          requester: { account: "org-a", repo: "repo-b" },
-          configPath: ".github/ghalactic/provision-github-tokens.yml",
-          configSha: "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-          configError: expect.any(ValidateError) as Error,
-        },
-      ],
-      [
-        "org-a/repo-c",
-        {
-          requester: { account: "org-a", repo: "repo-c" },
-          configPath: ".github/ghalactic/provision-github-tokens.yml",
-          configSha: "cccccccccccccccccccccccccccccccccccccccc",
-          config: expect.objectContaining({}) as RequesterConfig,
-        },
-      ],
-    ]),
-  );
+  expect(discovered).toEqual([
+    {
+      requester: { account: "org-a", repo: "repo-a" },
+      configPath: ".github/ghalactic/provision-github-tokens.yml",
+      configSha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      config: expect.objectContaining({}) as RequesterConfig,
+    },
+    {
+      requester: { account: "org-a", repo: "repo-b" },
+      configPath: ".github/ghalactic/provision-github-tokens.yml",
+      configSha: "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      configError: expect.any(ValidateError) as Error,
+    },
+    {
+      requester: { account: "org-a", repo: "repo-c" },
+      configPath: ".github/ghalactic/provision-github-tokens.yml",
+      configSha: "cccccccccccccccccccccccccccccccccccccccc",
+      config: expect.objectContaining({}) as RequesterConfig,
+    },
+  ]);
 });
 
 it("skips requesters with invalid YAML configuration", async () => {
@@ -621,28 +657,20 @@ it("skips requesters with invalid YAML configuration", async () => {
     Discovered 1 requester
     "
   `);
-  expect(discovered).toEqual(
-    new Map([
-      [
-        "org-a/repo-a",
-        {
-          requester: { account: "org-a", repo: "repo-a" },
-          configPath: ".github/ghalactic/provision-github-tokens.yml",
-          configSha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-          config: expect.objectContaining({}) as RequesterConfig,
-        },
-      ],
-      [
-        "org-a/repo-b",
-        {
-          requester: { account: "org-a", repo: "repo-b" },
-          configPath: ".github/ghalactic/provision-github-tokens.yml",
-          configSha: "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
-          configError: expect.any(ParseYamlError) as Error,
-        },
-      ],
-    ]),
-  );
+  expect(discovered).toEqual([
+    {
+      requester: { account: "org-a", repo: "repo-a" },
+      configPath: ".github/ghalactic/provision-github-tokens.yml",
+      configSha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      config: expect.objectContaining({}) as RequesterConfig,
+    },
+    {
+      requester: { account: "org-a", repo: "repo-b" },
+      configPath: ".github/ghalactic/provision-github-tokens.yml",
+      configSha: "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      configError: expect.any(ParseYamlError) as Error,
+    },
+  ]);
 });
 
 it("skips requesters whose config no longer exists", async () => {
@@ -688,5 +716,5 @@ it("skips requesters whose config no longer exists", async () => {
     Discovered 0 requesters
     "
   `);
-  expect(discovered).toEqual(new Map());
+  expect(discovered).toEqual([]);
 });

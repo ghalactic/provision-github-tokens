@@ -3,9 +3,9 @@ import type { TokenDeclarationRegistry } from "./token-declaration-registry.js";
 
 export function registerTokenDeclarations(
   declarationRegistry: TokenDeclarationRegistry,
-  requesters: Map<string, DiscoveredRequester>,
+  requesters: readonly DiscoveredRequester[],
 ): void {
-  for (const { requester, config } of requesters.values()) {
+  for (const { requester, config } of requesters) {
     if (!config) continue;
 
     for (const [name, declaration] of Object.entries(config.tokens)) {

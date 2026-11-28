@@ -135,7 +135,7 @@ try {
   });
 
   const authorizeResult = await group("Authorizing requests", async () => {
-    return await authorizer.authorize(Array.from(requesters.values()));
+    return await authorizer.authorize(requesters);
   });
 
   const tokenCreationResults = await group("Creating tokens", async () => {

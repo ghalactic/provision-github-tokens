@@ -66181,7 +66181,7 @@ function createTextTokenAuthExplainer() {
 function createAuthorizer(createProvisionRequest, provisionAuthorizer, tokenAuthorizer) {
   return {
     async authorize(requesters) {
-      for (const { config, requester } of requesters.values()) {
+      for (const { config, requester } of requesters) {
         if (!config) continue;
         for (const name in config.provision.secrets) {
           provisionAuthorizer.authorizeSecret(
@@ -73999,103 +73999,116 @@ function normalizeRequesterConfig(definingRepo, config) {
 // src/discover-requesters.ts
 var CONFIG_PATH = ".github/ghalactic/provision-github-tokens.yml";
 async function discoverRequesters(octokitFactory, appRegistry, appsInput) {
-  const discovered = /* @__PURE__ */ new Map();
+  const discovered = [];
   let discoverCount = 0;
-  for (const [, instReg] of appRegistry.provisioners) {
-    const { installation, repos } = instReg;
+  for (const { installation, requester } of reposForDiscovery(appRegistry)) {
+    const repoName = repoRefToString(requester);
     const octokit = octokitFactory.installationOctokit(
       appsInput,
       installation.app_id,
       installation.id
     );
-    for (const r2 of repos) {
-      if (discovered.has(r2.full_name)) continue;
-      const requester = createRepoRef(r2.owner.login, r2.name);
-      const commits = await octokit.rest.repos.listCommits({
+    const commits = await octokit.rest.repos.listCommits({
+      owner: requester.account,
+      repo: requester.repo,
+      path: CONFIG_PATH,
+      per_page: 1
+    });
+    const head = commits.data[0];
+    if (!head) {
+      debug(`Repo ${repoName} isn't a requester`);
+      continue;
+    }
+    const configSha = head.sha;
+    let configYaml;
+    try {
+      const res = await octokit.rest.repos.getContent({
         owner: requester.account,
         repo: requester.repo,
         path: CONFIG_PATH,
-        per_page: 1
+        ref: configSha,
+        mediaType: { format: "raw" }
       });
-      const head = commits.data[0];
-      if (!head) {
-        debug(`Repo ${r2.full_name} isn't a requester`);
-        continue;
+      if (typeof res.data !== "string") {
+        throw new Error(
+          `Invariant violation: Unexpected repo contents type ${typeof res.data}`
+        );
       }
-      const configSha = head.sha;
-      let configYaml;
-      try {
-        const res = await octokit.rest.repos.getContent({
-          owner: requester.account,
-          repo: requester.repo,
-          path: CONFIG_PATH,
-          ref: configSha,
-          mediaType: { format: "raw" }
-        });
-        if (typeof res.data !== "string") {
-          throw new Error(
-            `Invariant violation: Unexpected repo contents type ${typeof res.data}`
-          );
+      configYaml = res.data;
+    } catch (error2) {
+      handleRequestError(error2, {
+        404: () => {
+          debug(`Repo ${repoName} isn't a requester`);
         }
-        configYaml = res.data;
-      } catch (error2) {
-        handleRequestError(error2, {
-          404: () => {
-            debug(`Repo ${r2.full_name} isn't a requester`);
+      });
+      continue;
+    }
+    debug(`Discovered requester ${repoName}`);
+    let config;
+    try {
+      config = parseRequesterConfig(requester, CONFIG_PATH, configYaml);
+    } catch (error2) {
+      warning(`Requester ${repoName} has invalid config`);
+      const cause = errorCause(error2);
+      if (!cause) {
+        throw new Error(
+          "Invariant violation: Requester config error has no cause",
+          {
+            cause: error2
           }
-        });
-        continue;
+        );
       }
-      debug(`Discovered requester ${r2.full_name}`);
-      let config;
-      try {
-        config = parseRequesterConfig(requester, CONFIG_PATH, configYaml);
-      } catch (error2) {
-        warning(`Requester ${r2.full_name} has invalid config`);
-        const cause = errorCause(error2);
-        if (!cause) {
-          throw new Error(
-            "Invariant violation: Requester config error has no cause",
-            { cause: error2 }
-          );
-        }
-        discovered.set(r2.full_name, {
-          requester,
-          configPath: CONFIG_PATH,
-          configSha,
-          configError: cause
-        });
-        continue;
-      }
-      const tokenDecNames = Object.keys(config.tokens);
-      const tokenDecs = pluralize(
-        tokenDecNames.length,
-        "token declaration",
-        "token declarations"
-      );
-      debug(
-        `Requester ${r2.full_name} has ${tokenDecs} ` + JSON.stringify(tokenDecNames)
-      );
-      const secretDecNames = Object.keys(config.provision.secrets);
-      const secretDecs = pluralize(
-        secretDecNames.length,
-        "secret declaration",
-        "secret declarations"
-      );
-      debug(
-        `Requester ${r2.full_name} has ${secretDecs} ` + JSON.stringify(secretDecNames)
-      );
-      ++discoverCount;
-      discovered.set(r2.full_name, {
+      discovered.push({
         requester,
         configPath: CONFIG_PATH,
-        config,
-        configSha
+        configSha,
+        configError: cause
       });
+      continue;
     }
+    const tokenDecNames = Object.keys(config.tokens);
+    const tokenDecs = pluralize(
+      tokenDecNames.length,
+      "token declaration",
+      "token declarations"
+    );
+    debug(
+      `Requester ${repoName} has ${tokenDecs} ` + JSON.stringify(tokenDecNames)
+    );
+    const secretDecNames = Object.keys(config.provision.secrets);
+    const secretDecs = pluralize(
+      secretDecNames.length,
+      "secret declaration",
+      "secret declarations"
+    );
+    debug(
+      `Requester ${repoName} has ${secretDecs} ` + JSON.stringify(secretDecNames)
+    );
+    ++discoverCount;
+    discovered.push({
+      requester,
+      configPath: CONFIG_PATH,
+      config,
+      configSha
+    });
   }
   info(`Discovered ${pluralize(discoverCount, "requester", "requesters")}`);
   return discovered;
+}
+function reposForDiscovery(appRegistry) {
+  const found = /* @__PURE__ */ new Map();
+  for (const [, { installation, repos: repos2 }] of appRegistry.provisioners) {
+    for (const repo of repos2) {
+      const requester = createRepoRef(repo.owner.login, repo.name);
+      const repoName = repoRefToString(requester);
+      if (!found.has(repoName)) {
+        found.set(repoName, { installation, requester });
+      }
+    }
+  }
+  const repos = Array.from(found.values());
+  repos.sort((a2, b2) => compareRef(a2.requester, b2.requester));
+  return repos;
 }
 
 // node_modules/.pnpm/libsodium@0.8.0/node_modules/libsodium/dist/modules-esm/libsodium.mjs
@@ -122926,10 +122939,11 @@ function isFullyProvisioned(authResult, provisionResults) {
 function createReconcileDashboards(findProvisionerOctokit) {
   return async (context, config, requesters, tokenResults, tokenCreationResults, provisionResults) => {
     debug("Reconciling token dashboards");
-    const entries = [...requesters.entries()].sort(
-      ([a2], [b2]) => a2.localeCompare(b2)
+    const entries = [...requesters].sort(
+      (a2, b2) => repoRefToString(a2.requester).localeCompare(repoRefToString(b2.requester))
     );
-    for (const [repoName, discovered] of entries) {
+    for (const discovered of entries) {
+      const repoName = repoRefToString(discovered.requester);
       try {
         await reconcileRepo(discovered);
       } catch (cause) {
@@ -123131,7 +123145,7 @@ function createReconcileDashboards(findProvisionerOctokit) {
 
 // src/register-token-declarations.ts
 function registerTokenDeclarations(declarationRegistry, requesters) {
-  for (const { requester, config } of requesters.values()) {
+  for (const { requester, config } of requesters) {
     if (!config) continue;
     for (const [name, declaration] of Object.entries(config.tokens)) {
       declarationRegistry.registerDeclaration(requester, name, declaration);
@@ -123215,7 +123229,7 @@ function renderSummary(context, requesters, authResult, tokenCreationResults, pr
   ]);
   function discoveredConfigIssues() {
     const configIssues2 = [];
-    for (const discovered of requesters.values()) {
+    for (const discovered of requesters) {
       if (discovered.configError) {
         configIssues2.push({ discovered, error: discovered.configError });
       }
@@ -124068,7 +124082,7 @@ try {
     return requesters2;
   });
   const authorizeResult = await group("Authorizing requests", async () => {
-    return await authorizer.authorize(Array.from(requesters.values()));
+    return await authorizer.authorize(requesters);
   });
   const tokenCreationResults = await group("Creating tokens", async () => {
     return await createTokens(tokenAuthorizer.listResults());

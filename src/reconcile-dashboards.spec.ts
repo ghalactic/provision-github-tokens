@@ -78,25 +78,22 @@ it("creates a dashboard when there are config issues", async () => {
     provision: { rules: { secrets: [] } },
   };
 
-  const discovered = new Map<string, DiscoveredRequester>([
-    [
-      repoA.full_name,
-      {
-        requester: createRepoRef("org-a", "repo-a"),
-        configPath: ".github/ghalactic/provision-github-tokens.yml",
-        configSha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-        configError: new ValidateError("Invalid requester configuration", [
-          {
-            instancePath: "/tokens/token-a/shared",
-            schemaPath: "#/properties/tokens/additionalProperties",
-            keyword: "additionalProperties",
-            params: { additionalProperty: "shared" },
-            message: "must NOT have additional properties",
-          },
-        ]),
-      },
-    ],
-  ]);
+  const discovered: DiscoveredRequester[] = [
+    {
+      requester: createRepoRef("org-a", "repo-a"),
+      configPath: ".github/ghalactic/provision-github-tokens.yml",
+      configSha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      configError: new ValidateError("Invalid requester configuration", [
+        {
+          instancePath: "/tokens/token-a/shared",
+          schemaPath: "#/properties/tokens/additionalProperties",
+          keyword: "additionalProperties",
+          params: { additionalProperty: "shared" },
+          message: "must NOT have additional properties",
+        },
+      ]),
+    },
+  ];
 
   await reconcileDashboards(
     testContext,
@@ -163,22 +160,19 @@ it("creates a dashboard when provisioning fails", async () => {
     provision: { rules: { secrets: [] } },
   };
 
-  const discovered = new Map<string, DiscoveredRequester>([
-    [
-      repoA.full_name,
-      {
-        requester: createRepoRef("org-a", "repo-a"),
-        configPath: ".github/ghalactic/provision-github-tokens.yml",
-        configSha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-        config: {
-          $schema: "",
-          dashboard: { enabled: true },
-          tokens: {},
-          provision: { secrets: {} },
-        },
+  const discovered: DiscoveredRequester[] = [
+    {
+      requester: createRepoRef("org-a", "repo-a"),
+      configPath: ".github/ghalactic/provision-github-tokens.yml",
+      configSha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      config: {
+        $schema: "",
+        dashboard: { enabled: true },
+        tokens: {},
+        provision: { secrets: {} },
       },
-    ],
-  ]);
+    },
+  ];
 
   await reconcileDashboards(
     testContext,
@@ -247,22 +241,19 @@ it("updates a dashboard when its body is stale", async () => {
     provision: { rules: { secrets: [] } },
   };
 
-  const discovered = new Map<string, DiscoveredRequester>([
-    [
-      repoA.full_name,
-      {
-        requester: createRepoRef("org-a", "repo-a"),
-        configPath: ".github/ghalactic/provision-github-tokens.yml",
-        configSha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-        config: {
-          $schema: "",
-          dashboard: { enabled: true },
-          tokens: {},
-          provision: { secrets: {} },
-        },
+  const discovered: DiscoveredRequester[] = [
+    {
+      requester: createRepoRef("org-a", "repo-a"),
+      configPath: ".github/ghalactic/provision-github-tokens.yml",
+      configSha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      config: {
+        $schema: "",
+        dashboard: { enabled: true },
+        tokens: {},
+        provision: { secrets: {} },
       },
-    ],
-  ]);
+    },
+  ];
 
   __setIssues(repoA.full_name, [
     createTestIssue(
@@ -342,22 +333,19 @@ it("updates a dashboard on subsequent workflow runs", async () => {
     provision: { rules: { secrets: [] } },
   };
 
-  const discovered = new Map<string, DiscoveredRequester>([
-    [
-      repoA.full_name,
-      {
-        requester: createRepoRef("org-a", "repo-a"),
-        configPath: ".github/ghalactic/provision-github-tokens.yml",
-        configSha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-        config: {
-          $schema: "",
-          dashboard: { enabled: true },
-          tokens: {},
-          provision: { secrets: {} },
-        },
+  const discovered: DiscoveredRequester[] = [
+    {
+      requester: createRepoRef("org-a", "repo-a"),
+      configPath: ".github/ghalactic/provision-github-tokens.yml",
+      configSha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      config: {
+        $schema: "",
+        dashboard: { enabled: true },
+        tokens: {},
+        provision: { secrets: {} },
       },
-    ],
-  ]);
+    },
+  ];
 
   await reconcileDashboards(
     testContext,
@@ -436,22 +424,19 @@ it("closes all but the newest dashboard", async () => {
     provision: { rules: { secrets: [] } },
   };
 
-  const discovered = new Map<string, DiscoveredRequester>([
-    [
-      repoA.full_name,
-      {
-        requester: createRepoRef("org-a", "repo-a"),
-        configPath: ".github/ghalactic/provision-github-tokens.yml",
-        configSha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-        config: {
-          $schema: "",
-          dashboard: { enabled: true },
-          tokens: {},
-          provision: { secrets: {} },
-        },
+  const discovered: DiscoveredRequester[] = [
+    {
+      requester: createRepoRef("org-a", "repo-a"),
+      configPath: ".github/ghalactic/provision-github-tokens.yml",
+      configSha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      config: {
+        $schema: "",
+        dashboard: { enabled: true },
+        tokens: {},
+        provision: { secrets: {} },
       },
-    ],
-  ]);
+    },
+  ];
 
   __setIssues(repoA.full_name, [
     createTestIssue(
@@ -532,22 +517,19 @@ it("closes dashboards when nothing is failing", async () => {
     provision: { rules: { secrets: [] } },
   };
 
-  const discovered = new Map<string, DiscoveredRequester>([
-    [
-      repoA.full_name,
-      {
-        requester: createRepoRef("org-a", "repo-a"),
-        configPath: ".github/ghalactic/provision-github-tokens.yml",
-        configSha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-        config: {
-          $schema: "",
-          dashboard: { enabled: true },
-          tokens: {},
-          provision: { secrets: {} },
-        },
+  const discovered: DiscoveredRequester[] = [
+    {
+      requester: createRepoRef("org-a", "repo-a"),
+      configPath: ".github/ghalactic/provision-github-tokens.yml",
+      configSha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      config: {
+        $schema: "",
+        dashboard: { enabled: true },
+        tokens: {},
+        provision: { secrets: {} },
       },
-    ],
-  ]);
+    },
+  ];
 
   __setIssues(repoA.full_name, [
     createTestIssue(
@@ -638,22 +620,19 @@ it("closes dashboards when everything is provisioned", async () => {
     provision: { rules: { secrets: [] } },
   };
 
-  const discovered = new Map<string, DiscoveredRequester>([
-    [
-      repoA.full_name,
-      {
-        requester: createRepoRef("org-a", "repo-a"),
-        configPath: ".github/ghalactic/provision-github-tokens.yml",
-        configSha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-        config: {
-          $schema: "",
-          dashboard: { enabled: true },
-          tokens: {},
-          provision: { secrets: {} },
-        },
+  const discovered: DiscoveredRequester[] = [
+    {
+      requester: createRepoRef("org-a", "repo-a"),
+      configPath: ".github/ghalactic/provision-github-tokens.yml",
+      configSha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      config: {
+        $schema: "",
+        dashboard: { enabled: true },
+        tokens: {},
+        provision: { secrets: {} },
       },
-    ],
-  ]);
+    },
+  ];
 
   __setIssues(repoA.full_name, [
     createTestIssue(
@@ -730,22 +709,19 @@ it("closes dashboards when they're disabled by the provider", async () => {
     provision: { rules: { secrets: [] } },
   };
 
-  const discovered = new Map<string, DiscoveredRequester>([
-    [
-      repoA.full_name,
-      {
-        requester: createRepoRef("org-a", "repo-a"),
-        configPath: ".github/ghalactic/provision-github-tokens.yml",
-        configSha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-        config: {
-          $schema: "",
-          dashboard: { enabled: true },
-          tokens: {},
-          provision: { secrets: {} },
-        },
+  const discovered: DiscoveredRequester[] = [
+    {
+      requester: createRepoRef("org-a", "repo-a"),
+      configPath: ".github/ghalactic/provision-github-tokens.yml",
+      configSha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      config: {
+        $schema: "",
+        dashboard: { enabled: true },
+        tokens: {},
+        provision: { secrets: {} },
       },
-    ],
-  ]);
+    },
+  ];
 
   __setIssues(repoA.full_name, [
     createTestIssue(
@@ -822,22 +798,19 @@ it("closes dashboards when they're disabled by the requester", async () => {
     provision: { rules: { secrets: [] } },
   };
 
-  const discovered = new Map<string, DiscoveredRequester>([
-    [
-      repoA.full_name,
-      {
-        requester: createRepoRef("org-a", "repo-a"),
-        configPath: ".github/ghalactic/provision-github-tokens.yml",
-        configSha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-        config: {
-          $schema: "",
-          dashboard: { enabled: false },
-          tokens: {},
-          provision: { secrets: {} },
-        },
+  const discovered: DiscoveredRequester[] = [
+    {
+      requester: createRepoRef("org-a", "repo-a"),
+      configPath: ".github/ghalactic/provision-github-tokens.yml",
+      configSha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      config: {
+        $schema: "",
+        dashboard: { enabled: false },
+        tokens: {},
+        provision: { secrets: {} },
       },
-    ],
-  ]);
+    },
+  ];
 
   __setIssues(repoA.full_name, [
     createTestIssue(
@@ -902,22 +875,19 @@ it("doesn't create a dashboard when nothing is failing", async () => {
     provision: { rules: { secrets: [] } },
   };
 
-  const discovered = new Map<string, DiscoveredRequester>([
-    [
-      repoA.full_name,
-      {
-        requester: createRepoRef("org-a", "repo-a"),
-        configPath: ".github/ghalactic/provision-github-tokens.yml",
-        configSha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-        config: {
-          $schema: "",
-          dashboard: { enabled: true },
-          tokens: {},
-          provision: { secrets: {} },
-        },
+  const discovered: DiscoveredRequester[] = [
+    {
+      requester: createRepoRef("org-a", "repo-a"),
+      configPath: ".github/ghalactic/provision-github-tokens.yml",
+      configSha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      config: {
+        $schema: "",
+        dashboard: { enabled: true },
+        tokens: {},
+        provision: { secrets: {} },
       },
-    ],
-  ]);
+    },
+  ];
 
   await reconcileDashboards(
     testContext,
@@ -977,22 +947,19 @@ it("doesn't create a dashboard when they're disabled", async () => {
     provision: { rules: { secrets: [] } },
   };
 
-  const discovered = new Map<string, DiscoveredRequester>([
-    [
-      repoA.full_name,
-      {
-        requester: createRepoRef("org-a", "repo-a"),
-        configPath: ".github/ghalactic/provision-github-tokens.yml",
-        configSha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-        config: {
-          $schema: "",
-          dashboard: { enabled: true },
-          tokens: {},
-          provision: { secrets: {} },
-        },
+  const discovered: DiscoveredRequester[] = [
+    {
+      requester: createRepoRef("org-a", "repo-a"),
+      configPath: ".github/ghalactic/provision-github-tokens.yml",
+      configSha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      config: {
+        $schema: "",
+        dashboard: { enabled: true },
+        tokens: {},
+        provision: { secrets: {} },
       },
-    ],
-  ]);
+    },
+  ];
 
   await reconcileDashboards(
     testContext,
@@ -1052,22 +1019,19 @@ it("reuses the existing label when creating dashboards", async () => {
     provision: { rules: { secrets: [] } },
   };
 
-  const discovered = new Map<string, DiscoveredRequester>([
-    [
-      repoA.full_name,
-      {
-        requester: createRepoRef("org-a", "repo-a"),
-        configPath: ".github/ghalactic/provision-github-tokens.yml",
-        configSha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-        config: {
-          $schema: "",
-          dashboard: { enabled: true },
-          tokens: {},
-          provision: { secrets: {} },
-        },
+  const discovered: DiscoveredRequester[] = [
+    {
+      requester: createRepoRef("org-a", "repo-a"),
+      configPath: ".github/ghalactic/provision-github-tokens.yml",
+      configSha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      config: {
+        $schema: "",
+        dashboard: { enabled: true },
+        tokens: {},
+        provision: { secrets: {} },
       },
-    ],
-  ]);
+    },
+  ];
 
   __setRepoIssueLabels(repoA.full_name, [DASHBOARD_LABEL]);
 
@@ -1142,22 +1106,19 @@ it("ignores provisioned secrets from other repos", async () => {
     provision: { rules: { secrets: [] } },
   };
 
-  const discovered = new Map<string, DiscoveredRequester>([
-    [
-      repoA.full_name,
-      {
-        requester: createRepoRef("org-a", "repo-a"),
-        configPath: ".github/ghalactic/provision-github-tokens.yml",
-        configSha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-        config: {
-          $schema: "",
-          dashboard: { enabled: true },
-          tokens: {},
-          provision: { secrets: {} },
-        },
+  const discovered: DiscoveredRequester[] = [
+    {
+      requester: createRepoRef("org-a", "repo-a"),
+      configPath: ".github/ghalactic/provision-github-tokens.yml",
+      configSha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      config: {
+        $schema: "",
+        dashboard: { enabled: true },
+        tokens: {},
+        provision: { secrets: {} },
       },
-    ],
-  ]);
+    },
+  ];
 
   await reconcileDashboards(
     testContext,
@@ -1221,22 +1182,19 @@ it("ignores open issues without the dashboard label", async () => {
     provision: { rules: { secrets: [] } },
   };
 
-  const discovered = new Map<string, DiscoveredRequester>([
-    [
-      repoA.full_name,
-      {
-        requester: createRepoRef("org-a", "repo-a"),
-        configPath: ".github/ghalactic/provision-github-tokens.yml",
-        configSha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-        config: {
-          $schema: "",
-          dashboard: { enabled: true },
-          tokens: {},
-          provision: { secrets: {} },
-        },
+  const discovered: DiscoveredRequester[] = [
+    {
+      requester: createRepoRef("org-a", "repo-a"),
+      configPath: ".github/ghalactic/provision-github-tokens.yml",
+      configSha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      config: {
+        $schema: "",
+        dashboard: { enabled: true },
+        tokens: {},
+        provision: { secrets: {} },
       },
-    ],
-  ]);
+    },
+  ];
 
   __setIssues(repoA.full_name, [
     createTestIssue(
@@ -1325,36 +1283,30 @@ it("reconciles each requester independently", async () => {
     provision: { rules: { secrets: [] } },
   };
 
-  const discovered = new Map<string, DiscoveredRequester>([
-    [
-      repoA.full_name,
-      {
-        requester: createRepoRef("org-a", "repo-a"),
-        configPath: ".github/ghalactic/provision-github-tokens.yml",
-        configSha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-        config: {
-          $schema: "",
-          dashboard: { enabled: true },
-          tokens: {},
-          provision: { secrets: {} },
-        },
+  const discovered: DiscoveredRequester[] = [
+    {
+      requester: createRepoRef("org-a", "repo-a"),
+      configPath: ".github/ghalactic/provision-github-tokens.yml",
+      configSha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      config: {
+        $schema: "",
+        dashboard: { enabled: true },
+        tokens: {},
+        provision: { secrets: {} },
       },
-    ],
-    [
-      repoB.full_name,
-      {
-        requester: createRepoRef("org-a", "repo-b"),
-        configPath: ".github/ghalactic/provision-github-tokens.yml",
-        configSha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-        config: {
-          $schema: "",
-          dashboard: { enabled: true },
-          tokens: {},
-          provision: { secrets: {} },
-        },
+    },
+    {
+      requester: createRepoRef("org-a", "repo-b"),
+      configPath: ".github/ghalactic/provision-github-tokens.yml",
+      configSha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      config: {
+        $schema: "",
+        dashboard: { enabled: true },
+        tokens: {},
+        provision: { secrets: {} },
       },
-    ],
-  ]);
+    },
+  ];
 
   await reconcileDashboards(
     testContext,
@@ -1416,22 +1368,19 @@ it("warns when listing open issues fails", async () => {
     provision: { rules: { secrets: [] } },
   };
 
-  const discovered = new Map<string, DiscoveredRequester>([
-    [
-      repoA.full_name,
-      {
-        requester: createRepoRef("org-a", "repo-a"),
-        configPath: ".github/ghalactic/provision-github-tokens.yml",
-        configSha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-        config: {
-          $schema: "",
-          dashboard: { enabled: true },
-          tokens: {},
-          provision: { secrets: {} },
-        },
+  const discovered: DiscoveredRequester[] = [
+    {
+      requester: createRepoRef("org-a", "repo-a"),
+      configPath: ".github/ghalactic/provision-github-tokens.yml",
+      configSha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      config: {
+        $schema: "",
+        dashboard: { enabled: true },
+        tokens: {},
+        provision: { secrets: {} },
       },
-    ],
-  ]);
+    },
+  ];
 
   __setErrors("issues.listForRepo", [new TestRequestError(410)]);
 
@@ -1492,22 +1441,19 @@ it("warns when failing to create the dashboard label", async () => {
     provision: { rules: { secrets: [] } },
   };
 
-  const discovered = new Map<string, DiscoveredRequester>([
-    [
-      repoA.full_name,
-      {
-        requester: createRepoRef("org-a", "repo-a"),
-        configPath: ".github/ghalactic/provision-github-tokens.yml",
-        configSha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
-        config: {
-          $schema: "",
-          dashboard: { enabled: true },
-          tokens: {},
-          provision: { secrets: {} },
-        },
+  const discovered: DiscoveredRequester[] = [
+    {
+      requester: createRepoRef("org-a", "repo-a"),
+      configPath: ".github/ghalactic/provision-github-tokens.yml",
+      configSha: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      config: {
+        $schema: "",
+        dashboard: { enabled: true },
+        tokens: {},
+        provision: { secrets: {} },
       },
-    ],
-  ]);
+    },
+  ];
 
   __setErrors("issues.createLabel", [new TestRequestError(422)]);
 
