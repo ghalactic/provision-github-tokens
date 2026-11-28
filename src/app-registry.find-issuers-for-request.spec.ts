@@ -156,6 +156,40 @@ it("finds issuers for no repos", () => {
   ).toEqual([appAInstallationA]);
 });
 
+it("doesn't find account-only issuers from another account", () => {
+  const [[orgA], [orgB, [repoB]]] = createTestInstallationAccounts(
+    ["Organization", 100, "org-a"],
+    ["Organization", 200, "org-b", ["repo-b"]],
+  );
+  const appA: AppRegistration = {
+    app: createTestApp("App A", { metadata: "read" }),
+    issuer: { enabled: true, roles: ["role-a"] },
+    provisioner: { enabled: false },
+  };
+  const appAInstallationB: InstallationRegistration = {
+    installation: createTestInstallation(112, appA.app, orgB, "selected"),
+    repos: [repoB],
+  };
+
+  const appRegistry = createAppRegistry(createRepoRegistry());
+  appRegistry.registerApp(appA);
+  appRegistry.registerInstallation(appAInstallationB);
+
+  expect(
+    appRegistry.findIssuersForRequest({
+      consumer: { account: "account-x" },
+      tokenDec: {
+        shared: false,
+        as: "role-a",
+        account: orgA.login,
+        repos: [],
+        permissions: { metadata: "read" },
+      },
+      repos: [],
+    }),
+  ).toHaveLength(0);
+});
+
 it.each([
   ["read", "write"],
   ["read", "admin"],

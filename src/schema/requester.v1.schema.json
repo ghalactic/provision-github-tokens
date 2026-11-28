@@ -71,7 +71,7 @@
                 "const": "all"
               },
               {
-                "description": "A list of repo name patterns to match against.",
+                "description": "A list of repo name patterns to match against. An empty list grants account-only access.",
                 "type": "array",
                 "items": {
                   "description": "A pattern which matches repos without their account prefix.",
@@ -86,8 +86,7 @@
                     "*-with-suffix",
                     "with-*-infix"
                   ]
-                },
-                "minItems": 1
+                }
               }
             ]
           },

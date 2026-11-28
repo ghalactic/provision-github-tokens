@@ -1608,6 +1608,70 @@ it("fails over to the next issuer after a request error", async () => {
   );
 });
 
+it("doesn't fail over to an issuer from another account", async () => {
+  const [[accountA], [accountB, [repoB]]] = createTestInstallationAccounts(
+    ["Organization", 100, "account-a"],
+    ["Organization", 200, "account-b", ["repo-b"]],
+  );
+  const [[appA, [appAInstallationA]], [appB, [appBInstallationB]]] =
+    createTestApps(
+      ["App A", { metadata: "read" }, [[accountA]]],
+      ["App B", { metadata: "read" }, [[accountB, "selected"]]],
+    );
+  const appRegistry = createTestAppRegistry(
+    createTestRepoRegistry(),
+    {
+      app: appA,
+      issuer: [],
+      installations: [[appAInstallationA, []]],
+    },
+    {
+      app: appB,
+      issuer: [],
+      installations: [[appBInstallationB, [repoB]]],
+    },
+  );
+
+  const { findIssuerOctokit } = createTestOctokitFactory(appRegistry);
+  const createTokens = createTokenFactory(findIssuerOctokit);
+
+  __addInstallationToken(appBInstallationB.id, [], { metadata: "read" });
+  __setErrors("apps.createInstallationAccessToken", [new Error("boom")]);
+
+  const authResult = createTestTokenAuthResult({
+    type: "NO_REPOS",
+    request: {
+      consumer: { account: "consumer-a" },
+      tokenDec: createTestTokenDec({ repos: [] }),
+      repos: [],
+    },
+  });
+  const candidates = findIssuerOctokit(authResult.request);
+
+  expect(candidates.map((candidate) => candidate.issuer)).toEqual([
+    { installation: appAInstallationA, repos: [] },
+  ]);
+
+  const results = await createTokens([authResult]);
+
+  expect(results.get(authResult)).toMatchObject({
+    type: "FAILED",
+    attempts: [
+      {
+        type: "ERROR",
+        issuer: candidates[0].issuer,
+        error: new Error("boom"),
+      },
+    ],
+  });
+
+  const debugMessages = vi.mocked(debug).mock.calls.map(([message]) => message);
+  expect(debugMessages).toEqual([
+    `Trying issuer app ${appAInstallationA.app_id} ` +
+      `installation ${appAInstallationA.id}`,
+  ]);
+});
+
 it("fails over to the next issuer after an unexpected error", async () => {
   const [[accountA, [repoA]]] = createTestInstallationAccounts([
     "Organization",
