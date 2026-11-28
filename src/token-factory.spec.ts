@@ -1533,7 +1533,7 @@ it("keeps a token shape on the same issuer across runs", async () => {
   });
 });
 
-it("falls over to the next issuer after a request error", async () => {
+it("fails over to the next issuer after a request error", async () => {
   const [[accountA, [repoA]]] = createTestInstallationAccounts([
     "Organization",
     100,
@@ -1608,7 +1608,7 @@ it("falls over to the next issuer after a request error", async () => {
   );
 });
 
-it("falls over to the next issuer after an unexpected error", async () => {
+it("fails over to the next issuer after an unexpected error", async () => {
   const [[accountA, [repoA]]] = createTestInstallationAccounts([
     "Organization",
     100,

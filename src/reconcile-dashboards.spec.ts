@@ -1479,7 +1479,7 @@ it("warns when failing to create the dashboard label", async () => {
   expect(__getIssues("org-a", "repo-a")).toEqual([]);
 });
 
-it("falls over when listing dashboards fails", async () => {
+it("fails over when listing dashboards fails", async () => {
   const [[orgA, [repoA]]] = createTestInstallationAccounts([
     "Organization",
     100,
@@ -1565,7 +1565,7 @@ it("falls over when listing dashboards fails", async () => {
   expect(__getIssues("org-a", "repo-a")).toHaveLength(1);
 });
 
-it("falls over when creating a dashboard fails", async () => {
+it("fails over when creating a dashboard fails", async () => {
   const [[orgA, [repoA]]] = createTestInstallationAccounts([
     "Organization",
     100,
@@ -1740,7 +1740,7 @@ it("logs when every provisioner fails", async () => {
   expect(__getIssues("org-a", "repo-a")).toEqual([]);
 });
 
-it("falls over without repeating a close comment", async () => {
+it("fails over without repeating a close comment", async () => {
   const [[orgA, [repoA]]] = createTestInstallationAccounts([
     "Organization",
     100,

@@ -432,7 +432,7 @@ it("only discovers requesters once when multiple providers can access them", asy
   ]);
 });
 
-it("falls over when listing commits fails", async () => {
+it("fails over when listing commits fails", async () => {
   const [[accountA, [repoA]]] = createTestInstallationAccounts([
     "Organization",
     100,
@@ -493,7 +493,7 @@ it("falls over when listing commits fails", async () => {
   `);
 });
 
-it("falls over when reading the config fails", async () => {
+it("fails over when reading the config fails", async () => {
   const [[accountA, [repoA]]] = createTestInstallationAccounts([
     "Organization",
     100,

@@ -87,7 +87,7 @@ it("resolves environment names for a repo", async () => {
   `);
 });
 
-it("falls over to the next provisioner when listing fails", async () => {
+it("fails over to the next provisioner when listing fails", async () => {
   const [[accountA, [repoA], [[envA1]]]] = createTestInstallationAccounts([
     "Organization",
     100,

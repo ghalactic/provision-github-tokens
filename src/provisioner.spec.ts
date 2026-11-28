@@ -2066,7 +2066,7 @@ it("keeps a provision target on the same provisioner across runs", async () => {
   });
 });
 
-it("falls over when a provisioner can't fetch the public key", async () => {
+it("fails over when a provisioner can't fetch the public key", async () => {
   const [[accountA, [repoA]]] = createTestInstallationAccounts([
     "Organization",
     100,
@@ -2152,7 +2152,7 @@ it("falls over when a provisioner can't fetch the public key", async () => {
   expect(markdown).toContain("401");
 });
 
-it("falls over when a provisioner can't write the secret", async () => {
+it("fails over when a provisioner can't write the secret", async () => {
   const [[accountA, [repoA]]] = createTestInstallationAccounts([
     "Organization",
     100,
